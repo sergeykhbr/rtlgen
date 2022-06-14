@@ -20,7 +20,7 @@
 #include <stdint.h>
 #include <string.h>
 
-namespace debugger {
+namespace sysvc {
 
 /**
  * @brief String buffer declaration.

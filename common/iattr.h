@@ -14,12 +14,11 @@
  *  limitations under the License.
  */
 
-#ifndef __DEBUGGER_IATTRIBUTE_H__
-#define __DEBUGGER_IATTRIBUTE_H__
+#pragma once
 
 #include <iface.h>
 
-namespace debugger {
+namespace sysvc {
 
 static const char *const IFACE_ATTRIBUTE = "IAttribute";
 
@@ -45,4 +44,3 @@ class IAttribute : public IFace {
 
 }  // namespace debugger
 
-#endif  // __DEBUGGER_IATTRIBUTE_H__

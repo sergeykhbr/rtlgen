@@ -21,7 +21,7 @@
 #include <string.h>
 #include <iattr.h>
 
-namespace debugger {
+namespace sysvc {
 
 enum KindType {
         Attr_Invalid,

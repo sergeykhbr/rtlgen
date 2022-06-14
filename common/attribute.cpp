@@ -21,7 +21,7 @@
 #include <string>
 #include <algorithm>
 
-namespace debugger {
+namespace sysvc {
 
 static const int64_t MIN_ALLOC_BYTES = 1 << 12;
 static AttributeType NilAttribute;

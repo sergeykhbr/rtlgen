@@ -19,7 +19,7 @@
 #include <cstdio>
 #include <cstring>  // memcpy definition
 
-namespace debugger {
+namespace sysvc {
 
 AutoBuffer::AutoBuffer() {
     buf_ = NULL;

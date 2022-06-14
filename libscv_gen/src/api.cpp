@@ -1,72 +1,64 @@
 #include <systemc.h>
 #include <api_core.h>
 #include "api.h"
+#include "systemc_gen.h"
 
 namespace sysvc {
 
-using namespace debugger;
-
-vc_module::vc_module(const char *name)
-{
-    cfg_.make_list(module_attr_total);
-    cfg_[module_name].make_string(name);
-    cfg_[module_childs].make_list(0);
-    cfg_[module_in].make_list(0);
-    cfg_[module_out].make_list(0);
-    cfg_[module_localparam].make_list(0);
-    cfg_[module_reg].make_list(0);
-    cfg_[module_wire].make_list(0);
+GenObject *SCV_new_object(size_t sz) {
+    GenObject *ret = reinterpret_cast<GenObject *>(malloc(sz));
+    memset(ret, 0, sz);
+    return ret;
 }
 
-void vc_module::register_input(const char *name, int width) {
-    AttributeType &i = cfg_[module_in].new_list_item();
-    i.make_list(in_attr_total);
-    i[in_name].make_string(name);
-    i[in_width].make_int64(width);
-}
-
-void vc_module::register_output(const char *name, int width) {
-    AttributeType &o = cfg_[module_out].new_list_item();
-    o.make_list(out_attr_total);
-    o[out_name].make_string(name);
-    o[out_width].make_int64(width);
-}
-
-void vc_module::generate_sc(char *buf, size_t sz) {
-    generate_sc_h(buf, sz);
-    generate_sc_cpp(buf, sz);
-}
-
-void vc_module::generate_sc_h(char *buf, size_t sz) {
-    size_t pos = 0;
-    pos += RISCV_sprintf(&buf[pos], sz - pos, "%s",
-"/*\n"
-" *  Copyright 2022 Sergey Khabarov, sergeykhbr@gmail.com\n"
-" *\n"
-" *  Licensed under the Apache License, Version 2.0 (the \"License\");\n"
-" *  you may not use this file except in compliance with the License.\n"
-" *  You may obtain a copy of the License at\n"
-" *\n"
-" *      http://www.apache.org/licenses/LICENSE-2.0\n"
-" *\n"
-" *  Unless required by applicable law or agreed to in writing, software\n"
-" *  distributed under the License is distributed on an \"AS IS\" BASIS,\n"
-" *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.\n"
-" *  See the License for the specific language governing permissions and\n"
-" *  limitations under the License.\n"
-" */\n"
-" \n"
-"#pragma once\n");
-}
-
-void vc_module::generate_sc_h_include(char *buf, size_t sz, size_t pos) {
-    pos += RISCV_sprintf(&buf[pos], sz - pos, "%s", "#include <systemc.h>\n");
-    AttributeType &childs = cfg_[module_childs];
-    for (unsigned i = 0; i < childs.size(); i++) {
+void SCV_add_to_end(GenObject *parent, GenObject *child) {
+    while (parent->next) {
+        parent = parent->next;
     }
+    parent->next = child;
 }
 
-void vc_module::generate_sc_cpp(char *buf, size_t sz) {
+ModuleObject *SCV_new_module(ModuleObject *parent,
+                        const char *name) {
+
+    ModuleObject *p = static_cast<ModuleObject *>(
+                    SCV_new_object(sizeof(ModuleObject)));
+    p->id = LIST_ID_MODULE;
+    p->parent = parent;
+    p->name.make_string(name);
+
+    if (parent) {
+        SCV_add_to_end(parent, p);
+    }
+    return p;
+}
+
+IoObject *SCV_new_module_io(ModuleObject *m,
+                    int dir,
+                    char *name,
+                    int width,
+                    const char *comment) {
+    IoObject *p = static_cast<IoObject *>(
+                    SCV_new_object(sizeof(IoObject)));
+
+    p->id = LIST_ID_INPUT;
+    p->dir = dir;
+    p->name.make_string(name);
+    p->width.make_int64(width);
+    p->comment.make_string(comment);
+
+    if (m->io == 0) {
+        m->io = p;
+    } else {
+        SCV_add_to_end(m->io, p);
+    }
+    return p;
+}
+
+int SCV_generate_systemc(AttributeType *cfg, ModuleObject *m) {
+    SystemCGenerator gen(*cfg);
+    gen.generate(m);
+    return 0;
 }
 
 }

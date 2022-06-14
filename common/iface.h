@@ -14,10 +14,9 @@
  *  limitations under the License.
  */
 
-#ifndef __DEBUGGER_IFACE_H__
-#define __DEBUGGER_IFACE_H__
+#pragma once
 
-namespace debugger {
+namespace sysvc {
 
 class IFace {
  public:
@@ -38,5 +37,3 @@ class IFace {
 };
 
 }  // namespace debugger
-
-#endif  // __DEBUGGER_IFACE_H__

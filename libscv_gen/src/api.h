@@ -4,45 +4,46 @@
 
 namespace sysvc {
 
-enum EModuleAttributes {
-    module_name,
-    module_childs,
-    module_in,
-    module_out,
-    module_localparam,
-    module_reg,
-    module_wire,
-    module_attr_total
+enum EListIdType {
+    LIST_ID_MODULE,
+    LIST_ID_INPUT,
+    LIST_ID_OUTPUT,
 };
 
-enum EInputAttributes {
-    in_name,
-    in_width,
-    in_attr_total
+static const int IO_DIR_INPUT = 0x1;
+static const int IO_DIR_OUTPUT = 0x2;
+
+
+struct GenObject {
+    unsigned id;
+    GenObject *next;
 };
 
-enum EOutputAttributes {
-    out_name,
-    out_width,
-    out_attr_total
+struct IoObject : public GenObject {
+    AttributeType name;
+    int dir;
+    AttributeType width;        // width integer or string
+    AttributeType comment;
+};
+
+struct ModuleObject : public GenObject {
+    AttributeType name;
+    GenObject *parent;
+    GenObject *childs;
+    IoObject *io;
 };
 
 
-class vc_module
-{
- public:
-    vc_module(const char *name);
+ModuleObject *SCV_new_module(ModuleObject *parent,
+                            const char *name);
 
-    void register_input(const char *name, int width);
-    void register_output(const char *name, int width);
+IoObject *SCV_new_module_io(ModuleObject *m,
+                            int dir,
+                            char *name,
+                            int width,
+                            const char *comment);
 
-    void generate_sc(char *buf, size_t sz);
-    void generate_sc_h(char *buf, size_t sz);
-    void generate_sc_h_include(char *buf, size_t sz, size_t pos);
-    void generate_sc_cpp(char *buf, size_t sz);
-
- protected:
-    debugger::AttributeType cfg_;
-};
+int SCV_generate_systemc(AttributeType *cfg,
+                         ModuleObject *m);
 
 };
