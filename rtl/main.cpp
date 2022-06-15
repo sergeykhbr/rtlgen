@@ -2,19 +2,14 @@
 //
 
 #include <iostream>
-#include <api.h>
+#include "riverlib/river_top.h"
 
 using namespace std;
 using namespace sysvc;
 
 int main()
 {
-    ModuleObject *top = SCV_new_module(0, "top");
-    IoObject *i_a = SCV_new_module_io(top, IO_DIR_INPUT, "i_a", 8, " signal A");
-    IoObject *i_b = SCV_new_module_io(top, IO_DIR_INPUT, "i_b", 1, " signal B");
-    IoObject *i_c = SCV_new_module_io(top, IO_DIR_OUTPUT, "o_c", 64, " signal C");
-
-
+    TopObject *top = new TopObject();
 
     AttributeType gencfg(Attr_Dict);
     gencfg["FileMaxLength"].make_int64(1024*1024);

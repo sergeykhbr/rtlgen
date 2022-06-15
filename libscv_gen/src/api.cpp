@@ -5,55 +5,72 @@
 
 namespace sysvc {
 
-GenObject *SCV_new_object(size_t sz) {
-    GenObject *ret = reinterpret_cast<GenObject *>(malloc(sz));
-    memset(ret, 0, sz);
-    return ret;
+GenObject::GenObject(int id, const char *name) {
+    id_ = id;
+    name_.make_string(name);
+    next_ = 0;
 }
 
-void SCV_add_to_end(GenObject *parent, GenObject *child) {
-    while (parent->next) {
-        parent = parent->next;
-    }
-    parent->next = child;
-}
-
-ModuleObject *SCV_new_module(ModuleObject *parent,
-                        const char *name) {
-
-    ModuleObject *p = static_cast<ModuleObject *>(
-                    SCV_new_object(sizeof(ModuleObject)));
-    p->id = LIST_ID_MODULE;
-    p->parent = parent;
-    p->name.make_string(name);
-
-    if (parent) {
-        SCV_add_to_end(parent, p);
-    }
-    return p;
-}
-
-IoObject *SCV_new_module_io(ModuleObject *m,
-                    int dir,
-                    char *name,
-                    int width,
-                    const char *comment) {
-    IoObject *p = static_cast<IoObject *>(
-                    SCV_new_object(sizeof(IoObject)));
-
-    p->id = LIST_ID_INPUT;
-    p->dir = dir;
-    p->name.make_string(name);
-    p->width.make_int64(width);
-    p->comment.make_string(comment);
-
-    if (m->io == 0) {
-        m->io = p;
+void GenObject::add_to_end(GenObject *p) {
+    if (next_ == 0) {
+        next_ = p;
     } else {
-        SCV_add_to_end(m->io, p);
+        GenObject *t = next_;
+        while (t->next_) {
+            t = t->next_;
+        }
+        t->next_ = p;
     }
-    return p;
 }
+
+CfgParamObject::CfgParamObject(ModuleObject *parent,
+                               const char *name,
+                               int type,
+                               int width,
+                               uint64_t value,
+                               const char *comment)
+    : GenObject(ID_CFG_PARAM, name) {
+    type_ = type;
+    value_ = value;
+    comment_.make_string(comment);
+}
+
+ModuleObject::ModuleObject(ModuleObject *parent, const char *name) :
+    GenObject(ID_MODULE, name) {
+    parent_ = parent;
+    child_ = 0;
+    io_ = 0;
+}
+
+void ModuleObject::add_child(ModuleObject *child) {
+    if (child_) {
+        child_->add_child(child);
+    } else {
+        child_ = child;
+    }
+}
+
+void ModuleObject::add_io(IoObject *io) {
+    if (io_) {
+        io_->add_to_end(io);
+    } else {
+        io_ = io;
+    }
+}
+
+IoObject::IoObject(ModuleObject *parent,
+                     int id,
+                     const char *name,
+                     int width,
+                     const char *comment) : GenObject(id, name) {
+    width_int_ = width;
+    char tstr[64];
+    RISCV_sprintf(tstr, sizeof(tstr), "%d", width);
+    width_str_.make_string(tstr);
+    comment_.make_string(comment);
+    parent->add_io(this);
+}
+
 
 int SCV_generate_systemc(AttributeType *cfg, ModuleObject *m) {
     SystemCGenerator gen(*cfg);

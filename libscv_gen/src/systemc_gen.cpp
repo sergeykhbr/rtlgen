@@ -20,24 +20,19 @@ SystemCGenerator::~SystemCGenerator() {
 
 
 void SystemCGenerator::generate(ModuleObject *m) {
-    generate_h(m);
+    pos_ = 0;
+    generate_h_module(m);
+
+    char outfile[4096];
+    RISCV_sprintf(outfile, sizeof(outfile), "%s/%s.h",
+        cfg_["OutputDir"].to_string(),
+        m->getName());
+    write_file(outfile);
 }
 
-void SystemCGenerator::generate_h(ModuleObject *m) {
-    if (m->id == LIST_ID_MODULE) {
-        pos_ = 0;
-        generate_h_module(m);
-
-        char outfile[4096];
-        RISCV_sprintf(outfile, sizeof(outfile), "%s/%s.h",
-            cfg_["OutputDir"].to_string(),
-            m->name.to_string());
-        write_file(outfile);
-    }
-}
 
 void SystemCGenerator::generate_h_module(ModuleObject *m) {
-    const char *mname = m->name.to_string();
+    const char *mname = m->getName();
 
     pos_ += RISCV_sprintf(&out_[pos_], sz_ - pos_, "%s",
         "/*\n"
@@ -72,48 +67,36 @@ void SystemCGenerator::generate_h_module(ModuleObject *m) {
             mname);
 
     // Input signal declaration
-    IoObject *io = m->io;
+    IoObject *io = m->getIo();
     int width;
     while (io) {
-        const char *ioname = io->name.to_string();
+        const char *ioname = io->getName();
 
-        if (io->dir == IO_DIR_INPUT) {
+        if (io->getId() == ID_INPUT) {
             add_string("    sc_in");
-        } else if (io->dir == IO_DIR_OUTPUT) {
+        } else if (io->getId() == ID_OUTPUT) {
             add_string("    sc_out");
         }
 
-        if (io->width.is_integer()) {
-            width = io->width.to_int();
-        } else {
-            width = getParameterValue(io->width.to_string());
-        }
+        width = io->getWidthInt();
         if (width == 1) {
             add_string("<bool> ");
         } else if (width <= 64) {
             add_string("<sc_uint<");
-            if (io->width.is_integer()) {
-                add_dec(width);
-            } else {
-                add_string(io->width.to_string());
-            }
+            add_string(io->getWidthStr());
             add_string(">> ");
         } else {
             add_string("<sc_biguint<");
-            if (io->width.is_integer()) {
-                add_dec(width);
-            } else {
-                add_string(io->width.to_string());
-            }
+            add_string(io->getWidthStr());
             add_string(">> ");
         }
 
         pos_ += RISCV_sprintf(&out_[pos_], sz_ - pos_,
             "%s;    // %s\n",
                 ioname,
-                io->comment.to_string());
+                io->getComment());
 
-        io = static_cast<IoObject *>(io->next);
+        io = static_cast<IoObject *>(io->getNext());
     }
 
     

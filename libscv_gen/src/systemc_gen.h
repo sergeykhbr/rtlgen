@@ -14,9 +14,7 @@ class SystemCGenerator
     void generate(ModuleObject *m);
 
  protected:
-    void generate_h(ModuleObject *m);
     void generate_h_module(ModuleObject *m);
-    int getParameterValue(const char *name) { return 64; }
 
     void add_string(const char *str);
     void add_dec(int v);
