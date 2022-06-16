@@ -1,12 +1,14 @@
 #pragma once
 
 #include <api.h>
+#include "river_cfg.h"
 
 using namespace sysvc;
 
 class RiverTop : public ModuleObject {
  public:
-    RiverTop();
+    RiverTop(GenObject *parent,
+             river_cfg &cfg);
 
  protected:
     /*CfgParamObject hartid;
@@ -17,9 +19,8 @@ class RiverTop : public ModuleObject {
 
     InPort i_clk;
     InPort i_nrst;
-    CommentIo cmt1;
+    CommentObject cmt1;
     InPort i_req_mem_ready;
-    OutPort o_req_mem_ready;
     OutPort o_req_mem_path;
     OutPort o_req_mem_valid;
     OutPort o_req_mem_type;

@@ -1,19 +1,12 @@
 cmake_minimum_required(VERSION 3.6)
 project(libscv_gen DESCRIPTION "libscv_gen shared library")
 
-if (NOT DEFINED ENV{SYSTEMC_SRC} OR NOT DEFINED ENV{SYSTEMC_LIB})
-    message(FATAL_ERROR "Variables SYSTEMC_SRC and SYSTEMC_LIB not defined.")
-else()
-    add_library(systemc STATIC IMPORTED)
-    set_target_properties(systemc PROPERTIES IMPORTED_LOCATION $ENV{SYSTEMC_LIB}/Debug/systemc.lib)
-endif()
-
 set(src_top "${CMAKE_CURRENT_SOURCE_DIR}/..")
-set(sysc_lib "$ENV{SYSTEMC_LIB}")
 set(EXECUTABLE_OUTPUT_PATH "../bin")
 set(LIBRARY_OUTPUT_PATH "../bin")
 add_definitions(-D_UNICODE)
 add_definitions(-DUNICODE)
+add_definitions(-D_CRT_SECURE_NO_WARNINGS)
 
 if(UNIX)
 else()
@@ -23,15 +16,12 @@ endif()
 
 
 include_directories(
-    $ENV{SYSTEMC_SRC}
-    ${src_top}/common
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/wininclude
 )
 
 
 file(GLOB_RECURSE libscv_gen_src
     LIST_DIRECTORIES false
-    ${src_top}/common/*.cpp
-    ${src_top}/common/*.h
     ${CMAKE_CURRENT_SOURCE_DIR}/src/*.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/*.h
     ${CMAKE_CURRENT_SOURCE_DIR}/exportmap.def
@@ -52,18 +42,9 @@ else()
 endif()
 
 
-if (MSVC)
-    add_compile_options(/vmg /wd"4244" /wd"4996")
-else()
-    add_compile_options(-Wl,-Bstatic -lsystemc -Wl,-Bdynamic)
-endif()
-
-
 add_library(libscv_gen STATIC
     ${libscv_gen_src}
 )
-
-target_link_libraries(libscv_gen systemc)
 
 
 if(UNIX)

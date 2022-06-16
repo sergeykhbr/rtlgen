@@ -16,16 +16,13 @@ endif()
 add_subdirectory(libscv_gen)
 
 include_directories(
-    ${CMAKE_CURRENT_SOURCE_DIR}/common
-    ${CMAKE_CURRENT_SOURCE_DIR}/rtl
     ${CMAKE_CURRENT_SOURCE_DIR}/libscv_gen/src
 )
 
 file(GLOB_RECURSE _testapp_src
     LIST_DIRECTORIES false
-    ${CMAKE_CURRENT_SOURCE_DIR}/common/*.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/rtl/*.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/rtl/*.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/*.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/*.h
 )
 
 
