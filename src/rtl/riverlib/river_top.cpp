@@ -3,6 +3,7 @@
 RiverTop::RiverTop(GenObject *parent,
                    river_cfg &cfg) :
     ModuleObject(parent, "RiverTop"),
+    io_start_(this),
     i_clk(this, "i_clk", ConstParam(1), "CPU clock"),
     i_nrst(this, "i_nrst", ConstParam(1), "Reset: active LOW"),
     cmt1(this, "Memory interface:"),
@@ -18,6 +19,7 @@ RiverTop::RiverTop(GenObject *parent,
     i_resp_mem_path(this, "i_resp_mem_path", ConstParam(1), "0=ctrl; 1=data path"),
     i_resp_mem_data(this, "i_resp_mem_data", cfg.REQ_MEM_TYPE_BITS, "Read data"),
     i_resp_mem_load_fault(this, "i_resp_mem_load_fault", ConstParam(1), "data load error"),
-    i_resp_mem_store_fault(this, "i_resp_mem_store_fault", ConstParam(1), "data store error")
+    i_resp_mem_store_fault(this, "i_resp_mem_store_fault", ConstParam(1), "data store error"),
+    io_end_(this)
 {
 }

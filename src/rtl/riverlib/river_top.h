@@ -17,6 +17,7 @@ class RiverTop : public ModuleObject {
     CfgParamObject coherence_ena;
     CfgParamObject tracer_ena;*/
 
+    IoPortsStart io_start_;
     InPort i_clk;
     InPort i_nrst;
     CommentObject cmt1;
@@ -33,7 +34,7 @@ class RiverTop : public ModuleObject {
     InPort i_resp_mem_data;
     InPort i_resp_mem_load_fault;
     InPort i_resp_mem_store_fault;
-
+    IoPortsEnd io_end_;
 };
 
 

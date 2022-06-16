@@ -5,8 +5,10 @@ river_cfg::river_cfg(GenObject *parent) :
     cmt1_(this, ""),
     cmt2_(this, "2**Number of CPU slots in the clusters. Some of them could be unavailable"),
     cmt3_(this, ""),
-    CFG_LOG2_CPU_MAX(this, "CFG_LOG2_CPU_MAX", 2, ""),
-    CFG_CPU_MAX(this, "CFG_CPU_MAX", "1 << CFG_LOG2_CPU_MAX", 1 << CFG_LOG2_CPU_MAX.getValue(), ""),
-    REQ_MEM_TYPE_BITS(this, "REQ_MEM_TYPE_BITS", 3, "")
+    CFG_LOG2_CPU_MAX(this, "CFG_LOG2_CPU_MAX", &const_2, ""),
+    CFG_CPU_MAX(this, "CFG_CPU_MAX", new Int32Pow2(&const_2), ""),
+    emt1_(this),
+    REQ_MEM_TYPE_BITS(this, "REQ_MEM_TYPE_BITS", &const_3, ""),
+    emtn_(this)
 {
 }

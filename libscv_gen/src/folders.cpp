@@ -1,37 +1,15 @@
 #include "api.h"
+#include "utils.h"
 
 namespace sysvc {
 
 FolderObject::FolderObject(GenObject *parent,
                            const char *name)
-    : GenObject(ID_FOLDER, name) {
-    parent_ = parent;
-    files_ = 0;
-    if (is_root()) {
-        reinterpret_cast<ProjectObject *>(parent_)->add_item(this);
-    } else {
-        reinterpret_cast<FolderObject *>(parent_)->add_subfolder(this);
-    }
+    : GenObject(parent, ID_FOLDER, name) {
 }
 
 bool FolderObject::is_root() {
     return parent_->getId() == ID_PROJECT;
-}
-
-void FolderObject::add_subfolder(GenObject *f) {
-    if (files_) {
-        files_->add_to_end(f);
-    } else {
-        files_ = f;
-    }
-}
-
-void FolderObject::add_file(GenObject *f) {
-    if (files_) {
-        files_->add_to_end(f);
-    } else {
-        files_ = f;
-    }
 }
 
 std::string FolderObject::getFullPath() {
@@ -53,10 +31,10 @@ std::string FolderObject::generate_sysc() {
         SCV_create_dir(path.c_str());
     }
 
-    GenObject *p = files_;
+    GenObject *p = getChilds();
     while (p) {
         p->generate_sysc();
-        p = p->getNext();
+        p = p->getChilds();
     }
 
     return GenObject::generate_sysc();
