@@ -1,20 +1,21 @@
-#include "api.h"
+#include "params.h"
 #include "utils.h"
 
 namespace sysvc {
 
+
 ParamObject::ParamObject(GenObject *parent,
                          const char *name,
-                         EIdType id,
                          GenValue *value,
                          const char *comment)
-    : GenObject(parent, id, name) {
-    value_str_ = std::string("UNDEFINED");
+    : GenObject(parent, ID_PARAM, name), value_(value) {
     comment_ = std::string(comment);
+
+    SCV_set_cfg_parameter(getName(), value_->getValue());
 }
 
 
-std::string Int32Param::generate_sysc() {
+std::string ParamI32::generate_sysc() {
     std::string ret = "static const int " + getName();
     ret += " = " + value_->generate_sysc() + ";";
 
@@ -27,5 +28,17 @@ std::string Int32Param::generate_sysc() {
     return ret;
 }
 
+std::string ParamUI64::generate_sysc() {
+    std::string ret = "static const uint64_t " + getName();
+    ret += " = " + value_->generate_sysc() + ";";
+
+    // One line comment
+    if (getComment().size()) {
+        ret += "    // " + getComment();
+    }
+    ret += "\n";
+
+    return ret;
+}
 
 }

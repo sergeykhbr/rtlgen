@@ -9,8 +9,7 @@ enum EIdType {
     ID_FOLDER,
     ID_HEAD_FILE,
     ID_VALUE,
-    ID_INT32_PARAM,
-    ID_INT64_PARAM,
+    ID_PARAM,
     ID_MODULE,
     ID_IO_START,    // input/output signal start marker
     ID_INPUT,

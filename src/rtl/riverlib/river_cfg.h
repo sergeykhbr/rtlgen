@@ -12,11 +12,14 @@ class river_cfg : public HeadFileObject {
     CommentObject cmt1_;
     CommentObject cmt2_;
     CommentObject cmt3_;
-    Int32Param CFG_LOG2_CPU_MAX;
-    Int32Param CFG_CPU_MAX;
+    ParamI32 CFG_LOG2_CPU_MAX;
+    ParamI32 CFG_CPU_MAX;
     EmptyLine emt1_;
+    ParamUI64 CFG_VENDOR_ID;
+    ParamUI64 CFG_IMPLEMENTATION_ID;
 
-    Int32Param REQ_MEM_TYPE_BITS;
+
+    ParamI32 REQ_MEM_TYPE_BITS;
     EmptyLine emtn_;
 };
 

@@ -2,37 +2,50 @@
 
 #include <inttypes.h>
 #include <iostream>
+#include <vector>
 
-class ParamObject;
+namespace sysvc {
 
 class GenValue {
  public:
-    virtual uint64_t getValue() = 0;
-    virtual std::string generate_sysc() = 0;
-};
+    GenValue(const char *op);
 
-class Int32Const : public GenValue {
- public:
-    Int32Const(uint64_t v) : GenValue(), val_(v) {}
-
+    virtual bool isNumber() { return isnumber_;}
     virtual uint64_t getValue() { return val_; }
-    virtual std::string generate_sysc();
+
+    virtual std::string generate_sysc() { return sysc_; }
 
  protected:
+    virtual void parse(const char *op);
+    void tokenize(std::string const &str,
+                  std::vector<std::string> &out);
+
+    void processToken(std::string &s);
+    bool isTokenDec(const char *s);
+    bool isTokenHex(const char *s);
+    void processMacro(std::string &s);
+    void macroPOW2(std::string &s);
+    uint64_t getArgValue(const char *arg);
+
+ protected:
+    bool isnumber_;     // used to form rtl entries: [val-1: 0]
     uint64_t val_;
+
+    std::string sysc_;  // systemc representation
+    std::string sysv_;  // system verilog
+    std::string vhdl_;  // vhdl
 };
 
-class Int32Pow2 : public GenValue {
+class I32D : public GenValue {
  public:
-    Int32Pow2(Int32Const *v) : GenValue(), val_(v) {}
-
-    virtual uint64_t getValue() { return 1ull << val_->getValue(); }
-    virtual std::string generate_sysc();
-
- protected:
-    Int32Const *val_;
+    I32D(const char *op) : GenValue(op) {}
+    I32D(int v);
 };
 
-static Int32Const const_1(1);
-static Int32Const const_2(2);
-static Int32Const const_3(3);
+class UI64H : public GenValue {
+ public:
+    UI64H(const char *op) : GenValue(op) {}
+    UI64H(uint64_t v);
+};
+
+}  // namespace sysvc

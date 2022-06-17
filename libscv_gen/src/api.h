@@ -4,6 +4,8 @@
 #include "genobjects.h"
 #include "projects.h"
 #include "values.h"
+#include "params.h"
+#include "ports.h"
 
 namespace sysvc {
 

@@ -1,32 +1,42 @@
 #pragma once
 
 #include "genobjects.h"
+#include "values.h"
 #include <iostream>
 
 namespace sysvc {
+
 class ParamObject : public GenObject {
  public:
     ParamObject(GenObject *parent,
                 const char *name,
-                EIdType id,
                 GenValue *value,
                 const char *comment);
 
     virtual int64_t getValue() { return value_->getValue(); }
-    std::string getComment() { return comment_; }
+    virtual std::string getComment() { return comment_; }
+
+    virtual std::string generate_sysc() { return std::string(""); }
 
  protected:
-    int type_;
     GenValue *value_;
-    std::string value_str_;
     std::string comment_;
 };
 
-class Int32Param : public ParamObject {
+class ParamI32 : public ParamObject {
  public:
-    Int32Param::Int32Param(GenObject *parent, const char *name,
-                            GenValue *value, const char *comment)
-        : ParamObject(parent, name, ID_INT32_PARAM, value, comment) {}
+    ParamI32::ParamI32(GenObject *parent, const char *name,
+                       GenValue *value, const char *comment)
+        : ParamObject(parent, name, value, comment) {}
+
+    virtual std::string generate_sysc() override;
+};
+
+class ParamUI64 : public ParamObject {
+ public:
+    ParamUI64::ParamUI64(GenObject *parent, const char *name,
+                         GenValue *value, const char *comment)
+        : ParamObject(parent, name, value, comment) {}
 
     virtual std::string generate_sysc() override;
 };

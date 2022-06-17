@@ -1,8 +1,27 @@
 #include "utils.h"
 #include <stdlib.h>
 #include <dirent.h>
+#include <map>
 
 namespace sysvc {
+
+static std::map<std::string, uint64_t> cfgParamters_;
+
+void SCV_set_cfg_parameter(std::string &name, uint64_t v) {
+    cfgParamters_[name] = v;
+}
+
+int SCV_is_cfg_parameter(std::string &name) {
+    if (cfgParamters_.find(name) == cfgParamters_.end()) {
+        // not found
+        return 0;
+    }
+    return 1;
+}
+
+uint64_t SCV_get_cfg_parameter(std::string &name) {
+    return cfgParamters_[name];
+}
 
 int SCV_is_dir_exists(const char *path) {
 #ifdef _WIN32

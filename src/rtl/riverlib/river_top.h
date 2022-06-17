@@ -7,8 +7,7 @@ using namespace sysvc;
 
 class RiverTop : public ModuleObject {
  public:
-    RiverTop(GenObject *parent,
-             river_cfg &cfg);
+    RiverTop(GenObject *parent);
 
  protected:
     /*CfgParamObject hartid;

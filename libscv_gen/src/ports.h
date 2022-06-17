@@ -12,19 +12,19 @@ namespace sysvc {
 class IoObject : public GenObject {
  public:
     IoObject(GenObject *parent,
-             EIdType id,
+             EIdType type,
              const char *name,
-             ParamObject &width,
+             GenValue *width,
              const char *comment);
 
-    int getWidthInt() { return width_value_; }
-    std::string getWidthStr() { return width_name_; }
+    int getWidth() { return static_cast<int>(width_->getValue()); }
     std::string getComment() { return comment_; }
 
+    virtual std::string generate_sysc() = 0;
  protected:
-    int width_value_;
-    std::string width_name_;
+    std::string name_;
     std::string comment_;
+    GenValue *width_;
 };
 
 class IoPortsStart : public GenObject {
@@ -43,7 +43,7 @@ class IoPortsEnd : public GenObject {
 class InPort : public IoObject {
  public:
     InPort(GenObject *parent, const char *name,
-             ParamObject &width, const char *comment)
+             GenValue *width, const char *comment)
         : IoObject(parent, ID_INPUT, name, width, comment) {}
 
     virtual std::string generate_sysc() override;
@@ -52,7 +52,7 @@ class InPort : public IoObject {
 class OutPort : public IoObject {
  public:
     OutPort(GenObject *parent, const char *name,
-             ParamObject &width, const char *comment)
+             GenValue *width, const char *comment)
         : IoObject(parent, ID_OUTPUT, name, width, comment) {}
 
     virtual std::string generate_sysc() override;
