@@ -7,6 +7,6 @@
 int main()
 {
     RiverProject *prj = new RiverProject("_generated");
-    prj->generate_sysc();
+    prj->generate(SYSC_ALL);
     return 0;
 }

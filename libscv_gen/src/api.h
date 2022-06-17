@@ -14,35 +14,22 @@ class FolderObject : public GenObject {
     FolderObject(GenObject *parent,
                  const char *name);
 
-    bool is_root();
-    std::string getFullPath();
-
-    virtual std::string generate_sysc() override;
+    virtual std::string getFullPath() override;
+    virtual std::string generate(EGenerateType) override;
 
  protected:
 };
 
-class HeadFileObject : public GenObject {
+class FileObject : public GenObject {
  public:
-    HeadFileObject(GenObject *parent,
-               const char *name,
-               const char *comment);
+    FileObject(GenObject *parent,
+                 const char *name);
 
-    bool is_root();
-    std::string getFullPath();
-
-    virtual std::string generate_sysc() override;
+    virtual std::string getFullPath() override;
+    virtual std::string generate(EGenerateType) override;
 
  protected:
-    std::string comment_;
 };
-
-
-
-
-/*
- * Simple wires
- */
 
 
 
@@ -54,21 +41,21 @@ class EmptyLine : public GenObject {
  public:
     EmptyLine(GenObject *parent);
 
-    virtual std::string generate_sysc() override;
+    virtual std::string generate(EGenerateType) override;
 };
 
 class CommentObject : public GenObject {
  public:
     CommentObject(GenObject *parent, const char *comment);
 
-    virtual std::string generate_sysc() override;
+    virtual std::string generate(EGenerateType) override;
 };
 
 class CommentLicense : public CommentObject {
  public:
     CommentLicense();
 
-    virtual std::string generate_sysc() override;
+    virtual std::string generate(EGenerateType) override;
  protected:
     CommentObject str01;
     CommentObject str02;
@@ -95,12 +82,9 @@ class ModuleObject : public GenObject {
  public:
     ModuleObject(GenObject *parent, const char *name);
 
-    virtual std::string generate_sysc() override;
+    virtual std::string generate(EGenerateType v) override;
  protected:
-    void generate_sysc_h();
-
- protected:
-    std::string fullpath_;
+    std::string generate_sysc_h();
 };
 
 

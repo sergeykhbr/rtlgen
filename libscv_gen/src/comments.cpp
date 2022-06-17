@@ -6,7 +6,7 @@ EmptyLine::EmptyLine(GenObject *parent)
     : GenObject(parent, ID_EMPTYLINE, "") {
 }
 
-std::string EmptyLine::generate_sysc() {
+std::string EmptyLine::generate(EGenerateType v) {
     std::string ret = "\n";
     return ret;
 }
@@ -16,7 +16,7 @@ CommentObject::CommentObject(GenObject *parent, const char *comment)
     : GenObject(parent, ID_COMMENT, comment) {
 }
 
-std::string CommentObject::generate_sysc() {
+std::string CommentObject::generate(EGenerateType v) {
     std::string ret = "// " + getName() + "\n";
     return ret;
 }
@@ -41,7 +41,7 @@ CommentLicense::CommentLicense()
     str15(this, "") {
 }
 
-std::string CommentLicense::generate_sysc() {
+std::string CommentLicense::generate(EGenerateType v) {
     std::string ret = "";
     GenObject *p = getEntries();
     while (p) {

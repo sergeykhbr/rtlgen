@@ -14,7 +14,7 @@ class RiverProject : public ProjectObject {
     FolderObject folder_rtl_;
     FolderObject folder_riverlib_;
     river_cfg file_river_cfg_;
-    RiverTop module_RiverTop_;
+    river_top file_river_top_;
 };
 
 

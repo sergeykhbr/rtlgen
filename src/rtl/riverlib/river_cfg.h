@@ -4,7 +4,7 @@
 
 using namespace sysvc;
 
-class river_cfg : public HeadFileObject {
+class river_cfg : public FileObject {
  public:
     river_cfg(GenObject *parent);
 
@@ -17,7 +17,10 @@ class river_cfg : public HeadFileObject {
     EmptyLine emt1_;
     ParamUI64 CFG_VENDOR_ID;
     ParamUI64 CFG_IMPLEMENTATION_ID;
-
+    ParamBOOL CFG_HW_FPU_ENABLE;
+    EmptyLine emt2_;
+    ParamI32 RISCV_ARCH;
+    EmptyLine emt3_;
 
     ParamI32 REQ_MEM_TYPE_BITS;
     EmptyLine emtn_;

@@ -41,7 +41,10 @@ void GenValue::processToken(std::string &op) {
     if (s[0] == '\0') {
         return;
     }
-    if (isTokenHex(s)) {
+    if (isTokenBool(s)) {
+        val_ = s[0] == 't' ? 1: 0;
+        sysc_ += op;
+    } else if (isTokenHex(s)) {
         val_ = strtoll(s, 0, 16);
         sysc_ += op;
     } else if (isTokenDec(s)) {
@@ -61,6 +64,11 @@ bool GenValue::isTokenDec(const char *s) {
 
 bool GenValue::isTokenHex(const char *s) {
     return s[0] == '0' && s[1] == 'x';
+}
+
+bool GenValue::isTokenBool(const char *s) {
+    return (s[0] == 't' || s[1] == 'r' || s[2] == 'u' || s[3] == 'e')
+        || (s[0] == 'f' || s[1] == 'a' || s[2] == 'l' || s[3] == 's' || s[4] == 'e');
 }
 
 void GenValue::processMacro(std::string &s) {
@@ -109,6 +117,15 @@ uint64_t GenValue::getArgValue(const char *arg) {
     return ret;
 }
 
+
+BOOL::BOOL(bool v) : GenValue(""){
+    char tstr[64] = "false";
+    if (v) {
+        RISCV_sprintf(tstr, sizeof(tstr), "%s", "true");
+    }
+    isnumber_ = true;
+    parse(tstr);
+}
 
 
 I32D::I32D(int v) : GenValue(""){

@@ -7,7 +7,7 @@ namespace sysvc {
 enum EIdType {
     ID_PROJECT,
     ID_FOLDER,
-    ID_HEAD_FILE,
+    ID_FILE,
     ID_VALUE,
     ID_PARAM,
     ID_MODULE,
@@ -19,10 +19,17 @@ enum EIdType {
     ID_EMPTYLINE
 };
 
+enum EGenerateType {
+    SYSC_ALL,
+    SYSC_DECLRATION,
+    SYSC_DEDEFINITION,
+};
+
 class GenObject {
  public:
     GenObject(GenObject *parent, EIdType id, const char *name);
 
+    virtual std::string getFullPath();
     virtual void add_child(GenObject *p);
     virtual void add_entry(GenObject *p);
 
@@ -32,7 +39,7 @@ class GenObject {
     GenObject *getEntries() { return entries_; }
     GenObject *getEntryById(EIdType id);
 
-    virtual std::string generate_sysc() { return std::string(""); }
+    virtual std::string generate(EGenerateType) { return std::string(""); }
 
  protected:
     EIdType id_;

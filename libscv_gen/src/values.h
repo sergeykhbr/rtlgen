@@ -23,6 +23,7 @@ class GenValue {
     void processToken(std::string &s);
     bool isTokenDec(const char *s);
     bool isTokenHex(const char *s);
+    bool isTokenBool(const char *s);
     void processMacro(std::string &s);
     void macroPOW2(std::string &s);
     uint64_t getArgValue(const char *arg);
@@ -35,6 +36,13 @@ class GenValue {
     std::string sysv_;  // system verilog
     std::string vhdl_;  // vhdl
 };
+
+class BOOL : public GenValue {
+ public:
+    BOOL(const char *op) : GenValue(op) {}
+    BOOL(bool v);
+};
+
 
 class I32D : public GenValue {
  public:

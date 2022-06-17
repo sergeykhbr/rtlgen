@@ -9,12 +9,21 @@ GenObject::GenObject(GenObject *parent, EIdType id, const char *name) {
     childs_ = 0;
     entries_ = 0;
     if (parent) {
-        if (parent->getId() == ID_PROJECT || parent->getId() == ID_FOLDER) {
+        if (parent->getId() == ID_PROJECT
+            || parent->getId() == ID_FOLDER) {
             parent_->add_child(this);
         } else {
             parent_->add_entry(this);
         }
     }
+}
+
+std::string GenObject::getFullPath() {
+    std::string ret = "";
+    if (parent_) {
+        ret = parent_->getFullPath();
+    }
+    return ret;
 }
 
 void GenObject::add_child(GenObject *p) {

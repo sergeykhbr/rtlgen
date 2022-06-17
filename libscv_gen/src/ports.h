@@ -20,7 +20,7 @@ class IoObject : public GenObject {
     int getWidth() { return static_cast<int>(width_->getValue()); }
     std::string getComment() { return comment_; }
 
-    virtual std::string generate_sysc() = 0;
+    virtual std::string generate(EGenerateType v) = 0;
  protected:
     std::string name_;
     std::string comment_;
@@ -46,7 +46,7 @@ class InPort : public IoObject {
              GenValue *width, const char *comment)
         : IoObject(parent, ID_INPUT, name, width, comment) {}
 
-    virtual std::string generate_sysc() override;
+    virtual std::string generate(EGenerateType v) override;
 };
 
 class OutPort : public IoObject {
@@ -55,7 +55,7 @@ class OutPort : public IoObject {
              GenValue *width, const char *comment)
         : IoObject(parent, ID_OUTPUT, name, width, comment) {}
 
-    virtual std::string generate_sysc() override;
+    virtual std::string generate(EGenerateType v) override;
 };
 
 }  // namespace sysvc

@@ -12,18 +12,18 @@ ProjectObject::ProjectObject(const char *name,
 }
 
 
-std::string ProjectObject::generate_sysc() {
+std::string ProjectObject::generate(EGenerateType v) {
     if (!SCV_is_dir_exists(rootpath_.c_str())) {
         SCV_create_dir(rootpath_.c_str());
     }
 
     GenObject *p = getChilds();
     while (p) {
-        p->generate_sysc();
+        p->generate(v);
         p = p->getChilds();
     }
 
-    return GenObject::generate_sysc();
+    return GenObject::generate(v);
 }
 
 }  // namespace sysvc

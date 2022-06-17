@@ -36,4 +36,11 @@ class RiverTop : public ModuleObject {
     IoPortsEnd io_end_;
 };
 
+class river_top : public FileObject {
+ public:
+    river_top(GenObject *parent);
+
+ private:
+    RiverTop top_;
+};
 

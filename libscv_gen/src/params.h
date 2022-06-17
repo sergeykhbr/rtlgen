@@ -23,6 +23,15 @@ class ParamObject : public GenObject {
     std::string comment_;
 };
 
+class ParamBOOL : public ParamObject {
+ public:
+    ParamBOOL::ParamBOOL(GenObject *parent, const char *name,
+                         GenValue *value, const char *comment)
+        : ParamObject(parent, name, value, comment) {}
+
+    virtual std::string generate_sysc() override;
+};
+
 class ParamI32 : public ParamObject {
  public:
     ParamI32::ParamI32(GenObject *parent, const char *name,

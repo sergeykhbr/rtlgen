@@ -22,3 +22,9 @@ RiverTop::RiverTop(GenObject *parent) :
     io_end_(this)
 {
 }
+
+river_top::river_top(GenObject *parent) :
+    FileObject(parent, "river_top"),
+    top_(this)
+{
+}

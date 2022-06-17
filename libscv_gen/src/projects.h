@@ -11,11 +11,10 @@ class ProjectObject : public GenObject {
                   const char *rootpath,
                   const char *comment);
 
-    void add_item(GenObject *item);
-    std::string getRootPath() { return rootpath_; }
+    virtual std::string getFullPath() override { return rootpath_; }
     std::string getComment() { return comment_; }
 
-    virtual std::string generate_sysc() override;
+    virtual std::string generate(EGenerateType) override;
 
  protected:
     std::string rootpath_;
