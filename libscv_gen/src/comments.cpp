@@ -1,4 +1,4 @@
-#include "api.h"
+#include "comments.h"
 
 namespace sysvc {
 
@@ -43,10 +43,8 @@ CommentLicense::CommentLicense()
 
 std::string CommentLicense::generate(EGenerateType v) {
     std::string ret = "";
-    GenObject *p = getEntries();
-    while (p) {
+    for (auto &p: entries_) {
         ret += "// " + p->getName() + "\n";
-        p = p->getEntries();
     }
     return ret;
 }

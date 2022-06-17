@@ -13,20 +13,10 @@ class GenValue {
     virtual bool isNumber() { return isnumber_;}
     virtual uint64_t getValue() { return val_; }
 
-    virtual std::string generate_sysc() { return sysc_; }
+    virtual std::string generate_sysc(){ return sysc_; }
 
  protected:
     virtual void parse(const char *op);
-    void tokenize(std::string const &str,
-                  std::vector<std::string> &out);
-
-    void processToken(std::string &s);
-    bool isTokenDec(const char *s);
-    bool isTokenHex(const char *s);
-    bool isTokenBool(const char *s);
-    void processMacro(std::string &s);
-    void macroPOW2(std::string &s);
-    uint64_t getArgValue(const char *arg);
 
  protected:
     bool isnumber_;     // used to form rtl entries: [val-1: 0]

@@ -1,4 +1,4 @@
-#include "api.h"
+#include "modules.h"
 #include "utils.h"
 
 namespace sysvc {
@@ -24,12 +24,9 @@ std::string ModuleObject::generate_sysc_h() {
 
     // Input/Output signal declaration
     GenObject *io = getEntryById(ID_IO_START);
-    io = io->getEntries();
-    while (io && io->getId() != ID_IO_END) {
-        out += io->generate(SYSC_DECLRATION);
-        io = io->getEntries();
+    for (auto &p: entries_) {
+        out += p->generate(SYSC_DECLRATION);
     }
-
     
     out += 
         "};\n"

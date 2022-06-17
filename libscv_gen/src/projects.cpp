@@ -17,10 +17,8 @@ std::string ProjectObject::generate(EGenerateType v) {
         SCV_create_dir(rootpath_.c_str());
     }
 
-    GenObject *p = getChilds();
-    while (p) {
+    for (auto &p: entries_) {
         p->generate(v);
-        p = p->getChilds();
     }
 
     return GenObject::generate(v);

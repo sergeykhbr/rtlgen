@@ -1,6 +1,7 @@
 #pragma once
 
 #include <iostream>
+#include <list>
 
 namespace sysvc {
 
@@ -30,13 +31,10 @@ class GenObject {
     GenObject(GenObject *parent, EIdType id, const char *name);
 
     virtual std::string getFullPath();
-    virtual void add_child(GenObject *p);
     virtual void add_entry(GenObject *p);
 
     unsigned getId() { return id_; }
     std::string getName() { return name_; }
-    GenObject *getChilds() { return childs_; }
-    GenObject *getEntries() { return entries_; }
     GenObject *getEntryById(EIdType id);
 
     virtual std::string generate(EGenerateType) { return std::string(""); }
@@ -45,8 +43,7 @@ class GenObject {
     EIdType id_;
     GenObject *parent_;
     std::string name_;
-    GenObject *childs_;
-    GenObject *entries_;
+    std::list<GenObject *> entries_;
 };
 
 }  // namespace sysvc

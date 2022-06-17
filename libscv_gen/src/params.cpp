@@ -14,21 +14,24 @@ ParamObject::ParamObject(GenObject *parent,
     SCV_set_cfg_parameter(getName(), value_->getValue());
 }
 
-std::string ParamBOOL::generate_sysc() {
-    std::string ret = "static const bool " + getName();
-    ret += " = " + value_->generate_sysc() + ";";
+std::string ParamBOOL::generate(EGenerateType v) {
+    std::string ret = "";
+    if (v == SYSC_DECLRATION) {
+        ret += "static const bool " + getName();
+        ret += " = " + value_->generate_sysc() + ";";
 
-    // One line comment
-    if (getComment().size()) {
-        ret += "    // " + getComment();
+        // One line comment
+        if (getComment().size()) {
+            ret += "    // " + getComment();
+        }
+        ret += "\n";
     }
-    ret += "\n";
 
     return ret;
 }
 
 
-std::string ParamI32::generate_sysc() {
+std::string ParamI32::generate(EGenerateType v) {
     std::string ret = "static const int " + getName();
     ret += " = " + value_->generate_sysc() + ";";
 
@@ -41,7 +44,7 @@ std::string ParamI32::generate_sysc() {
     return ret;
 }
 
-std::string ParamUI64::generate_sysc() {
+std::string ParamUI64::generate(EGenerateType v) {
     std::string ret = "static const uint64_t " + getName();
     ret += " = " + value_->generate_sysc() + ";";
 

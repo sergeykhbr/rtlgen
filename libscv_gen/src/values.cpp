@@ -5,116 +5,154 @@
 
 namespace sysvc {
 
-GenValue::GenValue(const char *op) : isnumber_(false) {
-    val_ = 0;
-    sysc_ = std::string("");
-    sysv_ = std::string("");
-    vhdl_ = std::string("");
-    
-    parse(op);
+
+size_t decodeValue(const char *ops, size_t pos,
+                 std::string &m, uint64_t &arg) {
+    char buf[64] = "";
+    size_t cnt = 0;
+    // Check macro:
+    while (ops[pos] && ops[pos] != ',' && ops[pos] != '(' && ops[pos] != ')') {
+        buf[cnt++] = ops[pos];
+        buf[cnt] = '\0';
+        pos++;
+    }
+    if (ops[pos] == ',' || ops[pos] == ')') {
+        pos++;
+    }
+
+    if (buf[0] == '\0') {
+        m = std::string("CONST");
+        arg = 0;
+        return pos;
+    }
+    if (buf[0] >= '0' && buf[0] <= '9') {
+        m = std::string("CONST");
+        int base = buf[1] == 'x' ? 16: 10;
+        arg = strtoll(buf, 0, base);
+        return pos;
+    }
+    if (strcmp(buf, "true") == 0 || strcmp(buf, "false") == 0) {
+        m = std::string("CONST");
+        arg = buf[0] == 't' ? 1 : 0;
+        return pos;
+    }
+    m = std::string(buf);
+    if (SCV_is_cfg_parameter(m)) {
+        arg = SCV_get_cfg_parameter(m);
+        m = std::string("CONST");
+        return pos;
+    }
+
+    if (ops[pos] != '(') {
+        RISCV_printf("error: syntax %s, line %d\n", __FILE__, __LINE__);
+        return pos;
+    }
+    pos++;
+
+    if (m == "POW2" || m == "SUB" || m == "MUL") {
+        std::string op = m;
+        uint64_t arg1, arg2;
+        pos = decodeValue(ops, pos, m, arg1);
+        if (m != "CONST") {
+            RISCV_printf("error: syntax %s, line %d\n", __FILE__, __LINE__);
+        }
+        pos = decodeValue(ops, pos, m, arg2);
+        if (m != "CONST") {
+            RISCV_printf("error: syntax %s, line %d\n", __FILE__, __LINE__);
+        }
+        if (op == "POW2") {
+            arg = arg1 << arg2;
+        } else if (op == "SUB") {
+            arg = arg1 - arg2;
+        } else if (op == "MUL") {
+            arg = arg1 * arg2;
+        }
+        m = std::string("CONST");
+    } else {
+        RISCV_printf("error: syntax %s, line %d\n", __FILE__, __LINE__);
+    }
+    return pos;
 }
 
-void GenValue::tokenize(std::string const &str,
-                        std::vector<std::string> &out)
-{
-    // construct a stream from the string
-    std::stringstream ss(str);
- 
-    std::string s;
-    while (std::getline(ss, s, ';')) {
-        out.push_back(s);
+size_t decodeParamSysc(const char *ops, size_t pos,
+                 std::string &m, std::string &arg) {
+    char buf[64] = "";
+    size_t cnt = 0;
+    // Check macro:
+    while (ops[pos] && ops[pos] != ',' && ops[pos] != '(' && ops[pos] != ')') {
+        buf[cnt++] = ops[pos];
+        buf[cnt] = '\0';
+        pos++;
     }
+    if (ops[pos] == ',' || ops[pos] == ')') {
+        pos++;
+    }
+
+    if (buf[0] == '\0') {
+        arg = std::string("");
+        m = std::string("CONST");
+        return pos;
+    }
+    if (buf[0] >= '0' && buf[0] <= '9') {
+        arg = std::string(buf);
+        m = std::string("CONST");
+        return pos;
+    }
+    if (strcmp(buf, "true") == 0 || strcmp(buf, "false") == 0) {
+        arg = std::string(buf);
+        m = std::string("CONST");
+        return pos;
+    }
+    m = std::string(buf);
+    if (SCV_is_cfg_parameter(m)) {
+        arg = m;
+        m = std::string("CONST");
+        return pos;
+    }
+
+    if (ops[pos] != '(') {
+        RISCV_printf("error: syntax %s, line %d\n", __FILE__, __LINE__);
+        return pos;
+    }
+    pos++;
+
+    if (m == "POW2" || m == "SUB" || m == "MUL") {
+        std::string op = m;
+        std::string arg1, arg2;
+        pos = decodeParamSysc(ops, pos, m, arg1);
+        if (m != "CONST") {
+            RISCV_printf("error: syntax %s, line %d\n", __FILE__, __LINE__);
+        }
+        pos = decodeParamSysc(ops, pos, m, arg2);
+        if (m != "CONST") {
+            RISCV_printf("error: syntax %s, line %d\n", __FILE__, __LINE__);
+        }
+        if (op == "POW2") {
+            arg = arg1 + " << " + arg2;
+        } else if (op == "SUB") {
+            arg = arg1 + " - " + arg2;
+        } else if (op == "MUL") {
+            arg = arg1 + " * " + arg2;
+        }
+        m = std::string("CONST");
+    } else {
+        RISCV_printf("error: syntax %s, line %d\n", __FILE__, __LINE__);
+    }
+    return pos;
+}
+
+
+GenValue::GenValue(const char *op) : isnumber_(false) {
+    parse(op);
 }
 
 
 void GenValue::parse(const char *op) {
-    std::vector<std::string> ops;
-    tokenize(std::string(op), ops);
-
-    for (auto &s: ops) {
-        processToken(s);
-    }
-}
-
-void GenValue::processToken(std::string &op) {
-    const char *s = op.c_str();
-    if (s[0] == '\0') {
-        return;
-    }
-    if (isTokenBool(s)) {
-        val_ = s[0] == 't' ? 1: 0;
-        sysc_ += op;
-    } else if (isTokenHex(s)) {
-        val_ = strtoll(s, 0, 16);
-        sysc_ += op;
-    } else if (isTokenDec(s)) {
-        val_ = atoll(s);
-        sysc_ += op;
-    } else if (SCV_is_cfg_parameter(op)) {
-        val_ = SCV_get_cfg_parameter(op);
-        sysc_ += std::string(op);
-    } else {
-        processMacro(op);
-    }
-}
-
-bool GenValue::isTokenDec(const char *s) {
-    return s[0] >= '0' && s[0] <= '9';
-}
-
-bool GenValue::isTokenHex(const char *s) {
-    return s[0] == '0' && s[1] == 'x';
-}
-
-bool GenValue::isTokenBool(const char *s) {
-    return (s[0] == 't' || s[1] == 'r' || s[2] == 'u' || s[3] == 'e')
-        || (s[0] == 'f' || s[1] == 'a' || s[2] == 'l' || s[3] == 's' || s[4] == 'e');
-}
-
-void GenValue::processMacro(std::string &s) {
-    if (s.find("POW2") != std::string::npos) {
-        macroPOW2(s);
-    }
-}
-
-void GenValue::macroPOW2(std::string &s) {
-    char arg1[256];
-    char arg2[256];
-    const char *psrc = &s.c_str()[5];
-    char *pdst = arg1;
-    while (*psrc && *psrc != ',') {
-        *pdst = *psrc;
-
-        *(++pdst) = '\0';
-        psrc++;
-    }
-    psrc++;
-    pdst = arg2;
-    while (*psrc && *psrc != ')') {
-        *pdst = *psrc;
-
-        *(++pdst) = '\0';
-        psrc++;
-    }
-
-    uint64_t a1 = getArgValue(arg1);
-    uint64_t a2 = getArgValue(arg2);
-    val_ = a1 << a2;
-    sysc_ = std::string(arg1) + " << " + std::string(arg2);
-}
-
-uint64_t GenValue::getArgValue(const char *arg) {
-    uint64_t ret = 0;
-    if (isTokenHex(arg)) {
-        ret = strtoll(arg, 0, 16);
-    } else if (isTokenDec(arg)) {
-        ret = atoll(arg);
-    } else if (SCV_is_cfg_parameter(std::string(arg))) {
-        ret = SCV_get_cfg_parameter(std::string(arg));
-    } else {
-        bool tr = true;
-    }
-    return ret;
+    std::string m;
+    decodeValue(op, 0, m, val_);
+    decodeParamSysc(op, 0, m, sysc_);
+    sysv_ = std::string("");
+    vhdl_ = std::string("");
 }
 
 

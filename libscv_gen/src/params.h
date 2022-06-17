@@ -16,7 +16,7 @@ class ParamObject : public GenObject {
     virtual int64_t getValue() { return value_->getValue(); }
     virtual std::string getComment() { return comment_; }
 
-    virtual std::string generate_sysc() { return std::string(""); }
+    virtual std::string generate(EGenerateType v) { return std::string(""); }
 
  protected:
     GenValue *value_;
@@ -29,7 +29,7 @@ class ParamBOOL : public ParamObject {
                          GenValue *value, const char *comment)
         : ParamObject(parent, name, value, comment) {}
 
-    virtual std::string generate_sysc() override;
+    virtual std::string generate(EGenerateType v) override;
 };
 
 class ParamI32 : public ParamObject {
@@ -38,7 +38,7 @@ class ParamI32 : public ParamObject {
                        GenValue *value, const char *comment)
         : ParamObject(parent, name, value, comment) {}
 
-    virtual std::string generate_sysc() override;
+    virtual std::string generate(EGenerateType v) override;
 };
 
 class ParamUI64 : public ParamObject {
@@ -47,7 +47,7 @@ class ParamUI64 : public ParamObject {
                          GenValue *value, const char *comment)
         : ParamObject(parent, name, value, comment) {}
 
-    virtual std::string generate_sysc() override;
+    virtual std::string generate(EGenerateType v) override;
 };
 
 
