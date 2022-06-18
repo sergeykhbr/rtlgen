@@ -1,10 +1,10 @@
 cmake_minimum_required(VERSION 3.6)
-project(testsysvc)
+project(rivergen)
 
 set(EXECUTABLE_OUTPUT_PATH "bin")
 set(LIBRARY_OUTPUT_PATH "bin")
 if(UNIX)
-	add_compile_options(-rdynamic)
+    add_compile_options(-rdynamic)
     set(INSTALL_DIR "bin")
 else()
 	add_definitions(-D_UNICODE)
@@ -13,29 +13,29 @@ else()
 	set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} /MTd")
 endif()
 
-add_subdirectory(libscv_gen)
+add_subdirectory(librtlgen)
 
 include_directories(
-    ${CMAKE_CURRENT_SOURCE_DIR}/libscv_gen/src
+    ${CMAKE_CURRENT_SOURCE_DIR}/librtlgen/src
 )
 
-file(GLOB_RECURSE _testapp_src
+file(GLOB_RECURSE _rivergen_src
     LIST_DIRECTORIES false
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/*.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/*.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/rivergen/*.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/rivergen/*.h
 )
 
 
 add_executable(
-   testapp
-   ${_testapp_src}
+   rivergen
+   ${_rivergen_src}
 )
 
 if(UNIX)
-    target_link_libraries(testapp sysvc)
+    target_link_libraries(rivergen librtlgen)
 else()
 
-    foreach(_source IN ITEMS ${_testapp_src})
+    foreach(_source IN ITEMS ${_rivergen_src})
         get_filename_component(_source_path "${_source}" PATH)
         # form proper filter name from the path to source file:
         string(REPLACE "${CMAKE_SOURCE_DIR}" "" _group_path "${_source_path}")
@@ -46,9 +46,9 @@ else()
     endforeach()
 
 
-    set_property(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} PROPERTY VS_STARTUP_PROJECT testapp)
+    set_property(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} PROPERTY VS_STARTUP_PROJECT rivergen)
 
-    add_dependencies(testapp libscv_gen)
-    target_link_libraries(testapp libscv_gen)
+    add_dependencies(rivergen librtlgen)
+    target_link_libraries(rivergen librtlgen)
 endif()
   

@@ -1,4 +1,4 @@
-﻿// syscv.cpp : Defines the entry point for the application.
+﻿// main.cpp : Defines the entry point for the application.
 //
 
 #include <iostream>
