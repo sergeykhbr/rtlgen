@@ -88,7 +88,7 @@ size_t decodeValue(const char *ops, size_t pos,
 }
 
 
-GenValue::GenValue(const char *op) {
+GenValue::GenValue(const char *op) : GenObject(0, ID_CONST, "") {
     parse(op);
 }
 

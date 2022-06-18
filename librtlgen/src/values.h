@@ -19,10 +19,11 @@
 #include <inttypes.h>
 #include <iostream>
 #include <vector>
+#include "genobjects.h"
 
 namespace sysvc {
 
-class GenValue {
+class GenValue : public GenObject {
  public:
     GenValue(const char *op);
 
@@ -31,7 +32,7 @@ class GenValue {
     }
     virtual uint64_t getValue() { return val_; }
 
-    virtual std::string generate_sysc(){ return sysc_; }
+    virtual std::string generate(EGenerateType) override { return sysc_; }
 
  protected:
     virtual void parse(const char *op);

@@ -22,10 +22,39 @@ FunctionObject::FunctionObject(GenObject *parent,
                                  const char *name,
                                  const char *comment)
     : GenObject(parent, ID_FUNCTION, name, comment) {
+    retval_ = 0;
 }
 
 std::string FunctionObject::generate(EGenerateType v) {
     std::string ret = "";
+    if (isStatic()) {
+        ret += "static ";
+    }
+    if (retval_) {
+        ret += retval_->generate(v);
+    } else {
+        ret += "void";
+    }
+    ret += " ";
+    ret += getName();
+    ret += "(";
+    for (auto a : args_) {
+        ret += "\n    " + a->generate(v);
+        if (&a != &args_.back()) {
+            ret += ",";
+        }
+    }
+    ret += ")";
+
+    if (isStatic()) {
+        ret += " {\n";
+        for (auto e: entries_) {
+            ret += "    " + e->generate(v) + "\n";
+        }
+        ret += "}\n";
+    } else {
+        ret += ";\n";
+    }
     return ret;
 }
 

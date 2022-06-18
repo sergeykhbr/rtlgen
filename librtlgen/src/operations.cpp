@@ -14,31 +14,21 @@
 //  limitations under the License.
 // 
 
-#pragma once
-
-#include "genobjects.h"
-#include "logic.h"
-#include <iostream>
-#include <vector>
+#include "operations.h"
 
 namespace sysvc {
 
-class FunctionObject : public GenObject {
- public:
-    FunctionObject(GenObject *parent,
-                   const char *name,
-                   const char *comment="");
+Operation::Operation(GenObject *parent,
+                     GenObject *a,
+                     GenObject *b,
+                     const char *comment)
+    : GenObject(parent, ID_OPERATION, "", comment), a_(a), b_(b) {
+}
 
-    virtual std::string generate(EGenerateType v);
+std::string EQ::generate(EGenerateType v) {
+    std::string ret = "";
+    ret += a_->getName() + " = " + b_->generate(v) + ";";
+    return ret;
+}
 
- protected:
-    virtual bool isStatic() {
-        return parent_->getId() == ID_FILE;
-    }
-
- protected:
-    GenObject *retval_;
-    std::vector<GenObject *> args_;
-};
-
-}  // namespace sysvc
+}

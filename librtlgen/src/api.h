@@ -26,6 +26,9 @@
 #include "modules.h"
 #include "ports.h"
 #include "comments.h"
+#include "funcs.h"
+#include "logic.h"
+#include "operations.h"
 
 namespace sysvc {
 

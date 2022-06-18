@@ -25,6 +25,7 @@ enum EIdType {
     ID_PROJECT,
     ID_FOLDER,
     ID_FILE,
+    ID_CONST,
     ID_VALUE,
     ID_PARAM,
     ID_LOGIC,
@@ -35,7 +36,8 @@ enum EIdType {
     ID_OUTPUT,
     ID_IO_END,      // input/output signal end marker
     ID_COMMENT,
-    ID_EMPTYLINE
+    ID_EMPTYLINE,
+    ID_OPERATION
 };
 
 enum EGenerateType {

@@ -36,11 +36,11 @@ std::string InPort::generate(EGenerateType v) {
             out += "<bool> ";
         } else if (width <= 64) {
             out += "<sc_uint<";
-            out += width_->generate_sysc();
+            out += width_->generate(v);
             out += ">> ";
         } else {
             out += "<sc_biguint<";
-            out += width_->generate_sysc();
+            out += width_->generate(v);
             out += ">> ";
         }
 
@@ -66,11 +66,11 @@ std::string OutPort::generate(EGenerateType v) {
             out += "<bool> ";
         } else if (width <= 64) {
             out += "<sc_uint<";
-            out += width_->generate_sysc();
+            out += width_->generate(v);
             out += ">> ";
         } else {
             out += "<sc_biguint<";
-            out += width_->generate_sysc();
+            out += width_->generate(v);
             out += ">> ";
         }
 

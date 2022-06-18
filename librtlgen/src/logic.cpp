@@ -15,17 +15,32 @@
 // 
 
 #include "logic.h"
+#include "operations.h"
 
 namespace sysvc {
 
 Logic::Logic(GenObject *parent,
              const char *name,
+             GenValue *width,
              const char *comment)
-    : GenObject(parent, ID_LOGIC, name, comment) {
+    : GenObject(parent, ID_LOGIC, name, comment), width_(width) {
+}
+
+void Logic::eq(uint64_t v) {
+    new EQ(parent_, this, new I32D(v));
 }
 
 std::string Logic::generate(EGenerateType v) {
     std::string ret = "";
+    if (width_->getValue() <= 1) {
+        ret += "bool";
+    } else if (width_->getValue() > 64) {
+        ret += "sc_biguint<" + width_->generate(v) + ">";
+    } else {
+        ret += "sc_uint<" + width_->generate(v) + ">";
+    }
+
+    ret += " " + getName() + ";";
     return ret;
 }
 

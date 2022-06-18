@@ -26,7 +26,10 @@ class Logic : public GenObject {
  public:
     Logic(GenObject *parent,
           const char *name,
+          GenValue *width,
           const char *comment="");
+
+    virtual void eq(uint64_t v);
 
     virtual std::string generate(EGenerateType v);
  protected:

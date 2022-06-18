@@ -17,28 +17,32 @@
 #pragma once
 
 #include "genobjects.h"
+#include "values.h"
 #include "logic.h"
 #include <iostream>
-#include <vector>
 
 namespace sysvc {
 
-class FunctionObject : public GenObject {
+class Operation : public GenObject {
  public:
-    FunctionObject(GenObject *parent,
-                   const char *name,
-                   const char *comment="");
+    Operation(GenObject *parent,
+              GenObject *a,
+              GenObject *b,
+              const char *comment="");
+
+    virtual std::string generate(EGenerateType v) = 0;
+ protected:
+    GenObject *a_;
+    GenObject *b_;
+};
+
+// Assignment
+class EQ : public Operation {
+ public:
+    EQ(GenObject *parent, GenObject *a, GenObject *b, const char *comment="")
+        : Operation(parent, a, b, comment) {}
 
     virtual std::string generate(EGenerateType v);
-
- protected:
-    virtual bool isStatic() {
-        return parent_->getId() == ID_FILE;
-    }
-
- protected:
-    GenObject *retval_;
-    std::vector<GenObject *> args_;
 };
 
 }  // namespace sysvc

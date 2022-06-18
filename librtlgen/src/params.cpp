@@ -22,9 +22,11 @@ namespace sysvc {
 
 ParamObject::ParamObject(GenObject *parent,
                          const char *name,
+                         GenValue *high,
                          GenValue *value,
                          const char *comment)
-    : GenObject(parent, ID_PARAM, name, comment), value_(value) {
+    : GenObject(parent, ID_PARAM, name, comment),
+    value_(value), high_(high) {
 
     SCV_set_cfg_parameter(getName(), value_->getValue());
 }
@@ -33,7 +35,7 @@ std::string ParamBOOL::generate(EGenerateType v) {
     std::string ret = "";
     if (v == SYSC_DECLRATION) {
         ret += "static const bool " + getName();
-        ret += " = " + value_->generate_sysc() + ";";
+        ret += " = " + value_->generate(v) + ";";
 
         // One line comment
         if (getComment().size()) {
@@ -48,7 +50,7 @@ std::string ParamBOOL::generate(EGenerateType v) {
 
 std::string ParamI32::generate(EGenerateType v) {
     std::string ret = "static const int " + getName();
-    ret += " = " + value_->generate_sysc() + ";";
+    ret += " = " + value_->generate(v) + ";";
 
     // One line comment
     if (getComment().size()) {
@@ -61,7 +63,26 @@ std::string ParamI32::generate(EGenerateType v) {
 
 std::string ParamUI64::generate(EGenerateType v) {
     std::string ret = "static const uint64_t " + getName();
-    ret += " = " + value_->generate_sysc() + ";";
+    ret += " = " + value_->generate(v) + ";";
+
+    // One line comment
+    if (getComment().size()) {
+        ret += "    // " + getComment();
+    }
+    ret += "\n";
+
+    return ret;
+}
+
+std::string ParamBit::generate(EGenerateType v) {
+    std::string ret = "static const ";
+    if (high_->getValue() > 64) {
+        ret += "sc_biguint<" + high_->generate(v) + "> ";
+    } else {
+        ret += "sc_uint<" + high_->generate(v) + "> ";
+    }
+    ret += getName();
+    ret += " = " + value_->generate(v) + ";";
 
     // One line comment
     if (getComment().size()) {

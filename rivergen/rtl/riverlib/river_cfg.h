@@ -24,6 +24,56 @@ class river_cfg : public FileObject {
  public:
     river_cfg(GenObject *parent);
 
+    class FunctionReadNoSnoop : public FunctionObject {
+     public:
+        FunctionReadNoSnoop(GenObject *parent)
+            : FunctionObject(parent, "ReadNoSnoop") {
+            retval_ = new Logic(this, "ret", new GenValue("REQ_MEM_TYPE_BITS"));
+            static_cast<Logic *>(retval_)->eq(0);
+        }
+    };
+
+    class FunctionReadShare : public FunctionObject {
+     public:
+        FunctionReadShare(GenObject *parent)
+            : FunctionObject(parent, "ReadShare") {
+            retval_ = new Logic(0, "ret", new GenValue("REQ_MEM_TYPE_BITS"));
+
+        }
+    };
+
+    class FunctionReadMakeUnique : public FunctionObject {
+     public:
+        FunctionReadMakeUnique(GenObject *parent)
+            : FunctionObject(parent, "ReadMakeUnique") {
+            retval_ = new Logic(0, "ret", new GenValue("REQ_MEM_TYPE_BITS"));
+        }
+    };
+
+    class FunctionWriteNoSnoop : public FunctionObject {
+     public:
+        FunctionWriteNoSnoop(GenObject *parent)
+            : FunctionObject(parent, "WriteNoSnoop") {
+            retval_ = new Logic(0, "ret", new GenValue("REQ_MEM_TYPE_BITS"));
+        }
+    };
+
+    class FunctionWriteLineUnique : public FunctionObject {
+     public:
+        FunctionWriteLineUnique(GenObject *parent)
+            : FunctionObject(parent, "WriteLineUnique") {
+            retval_ = new Logic(0, "ret", new GenValue("REQ_MEM_TYPE_BITS"));
+        }
+    };
+
+    class FunctionWriteBack : public FunctionObject {
+     public:
+        FunctionWriteBack(GenObject *parent)
+            : FunctionObject(parent, "WriteBack") {
+            retval_ = new Logic(0, "ret", new GenValue("REQ_MEM_TYPE_BITS"));
+        }
+    };
+
  public:
     TextLine _1_;
     TextLine _2_;
@@ -55,7 +105,7 @@ class river_cfg : public FileObject {
     ParamI32 CFG_DEC_DEPTH;
     TextLine _17_;
     TextLine _18_;
-    ParamUI64 CFG_RESET_VECTOR;
+    ParamBit CFG_RESET_VECTOR;
     TextLine _19_;
     TextLine _20_;
     ParamI32 CFG_PROGBUF_REG_TOTAL;
@@ -125,6 +175,62 @@ class river_cfg : public FileObject {
     ParamI32 SNOOP_REQ_TYPE_READCLEAN;
     ParamI32 SNOOP_REQ_TYPE_BITS;
     TextLine _51_;
+    FunctionReadNoSnoop ReadNoSnoop;
+    FunctionReadShare ReadShared;
+    FunctionReadMakeUnique ReadMakeUnique;
+    FunctionWriteNoSnoop WriteNoSnoop;
+    FunctionWriteLineUnique WriteLineUnique;
+    FunctionWriteBack WriteBack;
+    TextLine _52_;
+    TextLine _53_;
+    TextLine _54_;
+    TextLine _55_;
+    TextLine _56_;
+    ParamI32 CFG_L2_LOG2_BYTES_PER_LINE;
+    ParamI32 CFG_L2_LOG2_LINES_PER_WAY;
+    ParamI32 CFG_L2_LOG2_NWAYS;
+    TextLine _57_;
+    TextLine _58_;
+    ParamI32 L2CACHE_BYTES_PER_LINE;
+    ParamI32 L2CACHE_LINES_PER_WAY;
+    ParamI32 L2CACHE_WAYS;
+    TextLine _59_;
+    ParamI32 L2CACHE_LINE_BITS;
+    ParamI32 L2CACHE_SIZE_BYTES;
+    TextLine _60_;
+    ParamI32 L2TAG_FL_DIRTY;
+    ParamI32 L2TAG_FL_TOTAL;
+    TextLine _61_;
+    ParamI32 L2_REQ_TYPE_WRITE;
+    ParamI32 L2_REQ_TYPE_CACHED;
+    ParamI32 L2_REQ_TYPE_UNIQUE;
+    ParamI32 L2_REQ_TYPE_SNOOP;
+    ParamI32 L2_REQ_TYPE_BITS;
+    TextLine _62_;
+    TextLine _63_;
+    ParamI32 CFG_MPU_TBL_WIDTH;
+    ParamI32 CFG_MPU_TBL_SIZE;
+    ParamI32 CFG_MPU_FL_WR;
+    ParamI32 CFG_MPU_FL_RD;
+    ParamI32 CFG_MPU_FL_EXEC;
+    ParamI32 CFG_MPU_FL_CACHABLE;
+    ParamI32 CFG_MPU_FL_ENA;
+    ParamI32 CFG_MPU_FL_TOTAL;
+    TextLine _64_;
+    TextLine _65_;
+    ParamBit MEMOP_8B;
+    ParamBit MEMOP_4B;
+    ParamBit MEMOP_2B;
+    ParamBit MEMOP_1B;
+    TextLine _66_;
+    TextLine _67_;
+    ParamI32 DPortReq_Write;
+    ParamI32 DPortReq_RegAccess;
+    ParamI32 DPortReq_MemAccess;
+    ParamI32 DPortReq_MemVirtual;
+    ParamI32 DPortReq_Progexec;
+    ParamI32 DPortReq_Total;
+    TextLine _68_;
 
     TextLine _n_;
 };
