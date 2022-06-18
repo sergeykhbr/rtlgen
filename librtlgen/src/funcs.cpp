@@ -14,23 +14,19 @@
 //  limitations under the License.
 // 
 
-#pragma once
-
-#include "genobjects.h"
-#include <iostream>
+#include "funcs.h"
 
 namespace sysvc {
 
-/**
- * Parent module class definition
- */
-class ModuleObject : public GenObject {
- public:
-    ModuleObject(GenObject *parent, const char *name);
+FunctionObject::FunctionObject(GenObject *parent,
+                                 const char *name,
+                                 const char *comment)
+    : GenObject(parent, ID_FUNCTION, name, comment) {
+}
 
-    virtual std::string generate(EGenerateType v) override;
- protected:
-    std::string generate_sysc_h();
-};
+std::string FunctionObject::generate(EGenerateType v) {
+    std::string ret = "";
+    return ret;
+}
 
-}  // namespace sysvc
+}

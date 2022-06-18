@@ -17,20 +17,20 @@
 #pragma once
 
 #include "genobjects.h"
+#include "values.h"
 #include <iostream>
 
 namespace sysvc {
 
-/**
- * Parent module class definition
- */
-class ModuleObject : public GenObject {
+class FunctionObject : public GenObject {
  public:
-    ModuleObject(GenObject *parent, const char *name);
+    FunctionObject(GenObject *parent,
+                   const char *name,
+                   const char *comment="");
 
-    virtual std::string generate(EGenerateType v) override;
+    virtual std::string generate(EGenerateType v);
  protected:
-    std::string generate_sysc_h();
+    GenValue *width_;
 };
 
 }  // namespace sysvc

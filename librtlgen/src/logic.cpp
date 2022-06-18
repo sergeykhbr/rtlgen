@@ -14,23 +14,19 @@
 //  limitations under the License.
 // 
 
-#pragma once
-
-#include "genobjects.h"
-#include <iostream>
+#include "logic.h"
 
 namespace sysvc {
 
-/**
- * Parent module class definition
- */
-class ModuleObject : public GenObject {
- public:
-    ModuleObject(GenObject *parent, const char *name);
+Logic::Logic(GenObject *parent,
+             const char *name,
+             const char *comment)
+    : GenObject(parent, ID_LOGIC, name, comment) {
+}
 
-    virtual std::string generate(EGenerateType v) override;
- protected:
-    std::string generate_sysc_h();
-};
+std::string Logic::generate(EGenerateType v) {
+    std::string ret = "";
+    return ret;
+}
 
-}  // namespace sysvc
+}

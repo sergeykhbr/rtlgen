@@ -1,3 +1,19 @@
+// 
+//  Copyright 2022 Sergey Khabarov, sergeykhbr@gmail.com
+// 
+//  Licensed under the Apache License, Version 2.0 (the "License");
+//  you may not use this file except in compliance with the License.
+//  You may obtain a copy of the License at
+// 
+//      http://www.apache.org/licenses/LICENSE-2.0
+// 
+//  Unless required by applicable law or agreed to in writing, software
+//  distributed under the License is distributed on an "AS IS" BASIS,
+//  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+//  See the License for the specific language governing permissions and
+//  limitations under the License.
+// 
+
 #include "river_cfg.h"
 
 river_cfg::river_cfg(GenObject *parent) :
@@ -67,7 +83,7 @@ river_cfg::river_cfg(GenObject *parent) :
     _36_(this, "DCacheLru config (16 KB by default)"),
     _37_(this, ""),
     CFG_DLOG2_BYTES_PER_LINE(this, "CFG_DLOG2_BYTES_PER_LINE", new I32D(5), "[4:0] 32 Bytes = 4x8 B log2(Bytes per line)"),
-    CFG_DLOG2_LINES_PER_WAY(this, "CFG_DLOG2_LINES_PER_WAY", new I32D(7)),
+    CFG_DLOG2_LINES_PER_WAY(this, "CFG_DLOG2_LINES_PER_WAY", new I32D(7), "7=16KB; 8=32KB; .."),
     CFG_DLOG2_NWAYS(this, "CFG_DLOG2_NWAYS", new I32D(2)),
     _38_(this),
     _39_(this, "Derivatives D$ constants:"),

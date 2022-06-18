@@ -17,24 +17,31 @@ this RTL generator.
 - Dynamically track global and local configuration parameters to compute their values
 - Preserve text names of configuration parameters in the signal bus declarations
 
+## Code structure
+
+- <b>librtlgen</b> library that implements API with the generic C++ classes 
+that should be used to describe any RTL model: project, file, parameter, 
+module, port, signal etc.
+- <b>rivergen</b> RTL project implements River CPU using <i>librtlgen</i> generic classes.
+
 ## Example System Verilog:
 
     // Code commentary
     localparam int CFG_PARAM1 = 128;
-    localparam int CFG_PARAM2 = 64;
+    localparam int CFG_PARAM2 = CFG_PARAM1 - 64;    // commentary 2
 
     logic [CFG_PARAM1-1:0] A;
     logic [CFG_PARAM1-CFG_PARAM2-1:0] B;
 
-## Example System C:
+## Example SystemC:
 
     // Code commentary
     static const int CFG_PARAM1 = 128;
-    static const int CFG_PARAM2 = 64;
+    static const int CFG_PARAM2 = CFG_PARAM1 - 64;  // commentary 2
 
     sc_biguint<CFG_PARAM1> A;
     sc_uint<CFG_PARAM1-CFG_PARAM2> B;
 
-<b> Generator should preserve parameters names and automatically detect
-bus width to properly <i>sc_uint</i>/<i>sc_biguint</i>.</b>
+<b> Generator should preserve parameters names and automatically calculates
+bus widths to properly use <i>sc_uint</i>/<i>sc_biguint</i> definitions.</b>
 
