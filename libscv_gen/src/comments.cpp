@@ -2,28 +2,28 @@
 
 namespace sysvc {
 
-EmptyLine::EmptyLine(GenObject *parent)
-    : GenObject(parent, ID_EMPTYLINE, "") {
-}
-
-std::string EmptyLine::generate(EGenerateType v) {
-    std::string ret = "\n";
-    return ret;
-}
-
-
-CommentObject::CommentObject(GenObject *parent, const char *comment)
+TextLine::TextLine(GenObject *parent, const char *comment)
     : GenObject(parent, ID_COMMENT, comment) {
+    empty_ = false;
 }
 
-std::string CommentObject::generate(EGenerateType v) {
-    std::string ret = "// " + getName() + "\n";
+TextLine::TextLine(GenObject *parent)
+    : GenObject(parent, ID_COMMENT, "") {
+    empty_ = true;
+}
+
+std::string TextLine::generate(EGenerateType v) {
+    std::string ret = "";
+    if (!empty_) {
+        ret += "// " + getName();
+    }
+    ret += "\n";
     return ret;
 }
 
 
 CommentLicense::CommentLicense()
-    : CommentObject(0, ""),
+    : GenObject(0, ID_COMMENT, ""),
     str01(this, ""),
     str02(this, " Copyright 2022 Sergey Khabarov, sergeykhbr@gmail.com"),
     str03(this, ""),

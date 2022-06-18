@@ -10,7 +10,7 @@ class types_amba : public FileObject {
 
  public:
     ParamI32 CFG_BUS_ADDR_WIDTH;
-    EmptyLine emtn_;
+    TextLine _1_;
 };
 
 

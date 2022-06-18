@@ -9,41 +9,37 @@ namespace sysvc {
  * Commentary insertion
  */
 
-class EmptyLine : public GenObject {
+class TextLine : public GenObject {
  public:
-    EmptyLine(GenObject *parent);
+    TextLine(GenObject *parent, const char *comment);
+    TextLine(GenObject *parent);
 
     virtual std::string generate(EGenerateType) override;
+ protected:
+    bool empty_;
 };
 
-class CommentObject : public GenObject {
- public:
-    CommentObject(GenObject *parent, const char *comment);
-
-    virtual std::string generate(EGenerateType) override;
-};
-
-class CommentLicense : public CommentObject {
+class CommentLicense : public GenObject {
  public:
     CommentLicense();
 
     virtual std::string generate(EGenerateType) override;
  protected:
-    CommentObject str01;
-    CommentObject str02;
-    CommentObject str03;
-    CommentObject str04;
-    CommentObject str05;
-    CommentObject str06;
-    CommentObject str07;
-    CommentObject str08;
-    CommentObject str09;
-    CommentObject str10;
-    CommentObject str11;
-    CommentObject str12;
-    CommentObject str13;
-    CommentObject str14;
-    CommentObject str15;
+    TextLine str01;
+    TextLine str02;
+    TextLine str03;
+    TextLine str04;
+    TextLine str05;
+    TextLine str06;
+    TextLine str07;
+    TextLine str08;
+    TextLine str09;
+    TextLine str10;
+    TextLine str11;
+    TextLine str12;
+    TextLine str13;
+    TextLine str14;
+    TextLine str15;
 };
 
 }  // namespace sysvc

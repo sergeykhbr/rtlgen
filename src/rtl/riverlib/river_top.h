@@ -19,7 +19,7 @@ class RiverTop : public ModuleObject {
     IoPortsStart io_start_;
     InPort i_clk;
     InPort i_nrst;
-    CommentObject cmt1;
+    TextLine _1_;
     InPort i_req_mem_ready;
     OutPort o_req_mem_path;
     OutPort o_req_mem_valid;

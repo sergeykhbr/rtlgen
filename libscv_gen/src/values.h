@@ -10,7 +10,9 @@ class GenValue {
  public:
     GenValue(const char *op);
 
-    virtual bool isNumber() { return isnumber_;}
+    virtual bool isNumber() {
+        return sysc_.c_str()[0] >= '0' && sysc_.c_str()[0] <= '9';
+    }
     virtual uint64_t getValue() { return val_; }
 
     virtual std::string generate_sysc(){ return sysc_; }
@@ -19,7 +21,6 @@ class GenValue {
     virtual void parse(const char *op);
 
  protected:
-    bool isnumber_;     // used to form rtl entries: [val-1: 0]
     uint64_t val_;
 
     std::string sysc_;  // systemc representation

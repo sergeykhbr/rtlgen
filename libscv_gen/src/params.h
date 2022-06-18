@@ -26,7 +26,7 @@ class ParamObject : public GenObject {
 class ParamBOOL : public ParamObject {
  public:
     ParamBOOL::ParamBOOL(GenObject *parent, const char *name,
-                         GenValue *value, const char *comment)
+                         GenValue *value, const char *comment="")
         : ParamObject(parent, name, value, comment) {}
 
     virtual std::string generate(EGenerateType v) override;
@@ -35,7 +35,7 @@ class ParamBOOL : public ParamObject {
 class ParamI32 : public ParamObject {
  public:
     ParamI32::ParamI32(GenObject *parent, const char *name,
-                       GenValue *value, const char *comment)
+                       GenValue *value, const char *comment="")
         : ParamObject(parent, name, value, comment) {}
 
     virtual std::string generate(EGenerateType v) override;
@@ -44,7 +44,7 @@ class ParamI32 : public ParamObject {
 class ParamUI64 : public ParamObject {
  public:
     ParamUI64::ParamUI64(GenObject *parent, const char *name,
-                         GenValue *value, const char *comment)
+                         GenValue *value, const char *comment="")
         : ParamObject(parent, name, value, comment) {}
 
     virtual std::string generate(EGenerateType v) override;

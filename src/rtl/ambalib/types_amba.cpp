@@ -3,6 +3,6 @@
 types_amba::types_amba(GenObject *parent) :
     FileObject(parent, "types_amba"),
     CFG_BUS_ADDR_WIDTH(this, "CFG_BUS_ADDR_WIDTH", new I32D(64), ""),
-    emtn_(this)
+    _1_(this)
 {
 }

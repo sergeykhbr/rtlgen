@@ -5,7 +5,7 @@ RiverTop::RiverTop(GenObject *parent) :
     io_start_(this),
     i_clk(this, "i_clk", new I32D(1), "CPU clock"),
     i_nrst(this, "i_nrst", new I32D(1), "Reset: active LOW"),
-    cmt1(this, "Memory interface:"),
+    _1_(this, "Memory interface:"),
     i_req_mem_ready(this, "i_req_mem_ready", new I32D(1), "System Bus is ready to accept memory operation request"),
     o_req_mem_path(this, "o_req_mem_path", new I32D(1), "0=ctrl; 1=data path"),
     o_req_mem_valid(this, "o_req_mem_valid", new I32D(1), "AXI memory request is valid"),
