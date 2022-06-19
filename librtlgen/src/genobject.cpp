@@ -23,7 +23,7 @@ GenObject::GenObject(GenObject *parent, EIdType id,
     id_ = id;
     parent_ = parent;
     name_ = std::string(name);
-    comment_ = std::string(comment_);
+    comment_ = std::string(comment);
     if (parent_) {
         parent_->add_entry(this);
     }

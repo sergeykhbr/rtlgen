@@ -25,9 +25,22 @@ Operation::Operation(GenObject *parent,
     : GenObject(parent, ID_OPERATION, "", comment), a_(a), b_(b) {
 }
 
+std::string ZEROS::generate(EGenerateType v) {
+    std::string ret = "";
+    ret += a_->getName() + " = " + "0" + ";";
+    return ret;
+}
+
+
 std::string EQ::generate(EGenerateType v) {
     std::string ret = "";
     ret += a_->getName() + " = " + b_->generate(v) + ";";
+    return ret;
+}
+
+std::string SETBIT::generate(EGenerateType v) {
+    std::string ret = "";
+    ret += a_->getName() + "[" + b_->generate(v) + "] = 1;";
     return ret;
 }
 

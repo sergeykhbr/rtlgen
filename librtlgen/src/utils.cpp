@@ -21,10 +21,19 @@
 
 namespace sysvc {
 
-static std::map<std::string, uint64_t> cfgParamters_;
+struct CfgParameterInfo {
+    std::string path;
+    uint64_t value;
+};
 
-void SCV_set_cfg_parameter(std::string &name, uint64_t v) {
-    cfgParamters_[name] = v;
+static std::map<std::string, CfgParameterInfo> cfgParamters_;
+AccessListener *accessListener_ = 0;
+
+void SCV_set_cfg_parameter(std::string &path, std::string &name, uint64_t v) {
+    CfgParameterInfo cfg;
+    cfg.path = path;
+    cfg.value = v;
+    cfgParamters_[name] = cfg;
 }
 
 int SCV_is_cfg_parameter(std::string &name) {
@@ -36,7 +45,15 @@ int SCV_is_cfg_parameter(std::string &name) {
 }
 
 uint64_t SCV_get_cfg_parameter(std::string &name) {
-    return cfgParamters_[name];
+    CfgParameterInfo &info = cfgParamters_[name];
+    if (accessListener_) {
+        accessListener_->notifyAccess(info.path);
+    }
+    return info.value;
+}
+
+void SCV_set_access_listener(AccessListener *p) {
+    accessListener_ = p;
 }
 
 int SCV_is_dir_exists(const char *path) {

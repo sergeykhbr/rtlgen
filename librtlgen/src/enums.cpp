@@ -14,41 +14,37 @@
 //  limitations under the License.
 // 
 
-#include "params.h"
+#include "enums.h"
 #include "utils.h"
 
 namespace sysvc {
 
-
-Param::Param(GenObject *parent,
-                         const char *name,
-                         GenValue *value,
-                         const char *comment)
-    : GenObject(parent, ID_PARAM, name, comment),
-    value_(value) {
-
-    std::string path = getFullPath();
-    SCV_set_cfg_parameter(path, getName(), value_->getValue());
+EnumObject::EnumObject(GenObject *parent,
+                       const char *name)
+    : GenObject(parent, ID_ENUM, name), total_(0) {
 }
 
-std::string Param::generate(EGenerateType v) {
-    std::string ret = "";
-    if (v == SYSC_DECLRATION) {
-        ret += "static const ";
-        ret += value_->getType(v) + " ";
-        ret += getName() + " = ";
-        ret += value_->generate(v) + ";";
+void EnumObject::add_value(const char *name) {
+    char tstr[64];
+    RISCV_sprintf(tstr, sizeof(tstr), "%d", total_);
+    new I32D(tstr, name, this);
 
-        // One line comment
-        if (getComment().size()) {
-            while (ret.size() < 60) {
-                ret += " ";
-            }
-            ret += "// " + getComment();
+    std::string path = getFullPath();
+    SCV_set_cfg_parameter(path, std::string(name), total_);
+    total_++;
+}
+
+std::string EnumObject::generate(EGenerateType v) {
+    std::string ret = "";
+    ret += "enum " + getName() + " {\n";
+    for (auto &p: entries_) {
+        ret += "    " + p->getName() + " = " + static_cast<I32D *>(p)->generate(v);
+        if (&p != &entries_.back()) {
+            ret += ",";
         }
         ret += "\n";
     }
-
+    ret += "};\n";
     return ret;
 }
 

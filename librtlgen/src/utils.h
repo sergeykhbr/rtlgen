@@ -31,9 +31,19 @@ namespace sysvc {
 #else
 #endif
 
-void SCV_set_cfg_parameter(std::string &name, uint64_t v);
+class AccessListener {
+ public:
+    virtual void notifyAccess(std::string &file) = 0;
+};
+
+void SCV_set_cfg_parameter(std::string &path, std::string &name, uint64_t v);
 int SCV_is_cfg_parameter(std::string &name);
 uint64_t SCV_get_cfg_parameter(std::string &name);
+
+//
+// To track dependency parameters and properly form include files list
+// call registered listener on each "get parameter" or "get module" call
+void SCV_set_access_listener(AccessListener *p);
 
 int SCV_is_dir_exists(const char *path);
 void SCV_create_dir(const char *path);

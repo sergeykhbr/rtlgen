@@ -17,11 +17,15 @@
 #pragma once
 
 #include "genobjects.h"
+#include "utils.h"
 #include <iostream>
+#include <map>
+#include <vector>
 
 namespace sysvc {
 
-class FileObject : public GenObject {
+class FileObject : public GenObject,
+                   public AccessListener {
  public:
     FileObject(GenObject *parent,
                  const char *name);
@@ -29,7 +33,15 @@ class FileObject : public GenObject {
     virtual std::string getFullPath() override;
     virtual std::string generate(EGenerateType) override;
 
+    /** Access Listener */
+    virtual void notifyAccess(std::string &file);
+
+ private:
+    void fullPath2vector(const char *fullpath, std::vector<std::string> &subs);
+    std::string fullPath2fileRelative(const char *fullpath);
+
  protected:
+    std::map<std::string, int> depfiles_;   // dependency files
 };
 
 }  // namespace sysvc

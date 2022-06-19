@@ -16,22 +16,22 @@
 
 #pragma once
 
-#include <iostream>
 #include "genobjects.h"
-#include "projects.h"
-#include "folders.h"
-#include "files.h"
 #include "values.h"
-#include "params.h"
-#include "modules.h"
-#include "ports.h"
-#include "comments.h"
-#include "funcs.h"
-#include "logic.h"
-#include "operations.h"
-#include "enums.h"
+#include <iostream>
 
 namespace sysvc {
 
+class EnumObject : public GenObject {
+ public:
+    EnumObject(GenObject *parent,
+               const char *name);
 
+    virtual void add_value(const char *name);
+
+    virtual std::string generate(EGenerateType v);
+ protected:
+    int total_;
 };
+
+}  // namespace sysvc

@@ -36,7 +36,15 @@ class Operation : public GenObject {
     GenObject *b_;
 };
 
-// Assignment
+class ZEROS : public Operation {
+ public:
+    ZEROS(GenObject *parent, GenObject *a, const char *comment="")
+        : Operation(parent, a, 0, comment) {}
+
+    virtual std::string generate(EGenerateType v);
+};
+
+
 class EQ : public Operation {
  public:
     EQ(GenObject *parent, GenObject *a, GenObject *b, const char *comment="")
@@ -44,5 +52,15 @@ class EQ : public Operation {
 
     virtual std::string generate(EGenerateType v);
 };
+
+
+class SETBIT : public Operation {
+ public:
+    SETBIT(GenObject *parent, GenObject *a, GenObject *b, const char *comment="")
+        : Operation(parent, a, b, comment) {}
+
+    virtual std::string generate(EGenerateType v);
+};
+
 
 }  // namespace sysvc

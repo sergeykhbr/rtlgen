@@ -27,6 +27,7 @@ enum EIdType {
     ID_FILE,
     ID_CONST,
     ID_VALUE,
+    ID_ENUM,
     ID_PARAM,
     ID_FUNCTION,
     ID_MODULE,

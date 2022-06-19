@@ -38,7 +38,7 @@ std::string FunctionObject::generate(EGenerateType v) {
     ret += " ";
     ret += getName();
     ret += "(";
-    for (auto a : args_) {
+    for (auto &a : args_) {
         if (a->getId() == ID_INPUT || a->getId() == ID_OUTPUT) {
             ret += "\n    " + a->generate(v);
             if (&a != &args_.back()) {
@@ -53,7 +53,7 @@ std::string FunctionObject::generate(EGenerateType v) {
         if (retval_) {
             ret += "    " + retval_->getType(v) + " " + retval_->getName() +";\n";
         }
-        for (auto e: entries_) {
+        for (auto &e: entries_) {
             ret += "    " + e->generate(v) + "\n";
         }
         if (retval_) {

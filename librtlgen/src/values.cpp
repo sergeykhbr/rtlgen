@@ -42,9 +42,6 @@ size_t GenValue::parse(const char *val, size_t pos,
         buf[cnt] = '\0';
         pos++;
     }
-    if (val[pos] == ',' || val[pos] == ')') {
-        pos++;
-    }
 
     if (buf[0] == '\0') {
         out = 0;
@@ -75,23 +72,36 @@ size_t GenValue::parse(const char *val, size_t pos,
     }
     pos++;
 
-    if (m == "POW2" || m == "SUB" || m == "MUL") {
+    if (m == "POW2" || m == "ADD" || m == "SUB" || m == "MUL") {
         std::string op = m;
         uint64_t arg1, arg2;
         std::string sysc1, sysc2;
         pos = parse(val, pos, arg1, sysc1);
+        if (val[pos] != ',') {
+            RISCV_printf("error: syntax %s, line %d\n", __FILE__, __LINE__);
+        } else {
+            pos++;
+        }
         pos = parse(val, pos, arg2, sysc2);
-        if (op == "POW2") {
-            out = arg1 << arg2;
-            sysc = sysc1 + " << " + sysc2;
-        } else if (op == "SUB") {
-            out = arg1 - arg2;
-            sysc = sysc1 + " - " + sysc2;
-        } else if (op == "MUL") {
-            out = arg1 * arg2;
-            sysc = sysc1 + " * " + sysc2;
+        if (val[pos] != ')') {
+            RISCV_printf("error: syntax %s, line %d\n", __FILE__, __LINE__);
+        } else {
+            pos++;
         }
 
+        if (op == "POW2") {
+            out = arg1 << arg2;
+            sysc = "(" + sysc1 + " << " + sysc2 + ")";
+        } else if (op == "ADD") {
+            out = arg1 + arg2;
+            sysc = "(" + sysc1 + " + " + sysc2 + ")";
+        } else if (op == "SUB") {
+            out = arg1 - arg2;
+            sysc = "(" + sysc1 + " - " + sysc2 + ")";
+        } else if (op == "MUL") {
+            out = arg1 * arg2;
+            sysc = "(" + sysc1 + " * " + sysc2 + ")";
+        }
     } else {
         RISCV_printf("error: syntax %s, line %d\n", __FILE__, __LINE__);
     }
