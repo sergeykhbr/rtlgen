@@ -18,20 +18,37 @@
 
 #include "genobjects.h"
 #include "values.h"
+#include "params.h"
 #include <iostream>
 
 namespace sysvc {
 
-class Logic : public GenObject {
+class Param;
+
+class Logic : public GenValue {
  public:
-    Logic(GenObject *parent,
-          const char *name,
-          GenValue *width,
+    Logic(const char *width,
+          const char *val,
+          const char *name="",
+          GenObject *parent=0,
           const char *comment="");
 
-    virtual void eq(uint64_t v);
+    Logic(GenValue *width,
+          const char *val,
+          const char *name="",
+          GenObject *parent=0,
+          const char *comment="");
 
-    virtual std::string generate(EGenerateType v);
+    Logic(Param *width,
+          const char *val,
+          const char *name="",
+          GenObject *parent=0,
+          const char *comment="");
+
+    virtual void eq(const char *val);
+
+    virtual std::string getType(EGenerateType);
+    virtual std::string generate(EGenerateType v) override;
  protected:
     GenValue *width_;
 };

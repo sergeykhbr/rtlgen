@@ -25,7 +25,7 @@ class types_amba : public FileObject {
     types_amba(GenObject *parent);
 
  public:
-    ParamI32 CFG_BUS_ADDR_WIDTH;
+    Param CFG_BUS_ADDR_WIDTH;
     TextLine _1_;
 };
 

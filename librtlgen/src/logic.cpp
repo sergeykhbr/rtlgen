@@ -19,18 +19,37 @@
 
 namespace sysvc {
 
-Logic::Logic(GenObject *parent,
-             const char *name,
-             GenValue *width,
-             const char *comment)
-    : GenObject(parent, ID_LOGIC, name, comment), width_(width) {
+Logic::Logic(const char *width,
+              const char *val,
+              const char *name,
+              GenObject *parent,
+              const char *comment)
+    : GenValue(val, name, parent, comment) {
+    width_ = new I32D(width);
 }
 
-void Logic::eq(uint64_t v) {
-    new EQ(parent_, this, new I32D(v));
+
+Logic::Logic(GenValue *width,
+              const char *val,
+              const char *name,
+              GenObject *parent,
+              const char *comment)
+    : GenValue(val, name, parent, comment), width_(width) {
 }
 
-std::string Logic::generate(EGenerateType v) {
+Logic::Logic(Param *width,
+              const char *val,
+              const char *name,
+              GenObject *parent,
+              const char *comment)
+    : GenValue(val, name, parent, comment), width_(width->getValue()) {
+}
+
+void Logic::eq(const char *val) {
+    new EQ(parent_, this, new I32D(val));
+}
+
+std::string Logic::getType(EGenerateType v) {
     std::string ret = "";
     if (width_->getValue() <= 1) {
         ret += "bool";
@@ -39,8 +58,11 @@ std::string Logic::generate(EGenerateType v) {
     } else {
         ret += "sc_uint<" + width_->generate(v) + ">";
     }
+    return ret;
+}
 
-    ret += " " + getName() + ";";
+std::string Logic::generate(EGenerateType v) {
+    std::string ret = GenValue::generate(v);
     return ret;
 }
 

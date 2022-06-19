@@ -31,7 +31,7 @@ std::string FunctionObject::generate(EGenerateType v) {
         ret += "static ";
     }
     if (retval_) {
-        ret += retval_->generate(v);
+        ret += retval_->getType(v);
     } else {
         ret += "void";
     }
@@ -39,17 +39,25 @@ std::string FunctionObject::generate(EGenerateType v) {
     ret += getName();
     ret += "(";
     for (auto a : args_) {
-        ret += "\n    " + a->generate(v);
-        if (&a != &args_.back()) {
-            ret += ",";
+        if (a->getId() == ID_INPUT || a->getId() == ID_OUTPUT) {
+            ret += "\n    " + a->generate(v);
+            if (&a != &args_.back()) {
+                ret += ",";
+            }
         }
     }
     ret += ")";
 
     if (isStatic()) {
         ret += " {\n";
+        if (retval_) {
+            ret += "    " + retval_->getType(v) + " " + retval_->getName() +";\n";
+        }
         for (auto e: entries_) {
             ret += "    " + e->generate(v) + "\n";
+        }
+        if (retval_) {
+            ret += "    return " + retval_->getName() + ";\n";
         }
         ret += "}\n";
     } else {

@@ -37,7 +37,7 @@ class FunctionObject : public GenObject {
     }
 
  protected:
-    GenObject *retval_;
+    GenValue *retval_;
     std::vector<GenObject *> args_;
 };
 

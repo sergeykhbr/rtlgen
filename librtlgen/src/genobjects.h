@@ -28,7 +28,6 @@ enum EIdType {
     ID_CONST,
     ID_VALUE,
     ID_PARAM,
-    ID_LOGIC,
     ID_FUNCTION,
     ID_MODULE,
     ID_IO_START,    // input/output signal start marker
@@ -43,7 +42,7 @@ enum EIdType {
 enum EGenerateType {
     SYSC_ALL,
     SYSC_DECLRATION,
-    SYSC_DEDEFINITION,
+    SYSC_DEFINITION,
 };
 
 class GenObject {
