@@ -85,12 +85,23 @@ std::string FileObject::fullPath2fileRelative(const char *fullpath) {
 }
 
 std::string FileObject::generate(EGenerateType v) {
+    if (v == SYSC_ALL) {
+        generate_sysc();
+    } else if (SYSVERILOG_ALL) {
+        generate_sysv();
+    } else {
+        generate_vhdl();
+    }
+    return GenObject::generate(v);
+}
+
+void FileObject::generate_sysc() {
     bool is_module = false;
     std::string out = "";
     std::string filename = getFullPath();
     filename = filename + ".h";
 
-    out += CommentLicense().generate(v);
+    out += CommentLicense().generate(SYSC_ALL);
 
     out += 
         "#pragma once\n"
@@ -125,13 +136,55 @@ std::string FileObject::generate(EGenerateType v) {
 
     SCV_write_file(filename.c_str(), out.c_str(), out.size());
 
+    // source file if any module defined in this file
+    if (is_module) {
+    }
+}
+
+void FileObject::generate_sysv() {
+    bool is_module = false;
+    std::string out = "";
+    std::string filename = getFullPath();
+    filename = filename + "_pkg.sv";
+
+    out += CommentLicense().generate(SYSVERILOG_ALL);
+
+    out += "package " + getName() + "_pkg;\n";
+    out += "\n";
+
+    // Automatic Dependency detection
+    std::map<std::string, int>::iterator it;
+    std::vector<std::string> subs;
+    for (it = depfiles_.begin(); it != depfiles_.end(); it++) {
+        if (it->first == getFullPath()) {
+            continue;
+        }
+        fullPath2vector(it->first.c_str(), subs);
+        out += "import " + subs.back() + "_pkg::*;\n";
+    }
+
+    out += "\n";
+
+    // header
+    for (auto &p: entries_) {
+        if (p->getId() == ID_MODULE) {
+            is_module = true;
+        }
+        out += p->generate(SYSVERILOG_ALL);
+    }
+
+    out += "endpackage: " + getName() + "_pkg\n";
+
+    SCV_write_file(filename.c_str(), out.c_str(), out.size());
+
 
     // source file if any module defined in this file
     if (is_module) {
     }
-
-
-    return GenObject::generate(v);
 }
+
+void FileObject::generate_vhdl() {
+}
+
 
 }

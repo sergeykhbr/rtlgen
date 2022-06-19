@@ -33,11 +33,22 @@ class GenValue : public GenObject {
     }
     virtual uint64_t getValue() { return val_; }
     virtual std::string getType(EGenerateType) = 0;
-    virtual std::string generate(EGenerateType) override { return sysc_; }
+    virtual std::string generate(EGenerateType v) override {
+        if (v == SYSC_ALL || v == SYSC_DECLRATION || v == SYSC_DEFINITION) {
+            return sysc_;
+        } else if (v == SYSVERILOG_ALL) {
+            return sysv_;
+        } else {
+            return vhdl_;
+        }
+    }
 
  protected:
     virtual size_t parse(const char *ops, size_t pos,
-                        uint64_t &num, std::string &sysc);
+                        uint64_t &num,
+                        std::string &sysc,
+                        std::string &sysv,
+                        std::string &vhdl);
 
  protected:
     uint64_t val_;

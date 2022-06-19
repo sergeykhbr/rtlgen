@@ -27,11 +27,23 @@ FunctionObject::FunctionObject(GenObject *parent,
 
 std::string FunctionObject::generate(EGenerateType v) {
     std::string ret = "";
+    if (v == SYSC_ALL || v == SYSC_DECLRATION || v == SYSC_DEFINITION) {
+        ret += generate_sysc();
+    } else if (v == SYSVERILOG_ALL) {
+        ret += generate_sysv();
+    } else {
+        ret += generate_vhdl();
+    }
+    return ret;
+}
+
+std::string FunctionObject::generate_sysc() {
+    std::string ret = "";
     if (isStatic()) {
         ret += "static ";
     }
     if (retval_) {
-        ret += retval_->getType(v);
+        ret += retval_->getType(SYSC_ALL);
     } else {
         ret += "void";
     }
@@ -40,7 +52,7 @@ std::string FunctionObject::generate(EGenerateType v) {
     ret += "(";
     for (auto &a : args_) {
         if (a->getId() == ID_INPUT || a->getId() == ID_OUTPUT) {
-            ret += "\n    " + a->generate(v);
+            ret += "\n    " + a->generate(SYSC_ALL);
             if (&a != &args_.back()) {
                 ret += ",";
             }
@@ -51,10 +63,10 @@ std::string FunctionObject::generate(EGenerateType v) {
     if (isStatic()) {
         ret += " {\n";
         if (retval_) {
-            ret += "    " + retval_->getType(v) + " " + retval_->getName() +";\n";
+            ret += "    " + retval_->getType(SYSC_ALL) + " " + retval_->getName() +";\n";
         }
         for (auto &e: entries_) {
-            ret += "    " + e->generate(v) + "\n";
+            ret += "    " + e->generate(SYSC_ALL) + "\n";
         }
         if (retval_) {
             ret += "    return " + retval_->getName() + ";\n";
@@ -66,4 +78,46 @@ std::string FunctionObject::generate(EGenerateType v) {
     return ret;
 }
 
+
+std::string FunctionObject::generate_sysv() {
+    std::string ret = "";
+    ret += "function automatic ";
+    if (retval_) {
+        ret += retval_->getType(SYSVERILOG_ALL);
+    }
+    ret += " ";
+    ret += getName();
+    if (args_.size()) {
+        ret += "(";
+    }
+    for (auto &a : args_) {
+        if (a->getId() == ID_INPUT || a->getId() == ID_OUTPUT) {
+            ret += "\n    " + a->generate(SYSVERILOG_ALL);
+            if (&a != &args_.back()) {
+                ret += ",";
+            }
+        }
+    }
+    if (args_.size()) {
+        ret += ")";
+    }
+    ret += ";\n";
+    if (retval_) {
+        ret += "    " + retval_->getType(SYSVERILOG_ALL) + " " + retval_->getName() +";\n";
+    }
+    for (auto &e: entries_) {
+        ret += "    " + e->generate(SYSVERILOG_ALL) + "\n";
+    }
+    if (retval_) {
+        ret += "    return " + retval_->getName() + ";\n";
+    }
+    ret += "endfunction\n";
+    return ret;
+}
+
+
+std::string FunctionObject::generate_vhdl() {
+    std::string ret = "";
+    return ret;
+}
 }

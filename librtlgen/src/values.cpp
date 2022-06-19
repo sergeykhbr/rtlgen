@@ -23,16 +23,17 @@ namespace sysvc {
 GenValue::GenValue(const char *val, const char *name,
                     GenObject *parent, const char *comment)
     : GenObject(parent, (name[0] ? ID_VALUE : ID_CONST), name, comment) {
-    parse(val, 0, val_, sysc_);
-    sysv_ = std::string("");
-    vhdl_ = std::string("");
+    parse(val, 0, val_, sysc_, sysv_, vhdl_);
     if (val[0] && name[0] && parent) {
         //SCV_set_value(getName(), val_);
     }
 }
 
 size_t GenValue::parse(const char *val, size_t pos,
-                 uint64_t &out, std::string &sysc) {
+                        uint64_t &out,
+                        std::string &sysc,
+                        std::string &sysv,
+                        std::string &vhdl) {
     char buf[64] = "";
     size_t cnt = 0;
     std::string m = "";
@@ -46,23 +47,29 @@ size_t GenValue::parse(const char *val, size_t pos,
     if (buf[0] == '\0') {
         out = 0;
         sysc = std::string("");
+        sysv = std::string("");
+        vhdl = std::string("");
         return pos;
     }
     if (buf[0] >= '0' && buf[0] <= '9') {
         int base = buf[1] == 'x' ? 16: 10;
         out = strtoll(buf, 0, base);
         sysc = std::string(buf);
+        sysv = std::string(buf);        // !! need to check
         return pos;
     }
     if (strcmp(buf, "true") == 0 || strcmp(buf, "false") == 0) {
         out = buf[0] == 't' ? 1 : 0;
         sysc = std::string(buf);
+        sysv = buf[0] == 't' ? "1'b1" : "1'b0";
         return pos;
     }
     m = std::string(buf);
     if (SCV_is_cfg_parameter(m)) {
         out = SCV_get_cfg_parameter(m);
         sysc = m;
+        sysv = m;
+        vhdl = m;
         return pos;
     }
 
@@ -76,13 +83,15 @@ size_t GenValue::parse(const char *val, size_t pos,
         std::string op = m;
         uint64_t arg1, arg2;
         std::string sysc1, sysc2;
-        pos = parse(val, pos, arg1, sysc1);
+        std::string sysv1, sysv2;
+        std::string vhdl1, vhdl2;
+        pos = parse(val, pos, arg1, sysc1, sysv1, vhdl1);
         if (val[pos] != ',') {
             RISCV_printf("error: syntax %s, line %d\n", __FILE__, __LINE__);
         } else {
             pos++;
         }
-        pos = parse(val, pos, arg2, sysc2);
+        pos = parse(val, pos, arg2, sysc2, sysv2, vhdl2);
         if (val[pos] != ')') {
             RISCV_printf("error: syntax %s, line %d\n", __FILE__, __LINE__);
         } else {
@@ -92,15 +101,19 @@ size_t GenValue::parse(const char *val, size_t pos,
         if (op == "POW2") {
             out = arg1 << arg2;
             sysc = "(" + sysc1 + " << " + sysc2 + ")";
+            sysv = "(2**" + sysv2 + ")";
         } else if (op == "ADD") {
             out = arg1 + arg2;
             sysc = "(" + sysc1 + " + " + sysc2 + ")";
+            sysv = "(" + sysv1 + " + " + sysv2 + ")";
         } else if (op == "SUB") {
             out = arg1 - arg2;
             sysc = "(" + sysc1 + " - " + sysc2 + ")";
+            sysv = "(" + sysv1 + " - " + sysv2 + ")";
         } else if (op == "MUL") {
             out = arg1 * arg2;
             sysc = "(" + sysc1 + " * " + sysc2 + ")";
+            sysv = "(" + sysv1 + " * " + sysv2 + ")";
         }
     } else {
         RISCV_printf("error: syntax %s, line %d\n", __FILE__, __LINE__);
@@ -113,6 +126,8 @@ std::string BOOL::getType(EGenerateType v) {
     std::string ret = "";
     if (v == SYSC_ALL || v == SYSC_DECLRATION || v == SYSC_DEFINITION) {
         ret = std::string("bool");
+    } else if (v == SYSVERILOG_ALL) {
+        ret = std::string("bit");
     }
     return ret;
 }
@@ -121,6 +136,8 @@ std::string BOOL::getType(EGenerateType v) {
 std::string I32D::getType(EGenerateType v) {
     std::string ret = "";
     if (v == SYSC_ALL || v == SYSC_DECLRATION || v == SYSC_DEFINITION) {
+        ret = std::string("int");
+    } else if (v == SYSVERILOG_ALL) {
         ret = std::string("int");
     }
     return ret;
@@ -131,6 +148,8 @@ std::string UI64H::getType(EGenerateType v) {
     std::string ret = "";
     if (v == SYSC_ALL || v == SYSC_DECLRATION || v == SYSC_DEFINITION) {
         ret = std::string("uint64_t");
+    } else if (v == SYSVERILOG_ALL) {
+        ret = std::string("longint");
     }
     return ret;
 }

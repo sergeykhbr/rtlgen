@@ -33,22 +33,58 @@ Param::Param(GenObject *parent,
 
 std::string Param::generate(EGenerateType v) {
     std::string ret = "";
-    if (v == SYSC_DECLRATION) {
-        ret += "static const ";
-        ret += value_->getType(v) + " ";
-        ret += getName() + " = ";
-        ret += value_->generate(v) + ";";
 
-        // One line comment
-        if (getComment().size()) {
-            while (ret.size() < 60) {
-                ret += " ";
-            }
-            ret += "// " + getComment();
-        }
-        ret += "\n";
+    if (v == SYSC_ALL || v == SYSC_DECLRATION || v == SYSC_DEFINITION) {
+        ret += generate_sysc();
+    } else if (v == SYSVERILOG_ALL) {
+        ret += generate_sysv();
+    } else {
+        ret += generate_vhdl();
     }
 
+    return ret;
+}
+
+std::string Param::generate_sysc() {
+    std::string ret = "";
+
+    ret += "static const ";
+    ret += value_->getType(SYSC_ALL) + " ";
+    ret += getName() + " = ";
+    ret += value_->generate(SYSC_ALL) + ";";
+
+    // One line comment
+    if (getComment().size()) {
+        while (ret.size() < 60) {
+            ret += " ";
+        }
+        ret += "// " + getComment();
+    }
+    ret += "\n";
+    return ret;
+}
+
+std::string Param::generate_sysv() {
+    std::string ret = "";
+
+    ret += "localparam ";
+    ret += value_->getType(SYSVERILOG_ALL) + " ";
+    ret += getName() + " = ";
+    ret += value_->generate(SYSVERILOG_ALL) + ";";
+
+    // One line comment
+    if (getComment().size()) {
+        while (ret.size() < 60) {
+            ret += " ";
+        }
+        ret += "// " + getComment();
+    }
+    ret += "\n";
+    return ret;
+}
+
+std::string Param::generate_vhdl() {
+    std::string ret = "";
     return ret;
 }
 

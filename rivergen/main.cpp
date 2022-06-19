@@ -21,5 +21,6 @@ int main()
 {
     RiverProject *prj = new RiverProject("_generated");
     prj->generate(SYSC_ALL);
+    prj->generate(SYSVERILOG_ALL);
     return 0;
 }

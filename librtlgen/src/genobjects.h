@@ -44,6 +44,7 @@ enum EGenerateType {
     SYSC_ALL,
     SYSC_DECLRATION,
     SYSC_DEFINITION,
+    SYSVERILOG_ALL
 };
 
 class GenObject {

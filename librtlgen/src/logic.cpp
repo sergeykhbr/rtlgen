@@ -16,6 +16,7 @@
 
 #include "logic.h"
 #include "operations.h"
+#include "utils.h"
 
 namespace sysvc {
 
@@ -63,18 +64,43 @@ void Logic::clearbit(const char *idx) {
 
 std::string Logic::getType(EGenerateType v) {
     std::string ret = "";
-    if (width_->getValue() <= 1) {
-        ret += "bool";
-    } else if (width_->getValue() > 64) {
-        ret += "sc_biguint<" + width_->generate(v) + ">";
-    } else {
-        ret += "sc_uint<" + width_->generate(v) + ">";
+
+    if (v == SYSC_ALL || v == SYSC_DECLRATION || v == SYSC_DEFINITION) {
+        if (width_->getValue() <= 1) {
+            ret += "bool";
+        } else if (width_->getValue() > 64) {
+            ret += "sc_biguint<" + width_->generate(v) + ">";
+        } else {
+            ret += "sc_uint<" + width_->generate(v) + ">";
+        }
+    } else if (v == SYSVERILOG_ALL) {
+        ret = std::string("logic ");
+        if (width_->getValue() > 1) {
+            ret += "[";
+            if (width_->isNumber()) {
+                char tstr[256];
+                RISCV_sprintf(tstr, sizeof(tstr), "%d",
+                            static_cast<int>(width_->getValue()) - 1);
+                ret += tstr;
+            } else {
+                ret += width_->generate(v) + "-1";
+            }
+            ret += ":0]";
+        }
     }
     return ret;
 }
 
 std::string Logic::generate(EGenerateType v) {
-    std::string ret = GenValue::generate(v);
+    std::string ret = "";
+    if (v == SYSC_ALL || v == SYSC_DECLRATION || v == SYSC_DEFINITION) {
+        ret += GenValue::generate(v);;
+    } else if (v == SYSVERILOG_ALL) {
+        char tstr[256];
+        RISCV_sprintf(tstr, sizeof(tstr), "%d'h%" RV_PRI64 "x",
+            static_cast<int>(width_->getValue()), getValue());
+        ret += tstr;
+    }
     return ret;
 }
 

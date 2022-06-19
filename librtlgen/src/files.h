@@ -36,6 +36,11 @@ class FileObject : public GenObject,
     /** Access Listener */
     virtual void notifyAccess(std::string &file);
 
+ protected:
+    void generate_sysc();
+    void generate_sysv();
+    void generate_vhdl();
+
  private:
     void fullPath2vector(const char *fullpath, std::vector<std::string> &subs);
     std::string fullPath2fileRelative(const char *fullpath);

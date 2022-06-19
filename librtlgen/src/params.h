@@ -33,6 +33,11 @@ class Param : public GenObject {
     virtual std::string generate(EGenerateType v);
 
  protected:
+    std::string generate_sysc();
+    std::string generate_sysv();
+    std::string generate_vhdl();
+
+ protected:
     GenValue *value_;
 };
 
