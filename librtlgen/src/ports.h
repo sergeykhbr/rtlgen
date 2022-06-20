@@ -35,8 +35,6 @@ class PortObject : public GenObject {
              const char *comment);
 
     int getWidth() { return static_cast<int>(wire_->getValue()); }
-    virtual std::string getType(EGenerateType v) = 0;
-    virtual std::string generate(EGenerateType v) = 0;
  protected:
     Logic *wire_;
 };
@@ -45,21 +43,19 @@ class PortObject : public GenObject {
 class InPort : public PortObject {
  public:
     InPort(GenObject *parent, const char *name,
-             Logic *wire, const char *comment)
+             Logic *wire, const char *comment="")
         : PortObject(parent, ID_INPUT, name, wire, comment) {}
 
     virtual std::string getType(EGenerateType v);
-    virtual std::string generate(EGenerateType v) override;
 };
 
 class OutPort : public PortObject {
  public:
     OutPort(GenObject *parent, const char *name,
-             Logic *wire, const char *comment)
+             Logic *wire, const char *comment="")
         : PortObject(parent, ID_OUTPUT, name, wire, comment) {}
 
     virtual std::string getType(EGenerateType v);
-    virtual std::string generate(EGenerateType v) override;
 };
 
 }  // namespace sysvc

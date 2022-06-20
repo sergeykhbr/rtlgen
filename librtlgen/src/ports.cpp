@@ -37,11 +37,6 @@ std::string InPort::getType(EGenerateType v) {
     return out;
 }
 
-std::string InPort::generate(EGenerateType v) {
-    std::string out = "";
-    return out;
-}
-
 std::string OutPort::getType(EGenerateType v) {
     std::string out = "";
     if (v == SYSC_ALL || v == SYSC_DECLRATION) {
@@ -50,11 +45,6 @@ std::string OutPort::getType(EGenerateType v) {
         out += "output logic " + wire_->getType(v);
     } else {
     }
-    return out;
-}
-
-std::string OutPort::generate(EGenerateType v) {
-    std::string out = "";
     return out;
 }
 

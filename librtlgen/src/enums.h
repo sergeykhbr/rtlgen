@@ -29,6 +29,7 @@ class EnumObject : public GenObject {
 
     virtual void add_value(const char *name);
 
+    virtual std::string getType(EGenerateType v) { return std::string(""); }
     virtual std::string generate(EGenerateType v);
  protected:
     std::string generate_sysc();

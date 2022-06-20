@@ -31,6 +31,7 @@
 #include "logic.h"
 #include "operations.h"
 #include "enums.h"
+#include "signals.h"
 
 namespace sysvc {
 

@@ -27,14 +27,13 @@ class RiverTop : public ModuleObject {
 
  protected:
     DefParam hartid;
-    /*CfgParamObject async_reset;
-    CfgParamObject fpu_ena;
-    CfgParamObject coherence_ena;
-    CfgParamObject tracer_ena;*/
+    DefParam fpu_ena;
+    DefParam coherence_ena;
+    DefParam tracer_ena;
 
     InPort i_clk;
     InPort i_nrst;
-    TextLine _1_;
+    TextLine _MemInterface0_;
     InPort i_req_mem_ready;
     OutPort o_req_mem_path;
     OutPort o_req_mem_valid;
@@ -48,6 +47,73 @@ class RiverTop : public ModuleObject {
     InPort i_resp_mem_data;
     InPort i_resp_mem_load_fault;
     InPort i_resp_mem_store_fault;
+    TextLine _DSnoopInterface0_;
+    InPort i_req_snoop_valid;
+    InPort i_req_snoop_type;
+    OutPort o_req_snoop_ready;
+    InPort i_req_snoop_addr;
+    InPort i_resp_snoop_ready;
+    OutPort o_resp_snoop_valid;
+    OutPort o_resp_snoop_data;
+    OutPort o_resp_snoop_flags;
+    TextLine _Interrupts0_;
+    InPort i_msip;
+    InPort i_mtip;
+    InPort i_meip;
+    InPort i_seip;
+    TextLine _Debug0;
+    InPort i_haltreq;
+    InPort i_resumereq;
+    InPort i_dport_req_valid;
+    InPort i_dport_type;
+    InPort i_dport_addr;
+    InPort i_dport_wdata;
+    InPort i_dport_size;
+    OutPort o_dport_req_ready;
+    InPort i_dport_resp_ready;
+    OutPort o_dport_resp_valid;
+    OutPort o_dport_resp_error;
+    OutPort o_dport_rdata;
+    InPort i_progbuf;
+    OutPort o_halted;
+
+    TextLine _ControlPath0_;
+    Signal w_req_ctrl_ready;
+    Signal w_req_ctrl_valid;
+    Signal wb_req_ctrl_addr;
+    Signal w_resp_ctrl_valid;
+    Signal wb_resp_ctrl_addr;
+    Signal wb_resp_ctrl_data;
+    Signal w_resp_ctrl_load_fault;
+    Signal w_resp_ctrl_executable;
+    Signal w_resp_ctrl_ready;
+    TextLine _DataPath0_;
+    Signal w_req_data_ready;
+    Signal w_req_data_valid;
+    Signal wb_req_data_type;
+    Signal wb_req_data_addr;
+    Signal wb_req_data_wdata;
+    Signal wb_req_data_wstrb;
+    Signal wb_req_data_size;
+    Signal w_resp_data_valid;
+    Signal wb_resp_data_addr;
+    Signal wb_resp_data_data;
+    Signal w_resp_data_load_fault;
+    Signal w_resp_data_store_fault;
+    Signal w_resp_data_er_mpu_load;
+    Signal w_resp_data_er_mpu_store;
+    Signal wb_resp_data_fault_addr;
+    Signal w_resp_data_ready;
+    Signal w_mpu_region_we;
+    Signal wb_mpu_region_idx;
+    Signal wb_mpu_region_addr;
+    Signal wb_mpu_region_mask;
+    Signal wb_mpu_region_flags;
+    Signal wb_flush_address;
+    Signal w_flush_valid;
+    Signal wb_data_flush_address;
+    Signal w_data_flush_valid;
+    Signal w_data_flush_end;
 };
 
 class river_top : public FileObject {

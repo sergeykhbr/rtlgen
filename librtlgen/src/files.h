@@ -31,6 +31,7 @@ class FileObject : public GenObject,
                  const char *name);
 
     virtual std::string getFullPath() override;
+    virtual std::string getType(EGenerateType v) { return std::string(""); }
     virtual std::string generate(EGenerateType) override;
 
     /** Access Listener */

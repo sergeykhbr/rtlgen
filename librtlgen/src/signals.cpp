@@ -14,25 +14,26 @@
 //  limitations under the License.
 // 
 
-#pragma once
-
-#include "genobjects.h"
-#include <iostream>
+#include "signals.h"
 
 namespace sysvc {
 
-class ProjectObject : public GenObject {
- public:
-    ProjectObject(const char *name,
-                  const char *rootpath,
-                  const char *comment);
+Signal::Signal(GenObject *parent,
+               const char *name,
+               Logic *wire,
+               const char *comment)
+    : GenObject(parent, ID_SIGNAL, name, comment), wire_(wire) {
+}
 
-    virtual std::string getFullPath() override { return rootpath_; }
-    virtual std::string getType(EGenerateType v) { return std::string(""); }
-    virtual std::string generate(EGenerateType) override;
+std::string Signal::getType(EGenerateType v) {
+    std::string out = "";
+    if (v == SYSC_ALL || v == SYSC_DECLRATION) {
+        out += "sc_signal<" + wire_->getType(v) + ">";
+    } else if (v == SYSVERILOG_ALL) {
+        out += "logic " + wire_->getType(v);
+    } else {
+    }
+    return out;
+}
 
- protected:
-    std::string rootpath_;
-};
-
-}  // namespace sysvc
+}

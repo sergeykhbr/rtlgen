@@ -32,8 +32,12 @@ enum EIdType {
     ID_DEF_PARAM,   // Generic parameter used in ifdef/endif statements
     ID_FUNCTION,
     ID_MODULE,
+    ID_MINSTANCE,   // module instance
     ID_INPUT,
     ID_OUTPUT,
+    ID_SIGNAL,
+    ID_REG,
+    ID_PROCESS,
     ID_COMMENT,
     ID_EMPTYLINE,
     ID_OPERATION
@@ -57,6 +61,7 @@ class GenObject {
     unsigned getId() { return id_; }
     std::string getName() { return name_; }
     std::string getComment() { return comment_; }
+    virtual std::string getType(EGenerateType) = 0;
 
     virtual std::string generate(EGenerateType) { return std::string(""); }
 

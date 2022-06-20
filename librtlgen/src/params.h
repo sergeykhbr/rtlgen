@@ -29,6 +29,7 @@ class Param : public GenObject {
           GenValue *value,
           const char *comment="");
 
+    virtual std::string getType(EGenerateType v) { return value_->getType(v); }
     virtual GenValue *getValue() { return value_; }
     virtual std::string generate(EGenerateType v);
 

@@ -45,3 +45,5 @@ module, port, signal etc.
 <b> Generator should preserve parameters names and automatically calculates
 bus widths to properly use <i>sc_uint</i>/<i>sc_biguint</i> definitions.</b>
 
+<b> Windows Toolchain: CMake + generate MS Visual Studio (community) project.</b>
+Linux support requries a cmake fixes (will be added later).

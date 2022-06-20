@@ -143,13 +143,23 @@ std::string I32D::getType(EGenerateType v) {
     return ret;
 }
 
+std::string UI32D::getType(EGenerateType v) {
+    std::string ret = "";
+    if (v == SYSC_ALL || v == SYSC_DECLRATION || v == SYSC_DEFINITION) {
+        ret = std::string("uint32_t");
+    } else if (v == SYSVERILOG_ALL) {
+        ret = std::string("int unsigned");
+    }
+    return ret;
+}
+
 
 std::string UI64H::getType(EGenerateType v) {
     std::string ret = "";
     if (v == SYSC_ALL || v == SYSC_DECLRATION || v == SYSC_DEFINITION) {
         ret = std::string("uint64_t");
     } else if (v == SYSVERILOG_ALL) {
-        ret = std::string("longint");
+        ret = std::string("longint unsigned");
     }
     return ret;
 }

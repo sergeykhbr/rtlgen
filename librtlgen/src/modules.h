@@ -28,7 +28,11 @@ class ModuleObject : public GenObject {
  public:
     ModuleObject(GenObject *parent, const char *name);
 
+    virtual std::string getType(EGenerateType v);
     virtual std::string generate(EGenerateType v) override;
+    // Check registers in current module and all sub-modules to create
+    // async_reset logic and always (ff) process
+    virtual bool isRegisters();
  protected:
     std::string generate_sysc_h();
 };

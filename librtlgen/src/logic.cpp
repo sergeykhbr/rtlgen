@@ -21,8 +21,8 @@
 namespace sysvc {
 
 Logic::Logic(const char *width,
-              const char *val,
               const char *name,
+              const char *val,
               GenObject *parent,
               const char *comment)
     : GenValue(val, name, parent, comment) {
@@ -31,16 +31,16 @@ Logic::Logic(const char *width,
 
 
 Logic::Logic(GenValue *width,
-              const char *val,
               const char *name,
+              const char *val,
               GenObject *parent,
               const char *comment)
     : GenValue(val, name, parent, comment), width_(width) {
 }
 
 Logic::Logic(Param *width,
-              const char *val,
               const char *name,
+              const char *val,
               GenObject *parent,
               const char *comment)
     : GenValue(val, name, parent, comment), width_(width->getValue()) {

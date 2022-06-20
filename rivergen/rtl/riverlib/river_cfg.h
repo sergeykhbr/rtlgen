@@ -28,7 +28,7 @@ class river_cfg : public FileObject {
      public:
         FunctionReadNoSnoop(GenObject *parent)
             : FunctionObject(parent, "ReadNoSnoop") {
-            retval_ = new Logic("REQ_MEM_TYPE_BITS", "", "ret", this);
+            retval_ = new Logic("REQ_MEM_TYPE_BITS", "ret", "", this);
             static_cast<Logic *>(retval_)->allzero();
         }
     };
@@ -37,7 +37,7 @@ class river_cfg : public FileObject {
      public:
         FunctionReadShare(GenObject *parent)
             : FunctionObject(parent, "ReadShare") {
-            retval_ = new Logic("REQ_MEM_TYPE_BITS", "", "ret", this);
+            retval_ = new Logic("REQ_MEM_TYPE_BITS", "ret", "", this);
             static_cast<Logic *>(retval_)->allzero();
             static_cast<Logic *>(retval_)->setbit("REQ_MEM_TYPE_CACHED");
         }
@@ -47,7 +47,7 @@ class river_cfg : public FileObject {
      public:
         FunctionReadMakeUnique(GenObject *parent)
             : FunctionObject(parent, "ReadMakeUnique") {
-            retval_ = new Logic("REQ_MEM_TYPE_BITS", "", "ret", this);
+            retval_ = new Logic("REQ_MEM_TYPE_BITS", "ret", "", this);
             static_cast<Logic *>(retval_)->allzero();
             static_cast<Logic *>(retval_)->setbit("REQ_MEM_TYPE_CACHED");
             static_cast<Logic *>(retval_)->setbit("REQ_MEM_TYPE_UNIQUE");
@@ -58,7 +58,7 @@ class river_cfg : public FileObject {
      public:
         FunctionWriteNoSnoop(GenObject *parent)
             : FunctionObject(parent, "WriteNoSnoop") {
-            retval_ = new Logic("REQ_MEM_TYPE_BITS", "", "ret", this);
+            retval_ = new Logic("REQ_MEM_TYPE_BITS", "ret", "", this);
             static_cast<Logic *>(retval_)->allzero();
             static_cast<Logic *>(retval_)->setbit("REQ_MEM_TYPE_WRITE");
         }
@@ -68,7 +68,7 @@ class river_cfg : public FileObject {
      public:
         FunctionWriteLineUnique(GenObject *parent)
             : FunctionObject(parent, "WriteLineUnique") {
-            retval_ = new Logic("REQ_MEM_TYPE_BITS", "", "ret", this);
+            retval_ = new Logic("REQ_MEM_TYPE_BITS", "ret", "", this);
             static_cast<Logic *>(retval_)->allzero();
             static_cast<Logic *>(retval_)->setbit("REQ_MEM_TYPE_WRITE");
             static_cast<Logic *>(retval_)->setbit("REQ_MEM_TYPE_CACHED");
@@ -80,7 +80,7 @@ class river_cfg : public FileObject {
      public:
         FunctionWriteBack(GenObject *parent)
             : FunctionObject(parent, "WriteBack") {
-            retval_ = new Logic("REQ_MEM_TYPE_BITS", "", "ret", this);
+            retval_ = new Logic("REQ_MEM_TYPE_BITS", "ret", "", this);
             static_cast<Logic *>(retval_)->allzero();
             static_cast<Logic *>(retval_)->setbit("REQ_MEM_TYPE_WRITE");
             static_cast<Logic *>(retval_)->setbit("REQ_MEM_TYPE_CACHED");

@@ -32,7 +32,6 @@ class GenValue : public GenObject {
         return sysc_.c_str()[0] >= '0' && sysc_.c_str()[0] <= '9';
     }
     virtual uint64_t getValue() { return val_; }
-    virtual std::string getType(EGenerateType) = 0;
     virtual std::string generate(EGenerateType v) override {
         if (v == SYSC_ALL || v == SYSC_DECLRATION || v == SYSC_DEFINITION) {
             return sysc_;
@@ -65,7 +64,7 @@ class BOOL : public GenValue {
         GenObject *parent=0, const char *comment=""):
         GenValue(val, name, parent, comment) {}
 
-    virtual std::string getType(EGenerateType) override;
+    virtual std::string getType(EGenerateType);
 };
 
 class I32D : public GenValue {
@@ -74,7 +73,16 @@ class I32D : public GenValue {
         GenObject *parent=0, const char *comment=""):
         GenValue(val, name, parent, comment) {}
 
-    virtual std::string getType(EGenerateType) override;
+    virtual std::string getType(EGenerateType);
+};
+
+class UI32D : public GenValue {
+ public:
+    UI32D(const char *val, const char *name="",
+        GenObject *parent=0, const char *comment=""):
+        GenValue(val, name, parent, comment) {}
+
+    virtual std::string getType(EGenerateType);
 };
 
 class UI64H : public GenValue {
@@ -83,7 +91,7 @@ class UI64H : public GenValue {
         GenObject *parent=0, const char *comment=""):
         GenValue(val, name, parent, comment) {}
 
-    virtual std::string getType(EGenerateType) override;
+    virtual std::string getType(EGenerateType);
 };
 
 }  // namespace sysvc

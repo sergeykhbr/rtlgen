@@ -27,21 +27,21 @@ class Param;
 
 class Logic : public GenValue {
  public:
-    Logic(const char *width,
-          const char *val,
+    Logic(const char *width="1",
           const char *name="",
+          const char *val="",
           GenObject *parent=0,
           const char *comment="");
 
     Logic(GenValue *width,
-          const char *val,
           const char *name="",
+          const char *val="",
           GenObject *parent=0,
           const char *comment="");
 
     Logic(Param *width,
-          const char *val,
           const char *name="",
+          const char *val="",
           GenObject *parent=0,
           const char *comment="");
 

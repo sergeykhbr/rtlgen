@@ -17,22 +17,22 @@
 #pragma once
 
 #include "genobjects.h"
+#include "logic.h"
 #include <iostream>
 
 namespace sysvc {
 
-class ProjectObject : public GenObject {
+class Signal : public GenObject {
  public:
-    ProjectObject(const char *name,
-                  const char *rootpath,
-                  const char *comment);
+    Signal(GenObject *parent,
+           const char *name,
+           Logic *wire,
+           const char *comment="");
 
-    virtual std::string getFullPath() override { return rootpath_; }
-    virtual std::string getType(EGenerateType v) { return std::string(""); }
-    virtual std::string generate(EGenerateType) override;
-
+    int getWidth() { return static_cast<int>(wire_->getValue()); }
+    virtual std::string getType(EGenerateType v);
  protected:
-    std::string rootpath_;
+    Logic *wire_;
 };
 
 }  // namespace sysvc

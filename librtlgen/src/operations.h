@@ -30,6 +30,7 @@ class Operation : public GenObject {
               GenObject *b,
               const char *comment="");
 
+    virtual std::string getType(EGenerateType v) { return std::string(""); }
     virtual std::string generate(EGenerateType v) = 0;
  protected:
     GenObject *a_;
