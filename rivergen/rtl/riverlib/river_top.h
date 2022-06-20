@@ -26,13 +26,12 @@ class RiverTop : public ModuleObject {
     RiverTop(GenObject *parent);
 
  protected:
-    /*CfgParamObject hartid;
-    CfgParamObject async_reset;
+    DefParam hartid;
+    /*CfgParamObject async_reset;
     CfgParamObject fpu_ena;
     CfgParamObject coherence_ena;
     CfgParamObject tracer_ena;*/
 
-    IoPortsStart io_start_;
     InPort i_clk;
     InPort i_nrst;
     TextLine _1_;
@@ -49,7 +48,6 @@ class RiverTop : public ModuleObject {
     InPort i_resp_mem_data;
     InPort i_resp_mem_load_fault;
     InPort i_resp_mem_store_fault;
-    IoPortsEnd io_end_;
 };
 
 class river_top : public FileObject {

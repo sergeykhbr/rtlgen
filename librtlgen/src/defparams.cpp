@@ -14,28 +14,22 @@
 //  limitations under the License.
 // 
 
-#include "enums.h"
+#include "defparams.h"
 #include "utils.h"
 
 namespace sysvc {
 
-EnumObject::EnumObject(GenObject *parent,
-                       const char *name)
-    : GenObject(parent, ID_ENUM, name), total_(0) {
+DefParam::DefParam(GenObject *parent,
+                    const char *name,
+                    GenValue *value,
+                    const char *comment)
+    : GenObject(parent, ID_DEF_PARAM, name, comment),
+    value_(value) {
 }
 
-void EnumObject::add_value(const char *name) {
-    char tstr[64];
-    RISCV_sprintf(tstr, sizeof(tstr), "%d", total_);
-    new I32D(tstr, name, this);
-
-    std::string path = getFullPath();
-    SCV_set_cfg_parameter(path, std::string(name), total_);
-    total_++;
-}
-
-std::string EnumObject::generate(EGenerateType v) {
+std::string DefParam::generate(EGenerateType v) {
     std::string ret = "";
+
     if (v == SYSC_ALL || v == SYSC_DECLRATION || v == SYSC_DEFINITION) {
         ret += generate_sysc();
     } else if (v == SYSVERILOG_ALL) {
@@ -43,38 +37,49 @@ std::string EnumObject::generate(EGenerateType v) {
     } else {
         ret += generate_vhdl();
     }
+
     return ret;
 }
 
-std::string EnumObject::generate_sysc() {
+std::string DefParam::generate_sysc() {
     std::string ret = "";
-    ret += "enum " + getName() + " {\n";
-    for (auto &p: entries_) {
-        ret += "    " + p->getName() + " = ";
-        ret += static_cast<I32D *>(p)->generate(SYSC_ALL);
-        if (&p != &entries_.back()) {
-            ret += ",";
+
+    ret += value_->getType(SYSC_ALL) + " ";
+    ret += getName() + " = ";
+    ret += value_->generate(SYSC_ALL);
+
+    // One line comment
+    if (getComment().size()) {
+        while (ret.size() < 60) {
+            ret += " ";
         }
-        ret += "\n";
+        ret += "// " + getComment();
     }
-    ret += "};\n";
+    ret += "\n";
     return ret;
 }
 
-std::string EnumObject::generate_sysv() {
+std::string DefParam::generate_sysv() {
     std::string ret = "";
-    for (auto &p: entries_) {
-        ret += "localparam int " + p->getName() + " = ";
-        ret += static_cast<I32D *>(p)->generate(SYSVERILOG_ALL);
-        ret += ";\n";
+
+    ret += value_->getType(SYSVERILOG_ALL) + " ";
+    ret += getName() + " = ";
+    ret += value_->generate(SYSVERILOG_ALL);
+
+    // One line comment
+    if (getComment().size()) {
+        while (ret.size() < 60) {
+            ret += " ";
+        }
+        ret += "// " + getComment();
     }
+    ret += "\n";
     return ret;
 }
 
-std::string EnumObject::generate_vhdl() {
+std::string DefParam::generate_vhdl() {
     std::string ret = "";
     return ret;
 }
-
 
 }

@@ -23,6 +23,7 @@
 #include "files.h"
 #include "values.h"
 #include "params.h"
+#include "defparams.h"
 #include "modules.h"
 #include "ports.h"
 #include "comments.h"

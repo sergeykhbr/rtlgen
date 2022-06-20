@@ -65,7 +65,11 @@ std::string FunctionObject::generate_sysc() {
         if (retval_) {
             ret += "    " + retval_->getType(SYSC_ALL) + " " + retval_->getName() +";\n";
         }
+        ret += "\n";
         for (auto &e: entries_) {
+            if (e->getId() != ID_OPERATION) {
+                continue;
+            }
             ret += "    " + e->generate(SYSC_ALL) + "\n";
         }
         if (retval_) {
@@ -105,7 +109,11 @@ std::string FunctionObject::generate_sysv() {
     if (retval_) {
         ret += "    " + retval_->getType(SYSVERILOG_ALL) + " " + retval_->getName() +";\n";
     }
+    ret += "\n";
     for (auto &e: entries_) {
+        if (e->getId() != ID_OPERATION) {
+            continue;
+        }
         ret += "    " + e->generate(SYSVERILOG_ALL) + "\n";
     }
     if (retval_) {

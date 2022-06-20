@@ -18,6 +18,7 @@
 
 #include "genobjects.h"
 #include "params.h"
+#include "logic.h"
 #include <iostream>
 
 namespace sysvc {
@@ -30,44 +31,34 @@ class PortObject : public GenObject {
     PortObject(GenObject *parent,
              EIdType type,
              const char *name,
-             GenValue *width,
+             Logic *wire,
              const char *comment);
 
-    int getWidth() { return static_cast<int>(width_->getValue()); }
-
+    int getWidth() { return static_cast<int>(wire_->getValue()); }
+    virtual std::string getType(EGenerateType v) = 0;
     virtual std::string generate(EGenerateType v) = 0;
  protected:
-    GenValue *width_;
-};
-
-class IoPortsStart : public GenObject {
- public:
-    IoPortsStart(GenObject *parent)
-        : GenObject(parent, ID_IO_START, "") {}
-};
-
-class IoPortsEnd : public GenObject {
- public:
-    IoPortsEnd(GenObject *parent)
-        : GenObject(parent, ID_IO_END, "") {}
+    Logic *wire_;
 };
 
 
 class InPort : public PortObject {
  public:
     InPort(GenObject *parent, const char *name,
-             GenValue *width, const char *comment)
-        : PortObject(parent, ID_INPUT, name, width, comment) {}
+             Logic *wire, const char *comment)
+        : PortObject(parent, ID_INPUT, name, wire, comment) {}
 
+    virtual std::string getType(EGenerateType v);
     virtual std::string generate(EGenerateType v) override;
 };
 
 class OutPort : public PortObject {
  public:
     OutPort(GenObject *parent, const char *name,
-             GenValue *width, const char *comment)
-        : PortObject(parent, ID_OUTPUT, name, width, comment) {}
+             Logic *wire, const char *comment)
+        : PortObject(parent, ID_OUTPUT, name, wire, comment) {}
 
+    virtual std::string getType(EGenerateType v);
     virtual std::string generate(EGenerateType v) override;
 };
 

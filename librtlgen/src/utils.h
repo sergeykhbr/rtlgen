@@ -29,6 +29,7 @@ namespace sysvc {
 #ifdef _WIN32
     #define RV_PRI64 "I64"
 #else
+    #define RV_PRI64 "ll"
 #endif
 
 class AccessListener {

@@ -21,68 +21,40 @@ namespace sysvc {
 PortObject::PortObject(GenObject *parent,
                        EIdType id,
                        const char *name,
-                       GenValue *width,
+                       Logic *wire,
                        const char *comment)
-    : GenObject(parent, id, name, comment), width_(width) {
+    : GenObject(parent, id, name, comment), wire_(wire) {
+}
+
+std::string InPort::getType(EGenerateType v) {
+    std::string out = "";
+    if (v == SYSC_ALL || v == SYSC_DECLRATION) {
+        out += "sc_in<" + wire_->getType(v) + ">";
+    } else if (v == SYSVERILOG_ALL) {
+        out += "input " + wire_->getType(v);
+    } else {
+    }
+    return out;
 }
 
 std::string InPort::generate(EGenerateType v) {
     std::string out = "";
-    if (v == SYSC_DECLRATION) {
-        out += "    sc_in";
+    return out;
+}
 
-        int width = getWidth();
-        if (width == 1) {
-            out += "<bool> ";
-        } else if (width <= 64) {
-            out += "<sc_uint<";
-            out += width_->generate(v);
-            out += ">> ";
-        } else {
-            out += "<sc_biguint<";
-            out += width_->generate(v);
-            out += ">> ";
-        }
-
-        out += getName() + ";";
-        if (getComment().size()) {
-            while (out.size() < 60) {
-                out += " ";
-            }
-            out += "// " + getComment();
-        }
-        out += "\n";
+std::string OutPort::getType(EGenerateType v) {
+    std::string out = "";
+    if (v == SYSC_ALL || v == SYSC_DECLRATION) {
+        out += "sc_out<" + wire_->getType(v) + ">";
+    } else if (v == SYSVERILOG_ALL) {
+        out += "output logic " + wire_->getType(v);
+    } else {
     }
     return out;
 }
 
 std::string OutPort::generate(EGenerateType v) {
     std::string out = "";
-    if (v == SYSC_DECLRATION) {
-        out += "    sc_out";
-
-        int width = getWidth();
-        if (width == 1) {
-            out += "<bool> ";
-        } else if (width <= 64) {
-            out += "<sc_uint<";
-            out += width_->generate(v);
-            out += ">> ";
-        } else {
-            out += "<sc_biguint<";
-            out += width_->generate(v);
-            out += ">> ";
-        }
-
-        out += getName() + ";";
-        if (getComment().size()) {
-            while (out.size() < 60) {
-                out += " ";
-            }
-            out += "// " + getComment();
-        }
-        out += "\n";
-    }
     return out;
 }
 

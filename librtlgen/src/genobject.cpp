@@ -41,15 +41,4 @@ void GenObject::add_entry(GenObject *p) {
     entries_.push_back(p);
 }
 
-GenObject *GenObject::getEntryById(EIdType id) {
-    GenObject *ret = 0;
-    for (auto &p: entries_) {
-        if (p->getId() == id) {
-            ret = p;
-            break;
-        }
-    }
-    return ret;
-}
-
 }

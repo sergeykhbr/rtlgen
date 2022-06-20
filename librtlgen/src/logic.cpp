@@ -94,12 +94,18 @@ std::string Logic::getType(EGenerateType v) {
 std::string Logic::generate(EGenerateType v) {
     std::string ret = "";
     if (v == SYSC_ALL || v == SYSC_DECLRATION || v == SYSC_DEFINITION) {
-        ret += GenValue::generate(v);;
+        ret += GenValue::generate(v);
     } else if (v == SYSVERILOG_ALL) {
-        char tstr[256];
-        RISCV_sprintf(tstr, sizeof(tstr), "%d'h%" RV_PRI64 "x",
-            static_cast<int>(width_->getValue()), getValue());
-        ret += tstr;
+        if (isNumber()) {
+            char fmt[64] = "%d'h%";
+            char tstr[256];
+            int w = static_cast<int>(width_->getValue());
+            RISCV_sprintf(fmt, sizeof(fmt), "%%d'h%%0%d" RV_PRI64 "x", (w+3)/4);
+            RISCV_sprintf(tstr, sizeof(tstr), fmt, w, getValue());
+            ret += tstr;
+        } else {
+            ret += GenValue::generate(v);
+        }
     }
     return ret;
 }

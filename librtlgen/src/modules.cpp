@@ -15,6 +15,8 @@
 // 
 
 #include "modules.h"
+#include "defparams.h"
+#include "ports.h"
 #include "utils.h"
 
 namespace sysvc {
@@ -39,10 +41,38 @@ std::string ModuleObject::generate_sysc_h() {
         "SC_MODULE(" + getName() + ") {\n";
 
     // Input/Output signal declaration
-    GenObject *io = getEntryById(ID_IO_START);
+    std::string ln;
     for (auto &p: entries_) {
-        out += p->generate(SYSC_DECLRATION);
+        if (p->getId() != ID_INPUT && p->getId() != ID_OUTPUT) {
+            continue;
+        }
+        ln = "";
+        ln += "    " + static_cast<PortObject *>(p)->getType(SYSC_ALL);
+        ln += " " + p->getName() + ";";
+        if (p->getComment().size()) {
+            while (ln.size() < 60) {
+                ln += " ";
+            }
+            ln += "// " + p->getComment();
+        }
+        out += ln + "\n";
     }
+
+    out += "\n";
+    out += "\n";
+    // Constructor delcartion:
+    out += "    " + getName() + "(sc_module_name name_";
+    for (auto &p: entries_) {
+        if (p->getId() != ID_DEF_PARAM) {
+            continue;
+        }
+        out += ",\n"
+               "           " + static_cast<DefParam *>(p)->getType(SYSC_ALL);
+        out += " " + p->getName();
+    }
+    out += ");\n";
+    // Destructor declaration
+    out += "    virtual ~" + getName() + "();\n";
     
     out += 
         "};\n"

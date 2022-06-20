@@ -29,12 +29,11 @@ enum EIdType {
     ID_VALUE,
     ID_ENUM,
     ID_PARAM,
+    ID_DEF_PARAM,   // Generic parameter used in ifdef/endif statements
     ID_FUNCTION,
     ID_MODULE,
-    ID_IO_START,    // input/output signal start marker
     ID_INPUT,
     ID_OUTPUT,
-    ID_IO_END,      // input/output signal end marker
     ID_COMMENT,
     ID_EMPTYLINE,
     ID_OPERATION
@@ -58,7 +57,6 @@ class GenObject {
     unsigned getId() { return id_; }
     std::string getName() { return name_; }
     std::string getComment() { return comment_; }
-    GenObject *getEntryById(EIdType id);
 
     virtual std::string generate(EGenerateType) { return std::string(""); }
 

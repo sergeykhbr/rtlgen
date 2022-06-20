@@ -22,21 +22,24 @@
 
 namespace sysvc {
 
-class EnumObject : public GenObject {
+class DefParam : public GenObject {
  public:
-    EnumObject(GenObject *parent,
-               const char *name);
+    DefParam(GenObject *parent,
+             const char *name,
+             GenValue *value,
+             const char *comment="");
 
-    virtual void add_value(const char *name);
-
+    virtual GenValue *getValue() { return value_; }
+    virtual std::string getType(EGenerateType v) { return value_->getType(v); }
     virtual std::string generate(EGenerateType v);
+
  protected:
     std::string generate_sysc();
     std::string generate_sysv();
     std::string generate_vhdl();
 
  protected:
-    int total_;
+    GenValue *value_;
 };
 
 }  // namespace sysvc
