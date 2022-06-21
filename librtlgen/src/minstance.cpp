@@ -1,4 +1,4 @@
-﻿// 
+// 
 //  Copyright 2022 Sergey Khabarov, sergeykhbr@gmail.com
 // 
 //  Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,18 +14,23 @@
 //  limitations under the License.
 // 
 
-#include <iostream>
-#include "prj_river.h"
+#include "minstance.h"
+#include "utils.h"
 
-int main()
-{
-    RiverProject *prj = new RiverProject("_generated");
-    printf("Generating SystemC into '%s' subfolder\n",
-            prj->getFullPath().c_str());
-    prj->generate(SYSC_ALL);
+namespace sysvc {
 
-    printf("Generating SystemVerilog into '%s' subfolder\n",
-            prj->getFullPath().c_str());
-    prj->generate(SYSVERILOG_ALL);
-    return 0;
+MInstanceObject::MInstanceObject(GenObject *parent, ModuleObject *m, const char *name) :
+    GenObject(parent, ID_MINSTANCE, name), m_(m) {
+}
+
+std::string MInstanceObject::getType(EGenerateType v) {
+    std::string out = "";
+    if (v == SYSC_ALL) {
+    } else if (v == SYSVERILOG_ALL) {
+        out += "module";
+    } else {
+    }
+    return out;
+}
+
 }

@@ -42,8 +42,15 @@ module, port, signal etc.
     sc_biguint<CFG_PARAM1> A;
     sc_uint<CFG_PARAM1-CFG_PARAM2> B;
 
-<b> Generator should preserve parameters names and automatically calculates
+<b>Generator should preserve parameters names and automatically calculates
 bus widths to properly use <i>sc_uint</i>/<i>sc_biguint</i> definitions.</b>
 
-<b> Windows Toolchain: CMake + generate MS Visual Studio (community) project.</b>
-Linux support requries a cmake fixes (will be added later).
+<b>Windows:</b> Use CMake and generate MS Visual Studio project.
+
+<b>Linux:</b>
+
+    > cd rtlgen
+    > cmake -S . -B output_dir
+    > cd output_dir
+    > make
+    > ./bin/rivergen

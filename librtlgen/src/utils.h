@@ -17,14 +17,17 @@
 #pragma once
 
 #include <iostream>
+#include <stdarg.h>
 
 namespace sysvc {
 
 #define RISCV_free free
 #define RISCV_malloc malloc
-#define RISCV_sprintf sprintf_s
 #define RISCV_printf printf
 #define LOG_ERROR 1
+
+/** Format output to string. */
+int RISCV_sprintf(char *s, size_t len, const char *fmt, ...);
 
 #ifdef _WIN32
     #define RV_PRI64 "I64"
@@ -37,7 +40,7 @@ class AccessListener {
     virtual void notifyAccess(std::string &file) = 0;
 };
 
-void SCV_set_cfg_parameter(std::string &path, std::string &name, uint64_t v);
+void SCV_set_cfg_parameter(std::string &path, const char *name, uint64_t v);
 int SCV_is_cfg_parameter(std::string &name);
 uint64_t SCV_get_cfg_parameter(std::string &name);
 

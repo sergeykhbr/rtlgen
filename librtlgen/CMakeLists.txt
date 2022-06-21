@@ -8,14 +8,16 @@ add_definitions(-DUNICODE)
 add_definitions(-D_CRT_SECURE_NO_WARNINGS)
 
 if(UNIX)
+        set(OS_INCLUDE "")
 else()
 	set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} /MT")
 	set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} /MTd")
+        set(OS_INCLUDE "${CMAKE_CURRENT_SOURCE_DIR}/src/wininclude")
 endif()
 
 
 include_directories(
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/wininclude
+    ${OS_INCLUDE}
 )
 
 

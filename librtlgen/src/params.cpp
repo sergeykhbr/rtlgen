@@ -28,7 +28,7 @@ Param::Param(GenObject *parent,
     value_(value) {
 
     std::string path = getFullPath();
-    SCV_set_cfg_parameter(path, getName(), value_->getValue());
+    SCV_set_cfg_parameter(path, getName().c_str(), value_->getValue());
 }
 
 std::string Param::generate(EGenerateType v) {

@@ -1,4 +1,4 @@
-﻿// 
+// 
 //  Copyright 2022 Sergey Khabarov, sergeykhbr@gmail.com
 // 
 //  Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,18 +14,19 @@
 //  limitations under the License.
 // 
 
-#include <iostream>
-#include "prj_river.h"
+#pragma once
 
-int main()
-{
-    RiverProject *prj = new RiverProject("_generated");
-    printf("Generating SystemC into '%s' subfolder\n",
-            prj->getFullPath().c_str());
-    prj->generate(SYSC_ALL);
+#include <api.h>
+#include "types_amba.h"
 
-    printf("Generating SystemVerilog into '%s' subfolder\n",
-            prj->getFullPath().c_str());
-    prj->generate(SYSVERILOG_ALL);
-    return 0;
-}
+class ambalib_folder : public FolderObject {
+ public:
+    ambalib_folder(GenObject *parent) :
+        FolderObject(parent, "ambalib"),
+        types_amba_(this) {}
+
+ protected:
+    // subfolders:
+    // files
+    types_amba types_amba_;
+};

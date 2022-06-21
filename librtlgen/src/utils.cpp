@@ -18,6 +18,11 @@
 #include <stdlib.h>
 #include <dirent.h>
 #include <map>
+#if defined(_WIN32) || defined(__CYGWIN__)
+#else
+    #include <sys/types.h>
+    #include <sys/stat.h>
+#endif
 
 namespace sysvc {
 
@@ -29,11 +34,11 @@ struct CfgParameterInfo {
 static std::map<std::string, CfgParameterInfo> cfgParamters_;
 AccessListener *accessListener_ = 0;
 
-void SCV_set_cfg_parameter(std::string &path, std::string &name, uint64_t v) {
+void SCV_set_cfg_parameter(std::string &path, const char *name, uint64_t v) {
     CfgParameterInfo cfg;
     cfg.path = path;
     cfg.value = v;
-    cfgParamters_[name] = cfg;
+    cfgParamters_[std::string(name)] = cfg;
 }
 
 int SCV_is_cfg_parameter(std::string &name) {
@@ -96,6 +101,19 @@ void SCV_write_file(const char *fname, const char *buf, size_t sz) {
     } else {
         RISCV_printf("error: cannot open file %s\n", fname);
     }
+}
+
+int RISCV_sprintf(char *s, size_t len, const char *fmt, ...) {
+    int ret;
+    va_list arg;
+    va_start(arg, fmt);
+#if defined(_WIN32) || defined(__CYGWIN__)
+    ret = vsprintf_s(s, len, fmt, arg);
+#else
+    ret = vsprintf(s, fmt, arg);
+#endif
+    va_end(arg);
+    return ret;
 }
 
 

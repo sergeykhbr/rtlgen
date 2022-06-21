@@ -16,6 +16,7 @@
 
 #include "values.h"
 #include "utils.h"
+#include <cstring>
 
 namespace sysvc {
 

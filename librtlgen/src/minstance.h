@@ -1,4 +1,4 @@
-﻿// 
+// 
 //  Copyright 2022 Sergey Khabarov, sergeykhbr@gmail.com
 // 
 //  Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,18 +14,27 @@
 //  limitations under the License.
 // 
 
+#pragma once
+
+#include "genobjects.h"
+#include "modules.h"
 #include <iostream>
-#include "prj_river.h"
 
-int main()
-{
-    RiverProject *prj = new RiverProject("_generated");
-    printf("Generating SystemC into '%s' subfolder\n",
-            prj->getFullPath().c_str());
-    prj->generate(SYSC_ALL);
+namespace sysvc {
 
-    printf("Generating SystemVerilog into '%s' subfolder\n",
-            prj->getFullPath().c_str());
-    prj->generate(SYSVERILOG_ALL);
-    return 0;
-}
+/**
+ * Parent module instance class definition
+ */
+class MInstanceObject : public GenObject {
+ public:
+    MInstanceObject(GenObject *parent, ModuleObject *m, const char *name);
+
+    virtual std::string getType(EGenerateType v);
+    // Check registers in current module and all sub-modules to create
+    // async_reset logic and always (ff) process
+    virtual bool isRegisters() { return m_->isRegisters(); }
+ protected:
+    ModuleObject *m_;
+};
+
+}  // namespace sysvc

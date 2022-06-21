@@ -1,4 +1,4 @@
-﻿// 
+// 
 //  Copyright 2022 Sergey Khabarov, sergeykhbr@gmail.com
 // 
 //  Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,18 +14,28 @@
 //  limitations under the License.
 // 
 
-#include <iostream>
-#include "prj_river.h"
+#pragma once
 
-int main()
-{
-    RiverProject *prj = new RiverProject("_generated");
-    printf("Generating SystemC into '%s' subfolder\n",
-            prj->getFullPath().c_str());
-    prj->generate(SYSC_ALL);
+#include <api.h>
+#include "cache/cache_folder.h"
+#include "core/core_folder.h"
+#include "river_cfg.h"
+#include "river_top.h"
 
-    printf("Generating SystemVerilog into '%s' subfolder\n",
-            prj->getFullPath().c_str());
-    prj->generate(SYSVERILOG_ALL);
-    return 0;
-}
+class riverlib_folder : public FolderObject {
+ public:
+    riverlib_folder(GenObject *parent) :
+        FolderObject(parent, "riverlib"),
+        river_cfg_(this),
+        river_top_(this),
+        cache_(this),
+        core_(this) {}
+
+ protected:
+    // files
+    river_cfg river_cfg_;
+    river_top river_top_;
+    // subfolders:
+    cache_folder cache_;
+    core_folder core_;
+};

@@ -30,7 +30,7 @@ void EnumObject::add_value(const char *name) {
     new I32D(tstr, name, this);
 
     std::string path = getFullPath();
-    SCV_set_cfg_parameter(path, std::string(name), total_);
+    SCV_set_cfg_parameter(path, name, total_);
     total_++;
 }
 
