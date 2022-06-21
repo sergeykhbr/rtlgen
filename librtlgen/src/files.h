@@ -19,8 +19,8 @@
 #include "genobjects.h"
 #include "utils.h"
 #include <iostream>
-#include <map>
 #include <vector>
+#include <list>
 
 namespace sysvc {
 
@@ -47,7 +47,7 @@ class FileObject : public GenObject,
     std::string fullPath2fileRelative(const char *fullpath);
 
  protected:
-    std::map<std::string, int> depfiles_;   // dependency files
+    std::list<std::string> depfiles_;   // dependency files
 };
 
 }  // namespace sysvc

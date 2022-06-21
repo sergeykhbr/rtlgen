@@ -75,7 +75,7 @@ size_t GenValue::parse(const char *val, size_t pos,
     }
 
     if (val[pos] != '(') {
-        RISCV_printf("error: syntax %s, line %d\n", __FILE__, __LINE__);
+        SHOW_ERROR();
         return pos;
     }
     pos++;
@@ -88,13 +88,13 @@ size_t GenValue::parse(const char *val, size_t pos,
         std::string vhdl1, vhdl2;
         pos = parse(val, pos, arg1, sysc1, sysv1, vhdl1);
         if (val[pos] != ',') {
-            RISCV_printf("error: syntax %s, line %d\n", __FILE__, __LINE__);
+            SHOW_ERROR();
         } else {
             pos++;
         }
         pos = parse(val, pos, arg2, sysc2, sysv2, vhdl2);
         if (val[pos] != ')') {
-            RISCV_printf("error: syntax %s, line %d\n", __FILE__, __LINE__);
+            SHOW_ERROR();
         } else {
             pos++;
         }
@@ -117,7 +117,7 @@ size_t GenValue::parse(const char *val, size_t pos,
             sysv = "(" + sysv1 + " * " + sysv2 + ")";
         }
     } else {
-        RISCV_printf("error: syntax %s, line %d\n", __FILE__, __LINE__);
+        SHOW_ERROR();
     }
     return pos;
 }

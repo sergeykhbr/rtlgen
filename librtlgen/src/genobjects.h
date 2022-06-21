@@ -59,6 +59,7 @@ class GenObject {
     virtual void add_entry(GenObject *p);
 
     unsigned getId() { return id_; }
+    GenObject *getParent() { return parent_; }
     std::string getName() { return name_; }
     std::string getComment() { return comment_; }
     virtual std::string getType(EGenerateType) = 0;

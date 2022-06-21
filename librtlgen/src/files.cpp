@@ -27,7 +27,12 @@ FileObject::FileObject(GenObject *parent,
 }
 
 void FileObject::notifyAccess(std::string &file) {
-    depfiles_[file] = 1;
+    for (auto &d: depfiles_) {
+        if (d == file) {
+            return;
+        }
+    }
+    depfiles_.push_back(file);
 }
 
 
@@ -109,12 +114,11 @@ void FileObject::generate_sysc() {
         "#include <systemc.h>\n";
 
     // Automatic Dependency detection
-    std::map<std::string, int>::iterator it;
-    for (it = depfiles_.begin(); it != depfiles_.end(); it++) {
-        if (it->first == getFullPath()) {
+    for (auto &d : depfiles_) {
+        if (d == getFullPath()) {
             continue;
         }
-        out += "#include \"" + fullPath2fileRelative(it->first.c_str()) + ".h\"\n";
+        out += "#include \"" + fullPath2fileRelative(d.c_str()) + ".h\"\n";
     }
 
     out += "\n";
@@ -153,13 +157,12 @@ void FileObject::generate_sysv() {
     out += "\n";
 
     // Automatic Dependency detection
-    std::map<std::string, int>::iterator it;
     std::vector<std::string> subs;
-    for (it = depfiles_.begin(); it != depfiles_.end(); it++) {
-        if (it->first == getFullPath()) {
+    for (auto &d : depfiles_) {
+        if (d == getFullPath()) {
             continue;
         }
-        fullPath2vector(it->first.c_str(), subs);
+        fullPath2vector(d.c_str(), subs);
         out += "import " + subs.back() + "_pkg::*;\n";
     }
 

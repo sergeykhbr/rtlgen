@@ -18,6 +18,8 @@
 
 #include <api.h>
 #include "river_cfg.h"
+#include "cache/cache_top.h"
+#include "core/proc.h"
 
 using namespace sysvc;
 
@@ -30,7 +32,7 @@ class RiverTop : public ModuleObject {
     DefParam fpu_ena;
     DefParam coherence_ena;
     DefParam tracer_ena;
-
+    // Ports:
     InPort i_clk;
     InPort i_nrst;
     TextLine _MemInterface0_;
@@ -77,6 +79,11 @@ class RiverTop : public ModuleObject {
     InPort i_progbuf;
     OutPort o_halted;
 
+    // Sub-module instances:
+    MInstanceObject *proc0;
+    MInstanceObject *cache0;
+
+    // Signals:
     TextLine _ControlPath0_;
     Signal w_req_ctrl_ready;
     Signal w_req_ctrl_valid;

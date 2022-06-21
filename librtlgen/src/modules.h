@@ -17,7 +17,9 @@
 #pragma once
 
 #include "genobjects.h"
+#include "minstance.h"
 #include <iostream>
+#include <list>
 
 namespace sysvc {
 
@@ -30,11 +32,16 @@ class ModuleObject : public GenObject {
 
     virtual std::string getType(EGenerateType v);
     virtual std::string generate(EGenerateType v) override;
+    virtual MInstanceObject *createInstance(GenObject *parent, const char *name);
+
     // Check registers in current module and all sub-modules to create
     // async_reset logic and always (ff) process
     virtual bool isRegisters();
  protected:
     std::string generate_sysc_h();
+
+ protected:
+    std::list<MInstanceObject *> instances_;
 };
 
 }  // namespace sysvc

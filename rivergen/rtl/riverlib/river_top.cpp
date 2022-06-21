@@ -18,10 +18,12 @@
 
 RiverTop::RiverTop(GenObject *parent) :
     ModuleObject(parent, "RiverTop"),
+    // Generic parameters
     hartid(this, "hartid", new UI32D("0")),
     fpu_ena(this, "fpu_ena", new BOOL("true")),
-    coherence_ena(this, "fpu_ena", new BOOL("false")),
+    coherence_ena(this, "coherence_ena", new BOOL("false")),
     tracer_ena(this, "tracer_ena", new BOOL("true")),
+    // Ports
     i_clk(this, "i_clk", new Logic(), "CPU clock"),
     i_nrst(this, "i_nrst", new Logic(), "Reset: active LOW"),
     _MemInterface0_(this, "Memory interface:"),
@@ -67,7 +69,7 @@ RiverTop::RiverTop(GenObject *parent) :
     o_dport_rdata(this, "o_dport_rdata", new Logic("RISCV_ARCH"), "Response value"),
     i_progbuf(this, "i_progbuf", new Logic("MUL(32,CFG_PROGBUF_REG_TOTAL)"), "progam buffer"),
     o_halted(this, "o_halted", new Logic(), "CPU halted via debug interface"),
-
+    // Singals:
     _ControlPath0_(this, "Control path:"),
     w_req_ctrl_ready(this, "w_req_ctrl_ready", new Logic()),
     w_req_ctrl_valid(this, "w_req_ctrl_valid", new Logic()),
@@ -106,6 +108,21 @@ RiverTop::RiverTop(GenObject *parent) :
     w_data_flush_valid(this, "w_data_flush_valid", new Logic()),
     w_data_flush_end(this, "w_data_flush_end", new Logic())
 {
+    // Create and connet Sub-modules:
+    ModuleObject *p = static_cast<ModuleObject *>(SCV_get_module("Processor"));
+    if (p) {
+        proc0 = p->createInstance(this, "proc0");
+    } else {
+        SHOW_ERROR();
+        proc0 = 0;
+    }
+    p = static_cast<ModuleObject *>(SCV_get_module("CacheTop"));
+    if (p) {
+        cache0 = p->createInstance(this, "cache0");
+    } else {
+        SHOW_ERROR();
+        cache0 = 0;
+    }
 }
 
 river_top::river_top(GenObject *parent) :

@@ -18,13 +18,11 @@
 
 #include <iostream>
 #include <stdarg.h>
+#include "genobjects.h"
 
 namespace sysvc {
 
-#define RISCV_free free
-#define RISCV_malloc malloc
-#define RISCV_printf printf
-#define LOG_ERROR 1
+#define SHOW_ERROR() printf("error: %s, line %d\n", __FILE__, __LINE__)
 
 /** Format output to string. */
 int RISCV_sprintf(char *s, size_t len, const char *fmt, ...);
@@ -43,6 +41,9 @@ class AccessListener {
 void SCV_set_cfg_parameter(std::string &path, const char *name, uint64_t v);
 int SCV_is_cfg_parameter(std::string &name);
 uint64_t SCV_get_cfg_parameter(std::string &name);
+
+void SCV_register_module(GenObject *m);
+GenObject *SCV_get_module(const char *name);
 
 //
 // To track dependency parameters and properly form include files list

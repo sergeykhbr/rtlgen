@@ -18,6 +18,7 @@
 #include <stdlib.h>
 #include <dirent.h>
 #include <map>
+#include <list>
 #if defined(_WIN32) || defined(__CYGWIN__)
 #else
     #include <sys/types.h>
@@ -32,6 +33,7 @@ struct CfgParameterInfo {
 };
 
 static std::map<std::string, CfgParameterInfo> cfgParamters_;
+static std::list<GenObject *> modules_;
 AccessListener *accessListener_ = 0;
 
 void SCV_set_cfg_parameter(std::string &path, const char *name, uint64_t v) {
@@ -56,6 +58,21 @@ uint64_t SCV_get_cfg_parameter(std::string &name) {
     }
     return info.value;
 }
+
+void SCV_register_module(GenObject *m) {
+    modules_.push_back(m);
+}
+
+GenObject *SCV_get_module(const char *name) {
+    for (auto &m: modules_) {
+        if (m->getName() == std::string(name)) {
+            return m;
+            break;
+        }
+    }
+    return 0;
+}
+
 
 void SCV_set_access_listener(AccessListener *p) {
     accessListener_ = p;
@@ -99,7 +116,7 @@ void SCV_write_file(const char *fname, const char *buf, size_t sz) {
         fwrite(buf, 1, sz, f);
         fclose(f);
     } else {
-        RISCV_printf("error: cannot open file %s\n", fname);
+        SHOW_ERROR();
     }
 }
 

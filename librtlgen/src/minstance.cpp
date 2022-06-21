@@ -15,22 +15,18 @@
 // 
 
 #include "minstance.h"
+#include "modules.h"
+#include "files.h"
 #include "utils.h"
 
 namespace sysvc {
 
-MInstanceObject::MInstanceObject(GenObject *parent, ModuleObject *m, const char *name) :
-    GenObject(parent, ID_MINSTANCE, name), m_(m) {
+MInstanceObject::MInstanceObject(GenObject *owner, GenObject *parent, const char *name) :
+    GenObject(parent, ID_MINSTANCE, name), owner_(owner) {
 }
 
-std::string MInstanceObject::getType(EGenerateType v) {
-    std::string out = "";
-    if (v == SYSC_ALL) {
-    } else if (v == SYSVERILOG_ALL) {
-        out += "module";
-    } else {
-    }
-    return out;
-}
+bool MInstanceObject::isRegisters() {
+    return static_cast<ModuleObject *>(owner_)->isRegisters();
+} 
 
 }

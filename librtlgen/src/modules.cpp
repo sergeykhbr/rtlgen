@@ -19,11 +19,14 @@
 #include "ports.h"
 #include "signals.h"
 #include "utils.h"
+#include "minstance.h"
+#include "files.h"
 
 namespace sysvc {
 
 ModuleObject::ModuleObject(GenObject *parent, const char *name) :
     GenObject(parent, ID_MODULE, name) {
+    SCV_register_module(this);
 }
 
 std::string ModuleObject::getType(EGenerateType v) {
@@ -37,12 +40,22 @@ std::string ModuleObject::getType(EGenerateType v) {
     return out;
 }
 
-std::string ModuleObject::generate(EGenerateType v) {
-    std::string out = "";
-    if (v == SYSC_DECLRATION) {
-        out += generate_sysc_h();
+MInstanceObject *ModuleObject::createInstance(GenObject *parent, const char *name) {
+    MInstanceObject *inst = new MInstanceObject(this, parent, name);
+    instances_.push_back(inst);
+
+    GenObject *p = parent;
+    while (p) {
+        if (p->getId() != ID_FILE) {
+            p = p->getParent();
+            continue;
+        }
+        // to build include dependencies
+        static_cast<FileObject *>(p)->notifyAccess(getFullPath());
+        break;
     }
-    return out;
+
+    return inst;
 }
 
 bool ModuleObject::isRegisters() {
@@ -56,6 +69,14 @@ bool ModuleObject::isRegisters() {
         }
     }
     return false;
+}
+
+std::string ModuleObject::generate(EGenerateType v) {
+    std::string out = "";
+    if (v == SYSC_DECLRATION) {
+        out += generate_sysc_h();
+    }
+    return out;
 }
 
 std::string ModuleObject::generate_sysc_h() {
@@ -152,8 +173,8 @@ std::string ModuleObject::generate_sysc_h() {
         if (p->getId() != ID_MINSTANCE) {
             continue;
         }
-        //out += static_cast<ModuleInstance *>(p)->getModuleName(SYSC_ALL);
-        out += " *" + p->getName() + "\n";
+        out += "    " + p->getType(SYSC_ALL);
+        out += " *" + p->getName() + ";\n";
     }
     out += "\n";
 

@@ -27,15 +27,13 @@ class riverlib_folder : public FolderObject {
     riverlib_folder(GenObject *parent) :
         FolderObject(parent, "riverlib"),
         river_cfg_(this),
-        river_top_(this),
         cache_(this),
-        core_(this) {}
+        core_(this),
+        river_top_(this) {}
 
  protected:
-    // files
     river_cfg river_cfg_;
-    river_top river_top_;
-    // subfolders:
     cache_folder cache_;
     core_folder core_;
+    river_top river_top_;
 };

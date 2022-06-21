@@ -17,24 +17,24 @@
 #pragma once
 
 #include "genobjects.h"
-#include "modules.h"
 #include <iostream>
 
 namespace sysvc {
 
 /**
- * Parent module instance class definition
+ * Module instance wrapper definition
  */
 class MInstanceObject : public GenObject {
  public:
-    MInstanceObject(GenObject *parent, ModuleObject *m, const char *name);
+    MInstanceObject(GenObject *owner, GenObject *parent, const char *name);
 
-    virtual std::string getType(EGenerateType v);
+    virtual std::string getType(EGenerateType v) { return owner_->getName(); }
     // Check registers in current module and all sub-modules to create
     // async_reset logic and always (ff) process
-    virtual bool isRegisters() { return m_->isRegisters(); }
+    virtual bool isRegisters();
+
  protected:
-    ModuleObject *m_;
+    GenObject *owner_;
 };
 
 }  // namespace sysvc
