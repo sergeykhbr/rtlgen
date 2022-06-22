@@ -33,9 +33,9 @@ class GenValue : public GenObject {
     }
     virtual uint64_t getValue() { return val_; }
     virtual std::string generate(EGenerateType v) override {
-        if (v == SYSC_ALL || v == SYSC_DECLRATION || v == SYSC_DEFINITION) {
+        if (v == SYSC_ALL || v == SYSC_H || v == SYSC_CPP) {
             return sysc_;
-        } else if (v == SYSVERILOG_ALL) {
+        } else if (v == SV_ALL || v == SV_PKG || v == SV_MOD) {
             return sysv_;
         } else {
             return vhdl_;

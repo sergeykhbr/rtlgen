@@ -65,7 +65,7 @@ void Logic::clearbit(const char *idx) {
 std::string Logic::getType(EGenerateType v) {
     std::string ret = "";
 
-    if (v == SYSC_ALL || v == SYSC_DECLRATION || v == SYSC_DEFINITION) {
+    if (v == SYSC_ALL || v == SYSC_H || v == SYSC_CPP) {
         if (width_->getValue() <= 1) {
             ret += "bool";
         } else if (width_->getValue() > 64) {
@@ -73,7 +73,7 @@ std::string Logic::getType(EGenerateType v) {
         } else {
             ret += "sc_uint<" + width_->generate(v) + ">";
         }
-    } else if (v == SYSVERILOG_ALL) {
+    } else if (v == SV_ALL || v == SV_PKG || v == SV_MOD) {
         ret = std::string("logic ");
         if (width_->getValue() > 1) {
             ret += "[";
@@ -93,9 +93,9 @@ std::string Logic::getType(EGenerateType v) {
 
 std::string Logic::generate(EGenerateType v) {
     std::string ret = "";
-    if (v == SYSC_ALL || v == SYSC_DECLRATION || v == SYSC_DEFINITION) {
+    if (v == SYSC_ALL || v == SYSC_H || v == SYSC_CPP) {
         ret += GenValue::generate(v);
-    } else if (v == SYSVERILOG_ALL) {
+    } else if (v == SV_ALL || v == SV_PKG || v == SV_MOD) {
         if (isNumber()) {
             char fmt[64] = "%d'h%";
             char tstr[256];

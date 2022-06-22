@@ -14,22 +14,18 @@
 //  limitations under the License.
 // 
 
-#include "defparams.h"
+#include "structs.h"
 #include "utils.h"
 
 namespace sysvc {
 
-DefParam::DefParam(GenObject *parent,
-                    const char *name,
-                    GenValue *value,
-                    const char *comment)
-    : GenObject(parent, ID_DEF_PARAM, name, comment),
-    value_(value) {
+StructObject::StructObject(GenObject *parent,
+                           const char *name)
+    : GenObject(parent, ID_STRUCT, name) {
 }
 
-std::string DefParam::generate(EGenerateType v) {
+std::string StructObject::generate(EGenerateType v) {
     std::string ret = "";
-
     if (v == SYSC_ALL || v == SYSC_H || v == SYSC_CPP) {
         ret += generate_sysc();
     } else if (v == SV_ALL || v == SV_PKG || v == SV_MOD) {
@@ -37,49 +33,38 @@ std::string DefParam::generate(EGenerateType v) {
     } else {
         ret += generate_vhdl();
     }
-
     return ret;
 }
 
-std::string DefParam::generate_sysc() {
+std::string StructObject::generate_sysc() {
     std::string ret = "";
-
-    ret += value_->getType(SYSC_ALL) + " ";
-    ret += getName() + " = ";
-    ret += value_->generate(SYSC_ALL);
-
-    // One line comment
-    if (getComment().size()) {
-        while (ret.size() < 60) {
-            ret += " ";
+    ret += "struct " + getName() + " {\n";
+    for (auto &p: entries_) {
+        ret += "    " + p->getName() + " = ";
+        ret += static_cast<I32D *>(p)->generate(SYSC_ALL);
+        if (&p != &entries_.back()) {
+            ret += ",";
         }
-        ret += "// " + getComment();
+        ret += "\n";
     }
-    ret += "\n";
+    ret += "};\n";
     return ret;
 }
 
-std::string DefParam::generate_sysv() {
+std::string StructObject::generate_sysv() {
     std::string ret = "";
-
-    ret += value_->getType(SV_ALL) + " ";
-    ret += getName() + " = ";
-    ret += value_->generate(SV_ALL);
-
-    // One line comment
-    if (getComment().size()) {
-        while (ret.size() < 60) {
-            ret += " ";
-        }
-        ret += "// " + getComment();
+    for (auto &p: entries_) {
+        ret += "     " + p->getType(SV_ALL) + " = ";
+        ret += static_cast<I32D *>(p)->generate(SV_ALL);
+        ret += ";\n";
     }
-    ret += "\n";
     return ret;
 }
 
-std::string DefParam::generate_vhdl() {
+std::string StructObject::generate_vhdl() {
     std::string ret = "";
     return ret;
 }
+
 
 }

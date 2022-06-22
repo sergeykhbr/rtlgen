@@ -33,7 +33,7 @@ std::string ModuleObject::getType(EGenerateType v) {
     std::string out = "";
     if (v == SYSC_ALL) {
         out += "SC_MODULE";
-    } else if (v == SYSVERILOG_ALL) {
+    } else if (v == SV_ALL) {
         out += "module";
     } else {
     }
@@ -58,10 +58,10 @@ MInstanceObject *ModuleObject::createInstance(GenObject *parent, const char *nam
     return inst;
 }
 
-bool ModuleObject::isRegisters() {
+bool ModuleObject::isAsyncReset() {
     for (auto &e: entries_) {
-        if (e->getId() == ID_MODULE) {
-            if (static_cast<ModuleObject *>(e)->isRegisters()) {
+        if (e->getId() == ID_MINSTANCE) {
+            if (static_cast<MInstanceObject *>(e)->isAsyncReset()) {
                 return true;
             }
         } else if (e->getId() == ID_REG) {
@@ -71,136 +71,27 @@ bool ModuleObject::isRegisters() {
     return false;
 }
 
-std::string ModuleObject::generate(EGenerateType v) {
-    std::string out = "";
-    if (v == SYSC_DECLRATION) {
-        out += generate_sysc_h();
+bool ModuleObject::isRegProcess() {
+    for (auto &e: entries_) {
+        if (e->getId() == ID_REG) {
+            return true;
+        }
     }
-    return out;
+    return false;
 }
 
-std::string ModuleObject::generate_sysc_h() {
+
+std::string ModuleObject::generate(EGenerateType v) {
     std::string out = "";
-
-    out +=
-        "SC_MODULE(" + getName() + ") {\n";
-
-    // Input/Output signal declaration
-    std::string ln;
-    std::string text = "";
-    for (auto &p: entries_) {
-        if (p->getId() != ID_INPUT && p->getId() != ID_OUTPUT) {
-            if (p->getId() == ID_COMMENT) {
-                text = p->generate(SYSC_ALL);
-            } else {
-                text = "";
-            }
-            continue;
-        }
-        ln = "";
-        ln += "    " + static_cast<PortObject *>(p)->getType(SYSC_ALL);
-        ln += " " + p->getName() + ";";
-        if (p->getComment().size()) {
-            while (ln.size() < 60) {
-                ln += " ";
-            }
-            ln += "// " + p->getComment();
-        }
-        if (text.size()) {
-            out += text;
-        }
-        out += ln + "\n";
-        text = "";
+    if (v == SYSC_H) {
+        out += generate_sysc_h();
+    } else if (v == SYSC_CPP) {
+        out += generate_sysc_cpp();
+    } else if (v == SV_PKG) {
+        out += generate_sv_pkg();
+    } else if (v == SV_MOD) {
+        out += generate_sv_mod();
     }
-
-    // Process declaration:
-    out += "\n";
-    bool hasProcess = false;
-    for (auto &p: entries_) {
-        if (p->getId() != ID_PROCESS) {
-            continue;
-        }
-        out += "    void " + p->getName() + "();\n";
-        hasProcess = true;
-    }
-    if (isRegisters()) {
-        out += "    void registers();\n";
-        hasProcess = true;
-    }
-    if (hasProcess) {
-        out += "\n";
-        out += "    SC_HAS_PROCESS(" + getName() + ");\n";
-    }
-
-
-    out += "\n";
-    // Constructor delcartion:
-    std::string space1 = "    " + getName() + "(";
-    out += space1 + "sc_module_name name";
-    if (isRegisters()) {
-        ln = "";
-        while (ln.size() < space1.size()) {
-            ln += " ";
-        }
-        ln += "bool async_reset";           // Mandatory generic parameter
-        out += ",\n" + ln;
-    }
-    for (auto &p: entries_) {
-        if (p->getId() != ID_DEF_PARAM) {
-            continue;
-        }
-        out += ",\n";
-        ln = "";
-        while (ln.size() < space1.size()) {
-            ln += " ";
-        }
-        ln += static_cast<DefParam *>(p)->getType(SYSC_ALL);
-        ln += " " + p->getName();
-        out += ln;
-    }
-    out += ");\n";
-    // Destructor declaration
-    out += "    virtual ~" + getName() + "();\n";
-    out += "\n";
-
-    // Mandatory VCD generator
-    out += "    void generateVCD(sc_trace_file *i_vcd, sc_trace_file *o_vcd);\n";
-    out += "\n";
-    out += " private:\n";
-
-    // Sub-module list
-    for (auto &p: entries_) {
-        if (p->getId() != ID_MINSTANCE) {
-            continue;
-        }
-        out += "    " + p->getType(SYSC_ALL);
-        out += " *" + p->getName() + ";\n";
-    }
-    out += "\n";
-
-    // Signals list
-    text = "";
-    for (auto &p: entries_) {
-        if (p->getId() != ID_SIGNAL) {
-            if (p->getId() == ID_COMMENT) {
-                text = p->generate(SYSC_ALL);
-            } else {
-                text = "";
-            }
-            continue;
-        }
-        if (text.size()) {
-            out += "    " + text;
-            text = "";
-        }
-        out += "    " + static_cast<Signal *>(p)->getType(SYSC_ALL);
-        out += " " + p->getName() + ";\n";
-    }
-    
-    out += 
-        "};\n"
-        "\n";
-
     return out;
 }
 

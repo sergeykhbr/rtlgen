@@ -28,9 +28,9 @@ Operation::Operation(GenObject *parent,
 std::string ZEROS::generate(EGenerateType v) {
     std::string ret = "";
     ret += a_->getName();
-    if (v == SYSC_ALL || v == SYSC_DECLRATION || v == SYSC_DEFINITION) {
+    if (v == SYSC_ALL || v == SYSC_H || v == SYSC_CPP) {
         ret += " = 0;";
-    } else if (v == SYSVERILOG_ALL) {
+    } else if (v == SV_ALL || v == SV_PKG || v == SV_MOD) {
         ret += " = '0;";
     } else  {
         ret += " = (others => '0');";
@@ -48,9 +48,9 @@ std::string EQ::generate(EGenerateType v) {
 std::string SETBIT::generate(EGenerateType v) {
     std::string ret = "";
     ret += a_->getName();
-    if (v == SYSC_ALL || v == SYSC_DECLRATION || v == SYSC_DEFINITION) {
+    if (v == SYSC_ALL || v == SYSC_H || v == SYSC_CPP) {
          ret += "[" + b_->generate(v) + "] = 1;";
-    } else if (v == SYSVERILOG_ALL) {
+    } else if (v == SV_ALL || v == SV_PKG || v == SV_MOD) {
         ret += "[" + b_->generate(v) + "] = 1'b1;";
     } else {
         ret += "(" + b_->generate(v) + ") := '1';";

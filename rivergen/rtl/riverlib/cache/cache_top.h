@@ -51,6 +51,9 @@ class CacheTop : public ModuleObject {
     OutPort o_resp_snoop_valid;
     OutPort o_resp_snoop_data;
     OutPort o_resp_snoop_flags;
+
+
+    Reg test;
 };
 
 class cache_top : public FileObject {

@@ -27,9 +27,9 @@ Signal::Signal(GenObject *parent,
 
 std::string Signal::getType(EGenerateType v) {
     std::string out = "";
-    if (v == SYSC_ALL || v == SYSC_DECLRATION) {
+    if (v == SYSC_ALL || v == SYSC_H || v == SYSC_CPP) {
         out += "sc_signal<" + wire_->getType(v) + ">";
-    } else if (v == SYSVERILOG_ALL) {
+    } else if (v == SV_ALL || v == SV_PKG || v == SV_MOD) {
         out += "logic " + wire_->getType(v);
     } else {
     }

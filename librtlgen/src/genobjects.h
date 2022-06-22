@@ -37,6 +37,7 @@ enum EIdType {
     ID_OUTPUT,
     ID_SIGNAL,
     ID_REG,
+    ID_STRUCT,
     ID_PROCESS,
     ID_COMMENT,
     ID_EMPTYLINE,
@@ -45,9 +46,14 @@ enum EIdType {
 
 enum EGenerateType {
     SYSC_ALL,
-    SYSC_DECLRATION,
-    SYSC_DEFINITION,
-    SYSVERILOG_ALL
+    SYSC_H,
+    SYSC_CPP,
+    SV_ALL,
+    SV_PKG,
+    SV_MOD,
+    VHDL_ALL,
+    VHDL_PKG,
+    VHDL_MOD
 };
 
 class GenObject {

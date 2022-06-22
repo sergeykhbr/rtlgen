@@ -14,19 +14,14 @@
 //  limitations under the License.
 // 
 
-#include "minstance.h"
 #include "modules.h"
-#include "files.h"
+#include "defparams.h"
+#include "ports.h"
+#include "signals.h"
 #include "utils.h"
+#include "minstance.h"
+#include "files.h"
 
 namespace sysvc {
-
-MInstanceObject::MInstanceObject(GenObject *owner, GenObject *parent, const char *name) :
-    GenObject(parent, ID_MINSTANCE, name), owner_(owner) {
-}
-
-bool MInstanceObject::isAsyncReset() {
-    return static_cast<ModuleObject *>(owner_)->isAsyncReset();
-} 
 
 }

@@ -27,9 +27,9 @@ FunctionObject::FunctionObject(GenObject *parent,
 
 std::string FunctionObject::generate(EGenerateType v) {
     std::string ret = "";
-    if (v == SYSC_ALL || v == SYSC_DECLRATION || v == SYSC_DEFINITION) {
+    if (v == SYSC_ALL || v == SYSC_H || v == SYSC_CPP) {
         ret += generate_sysc();
-    } else if (v == SYSVERILOG_ALL) {
+    } else if (v == SV_ALL || v == SV_PKG || v == SV_MOD) {
         ret += generate_sysv();
     } else {
         ret += generate_vhdl();
@@ -87,7 +87,7 @@ std::string FunctionObject::generate_sysv() {
     std::string ret = "";
     ret += "function automatic ";
     if (retval_) {
-        ret += retval_->getType(SYSVERILOG_ALL);
+        ret += retval_->getType(SV_ALL);
     }
     ret += " ";
     ret += getName();
@@ -96,7 +96,7 @@ std::string FunctionObject::generate_sysv() {
     }
     for (auto &a : args_) {
         if (a->getId() == ID_INPUT || a->getId() == ID_OUTPUT) {
-            ret += "\n    " + a->generate(SYSVERILOG_ALL);
+            ret += "\n    " + a->generate(SV_ALL);
             if (&a != &args_.back()) {
                 ret += ",";
             }
@@ -107,14 +107,14 @@ std::string FunctionObject::generate_sysv() {
     }
     ret += ";\n";
     if (retval_) {
-        ret += "    " + retval_->getType(SYSVERILOG_ALL) + " " + retval_->getName() +";\n";
+        ret += "    " + retval_->getType(SV_ALL) + " " + retval_->getName() +";\n";
     }
     ret += "\n";
     for (auto &e: entries_) {
         if (e->getId() != ID_OPERATION) {
             continue;
         }
-        ret += "    " + e->generate(SYSVERILOG_ALL) + "\n";
+        ret += "    " + e->generate(SV_ALL) + "\n";
     }
     if (retval_) {
         ret += "    return " + retval_->getName() + ";\n";

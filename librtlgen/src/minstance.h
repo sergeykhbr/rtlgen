@@ -31,7 +31,7 @@ class MInstanceObject : public GenObject {
     virtual std::string getType(EGenerateType v) { return owner_->getName(); }
     // Check registers in current module and all sub-modules to create
     // async_reset logic and always (ff) process
-    virtual bool isRegisters();
+    virtual bool isAsyncReset();
 
  protected:
     GenObject *owner_;

@@ -42,7 +42,9 @@ CacheTop::CacheTop(GenObject *parent) :
     i_resp_snoop_ready(this, "i_resp_snoop_ready", new Logic()),
     o_resp_snoop_valid(this, "o_resp_snoop_valid", new Logic(), ""),
     o_resp_snoop_data(this, "o_resp_snoop_data", new Logic("L1CACHE_LINE_BITS")),
-    o_resp_snoop_flags(this, "o_resp_snoop_flags", new Logic("DTAG_FL_TOTAL"))
+    o_resp_snoop_flags(this, "o_resp_snoop_flags", new Logic("DTAG_FL_TOTAL")),
+
+    test(this, "test", new Logic("32"), "test register")
 {
 }
 

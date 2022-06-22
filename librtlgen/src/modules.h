@@ -36,9 +36,13 @@ class ModuleObject : public GenObject {
 
     // Check registers in current module and all sub-modules to create
     // async_reset logic and always (ff) process
-    virtual bool isRegisters();
+    virtual bool isAsyncReset();
+    virtual bool isRegProcess();
  protected:
     std::string generate_sysc_h();
+    std::string generate_sysc_cpp();
+    std::string generate_sv_pkg();
+    std::string generate_sv_mod();
 
  protected:
     std::list<MInstanceObject *> instances_;

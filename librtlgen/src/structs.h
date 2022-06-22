@@ -14,19 +14,25 @@
 //  limitations under the License.
 // 
 
-#include "minstance.h"
-#include "modules.h"
-#include "files.h"
-#include "utils.h"
+#pragma once
+
+#include "genobjects.h"
+#include "values.h"
+#include <iostream>
 
 namespace sysvc {
 
-MInstanceObject::MInstanceObject(GenObject *owner, GenObject *parent, const char *name) :
-    GenObject(parent, ID_MINSTANCE, name), owner_(owner) {
-}
+class StructObject : public GenObject {
+ public:
+    StructObject(GenObject *parent,
+                 const char *name);
 
-bool MInstanceObject::isAsyncReset() {
-    return static_cast<ModuleObject *>(owner_)->isAsyncReset();
-} 
+    virtual std::string getType(EGenerateType v) { return std::string(""); }
+    virtual std::string generate(EGenerateType v);
+ protected:
+    std::string generate_sysc();
+    std::string generate_sysv();
+    std::string generate_vhdl();
+};
 
-}
+}  // namespace sysvc

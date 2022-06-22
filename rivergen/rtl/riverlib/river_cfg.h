@@ -89,7 +89,7 @@ class river_cfg : public FileObject {
 
     class EnumEIsaType : public EnumObject {
      public:
-        EnumEIsaType(GenObject *parent) : EnumObject(parent, "EnumType") {
+        EnumEIsaType(GenObject *parent) : EnumObject(parent, "EIsaType") {
             add_value("ISA_R_type");
             add_value("ISA_I_type");
             add_value("ISA_S_type");

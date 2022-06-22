@@ -32,6 +32,8 @@
 #include "operations.h"
 #include "enums.h"
 #include "signals.h"
+#include "regs.h"
+#include "structs.h"
 #include "minstance.h"
 
 namespace sysvc {

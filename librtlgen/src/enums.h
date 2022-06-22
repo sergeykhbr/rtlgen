@@ -35,9 +35,6 @@ class EnumObject : public GenObject {
     std::string generate_sysc();
     std::string generate_sysv();
     std::string generate_vhdl();
-
- protected:
-    int total_;
 };
 
 }  // namespace sysvc

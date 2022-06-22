@@ -26,6 +26,6 @@ int main()
 
     printf("Generating SystemVerilog into '%s' subfolder\n",
             prj->getFullPath().c_str());
-    prj->generate(SYSVERILOG_ALL);
+    prj->generate(SV_ALL);
     return 0;
 }

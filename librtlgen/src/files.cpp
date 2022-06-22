@@ -92,7 +92,7 @@ std::string FileObject::fullPath2fileRelative(const char *fullpath) {
 std::string FileObject::generate(EGenerateType v) {
     if (v == SYSC_ALL) {
         generate_sysc();
-    } else if (SYSVERILOG_ALL) {
+    } else if (v == SV_ALL) {
         generate_sysv();
     } else {
         generate_vhdl();
@@ -107,7 +107,6 @@ void FileObject::generate_sysc() {
     filename = filename + ".h";
 
     out += CommentLicense().generate(SYSC_ALL);
-
     out += 
         "#pragma once\n"
         "\n"
@@ -120,7 +119,6 @@ void FileObject::generate_sysc() {
         }
         out += "#include \"" + fullPath2fileRelative(d.c_str()) + ".h\"\n";
     }
-
     out += "\n";
     out += 
         "namespace debugger {\n"
@@ -131,17 +129,41 @@ void FileObject::generate_sysc() {
         if (p->getId() == ID_MODULE) {
             is_module = true;
         }
-        out += p->generate(SYSC_DECLRATION);
+        out += p->generate(SYSC_H);
     }
-
     out += 
-        "}  //namespace debugger\n"
+        "}  // namespace debugger\n"
         "\n";
 
     SCV_write_file(filename.c_str(), out.c_str(), out.size());
 
     // source file if any module defined in this file
     if (is_module) {
+        out = "";
+        filename = getFullPath();
+        filename = filename + ".cpp";
+
+        out += CommentLicense().generate(SYSC_ALL);
+        out += 
+            "\n"
+            "#include \"" + getName() + ".h\"\n"
+            "\n";
+        out += 
+            "namespace debugger {\n"
+            "\n";
+
+        // module definition
+        for (auto &p: entries_) {
+            if (p->getId() == ID_MODULE) {
+                is_module = true;
+            }
+            out += p->generate(SYSC_CPP);
+        }
+        out += 
+            "}  // namespace debugger\n"
+            "\n";
+
+        SCV_write_file(filename.c_str(), out.c_str(), out.size());
     }
 }
 
@@ -151,8 +173,7 @@ void FileObject::generate_sysv() {
     std::string filename = getFullPath();
     filename = filename + "_pkg.sv";
 
-    out += CommentLicense().generate(SYSVERILOG_ALL);
-
+    out += CommentLicense().generate(SV_ALL);
     out += "package " + getName() + "_pkg;\n";
     out += "\n";
 
@@ -165,7 +186,6 @@ void FileObject::generate_sysv() {
         fullPath2vector(d.c_str(), subs);
         out += "import " + subs.back() + "_pkg::*;\n";
     }
-
     out += "\n";
 
     // header
@@ -173,7 +193,7 @@ void FileObject::generate_sysv() {
         if (p->getId() == ID_MODULE) {
             is_module = true;
         }
-        out += p->generate(SYSVERILOG_ALL);
+        out += p->generate(SV_PKG);
     }
 
     out += "endpackage: " + getName() + "_pkg\n";

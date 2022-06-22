@@ -125,9 +125,9 @@ size_t GenValue::parse(const char *val, size_t pos,
 
 std::string BOOL::getType(EGenerateType v) {
     std::string ret = "";
-    if (v == SYSC_ALL || v == SYSC_DECLRATION || v == SYSC_DEFINITION) {
+    if (v == SYSC_ALL || v == SYSC_H || v == SYSC_CPP) {
         ret = std::string("bool");
-    } else if (v == SYSVERILOG_ALL) {
+    } else if (v == SV_ALL || v == SV_PKG || v == SV_MOD) {
         ret = std::string("bit");
     }
     return ret;
@@ -136,9 +136,9 @@ std::string BOOL::getType(EGenerateType v) {
 
 std::string I32D::getType(EGenerateType v) {
     std::string ret = "";
-    if (v == SYSC_ALL || v == SYSC_DECLRATION || v == SYSC_DEFINITION) {
+    if (v == SYSC_ALL || v == SYSC_H || v == SYSC_CPP) {
         ret = std::string("int");
-    } else if (v == SYSVERILOG_ALL) {
+    } else if (v == SV_ALL || v == SV_PKG || v == SV_MOD) {
         ret = std::string("int");
     }
     return ret;
@@ -146,9 +146,9 @@ std::string I32D::getType(EGenerateType v) {
 
 std::string UI32D::getType(EGenerateType v) {
     std::string ret = "";
-    if (v == SYSC_ALL || v == SYSC_DECLRATION || v == SYSC_DEFINITION) {
+    if (v == SYSC_ALL || v == SYSC_H || v == SYSC_CPP) {
         ret = std::string("uint32_t");
-    } else if (v == SYSVERILOG_ALL) {
+    } else if (v == SV_ALL || v == SV_PKG || v == SV_MOD) {
         ret = std::string("int unsigned");
     }
     return ret;
@@ -157,9 +157,9 @@ std::string UI32D::getType(EGenerateType v) {
 
 std::string UI64H::getType(EGenerateType v) {
     std::string ret = "";
-    if (v == SYSC_ALL || v == SYSC_DECLRATION || v == SYSC_DEFINITION) {
+    if (v == SYSC_ALL || v == SYSC_H || v == SYSC_CPP) {
         ret = std::string("uint64_t");
-    } else if (v == SYSVERILOG_ALL) {
+    } else if (v == SV_ALL || v == SV_PKG || v == SV_MOD) {
         ret = std::string("longint unsigned");
     }
     return ret;

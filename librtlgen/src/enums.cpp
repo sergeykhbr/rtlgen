@@ -21,24 +21,24 @@ namespace sysvc {
 
 EnumObject::EnumObject(GenObject *parent,
                        const char *name)
-    : GenObject(parent, ID_ENUM, name), total_(0) {
+    : GenObject(parent, ID_ENUM, name) {
 }
 
 void EnumObject::add_value(const char *name) {
     char tstr[64];
-    RISCV_sprintf(tstr, sizeof(tstr), "%d", total_);
+    int total = static_cast<int>(entries_.size());
+    RISCV_sprintf(tstr, sizeof(tstr), "%d", total);
     new I32D(tstr, name, this);
 
     std::string path = getFullPath();
-    SCV_set_cfg_parameter(path, name, total_);
-    total_++;
+    SCV_set_cfg_parameter(path, name, total);
 }
 
 std::string EnumObject::generate(EGenerateType v) {
     std::string ret = "";
-    if (v == SYSC_ALL || v == SYSC_DECLRATION || v == SYSC_DEFINITION) {
+    if (v == SYSC_ALL || v == SYSC_H || v == SYSC_CPP) {
         ret += generate_sysc();
-    } else if (v == SYSVERILOG_ALL) {
+    } else if (v == SV_ALL || v == SV_PKG || v == SV_MOD) {
         ret += generate_sysv();
     } else {
         ret += generate_vhdl();
@@ -65,7 +65,7 @@ std::string EnumObject::generate_sysv() {
     std::string ret = "";
     for (auto &p: entries_) {
         ret += "localparam int " + p->getName() + " = ";
-        ret += static_cast<I32D *>(p)->generate(SYSVERILOG_ALL);
+        ret += static_cast<I32D *>(p)->generate(SV_ALL);
         ret += ";\n";
     }
     return ret;

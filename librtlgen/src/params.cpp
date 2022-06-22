@@ -34,9 +34,9 @@ Param::Param(GenObject *parent,
 std::string Param::generate(EGenerateType v) {
     std::string ret = "";
 
-    if (v == SYSC_ALL || v == SYSC_DECLRATION || v == SYSC_DEFINITION) {
+    if (v == SYSC_ALL || v == SYSC_H || v == SYSC_CPP) {
         ret += generate_sysc();
-    } else if (v == SYSVERILOG_ALL) {
+    } else if (v == SV_ALL || v == SV_PKG || v == SV_MOD) {
         ret += generate_sysv();
     } else {
         ret += generate_vhdl();
@@ -68,9 +68,9 @@ std::string Param::generate_sysv() {
     std::string ret = "";
 
     ret += "localparam ";
-    ret += value_->getType(SYSVERILOG_ALL) + " ";
+    ret += value_->getType(SV_ALL) + " ";
     ret += getName() + " = ";
-    ret += value_->generate(SYSVERILOG_ALL) + ";";
+    ret += value_->generate(SV_ALL) + ";";
 
     // One line comment
     if (getComment().size()) {
