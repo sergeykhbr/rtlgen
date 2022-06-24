@@ -27,6 +27,63 @@ MInstanceObject::MInstanceObject(GenObject *owner, GenObject *parent, const char
 
 bool MInstanceObject::isAsyncReset() {
     return static_cast<ModuleObject *>(owner_)->isAsyncReset();
-} 
+}
+
+void MInstanceObject::connect_io(const char *ioname, GenObject *v) {
+    io_[std::string(ioname)] = v;
+}
+
+std::string MInstanceObject::generate(EGenerateType v) {
+    std::string ret = "";
+    if (v == SYSC_ALL || v == SYSC_CPP || v == SYSC_H) {
+        return generate_sysc();
+    } else if (v == SYSC_ALL || v == SYSC_CPP || v == SYSC_H) {
+        return generate_sv();
+    } else {
+        return generate_vhdl();
+    }
+    return ret;
+}
+
+std::string MInstanceObject::generate_sysc() {
+    std::string ret = "";
+    ret += "    " + getName() + " = new " + getType(SYSC_ALL);
+    ret += "(\"" + getName() + "\"";
+    ModuleObject *mod = static_cast<ModuleObject *>(owner_);
+    std::list<GenObject *> paramlist;
+    std::list<GenObject *> iolist;
+
+    // Generic paramater list
+    mod->getParamList(paramlist);
+    for (auto &p : paramlist) {
+        ret += ", " + p->getName();
+    }
+    ret += ");\n";
+
+    // IO port assignments
+    mod->getIoList(iolist);
+    for (auto &io: iolist) {
+        ret += "    " + getName() + "->" + io->getName() + "(";
+        if (io_.find(io->getName()) == io_.end()) {
+            SHOW_ERROR("io not connected");
+        } else {
+            GenObject *port = io_[io->getName()];
+            ret += port->getName();
+        }
+        ret += ");\n";
+    }
+    return ret;
+}
+
+std::string MInstanceObject::generate_sv() {
+    std::string ret = "";
+    return ret;
+}
+
+std::string MInstanceObject::generate_vhdl() {
+    std::string ret = "";
+    return ret;
+}
+
 
 }

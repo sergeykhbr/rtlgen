@@ -34,6 +34,7 @@ class PortObject : public GenObject {
              Logic *wire,
              const char *comment);
 
+    Logic *getWire() { return wire_; }
     int getWidth() { return static_cast<int>(wire_->getValue()); }
  protected:
     Logic *wire_;

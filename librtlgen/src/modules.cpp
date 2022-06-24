@@ -80,6 +80,25 @@ bool ModuleObject::isRegProcess() {
     return false;
 }
 
+void ModuleObject::getParamList(std::list<GenObject *> &genlist) {
+    for (auto &e : entries_) {
+        if (e->getId() != ID_DEF_PARAM) {
+            continue;
+        }
+        genlist.push_back(e);
+    }
+}
+
+void ModuleObject::getIoList(std::list<GenObject *> &iolist) {
+    for (auto &e : entries_) {
+        if (e->getId() != ID_INPUT && e->getId() != ID_OUTPUT) {
+            continue;
+        }
+        iolist.push_back(e);
+    }
+}
+
+
 
 std::string ModuleObject::generate(EGenerateType v) {
     std::string out = "";

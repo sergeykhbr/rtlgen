@@ -22,7 +22,7 @@
 
 namespace sysvc {
 
-#define SHOW_ERROR() printf("error: %s, line %d\n", __FILE__, __LINE__)
+#define SHOW_ERROR(x) printf("error: %s, line %d " x "\n", __FILE__, __LINE__)
 
 /** Format output to string. */
 int RISCV_sprintf(char *s, size_t len, const char *fmt, ...);

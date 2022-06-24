@@ -196,15 +196,8 @@ std::string ModuleObject::generate_sysc_cpp() {
         if (p->getId() != ID_MINSTANCE) {
             continue;
         }
-        out += "\n    " + p->getName() + " = new " + p->getType(SYSC_ALL);
-        out += "(\"" + p->getName() + "\"";
-        for (auto &defparam : entries_) {
-            if (p->getId() != ID_DEF_PARAM) {
-                continue;
-            }
-            out += ", " + defparam->getName();
-        }
-        out += ");\n";
+        out += "\n";
+        out += p->generate(SYSC_ALL);
     }
     out += "}\n";
 

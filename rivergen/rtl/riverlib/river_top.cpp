@@ -112,6 +112,8 @@ RiverTop::RiverTop(GenObject *parent) :
     ModuleObject *p = static_cast<ModuleObject *>(SCV_get_module("Processor"));
     if (p) {
         proc0 = p->createInstance(this, "proc0");
+        proc0->connect_io("i_clk", &i_clk);
+        proc0->connect_io("i_nrst", &i_nrst);
     } else {
         SHOW_ERROR();
         proc0 = 0;

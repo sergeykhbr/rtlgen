@@ -24,66 +24,13 @@ class river_cfg : public FileObject {
  public:
     river_cfg(GenObject *parent);
 
-    class FunctionReadNoSnoop : public FunctionObject {
+    class EnumMemopSize : public EnumObject {
      public:
-        FunctionReadNoSnoop(GenObject *parent)
-            : FunctionObject(parent, "ReadNoSnoop") {
-            retval_ = new Logic("REQ_MEM_TYPE_BITS", "ret", "", this);
-            static_cast<Logic *>(retval_)->allzero();
-        }
-    };
-
-    class FunctionReadShare : public FunctionObject {
-     public:
-        FunctionReadShare(GenObject *parent)
-            : FunctionObject(parent, "ReadShare") {
-            retval_ = new Logic("REQ_MEM_TYPE_BITS", "ret", "", this);
-            static_cast<Logic *>(retval_)->allzero();
-            static_cast<Logic *>(retval_)->setbit("REQ_MEM_TYPE_CACHED");
-        }
-    };
-
-    class FunctionReadMakeUnique : public FunctionObject {
-     public:
-        FunctionReadMakeUnique(GenObject *parent)
-            : FunctionObject(parent, "ReadMakeUnique") {
-            retval_ = new Logic("REQ_MEM_TYPE_BITS", "ret", "", this);
-            static_cast<Logic *>(retval_)->allzero();
-            static_cast<Logic *>(retval_)->setbit("REQ_MEM_TYPE_CACHED");
-            static_cast<Logic *>(retval_)->setbit("REQ_MEM_TYPE_UNIQUE");
-        }
-    };
-
-    class FunctionWriteNoSnoop : public FunctionObject {
-     public:
-        FunctionWriteNoSnoop(GenObject *parent)
-            : FunctionObject(parent, "WriteNoSnoop") {
-            retval_ = new Logic("REQ_MEM_TYPE_BITS", "ret", "", this);
-            static_cast<Logic *>(retval_)->allzero();
-            static_cast<Logic *>(retval_)->setbit("REQ_MEM_TYPE_WRITE");
-        }
-    };
-
-    class FunctionWriteLineUnique : public FunctionObject {
-     public:
-        FunctionWriteLineUnique(GenObject *parent)
-            : FunctionObject(parent, "WriteLineUnique") {
-            retval_ = new Logic("REQ_MEM_TYPE_BITS", "ret", "", this);
-            static_cast<Logic *>(retval_)->allzero();
-            static_cast<Logic *>(retval_)->setbit("REQ_MEM_TYPE_WRITE");
-            static_cast<Logic *>(retval_)->setbit("REQ_MEM_TYPE_CACHED");
-            static_cast<Logic *>(retval_)->setbit("REQ_MEM_TYPE_UNIQUE");
-        }
-    };
-
-    class FunctionWriteBack : public FunctionObject {
-     public:
-        FunctionWriteBack(GenObject *parent)
-            : FunctionObject(parent, "WriteBack") {
-            retval_ = new Logic("REQ_MEM_TYPE_BITS", "ret", "", this);
-            static_cast<Logic *>(retval_)->allzero();
-            static_cast<Logic *>(retval_)->setbit("REQ_MEM_TYPE_WRITE");
-            static_cast<Logic *>(retval_)->setbit("REQ_MEM_TYPE_CACHED");
+        EnumMemopSize(GenObject *parent) : EnumObject(parent, "EnumMemopSize") {
+            add_value("MEMOP_1B");
+            add_value("MEMOP_2B");
+            add_value("MEMOP_4B");
+            add_value("MEMOP_8B");
         }
     };
 
@@ -318,27 +265,10 @@ class river_cfg : public FileObject {
     TextLine _48_;
     Param L1CACHE_BYTES_PER_LINE;
     Param L1CACHE_LINE_BITS;
-    TextLine _49_;
-    Param REQ_MEM_TYPE_WRITE;
-    Param REQ_MEM_TYPE_CACHED;
-    Param REQ_MEM_TYPE_UNIQUE;
-    Param REQ_MEM_TYPE_BITS;
     TextLine _50_;
     Param SNOOP_REQ_TYPE_READDATA;
     Param SNOOP_REQ_TYPE_READCLEAN;
     Param SNOOP_REQ_TYPE_BITS;
-    TextLine _51_;
-    FunctionReadNoSnoop ReadNoSnoop;
-    TextLine _52_;
-    FunctionReadShare ReadShared;
-    TextLine _53_;
-    FunctionReadMakeUnique ReadMakeUnique;
-    TextLine _54_;
-    FunctionWriteNoSnoop WriteNoSnoop;
-    TextLine _55_;
-    FunctionWriteLineUnique WriteLineUnique;
-    TextLine _56_;
-    FunctionWriteBack WriteBack;
     TextLine _57_;
     TextLine _58_;
     TextLine _59_;
@@ -377,10 +307,7 @@ class river_cfg : public FileObject {
     Param CFG_MPU_FL_TOTAL;
     TextLine _70_;
     TextLine _71_;
-    Param MEMOP_8B;
-    Param MEMOP_4B;
-    Param MEMOP_2B;
-    Param MEMOP_1B;
+    EnumMemopSize MEMOP;
     TextLine _72_;
     TextLine _73_;
     Param DPortReq_Write;

@@ -17,7 +17,10 @@
 #pragma once
 
 #include "genobjects.h"
+#include "logic.h"
+#include "ports.h"
 #include <iostream>
+#include <map>
 
 namespace sysvc {
 
@@ -29,12 +32,21 @@ class MInstanceObject : public GenObject {
     MInstanceObject(GenObject *owner, GenObject *parent, const char *name);
 
     virtual std::string getType(EGenerateType v) { return owner_->getName(); }
+    virtual std::string generate(EGenerateType v) override;
     // Check registers in current module and all sub-modules to create
     // async_reset logic and always (ff) process
     virtual bool isAsyncReset();
 
+    virtual void connect_io(const char *ioname, GenObject *v);
+
+ protected:
+    std::string generate_sysc();
+    std::string generate_sv();
+    std::string generate_vhdl();
+
  protected:
     GenObject *owner_;
+    std::map<std::string, GenObject *> io_;
 };
 
 }  // namespace sysvc

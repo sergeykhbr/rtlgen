@@ -20,7 +20,7 @@ Processor::Processor(GenObject *parent) :
     ModuleObject(parent, "Processor"),
     hartid(this, "hartid", new UI32D("0")),
     fpu_ena(this, "fpu_ena", new BOOL("true")),
-    coherence_ena(this, "fpu_ena", new BOOL("false")),
+    coherence_ena(this, "coherence_ena", new BOOL("false")),
     tracer_ena(this, "tracer_ena", new BOOL("true")),
     i_clk(this, "i_clk", new Logic(), "CPU clock"),
     i_nrst(this, "i_nrst", new Logic(), "Reset: active LOW"),
