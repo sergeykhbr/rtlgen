@@ -29,6 +29,10 @@ bool MInstanceObject::isAsyncReset() {
     return static_cast<ModuleObject *>(owner_)->isAsyncReset();
 }
 
+void MInstanceObject::connect_param(const char *ioname, GenObject *v) {
+    param_[std::string(ioname)] = v;
+}
+
 void MInstanceObject::connect_io(const char *ioname, GenObject *v) {
     io_[std::string(ioname)] = v;
 }
@@ -55,8 +59,16 @@ std::string MInstanceObject::generate_sysc() {
 
     // Generic paramater list
     mod->getParamList(paramlist);
+    if (mod->isAsyncReset()) {
+        ret += ", async_reset";
+    }
     for (auto &p : paramlist) {
-        ret += ", " + p->getName();
+        ret += ", ";
+        if (param_.find(p->getName()) == param_.end()) {
+            SHOW_ERROR("param not connected");
+        } else {
+            ret += p->getName();
+        }
     }
     ret += ");\n";
 

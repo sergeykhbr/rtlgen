@@ -37,6 +37,7 @@ class MInstanceObject : public GenObject {
     // async_reset logic and always (ff) process
     virtual bool isAsyncReset();
 
+    virtual void connect_param(const char *ioname, GenObject *v);
     virtual void connect_io(const char *ioname, GenObject *v);
 
  protected:
@@ -46,6 +47,7 @@ class MInstanceObject : public GenObject {
 
  protected:
     GenObject *owner_;
+    std::map<std::string, GenObject *> param_;
     std::map<std::string, GenObject *> io_;
 };
 

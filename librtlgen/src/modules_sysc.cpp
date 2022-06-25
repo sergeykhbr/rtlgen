@@ -211,6 +211,44 @@ std::string ModuleObject::generate_sysc_cpp() {
         out += "    delete " + p->getName() + ";\n";
     }
     out += "}\n";
+    out += "\n";
+
+    // generateVCD function
+    out += "void " + getName() + "::generateVCD(sc_trace_file *i_vcd, sc_trace_file *o_vcd) {\n";
+    out += "    if (i_vcd) {\n";
+    for (auto &p: entries_) {
+        if (p->getId() != ID_INPUT) {
+            continue;
+        }
+        // TODO: check top level module instead of hardcoded name
+        if (getName() != "RiverTop") {
+            if (p->getName() == "i_clk" || p->getName() == "i_nrst" ) {
+                // i_clk and i_nrst generate only on top level module
+                continue;
+            }
+        }
+        out += "        sc_trace(i_vcd, " + p->getName() + ", " + p->getName() + ".name());\n";
+    }
+    out += "    }\n";
+    out += "    if (o_vcd) {\n";
+    for (auto &p: entries_) {
+        if (p->getId() != ID_OUTPUT) {
+            continue;
+        }
+        out += "        sc_trace(o_vcd, " + p->getName() + ", " + p->getName() + ".name());\n";
+    }
+    out += "    }\n";
+    out += "\n";
+    // TODO registers:
+    // Sub modules:
+    for (auto &p: entries_) {
+        if (p->getId() != ID_MINSTANCE) {
+            continue;
+        }
+        out += "    " + p->getName() + "->generateVCD(i_vcd, o_vcd);\n";
+    }
+    out += "}\n";
+
 
 
     out += "\n";
