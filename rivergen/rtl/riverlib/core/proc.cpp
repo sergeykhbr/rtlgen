@@ -81,7 +81,17 @@ Processor::Processor(GenObject *parent) :
     o_flush_valid(this, "o_flush_valid", new Logic(), "Remove address from ICache is valid"),
     o_data_flush_address(this, "o_data_flush_address", new Logic("CFG_CPU_ADDR_BITS"), "Address of instruction to remove from D$"),
     o_data_flush_valid(this, "o_data_flush_valid", new Logic(), "Remove address from D$ is valid"),
-    i_data_flush_end(this, "i_data_flush_end", new Logic())
+    i_data_flush_end(this, "i_data_flush_end", new Logic()),
+    // Structures declaration
+    /*structDefFetchType(this),
+    structDefInstructionDecodeType(this),
+    structDefExecuteType(this),
+    structDefMemoryType(this),
+    structDefWriteBackType(this),
+    structDefPipelineType(this),*/
+    // Signal/struct instances
+    comb(this),
+    w(this, "w", "5-stages CPU pipeline")
 {
 }
 

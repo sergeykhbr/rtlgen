@@ -171,7 +171,7 @@ RiverTop::RiverTop(GenObject *parent) :
         proc0->connect_io("o_data_flush_valid", &w_data_flush_valid);
         proc0->connect_io("i_data_flush_end", &w_data_flush_end);
     } else {
-        SHOW_ERROR();
+        SHOW_ERROR("%s", "Processor not found");
         proc0 = 0;
     }
     p = static_cast<ModuleObject *>(SCV_get_module("CacheTop"));
@@ -237,7 +237,7 @@ RiverTop::RiverTop(GenObject *parent) :
         cache0->connect_io("i_data_flush_valid", &w_data_flush_valid);
         cache0->connect_io("o_data_flush_end", &w_data_flush_end);
     } else {
-        SHOW_ERROR();
+        SHOW_ERROR("%s", "CacheTop not found");
         cache0 = 0;
     }
 }

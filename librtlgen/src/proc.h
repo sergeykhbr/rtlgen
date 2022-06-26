@@ -17,29 +17,26 @@
 #pragma once
 
 #include "genobjects.h"
-#include "values.h"
+#include "logic.h"
 #include <iostream>
 
 namespace sysvc {
 
-class StructObject : public GenObject {
+class ProcObject : public GenObject {
  public:
-    StructObject(GenObject *parent,
-                 const char *type);
+    ProcObject(GenObject *parent,
+               const char *name,
+               const char *comment="");
 
-    StructObject(GenObject *parent,
-                 const char *type,
-                 const char *name,
-                 const char *comment="");
-
-    virtual std::string getType(EGenerateType v) { return type_; }
+    virtual std::string getType(EGenerateType v) { return std::string(""); }
     virtual std::string generate(EGenerateType v);
+
  protected:
     std::string generate_sysc();
     std::string generate_sysv();
     std::string generate_vhdl();
+
  protected:
-    std::string type_;
 };
 
 }  // namespace sysvc

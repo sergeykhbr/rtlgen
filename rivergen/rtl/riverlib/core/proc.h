@@ -25,6 +25,121 @@ class Processor : public ModuleObject {
  public:
     Processor(GenObject *parent);
 
+    class CombProcess : public ProcObject {
+     public:
+        CombProcess(GenObject *parent)
+            : ProcObject(parent, "comb") {}
+     protected:
+    };
+
+    class FetchType : public StructObject {
+     public:
+        //FetchType(GenObject *parent)
+        //    : StructObject(parent, "FetchType") {}
+        FetchType(GenObject *parent, const char *name, const char *comment="")
+            : StructObject(parent, "FetchType", name, comment),
+            instr_load_fault(this, "instr_load_fault", new Logic()),
+            instr_executable(this, "instr_executable", new Logic()),
+            requested_pc(this, "requested_pc", new Logic("CFG_CPU_ADDR_BITS"), "requested but responded address"),
+            fetching_pc(this, "fetching_pc", new Logic("CFG_CPU_ADDR_BITS"), "receiving from cache before latch"),
+            pc(this, "pc", new Logic("CFG_CPU_ADDR_BITS")),
+            instr(this, "instr", new Logic("64")),
+            imem_req_valid(this, "imem_req_valid", new Logic()),
+            imem_req_addr(this, "imem_req_addr", new Logic("CFG_CPU_ADDR_BITS")) {
+        }
+     public:
+        Signal instr_load_fault;
+        Signal instr_executable;
+        Signal requested_pc;
+        Signal fetching_pc;
+        Signal pc;
+        Signal instr;
+        Signal imem_req_valid;
+        Signal imem_req_addr;
+    };
+
+    class InstructionDecodeType : public StructObject {
+     public:
+        //InstructionDecodeType(GenObject *parent)
+        //    : StructObject(parent, "InstructionDecodeType") {}
+        InstructionDecodeType(GenObject *parent, const char *name, const char *comment="")
+            : StructObject(parent, "InstructionDecodeType", name, comment) {}
+    };
+
+    class ExecuteType : public StructObject {
+     public:
+        //ExecuteType(GenObject *parent)
+        //    : StructObject(parent, "ExecuteType") {}
+        ExecuteType(GenObject *parent, const char *name, const char *comment="")
+            : StructObject(parent, "ExecuteType", name, comment) {}
+    };
+
+    class MemoryType : public StructObject {
+     public:
+        //MemoryType(GenObject *parent)
+        //    : StructObject(parent, "MemoryType") {}
+        MemoryType(GenObject *parent, const char *name, const char *comment="")
+            : StructObject(parent, "MemoryType", name, comment) {}
+    };
+
+    class WriteBackType : public StructObject {
+     public:
+        //WriteBackType(GenObject *parent)
+        //    : StructObject(parent, "WriteBackType") {}
+        WriteBackType(GenObject *parent, const char *name, const char *comment="")
+            : StructObject(parent, "WriteBackType", name, comment) {}
+    };
+
+    class IntRegsType : public StructObject {
+     public:
+        //IntRegsType(GenObject *parent)
+        //    : StructObject(parent, "IntRegsType") {}
+        IntRegsType(GenObject *parent, const char *name, const char *comment="")
+            : StructObject(parent, "IntRegsType", name, comment) {}
+    };
+
+    class CsrType : public StructObject {
+     public:
+        //CsrType(GenObject *parent)
+        //    : StructObject(parent, "CsrType") {}
+        CsrType(GenObject *parent, const char *name, const char *comment="")
+            : StructObject(parent, "CsrType", name, comment) {}
+    };
+
+    class DebugType : public StructObject {
+     public:
+        //DebugType(GenObject *parent)
+        //    : StructObject(parent, "DebugType") {}
+        DebugType(GenObject *parent, const char *name, const char *comment="")
+            : StructObject(parent, "DebugType", name, comment) {}
+    };
+
+    class BranchPredictorType : public StructObject {
+     public:
+        //BranchPredictorType(GenObject *parent)
+        //    : StructObject(parent, "BranchPredictorType") {}
+        BranchPredictorType(GenObject *parent, const char *name, const char *comment="")
+            : StructObject(parent, "BranchPredictorType", name, comment) {}
+    };
+
+    class PipelineType : public StructObject {
+     public:
+        PipelineType(GenObject *parent, const char *name, const char *comment="")
+            : StructObject(parent, "PipelineType", name, comment),
+            f(this, "f", "Fetch instruction stage"),
+            d(this, "d", "Decode instruction stage"),
+            e(this, "e", "Execute instruction"),
+            m(this, "m", "Memory load/store"),
+            w(this, "w", "Write back registers value") {
+        }
+     public:
+        FetchType f;
+        InstructionDecodeType d;
+        ExecuteType e;
+        MemoryType m;
+        WriteBackType w;
+    };
+
  protected:
     DefParam hartid;
     DefParam fpu_ena;
@@ -91,6 +206,16 @@ class Processor : public ModuleObject {
     OutPort o_data_flush_address;
     OutPort o_data_flush_valid;
     InPort i_data_flush_end;
+
+    /*FetchType structDefFetchType;
+    InstructionDecodeType structDefInstructionDecodeType;
+    ExecuteType structDefExecuteType;
+    MemoryType structDefMemoryType;
+    WriteBackType structDefWriteBackType;
+    PipelineType structDefPipelineType;*/
+
+    CombProcess comb;
+    PipelineType w;
 };
 
 class proc : public FileObject {

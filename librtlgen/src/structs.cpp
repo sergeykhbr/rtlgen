@@ -16,12 +16,22 @@
 
 #include "structs.h"
 #include "utils.h"
+#include <list>
 
 namespace sysvc {
 
 StructObject::StructObject(GenObject *parent,
-                           const char *name)
-    : GenObject(parent, ID_STRUCT, name) {
+                           const char *type)
+    : GenObject(parent, ID_STRUCT_DEF, type) {
+    type_ = std::string(type);
+}
+
+StructObject::StructObject(GenObject *parent,
+                           const char *type,
+                           const char *name,
+                           const char *comment)
+    : GenObject(parent, ID_STRUCT_INST, name, comment) {
+    type_ = std::string(type);
 }
 
 std::string StructObject::generate(EGenerateType v) {
@@ -38,16 +48,14 @@ std::string StructObject::generate(EGenerateType v) {
 
 std::string StructObject::generate_sysc() {
     std::string ret = "";
-    ret += "struct " + getName() + " {\n";
-    for (auto &p: entries_) {
-        ret += "    " + p->getName() + " = ";
-        ret += static_cast<I32D *>(p)->generate(SYSC_ALL);
-        if (&p != &entries_.back()) {
-            ret += ",";
+    if (getId() == ID_STRUCT_DEF) {
+        ret += "    struct " + getType(SYSC_ALL) + " {\n";
+        for (auto &p: entries_) {
+            ret += "        " + p->getType(SYSC_ALL) + " " + p->getName() + ";\n";
         }
+        ret += "    };\n";
         ret += "\n";
     }
-    ret += "};\n";
     return ret;
 }
 

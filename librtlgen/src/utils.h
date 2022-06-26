@@ -22,10 +22,16 @@
 
 namespace sysvc {
 
-#define SHOW_ERROR(x) printf("error: %s, line %d " x "\n", __FILE__, __LINE__)
+
+void SCV_printf(const char *fmt, ...);
 
 /** Format output to string. */
 int RISCV_sprintf(char *s, size_t len, const char *fmt, ...);
+
+#define SHOW_ERROR(fmt, ...) \
+    SCV_printf("%s:%d " fmt, \
+               __FILE__, __LINE__, __VA_ARGS__)
+
 
 #ifdef _WIN32
     #define RV_PRI64 "I64"

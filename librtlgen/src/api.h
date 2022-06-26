@@ -28,6 +28,7 @@
 #include "ports.h"
 #include "comments.h"
 #include "funcs.h"
+#include "proc.h"
 #include "logic.h"
 #include "operations.h"
 #include "enums.h"

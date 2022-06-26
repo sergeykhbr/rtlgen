@@ -113,6 +113,16 @@ std::string ModuleObject::generate_sysc_h() {
     out += "\n";
     out += " private:\n";
 
+    // struct definition
+    for (auto &p: entries_) {
+        if (p->getId() != ID_STRUCT_DEF) {
+            continue;
+        }
+        out += p->generate(SYSC_ALL);
+    }
+    out += "\n";
+
+
     // Sub-module list
     for (auto &p: entries_) {
         if (p->getId() != ID_MINSTANCE) {
@@ -126,7 +136,7 @@ std::string ModuleObject::generate_sysc_h() {
     // Signals list
     text = "";
     for (auto &p: entries_) {
-        if (p->getId() != ID_SIGNAL) {
+        if (p->getId() != ID_SIGNAL && p->getId() != ID_STRUCT_INST) {
             if (p->getId() == ID_COMMENT) {
                 text = p->generate(SYSC_ALL);
             } else {

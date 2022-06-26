@@ -130,6 +130,15 @@ void SCV_write_file(const char *fname, const char *buf, size_t sz) {
     }
 }
 
+void SCV_printf(const char *fmt, ...) {
+    int ret = 0;
+    va_list arg;
+    va_start(arg, fmt);
+    printf(fmt, arg);
+    va_end(arg);
+}
+
+
 int RISCV_sprintf(char *s, size_t len, const char *fmt, ...) {
     int ret;
     va_list arg;

@@ -80,7 +80,7 @@ size_t GenValue::parse(const char *val, size_t pos,
     }
 
     if (val[pos] != '(') {
-        SHOW_ERROR();
+        SHOW_ERROR("%s", "wrong parse format");
         return pos;
     }
     pos++;
@@ -94,13 +94,13 @@ size_t GenValue::parse(const char *val, size_t pos,
         std::string vhdl1, vhdl2;
         pos = parse(val, pos, arg1, sysc1, sv1, sv_pkg1, vhdl1);
         if (val[pos] != ',') {
-            SHOW_ERROR();
+            SHOW_ERROR("%s", "wrong parse format");
         } else {
             pos++;
         }
         pos = parse(val, pos, arg2, sysc2, sv2, sv_pkg2, vhdl2);
         if (val[pos] != ')') {
-            SHOW_ERROR();
+            SHOW_ERROR("%s", "wrong parse format");
         } else {
             pos++;
         }
@@ -127,7 +127,7 @@ size_t GenValue::parse(const char *val, size_t pos,
             sv_pkg = "(" + sv_pkg1 + " * " + sv_pkg2 + ")";
         }
     } else {
-        SHOW_ERROR();
+        SHOW_ERROR("%s", "wrong parse format");
     }
     return pos;
 }
