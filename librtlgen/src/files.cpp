@@ -203,6 +203,24 @@ void FileObject::generate_sysv() {
 
     // source file if any module defined in this file
     if (is_module) {
+        out = "";
+        filename = getFullPath();
+        filename = filename + ".sv";
+
+        out += CommentLicense().generate(SV_ALL);
+        out += 
+            "\n"
+            "`timescale 1ns/10ps\n"
+            "\n";
+
+        // module definition
+        for (auto &p: entries_) {
+            if (p->getId() == ID_MODULE) {
+                is_module = true;
+            }
+            out += p->generate(SV_MOD);
+        }
+        SCV_write_file(filename.c_str(), out.c_str(), out.size());
     }
 }
 

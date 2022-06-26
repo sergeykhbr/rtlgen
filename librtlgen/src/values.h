@@ -32,21 +32,14 @@ class GenValue : public GenObject {
         return sysc_.c_str()[0] >= '0' && sysc_.c_str()[0] <= '9';
     }
     virtual uint64_t getValue() { return val_; }
-    virtual std::string generate(EGenerateType v) override {
-        if (v == SYSC_ALL || v == SYSC_H || v == SYSC_CPP) {
-            return sysc_;
-        } else if (v == SV_ALL || v == SV_PKG || v == SV_MOD) {
-            return sysv_;
-        } else {
-            return vhdl_;
-        }
-    }
+    virtual std::string getValue(EGenerateType) override;
 
  protected:
     virtual size_t parse(const char *ops, size_t pos,
                         uint64_t &num,
                         std::string &sysc,
-                        std::string &sysv,
+                        std::string &sv,
+                        std::string &sv_pkg,    // package name include
                         std::string &vhdl);
 
  protected:
@@ -54,7 +47,8 @@ class GenValue : public GenObject {
 
     std::string type_;
     std::string sysc_;  // systemc representation
-    std::string sysv_;  // system verilog
+    std::string sv_;    // system verilog
+    std::string sv_pkg_;// system verilog with the package name
     std::string vhdl_;  // vhdl
 };
 

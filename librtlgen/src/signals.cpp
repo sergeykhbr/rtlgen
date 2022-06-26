@@ -30,7 +30,7 @@ std::string Signal::getType(EGenerateType v) {
     if (v == SYSC_ALL || v == SYSC_H || v == SYSC_CPP) {
         out += "sc_signal<" + wire_->getType(v) + ">";
     } else if (v == SV_ALL || v == SV_PKG || v == SV_MOD) {
-        out += "logic " + wire_->getType(v);
+        out += wire_->getType(v);
     } else {
     }
     return out;

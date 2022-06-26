@@ -29,6 +29,7 @@ namespace sysvc {
 
 struct CfgParameterInfo {
     std::string path;
+    std::string file;
     uint64_t value;
 };
 
@@ -36,9 +37,13 @@ static std::map<std::string, CfgParameterInfo> cfgParamters_;
 static std::list<GenObject *> modules_;
 AccessListener *accessListener_ = 0;
 
-void SCV_set_cfg_parameter(std::string &path, const char *name, uint64_t v) {
+void SCV_set_cfg_parameter(std::string &path,
+                           std::string &file,
+                           const char *name,
+                           uint64_t v) {
     CfgParameterInfo cfg;
     cfg.path = path;
+    cfg.file = file;
     cfg.value = v;
     cfgParamters_[std::string(name)] = cfg;
 }
@@ -49,6 +54,11 @@ int SCV_is_cfg_parameter(std::string &name) {
         return 0;
     }
     return 1;
+}
+
+std::string SCV_get_cfg_file(std::string &name) {
+    CfgParameterInfo &info = cfgParamters_[name];
+    return info.file;
 }
 
 uint64_t SCV_get_cfg_parameter(std::string &name) {

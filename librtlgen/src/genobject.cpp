@@ -37,6 +37,16 @@ std::string GenObject::getFullPath() {
     return ret;
 }
 
+std::string GenObject::getFile() {
+    std::string ret = "";
+    if (getId() == ID_FILE) {
+        return getName();
+    } else if (parent_) {
+        return parent_->getFile();
+    }
+    return ret;
+}
+
 void GenObject::add_entry(GenObject *p) {
     entries_.push_back(p);
 }

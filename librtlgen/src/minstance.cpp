@@ -41,7 +41,7 @@ std::string MInstanceObject::generate(EGenerateType v) {
     std::string ret = "";
     if (v == SYSC_ALL || v == SYSC_CPP || v == SYSC_H) {
         return generate_sysc();
-    } else if (v == SYSC_ALL || v == SYSC_CPP || v == SYSC_H) {
+    } else if (v == SV_ALL || v == SV_PKG || v == SV_MOD) {
         return generate_sv();
     } else {
         return generate_vhdl();
@@ -89,6 +89,62 @@ std::string MInstanceObject::generate_sysc() {
 
 std::string MInstanceObject::generate_sv() {
     std::string ret = "";
+    ModuleObject *mod = static_cast<ModuleObject *>(owner_);
+    std::list<GenObject *> paramlist;
+    std::list<GenObject *> iolist;
+    int cnt;
+
+    ret += getType(SV_ALL);
+
+    // Generic parameter list
+    cnt = 0;
+    mod->getParamList(paramlist);
+    if (mod->isAsyncReset() || paramlist.size()) {
+        ret += " #(\n";
+        if (mod->isAsyncReset()) {
+            ret += "    .async_reset(async_reset)";
+            if (paramlist.size()) {
+                ret += ",";
+            }
+            ret += "\n";
+        }
+        for (auto &p : paramlist) {
+            ret += "    ." + p->getName() + "(";
+            if (param_.find(p->getName()) == param_.end()) {
+                SHOW_ERROR("param not connected");
+            } else {
+                ret += p->getName();
+            }
+            ret += ")";
+            if (++cnt < paramlist.size()) {
+                ret += ",";
+            }
+            ret += "\n";
+        }
+    }
+    // Instance name
+    ret += ") " + getName() + "\n";
+    ret += "(\n";
+
+    // IO port assignments
+    cnt = 0;
+    mod->getIoList(iolist);
+    for (auto &io: iolist) {
+        ret += "    ." + io->getName() + "(";
+        if (io_.find(io->getName()) == io_.end()) {
+            SHOW_ERROR("io not connected");
+        } else {
+            GenObject *port = io_[io->getName()];
+            ret += port->getName();
+        }
+        ret += ")";
+        if (++cnt < iolist.size()) {
+            ret += ",";
+        }
+        ret += "\n";
+    }
+    ret += ");\n";
+    ret += "\n";
     return ret;
 }
 

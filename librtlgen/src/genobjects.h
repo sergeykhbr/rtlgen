@@ -62,6 +62,7 @@ class GenObject {
               const char *name, const char *comment="");
 
     virtual std::string getFullPath();
+    virtual std::string getFile();
     virtual void add_entry(GenObject *p);
 
     unsigned getId() { return id_; }
@@ -69,6 +70,7 @@ class GenObject {
     std::string getName() { return name_; }
     std::string getComment() { return comment_; }
     virtual std::string getType(EGenerateType) = 0;
+    virtual std::string getValue(EGenerateType) { return std::string(""); }
 
     virtual std::string generate(EGenerateType) { return std::string(""); }
 

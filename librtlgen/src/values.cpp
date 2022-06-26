@@ -24,7 +24,7 @@ namespace sysvc {
 GenValue::GenValue(const char *val, const char *name,
                     GenObject *parent, const char *comment)
     : GenObject(parent, (name[0] ? ID_VALUE : ID_CONST), name, comment) {
-    parse(val, 0, val_, sysc_, sysv_, vhdl_);
+    parse(val, 0, val_, sysc_, sv_, sv_pkg_, vhdl_);
     if (val[0] && name[0] && parent) {
         //SCV_set_value(getName(), val_);
     }
@@ -33,7 +33,8 @@ GenValue::GenValue(const char *val, const char *name,
 size_t GenValue::parse(const char *val, size_t pos,
                         uint64_t &out,
                         std::string &sysc,
-                        std::string &sysv,
+                        std::string &sv,
+                        std::string &sv_pkg,
                         std::string &vhdl) {
     char buf[64] = "";
     size_t cnt = 0;
@@ -48,7 +49,8 @@ size_t GenValue::parse(const char *val, size_t pos,
     if (buf[0] == '\0') {
         out = 0;
         sysc = std::string("");
-        sysv = std::string("");
+        sv = std::string("");
+        sv_pkg = sv;
         vhdl = std::string("");
         return pos;
     }
@@ -56,20 +58,23 @@ size_t GenValue::parse(const char *val, size_t pos,
         int base = buf[1] == 'x' ? 16: 10;
         out = strtoll(buf, 0, base);
         sysc = std::string(buf);
-        sysv = std::string(buf);        // !! need to check
+        sv = std::string(buf);        // !! need to check
+        sv_pkg = sv;
         return pos;
     }
     if (strcmp(buf, "true") == 0 || strcmp(buf, "false") == 0) {
         out = buf[0] == 't' ? 1 : 0;
         sysc = std::string(buf);
-        sysv = buf[0] == 't' ? "1'b1" : "1'b0";
+        sv = buf[0] == 't' ? "1'b1" : "1'b0";
+        sv_pkg = sv;
         return pos;
     }
     m = std::string(buf);
     if (SCV_is_cfg_parameter(m)) {
         out = SCV_get_cfg_parameter(m);
         sysc = m;
-        sysv = m;
+        sv = m;
+        sv_pkg = SCV_get_cfg_file(m) + "_pkg::" + m;
         vhdl = m;
         return pos;
     }
@@ -84,15 +89,16 @@ size_t GenValue::parse(const char *val, size_t pos,
         std::string op = m;
         uint64_t arg1, arg2;
         std::string sysc1, sysc2;
-        std::string sysv1, sysv2;
+        std::string sv1, sv2;
+        std::string sv_pkg1, sv_pkg2;
         std::string vhdl1, vhdl2;
-        pos = parse(val, pos, arg1, sysc1, sysv1, vhdl1);
+        pos = parse(val, pos, arg1, sysc1, sv1, sv_pkg1, vhdl1);
         if (val[pos] != ',') {
             SHOW_ERROR();
         } else {
             pos++;
         }
-        pos = parse(val, pos, arg2, sysc2, sysv2, vhdl2);
+        pos = parse(val, pos, arg2, sysc2, sv2, sv_pkg2, vhdl2);
         if (val[pos] != ')') {
             SHOW_ERROR();
         } else {
@@ -102,25 +108,42 @@ size_t GenValue::parse(const char *val, size_t pos,
         if (op == "POW2") {
             out = arg1 << arg2;
             sysc = "(" + sysc1 + " << " + sysc2 + ")";
-            sysv = "(2**" + sysv2 + ")";
+            sv = "(2**" + sv2 + ")";
+            sv_pkg = "(2**" + sv2 + ")";
         } else if (op == "ADD") {
             out = arg1 + arg2;
             sysc = "(" + sysc1 + " + " + sysc2 + ")";
-            sysv = "(" + sysv1 + " + " + sysv2 + ")";
+            sv = "(" + sv1 + " + " + sv2 + ")";
+            sv_pkg = "(" + sv_pkg1 + " + " + sv_pkg2 + ")";
         } else if (op == "SUB") {
             out = arg1 - arg2;
             sysc = "(" + sysc1 + " - " + sysc2 + ")";
-            sysv = "(" + sysv1 + " - " + sysv2 + ")";
+            sv = "(" + sv1 + " - " + sv2 + ")";
+            sv_pkg = "(" + sv_pkg1 + " - " + sv_pkg2 + ")";
         } else if (op == "MUL") {
             out = arg1 * arg2;
             sysc = "(" + sysc1 + " * " + sysc2 + ")";
-            sysv = "(" + sysv1 + " * " + sysv2 + ")";
+            sv = "(" + sv1 + " * " + sv2 + ")";
+            sv_pkg = "(" + sv_pkg1 + " * " + sv_pkg2 + ")";
         }
     } else {
         SHOW_ERROR();
     }
     return pos;
 }
+
+std::string GenValue::getValue(EGenerateType v) {
+    if (v == SYSC_ALL || v == SYSC_H || v == SYSC_CPP) {
+        return sysc_;
+    } else if (v == SV_ALL || v == SV_MOD) {
+        return sv_;
+    } else if (v == SV_PKG) {
+        return sv_pkg_;
+    } else {
+        return vhdl_;
+    }
+}
+
 
 
 std::string BOOL::getType(EGenerateType v) {

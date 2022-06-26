@@ -31,7 +31,10 @@ void EnumObject::add_value(const char *name) {
     new I32D(tstr, name, this);
 
     std::string path = getFullPath();
-    SCV_set_cfg_parameter(path, name, total);
+    SCV_set_cfg_parameter(path,
+                          getFile(),
+                          name,
+                          total);
 }
 
 std::string EnumObject::generate(EGenerateType v) {
@@ -51,7 +54,7 @@ std::string EnumObject::generate_sysc() {
     ret += "enum " + getName() + " {\n";
     for (auto &p: entries_) {
         ret += "    " + p->getName() + " = ";
-        ret += static_cast<I32D *>(p)->generate(SYSC_ALL);
+        ret += static_cast<I32D *>(p)->getValue(SYSC_ALL);
         if (&p != &entries_.back()) {
             ret += ",";
         }
@@ -65,7 +68,7 @@ std::string EnumObject::generate_sysv() {
     std::string ret = "";
     for (auto &p: entries_) {
         ret += "localparam int " + p->getName() + " = ";
-        ret += static_cast<I32D *>(p)->generate(SV_ALL);
+        ret += static_cast<I32D *>(p)->getValue(SV_ALL);
         ret += ";\n";
     }
     return ret;

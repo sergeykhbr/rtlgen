@@ -41,7 +41,7 @@ std::string ZEROS::generate(EGenerateType v) {
 
 std::string EQ::generate(EGenerateType v) {
     std::string ret = "";
-    ret += a_->getName() + " = " + b_->generate(v) + ";";
+    ret += a_->getName() + " = " + b_->getValue(v) + ";";
     return ret;
 }
 
@@ -49,11 +49,11 @@ std::string SETBIT::generate(EGenerateType v) {
     std::string ret = "";
     ret += a_->getName();
     if (v == SYSC_ALL || v == SYSC_H || v == SYSC_CPP) {
-         ret += "[" + b_->generate(v) + "] = 1;";
+         ret += "[" + b_->getValue(v) + "] = 1;";
     } else if (v == SV_ALL || v == SV_PKG || v == SV_MOD) {
-        ret += "[" + b_->generate(v) + "] = 1'b1;";
+        ret += "[" + b_->getValue(v) + "] = 1'b1;";
     } else {
-        ret += "(" + b_->generate(v) + ") := '1';";
+        ret += "(" + b_->getValue(v) + ") := '1';";
     }
     return ret;
 }

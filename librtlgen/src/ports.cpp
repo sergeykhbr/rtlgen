@@ -42,7 +42,7 @@ std::string OutPort::getType(EGenerateType v) {
     if (v == SYSC_ALL || v == SYSC_H || v == SYSC_CPP) {
         out += "sc_out<" + wire_->getType(v) + ">";
     } else if (v == SV_ALL || v == SV_PKG || v == SV_MOD) {
-        out += "output logic " + wire_->getType(v);
+        out += "output " + wire_->getType(v);
     } else {
     }
     return out;

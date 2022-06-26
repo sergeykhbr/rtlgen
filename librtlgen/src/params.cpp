@@ -28,7 +28,10 @@ Param::Param(GenObject *parent,
     value_(value) {
 
     std::string path = getFullPath();
-    SCV_set_cfg_parameter(path, getName().c_str(), value_->getValue());
+    SCV_set_cfg_parameter(path,
+                          getFile(),
+                          getName().c_str(),
+                          value_->getValue());
 }
 
 std::string Param::generate(EGenerateType v) {
@@ -51,7 +54,7 @@ std::string Param::generate_sysc() {
     ret += "static const ";
     ret += value_->getType(SYSC_ALL) + " ";
     ret += getName() + " = ";
-    ret += value_->generate(SYSC_ALL) + ";";
+    ret += value_->getValue(SYSC_ALL) + ";";
 
     // One line comment
     if (getComment().size()) {
@@ -70,7 +73,7 @@ std::string Param::generate_sysv() {
     ret += "localparam ";
     ret += value_->getType(SV_ALL) + " ";
     ret += getName() + " = ";
-    ret += value_->generate(SV_ALL) + ";";
+    ret += value_->getValue(SV_ALL) + ";";
 
     // One line comment
     if (getComment().size()) {

@@ -69,21 +69,21 @@ std::string Logic::getType(EGenerateType v) {
         if (width_->getValue() <= 1) {
             ret += "bool";
         } else if (width_->getValue() > 64) {
-            ret += "sc_biguint<" + width_->generate(v) + ">";
+            ret += "sc_biguint<" + width_->getValue(v) + ">";
         } else {
-            ret += "sc_uint<" + width_->generate(v) + ">";
+            ret += "sc_uint<" + width_->getValue(v) + ">";
         }
     } else if (v == SV_ALL || v == SV_PKG || v == SV_MOD) {
-        ret = std::string("logic ");
+        ret = std::string("logic");
         if (width_->getValue() > 1) {
-            ret += "[";
+            ret += " [";
             if (width_->isNumber()) {
                 char tstr[256];
                 RISCV_sprintf(tstr, sizeof(tstr), "%d",
                             static_cast<int>(width_->getValue()) - 1);
                 ret += tstr;
             } else {
-                ret += width_->generate(v) + "-1";
+                ret += width_->getValue(v) + "-1";
             }
             ret += ":0]";
         }
@@ -91,10 +91,10 @@ std::string Logic::getType(EGenerateType v) {
     return ret;
 }
 
-std::string Logic::generate(EGenerateType v) {
+std::string Logic::getValue(EGenerateType v) {
     std::string ret = "";
     if (v == SYSC_ALL || v == SYSC_H || v == SYSC_CPP) {
-        ret += GenValue::generate(v);
+        ret += GenValue::getValue(v);
     } else if (v == SV_ALL || v == SV_PKG || v == SV_MOD) {
         if (isNumber()) {
             char fmt[64] = "%d'h%";
@@ -104,7 +104,7 @@ std::string Logic::generate(EGenerateType v) {
             RISCV_sprintf(tstr, sizeof(tstr), fmt, w, getValue());
             ret += tstr;
         } else {
-            ret += GenValue::generate(v);
+            ret += GenValue::getValue(v);
         }
     }
     return ret;

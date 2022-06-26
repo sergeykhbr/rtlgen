@@ -51,7 +51,8 @@ class Logic : public GenValue {
     virtual void clearbit(const char *idx);
 
     virtual std::string getType(EGenerateType);
-    virtual std::string generate(EGenerateType v) override;
+    virtual uint64_t getValue() override { return GenValue::getValue(); }
+    virtual std::string getValue(EGenerateType v) override;
  protected:
     GenValue *width_;
 };

@@ -38,8 +38,10 @@ class AccessListener {
     virtual void notifyAccess(std::string &file) = 0;
 };
 
-void SCV_set_cfg_parameter(std::string &path, const char *name, uint64_t v);
+void SCV_set_cfg_parameter(std::string &path, std::string &file,
+                           const char *name, uint64_t v);
 int SCV_is_cfg_parameter(std::string &name);
+std::string SCV_get_cfg_file(std::string &name);
 uint64_t SCV_get_cfg_parameter(std::string &name);
 
 void SCV_register_module(GenObject *m);
