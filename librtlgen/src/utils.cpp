@@ -126,7 +126,7 @@ void SCV_write_file(const char *fname, const char *buf, size_t sz) {
         fwrite(buf, 1, sz, f);
         fclose(f);
     } else {
-        SHOW_ERROR();
+        SHOW_ERROR("cannot open file %s", fname);
     }
 }
 

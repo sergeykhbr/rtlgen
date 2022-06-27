@@ -68,10 +68,11 @@ std::string ModuleObject::generate_sv_mod() {
             port_cnt++;
         }
     }
+    text = "";
     for (auto &p: entries_) {
         if (p->getId() != ID_INPUT && p->getId() != ID_OUTPUT) {
             if (p->getId() == ID_COMMENT) {
-                text = "    " + p->generate(SV_ALL);
+                text += "    " + p->generate(SV_ALL);
             } else {
                 text = "";
             }

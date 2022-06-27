@@ -17,19 +17,40 @@
 #pragma once
 
 #include <api.h>
-#include "proc.h"
-#include "ic_csr_m2_s1.h"
+#include "../river_cfg.h"
 
-class core_folder : public FolderObject {
+using namespace sysvc;
+
+class ic_csr_m2_s1 : public ModuleObject {
  public:
-    core_folder(GenObject *parent) :
-        FolderObject(parent, "core"),
-        ic_(this),
-        proc_(this) {}
+    ic_csr_m2_s1(GenObject *parent);
+
+    class CombProcess : public ProcObject {
+     public:
+        CombProcess(GenObject *parent)
+            : ProcObject(parent, "comb") {}
+     protected:
+    };
+
 
  protected:
-    // subfolders:
-    // files
-    ic_csr_m2_s1_file ic_;
-    proc proc_;
+    InPort i_clk;
+    InPort i_nrst;
+    TextLine _Master0_;
+    InPort i_m0_req_valid;
+    OutPort o_m0_req_ready;
+
+    CombProcess comb;
+
+    Reg midx;
+    Reg acquired;
 };
+
+class ic_csr_m2_s1_file : public FileObject {
+ public:
+    ic_csr_m2_s1_file(GenObject *parent);
+
+ private:
+    ic_csr_m2_s1 ic_;
+};
+

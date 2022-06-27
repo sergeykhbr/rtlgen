@@ -21,6 +21,7 @@
 #include "utils.h"
 #include "minstance.h"
 #include "files.h"
+#include "structs.h"
 
 namespace sysvc {
 
@@ -121,6 +122,25 @@ std::string ModuleObject::generate_sysc_h() {
         out += p->generate(SYSC_ALL);
     }
     out += "\n";
+    // Register structure definition
+    if (isRegProcess()) {
+        out += "    struct " + getName() + "_registers {\n";
+        for (auto &p: entries_) {
+            if (p->getId() != ID_REG) {
+                continue;
+            }
+            ln = "        " + p->getType(SYSC_ALL) + " " + p->getName() + ";";
+            if (p->getComment().size()) {
+                while (ln.size() < 60) {
+                    ln += " ";
+                }
+                ln += "// " + p->getComment();
+            }
+            out += ln + "\n";
+        }
+        out += "    } v, r;\n";
+        out += "\n";
+    }
 
 
     // Sub-module list
@@ -138,14 +158,14 @@ std::string ModuleObject::generate_sysc_h() {
     for (auto &p: entries_) {
         if (p->getId() != ID_SIGNAL && p->getId() != ID_STRUCT_INST) {
             if (p->getId() == ID_COMMENT) {
-                text = p->generate(SYSC_ALL);
+                text += "    " + p->generate(SYSC_ALL);
             } else {
                 text = "";
             }
             continue;
         }
         if (text.size()) {
-            out += "    " + text;
+            out += text;
             text = "";
         }
         out += "    " + static_cast<Signal *>(p)->getType(SYSC_ALL);
@@ -249,7 +269,6 @@ std::string ModuleObject::generate_sysc_cpp() {
     }
     out += "    }\n";
     out += "\n";
-    // TODO registers:
     // Sub modules:
     for (auto &p: entries_) {
         if (p->getId() != ID_MINSTANCE) {
@@ -258,10 +277,31 @@ std::string ModuleObject::generate_sysc_cpp() {
         out += "    " + p->getName() + "->generateVCD(i_vcd, o_vcd);\n";
     }
     out += "}\n";
-
-
-
     out += "\n";
+
+
+    // Process
+    for (auto &p: entries_) {
+        if (p->getId() != ID_PROCESS) {
+            continue;
+        }
+        out += "void " + getName() + "::" + p->getName() + "() {\n";
+        out += p->generate(SYSC_CPP);
+        out += "}\n";
+        out += "\n";
+    }
+
+    if (isRegProcess()) {
+        out += "void " + getName() + "::registers() {\n";
+        out += "    if (async_reset_ && i_nrst.read() == 0) {\n";
+        out += "        " + getName() + "_r_reset(r);\n";
+        out += "    } else {\n";
+        out += "        r = v;\n";
+        out += "    }\n";
+        out += "}\n";
+        out += "\n";
+    }
+
     return out;
 }
 

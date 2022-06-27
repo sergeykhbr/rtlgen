@@ -82,17 +82,56 @@ Processor::Processor(GenObject *parent) :
     o_data_flush_address(this, "o_data_flush_address", new Logic("CFG_CPU_ADDR_BITS"), "Address of instruction to remove from D$"),
     o_data_flush_valid(this, "o_data_flush_valid", new Logic(), "Remove address from D$ is valid"),
     i_data_flush_end(this, "i_data_flush_end", new Logic()),
-    // Structures declaration
-    /*structDefFetchType(this),
-    structDefInstructionDecodeType(this),
-    structDefExecuteType(this),
-    structDefMemoryType(this),
-    structDefWriteBackType(this),
-    structDefPipelineType(this),*/
     // Signal/struct instances
     comb(this),
-    w(this, "w", "5-stages CPU pipeline")
+    w(this, "w", "5-stages CPU pipeline"),
+    ireg(this, "ireg"),
+    csr(this, "csr"),
+    dbg(this, "dbg"),
+    bp(this, "bp"),
+    // Internal signal
+    _CsrBridge0_(this),
+    _CsrBridge1_(this, "csr bridge to executor unit"),
+    iccsr_m0_req_ready(this, "iccsr_m0_req_ready", new Logic()),
+    iccsr_m0_resp_valid(this, "iccsr_m0_resp_valid", new Logic()),
+    iccsr_m0_resp_data(this, "iccsr_m0_resp_data", new Logic("RISCV_ARCH")),
+    iccsr_m0_resp_exception(this, "iccsr_m0_resp_exception", new Logic()),
+    _CsrBridge2_(this, "csr bridge to debug unit"),
+    iccsr_m1_req_ready(this, "iccsr_m1_req_ready", new Logic()),
+    iccsr_m1_resp_valid(this, "iccsr_m1_resp_valid", new Logic()),
+    iccsr_m1_resp_data(this, "iccsr_m1_resp_data", new Logic("RISCV_ARCH")),
+    iccsr_m1_resp_exception(this, "iccsr_m1_resp_exception", new Logic()),
+    _CsrBridge3_(this, "csr bridge to CSR module"),
+    iccsr_s0_req_valid(this, "iccsr_s0_req_valid", new Logic()),
+    iccsr_s0_req_type(this, "iccsr_s0_req_type", new Logic("CsrReq_TotalBits")),
+    iccsr_s0_req_addr(this, "iccsr_s0_req_addr", new Logic("12")),
+    iccsr_s0_req_data(this, "iccsr_s0_req_data", new Logic("RISCV_ARCH")),
+    iccsr_s0_resp_ready(this, "iccsr_s0_resp_ready", new Logic()),
+    iccsr_s0_resp_exception(this, "iccsr_s0_resp_exception", new Logic()),
+    _CsrBridge4_(this),
+    w_flush_pipeline(this, "w_flush_pipeline", new Logic()),
+    w_mem_resp_error(this, "w_mem_resp_error", new Logic()),
+    w_writeback_ready(this, "w_writeback_ready", new Logic()),
+    w_reg_wena(this, "w_reg_wena", new Logic()),
+    wb_reg_waddr(this, "wb_reg_waddr", new Logic("6")),
+    wb_reg_wdata(this, "wb_reg_wdata", new Logic("RISCV_ARCH")),
+    wb_reg_wtag(this, "wb_reg_wtag", new Logic("CFG_REG_TAG_WIDTH")),
+    w_reg_inorder(this, "w_reg_inorder", new Logic()),
+    w_reg_ignored(this, "w_reg_ignored", new Logic())
 {
+    // Create and connet Sub-modules:
+    ModuleObject *p = static_cast<ModuleObject *>(SCV_get_module("ic_csr_m2_s1"));
+    if (p) {
+        iccsr0 = p->createInstance(this, "iccsr0");
+        iccsr0->connect_io("i_clk", &i_clk);
+        iccsr0->connect_io("i_nrst", &i_nrst);
+        iccsr0->connect_io("i_m0_req_valid", &w.e.csr_req_valid);
+        iccsr0->connect_io("o_m0_req_ready", &iccsr_m0_req_ready);
+    } else {
+        SHOW_ERROR("%s", "ic_csr_m2_s1 not found");
+        iccsr0 = 0;
+    }
+
 }
 
 proc::proc(GenObject *parent) :

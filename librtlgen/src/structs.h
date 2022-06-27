@@ -19,27 +19,43 @@
 #include "genobjects.h"
 #include "values.h"
 #include <iostream>
+#include <list>
 
 namespace sysvc {
 
-class StructObject : public GenObject {
+class StructDefObject : public GenObject {
  public:
-    StructObject(GenObject *parent,
-                 const char *type);
+    // Declare structure type and create on instance
+    StructDefObject(GenObject *parent,
+                    const char *type,
+                    const char *name,
+                    const char *comment="");
 
-    StructObject(GenObject *parent,
-                 const char *type,
-                 const char *name,
-                 const char *comment="");
-
-    virtual std::string getType(EGenerateType v) { return type_; }
+    virtual std::string getType(EGenerateType) { return getName(); }
     virtual std::string generate(EGenerateType v);
+
+    virtual void add_instance(GenObject *parent, const char *name);
  protected:
     std::string generate_sysc();
     std::string generate_sysv();
     std::string generate_vhdl();
  protected:
-    std::string type_;
+    std::list<std::string> instlist_;   // instance list
 };
+
+class StructInstObject : public GenObject {
+ public:
+    StructInstObject(GenObject *parent,
+                     StructDefObject *structdef,
+                     const char *name,
+                     const char *comment="")
+    : GenObject(parent, ID_STRUCT_INST, name, comment), structdef_(structdef) {}
+
+    virtual std::string getType(EGenerateType v) { return structdef_->getType(v); }
+    StructDefObject *getStructDef() { return structdef_; }
+ protected:
+    StructDefObject *structdef_;
+};
+
 
 }  // namespace sysvc
