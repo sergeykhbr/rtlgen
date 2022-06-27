@@ -31,7 +31,7 @@ class StructDefObject : public GenObject {
                     const char *name,
                     const char *comment="");
 
-    virtual std::string getType(EGenerateType) { return getName(); }
+    virtual std::string getType(EGenerateType) { return type_; }
     virtual std::string generate(EGenerateType v);
 
     virtual void add_instance(GenObject *parent, const char *name);
@@ -40,6 +40,7 @@ class StructDefObject : public GenObject {
     std::string generate_sysv();
     std::string generate_vhdl();
  protected:
+    std::string type_;
     std::list<std::string> instlist_;   // instance list
 };
 

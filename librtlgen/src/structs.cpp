@@ -23,7 +23,8 @@ StructDefObject::StructDefObject(GenObject *parent,
                                  const char *type,
                                  const char *name,
                                  const char *comment)
-    : GenObject(parent, ID_STRUCT_DEF, type, comment) {
+    : GenObject(parent, ID_STRUCT_DEF, name, comment) {
+    type_ = std::string(type);
     add_instance(parent, name);
 }
 

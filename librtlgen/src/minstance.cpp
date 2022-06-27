@@ -51,6 +51,7 @@ std::string MInstanceObject::generate(EGenerateType v) {
 
 std::string MInstanceObject::generate_sysc() {
     std::string ret = "";
+    std::string ln;
     ret += "    " + getName() + " = new " + getType(SYSC_ALL);
     ret += "(\"" + getName() + "\"";
     ModuleObject *mod = static_cast<ModuleObject *>(owner_);
@@ -80,7 +81,13 @@ std::string MInstanceObject::generate_sysc() {
             SHOW_ERROR("io not connected");
         } else {
             GenObject *port = io_[io->getName()];
-            ret += port->getName();
+            GenObject *pstruct = port->getParent();
+            ln = "";
+            while (pstruct->getId() == ID_STRUCT_DEF) {
+                ln = pstruct->getName() + "." + ln;
+                pstruct = pstruct->getParent();
+            }
+            ret += ln + port->getName();
         }
         ret += ");\n";
     }

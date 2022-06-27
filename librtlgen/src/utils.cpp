@@ -131,11 +131,16 @@ void SCV_write_file(const char *fname, const char *buf, size_t sz) {
 }
 
 void SCV_printf(const char *fmt, ...) {
-    int ret = 0;
+    char tstr[1024];
     va_list arg;
     va_start(arg, fmt);
-    printf(fmt, arg);
+#if defined(_WIN32) || defined(__CYGWIN__)
+    vsprintf_s(tstr, sizeof(tstr), fmt, arg);
+#else
+    vsprintf(tstr, fmt, arg);
+#endif
     va_end(arg);
+    printf("%s\n", tstr);
 }
 
 

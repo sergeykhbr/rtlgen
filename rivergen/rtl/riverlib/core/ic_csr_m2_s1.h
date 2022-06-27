@@ -39,6 +39,33 @@ class ic_csr_m2_s1 : public ModuleObject {
     TextLine _Master0_;
     InPort i_m0_req_valid;
     OutPort o_m0_req_ready;
+    InPort i_m0_req_type;
+    InPort i_m0_req_addr;
+    InPort i_m0_req_data;
+    OutPort o_m0_resp_valid;
+    InPort i_m0_resp_ready;
+    OutPort o_m0_resp_data;
+    OutPort o_m0_resp_exception;
+    TextLine _Master1_;
+    InPort i_m1_req_valid;
+    OutPort o_m1_req_ready;
+    InPort i_m1_req_type;
+    InPort i_m1_req_addr;
+    InPort i_m1_req_data;
+    OutPort o_m1_resp_valid;
+    InPort i_m1_resp_ready;
+    OutPort o_m1_resp_data;
+    OutPort o_m1_resp_exception;
+    TextLine _Slave0_;
+    OutPort o_s0_req_valid;
+    InPort i_s0_req_ready;
+    OutPort o_s0_req_type;
+    OutPort o_s0_req_addr;
+    OutPort o_s0_req_data;
+    InPort i_s0_resp_valid;
+    OutPort o_s0_resp_ready;
+    InPort i_s0_resp_data;
+    InPort i_s0_resp_exception;
 
     CombProcess comb;
 
