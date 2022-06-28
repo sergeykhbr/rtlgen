@@ -22,6 +22,7 @@
 #include "minstance.h"
 #include "files.h"
 #include "structs.h"
+#include "regs.h"
 
 namespace sysvc {
 
@@ -140,6 +141,18 @@ std::string ModuleObject::generate_sysc_h() {
         }
         out += "    } v, r;\n";
         out += "\n";
+        // Reset function
+        out += "    void " + getName() + "_r_reset(" + getName() + "_registers &iv) {\n";
+        for (auto &p: entries_) {
+            if (p->getId() != ID_REG) {
+                continue;
+            }
+            out += "        iv." + p->getName() + " = ";
+            out += static_cast<Reg *>(p)->getReset(SYSC_ALL);
+            out += ";\n";
+        }
+        out += "    }\n";
+        out += "\n";
     }
 
 
@@ -170,6 +183,18 @@ std::string ModuleObject::generate_sysc_h() {
         }
         out += "    " + static_cast<Signal *>(p)->getType(SYSC_ALL);
         out += " " + p->getName() + ";\n";
+    }
+    out += "\n";
+
+    // Generic parameter local storage:
+    if (isAsyncReset()) {
+        out += "    " + (new Logic())->getType(SYSC_ALL) + " async_reset_;\n";
+    }
+    for (auto &p: entries_) {
+        if (p->getId() != ID_DEF_PARAM) {
+            continue;
+        }
+        out += "    " + p->getType(SYSC_ALL) + " " + p->getName() + "_;\n";
     }
     
     out += 
@@ -222,12 +247,47 @@ std::string ModuleObject::generate_sysc_cpp() {
         out += " ";
     }
     out += "{\n";
+    out += "\n";
+    // Generic parameter local storage:
+    if (isAsyncReset()) {
+        out += "    async_reset_ = async_reset;\n";
+    }
+    for (auto &p: entries_) {
+        if (p->getId() != ID_DEF_PARAM) {
+            continue;
+        }
+        out += "    " + p->getName() + "_ = " + p->getName() + ";\n";
+    }
+
+    // Sub-module instantiation
     for (auto &p: entries_) {
         if (p->getId() != ID_MINSTANCE) {
             continue;
         }
         out += "\n";
         out += p->generate(SYSC_ALL);
+    }
+
+    // Process sensitivity list:
+    for (auto &p: entries_) {
+        if (p->getId() != ID_PROCESS) {
+            continue;
+        }
+        out += "\n";
+        out += "    SC_METHOD(" + p->getName() + ");\n";
+        for (auto &s: entries_) {
+            if (s->getId() == ID_INPUT && s->getName() != "i_clk") {
+                out += "    sensitive << " + s->getName() + ";\n";
+            } else if (s->getId() == ID_REG) {
+                out += "    sensitive << r." + s->getName() + ";\n";
+            }
+        }
+    }
+    if (isRegProcess()) {
+        out += "\n";
+        out += "    SC_METHOD(registers);\n";
+        out += "    sensitive << i_nrst;\n";
+        out += "    sensitive << i_clk.pos();\n";
     }
     out += "}\n";
 
@@ -267,6 +327,18 @@ std::string ModuleObject::generate_sysc_cpp() {
         }
         out += "        sc_trace(o_vcd, " + p->getName() + ", " + p->getName() + ".name());\n";
     }
+    // Add all registers to trace file:
+    if (isRegProcess()) {
+        out += "\n";
+        out += "        std::string pn(name());\n";
+        for (auto &p: entries_) {
+            if (p->getId() != ID_REG) {
+                continue;
+            }
+            out += "        sc_trace(o_vcd, r." + p->getName() + ", pn + \".r_" + p->getName() + "\");\n";
+        }
+    }
+
     out += "    }\n";
     out += "\n";
     // Sub modules:
@@ -281,14 +353,27 @@ std::string ModuleObject::generate_sysc_cpp() {
 
 
     // Process
+    int proccnt = 0;
     for (auto &p: entries_) {
         if (p->getId() != ID_PROCESS) {
             continue;
         }
         out += "void " + getName() + "::" + p->getName() + "() {\n";
+        // TODO process variables declaration
+
+        if (proccnt == 0 && isRegProcess()) {
+            out += "    v = r;\n";
+        }
         out += p->generate(SYSC_CPP);
+        // sync register reset 
+        if (proccnt == 0 && isRegProcess()) {
+            out += "    if (!async_reset_ && !i_nrst.read()) {\n";
+            out += "        " + getName() + "_r_reset(v);\n";
+            out += "    }\n";
+        }
         out += "}\n";
         out += "\n";
+        proccnt++;
     }
 
     if (isRegProcess()) {

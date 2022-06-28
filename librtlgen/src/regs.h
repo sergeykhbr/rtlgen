@@ -22,17 +22,22 @@
 
 namespace sysvc {
 
-class Reg : public GenObject {
+class Reg : public GenValueWrapper {
  public:
+    Reg(GenObject *parent,
+        const char *name,
+        Logic *wire,
+        Logic *reset,
+        const char *comment="");
     Reg(GenObject *parent,
         const char *name,
         Logic *wire,
         const char *comment="");
 
-    int getWidth() { return static_cast<int>(wire_->getValue()); }
-    virtual std::string getType(EGenerateType v);
+    virtual std::string getReset(EGenerateType v) { return reset_->getValue(v); }
+    virtual std::string getType(EGenerateType v) override;
  protected:
-    Logic *wire_;
+    Logic *reset_;
 };
 
 }  // namespace sysvc

@@ -24,8 +24,7 @@ Param::Param(GenObject *parent,
                          const char *name,
                          GenValue *value,
                          const char *comment)
-    : GenObject(parent, ID_PARAM, name, comment),
-    value_(value) {
+    : GenValueWrapper(parent, ID_PARAM, name, value, comment) {
 
     std::string path = getFullPath();
     SCV_set_cfg_parameter(path,

@@ -58,6 +58,13 @@ ic_csr_m2_s1::ic_csr_m2_s1(GenObject *parent) :
 {
 }
 
+void ic_csr_m2_s1::proc_comb() {
+    comb.add_entry(new IF(new AND2(new NOT(&acquired),
+                                   new OR2(&i_m0_req_valid, &i_m1_req_valid))));
+    comb.add_entry(new ZEROS(this, &acquired));
+
+}
+
 ic_csr_m2_s1_file::ic_csr_m2_s1_file(GenObject *parent) :
     FileObject(parent, "ic_csr_m2_s1"),
     ic_(this)

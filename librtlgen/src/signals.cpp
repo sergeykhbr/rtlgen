@@ -22,15 +22,15 @@ Signal::Signal(GenObject *parent,
                const char *name,
                Logic *wire,
                const char *comment)
-    : GenObject(parent, ID_SIGNAL, name, comment), wire_(wire) {
+    : GenValueWrapper(parent, ID_SIGNAL, name, wire, comment) {
 }
 
 std::string Signal::getType(EGenerateType v) {
     std::string out = "";
     if (v == SYSC_ALL || v == SYSC_H || v == SYSC_CPP) {
-        out += "sc_signal<" + wire_->getType(v) + ">";
+        out += "sc_signal<" + value_->getType(v) + ">";
     } else if (v == SV_ALL || v == SV_PKG || v == SV_MOD) {
-        out += wire_->getType(v);
+        out += value_->getType(v);
     } else {
     }
     return out;

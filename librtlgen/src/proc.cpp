@@ -38,13 +38,18 @@ std::string ProcObject::generate(EGenerateType v) {
 
 std::string ProcObject::generate_sysc() {
     std::string ret = "";
+    for (auto &e: entries_) {
+        if (e->getId() != ID_OPERATION) {
+            continue;
+        }
+        ret += "    " + e->generate(SYSC_CPP) + "\n";
+    }
     return ret;
 }
 
 
 std::string ProcObject::generate_sysv() {
     std::string ret = "";
-    ret += "end\n";
     return ret;
 }
 

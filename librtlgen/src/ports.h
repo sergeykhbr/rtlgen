@@ -26,18 +26,13 @@ namespace sysvc {
 /*
  * Input/Output ports of the modules
  */
-class PortObject : public GenObject {
+class PortObject : public GenValueWrapper {
  public:
     PortObject(GenObject *parent,
              EIdType type,
              const char *name,
              Logic *wire,
              const char *comment);
-
-    Logic *getWire() { return wire_; }
-    int getWidth() { return static_cast<int>(wire_->getValue()); }
- protected:
-    Logic *wire_;
 };
 
 
@@ -47,7 +42,7 @@ class InPort : public PortObject {
              Logic *wire, const char *comment="")
         : PortObject(parent, ID_INPUT, name, wire, comment) {}
 
-    virtual std::string getType(EGenerateType v);
+    virtual std::string getType(EGenerateType v) override;
 };
 
 class OutPort : public PortObject {
@@ -56,7 +51,7 @@ class OutPort : public PortObject {
              Logic *wire, const char *comment="")
         : PortObject(parent, ID_OUTPUT, name, wire, comment) {}
 
-    virtual std::string getType(EGenerateType v);
+    virtual std::string getType(EGenerateType v) override;
 };
 
 }  // namespace sysvc

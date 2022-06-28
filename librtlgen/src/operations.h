@@ -20,27 +20,30 @@
 #include "values.h"
 #include "logic.h"
 #include <iostream>
+#include <list>
 
 namespace sysvc {
 
 class Operation : public GenObject {
  public:
     Operation(GenObject *parent,
-              GenObject *a,
-              GenObject *b,
               const char *comment="");
 
     virtual std::string getType(EGenerateType v) { return std::string(""); }
     virtual std::string generate(EGenerateType v) = 0;
  protected:
-    GenObject *a_;
-    GenObject *b_;
+    virtual std::string obj2varname(EGenerateType v, GenObject *obj);
+ protected:
+    GenObject *args[16];
+    int argcnt_;
 };
 
 class ZEROS : public Operation {
  public:
     ZEROS(GenObject *parent, GenObject *a, const char *comment="")
-        : Operation(parent, a, 0, comment) {}
+        : Operation(parent, comment) {
+        args[argcnt_++] = a;
+    }
 
     virtual std::string generate(EGenerateType v);
 };
@@ -49,7 +52,10 @@ class ZEROS : public Operation {
 class EQ : public Operation {
  public:
     EQ(GenObject *parent, GenObject *a, GenObject *b, const char *comment="")
-        : Operation(parent, a, b, comment) {}
+        : Operation(parent, comment) {
+        args[argcnt_++] = a;
+        args[argcnt_++] = b;
+    }
 
     virtual std::string generate(EGenerateType v);
 };
@@ -58,10 +64,54 @@ class EQ : public Operation {
 class SETBIT : public Operation {
  public:
     SETBIT(GenObject *parent, GenObject *a, GenObject *b, const char *comment="")
-        : Operation(parent, a, b, comment) {}
+        : Operation(parent, comment) {
+        args[argcnt_++] = a;
+        args[argcnt_++] = b;
+    }
 
     virtual std::string generate(EGenerateType v);
 };
 
+class NOT : public Operation {
+ public:
+    NOT(GenObject *a, const char *comment="")
+        : Operation(0, comment) {
+        args[argcnt_++] = a;
+    }
+
+    virtual std::string generate(EGenerateType v);
+};
+
+class OR2 : public Operation {
+ public:
+    OR2(GenObject *a, GenObject *b, const char *comment="")
+        : Operation(0, comment) {
+        args[argcnt_++] = a;
+        args[argcnt_++] = b;
+    }
+
+    virtual std::string generate(EGenerateType v);
+};
+
+class AND2 : public Operation {
+ public:
+    AND2(GenObject *a, GenObject *b, const char *comment="")
+        : Operation(0, comment) {
+        args[argcnt_++] = a;
+        args[argcnt_++] = b;
+    }
+
+    virtual std::string generate(EGenerateType v);
+};
+
+class IF : public Operation {
+ public:
+    IF(GenObject *a, const char *comment="")
+        : Operation(0, comment) {
+        args[argcnt_++] = a;
+    }
+
+    virtual std::string generate(EGenerateType v);
+};
 
 }  // namespace sysvc

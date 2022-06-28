@@ -22,17 +22,14 @@
 
 namespace sysvc {
 
-class Signal : public GenObject {
+class Signal : public GenValueWrapper {
  public:
     Signal(GenObject *parent,
            const char *name,
            Logic *wire,
            const char *comment="");
 
-    int getWidth() { return static_cast<int>(wire_->getValue()); }
     virtual std::string getType(EGenerateType v);
- protected:
-    Logic *wire_;
 };
 
 }  // namespace sysvc

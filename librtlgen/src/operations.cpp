@@ -19,15 +19,29 @@
 namespace sysvc {
 
 Operation::Operation(GenObject *parent,
-                     GenObject *a,
-                     GenObject *b,
                      const char *comment)
-    : GenObject(parent, ID_OPERATION, "", comment), a_(a), b_(b) {
+    : GenObject(0, ID_OPERATION, "", comment), argcnt_(0) {
+}
+
+std::string Operation::obj2varname(EGenerateType v, GenObject *obj) {
+    std::string ret = obj->getName();
+    if (obj->getId() == ID_REG) {
+        ret = "r." + obj->getName();
+    } else if (obj->getId() == ID_INPUT) {
+        ret = obj->getName() + ".read()";
+    } else if (obj->getId() == ID_OPERATION) {
+        ret = obj->generate(v);
+    }
+    return ret;
 }
 
 std::string ZEROS::generate(EGenerateType v) {
     std::string ret = "";
-    ret += a_->getName();
+    std::string prefix = "";
+    if (args[0u]->getId() == ID_REG) {
+        prefix += "v.";
+    }
+    ret += prefix + args[0]->getName();
     if (v == SYSC_ALL || v == SYSC_H || v == SYSC_CPP) {
         ret += " = 0;";
     } else if (v == SV_ALL || v == SV_PKG || v == SV_MOD) {
@@ -41,21 +55,48 @@ std::string ZEROS::generate(EGenerateType v) {
 
 std::string EQ::generate(EGenerateType v) {
     std::string ret = "";
-    ret += a_->getName() + " = " + b_->getValue(v) + ";";
+    ret += args[0]->getName() + " = " + args[1]->getValue(v) + ";";
     return ret;
 }
 
 std::string SETBIT::generate(EGenerateType v) {
     std::string ret = "";
-    ret += a_->getName();
+    ret += args[0]->getName();
     if (v == SYSC_ALL || v == SYSC_H || v == SYSC_CPP) {
-         ret += "[" + b_->getValue(v) + "] = 1;";
+         ret += "[" + args[1]->getValue(v) + "] = 1;";
     } else if (v == SV_ALL || v == SV_PKG || v == SV_MOD) {
-        ret += "[" + b_->getValue(v) + "] = 1'b1;";
+        ret += "[" + args[1]->getValue(v) + "] = 1'b1;";
     } else {
-        ret += "(" + b_->getValue(v) + ") := '1';";
+        ret += "(" + args[1]->getValue(v) + ") := '1';";
     }
     return ret;
+}
+
+std::string NOT::generate(EGenerateType v) {
+    std::string A = obj2varname(v, args[0]);
+    name_ = "(!" + A + ")";
+    return name_;
+}
+
+std::string OR2::generate(EGenerateType v) {
+    std::string A = obj2varname(v, args[0]);
+    std::string B = obj2varname(v, args[1]);
+    name_ = "(" + A + " || " + B + ")";
+    return name_;
+}
+
+std::string AND2::generate(EGenerateType v) {
+    std::string A = obj2varname(v, args[0]);
+    std::string B = obj2varname(v, args[1]);
+    name_ += "(" + A + " && " + B + ")";
+    return name_;
+}
+
+std::string IF::generate(EGenerateType v) {
+    std::string A = obj2varname(v, args[0]);
+    name_ += "if " + A + " {\n";
+    name_ += "}\n";
+    return name_;
 }
 
 }

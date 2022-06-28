@@ -23,15 +23,15 @@ PortObject::PortObject(GenObject *parent,
                        const char *name,
                        Logic *wire,
                        const char *comment)
-    : GenObject(parent, id, name, comment), wire_(wire) {
+    : GenValueWrapper(parent, id, name, wire, comment) {
 }
 
 std::string InPort::getType(EGenerateType v) {
     std::string out = "";
     if (v == SYSC_ALL || v == SYSC_H || v == SYSC_CPP) {
-        out += "sc_in<" + wire_->getType(v) + ">";
+        out += "sc_in<" + value_->getType(v) + ">";
     } else if (v == SV_ALL || v == SV_PKG || v == SV_MOD) {
-        out += "input " + wire_->getType(v);
+        out += "input " + value_->getType(v);
     } else {
     }
     return out;
@@ -40,9 +40,9 @@ std::string InPort::getType(EGenerateType v) {
 std::string OutPort::getType(EGenerateType v) {
     std::string out = "";
     if (v == SYSC_ALL || v == SYSC_H || v == SYSC_CPP) {
-        out += "sc_out<" + wire_->getType(v) + ">";
+        out += "sc_out<" + value_->getType(v) + ">";
     } else if (v == SV_ALL || v == SV_PKG || v == SV_MOD) {
-        out += "output " + wire_->getType(v);
+        out += "output " + value_->getType(v);
     } else {
     }
     return out;

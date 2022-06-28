@@ -22,19 +22,13 @@
 
 namespace sysvc {
 
-class DefParam : public GenObject {
+class DefParam : public GenValueWrapper {
  public:
     DefParam(GenObject *parent,
              const char *name,
              GenValue *value,
-             const char *comment="");
-
-    virtual GenValue *getValue() { return value_; }
-    virtual std::string getType(EGenerateType v) { return value_->getType(v); }
-    std::string getValue(EGenerateType v) override { return value_->getValue(v); }
-
- protected:
-    GenValue *value_;
+             const char *comment="")
+    : GenValueWrapper(parent, ID_DEF_PARAM, name, value, comment) {}
 };
 
 }  // namespace sysvc

@@ -21,10 +21,13 @@
 namespace sysvc {
 
 
-GenValue::GenValue(const char *val, const char *name,
+GenValue::GenValue(const char *width, const char *val, const char *name,
                     GenObject *parent, const char *comment)
     : GenObject(parent, (name[0] ? ID_VALUE : ID_CONST), name, comment) {
     parse(val, 0, val_, sysc_, sv_, sv_pkg_, vhdl_);
+    uint64_t twidth;
+    parse(width, 0, twidth, width_sysc_, width_sv_, width_sv_pkg_, width_vhdl_);
+    width_ = static_cast<int>(twidth);
     if (val[0] && name[0] && parent) {
         //SCV_set_value(getName(), val_);
     }
@@ -141,6 +144,18 @@ std::string GenValue::getValue(EGenerateType v) {
         return sv_pkg_;
     } else {
         return vhdl_;
+    }
+}
+
+std::string GenValue::getWidth(EGenerateType v) {
+    if (v == SYSC_ALL || v == SYSC_H || v == SYSC_CPP) {
+        return width_sysc_;
+    } else if (v == SV_ALL || v == SV_MOD) {
+        return width_sv_;
+    } else if (v == SV_PKG) {
+        return width_sv_pkg_;
+    } else {
+        return width_vhdl_;
     }
 }
 

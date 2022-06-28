@@ -19,12 +19,4 @@
 
 namespace sysvc {
 
-DefParam::DefParam(GenObject *parent,
-                    const char *name,
-                    GenValue *value,
-                    const char *comment)
-    : GenObject(parent, ID_DEF_PARAM, name, comment),
-    value_(value) {
-}
-
 }

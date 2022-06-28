@@ -71,9 +71,16 @@ class GenObject {
     std::string getName() { return name_; }
     std::string getComment() { return comment_; }
     virtual std::string getType(EGenerateType) = 0;
+    virtual uint64_t getValue() { return 0; }
     virtual std::string getValue(EGenerateType) { return std::string(""); }
+    virtual int getWidth() { return 0; }
+    virtual std::string getWidth(EGenerateType) { return std::string(""); }
 
     virtual std::string generate(EGenerateType) { return std::string(""); }
+
+    virtual bool isNumber(std::string &s) {
+        return s.c_str()[0] >= '0' && s.c_str()[0] <= '9';
+    }
 
  protected:
     EIdType id_;

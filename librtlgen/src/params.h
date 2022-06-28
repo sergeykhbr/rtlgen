@@ -22,24 +22,19 @@
 
 namespace sysvc {
 
-class Param : public GenObject {
+class Param : public GenValueWrapper {
  public:
     Param(GenObject *parent,
           const char *name,
           GenValue *value,
           const char *comment="");
 
-    virtual std::string getType(EGenerateType v) { return value_->getType(v); }
-    virtual GenValue *getValue() { return value_; }
     virtual std::string generate(EGenerateType v);
 
  protected:
     std::string generate_sysc();
     std::string generate_sysv();
     std::string generate_vhdl();
-
- protected:
-    GenValue *value_;
 };
 
 }  // namespace sysvc

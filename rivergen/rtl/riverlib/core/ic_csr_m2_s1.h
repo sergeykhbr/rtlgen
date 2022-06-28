@@ -27,11 +27,13 @@ class ic_csr_m2_s1 : public ModuleObject {
 
     class CombProcess : public ProcObject {
      public:
-        CombProcess(GenObject *parent)
-            : ProcObject(parent, "comb") {}
-     protected:
+        CombProcess(GenObject *parent) : ProcObject(parent, "comb") {
+            ic_csr_m2_s1 *p = static_cast<ic_csr_m2_s1 *>(parent);
+            p->proc_comb();
+        }
     };
 
+    void proc_comb();
 
  protected:
     InPort i_clk;
