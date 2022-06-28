@@ -15,6 +15,7 @@
 // 
 
 #include "proc.h"
+#include "operations.h"
 
 namespace sysvc {
 
@@ -22,10 +23,12 @@ ProcObject::ProcObject(GenObject *parent,
                        const char *name,
                        const char *comment)
     : GenObject(parent, ID_PROCESS, name, comment) {
+    Operation::start(this);
 }
 
 std::string ProcObject::generate(EGenerateType v) {
     std::string ret = "";
+    Operation::set_space(1);
     if (v == SYSC_ALL || v == SYSC_H || v == SYSC_CPP) {
         ret += generate_sysc();
     } else if (v == SV_ALL || v == SV_PKG || v == SV_MOD) {
@@ -42,7 +45,7 @@ std::string ProcObject::generate_sysc() {
         if (e->getId() != ID_OPERATION) {
             continue;
         }
-        ret += "    " + e->generate(SYSC_CPP) + "\n";
+        ret += e->generate(SYSC_CPP) + "\n";
     }
     return ret;
 }

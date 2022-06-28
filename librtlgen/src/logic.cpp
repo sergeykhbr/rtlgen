@@ -46,15 +46,15 @@ Logic::Logic(Param *width,
 }
 
 void Logic::allzero() {
-    new ZEROS(parent_, this);
+    new ZEROS(this);
 }
 
 void Logic::eq(const char *val) {
-    new EQ(parent_, this, new I32D(val));
+    new EQ(this, new I32D(val));
 }
 
 void Logic::setbit(const char *idx) {
-    new SETBIT(parent_, this, new I32D(idx));
+    new SETBIT(this, new I32D(idx));
 }
 
 void Logic::clearbit(const char *idx) {

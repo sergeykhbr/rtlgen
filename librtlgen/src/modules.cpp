@@ -21,12 +21,14 @@
 #include "utils.h"
 #include "minstance.h"
 #include "files.h"
+#include "operations.h"
 
 namespace sysvc {
 
 ModuleObject::ModuleObject(GenObject *parent, const char *name) :
     GenObject(parent, ID_MODULE, name) {
     SCV_register_module(this);
+    Operation::start(this);
 }
 
 std::string ModuleObject::getType(EGenerateType v) {
@@ -102,6 +104,7 @@ void ModuleObject::getIoList(std::list<GenObject *> &iolist) {
 
 std::string ModuleObject::generate(EGenerateType v) {
     std::string out = "";
+    Operation::set_space(0);
     if (v == SYSC_H) {
         out += generate_sysc_h();
     } else if (v == SYSC_CPP) {

@@ -50,19 +50,26 @@ ic_csr_m2_s1::ic_csr_m2_s1(GenObject *parent) :
     o_s0_resp_ready(this, "o_s0_resp_ready", new Logic()),
     i_s0_resp_data(this, "i_s0_resp_data", new Logic("RISCV_ARCH")),
     i_s0_resp_exception(this, "i_s0_resp_exception", new Logic()),
-    // process
-    comb(this),
     // registers
     midx(this, "midx", new Logic("1")),
-    acquired(this, "acquired", new Logic())
-{
+    acquired(this, "acquired", new Logic()),
+   // process
+    comb(this)
+ {
 }
 
 void ic_csr_m2_s1::proc_comb() {
-    comb.add_entry(new IF(new AND2(new NOT(&acquired),
-                                   new OR2(&i_m0_req_valid, &i_m1_req_valid))));
-    comb.add_entry(new ZEROS(this, &acquired));
+    new IF(new AND2(new NOT(&acquired),
+                    new OR2(&i_m0_req_valid, &i_m1_req_valid)));
 
+        new ONE(&acquired);
+        new IF(&i_m0_req_valid);
+            new ZEROS(&midx);
+        new ELSE();
+            new ONE(&midx);
+        new ENDIF();
+
+    new ZEROS(&acquired);
 }
 
 ic_csr_m2_s1_file::ic_csr_m2_s1_file(GenObject *parent) :

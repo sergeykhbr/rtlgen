@@ -15,6 +15,7 @@
 // 
 
 #include "funcs.h"
+#include "operations.h"
 
 namespace sysvc {
 
@@ -23,10 +24,12 @@ FunctionObject::FunctionObject(GenObject *parent,
                                  const char *comment)
     : GenObject(parent, ID_FUNCTION, name, comment) {
     retval_ = 0;
+    Operation::start(this);
 }
 
 std::string FunctionObject::generate(EGenerateType v) {
     std::string ret = "";
+    Operation::set_space(1);
     if (v == SYSC_ALL || v == SYSC_H || v == SYSC_CPP) {
         ret += generate_sysc();
     } else if (v == SV_ALL || v == SV_PKG || v == SV_MOD) {
