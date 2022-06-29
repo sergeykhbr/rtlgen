@@ -27,8 +27,9 @@ Param::Param(GenObject *parent,
     : GenValueWrapper(parent, ID_PARAM, name, value, comment) {
 
     std::string path = getFullPath();
+    std::string file = getFile();
     SCV_set_cfg_parameter(path,
-                          getFile(),
+                          file,
                           getName().c_str(),
                           value_->getValue());
 }

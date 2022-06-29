@@ -31,8 +31,9 @@ void EnumObject::add_value(const char *name) {
     new I32D(tstr, name, this);
 
     std::string path = getFullPath();
+    std::string file = getFile();
     SCV_set_cfg_parameter(path,
-                          getFile(),
+                          file,
                           name,
                           total);
 }

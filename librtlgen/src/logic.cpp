@@ -61,12 +61,13 @@ std::string Logic::getType(EGenerateType v) {
         ret = std::string("logic");
         if (getWidth() > 1) {
             ret += " [";
-            if (isNumber(getWidth(v))) {
+            std::string w = getWidth(v);
+            if (isNumber(w)) {
                 char tstr[256];
                 RISCV_sprintf(tstr, sizeof(tstr), "%d", getWidth() - 1);
                 ret += tstr;
             } else {
-                ret += getWidth(v) + "-1";
+                ret += w + "-1";
             }
             ret += ":0]";
         }
@@ -76,7 +77,8 @@ std::string Logic::getType(EGenerateType v) {
 
 std::string Logic::getValue(EGenerateType v) {
     std::string ret = "";
-    if ((v == SV_ALL || v == SV_PKG || v == SV_MOD) && isNumber(GenValue::getValue(v))) {
+    std::string t = GenValue::getValue(v);
+    if ((v == SV_ALL || v == SV_PKG || v == SV_MOD) && isNumber(t)) {
         char fmt[64] = "%d'h%";
         char tstr[256];
         int w = getWidth();
@@ -84,7 +86,7 @@ std::string Logic::getValue(EGenerateType v) {
         RISCV_sprintf(tstr, sizeof(tstr), fmt, w, GenValue::getValue());
         ret += tstr;
     } else {
-        ret += GenValue::getValue(v);
+        ret += t;
     }
     return ret;
 }

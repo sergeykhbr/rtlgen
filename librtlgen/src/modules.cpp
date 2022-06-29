@@ -53,7 +53,8 @@ MInstanceObject *ModuleObject::createInstance(GenObject *parent, const char *nam
             continue;
         }
         // to build include dependencies
-        static_cast<FileObject *>(p)->notifyAccess(getFullPath());
+        std::string fulpath = getFullPath();
+        static_cast<FileObject *>(p)->notifyAccess(fulpath);
         break;
     }
 

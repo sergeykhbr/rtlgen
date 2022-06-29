@@ -66,7 +66,7 @@ std::string MInstanceObject::generate_sysc() {
     for (auto &p : paramlist) {
         ret += ", ";
         if (param_.find(p->getName()) == param_.end()) {
-            SHOW_ERROR("param not connected");
+            SHOW_ERROR("param '%s' not connected", p->getName());
         } else {
             ret += p->getName();
         }
@@ -78,7 +78,7 @@ std::string MInstanceObject::generate_sysc() {
     for (auto &io: iolist) {
         ret += "    " + getName() + "->" + io->getName() + "(";
         if (io_.find(io->getName()) == io_.end()) {
-            SHOW_ERROR("io not connected");
+            SHOW_ERROR("io '%s' not connected", io->getName());
         } else {
             GenObject *port = io_[io->getName()];
             GenObject *pstruct = port->getParent();
@@ -118,7 +118,7 @@ std::string MInstanceObject::generate_sv() {
         for (auto &p : paramlist) {
             ret += "    ." + p->getName() + "(";
             if (param_.find(p->getName()) == param_.end()) {
-                SHOW_ERROR("param not connected");
+                SHOW_ERROR("param '%s' not connected", p->getName());
             } else {
                 ret += p->getName();
             }
@@ -139,7 +139,7 @@ std::string MInstanceObject::generate_sv() {
     for (auto &io: iolist) {
         ret += "    ." + io->getName() + "(";
         if (io_.find(io->getName()) == io_.end()) {
-            SHOW_ERROR("io not connected");
+            SHOW_ERROR("io '%s' not connected", io->getName());
         } else {
             GenObject *port = io_[io->getName()];
             ret += port->getName();
