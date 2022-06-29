@@ -73,7 +73,7 @@ std::string FunctionObject::generate_sysc() {
             if (e->getId() != ID_OPERATION) {
                 continue;
             }
-            ret += "    " + e->generate(SYSC_ALL) + "\n";
+            ret += e->generate(SYSC_ALL);
         }
         if (retval_) {
             ret += "    return " + retval_->getName() + ";\n";
@@ -117,7 +117,7 @@ std::string FunctionObject::generate_sysv() {
         if (e->getId() != ID_OPERATION) {
             continue;
         }
-        ret += "    " + e->generate(SV_ALL) + "\n";
+        ret += e->generate(SV_ALL);
     }
     if (retval_) {
         ret += "    return " + retval_->getName() + ";\n";

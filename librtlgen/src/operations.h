@@ -24,6 +24,8 @@
 
 namespace sysvc {
 
+typedef std::string (*generate_type)(EGenerateType v, GenObject **args);
+
 class Operation : public GenObject {
  public:
     Operation(const char *comment="");
@@ -33,122 +35,42 @@ class Operation : public GenObject {
     static void push_obj(GenObject *obj);
     static void pop_obj();
     static void set_space(int n);
+    static std::string addspaces();
+    static std::string obj2varname(EGenerateType v, GenObject *obj);
 
+    virtual void add_arg(GenObject *arg) {
+        args[argcnt_++] = arg;
+    }
     virtual std::string getType(EGenerateType v) { return std::string(""); }
-    virtual std::string generate(EGenerateType v) = 0;
- protected:
-    virtual std::string addspaces();
-    virtual std::string obj2varname(EGenerateType v, GenObject *obj);
- protected:
-    union ArgsType {
-        GenObject *obj;
-        int i32;
-    };
+    virtual std::string generate(EGenerateType v) {
+        std::string ret = igen_(v, args);
+        for (auto &e: entries_) {
+            if (e->getId() != ID_OPERATION) {
+                continue;
+            }
+            ret += e->generate(v);
+        }
+        return ret;
+    }
 
-    ArgsType args[16];
+    generate_type igen_;
+ protected:
+    GenObject *args[16];
     int argcnt_;
 };
 
-class ZEROS : public Operation {
- public:
-    ZEROS(GenObject *a, const char *comment="")
-        : Operation(comment) {
-        args[argcnt_++].obj = a;
-    }
+void TEXT(const char *comment="");
+Operation &SETZERO(GenObject &a, const char *comment="");
+Operation &SETONE(GenObject &a, const char *comment="");
+Operation &SETBIT(GenObject &a, GenObject &b, const char *comment="");
+Operation &SETVAL(GenObject &a, GenObject &b, const char *comment="");
+Operation &EZ(GenObject &a, const char *comment="");        // equal-zero
+Operation &OR2(GenObject &a, GenObject &b, const char *comment="");
+Operation &AND2(GenObject &a, GenObject &b, const char *comment="");
+Operation &AND3(GenObject &a, GenObject &b, GenObject &c, const char *comment="");
 
-    virtual std::string generate(EGenerateType v);
-};
-
-class ONE : public Operation {
- public:
-    ONE(GenObject *a, const char *comment="")
-        : Operation(comment) {
-        args[argcnt_++].obj = a;    // output signal
-    }
-
-    virtual std::string generate(EGenerateType v);
-};
-
-
-class EQ : public Operation {
- public:
-    EQ(GenObject *a, GenObject *b, const char *comment="")
-        : Operation(comment) {
-        args[argcnt_++].obj = a;
-        args[argcnt_++].obj = b;
-    }
-
-    virtual std::string generate(EGenerateType v);
-};
-
-
-class SETBIT : public Operation {
- public:
-    SETBIT(GenObject *a, GenObject *b, const char *comment="")
-        : Operation(comment) {
-        args[argcnt_++].obj = a;
-        args[argcnt_++].obj = b;
-    }
-
-    virtual std::string generate(EGenerateType v);
-};
-
-class NOT : public Operation {
- public:
-    NOT(GenObject *a, const char *comment="")
-        : Operation(0, comment) {
-        args[argcnt_++].obj = a;
-    }
-
-    virtual std::string generate(EGenerateType v);
-};
-
-class OR2 : public Operation {
- public:
-    OR2(GenObject *a, GenObject *b, const char *comment="")
-        : Operation(0, comment) {
-        args[argcnt_++].obj = a;
-        args[argcnt_++].obj = b;
-    }
-
-    virtual std::string generate(EGenerateType v);
-};
-
-class AND2 : public Operation {
- public:
-    AND2(GenObject *a, GenObject *b, const char *comment="")
-        : Operation(0, comment) {
-        args[argcnt_++].obj = a;
-        args[argcnt_++].obj = b;
-    }
-
-    virtual std::string generate(EGenerateType v);
-};
-
-class IF : public Operation {
- public:
-    IF(GenObject *a, const char *comment="") : Operation(comment) {
-        args[argcnt_++].obj = a;
-        push_obj(this);
-    }
-    virtual std::string generate(EGenerateType v);
-};
-
-class ELSE : public Operation {
- public:
-    ELSE(const char *comment="") : Operation(comment) {
-        pop_obj();
-        push_obj(this);
-    }
-    virtual std::string generate(EGenerateType v);
-};
-
-class ENDIF : public Operation {
- public:
-    ENDIF(const char *comment="") : Operation(comment) {
-        pop_obj();
-    }
-    virtual std::string generate(EGenerateType v) { return std::string(""); }
-};
+void IF(GenObject &a, const char *comment="");
+void ELSE(const char *comment="");
+void ENDIF(const char *comment="");
 
 }  // namespace sysvc

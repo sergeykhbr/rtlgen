@@ -45,7 +45,7 @@ std::string ProcObject::generate_sysc() {
         if (e->getId() != ID_OPERATION) {
             continue;
         }
-        ret += e->generate(SYSC_CPP) + "\n";
+        ret += e->generate(SYSC_CPP);
     }
     return ret;
 }

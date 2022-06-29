@@ -29,7 +29,7 @@ class types_amba : public FileObject {
         FunctionReadNoSnoop(GenObject *parent)
             : FunctionObject(parent, "ReadNoSnoop") {
             retval_ = new Logic("REQ_MEM_TYPE_BITS", "ret", "", this);
-            static_cast<Logic *>(retval_)->allzero();
+            SETZERO(*retval_);
         }
     };
 
@@ -37,9 +37,10 @@ class types_amba : public FileObject {
      public:
         FunctionReadShared(GenObject *parent)
             : FunctionObject(parent, "ReadShared") {
+            types_amba *p = static_cast<types_amba *>(parent_);
             retval_ = new Logic("REQ_MEM_TYPE_BITS", "ret", "", this);
-            static_cast<Logic *>(retval_)->allzero();
-            static_cast<Logic *>(retval_)->setbit("REQ_MEM_TYPE_CACHED");
+            SETZERO(*retval_);
+            SETBIT(*retval_, p->REQ_MEM_TYPE_CACHED);
         }
     };
 
@@ -47,10 +48,11 @@ class types_amba : public FileObject {
      public:
         FunctionReadMakeUnique(GenObject *parent)
             : FunctionObject(parent, "ReadMakeUnique") {
+            types_amba *p = static_cast<types_amba *>(parent_);
             retval_ = new Logic("REQ_MEM_TYPE_BITS", "ret", "", this);
-            static_cast<Logic *>(retval_)->allzero();
-            static_cast<Logic *>(retval_)->setbit("REQ_MEM_TYPE_CACHED");
-            static_cast<Logic *>(retval_)->setbit("REQ_MEM_TYPE_UNIQUE");
+            SETZERO(*retval_);
+            SETBIT(*retval_, p->REQ_MEM_TYPE_CACHED);
+            SETBIT(*retval_, p->REQ_MEM_TYPE_UNIQUE);
         }
     };
 
@@ -58,9 +60,10 @@ class types_amba : public FileObject {
      public:
         FunctionWriteNoSnoop(GenObject *parent)
             : FunctionObject(parent, "WriteNoSnoop") {
+            types_amba *p = static_cast<types_amba *>(parent_);
             retval_ = new Logic("REQ_MEM_TYPE_BITS", "ret", "", this);
-            static_cast<Logic *>(retval_)->allzero();
-            static_cast<Logic *>(retval_)->setbit("REQ_MEM_TYPE_WRITE");
+            SETZERO(*retval_);
+            SETBIT(*retval_, p->REQ_MEM_TYPE_WRITE);
         }
     };
 
@@ -68,11 +71,12 @@ class types_amba : public FileObject {
      public:
         FunctionWriteLineUnique(GenObject *parent)
             : FunctionObject(parent, "WriteLineUnique") {
+            types_amba *p = static_cast<types_amba *>(parent_);
             retval_ = new Logic("REQ_MEM_TYPE_BITS", "ret", "", this);
-            static_cast<Logic *>(retval_)->allzero();
-            static_cast<Logic *>(retval_)->setbit("REQ_MEM_TYPE_WRITE");
-            static_cast<Logic *>(retval_)->setbit("REQ_MEM_TYPE_CACHED");
-            static_cast<Logic *>(retval_)->setbit("REQ_MEM_TYPE_UNIQUE");
+            SETZERO(*retval_);
+            SETBIT(*retval_, p->REQ_MEM_TYPE_WRITE);
+            SETBIT(*retval_, p->REQ_MEM_TYPE_CACHED);
+            SETBIT(*retval_, p->REQ_MEM_TYPE_UNIQUE);
         }
     };
 
@@ -80,10 +84,11 @@ class types_amba : public FileObject {
      public:
         FunctionWriteBack(GenObject *parent)
             : FunctionObject(parent, "WriteBack") {
+            types_amba *p = static_cast<types_amba *>(parent_);
             retval_ = new Logic("REQ_MEM_TYPE_BITS", "ret", "", this);
-            static_cast<Logic *>(retval_)->allzero();
-            static_cast<Logic *>(retval_)->setbit("REQ_MEM_TYPE_WRITE");
-            static_cast<Logic *>(retval_)->setbit("REQ_MEM_TYPE_CACHED");
+            SETZERO(*retval_);
+            SETBIT(*retval_, p->REQ_MEM_TYPE_WRITE);
+            SETBIT(*retval_, p->REQ_MEM_TYPE_CACHED);
         }
     };
 

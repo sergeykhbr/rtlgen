@@ -59,17 +59,52 @@ ic_csr_m2_s1::ic_csr_m2_s1(GenObject *parent) :
 }
 
 void ic_csr_m2_s1::proc_comb() {
-    new IF(new AND2(new NOT(&acquired),
-                    new OR2(&i_m0_req_valid, &i_m1_req_valid)));
+    IF (AND2(EZ(acquired),
+             OR2(i_m0_req_valid, i_m1_req_valid)));
 
-        new ONE(&acquired);
-        new IF(&i_m0_req_valid);
-            new ZEROS(&midx);
-        new ELSE();
-            new ONE(&midx);
-        new ENDIF();
+        SETONE(acquired);
+        IF (i_m0_req_valid);
+            SETZERO(midx);
+        ELSE();
+            SETONE(midx);
+        ENDIF();
+    ENDIF();
 
-    new ZEROS(&acquired);
+    IF (OR2(AND3(EZ(midx), i_s0_resp_valid, i_m0_resp_ready),
+            AND3(midx, i_s0_resp_valid, i_m1_resp_ready)));
+        SETZERO(acquired);
+    ENDIF();
+
+TEXT();
+    IF (OR2(EZ(midx), AND2(EZ(acquired), i_m0_req_valid)));
+        SETVAL(o_s0_req_valid, i_m0_req_valid);
+        SETVAL(o_m0_req_ready, i_s0_req_ready);
+        SETVAL(o_s0_req_type, i_m0_req_type);
+        SETVAL(o_s0_req_addr, i_m0_req_addr);
+        SETVAL(o_s0_req_data, i_m0_req_data);
+        SETVAL(o_m0_resp_valid, i_s0_resp_valid);
+        SETVAL(o_s0_resp_ready, i_m0_resp_ready);
+        SETVAL(o_m0_resp_data, i_s0_resp_data);
+        SETVAL(o_m0_resp_exception, i_s0_resp_exception);
+        SETZERO(o_m1_req_ready);
+        SETZERO(o_m1_resp_valid);
+        SETZERO(o_m1_resp_data);
+        SETZERO(o_m1_resp_exception);
+    ELSE();
+        SETVAL(o_s0_req_valid, i_m1_req_valid);
+        SETVAL(o_m1_req_ready, i_s0_req_ready);
+        SETVAL(o_s0_req_type, i_m1_req_type);
+        SETVAL(o_s0_req_addr, i_m1_req_addr);
+        SETVAL(o_s0_req_data, i_m1_req_data);
+        SETVAL(o_m1_resp_valid, i_s0_resp_valid);
+        SETVAL(o_s0_resp_ready, i_m1_resp_ready);
+        SETVAL(o_m1_resp_data, i_s0_resp_data);
+        SETVAL(o_m1_resp_exception, i_s0_resp_exception);
+        SETZERO(o_m0_req_ready);
+        SETZERO(o_m0_resp_valid);
+        SETZERO(o_m0_resp_data);
+        SETZERO(o_m0_resp_exception);
+    ENDIF();
 }
 
 ic_csr_m2_s1_file::ic_csr_m2_s1_file(GenObject *parent) :

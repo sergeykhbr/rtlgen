@@ -24,11 +24,11 @@ int stackcnt_ = 0;
 GenObject *stackobj_[256] = {0};
 
 Operation::Operation(const char *comment)
-    : GenObject(stackobj_[stackcnt_], ID_OPERATION, "", comment), argcnt_(0) {
+    : GenObject(stackobj_[stackcnt_], ID_OPERATION, "", comment), igen_(0), argcnt_(0) {
 }
 
 Operation::Operation(GenObject *parent, const char *comment)
-    : GenObject(parent, ID_OPERATION, "", comment), argcnt_(0) {
+    : GenObject(parent, ID_OPERATION, "", comment), igen_(0), argcnt_(0) {
 }
 
 void Operation::start(GenObject *owner) {
@@ -67,12 +67,29 @@ std::string Operation::obj2varname(EGenerateType v, GenObject *obj) {
     return ret;
 }
 
-std::string ZEROS::generate(EGenerateType v) {
-    std::string ret = addspaces();
-    if (args[0u].obj->getId() == ID_REG) {
+// TEXT
+std::string TEXT_gen(EGenerateType v, GenObject **args) {
+    std::string ret = "";
+    if (args[0]->getComment().size() == 0) {
+        ret += "\n";
+    } else {
+        ret = Operation::addspaces() + "// " + args[0]->getComment();
+    }
+    return ret;
+}
+void TEXT(const char *comment) {
+    Operation *p = new Operation(comment);
+    p->igen_ = TEXT_gen;
+    p->add_arg(p);
+}
+
+// SETZERO
+std::string SETZERO_gen(EGenerateType v, GenObject **args) {
+    std::string ret = Operation::addspaces();
+    if (args[0u]->getId() == ID_REG) {
         ret += "v.";
     }
-    ret += args[0].obj->getName();
+    ret += args[0]->getName();
     if (v == SYSC_ALL || v == SYSC_H || v == SYSC_CPP) {
         ret += " = 0";
     } else if (v == SV_ALL || v == SV_PKG || v == SV_MOD) {
@@ -84,17 +101,25 @@ std::string ZEROS::generate(EGenerateType v) {
     return ret;
 }
 
-std::string ONE::generate(EGenerateType v) {
-    std::string ret = addspaces();
-    if (args[0u].obj->getId() == ID_REG) {
+Operation &SETZERO(GenObject &a, const char *comment) {
+    Operation *p = new Operation(comment);
+    p->igen_ = SETZERO_gen;
+    p->add_arg(&a);
+    return *p;
+}
+
+
+std::string SETONE_gen(EGenerateType v, GenObject **args) {
+    std::string ret = Operation::addspaces();
+    if (args[0u]->getId() == ID_REG) {
         ret += "v.";
     }
-    ret += args[0].obj->getName();
+    ret += args[0]->getName();
     if (v == SYSC_ALL || v == SYSC_H || v == SYSC_CPP) {
         ret += " = 1";
     } else if (v == SV_ALL || v == SV_PKG || v == SV_MOD) {
         char tstr[64];
-        RISCV_sprintf(tstr, sizeof(tstr), "%dd'1", args[0].obj->getWidth());
+        RISCV_sprintf(tstr, sizeof(tstr), "%dd'1", args[0]->getWidth());
         ret += " = " + std::string(tstr);
     } else  {
         ret += " = '1'";
@@ -103,80 +128,180 @@ std::string ONE::generate(EGenerateType v) {
     return ret;
 }
 
-std::string EQ::generate(EGenerateType v) {
-    std::string ret = addspaces();
-    ret += args[0].obj->getName() + " = " + args[1].obj->getValue(v) + ";\n";
-    return ret;
+Operation &SETONE(GenObject &a, const char *comment) {
+    Operation *p = new Operation(comment);
+    p->igen_ = SETONE_gen;
+    p->add_arg(&a);    // output signal
+    return *p;
 }
 
-std::string SETBIT::generate(EGenerateType v) {
-    std::string ret = addspaces();
-    ret += args[0].obj->getName();
+std::string SETBIT_gen(EGenerateType v, GenObject **args) {
+    std::string ret = Operation::addspaces();
+    ret += args[0]->getName();
     if (v == SYSC_ALL || v == SYSC_H || v == SYSC_CPP) {
-         ret += "[" + args[1].obj->getValue(v) + "] = 1;\n";
+         ret += "[";
+         if (args[1]->getId() == ID_PARAM || args[1]->getId() == ID_DEF_PARAM) {
+             ret += args[1]->getName();
+         } else {
+             ret += args[1]->getValue(v);
+         }
+         ret += "] = 1;\n";
     } else if (v == SV_ALL || v == SV_PKG || v == SV_MOD) {
-        ret += "[" + args[1].obj->getValue(v) + "] = 1'b1;\n";
+         ret += "[";
+         if (args[1]->getId() == ID_PARAM || args[1]->getId() == ID_DEF_PARAM) {
+             ret += args[1]->getName();
+         } else {
+             ret += args[1]->getValue(v);
+         }
+         ret += "] = 1'b1;\n";
     } else {
-        ret += "(" + args[1].obj->getValue(v) + ") := '1';\n";
+        ret += "(" + args[1]->getValue(v) + ") := '1';\n";
     }
     return ret;
 }
 
-std::string NOT::generate(EGenerateType v) {
-    std::string A = obj2varname(v, args[0].obj);
-    name_ = "(!" + A + ")";
-    return name_;
+Operation &SETBIT(GenObject &a, GenObject &b, const char *comment) {
+    Operation *p = new Operation(comment);
+    p->igen_ = SETBIT_gen;
+    p->add_arg(&a);
+    p->add_arg(&b);
+    return *p;
 }
 
-std::string OR2::generate(EGenerateType v) {
-    std::string A = obj2varname(v, args[0].obj);
-    std::string B = obj2varname(v, args[1].obj);
-    name_ = "(" + A + " || " + B + ")";
-    return name_;
+std::string SETVAL_gen(EGenerateType v, GenObject **args) {
+    std::string ret = Operation::addspaces();
+    ret += args[0]->getName() + " = ";
+    if (args[1]->getId() == ID_CONST) {
+        ret += args[1]->getValue(v);
+    } else {
+        ret += args[1]->getName();
+    }
+    ret += ";\n";
+    return ret;
 }
 
-std::string AND2::generate(EGenerateType v) {
-    std::string A = obj2varname(v, args[0].obj);
-    std::string B = obj2varname(v, args[1].obj);
-    name_ += "(" + A + " && " + B + ")";
-    return name_;
+Operation &SETVAL(GenObject &a, GenObject &b, const char *comment) {
+    Operation *p = new Operation(comment);
+    p->igen_ = SETVAL_gen;
+    p->add_arg(&a);
+    p->add_arg(&b);
+    return *p;
 }
 
-std::string IF::generate(EGenerateType v) {
-    std::string A = obj2varname(v, args[0].obj);
-    name_ += addspaces() + "if ";
+// EZ
+std::string EZ_gen(EGenerateType v, GenObject **args) {
+    std::string A = Operation::obj2varname(v, args[0]);
+    A = "(" + A + " == 0)";
+    return A;
+}
+
+Operation &EZ(GenObject &a, const char *comment) {
+    Operation *p = new Operation(0, comment);
+    p->igen_ = EZ_gen;
+    p->add_arg(&a);
+    return *p;
+}
+
+// OR2
+std::string OR2_gen(EGenerateType v, GenObject **args) {
+    std::string A = Operation::obj2varname(v, args[0]);
+    std::string B = Operation::obj2varname(v, args[1]);
+    A = "(" + A + " || " + B + ")";
+    return A;
+}
+
+Operation &OR2(GenObject &a, GenObject &b, const char *comment) {
+    Operation *p = new Operation(0, comment);
+    p->igen_ = OR2_gen;
+    p->add_arg(&a);
+    p->add_arg(&b);
+    return *p;
+}
+
+// AND2
+std::string AND2_gen(EGenerateType v, GenObject **args) {
+    std::string A = Operation::obj2varname(v, args[0]);
+    std::string B = Operation::obj2varname(v, args[1]);
+    A = "(" + A + " && " + B + ")";
+    return A;
+}
+
+Operation &AND2(GenObject &a, GenObject &b, const char *comment) {
+    Operation *p = new Operation(0, comment);
+    p->igen_ = AND2_gen;
+    p->add_arg(&a);
+    p->add_arg(&b);
+    return *p;
+}
+
+// AND3
+std::string AND3_gen(EGenerateType v, GenObject **args) {
+    std::string A = Operation::obj2varname(v, args[0]);
+    std::string B = Operation::obj2varname(v, args[1]);
+    std::string C = Operation::obj2varname(v, args[2]);
+    A = "(" + A + " && " + B + " && " + C + ")";
+    return A;
+}
+
+Operation &AND3(GenObject &a, GenObject &b, GenObject &c, const char *comment) {
+    Operation *p = new Operation(0, comment);
+    p->igen_ = AND3_gen;
+    p->add_arg(&a);
+    p->add_arg(&b);
+    p->add_arg(&c);
+    return *p;
+}
+
+// IF
+std::string IF_gen(EGenerateType v, GenObject **args) {
+    std::string ret = Operation::addspaces();
+    std::string A = Operation::obj2varname(v, args[0]);
     spaces_++;
 
     if (A.c_str()[0] == '(') {
-        name_ += A;
     } else {
-        name_ += "(" + A + ")";
+        A = "(" + A + ")";
     }
-    name_ += " {\n";
-    for (auto &e: entries_) {
-        if (e->getId() != ID_OPERATION) {
-            continue;
-        }
-        name_ += e->generate(v);
-    }
-    spaces_--;
-    name_ += addspaces() + "}\n";
-    return name_;
+    ret += "if " + A + " {\n";
+    return ret;
 }
 
-std::string ELSE::generate(EGenerateType v) {
+void IF(GenObject &a, const char *comment) {
+    Operation *p = new Operation(comment);
+    Operation::push_obj(p);
+    p->igen_ = IF_gen;
+    p->add_arg(&a);
+}
+
+
+// ELSE
+std::string ELSE_gen(EGenerateType v, GenObject **args) {
+    std::string ret = "";
     spaces_--;
-    name_ += addspaces() + "} else {\n";
+    ret += Operation::addspaces() + "} else {\n";
     spaces_++;
-    for (auto &e: entries_) {
-        if (e->getId() != ID_OPERATION) {
-            continue;
-        }
-        name_ += e->generate(v);
-    }
+    return ret;
+}
+
+void ELSE(const char *comment) {
+    Operation *p = new Operation(comment);
+    Operation::pop_obj();
+    Operation::push_obj(p);
+    p->igen_ = ELSE_gen;
+}
+
+
+// ENDIF
+std::string ENDIF_gen(EGenerateType v, GenObject **args) {
     spaces_--;
-    name_ += addspaces() + "}\n";
-    return name_;
+    std::string ret = Operation::addspaces() + "}\n";
+    return ret;
+}
+
+void ENDIF(const char *comment) {
+    Operation::pop_obj();
+    Operation *p = new Operation(comment);
+    p->igen_ = ENDIF_gen;
 }
 
 }

@@ -305,9 +305,9 @@ std::string ModuleObject::generate_sysc_cpp() {
 
     // generateVCD function
     out += "void " + getName() + "::generateVCD(sc_trace_file *i_vcd, sc_trace_file *o_vcd) {\n";
-    out += "    if (i_vcd) {\n";
+    out += "    if (o_vcd) {\n";
     for (auto &p: entries_) {
-        if (p->getId() != ID_INPUT) {
+        if (p->getId() != ID_INPUT && p->getId() != ID_OUTPUT) {
             continue;
         }
         // TODO: check top level module instead of hardcoded name
@@ -316,14 +316,6 @@ std::string ModuleObject::generate_sysc_cpp() {
                 // i_clk and i_nrst generate only on top level module
                 continue;
             }
-        }
-        out += "        sc_trace(i_vcd, " + p->getName() + ", " + p->getName() + ".name());\n";
-    }
-    out += "    }\n";
-    out += "    if (o_vcd) {\n";
-    for (auto &p: entries_) {
-        if (p->getId() != ID_OUTPUT) {
-            continue;
         }
         out += "        sc_trace(o_vcd, " + p->getName() + ", " + p->getName() + ".name());\n";
     }
@@ -364,9 +356,11 @@ std::string ModuleObject::generate_sysc_cpp() {
         if (proccnt == 0 && isRegProcess()) {
             out += "    v = r;\n";
         }
+        out += "\n";
         out += p->generate(SYSC_CPP);
         // sync register reset 
         if (proccnt == 0 && isRegProcess()) {
+            out += "\n";
             out += "    if (!async_reset_ && !i_nrst.read()) {\n";
             out += "        " + getName() + "_r_reset(v);\n";
             out += "    }\n";

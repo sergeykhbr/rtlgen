@@ -45,11 +45,6 @@ class Logic : public GenValue {
           GenObject *parent=0,
           const char *comment="");
 
-    virtual void allzero();
-    virtual void eq(const char *val);
-    virtual void setbit(const char *idx);
-    virtual void clearbit(const char *idx);
-
     virtual std::string getType(EGenerateType);
     virtual std::string getValue(EGenerateType v) override;
 };

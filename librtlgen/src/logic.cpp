@@ -45,21 +45,6 @@ Logic::Logic(Param *width,
     : GenValue(width->getValue(SYSC_ALL).c_str(), val, name, parent, comment) {
 }
 
-void Logic::allzero() {
-    new ZEROS(this);
-}
-
-void Logic::eq(const char *val) {
-    new EQ(this, new I32D(val));
-}
-
-void Logic::setbit(const char *idx) {
-    new SETBIT(this, new I32D(idx));
-}
-
-void Logic::clearbit(const char *idx) {
-}
-
 
 std::string Logic::getType(EGenerateType v) {
     std::string ret = "";
