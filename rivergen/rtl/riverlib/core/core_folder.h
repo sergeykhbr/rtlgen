@@ -19,17 +19,20 @@
 #include <api.h>
 #include "proc.h"
 #include "ic_csr_m2_s1.h"
+#include "regibank.h"
 
 class core_folder : public FolderObject {
  public:
     core_folder(GenObject *parent) :
         FolderObject(parent, "core"),
         ic_(this),
+        regint_(this),
         proc_(this) {}
 
  protected:
     // subfolders:
     // files
     ic_csr_m2_s1_file ic_;
+    regibank_file regint_;
     proc proc_;
 };

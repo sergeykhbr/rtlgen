@@ -27,10 +27,14 @@ class Processor : public ModuleObject {
 
     class CombProcess : public ProcObject {
      public:
-        CombProcess(GenObject *parent)
-            : ProcObject(parent, "comb") {}
+        CombProcess(GenObject *parent) : ProcObject(parent, "comb") {
+            Processor *p = static_cast<Processor *>(parent);
+            p->proc_comb();
+        }
      protected:
     };
+
+    void proc_comb();
 
     class FetchType : public StructDefObject {
      public:
@@ -403,11 +407,6 @@ class Processor : public ModuleObject {
     OutPort o_data_flush_valid;
     InPort i_data_flush_end;
 
-    CombProcess comb;
-
-    // Sub-module instances:
-    MInstanceObject *iccsr0;
-
     PipelineType w;
     IntRegsType ireg;
     CsrType csr;
@@ -442,6 +441,12 @@ class Processor : public ModuleObject {
     Signal wb_reg_wtag;
     Signal w_reg_inorder;
     Signal w_reg_ignored;
+
+    CombProcess comb;
+
+    // Sub-module instances:
+    MInstanceObject *iccsr0;
+    MInstanceObject *iregs0;
 };
 
 class proc : public FileObject {

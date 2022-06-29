@@ -114,6 +114,17 @@ std::string ModuleObject::generate_sysc_h() {
     out += "    void generateVCD(sc_trace_file *i_vcd, sc_trace_file *o_vcd);\n";
     out += "\n";
     out += " private:\n";
+    // Generic parameter local storage:
+    if (isAsyncReset()) {
+        out += "    " + (new Logic())->getType(SYSC_ALL) + " async_reset_;\n";
+    }
+    for (auto &p: entries_) {
+        if (p->getId() != ID_DEF_PARAM) {
+            continue;
+        }
+        out += "    " + p->getType(SYSC_ALL) + " " + p->getName() + "_;\n";
+    }
+    out += "\n";
 
     // struct definition
     for (auto &p: entries_) {
@@ -156,16 +167,6 @@ std::string ModuleObject::generate_sysc_h() {
     }
 
 
-    // Sub-module list
-    for (auto &p: entries_) {
-        if (p->getId() != ID_MINSTANCE) {
-            continue;
-        }
-        out += "    " + p->getType(SYSC_ALL);
-        out += " *" + p->getName() + ";\n";
-    }
-    out += "\n";
-
     // Signals list
     text = "";
     for (auto &p: entries_) {
@@ -186,17 +187,16 @@ std::string ModuleObject::generate_sysc_h() {
     }
     out += "\n";
 
-    // Generic parameter local storage:
-    if (isAsyncReset()) {
-        out += "    " + (new Logic())->getType(SYSC_ALL) + " async_reset_;\n";
-    }
+    // Sub-module list
     for (auto &p: entries_) {
-        if (p->getId() != ID_DEF_PARAM) {
+        if (p->getId() != ID_MINSTANCE) {
             continue;
         }
-        out += "    " + p->getType(SYSC_ALL) + " " + p->getName() + "_;\n";
+        out += "    " + p->getType(SYSC_ALL);
+        out += " *" + p->getName() + ";\n";
     }
-    
+    out += "\n";
+
     out += 
         "};\n"
         "\n";

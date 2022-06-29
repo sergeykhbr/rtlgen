@@ -37,6 +37,7 @@ class Operation : public GenObject {
     static void set_space(int n);
     static std::string addspaces();
     static std::string obj2varname(EGenerateType v, GenObject *obj);
+    static std::string addtext(EGenerateType v, GenObject *obj, size_t curpos);
 
     virtual void add_arg(GenObject *arg) {
         args[argcnt_++] = arg;
@@ -62,10 +63,15 @@ class Operation : public GenObject {
 void TEXT(const char *comment="");
 Operation &SETZERO(GenObject &a, const char *comment="");
 Operation &SETONE(GenObject &a, const char *comment="");
+Operation &SETALLONE(GenObject &a, const char *comment="");
 Operation &SETBIT(GenObject &a, GenObject &b, const char *comment="");
 Operation &SETVAL(GenObject &a, GenObject &b, const char *comment="");
 Operation &EZ(GenObject &a, const char *comment="");        // equal-zero
+Operation &NZ(GenObject &a, const char *comment="");        // Non-zero
+Operation &INV(GenObject &a, const char *comment="");        // logical inversion
 Operation &OR2(GenObject &a, GenObject &b, const char *comment="");
+Operation &OR3(GenObject &a, GenObject &b, GenObject &c, const char *comment="");
+Operation &OR4(GenObject &a, GenObject &b, GenObject &c, GenObject &d, const char *comment="");
 Operation &AND2(GenObject &a, GenObject &b, const char *comment="");
 Operation &AND3(GenObject &a, GenObject &b, GenObject &c, const char *comment="");
 
