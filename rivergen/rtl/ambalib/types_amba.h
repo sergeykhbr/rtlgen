@@ -27,78 +27,96 @@ class types_amba : public FileObject {
     class FunctionReadNoSnoop : public FunctionObject {
      public:
         FunctionReadNoSnoop(GenObject *parent)
-            : FunctionObject(parent, "ReadNoSnoop") {
-            retval_ = new Logic("REQ_MEM_TYPE_BITS", "ret", "", this);
-            SETZERO(*retval_);
+            : FunctionObject(parent, "ReadNoSnoop"),
+            ret_("REQ_MEM_TYPE_BITS", "ret", "", this) {
+            SETZERO(ret_);
         }
+        virtual GenObject *getpReturn() override { return &ret_; }
+     protected:
+        Logic ret_;
     };
 
     class FunctionReadShared : public FunctionObject {
      public:
         FunctionReadShared(GenObject *parent)
-            : FunctionObject(parent, "ReadShared") {
+            : FunctionObject(parent, "ReadShared"),
+            ret_("REQ_MEM_TYPE_BITS", "ret", "", this) {
             types_amba *p = static_cast<types_amba *>(parent_);
-            retval_ = new Logic("REQ_MEM_TYPE_BITS", "ret", "", this);
-            SETZERO(*retval_);
-            SETBIT(*retval_, p->REQ_MEM_TYPE_CACHED);
+            SETZERO(ret_);
+            SETBIT(ret_, p->REQ_MEM_TYPE_CACHED);
         }
+        virtual GenObject *getpReturn() override { return &ret_; }
+     protected:
+        Logic ret_;
     };
 
     class FunctionReadMakeUnique : public FunctionObject {
      public:
         FunctionReadMakeUnique(GenObject *parent)
-            : FunctionObject(parent, "ReadMakeUnique") {
+            : FunctionObject(parent, "ReadMakeUnique"),
+            ret_("REQ_MEM_TYPE_BITS", "ret", "", this) {
             types_amba *p = static_cast<types_amba *>(parent_);
-            retval_ = new Logic("REQ_MEM_TYPE_BITS", "ret", "", this);
-            SETZERO(*retval_);
-            SETBIT(*retval_, p->REQ_MEM_TYPE_CACHED);
-            SETBIT(*retval_, p->REQ_MEM_TYPE_UNIQUE);
+            SETZERO(ret_);
+            SETBIT(ret_, p->REQ_MEM_TYPE_CACHED);
+            SETBIT(ret_, p->REQ_MEM_TYPE_UNIQUE);
         }
+        virtual GenObject *getpReturn() override { return &ret_; }
+     protected:
+        Logic ret_;
     };
 
     class FunctionWriteNoSnoop : public FunctionObject {
      public:
         FunctionWriteNoSnoop(GenObject *parent)
-            : FunctionObject(parent, "WriteNoSnoop") {
+            : FunctionObject(parent, "WriteNoSnoop"),
+            ret_("REQ_MEM_TYPE_BITS", "ret", "", this) {
             types_amba *p = static_cast<types_amba *>(parent_);
-            retval_ = new Logic("REQ_MEM_TYPE_BITS", "ret", "", this);
-            SETZERO(*retval_);
-            SETBIT(*retval_, p->REQ_MEM_TYPE_WRITE);
+            SETZERO(ret_);
+            SETBIT(ret_, p->REQ_MEM_TYPE_WRITE);
         }
+        virtual GenObject *getpReturn() override { return &ret_; }
+     protected:
+        Logic ret_;
     };
 
     class FunctionWriteLineUnique : public FunctionObject {
      public:
         FunctionWriteLineUnique(GenObject *parent)
-            : FunctionObject(parent, "WriteLineUnique") {
+            : FunctionObject(parent, "WriteLineUnique"),
+            ret_("REQ_MEM_TYPE_BITS", "ret", "", this) {
             types_amba *p = static_cast<types_amba *>(parent_);
-            retval_ = new Logic("REQ_MEM_TYPE_BITS", "ret", "", this);
-            SETZERO(*retval_);
-            SETBIT(*retval_, p->REQ_MEM_TYPE_WRITE);
-            SETBIT(*retval_, p->REQ_MEM_TYPE_CACHED);
-            SETBIT(*retval_, p->REQ_MEM_TYPE_UNIQUE);
+            SETZERO(ret_);
+            SETBIT(ret_, p->REQ_MEM_TYPE_WRITE);
+            SETBIT(ret_, p->REQ_MEM_TYPE_CACHED);
+            SETBIT(ret_, p->REQ_MEM_TYPE_UNIQUE);
         }
+        virtual GenObject *getpReturn() override { return &ret_; }
+     protected:
+        Logic ret_;
     };
 
     class FunctionWriteBack : public FunctionObject {
      public:
         FunctionWriteBack(GenObject *parent)
-            : FunctionObject(parent, "WriteBack") {
+            : FunctionObject(parent, "WriteBack"),
+            ret_("REQ_MEM_TYPE_BITS", "ret", "", this) {
             types_amba *p = static_cast<types_amba *>(parent_);
-            retval_ = new Logic("REQ_MEM_TYPE_BITS", "ret", "", this);
-            SETZERO(*retval_);
-            SETBIT(*retval_, p->REQ_MEM_TYPE_WRITE);
-            SETBIT(*retval_, p->REQ_MEM_TYPE_CACHED);
+            SETZERO(ret_);
+            SETBIT(ret_, p->REQ_MEM_TYPE_WRITE);
+            SETBIT(ret_, p->REQ_MEM_TYPE_CACHED);
         }
+        virtual GenObject *getpReturn() override { return &ret_; }
+     protected:
+        Logic ret_;
     };
 
  public:
-    Param CFG_BUS_ADDR_WIDTH;
+    ParamI32D CFG_BUS_ADDR_WIDTH;
     TextLine _Memtype0_;
-    Param REQ_MEM_TYPE_WRITE;
-    Param REQ_MEM_TYPE_CACHED;
-    Param REQ_MEM_TYPE_UNIQUE;
-    Param REQ_MEM_TYPE_BITS;
+    ParamI32D REQ_MEM_TYPE_WRITE;
+    ParamI32D REQ_MEM_TYPE_CACHED;
+    ParamI32D REQ_MEM_TYPE_UNIQUE;
+    ParamI32D REQ_MEM_TYPE_BITS;
     TextLine _Snoop0_;
     FunctionReadNoSnoop ReadNoSnoop;
     TextLine _Snoop1_;

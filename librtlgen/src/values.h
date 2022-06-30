@@ -56,26 +56,6 @@ class GenValue : public GenObject {
     std::string width_vhdl_;  // vhdl
 };
 
-class GenValueWrapper : public GenObject {
- public:
-    GenValueWrapper(GenObject *parent,
-                    EIdType id,
-                    const char *name,
-                    GenValue *value,
-                    const char *comment="")
-    : GenObject(parent, id, name, comment), value_(value) {}
-
-    virtual std::string getType(EGenerateType v) override { return value_->getType(v); }
-    virtual uint64_t getValue() override { return value_->getValue(); }
-    virtual std::string getValue(EGenerateType v) override { return value_->getValue(v); };
-    virtual int getWidth() override { return value_->getWidth(); }
-    virtual std::string getWidth(EGenerateType v) override { return value_->getWidth(v); }
-
-    virtual GenValue *getpWrappedValue() { return value_; }
-protected:
-    GenValue *value_;
-};
-
 class BOOL : public GenValue {
  public:
     BOOL(const char *val, const char *name="",

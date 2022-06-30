@@ -18,19 +18,23 @@
 
 namespace sysvc {
 
-Signal::Signal(GenObject *parent,
-               const char *name,
-               Logic *wire,
-               const char *comment)
-    : GenValueWrapper(parent, ID_SIGNAL, name, wire, comment) {
+Signal::Signal(GenObject *parent, const char *name, const char *width,
+    const char *comment) : Logic(width, name, "", parent, comment) {
+    id_ = ID_SIGNAL;
 }
+
+Signal::Signal(GenObject *parent, const char *name, GenValue *width, 
+    const char *comment) : Logic(width, name, "", parent, comment) {
+    id_ = ID_SIGNAL;
+}
+
 
 std::string Signal::getType(EGenerateType v) {
     std::string out = "";
     if (v == SYSC_ALL || v == SYSC_H || v == SYSC_CPP) {
-        out += "sc_signal<" + value_->getType(v) + ">";
+        out += "sc_signal<" + Logic::getType(v) + ">";
     } else if (v == SV_ALL || v == SV_PKG || v == SV_MOD) {
-        out += value_->getType(v);
+        out += Logic::getType(v);
     } else {
     }
     return out;

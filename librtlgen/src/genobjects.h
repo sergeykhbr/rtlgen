@@ -28,6 +28,7 @@ enum EIdType {
     ID_CONST,
     ID_VALUE,
     ID_ENUM,
+    ID_ARRAY,
     ID_PARAM,
     ID_DEF_PARAM,   // Generic parameter used in ifdef/endif statements
     ID_FUNCTION,

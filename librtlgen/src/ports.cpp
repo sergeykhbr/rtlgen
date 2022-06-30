@@ -18,20 +18,34 @@
 
 namespace sysvc {
 
-PortObject::PortObject(GenObject *parent,
-                       EIdType id,
-                       const char *name,
-                       Logic *wire,
-                       const char *comment)
-    : GenValueWrapper(parent, id, name, wire, comment) {
+InPort::InPort(GenObject *parent, const char *name, const char *width,
+    const char *comment) : Logic(width, name, "", parent, comment) {
+    id_ = ID_INPUT;
 }
+
+InPort::InPort(GenObject *parent, const char *name, GenValue *width, 
+    const char *comment) : Logic(width, name, "", parent, comment) {
+    id_ = ID_INPUT;
+}
+
+
+OutPort::OutPort(GenObject *parent, const char *name, const char *width,
+    const char *comment) : Logic(width, name, "", parent, comment) {
+    id_ = ID_OUTPUT;
+}
+
+OutPort::OutPort(GenObject *parent, const char *name, GenValue *width, 
+    const char *comment) : Logic(width, name, "", parent, comment) {
+    id_ = ID_OUTPUT;
+}
+
 
 std::string InPort::getType(EGenerateType v) {
     std::string out = "";
     if (v == SYSC_ALL || v == SYSC_H || v == SYSC_CPP) {
-        out += "sc_in<" + value_->getType(v) + ">";
+        out += "sc_in<" + Logic::getType(v) + ">";
     } else if (v == SV_ALL || v == SV_PKG || v == SV_MOD) {
-        out += "input " + value_->getType(v);
+        out += "input " + Logic::getType(v);
     } else {
     }
     return out;
@@ -40,9 +54,9 @@ std::string InPort::getType(EGenerateType v) {
 std::string OutPort::getType(EGenerateType v) {
     std::string out = "";
     if (v == SYSC_ALL || v == SYSC_H || v == SYSC_CPP) {
-        out += "sc_out<" + value_->getType(v) + ">";
+        out += "sc_out<" + Logic::getType(v) + ">";
     } else if (v == SV_ALL || v == SV_PKG || v == SV_MOD) {
-        out += "output " + value_->getType(v);
+        out += "output " + Logic::getType(v);
     } else {
     }
     return out;

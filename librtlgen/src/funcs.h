@@ -31,6 +31,7 @@ class FunctionObject : public GenObject {
 
     virtual std::string getType(EGenerateType v) { return std::string(""); }
     virtual std::string generate(EGenerateType v);
+    virtual GenObject *getpReturn() { return 0; }
 
  protected:
     virtual bool isStatic() {
@@ -41,10 +42,6 @@ class FunctionObject : public GenObject {
     std::string generate_sysc();
     std::string generate_sysv();
     std::string generate_vhdl();
-
- protected:
-    GenValue *retval_;
-    std::vector<GenObject *> args_;
 };
 
 }  // namespace sysvc

@@ -18,7 +18,6 @@
 
 #include "genobjects.h"
 #include "values.h"
-#include "params.h"
 #include <iostream>
 
 namespace sysvc {
@@ -34,12 +33,6 @@ class Logic : public GenValue {
           const char *comment="");
 
     Logic(GenValue *width,
-          const char *name="",
-          const char *val="",
-          GenObject *parent=0,
-          const char *comment="");
-
-    Logic(Param *width,
           const char *name="",
           const char *val="",
           GenObject *parent=0,

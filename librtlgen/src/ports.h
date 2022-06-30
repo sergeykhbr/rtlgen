@@ -19,6 +19,7 @@
 #include "genobjects.h"
 #include "params.h"
 #include "logic.h"
+#include "values.h"
 #include <iostream>
 
 namespace sysvc {
@@ -26,30 +27,33 @@ namespace sysvc {
 /*
  * Input/Output ports of the modules
  */
-class PortObject : public GenValueWrapper {
- public:
-    PortObject(GenObject *parent,
-             EIdType type,
-             const char *name,
-             Logic *wire,
-             const char *comment);
-};
 
-
-class InPort : public PortObject {
+class InPort : public Logic {
  public:
-    InPort(GenObject *parent, const char *name,
-             Logic *wire, const char *comment="")
-        : PortObject(parent, ID_INPUT, name, wire, comment) {}
+    InPort(GenObject *parent,
+           const char *name,
+           const char *width="1",
+           const char *comment="");
+
+    InPort(GenObject *parent,
+           const char *name,
+           GenValue *width,
+           const char *comment="");
 
     virtual std::string getType(EGenerateType v) override;
 };
 
-class OutPort : public PortObject {
+class OutPort : public Logic {
  public:
-    OutPort(GenObject *parent, const char *name,
-             Logic *wire, const char *comment="")
-        : PortObject(parent, ID_OUTPUT, name, wire, comment) {}
+    OutPort(GenObject *parent,
+           const char *name,
+           const char *width="1",
+           const char *comment="");
+
+    OutPort(GenObject *parent,
+           const char *name,
+           GenValue *width,
+           const char *comment="");
 
     virtual std::string getType(EGenerateType v) override;
 };

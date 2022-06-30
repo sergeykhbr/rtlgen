@@ -45,7 +45,7 @@ std::string ModuleObject::generate_sysc_h() {
             continue;
         }
         ln = "";
-        ln += "    " + static_cast<PortObject *>(p)->getType(SYSC_ALL);
+        ln += "    " + p->getType(SYSC_ALL);
         ln += " " + p->getName() + ";";
         if (p->getComment().size()) {
             while (ln.size() < 60) {
@@ -101,7 +101,7 @@ std::string ModuleObject::generate_sysc_h() {
         while (ln.size() < space1.size()) {
             ln += " ";
         }
-        ln += static_cast<DefParam *>(p)->getType(SYSC_ALL);
+        ln += p->getType(SYSC_ALL);
         ln += " " + p->getName();
         out += ln;
     }
@@ -228,7 +228,7 @@ std::string ModuleObject::generate_sysc_cpp() {
         while (ln.size() < space1.size()) {
             ln += " ";
         }
-        ln += static_cast<DefParam *>(p)->getType(SYSC_ALL);
+        ln += p->getType(SYSC_ALL);
         ln += " " + p->getName();
         out += ln;
     }

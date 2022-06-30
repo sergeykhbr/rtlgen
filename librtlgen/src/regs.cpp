@@ -19,33 +19,21 @@
 
 namespace sysvc {
 
-Reg::Reg(GenObject *parent,
-         const char *name,
-         Logic *wire,
-         Logic *reset,
-         const char *comment)
-    : GenValueWrapper(parent, ID_REG, name, wire, comment), reset_(reset) {
-}
-
-Reg::Reg(GenObject *parent,
-         const char *name,
-         Logic *wire,
-         const char *comment)
-    : GenValueWrapper(parent, ID_REG, name, wire, comment) {
-    char tstr[64];
-    RISCV_sprintf(tstr, sizeof(tstr), "%d", getWidth());
-    reset_ = new Logic(tstr, "", "0");
+RegGeneric::RegGeneric(GenObject *parent,
+                        const char *name,
+                        const char *comment)
+    : GenObject(parent, ID_REG, name, comment) {
 }
 
 std::string Reg::getType(EGenerateType v) {
-    std::string out = "";
+    std::string ret = "";
     if (v == SYSC_ALL || v == SYSC_H || v == SYSC_CPP) {
-        out += "sc_signal<" + value_->getType(v) + ">";
+        ret += regvalue_.getType(v);
     } else if (v == SV_ALL || v == SV_PKG || v == SV_MOD) {
-        out += "reg " + value_->getType(v);
+        ret += "reg " + regvalue_.getType(v);
     } else {
     }
-    return out;
+    return ret;
 }
 
 }

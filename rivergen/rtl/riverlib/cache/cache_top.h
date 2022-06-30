@@ -26,7 +26,7 @@ class CacheTop : public ModuleObject {
     CacheTop(GenObject *parent);
 
  protected:
-    DefParam coherence_ena;
+    DefParamBOOL coherence_ena;
 
     InPort i_clk;
     InPort i_nrst;

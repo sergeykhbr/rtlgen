@@ -23,7 +23,6 @@ FunctionObject::FunctionObject(GenObject *parent,
                                  const char *name,
                                  const char *comment)
     : GenObject(parent, ID_FUNCTION, name, comment) {
-    retval_ = 0;
     Operation::start(this);
 }
 
@@ -45,18 +44,28 @@ std::string FunctionObject::generate_sysc() {
     if (isStatic()) {
         ret += "static ";
     }
-    if (retval_) {
-        ret += retval_->getType(SYSC_ALL);
+    if (getpReturn()) {
+        ret += getpReturn()->getType(SYSC_ALL);
     } else {
         ret += "void";
     }
     ret += " ";
     ret += getName();
     ret += "(";
-    for (auto &a : args_) {
+
+    // Compute total number of arguments
+    int argtotal = 0;
+    int argcnt = 0;
+    for (auto &a : entries_) {
+        if (a->getId() == ID_INPUT || a->getId() == ID_OUTPUT) {
+            argtotal++;
+        }
+    }
+    // Generate list of arguments
+    for (auto &a : entries_) {
         if (a->getId() == ID_INPUT || a->getId() == ID_OUTPUT) {
             ret += "\n    " + a->generate(SYSC_ALL);
-            if (&a != &args_.back()) {
+            if (++argcnt < argtotal) {
                 ret += ",";
             }
         }
@@ -65,8 +74,11 @@ std::string FunctionObject::generate_sysc() {
 
     if (isStatic()) {
         ret += " {\n";
-        if (retval_) {
-            ret += "    " + retval_->getType(SYSC_ALL) + " " + retval_->getName() +";\n";
+        for (auto &e: entries_) {
+            if (e->getId() != ID_VALUE) {
+                continue;
+            }
+            ret += "    " + e->getType(SYSC_ALL) + " " + e->getName() + ";\n";
         }
         ret += "\n";
         for (auto &e: entries_) {
@@ -75,8 +87,8 @@ std::string FunctionObject::generate_sysc() {
             }
             ret += e->generate(SYSC_ALL);
         }
-        if (retval_) {
-            ret += "    return " + retval_->getName() + ";\n";
+        if (getpReturn()) {
+            ret += "    return " + getpReturn()->getName() + ";\n";
         }
         ret += "}\n";
     } else {
@@ -89,29 +101,42 @@ std::string FunctionObject::generate_sysc() {
 std::string FunctionObject::generate_sysv() {
     std::string ret = "";
     ret += "function automatic ";
-    if (retval_) {
-        ret += retval_->getType(SV_ALL);
+    if (getpReturn()) {
+        ret += getpReturn()->getType(SV_ALL);
     }
     ret += " ";
     ret += getName();
-    if (args_.size()) {
+    // Compute total number of arguments
+    int argtotal = 0;
+    int argcnt = 0;
+    for (auto &a : entries_) {
+        if (a->getId() == ID_INPUT || a->getId() == ID_OUTPUT) {
+            argtotal++;
+        }
+    }
+    if (argtotal) {
         ret += "(";
     }
-    for (auto &a : args_) {
+    // Generate list of arguments
+    for (auto &a : entries_) {
         if (a->getId() == ID_INPUT || a->getId() == ID_OUTPUT) {
             ret += "\n    " + a->generate(SV_ALL);
-            if (&a != &args_.back()) {
+            if (++argcnt < argtotal) {
                 ret += ",";
             }
         }
     }
-    if (args_.size()) {
+    if (argtotal) {
         ret += ")";
     }
     ret += ";\n";
-    if (retval_) {
-        ret += "    " + retval_->getType(SV_ALL) + " " + retval_->getName() +";\n";
+    for (auto &e: entries_) {
+        if (e->getId() != ID_VALUE) {
+            continue;
+        }
+        ret += "    " + e->getType(SV_ALL) + " " + e->getName() +";\n";
     }
+
     ret += "\n";
     for (auto &e: entries_) {
         if (e->getId() != ID_OPERATION) {
@@ -119,8 +144,8 @@ std::string FunctionObject::generate_sysv() {
         }
         ret += e->generate(SV_ALL);
     }
-    if (retval_) {
-        ret += "    return " + retval_->getName() + ";\n";
+    if (getpReturn()) {
+        ret += "    return " + getpReturn()->getName() + ";\n";
     }
     ret += "endfunction\n";
     return ret;

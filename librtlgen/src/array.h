@@ -19,25 +19,27 @@
 #include "genobjects.h"
 #include "values.h"
 #include <iostream>
+#include <list>
 
 namespace sysvc {
 
-
-class DefParamBOOL : public BOOL {
+class ArrayObject : public GenObject {
  public:
-    DefParamBOOL(GenObject *parent, const char *name, const char *val,
-                const char *comment="") : BOOL(val, name, parent, comment) {
-        id_ = ID_DEF_PARAM;
-    }
-};
+    ArrayObject(GenObject *parent,
+                const char *type,
+                const char *name,
+                int size,
+                const char *comment="");
 
-
-class DefParamUI32D : public UI32D {
- public:
-    DefParamUI32D(GenObject *parent, const char *name, const char *val,
-                const char *comment="") : UI32D(val, name, parent, comment) {
-        id_ = ID_DEF_PARAM;
-    }
+    virtual std::string getType(EGenerateType v) { return type_; }
+    virtual std::string generate(EGenerateType v);
+ protected:
+    std::string generate_sysc();
+    std::string generate_sysv();
+    std::string generate_vhdl();
+ protected:
+    std::string type_;
+    int size_;
 };
 
 }  // namespace sysvc

@@ -83,7 +83,7 @@ std::string ModuleObject::generate_sv_mod() {
             text = "";
         }
         ln = "";
-        ln += "    " + static_cast<PortObject *>(p)->getType(SV_PKG);
+        ln += "    " + p->getType(SV_PKG);
         ln += " " + p->getName();
         if (--port_cnt) {
             ln += ",";

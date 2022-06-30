@@ -19,75 +19,39 @@
 
 namespace sysvc {
 
+ParamGeneric::ParamGeneric(GenValue *parent) {
 
-Param::Param(GenObject *parent,
-                         const char *name,
-                         GenValue *value,
-                         const char *comment)
-    : GenValueWrapper(parent, ID_PARAM, name, value, comment) {
-
-    std::string path = getFullPath();
-    std::string file = getFile();
+    std::string path = parent->getFullPath();
+    std::string file = parent->getFile();
     SCV_set_cfg_parameter(path,
                           file,
-                          getName().c_str(),
-                          value_->getValue());
+                          parent->getName().c_str(),
+                          parent->getValue());
 }
 
-std::string Param::generate(EGenerateType v) {
+std::string ParamGeneric::genparam(EGenerateType v, GenValue *p) {
     std::string ret = "";
 
     if (v == SYSC_ALL || v == SYSC_H || v == SYSC_CPP) {
-        ret += generate_sysc();
+        ret += "static const ";
     } else if (v == SV_ALL || v == SV_PKG || v == SV_MOD) {
-        ret += generate_sysv();
+        ret += "localparam ";
+        v = SV_ALL;     // no need to print package_name::param_name
     } else {
-        ret += generate_vhdl();
+        ret += "const ";
     }
-
-    return ret;
-}
-
-std::string Param::generate_sysc() {
-    std::string ret = "";
-
-    ret += "static const ";
-    ret += value_->getType(SYSC_ALL) + " ";
-    ret += getName() + " = ";
-    ret += value_->getValue(SYSC_ALL) + ";";
+    ret += p->getType(v) + " ";
+    ret += p->getName() + " = ";
+    ret += p->getValue(v) + ";";
 
     // One line comment
-    if (getComment().size()) {
+    if (p->getComment().size()) {
         while (ret.size() < 60) {
             ret += " ";
         }
-        ret += "// " + getComment();
+        ret += "// " + p->getComment();
     }
     ret += "\n";
-    return ret;
-}
-
-std::string Param::generate_sysv() {
-    std::string ret = "";
-
-    ret += "localparam ";
-    ret += value_->getType(SV_ALL) + " ";
-    ret += getName() + " = ";
-    ret += value_->getValue(SV_ALL) + ";";
-
-    // One line comment
-    if (getComment().size()) {
-        while (ret.size() < 60) {
-            ret += " ";
-        }
-        ret += "// " + getComment();
-    }
-    ret += "\n";
-    return ret;
-}
-
-std::string Param::generate_vhdl() {
-    std::string ret = "";
     return ret;
 }
 

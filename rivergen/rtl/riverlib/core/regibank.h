@@ -58,8 +58,17 @@ class RegIntBank : public ModuleObject {
     OutPort o_ra;
     OutPort o_sp;
 
-    Reg midx;
-    Reg acquired;
+    class RegArrayType : public ArrayObject {
+     public:
+        RegArrayType(GenObject *parent) : ArrayObject(parent, "RegArrayType", "arr", 32),
+        val(this, "val", "RISCV_ARCH"),
+        tag(this, "tag", "CFG_REG_TAG_WIDTH") {}
+     public:
+        Signal val;
+        Signal tag;
+    };
+    
+    Reg reg;
 
     // process should be intialized last to make all signals available
     CombProcess comb;

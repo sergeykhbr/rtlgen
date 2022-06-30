@@ -18,12 +18,12 @@
 
 types_amba::types_amba(GenObject *parent) :
     FileObject(parent, "types_amba"),
-    CFG_BUS_ADDR_WIDTH(this, "CFG_BUS_ADDR_WIDTH", new I32D("64"), ""),
+    CFG_BUS_ADDR_WIDTH(this, "CFG_BUS_ADDR_WIDTH", "64"),
     _Memtype0_(this),
-    REQ_MEM_TYPE_WRITE(this, "REQ_MEM_TYPE_WRITE", new I32D("0")),
-    REQ_MEM_TYPE_CACHED(this, "REQ_MEM_TYPE_CACHED", new I32D("1")),
-    REQ_MEM_TYPE_UNIQUE(this, "REQ_MEM_TYPE_UNIQUE", new I32D("2")),
-    REQ_MEM_TYPE_BITS(this, "REQ_MEM_TYPE_BITS", new I32D("3")),
+    REQ_MEM_TYPE_WRITE(this, "REQ_MEM_TYPE_WRITE", "0"),
+    REQ_MEM_TYPE_CACHED(this, "REQ_MEM_TYPE_CACHED", "1"),
+    REQ_MEM_TYPE_UNIQUE(this, "REQ_MEM_TYPE_UNIQUE", "2"),
+    REQ_MEM_TYPE_BITS(this, "REQ_MEM_TYPE_BITS", "3"),
     _Snoop0_(this),
     ReadNoSnoop(this),
     _Snoop1_(this),

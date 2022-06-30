@@ -37,14 +37,6 @@ Logic::Logic(GenValue *width,
     : GenValue(width->getValue(SYSC_ALL).c_str(), val, name, parent, comment) {
 }
 
-Logic::Logic(Param *width,
-              const char *name,
-              const char *val,
-              GenObject *parent,
-              const char *comment)
-    : GenValue(width->getValue(SYSC_ALL).c_str(), val, name, parent, comment) {
-}
-
 
 std::string Logic::getType(EGenerateType v) {
     std::string ret = "";

@@ -18,18 +18,25 @@
 
 #include "genobjects.h"
 #include "logic.h"
+#include "params.h"
+#include "values.h"
 #include <iostream>
 
 namespace sysvc {
 
-class Signal : public GenValueWrapper {
+class Signal : public Logic {
  public:
     Signal(GenObject *parent,
            const char *name,
-           Logic *wire,
+           const char *width="1",
            const char *comment="");
 
-    virtual std::string getType(EGenerateType v);
+    Signal(GenObject *parent,
+           const char *name,
+           GenValue *width,
+           const char *comment="");
+
+    virtual std::string getType(EGenerateType v) override;
 };
 
 }  // namespace sysvc

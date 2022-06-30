@@ -28,10 +28,10 @@ class RiverTop : public ModuleObject {
     RiverTop(GenObject *parent);
 
  protected:
-    DefParam hartid;
-    DefParam fpu_ena;
-    DefParam coherence_ena;
-    DefParam tracer_ena;
+    DefParamUI32D hartid;
+    DefParamBOOL fpu_ena;
+    DefParamBOOL coherence_ena;
+    DefParamBOOL tracer_ena;
     // Ports:
     InPort i_clk;
     InPort i_nrst;

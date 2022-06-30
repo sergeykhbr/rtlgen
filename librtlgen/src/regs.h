@@ -18,26 +18,33 @@
 
 #include "genobjects.h"
 #include "logic.h"
+#include "signals.h"
 #include <iostream>
 
 namespace sysvc {
 
-class Reg : public GenValueWrapper {
+class RegGeneric : public GenObject {
  public:
-    Reg(GenObject *parent,
-        const char *name,
-        Logic *wire,
-        Logic *reset,
-        const char *comment="");
-    Reg(GenObject *parent,
-        const char *name,
-        Logic *wire,
-        const char *comment="");
+    RegGeneric(GenObject *parent,
+                const char *name,
+                const char *comment="");
 
-    virtual std::string getReset(EGenerateType v) { return reset_->getValue(v); }
-    virtual std::string getType(EGenerateType v) override;
+    virtual std::string getReset(EGenerateType v) = 0;
+    virtual std::string getType(EGenerateType v) = 0;
+};
+
+class Reg : public RegGeneric {
+ public:
+    Reg(GenObject *parent, const char *name, const char *width="1", const char *comment="")
+        : RegGeneric(parent, name, comment),
+        regvalue_(this, "regval", width),
+        regreset_(width, "regreset", "0", this) {
+    }
+    virtual std::string getReset(EGenerateType v) { return regreset_.getValue(v); }
+    virtual std::string getType(EGenerateType v);
  protected:
-    Logic *reset_;
+    Signal regvalue_;
+    Logic regreset_;
 };
 
 }  // namespace sysvc

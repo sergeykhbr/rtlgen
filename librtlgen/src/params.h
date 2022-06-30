@@ -18,23 +18,64 @@
 
 #include "genobjects.h"
 #include "values.h"
+#include "logic.h"
 #include <iostream>
 
 namespace sysvc {
 
-class Param : public GenValueWrapper {
+class ParamGeneric {
  public:
-    Param(GenObject *parent,
-          const char *name,
-          GenValue *value,
-          const char *comment="");
+    ParamGeneric(GenValue *parent);
 
-    virtual std::string generate(EGenerateType v);
-
- protected:
-    std::string generate_sysc();
-    std::string generate_sysv();
-    std::string generate_vhdl();
+    virtual std::string genparam(EGenerateType v, GenValue *p);
 };
+
+class ParamBOOL : public BOOL,
+                  public ParamGeneric {
+ public:
+    ParamBOOL(GenObject *parent, const char *name,
+                const char *val, const char *comment="")
+        : BOOL(val, name, parent, comment),
+        ParamGeneric(static_cast<GenValue *>(this)) {
+        id_ = ID_PARAM;
+    }
+    virtual std::string generate(EGenerateType v) override {
+        return genparam(v, static_cast<GenValue *>(this));
+    }
+};
+
+
+class ParamI32D : public I32D,
+                  public ParamGeneric {
+ public:
+    ParamI32D(GenObject *parent, const char *name, const char *val,
+        const char *comment="")
+        : I32D(val, name, parent, comment),
+        ParamGeneric(static_cast<GenValue *>(this)) {}
+    virtual std::string generate(EGenerateType v) override {
+        return genparam(v, static_cast<GenValue *>(this));
+    }
+};
+
+class ParamLogic : public Logic,
+                   public ParamGeneric {
+ public:
+    ParamLogic(GenObject *parent, const char *width, const char *name,
+                const char *val, const char *comment="")
+        : Logic(width, name, val, parent, comment),
+        ParamGeneric(static_cast<GenValue *>(this)) {
+        id_ = ID_PARAM;
+    }
+    ParamLogic(GenObject *parent, GenValue *width, const char *name,
+               const char *val, const char *comment="")
+        : Logic(width, name, val, parent, comment),
+        ParamGeneric(static_cast<GenValue *>(this)) {
+        id_ = ID_PARAM;
+    }
+    virtual std::string generate(EGenerateType v) override {
+        return genparam(v, static_cast<GenValue *>(this));
+    }
+};
+
 
 }  // namespace sysvc
