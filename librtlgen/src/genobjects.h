@@ -67,15 +67,17 @@ class GenObject {
     virtual std::string getFile();
     virtual void add_entry(GenObject *p);
 
-    unsigned getId() { return id_; }
-    GenObject *getParent() { return parent_; }
-    std::string getName() { return name_; }
-    std::string getComment() { return comment_; }
+    virtual unsigned getId() { return id_; }
+    virtual GenObject *getParent() { return parent_; }
+    virtual std::string getName() { return name_; }
+    virtual std::string getComment() { return comment_; }
     virtual std::string getType(EGenerateType) = 0;
     virtual uint64_t getValue() { return 0; }
     virtual std::string getValue(EGenerateType) { return std::string(""); }
     virtual int getWidth() { return 0; }
     virtual std::string getWidth(EGenerateType) { return std::string(""); }
+    virtual int getDepth() { return 0; }    // two-dimensional object
+    virtual std::string getDepth(EGenerateType) { return std::string(""); }
 
     virtual std::string generate(EGenerateType) { return std::string(""); }
 

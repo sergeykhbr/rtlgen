@@ -40,7 +40,7 @@ RegIntBank::RegIntBank(GenObject *parent) :
     o_ra(this, "o_ra", "RISCV_ARCH", "Return address for branch predictor"),
     o_sp(this, "o_sp", "RISCV_ARCH", "Stack Pointer for border control"),
     // registers
-    reg(this, "reg"),
+    reg(this, "arr"),
    // process
     comb(this)
  {

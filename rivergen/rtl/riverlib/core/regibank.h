@@ -58,17 +58,22 @@ class RegIntBank : public ModuleObject {
     OutPort o_ra;
     OutPort o_sp;
 
-    class RegArrayType : public ArrayObject {
+    class RegArrayType : public StructDefObject {
      public:
-        RegArrayType(GenObject *parent) : ArrayObject(parent, "RegArrayType", "arr", 32),
-        val(this, "val", "RISCV_ARCH"),
-        tag(this, "tag", "CFG_REG_TAG_WIDTH") {}
+        RegArrayType(GenObject *parent, const char *name)
+            : StructDefObject(parent, "RegArrayType", name),
+            val(this, "val", "RISCV_ARCH"),
+            tag(this, "tag", "CFG_REG_TAG_WIDTH") {}
+
+        virtual int getDepth() override { return 32; }    // two-dimensional object
+        virtual std::string getDepth(EGenerateType) override { return std::string("31"); }
+
      public:
         Signal val;
         Signal tag;
     };
     
-    Reg reg;
+    RegArrayType reg;
 
     // process should be intialized last to make all signals available
     CombProcess comb;

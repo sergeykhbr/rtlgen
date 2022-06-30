@@ -141,7 +141,11 @@ std::string ModuleObject::generate_sysc_h() {
             if (p->getId() != ID_REG) {
                 continue;
             }
-            ln = "        " + p->getType(SYSC_ALL) + " " + p->getName() + ";";
+            ln = "        " + p->getType(SYSC_ALL) + " " + p->getName();
+            if (p->getDepth()) {
+                ln += "[0:" + p->getDepth(SYSC_ALL) + "]";
+            }
+            ln += ";";
             if (p->getComment().size()) {
                 while (ln.size() < 60) {
                     ln += " ";
@@ -182,8 +186,16 @@ std::string ModuleObject::generate_sysc_h() {
             out += text;
             text = "";
         }
-        out += "    " + static_cast<Signal *>(p)->getType(SYSC_ALL);
-        out += " " + p->getName() + ";\n";
+#if 1
+    if (p->getType(SYSC_ALL) == "RegArrayType") {
+        bool st = true;
+    }
+#endif
+        out += "    " + p->getType(SYSC_ALL) + " " + p->getName();
+        if (p->getDepth()) {
+            ln += "[0:" + p->getDepth(SYSC_ALL) + "]";
+        }
+        out += ";\n";
     }
     out += "\n";
 
