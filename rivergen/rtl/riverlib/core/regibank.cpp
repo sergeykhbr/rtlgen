@@ -39,8 +39,10 @@ RegIntBank::RegIntBank(GenObject *parent) :
     o_dport_rdata(this, "o_dport_rdata", "RISCV_ARCH", "Debug port read value"),
     o_ra(this, "o_ra", "RISCV_ARCH", "Return address for branch predictor"),
     o_sp(this, "o_sp", "RISCV_ARCH", "Stack Pointer for border control"),
+    // struct declaration
+    RegArrayTypeDef_(this, 0, "RegArrayType"),
     // registers
-    reg(this, "arr"),
+    reg(this, &RegArrayTypeDef_, "arr"),
    // process
     comb(this)
  {

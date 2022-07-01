@@ -58,10 +58,10 @@ class RegIntBank : public ModuleObject {
     OutPort o_ra;
     OutPort o_sp;
 
-    class RegArrayType : public StructDefObject {
+    class RegArrayType : public StructObject {
      public:
-        RegArrayType(GenObject *parent, const char *name)
-            : StructDefObject(parent, "RegArrayType", name),
+        RegArrayType(GenObject *parent, StructObject *def, const char *name, const char *comment="")
+            : StructObject(parent, def, name, comment),
             val(this, "val", "RISCV_ARCH"),
             tag(this, "tag", "CFG_REG_TAG_WIDTH") {}
 
@@ -71,7 +71,7 @@ class RegIntBank : public ModuleObject {
      public:
         Signal val;
         Signal tag;
-    };
+    } RegArrayTypeDef_;
     
     RegArrayType reg;
 

@@ -126,7 +126,7 @@ std::string ModuleObject::generate_sysc_h() {
     }
     out += "\n";
 
-    // struct definition
+    // struct definitions
     for (auto &p: entries_) {
         if (p->getId() != ID_STRUCT_DEF) {
             continue;
@@ -186,14 +186,9 @@ std::string ModuleObject::generate_sysc_h() {
             out += text;
             text = "";
         }
-#if 1
-    if (p->getType(SYSC_ALL) == "RegArrayType") {
-        bool st = true;
-    }
-#endif
         out += "    " + p->getType(SYSC_ALL) + " " + p->getName();
         if (p->getDepth()) {
-            ln += "[0:" + p->getDepth(SYSC_ALL) + "]";
+            out += "[0:" + p->getDepth(SYSC_ALL) + "]";
         }
         out += ";\n";
     }

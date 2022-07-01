@@ -28,7 +28,7 @@ namespace sysvc {
 ModuleObject::ModuleObject(GenObject *parent, const char *name) :
     GenObject(parent, ID_MODULE, name) {
     SCV_register_module(this);
-    Operation::start(this);
+    Operation::start(this);     // set operation parent to this module
 }
 
 std::string ModuleObject::getType(EGenerateType v) {
@@ -57,7 +57,6 @@ MInstanceObject *ModuleObject::createInstance(GenObject *parent, const char *nam
         static_cast<FileObject *>(p)->notifyAccess(fulpath);
         break;
     }
-
     return inst;
 }
 

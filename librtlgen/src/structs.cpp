@@ -15,26 +15,27 @@
 // 
 
 #include "structs.h"
+#include "files.h"
 #include "utils.h"
 
 namespace sysvc {
 
-StructDefObject::StructDefObject(GenObject *parent,
-                                 const char *type,
-                                 const char *name,
-                                 const char *comment)
-    : GenObject(parent, ID_STRUCT_DEF, name, comment) {
-    type_ = std::string(type);
-    add_instance(parent, name);
+StructObject::StructObject(GenObject *parent,
+                           StructObject *type,
+                           const char *name,
+                           const char *comment)
+    : GenObject(parent, type ? ID_STRUCT_INST : ID_STRUCT_DEF, name, comment) {
+    type_ = std::string("");
+    if (type) {
+        type_ = type->getName();
+    }
 }
 
-void StructDefObject::add_instance(GenObject *parent, const char *name) {
-    // add entry to parent
-    new StructInstObject(parent, this, name);
-}
-
-std::string StructDefObject::generate(EGenerateType v) {
+std::string StructObject::generate(EGenerateType v) {
     std::string ret = "";
+    if (getId() == ID_STRUCT_INST) {
+        return ret;
+    }
     if (v == SYSC_ALL || v == SYSC_H || v == SYSC_CPP) {
         ret += generate_sysc();
     } else if (v == SV_ALL || v == SV_PKG || v == SV_MOD) {
@@ -45,28 +46,21 @@ std::string StructDefObject::generate(EGenerateType v) {
     return ret;
 }
 
-std::string StructDefObject::generate_sysc() {
+std::string StructObject::generate_sysc() {
     std::string ret = "";
     std::string ln;
-    // sub-structure
-    for (auto &p: entries_) {
-        if (p->getId() != ID_STRUCT_DEF) {
-            continue;
-        }
-        ret += p->generate(SYSC_ALL);
-    }
 
-    // FIXME: sub structures created as a child of current struct (it is wrong)
     if (getComment().size()) {
         ret += "    // " + getComment() + "\n";
     }
-    ret += "    struct " + getType(SYSC_ALL) + " {\n";
+    ret += "    struct " + getName() + " {\n";
     for (auto &p: entries_) {
-        if (p->getId() == ID_STRUCT_DEF) {
-            // FIXME: remove this condition
-            continue;
+        ln = "        " + p->getType(SYSC_ALL) + " " + p->getName();
+        if (p->getDepth()) {
+            ln += "[" + p->getDepth(SYSC_ALL) + "]";
+
         }
-        ln = "        " + p->getType(SYSC_ALL) + " " + p->getName() + ";";
+        ln += ";";
         if (p->getComment().size()) {
             while (ln.size() < 60) {
                 ln += " ";
@@ -80,9 +74,9 @@ std::string StructDefObject::generate_sysc() {
     return ret;
 }
 
-std::string StructDefObject::generate_sysv() {
+std::string StructObject::generate_sysv() {
     std::string ret = "";
-    ret += "    struct " + getType(SYSC_ALL) + " {\n";
+    ret += "    struct " + getName() + " {\n";
     for (auto &p: entries_) {
         ret += "        " + p->getType(SV_ALL) + " " + p->getName() + ";\n";
     }
@@ -91,7 +85,7 @@ std::string StructDefObject::generate_sysv() {
     return ret;
 }
 
-std::string StructDefObject::generate_vhdl() {
+std::string StructObject::generate_vhdl() {
     std::string ret = "";
     return ret;
 }
