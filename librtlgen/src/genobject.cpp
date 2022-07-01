@@ -22,6 +22,7 @@ GenObject::GenObject(GenObject *parent, EIdType id,
                      const char *name, const char *comment) {
     id_ = id;
     parent_ = parent;
+    reg_ = false;
     name_ = std::string(name);
     comment_ = std::string(comment);
     if (parent_) {

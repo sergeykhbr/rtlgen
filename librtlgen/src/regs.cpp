@@ -19,21 +19,12 @@
 
 namespace sysvc {
 
-RegGeneric::RegGeneric(GenObject *parent,
-                        const char *name,
-                        const char *comment)
-    : GenObject(parent, ID_REG, name, comment) {
-}
-
-std::string Reg::getType(EGenerateType v) {
-    std::string ret = "";
-    if (v == SYSC_ALL || v == SYSC_H || v == SYSC_CPP) {
-        ret += regvalue_.getType(v);
-    } else if (v == SV_ALL || v == SV_PKG || v == SV_MOD) {
-        ret += "reg " + regvalue_.getType(v);
-    } else {
-    }
-    return ret;
+RegSignal::RegSignal(GenObject *parent,
+                     const char *name,
+                     const char *width,
+                     const char *val, // reset value
+                     const char *comment)
+    : Signal(parent, name, width, val, true, comment) {
 }
 
 }

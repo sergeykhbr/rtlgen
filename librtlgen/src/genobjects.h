@@ -37,7 +37,6 @@ enum EIdType {
     ID_INPUT,
     ID_OUTPUT,
     ID_SIGNAL,
-    ID_REG,
     ID_STRUCT_DEF,
     ID_STRUCT_INST,
     ID_PROCESS,
@@ -78,6 +77,8 @@ class GenObject {
     virtual std::string getWidth(EGenerateType) { return std::string(""); }
     virtual int getDepth() { return 0; }    // two-dimensional object
     virtual std::string getDepth(EGenerateType) { return std::string(""); }
+    virtual void setReg() { reg_ = true; };
+    virtual bool isReg() { return reg_; }
 
     virtual std::string generate(EGenerateType) { return std::string(""); }
 
@@ -88,6 +89,7 @@ class GenObject {
  protected:
     EIdType id_;
     GenObject *parent_;
+    bool reg_;              // Mark object (signal, value, port, structure) as a Flip-flop
     std::string name_;
     std::string comment_;
     std::list<GenObject *> entries_;

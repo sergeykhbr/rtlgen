@@ -62,13 +62,17 @@ class RegIntBank : public ModuleObject {
      public:
         RegArrayType(GenObject *parent, StructObject *def, const char *name, const char *comment="")
             : StructObject(parent, def, name, comment),
+            depth_("REGS_TOTAL"),
             val(this, "val", "RISCV_ARCH"),
-            tag(this, "tag", "CFG_REG_TAG_WIDTH") {}
+            tag(this, "tag", "CFG_REG_TAG_WIDTH") {
+                reg_ = def ? true : false;  // structure definition is not a register only instance
+            }
 
-        virtual int getDepth() override { return 32; }    // two-dimensional object
-        virtual std::string getDepth(EGenerateType) override { return std::string("31"); }
+        virtual int getDepth() override { return static_cast<int>(depth_.getValue()); }    // two-dimensional object
+        virtual std::string getDepth(EGenerateType v) override { return depth_.getValue(v); }
 
      public:
+        I32D depth_;
         Signal val;
         Signal tag;
     } RegArrayTypeDef_;

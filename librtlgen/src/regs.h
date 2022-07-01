@@ -23,28 +23,15 @@
 
 namespace sysvc {
 
-class RegGeneric : public GenObject {
+class RegSignal : public Signal {
  public:
-    RegGeneric(GenObject *parent,
-                const char *name,
-                const char *comment="");
-
-    virtual std::string getReset(EGenerateType v) = 0;
-    virtual std::string getType(EGenerateType v) = 0;
-};
-
-class Reg : public RegGeneric {
- public:
-    Reg(GenObject *parent, const char *name, const char *width="1", const char *comment="")
-        : RegGeneric(parent, name, comment),
-        regvalue_(this, "regval", width),
-        regreset_(width, "regreset", "0", this) {
-    }
-    virtual std::string getReset(EGenerateType v) { return regreset_.getValue(v); }
-    virtual std::string getType(EGenerateType v);
+    RegSignal(GenObject *parent,
+           const char *name,
+           const char *width="1",
+           const char *val="0", // reset value
+           const char *comment="");
  protected:
-    Signal regvalue_;
-    Logic regreset_;
+    
 };
 
 }  // namespace sysvc

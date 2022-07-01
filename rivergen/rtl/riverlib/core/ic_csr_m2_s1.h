@@ -69,8 +69,8 @@ class ic_csr_m2_s1 : public ModuleObject {
     InPort i_s0_resp_data;
     InPort i_s0_resp_exception;
 
-    Reg midx;
-    Reg acquired;
+    RegSignal midx;
+    RegSignal acquired;
 
     // process should be intialized last to make all signals available
     CombProcess comb;

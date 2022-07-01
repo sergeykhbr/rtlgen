@@ -68,7 +68,7 @@ std::string Operation::addtext(EGenerateType v, GenObject *obj, size_t curpos) {
 
 std::string Operation::obj2varname(EGenerateType v, GenObject *obj) {
     std::string ret = obj->getName();
-    if (obj->getId() == ID_REG) {
+    if (obj->isReg()) {
         ret = "r." + obj->getName();
     } else if (obj->getId() == ID_INPUT) {
         ret = obj->getName();// + ".read()";
@@ -106,7 +106,7 @@ void TEXT(const char *comment) {
 // SETZERO
 std::string SETZERO_gen(EGenerateType v, GenObject **args) {
     std::string ret = Operation::addspaces();
-    if (args[1]->getId() == ID_REG) {
+    if (args[1]->isReg()) {
         ret += "v.";
     }
     ret += args[1]->getName();
@@ -135,7 +135,7 @@ Operation &SETZERO(GenObject &a, const char *comment) {
 // SETONE
 std::string SETONE_gen(EGenerateType v, GenObject **args) {
     std::string ret = Operation::addspaces();
-    if (args[1]->getId() == ID_REG) {
+    if (args[1]->isReg()) {
         ret += "v.";
     }
     ret += args[1]->getName();
@@ -165,7 +165,7 @@ Operation &SETONE(GenObject &a, const char *comment) {
 // SETALLONE
 std::string SETALLONE_gen(EGenerateType v, GenObject **args) {
     std::string ret = Operation::addspaces();
-    if (args[1]->getId() == ID_REG) {
+    if (args[1]->isReg()) {
         ret += "v.";
     }
     ret += args[1]->getName();

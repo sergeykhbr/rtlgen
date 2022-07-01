@@ -84,7 +84,7 @@ CacheTop::CacheTop(GenObject *parent) :
     i_data_flush_valid(this, "i_data_flush_valid"),
     o_data_flush_end(this, "o_data_flush_end"),
 
-    test(this, "test", "32", "test register")
+    test(this, "test", "32", "0", "test register")
 {
 }
 

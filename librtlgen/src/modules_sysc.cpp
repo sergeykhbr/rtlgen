@@ -135,15 +135,17 @@ std::string ModuleObject::generate_sysc_h() {
     }
     out += "\n";
     // Register structure definition
+    bool twodim = false;        // if 2-dimensional register array, then do not use reset function
     if (isRegProcess()) {
         out += "    struct " + getName() + "_registers {\n";
         for (auto &p: entries_) {
-            if (p->getId() != ID_REG) {
+            if (!p->isReg()) {
                 continue;
             }
             ln = "        " + p->getType(SYSC_ALL) + " " + p->getName();
             if (p->getDepth()) {
-                ln += "[0:" + p->getDepth(SYSC_ALL) + "]";
+                twodim = true;
+                ln += "[" + p->getDepth(SYSC_ALL) + "]";
             }
             ln += ";";
             if (p->getComment().size()) {
@@ -157,24 +159,26 @@ std::string ModuleObject::generate_sysc_h() {
         out += "    } v, r;\n";
         out += "\n";
         // Reset function
-        out += "    void " + getName() + "_r_reset(" + getName() + "_registers &iv) {\n";
-        for (auto &p: entries_) {
-            if (p->getId() != ID_REG) {
-                continue;
+        if (!twodim) {
+            out += "    void " + getName() + "_r_reset(" + getName() + "_registers &iv) {\n";
+            for (auto &p: entries_) {
+                if (!p->isReg()) {
+                    continue;
+                }
+                out += "        iv." + p->getName() + " = ";
+                out += p->getValue(SYSC_ALL);
+                out += ";\n";
             }
-            out += "        iv." + p->getName() + " = ";
-            out += static_cast<Reg *>(p)->getReset(SYSC_ALL);
-            out += ";\n";
+            out += "    }\n";
+            out += "\n";
         }
-        out += "    }\n";
-        out += "\n";
     }
 
 
     // Signals list
     text = "";
     for (auto &p: entries_) {
-        if (p->getId() != ID_SIGNAL && p->getId() != ID_STRUCT_INST) {
+        if (p->isReg() || (p->getId() != ID_SIGNAL && p->getId() != ID_STRUCT_INST)) {
             if (p->getId() == ID_COMMENT) {
                 text += "    " + p->generate(SYSC_ALL);
             } else {
@@ -188,7 +192,7 @@ std::string ModuleObject::generate_sysc_h() {
         }
         out += "    " + p->getType(SYSC_ALL) + " " + p->getName();
         if (p->getDepth()) {
-            out += "[0:" + p->getDepth(SYSC_ALL) + "]";
+            out += "[" + p->getDepth(SYSC_ALL) + "]";
         }
         out += ";\n";
     }
@@ -285,7 +289,7 @@ std::string ModuleObject::generate_sysc_cpp() {
         for (auto &s: entries_) {
             if (s->getId() == ID_INPUT && s->getName() != "i_clk") {
                 out += "    sensitive << " + s->getName() + ";\n";
-            } else if (s->getId() == ID_REG) {
+            } else if (s->isReg()) {
                 out += "    sensitive << r." + s->getName() + ";\n";
             }
         }
@@ -331,7 +335,7 @@ std::string ModuleObject::generate_sysc_cpp() {
         out += "\n";
         out += "        std::string pn(name());\n";
         for (auto &p: entries_) {
-            if (p->getId() != ID_REG) {
+            if (!p->isReg()) {
                 continue;
             }
             out += "        sc_trace(o_vcd, r." + p->getName() + ", pn + \".r_" + p->getName() + "\");\n";

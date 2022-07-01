@@ -316,6 +316,9 @@ class river_cfg : public FileObject {
     ParamI32D DPortReq_MemVirtual;
     ParamI32D DPortReq_Progexec;
     ParamI32D DPortReq_Total;
+    TextLine _Regs0_;
+    ParamI32D REGS_BUS_WIDTH;
+    ParamI32D REGS_TOTAL;
     TextLine _IsaType0_;
     TextLine _IsaType1_;
     EnumEIsaType EIsaType;

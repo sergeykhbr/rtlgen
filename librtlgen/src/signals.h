@@ -36,6 +36,13 @@ class Signal : public Logic {
            GenValue *width,
            const char *comment="");
 
+    Signal(GenObject *parent,
+           const char *name,
+           const char *width,
+           const char *val,
+           bool usereg,
+           const char *comment="");
+
     virtual std::string getType(EGenerateType v) override;
 };
 

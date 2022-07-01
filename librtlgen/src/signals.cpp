@@ -28,6 +28,13 @@ Signal::Signal(GenObject *parent, const char *name, GenValue *width,
     id_ = ID_SIGNAL;
 }
 
+Signal::Signal(GenObject *parent, const char *name, const char *width,
+    const char *val, bool usereg, const char *comment)
+    : Logic(width, name, val, parent, comment) {
+    id_ = ID_SIGNAL;
+    reg_ = usereg;
+}
+
 
 std::string Signal::getType(EGenerateType v) {
     std::string out = "";

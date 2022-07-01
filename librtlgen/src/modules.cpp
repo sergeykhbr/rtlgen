@@ -66,7 +66,7 @@ bool ModuleObject::isAsyncReset() {
             if (static_cast<MInstanceObject *>(e)->isAsyncReset()) {
                 return true;
             }
-        } else if (e->getId() == ID_REG) {
+        } else if (e->isReg()) {
             return true;
         }
     }
@@ -75,7 +75,7 @@ bool ModuleObject::isAsyncReset() {
 
 bool ModuleObject::isRegProcess() {
     for (auto &e: entries_) {
-        if (e->getId() == ID_REG) {
+        if (e->isReg()) {
             return true;
         }
     }

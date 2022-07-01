@@ -94,7 +94,7 @@ class CacheTop : public ModuleObject {
     OutPort o_data_flush_end;
 
 
-    Reg test;
+    RegSignal test;
 };
 
 class cache_top : public FileObject {
