@@ -28,7 +28,6 @@ enum EIdType {
     ID_CONST,
     ID_VALUE,
     ID_ENUM,
-    ID_ARRAY,
     ID_PARAM,
     ID_DEF_PARAM,   // Generic parameter used in ifdef/endif statements
     ID_FUNCTION,
@@ -39,6 +38,9 @@ enum EIdType {
     ID_SIGNAL,
     ID_STRUCT_DEF,
     ID_STRUCT_INST,
+    ID_ARRAY_DEF,
+    ID_ARRAY_INST,
+    ID_ARRAY_ITEM,
     ID_PROCESS,
     ID_COMMENT,
     ID_EMPTYLINE,
@@ -65,10 +67,13 @@ class GenObject {
     virtual std::string getFullPath();
     virtual std::string getFile();
     virtual void add_entry(GenObject *p);
+    virtual std::list<GenObject *> &getEntries() { return entries_; }
+    virtual void getSignals(std::list<GenObject *> &objlist);
 
-    virtual unsigned getId() { return id_; }
+    virtual EIdType getId() { return id_; }
     virtual GenObject *getParent() { return parent_; }
     virtual std::string getName() { return name_; }
+    virtual std::string getFullName(GenObject *top);
     virtual std::string getComment() { return comment_; }
     virtual std::string getType(EGenerateType) = 0;
     virtual uint64_t getValue() { return 0; }

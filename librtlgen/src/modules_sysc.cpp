@@ -290,7 +290,11 @@ std::string ModuleObject::generate_sysc_cpp() {
             if (s->getId() == ID_INPUT && s->getName() != "i_clk") {
                 out += "    sensitive << " + s->getName() + ";\n";
             } else if (s->isReg()) {
-                out += "    sensitive << r." + s->getName() + ";\n";
+                std::list<GenObject *> objlist;
+                s->getSignals(objlist);
+                for (auto &r : objlist) {
+                    out += "    sensitive << r." + r->getFullName(s) + ";\n";
+                }
             }
         }
     }

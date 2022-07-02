@@ -20,69 +20,49 @@
 namespace sysvc {
 
 ArrayObject::ArrayObject(GenObject *parent,
-                         const char *type,
+                         GenObject *type,
                          const char *name,
-                         int size,
+                         const char *depth,
                          const char *comment)
-    : GenObject(parent, ID_ARRAY, name, comment), size_(size) {
-    type_ = std::string(type);
+    : GenObject(parent, type ? ID_ARRAY_INST : ID_ARRAY_DEF, name, comment), depth_(depth) {
+    type_ = std::string("");
+    if (type) {
+        type_ = type->getName();
+
+        arr_ = new GenObject *[depth_.getValue()];
+        for (int i = 0; i < static_cast<int>(depth_.getValue()); i++) {
+            arr_[i] = new ArrayItem(this, type, i);
+            //for (auto &e : type->getEntries()) {
+            //    entries_.push_back(e);
+            //}
+        }
+    }
+}
+
+std::string ArrayItem::getName() {
+    char tstr[64];
+    RISCV_sprintf(tstr, sizeof(tstr), "%d", idx_);
+    std::string ret = std::string(tstr);
+    return ret;
 }
 
 std::string ArrayObject::generate(EGenerateType v) {
     std::string ret = "";
-    if (v == SYSC_ALL || v == SYSC_H || v == SYSC_CPP) {
-        ret += generate_sysc();
-    } else if (v == SV_ALL || v == SV_PKG || v == SV_MOD) {
-        ret += generate_sysv();
-    } else {
+    if (getId() == ID_ARRAY_DEF && v == VHDL_ALL) {
         ret += generate_vhdl();
+    } else {
+        return ret;
     }
     return ret;
 }
 
 std::string ArrayObject::generate_sysc() {
     std::string ret = "";
-    std::string ln;
-    // sub-structure
-    for (auto &p: entries_) {
-        if (p->getId() != ID_STRUCT_DEF) {
-            continue;
-        }
-        ret += p->generate(SYSC_ALL);
-    }
-
-    // FIXME: sub structures created as a child of current struct (it is wrong)
-    if (getComment().size()) {
-        ret += "    // " + getComment() + "\n";
-    }
-    ret += "    struct " + getType(SYSC_ALL) + " {\n";
-    for (auto &p: entries_) {
-        if (p->getId() == ID_STRUCT_DEF) {
-            // FIXME: remove this condition
-            continue;
-        }
-        ln = "        " + p->getType(SYSC_ALL) + " " + p->getName() + ";";
-        if (p->getComment().size()) {
-            while (ln.size() < 60) {
-                ln += " ";
-            }
-            ln += "// " + p->getComment();
-        }
-        ret += ln + "\n";
-    }
-    ret += "    };\n";
-    ret += "\n";
     return ret;
 }
 
 std::string ArrayObject::generate_sysv() {
     std::string ret = "";
-    ret += "    struct " + getType(SYSC_ALL) + " {\n";
-    for (auto &p: entries_) {
-        ret += "        " + p->getType(SV_ALL) + " " + p->getName() + ";\n";
-    }
-    ret += "    };\n";
-    ret += "\n";
     return ret;
 }
 
