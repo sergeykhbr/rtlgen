@@ -23,6 +23,7 @@
 #include "files.h"
 #include "structs.h"
 #include "regs.h"
+#include "operations.h"
 
 namespace sysvc {
 
@@ -158,7 +159,7 @@ std::string ModuleObject::generate_sysc_h() {
         }
         out += "    } v, r;\n";
         out += "\n";
-        // Reset function
+        // Reset function only if no two-dimensial signals
         if (!twodim) {
             out += "    void " + getName() + "_r_reset(" + getName() + "_registers &iv) {\n";
             for (auto &p: entries_) {
@@ -293,7 +294,7 @@ std::string ModuleObject::generate_sysc_cpp() {
                 std::list<GenObject *> objlist;
                 s->getSignals(objlist);
                 for (auto &r : objlist) {
-                    out += "    sensitive << r." + r->getFullName(s) + ";\n";
+                    out += "    sensitive << r." + r->getFullName(SYSC_ALL, s) + ";\n";
                 }
             }
         }
@@ -335,6 +336,8 @@ std::string ModuleObject::generate_sysc_cpp() {
         out += "        sc_trace(o_vcd, " + p->getName() + ", " + p->getName() + ".name());\n";
     }
     // Add all registers to trace file:
+    bool twodim = is2DimReg();;
+    std::list<GenObject *> objlist;
     if (isRegProcess()) {
         out += "\n";
         out += "        std::string pn(name());\n";
@@ -342,7 +345,15 @@ std::string ModuleObject::generate_sysc_cpp() {
             if (!p->isReg()) {
                 continue;
             }
-            out += "        sc_trace(o_vcd, r." + p->getName() + ", pn + \".r_" + p->getName() + "\");\n";
+            if (p->getId() == ID_ARRAY_DEF) {
+                p->getSignals(objlist);
+                for (auto &s: objlist) {
+                    std::string fname = s->getFullName(SYSC_ALL, p);
+                    out += "        sc_trace(o_vcd, r." + fname + ", pn + \".r_" + fname + "\");\n";
+                }
+            } else {
+                out += "        sc_trace(o_vcd, r." + p->getName() + ", pn + \".r_" + p->getName() + "\");\n";
+            }
         }
     }
 
@@ -365,30 +376,34 @@ std::string ModuleObject::generate_sysc_cpp() {
         if (p->getId() != ID_PROCESS) {
             continue;
         }
-        out += "void " + getName() + "::" + p->getName() + "() {\n";
-        // TODO process variables declaration
-
-        if (proccnt == 0 && isRegProcess()) {
-            out += "    v = r;\n";
-        }
-        out += "\n";
-        out += p->generate(SYSC_CPP);
-        // sync register reset 
-        if (proccnt == 0 && isRegProcess()) {
-            out += "\n";
-            out += "    if (!async_reset_ && !i_nrst.read()) {\n";
-            out += "        " + getName() + "_r_reset(v);\n";
-            out += "    }\n";
-        }
-        out += "}\n";
-        out += "\n";
+        out += generate_sysc_cpp_proc(proccnt, p);
         proccnt++;
     }
 
     if (isRegProcess()) {
         out += "void " + getName() + "::registers() {\n";
         out += "    if (async_reset_ && i_nrst.read() == 0) {\n";
-        out += "        " + getName() + "_r_reset(r);\n";
+        if (!twodim) {
+            // reset using function
+            out += "        " + getName() + "_r_reset(r);\n";
+        } else {
+            // reset each register separatly
+            for (auto &p: entries_) {
+                if (!p->isReg()) {
+                    continue;
+                }
+                if (p->getId() == ID_ARRAY_DEF) {
+                    out += "        for (int i = 0; i < " + p->getDepth(SYSC_ALL) + "; i++) {\n";
+                    std::list<GenObject *>::iterator it = p->getEntries().begin();  // element[0]
+                    for (auto &s: (*it)->getEntries()) {
+                        out += "            r." + s->getName() + "[i] = " + s->getValue(SYSC_ALL) + ";\n";
+                    }
+                    out += "        }\n";
+                } else {
+                    out += "        r." + p->getName() + " = " + p->getValue(SYSC_ALL) + ";\n";
+                }
+            }
+        }
         out += "    } else {\n";
         out += "        r = v;\n";
         out += "    }\n";
@@ -397,6 +412,72 @@ std::string ModuleObject::generate_sysc_cpp() {
     }
 
     return out;
+}
+
+std::string ModuleObject::generate_sysc_cpp_proc(int proccnt, GenObject *proc) {
+    std::string ret = "";
+    ret += "void " + getName() + "::" + proc->getName() + "() {\n";
+    
+    // process variables declaration
+    int tcnt = 0;
+    for (auto &e: proc->getEntries()) {
+        if (e->getId() != ID_VALUE) {
+            continue;
+        }
+        ret += "    " + e->getType(SYSC_ALL) + " " + e->getName() + ";\n";
+        tcnt++;
+    }
+
+    if (tcnt) {
+        ret += "\n";
+    }
+    if (proccnt == 0 && isRegProcess()) {
+        ret += "    v = r;\n";
+    }
+    ret += "\n";
+
+    // Generate operations before sync reset:
+    Operation::set_space(1);
+    for (auto &e: proc->getEntries()) {
+        if (e->getId() != ID_OPERATION) {
+            continue;
+        }
+        if (static_cast<Operation *>(e)->isOutput()) {
+            continue;
+        }
+        ret += e->generate(SYSC_ALL);
+    }
+
+    // sync register reset 
+    if (proccnt == 0 && isRegProcess()) {
+        ret += "\n";
+        ret += "    if (!async_reset_ && !i_nrst.read()) {\n";
+        if (!is2DimReg()) {
+            // reset using function
+            ret += "        " + getName() + "_r_reset(v);\n";
+        } else {
+            // reset each register separatly
+            for (auto &p: entries_) {
+                if (!p->isReg()) {
+                    continue;
+                }
+                if (p->getId() == ID_ARRAY_DEF) {
+                    ret += "        for (int i = 0; i < " + p->getDepth(SYSC_ALL) + "; i++) {\n";
+                    std::list<GenObject *>::iterator it = p->getEntries().begin();  // element[0]
+                    for (auto &s: (*it)->getEntries()) {
+                        ret += "            v." + s->getName() + "[i] = " + s->getValue(SYSC_ALL) + ";\n";
+                    }
+                    ret += "        }\n";
+                } else {
+                    ret += "        v." + p->getName() + " = " + p->getValue(SYSC_ALL) + ";\n";
+                }
+            }
+        }
+        ret += "    }\n";
+    }
+    ret += "}\n";
+    ret += "\n";
+    return ret;
 }
 
 }

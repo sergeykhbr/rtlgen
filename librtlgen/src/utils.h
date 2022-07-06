@@ -44,6 +44,11 @@ class AccessListener {
     virtual void notifyAccess(std::string &file) = 0;
 };
 
+void SCV_set_generator(EGenerateType v);
+int SCV_is_sysc();
+int SCV_is_sv();
+int SCV_is_vhdl();
+
 void SCV_set_cfg_parameter(std::string &path, std::string &file,
                            const char *name, uint64_t v);
 int SCV_is_cfg_parameter(std::string &name);

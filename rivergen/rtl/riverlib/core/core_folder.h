@@ -23,10 +23,10 @@
 
 class core_folder : public FolderObject {
  public:
-    core_folder(GenObject *parent) :
+    core_folder(GenObject *parent, river_cfg *cfg) :
         FolderObject(parent, "core"),
         ic_(this),
-        regint_(this),
+        regint_(this, cfg),
         proc_(this) {}
 
  protected:

@@ -36,6 +36,7 @@ struct CfgParameterInfo {
 static std::map<std::string, CfgParameterInfo> cfgParamters_;
 static std::list<GenObject *> modules_;
 AccessListener *accessListener_ = 0;
+static EGenerateType gentype_ = GEN_UNDEFINED;
 
 void SCV_set_cfg_parameter(std::string &path,
                            std::string &file,
@@ -157,5 +158,29 @@ int RISCV_sprintf(char *s, size_t len, const char *fmt, ...) {
     return ret;
 }
 
+void SCV_set_generator(EGenerateType v) {
+    gentype_ = v;
+}
+
+int SCV_is_sysc() {
+    if (gentype_ == SYSC_ALL || gentype_ == SYSC_ALL || gentype_ == SYSC_ALL) {
+        return gentype_;
+    }
+    return 0;
+}
+
+int SCV_is_sv() {
+    if (gentype_ == SV_ALL || gentype_ == SV_MOD || gentype_ == SV_PKG) {
+        return gentype_;
+    }
+    return 0;
+}
+
+int SCV_is_vhdl() {
+    if (gentype_ == VHDL_ALL || gentype_ == VHDL_MOD || gentype_ == VHDL_PKG) {
+        return gentype_;
+    }
+    return 0;
+}
 
 }

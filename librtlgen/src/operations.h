@@ -36,10 +36,15 @@ class Operation : public GenObject {
     static void pop_obj();
     static void set_space(int n);
     static std::string addspaces();
+    static std::string obj2varname(const char *prefix, EGenerateType v, GenObject *obj);
     static std::string obj2varname(EGenerateType v, GenObject *obj);
     static std::string addtext(EGenerateType v, GenObject *obj, size_t curpos);
 
+    virtual bool isOutput() { return output_; }
     virtual void add_arg(GenObject *arg) {
+        if (arg->getId() == ID_OUTPUT) {
+            output_ = true;
+        }
         args[argcnt_++] = arg;
     }
     virtual std::string getType(EGenerateType v) { return std::string(""); }
@@ -58,6 +63,7 @@ class Operation : public GenObject {
  protected:
     GenObject *args[16];
     int argcnt_;
+    bool output_;        // assign to output port should be at the of process
 };
 
 void TEXT(const char *comment="");
@@ -66,6 +72,8 @@ Operation &SETONE(GenObject &a, const char *comment="");
 Operation &SETALLONE(GenObject &a, const char *comment="");
 Operation &SETBIT(GenObject &a, GenObject &b, const char *comment="");
 Operation &SETVAL(GenObject &a, GenObject &b, const char *comment="");
+Operation &TO_INT(GenObject &a, const char *comment="");
+Operation &EQ(GenObject &a, GenObject &b, const char *comment="");  // ==
 Operation &EZ(GenObject &a, const char *comment="");        // equal-zero
 Operation &NZ(GenObject &a, const char *comment="");        // Non-zero
 Operation &INV(GenObject &a, const char *comment="");        // logical inversion
@@ -74,8 +82,13 @@ Operation &OR3(GenObject &a, GenObject &b, GenObject &c, const char *comment="")
 Operation &OR4(GenObject &a, GenObject &b, GenObject &c, GenObject &d, const char *comment="");
 Operation &AND2(GenObject &a, GenObject &b, const char *comment="");
 Operation &AND3(GenObject &a, GenObject &b, GenObject &c, const char *comment="");
+Operation &AND4(GenObject &a, GenObject &b, GenObject &c, GenObject &d, const char *comment="");
+Operation &INC(GenObject &a, const char *comment="");
+
+void SELECTARRITEM(GenObject &arr, GenObject &mux, const char *comment="");
 
 void IF(GenObject &a, const char *comment="");
+void ELSIF(GenObject &a, const char *comment="");
 void ELSE(const char *comment="");
 void ENDIF(const char *comment="");
 

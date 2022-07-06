@@ -23,19 +23,33 @@ using namespace sysvc;
 
 class RegIntBank : public ModuleObject {
  public:
-    RegIntBank(GenObject *parent);
+    RegIntBank(GenObject *parent, river_cfg *cfg);
 
     class CombProcess : public ProcObject {
      public:
-        CombProcess(GenObject *parent) : ProcObject(parent, "comb") {
+        CombProcess(GenObject *parent) : ProcObject(parent, "comb"),
+            int_daddr("", "int_daddr", this),
+            int_waddr("", "int_waddr", this),
+            int_radr1("", "int_radr1", this),
+            int_radr2("", "int_radr2", this),
+            v_inordered("1", "v_inordered", "", this),
+            next_tag("CFG_REG_TAG_WIDTH", "next_tag", "", this) {
             RegIntBank *p = static_cast<RegIntBank *>(parent);
             p->proc_comb();
         }
+    public:
+        I32D int_daddr;
+        I32D int_waddr;
+        I32D int_radr1;
+        I32D int_radr2;
+        Logic v_inordered;
+        Logic next_tag;
     };
 
     void proc_comb();
 
  protected:
+    river_cfg *cfg_;
     InPort i_clk;
     InPort i_nrst;
     InPort i_radr1;
@@ -71,14 +85,30 @@ class RegIntBank : public ModuleObject {
 
     class RegArrayType : public ArrayObject {
      public:
-        RegArrayType(GenObject *parent, GenObject *type, const char *name, const char *comment="")
-            : ArrayObject(parent, type, name, "REGS_TOTAL", comment) {
-                reg_ = type ? true : false;  // structure definition is not a register only instance
+       class ItemType : public ArrayItem {
+        public:
+            ItemType(ArrayObject *parent, int idx, const char *rstval)
+                : ArrayItem(parent, idx),
+                val(this, "val", "RISCV_ARCH", rstval),
+                tag(this, "tag", "CFG_REG_TAG_WIDTH") {}
+        public:
+            RegSignal val;
+            RegSignal tag;
+       };
+
+       RegArrayType(GenObject *parent, const char *name, const char *comment="")
+            : ArrayObject(parent, "RegValueType", name, "REGS_TOTAL", comment) {
+                reg_ = true;
+
+                arr_ = new ItemType *[depth_.getValue()];
+                arr_[0] = new ItemType(this, 0, "0");
+                for (int i = 1; i < static_cast<int>(depth_.getValue()); i++) {
+                    arr_[i] = new ItemType(this, i, "0xfeedface");
+                }
+
             }
-        
-    };
-    
-    RegArrayType reg;
+        ItemType **arr_;
+    } arr;
 
     // process should be intialized last to make all signals available
     CombProcess comb;
@@ -86,7 +116,7 @@ class RegIntBank : public ModuleObject {
 
 class regibank_file : public FileObject {
  public:
-    regibank_file(GenObject *parent);
+    regibank_file(GenObject *parent, river_cfg *cfg);
 
  private:
     RegIntBank mod_;

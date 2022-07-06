@@ -26,7 +26,7 @@ namespace sysvc {
 class ArrayObject : public GenObject {
  public:
     ArrayObject(GenObject *parent,
-                GenObject *type,
+                const char *type,
                 const char *name,
                 const char *depth,
                 const char *comment="");
@@ -34,6 +34,8 @@ class ArrayObject : public GenObject {
     virtual std::string getType(EGenerateType v) { return type_; }
     virtual int getDepth() override { return static_cast<int>(depth_.getValue()); }    // two-dimensional object
     virtual std::string getDepth(EGenerateType v) override { return depth_.getValue(v); }
+    virtual void setSelector(GenObject *sel) { sel_ = sel; }
+    virtual GenObject *getSelector() { return sel_; }
     virtual std::string generate(EGenerateType v);
  protected:
     std::string generate_sysc();
@@ -42,18 +44,18 @@ class ArrayObject : public GenObject {
  protected:
     std::string type_;
     I32D depth_;
-    GenObject **arr_;
+    GenObject *sel_;
 };
 
 class ArrayItem : public GenObject {
  public:
-    ArrayItem(GenObject *parent, GenObject *type, int idx)
-              : GenObject(parent, ID_ARRAY_ITEM, ""), type_(type), idx_(idx) {}
+    ArrayItem(ArrayObject *parent, int idx)
+              : GenObject(parent, ID_ARRAY_ITEM, ""), idx_(idx) {}
 
-    virtual std::string getType(EGenerateType v) { return type_->getName(); }
+    virtual std::string getType(EGenerateType v) {
+        return static_cast<ArrayObject *>(parent_)->getType(v); }
     virtual std::string getName() override;
  protected:
-    GenObject *type_;
     int idx_;
 };
 

@@ -20,29 +20,25 @@
 namespace sysvc {
 
 ArrayObject::ArrayObject(GenObject *parent,
-                         GenObject *type,
+                         const char *type,
                          const char *name,
                          const char *depth,
                          const char *comment)
-    : GenObject(parent, type ? ID_ARRAY_INST : ID_ARRAY_DEF, name, comment), depth_(depth) {
-    type_ = std::string("");
-    if (type) {
-        type_ = type->getName();
-
-        arr_ = new GenObject *[depth_.getValue()];
-        for (int i = 0; i < static_cast<int>(depth_.getValue()); i++) {
-            arr_[i] = new ArrayItem(this, type, i);
-            //for (auto &e : type->getEntries()) {
-            //    entries_.push_back(e);
-            //}
-        }
-    }
+    : GenObject(parent, ID_ARRAY_DEF, name, comment), depth_(depth) {
+    type_ = std::string(type);
+    sel_ = 0;
 }
 
 std::string ArrayItem::getName() {
-    char tstr[64];
-    RISCV_sprintf(tstr, sizeof(tstr), "%d", idx_);
-    std::string ret = std::string(tstr);
+    GenObject *sel = static_cast<ArrayObject *>(getParent())->getSelector();
+    std::string ret = "";
+    if (sel) {
+        ret = sel->getName();
+    } else {
+        char tstr[64];
+        RISCV_sprintf(tstr, sizeof(tstr), "%d", idx_);
+        ret = std::string(tstr);
+    }
     return ret;
 }
 

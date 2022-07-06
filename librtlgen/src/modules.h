@@ -38,11 +38,13 @@ class ModuleObject : public GenObject {
     // async_reset logic and always (ff) process
     virtual bool isAsyncReset();
     virtual bool isRegProcess();
+    virtual bool is2DimReg();
     virtual void getParamList(std::list<GenObject *> &genlist);
     virtual void getIoList(std::list<GenObject *> &genlist);
  protected:
     std::string generate_sysc_h();
     std::string generate_sysc_cpp();
+    std::string generate_sysc_cpp_proc(int cnt, GenObject *proc);
     std::string generate_sv_pkg();
     std::string generate_sv_mod();
 

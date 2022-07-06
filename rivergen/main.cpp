@@ -22,10 +22,12 @@ int main()
     RiverProject *prj = new RiverProject("_generated");
     printf("Generating SystemC into '%s' subfolder\n",
             prj->getFullPath().c_str());
+    SCV_set_generator(SYSC_ALL);
     prj->generate(SYSC_ALL);
 
     printf("Generating SystemVerilog into '%s' subfolder\n",
             prj->getFullPath().c_str());
+    SCV_set_generator(SV_ALL);
     prj->generate(SV_ALL);
     return 0;
 }

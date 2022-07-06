@@ -82,6 +82,19 @@ bool ModuleObject::isRegProcess() {
     return false;
 }
 
+bool ModuleObject::is2DimReg() {
+    for (auto &p: entries_) {
+        if (!p->isReg()) {
+            continue;
+        }
+        if (p->getDepth()) {
+            // two-dimensional array is presence in a register list
+            return true;
+        }
+    }
+    return false;
+}
+
 void ModuleObject::getParamList(std::list<GenObject *> &genlist) {
     for (auto &e : entries_) {
         if (e->getId() != ID_DEF_PARAM) {
