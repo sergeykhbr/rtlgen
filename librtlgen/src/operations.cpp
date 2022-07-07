@@ -17,6 +17,7 @@
 #include "operations.h"
 #include "array.h"
 #include "utils.h"
+#include "modules.h"
 
 namespace sysvc {
 
@@ -25,11 +26,11 @@ int stackcnt_ = 0;
 GenObject *stackobj_[256] = {0};
 
 Operation::Operation(const char *comment)
-    : GenObject(stackobj_[stackcnt_], ID_OPERATION, "", comment), igen_(0), argcnt_(0), output_(false) {
+    : GenObject(stackobj_[stackcnt_], ID_OPERATION, "", comment), igen_(0), argcnt_(0) {
 }
 
 Operation::Operation(GenObject *parent, const char *comment)
-    : GenObject(parent, ID_OPERATION, "", comment), igen_(0), argcnt_(0), output_(false) {
+    : GenObject(parent, ID_OPERATION, "", comment), igen_(0), argcnt_(0) {
 }
 
 void Operation::start(GenObject *owner) {
@@ -72,7 +73,7 @@ std::string Operation::obj2varname(const char *prefix, EGenerateType v, GenObjec
     if (obj->isReg()) {
         ret = obj->getName();
         GenObject *p = obj->getParent();
-        while (p->getId() == ID_STRUCT_DEF
+        while (p->getId() == ID_STRUCT_INST
             || p->getId() == ID_ARRAY_DEF || p->getId() == ID_ARRAY_ITEM) {
             if (p->getId() == ID_ARRAY_ITEM) {
                 ret = p->getName() + "]." + ret;
@@ -93,7 +94,7 @@ std::string Operation::obj2varname(const char *prefix, EGenerateType v, GenObjec
             || obj->getId() == ID_SIGNAL) {
         ret = obj->getName();
         GenObject *p = obj->getParent();
-        while (p->getId() == ID_STRUCT_DEF
+        while (p->getId() == ID_STRUCT_INST
             || p->getId() == ID_ARRAY_DEF || p->getId() == ID_ARRAY_ITEM) {
             if (p->getId() == ID_ARRAY_ITEM) {
                 ret = p->getName() + "]." + ret;
@@ -118,7 +119,7 @@ std::string Operation::obj2varname(EGenerateType v, GenObject *obj) {
 std::string TEXT_gen(EGenerateType v, GenObject **args) {
     std::string ret = "";
     if (args[0]->getComment().size() == 0) {
-        ret += "\n";
+        // Do nothing
     } else {
         ret = Operation::addspaces() + "// " + args[0]->getComment();
     }
@@ -510,12 +511,13 @@ std::string SELECTARRITEM_gen(EGenerateType v, GenObject **args) {
     return ret;
 }
 
-void SELECTARRITEM(GenObject &arr, GenObject &mux, const char *comment) {
+Operation &SELECTARRITEM(GenObject &arr, GenObject &mux, const char *comment) {
     Operation *p = new Operation(comment);
     p->igen_ = SELECTARRITEM_gen;
     p->add_arg(p);
     p->add_arg(&arr);
     p->add_arg(&mux);
+    return *p;
 }
 
 // IF
@@ -557,6 +559,7 @@ std::string ELSIF_gen(EGenerateType v, GenObject **args) {
 
 void ELSIF(GenObject &a, const char *comment) {
     Operation *p = new Operation(comment);
+    Operation::pop_obj();
     Operation::push_obj(p);
     p->igen_ = ELSIF_gen;
     p->add_arg(p);
@@ -593,6 +596,61 @@ void ENDIF(const char *comment) {
     Operation *p = new Operation(comment);
     p->igen_ = ENDIF_gen;
     p->add_arg(p);
+}
+
+// Sync reset
+std::string SYNC_RESET_gen(EGenerateType v, GenObject **args) {
+    ModuleObject *m = static_cast<ModuleObject *>(args[1]);
+    std::string ret = "";
+    std::string ln;
+    if (SCV_is_sysc()) {
+        ret += Operation::addspaces();
+        ret += "if (!async_reset_ && !i_nrst.read()) {\n";
+        spaces_++;
+        if (!m->is2DimReg()) {
+            // reset using function
+            ret += Operation::addspaces();
+            ret += m->getName() + "_r_reset(v);\n";
+        } else {
+            // reset each register separatly
+            for (auto &p: m->getEntries()) {
+                if (!p->isReg()) {
+                    continue;
+                }
+                if (p->getId() == ID_ARRAY_DEF) {
+                    ret += Operation::addspaces();
+                    ret += "for (int i = 0; i < " + p->getDepth(SYSC_ALL) + "; i++) {\n";
+                    spaces_++;
+                    std::list<GenObject *>::iterator it = p->getEntries().begin();  // element[0]
+                    ln = Operation::addspaces() + "v." + p->getName() + "[i]";
+                    for (auto &s: (*it)->getEntries()) {
+                        ret += ln + "." + s->getName() + " = " + s->getValue(SYSC_ALL) + ";\n";
+                    }
+                    if ((*it)->getEntries().size() == 0) {
+                        ret += ln + " = " + p->getValue(SYSC_ALL);
+                    }
+                    spaces_--;
+                    ret += Operation::addspaces();
+                    ret += "}\n";
+                } else {
+                    ret += Operation::addspaces();
+                    ret += "v." + p->getName() + " = " + p->getValue(SYSC_ALL) + ";\n";
+                }
+            }
+        }
+        spaces_--;
+        ret += Operation::addspaces() + "}\n";
+    } else if (SCV_is_sv()) {
+    } else {
+    }
+    return ret;
+}
+
+void SYNC_RESET(GenObject &a, const char *comment) {
+    Operation *p = new Operation(comment);
+    p->igen_ = SYNC_RESET_gen;
+    p->add_arg(p);
+    p->add_arg(&a);
 }
 
 }

@@ -93,11 +93,14 @@ class Processor : public ModuleObject {
 
     class CombProcess : public ProcObject {
      public:
-        CombProcess(GenObject *parent) : ProcObject(parent, "comb") {
+        CombProcess(GenObject *parent)
+            : ProcObject(parent, "comb"),
+            vb_flush_address("CFG_CPU_ADDR_BITS", "vb_flush_address", "", this) {
             Processor *p = static_cast<Processor *>(parent);
             p->proc_comb();
         }
-     protected:
+     public:
+        Logic vb_flush_address;
     };
 
     void proc_comb();

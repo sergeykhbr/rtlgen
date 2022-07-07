@@ -40,11 +40,7 @@ class Operation : public GenObject {
     static std::string obj2varname(EGenerateType v, GenObject *obj);
     static std::string addtext(EGenerateType v, GenObject *obj, size_t curpos);
 
-    virtual bool isOutput() { return output_; }
     virtual void add_arg(GenObject *arg) {
-        if (arg->getId() == ID_OUTPUT) {
-            output_ = true;
-        }
         args[argcnt_++] = arg;
     }
     virtual std::string getType(EGenerateType v) { return std::string(""); }
@@ -63,7 +59,6 @@ class Operation : public GenObject {
  protected:
     GenObject *args[16];
     int argcnt_;
-    bool output_;        // assign to output port should be at the of process
 };
 
 void TEXT(const char *comment="");
@@ -85,11 +80,13 @@ Operation &AND3(GenObject &a, GenObject &b, GenObject &c, const char *comment=""
 Operation &AND4(GenObject &a, GenObject &b, GenObject &c, GenObject &d, const char *comment="");
 Operation &INC(GenObject &a, const char *comment="");
 
-void SELECTARRITEM(GenObject &arr, GenObject &mux, const char *comment="");
+Operation &SELECTARRITEM(GenObject &arr, GenObject &mux, const char *comment="");
 
 void IF(GenObject &a, const char *comment="");
 void ELSIF(GenObject &a, const char *comment="");
 void ELSE(const char *comment="");
 void ENDIF(const char *comment="");
+
+void SYNC_RESET(GenObject &a, const char *comment="");
 
 }  // namespace sysvc

@@ -222,15 +222,16 @@ void Processor::proc_comb() {
     ENDIF();
 
     SETVAL(w_flush_pipeline, OR2(w.e.flushi, csr.flushi_ena));
-    SETVAL(o_flush_valid, w_flush_pipeline);
     IF (NZ(w.e.flushi));
         TEXT("fencei or ebreak instructions");
-        SETVAL(o_flush_address, w.e.flushi_addr);
+        SETVAL(comb.vb_flush_address, w.e.flushi_addr);
     ELSE();
         TEXT("request through debug interface to clear cache");
-        SETVAL(o_flush_address, csr.flushi_addr);
+        SETVAL(comb.vb_flush_address, csr.flushi_addr);
     ENDIF();
 
+    SETVAL(o_flush_valid, w_flush_pipeline);
+    SETVAL(o_flush_address, comb.vb_flush_address);
     SETALLONE(o_data_flush_address);
     SETVAL(o_data_flush_valid, w.m.flushd);
     SETVAL(o_req_ctrl_valid, w.f.imem_req_valid);

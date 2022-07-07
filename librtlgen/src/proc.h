@@ -29,13 +29,6 @@ class ProcObject : public GenObject {
                const char *comment="");
 
     virtual std::string getType(EGenerateType v) { return std::string(""); }
-    virtual std::string generate(EGenerateType v);
-
- protected:
-    std::string generate_sysc();
-    std::string generate_sysv();
-    std::string generate_vhdl();
-
  protected:
 };
 

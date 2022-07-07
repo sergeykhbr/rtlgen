@@ -395,8 +395,12 @@ std::string ModuleObject::generate_sysc_cpp() {
                 if (p->getId() == ID_ARRAY_DEF) {
                     out += "        for (int i = 0; i < " + p->getDepth(SYSC_ALL) + "; i++) {\n";
                     std::list<GenObject *>::iterator it = p->getEntries().begin();  // element[0]
+                    ln = "            r." + p->getName() + "[i]";
                     for (auto &s: (*it)->getEntries()) {
-                        out += "            r." + s->getName() + "[i] = " + s->getValue(SYSC_ALL) + ";\n";
+                        out += ln + "." + s->getName() + " = " + s->getValue(SYSC_ALL) + ";\n";
+                    }
+                    if ((*it)->getEntries().size() == 0) {
+                        out += ln + " = " + p->getValue(SYSC_ALL);
                     }
                     out += "        }\n";
                 } else {
@@ -436,45 +440,15 @@ std::string ModuleObject::generate_sysc_cpp_proc(int proccnt, GenObject *proc) {
     }
     ret += "\n";
 
-    // Generate operations before sync reset:
+    // Generate operations:
     Operation::set_space(1);
     for (auto &e: proc->getEntries()) {
         if (e->getId() != ID_OPERATION) {
             continue;
         }
-        if (static_cast<Operation *>(e)->isOutput()) {
-            continue;
-        }
         ret += e->generate(SYSC_ALL);
     }
 
-    // sync register reset 
-    if (proccnt == 0 && isRegProcess()) {
-        ret += "\n";
-        ret += "    if (!async_reset_ && !i_nrst.read()) {\n";
-        if (!is2DimReg()) {
-            // reset using function
-            ret += "        " + getName() + "_r_reset(v);\n";
-        } else {
-            // reset each register separatly
-            for (auto &p: entries_) {
-                if (!p->isReg()) {
-                    continue;
-                }
-                if (p->getId() == ID_ARRAY_DEF) {
-                    ret += "        for (int i = 0; i < " + p->getDepth(SYSC_ALL) + "; i++) {\n";
-                    std::list<GenObject *>::iterator it = p->getEntries().begin();  // element[0]
-                    for (auto &s: (*it)->getEntries()) {
-                        ret += "            v." + s->getName() + "[i] = " + s->getValue(SYSC_ALL) + ";\n";
-                    }
-                    ret += "        }\n";
-                } else {
-                    ret += "        v." + p->getName() + " = " + p->getValue(SYSC_ALL) + ";\n";
-                }
-            }
-        }
-        ret += "    }\n";
-    }
     ret += "}\n";
     ret += "\n";
     return ret;

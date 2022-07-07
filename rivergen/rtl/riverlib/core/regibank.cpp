@@ -77,6 +77,9 @@ TEXT();
     ENDIF();
 
 TEXT();
+    SYNC_RESET(*this);
+
+TEXT();
     SETVAL(o_ignored, AND4(i_wena, NZ(i_waddr), i_inorder, INV(comb.v_inordered)));
     SELECTARRITEM(arr, comb.int_radr1);
     SETVAL(o_rdata1, arr.arr_[0]->val);

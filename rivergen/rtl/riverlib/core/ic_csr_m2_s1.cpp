@@ -105,6 +105,9 @@ TEXT();
         SETZERO(o_m0_resp_data);
         SETZERO(o_m0_resp_exception);
     ENDIF();
+
+TEXT();
+    SYNC_RESET(*this);
 }
 
 ic_csr_m2_s1_file::ic_csr_m2_s1_file(GenObject *parent) :
