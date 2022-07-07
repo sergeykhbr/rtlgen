@@ -17,6 +17,7 @@
 #include "structs.h"
 #include "files.h"
 #include "utils.h"
+#include "array.h"
 
 namespace sysvc {
 
@@ -26,14 +27,37 @@ StructObject::StructObject(GenObject *parent,
                            const char *comment)
     : GenObject(parent, type ? ID_STRUCT_INST : ID_STRUCT_DEF, name, comment) {
     type_ = std::string("");
+    idx_ = -1;
     if (type) {
         type_ = type->getName();
     }
 }
 
+StructObject::StructObject(GenObject *parent,
+                           const char *name,
+                           int idx,
+                           const char *comment)
+    : GenObject(parent, ID_ARRAY_ITEM, name, comment) {
+    idx_ = idx;
+    type_ = parent_->getName();
+}
+
+
+std::string StructObject::getName() {
+    std::string ret = GenObject::getName();
+    if (idx_ != -1) {
+        GenObject *sel = static_cast<ArrayObject *>(getParent())->getSelector();
+        if (sel) {
+            ret = sel->getName();
+        }
+    }
+    return ret;
+}
+
+
 std::string StructObject::generate(EGenerateType v) {
     std::string ret = "";
-    if (getId() == ID_STRUCT_INST) {
+    if (getId() == ID_STRUCT_INST || getId() == ID_ARRAY_ITEM) {
         return ret;
     }
     if (v == SYSC_ALL || v == SYSC_H || v == SYSC_CPP) {

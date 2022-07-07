@@ -29,43 +29,4 @@ ArrayObject::ArrayObject(GenObject *parent,
     sel_ = 0;
 }
 
-std::string ArrayItem::getName() {
-    GenObject *sel = static_cast<ArrayObject *>(getParent())->getSelector();
-    std::string ret = "";
-    if (sel) {
-        ret = sel->getName();
-    } else {
-        char tstr[64];
-        RISCV_sprintf(tstr, sizeof(tstr), "%d", idx_);
-        ret = std::string(tstr);
-    }
-    return ret;
-}
-
-std::string ArrayObject::generate(EGenerateType v) {
-    std::string ret = "";
-    if (getId() == ID_ARRAY_DEF && v == VHDL_ALL) {
-        ret += generate_vhdl();
-    } else {
-        return ret;
-    }
-    return ret;
-}
-
-std::string ArrayObject::generate_sysc() {
-    std::string ret = "";
-    return ret;
-}
-
-std::string ArrayObject::generate_sysv() {
-    std::string ret = "";
-    return ret;
-}
-
-std::string ArrayObject::generate_vhdl() {
-    std::string ret = "";
-    return ret;
-}
-
-
 }

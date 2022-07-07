@@ -36,27 +36,10 @@ class ArrayObject : public GenObject {
     virtual std::string getDepth(EGenerateType v) override { return depth_.getValue(v); }
     virtual void setSelector(GenObject *sel) { sel_ = sel; }
     virtual GenObject *getSelector() { return sel_; }
-    virtual std::string generate(EGenerateType v);
- protected:
-    std::string generate_sysc();
-    std::string generate_sysv();
-    std::string generate_vhdl();
  protected:
     std::string type_;
     I32D depth_;
     GenObject *sel_;
-};
-
-class ArrayItem : public GenObject {
- public:
-    ArrayItem(ArrayObject *parent, int idx)
-              : GenObject(parent, ID_ARRAY_ITEM, ""), idx_(idx) {}
-
-    virtual std::string getType(EGenerateType v) {
-        return static_cast<ArrayObject *>(parent_)->getType(v); }
-    virtual std::string getName() override;
- protected:
-    int idx_;
 };
 
 }  // namespace sysvc

@@ -30,9 +30,15 @@ class StructObject : public GenObject {
                  StructObject *type,
                  const char *name,
                  const char *comment="");
+    // Create structure as an array item
+    StructObject(GenObject *parent,
+                 const char *name,
+                 int idx,
+                 const char *comment="");
 
     /** GenObject generic methods */
     virtual std::string getType(EGenerateType) { return type_; }
+    std::string getName() override;
     virtual std::string generate(EGenerateType v);
 
  protected:
@@ -42,6 +48,7 @@ class StructObject : public GenObject {
  protected:
     std::string type_;
     std::list<std::string> instances_;   // instance list
+    int idx_;                            // array item index (-1) if not in an array
 };
 
 }  // namespace sysvc

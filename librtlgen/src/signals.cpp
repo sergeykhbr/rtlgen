@@ -19,12 +19,12 @@
 namespace sysvc {
 
 Signal::Signal(GenObject *parent, const char *name, const char *width,
-    const char *comment) : Logic(width, name, "", parent, comment) {
+    const char *comment) : Logic(width, name, "0", parent, comment) {
     id_ = ID_SIGNAL;
 }
 
 Signal::Signal(GenObject *parent, const char *name, GenValue *width, 
-    const char *comment) : Logic(width, name, "", parent, comment) {
+    const char *comment) : Logic(width, name, "0", parent, comment) {
     id_ = ID_SIGNAL;
 }
 

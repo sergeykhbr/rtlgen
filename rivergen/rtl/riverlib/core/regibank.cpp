@@ -41,7 +41,7 @@ RegIntBank::RegIntBank(GenObject *parent, river_cfg *cfg) :
     o_ra(this, "o_ra", "RISCV_ARCH", "Return address for branch predictor"),
     o_sp(this, "o_sp", "RISCV_ARCH", "Stack Pointer for border control"),
     // struct declaration
-    RegValueTypeDef_(this, 0, "RegArrayType"),
+    RegValueTypeDef_(this, "RegArrayType"),
     // registers
     arr(this, "arr"),
     // process

@@ -18,6 +18,7 @@
 
 #include <api.h>
 #include "proc.h"
+#include "bp.h"
 #include "ic_csr_m2_s1.h"
 #include "regibank.h"
 
@@ -25,6 +26,7 @@ class core_folder : public FolderObject {
  public:
     core_folder(GenObject *parent, river_cfg *cfg) :
         FolderObject(parent, "core"),
+        bp_(this, cfg),
         ic_(this),
         regint_(this, cfg),
         proc_(this) {}
@@ -32,6 +34,7 @@ class core_folder : public FolderObject {
  protected:
     // subfolders:
     // files
+    bp_file bp_;
     ic_csr_m2_s1_file ic_;
     regibank_file regint_;
     proc proc_;

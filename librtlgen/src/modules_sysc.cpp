@@ -179,7 +179,9 @@ std::string ModuleObject::generate_sysc_h() {
     // Signals list
     text = "";
     for (auto &p: entries_) {
-        if (p->isReg() || (p->getId() != ID_SIGNAL && p->getId() != ID_STRUCT_INST)) {
+        if (p->isReg() || (p->getId() != ID_SIGNAL
+                        && p->getId() != ID_STRUCT_INST
+                        && p->getId() != ID_ARRAY_DEF)) {
             if (p->getId() == ID_COMMENT) {
                 text += "    " + p->generate(SYSC_ALL);
             } else {
@@ -213,6 +215,59 @@ std::string ModuleObject::generate_sysc_h() {
         "};\n"
         "\n";
     return out;
+}
+
+std::string ModuleObject::generate_sysc_sensitivity(std::string prefix, GenObject *obj) {
+    std::string ret = "";
+    std::string ln;
+    for (auto &s: obj->getEntries()) {
+        ln = prefix;
+        if (s->isReg()) {
+            ln += "r.";
+        }
+
+        if (s->getId() == ID_INPUT && s->getName() != "i_clk") {
+            ret += ln + s->getName() + ";\n";
+        } else if (s->getId() == ID_SIGNAL) {
+            ret += ln + s->getName() + ";\n";
+        } else if (s->getId() == ID_ARRAY_DEF) {
+            ln = "    " + ln + s->getName() + "[i].";
+            ret += "    for (int i = 0; i < " + s->getDepth(SYSC_ALL) + "; i++) {\n";
+            std::list<GenObject *>::iterator it = s->getEntries().begin();
+            ret += generate_sysc_sensitivity(ln, *it);
+            ret += "    }\n";
+        }
+    }
+    return ret;
+}
+
+std::string ModuleObject::generate_sysc_vcd(std::string prefix, GenObject *obj, bool regonly) {
+    std::string ret = "";
+    std::string ln;
+    for (auto &s: obj->getEntries()) {
+        // TODO: check top level module instead of hardcoded name
+        if (obj->getName() != "RiverTop"
+            && (s->getName() == "i_clk" || s->getName() == "i_nrst")) {
+            continue;
+        }
+        ln = prefix;
+        if (s->isReg()) {
+            ln += "r.";
+        }
+
+        if (s->getId() == ID_INPUT || s->getId() == ID_OUTPUT
+             || s->getId() == ID_SIGNAL) {
+            ret += "        sc_trace(o_vcd, " + ln + s->getName() + ", " + ln + s->getName() + ".name());\n";
+        } else if (s->getId() == ID_ARRAY_DEF) {
+            ln += s->getName() + "[i].";
+            ret += "        for (int i = 0; i < " + s->getDepth(SYSC_ALL) + "; i++) {\n";
+            std::list<GenObject *>::iterator it = s->getEntries().begin();
+            ret += generate_sysc_vcd(ln, *it, true);
+            ret += "        }\n";
+        }
+    }
+
+    return ret;
 }
 
 std::string ModuleObject::generate_sysc_cpp() {
@@ -281,23 +336,16 @@ std::string ModuleObject::generate_sysc_cpp() {
     }
 
     // Process sensitivity list:
+    std::list<GenObject *> objlist;
     for (auto &p: entries_) {
         if (p->getId() != ID_PROCESS) {
             continue;
         }
         out += "\n";
         out += "    SC_METHOD(" + p->getName() + ");\n";
-        for (auto &s: entries_) {
-            if (s->getId() == ID_INPUT && s->getName() != "i_clk") {
-                out += "    sensitive << " + s->getName() + ";\n";
-            } else if (s->isReg()) {
-                std::list<GenObject *> objlist;
-                s->getSignals(objlist);
-                for (auto &r : objlist) {
-                    out += "    sensitive << r." + r->getFullName(SYSC_ALL, s) + ";\n";
-                }
-            }
-        }
+
+        ln = std::string("    sensitive << ");
+        out += generate_sysc_sensitivity(ln, this);
     }
     if (isRegProcess()) {
         out += "\n";
@@ -322,6 +370,10 @@ std::string ModuleObject::generate_sysc_cpp() {
     // generateVCD function
     out += "void " + getName() + "::generateVCD(sc_trace_file *i_vcd, sc_trace_file *o_vcd) {\n";
     out += "    if (o_vcd) {\n";
+
+    ln = "";
+    //out += generate_sysc_vcd(ln, this);
+
     for (auto &p: entries_) {
         if (p->getId() != ID_INPUT && p->getId() != ID_OUTPUT) {
             continue;
@@ -337,7 +389,6 @@ std::string ModuleObject::generate_sysc_cpp() {
     }
     // Add all registers to trace file:
     bool twodim = is2DimReg();;
-    std::list<GenObject *> objlist;
     if (isRegProcess()) {
         out += "\n";
         out += "        std::string pn(name());\n";

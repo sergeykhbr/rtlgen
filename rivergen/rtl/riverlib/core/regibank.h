@@ -72,42 +72,44 @@ class RegIntBank : public ModuleObject {
     OutPort o_ra;
     OutPort o_sp;
 
-    class RegValueType : public StructObject {
+    class RegsType {
      public:
-        RegValueType(GenObject *parent, StructObject *def, const char *name, const char *comment="")
-            : StructObject(parent, def, name, comment),
-            val(this, "val", "RISCV_ARCH"),
-            tag(this, "tag", "CFG_REG_TAG_WIDTH") {}
+        // Structure definition
+        RegsType(GenObject *parent) :
+            val(parent, "val", "RISCV_ARCH"),
+            tag(parent, "tag", "CFG_REG_TAG_WIDTH") {}
      public:
-        Signal val;
-        Signal tag;
+        RegSignal val;
+        RegSignal tag;
+    };
+
+
+    class RegValueTypeDefinition : public StructObject,
+                         public RegsType {
+     public:
+        // Structure definition
+        RegValueTypeDefinition(GenObject *parent, const char *name, const char *comment="")
+            : StructObject(parent, 0, name, comment), RegsType(this) {}
+
+        // Create structure as an array item
+        RegValueTypeDefinition(GenObject *parent, const char *name, int idx, const char *comment="")
+            : StructObject(parent, name, idx, comment), RegsType(this) {}
     } RegValueTypeDef_;
 
     class RegArrayType : public ArrayObject {
      public:
-       class ItemType : public ArrayItem {
-        public:
-            ItemType(ArrayObject *parent, int idx, const char *rstval)
-                : ArrayItem(parent, idx),
-                val(this, "val", "RISCV_ARCH", rstval),
-                tag(this, "tag", "CFG_REG_TAG_WIDTH") {}
-        public:
-            RegSignal val;
-            RegSignal tag;
-       };
-
        RegArrayType(GenObject *parent, const char *name, const char *comment="")
             : ArrayObject(parent, "RegValueType", name, "REGS_TOTAL", comment) {
-                reg_ = true;
-
-                arr_ = new ItemType *[depth_.getValue()];
-                arr_[0] = new ItemType(this, 0, "0");
+                char tstr[64];
+                arr_ = new RegValueTypeDefinition *[depth_.getValue()];
+                arr_[0] = new RegValueTypeDefinition(this, "0", 0);
                 for (int i = 1; i < static_cast<int>(depth_.getValue()); i++) {
-                    arr_[i] = new ItemType(this, i, "0xfeedface");
+                    RISCV_sprintf(tstr, sizeof(tstr), "%d", i);
+                    arr_[i] = new RegValueTypeDefinition(this, tstr, i);
                 }
 
             }
-        ItemType **arr_;
+        RegValueTypeDefinition **arr_;
     } arr;
 
     // process should be intialized last to make all signals available
