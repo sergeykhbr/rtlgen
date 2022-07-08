@@ -40,11 +40,23 @@ StructObject::StructObject(GenObject *parent,
 
 std::string StructObject::getName() {
     std::string ret = GenObject::getName();
-    if (idx_ != -1) {
-        GenObject *sel = static_cast<ArrayObject *>(getParent())->getSelector();
-        if (sel) {
-            ret = sel->getName();
+    if (idx_ == -1) {
+        return ret;
+    }
+    GenObject *sel = static_cast<ArrayObject *>(getParent())->getSelector();
+    if (!sel) {
+        return ret;
+    }
+    if (sel->getId() == ID_CONST) {
+        if (SCV_is_sysc()) {
+            ret = sel->getValue(SYSC_ALL);
+        } else if (SCV_is_sv()) {
+            ret = sel->getValue(SV_ALL);
         }
+    } else if (sel->getId() == ID_OPERATION) {
+        ret = sel->generate(SYSC_ALL);
+    } else {
+        ret = sel->getName();
     }
     return ret;
 }

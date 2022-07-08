@@ -18,6 +18,7 @@
 
 #include "genobjects.h"
 #include "values.h"
+#include "params.h"
 #include "logic.h"
 #include "modules.h"
 #include <iostream>
@@ -42,7 +43,7 @@ class Operation : public GenObject {
     static std::string obj2varname(EGenerateType v, GenObject *obj);
     static std::string obj2varval(GenObject *obj);
     static std::string addtext(EGenerateType v, GenObject *obj, size_t curpos);
-    static std::string reset(std::string prefix, ModuleObject *m);
+    static std::string reset(std::string prefix, ModuleObject *m, std::string xrst);
 
     virtual void add_arg(GenObject *arg) {
         args[argcnt_++] = arg;
@@ -95,14 +96,21 @@ Operation &AND3(GenObject &a, GenObject &b, GenObject &c, const char *comment=""
 Operation &AND4(GenObject &a, GenObject &b, GenObject &c, GenObject &d, const char *comment="");
 Operation &DEC(GenObject &a, const char *comment="");
 Operation &INC(GenObject &a, const char *comment="");
+Operation &MUL2(GenObject &a, GenObject &b, const char *comment="");
 
-Operation &SELECTARRITEM(GenObject &arr, GenObject &mux, const char *comment="");
+Operation &SELECTARRITEM(GenObject &arr, GenObject &mux, const char *comment="");   // DELME:
+Operation &ARRITEM(GenObject &arr, GenObject &idx, GenObject &item, const char *comment="");
+Operation &SETARRITEM(GenObject &arr, GenObject &idx, GenObject &item, GenObject &val, const char *comment="");
 
 void IF(GenObject &a, const char *comment="");
 void ELSIF(GenObject &a, const char *comment="");
 void ELSE(const char *comment="");
 void ENDIF(const char *comment="");
 
-void SYNC_RESET(GenObject &a, const char *comment="");
+GenObject &FOR(const char *i, GenObject &start, GenObject &end, const char *comment="");
+void ENDFOR(const char *comment="");
+
+// xrst is an additional reset signal
+void SYNC_RESET(GenObject &a, GenObject *xrst=0, const char *comment="");
 
 }  // namespace sysvc

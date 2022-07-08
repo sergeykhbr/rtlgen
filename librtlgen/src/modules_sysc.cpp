@@ -483,10 +483,11 @@ std::string ModuleObject::generate_sysc_cpp() {
 
     if (isRegProcess()) {
         prefix1 = "r";
+        std::string xrst = "";
         Operation::set_space(1);
 
         out += "void " + getName() + "::registers() {\n";
-        out += Operation::reset(prefix1, this);
+        out += Operation::reset(prefix1, this, xrst);
         out += " else {\n";
         out += "        r = v;\n";
         out += "    }\n";

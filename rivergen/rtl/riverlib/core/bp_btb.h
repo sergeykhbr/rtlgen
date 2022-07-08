@@ -27,10 +27,24 @@ class BpBTB : public ModuleObject {
 
     class CombProcess : public ProcObject {
      public:
-        CombProcess(GenObject *parent) : ProcObject(parent, "comb") {
+        CombProcess(GenObject *parent) : ProcObject(parent, "comb"),
+            vb_addr(this, "vb_addr", "MUL(CFG_BP_DEPTH,CFG_CPU_ADDR_BITS)"),
+            vb_hit(this, "vb_hit", "CFG_BP_DEPTH"),
+            t_addr(this, "t_addr", "CFG_CPU_ADDR_BITS"),
+            vb_pc_equal(this, "vb_pc_equal", "CFG_BTB_SIZE"),
+            vb_pc_nshift(this, "vb_pc_nshift", "CFG_BTB_SIZE"),
+            vb_bp_exec(this, "vb_bp_exec", "CFG_BP_DEPTH"),
+            v_dont_update(this, "v_dont_update", "1") {
             BpBTB *p = static_cast<BpBTB *>(parent);
             p->proc_comb();
         }
+        Logic vb_addr;
+        Logic vb_hit;
+        Logic t_addr;
+        Logic vb_pc_equal;
+        Logic vb_pc_nshift;
+        Logic vb_bp_exec;
+        Logic v_dont_update;
     };
 
     void proc_comb();

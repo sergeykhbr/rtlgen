@@ -41,8 +41,67 @@ BpBTB::BpBTB(GenObject *parent, river_cfg *cfg) :
 }
 
 void BpBTB::proc_comb() {
+    SETVAL(comb.vb_hit, ALLZEROS());
+    SETVAL(comb.vb_bp_exec, ALLZEROS());
+    SETBITS(comb.vb_addr, DEC(cfg_->CFG_CPU_ADDR_BITS), CONST("0"), i_bp_pc);
+    SETBIT(comb.vb_bp_exec, 0, i_e);
 
 TEXT();
-    SYNC_RESET(*this);
+    GenObject *i = &FOR("i", CONST("1"), cfg_->CFG_BP_DEPTH);
+        SETVAL(comb.t_addr, BITS(comb.vb_addr, MUL2(*i, DEC(cfg_->CFG_CPU_ADDR_BITS)),
+                                               MUL2(DEC(*i), cfg_->CFG_CPU_ADDR_BITS)));
+        GenObject &n = FOR("n", DEC(cfg_->CFG_BTB_SIZE), CONST("0"));
+            IF (EQ(comb.t_addr, ARRITEM(btb, n, btb.arr_[0]->pc)));
+                SETBITS(comb.vb_addr, DEC(MUL2(INC(*i), cfg_->CFG_CPU_ADDR_BITS)),
+                                      MUL2(*i, cfg_->CFG_CPU_ADDR_BITS), ARRITEM(btb, n, btb.arr_[0]->npc));
+                SETBIT(comb.vb_hit, *i, CONST("1", 1));
+                SETBIT(comb.vb_bp_exec, *i, btb.arr_[0]->exec,  "Used for: Do not override by pre-decoded jumps");
+            ELSIF(EZ(BIT(comb.vb_hit, *i)));
+                SETBITS(comb.vb_addr, DEC(MUL2(INC(*i), cfg_->CFG_CPU_ADDR_BITS)),
+                                      MUL2(*i, cfg_->CFG_CPU_ADDR_BITS), ADD2(comb.t_addr, CONST("4")));
+            ENDIF();
+        ENDFOR();
+    ENDFOR();
+
+TEXT();
+    SETVAL(comb.v_dont_update, ALLZEROS());
+    SETVAL(comb.vb_pc_equal, ALLZEROS());
+    i = &FOR("i", CONST("0"), cfg_->CFG_BTB_SIZE);
+        IF (EQ(ARRITEM(btb, *i, btb.arr_[0]->pc), i_we_pc));
+            SETBIT(comb.vb_pc_equal, *i, CONST("1"));
+            SETVAL(comb.v_dont_update, AND2(ARRITEM(btb, *i, btb.arr_[0]->exec), INV(i_e)));
+        ENDIF();
+    ENDFOR();
+    SETVAL(comb.vb_pc_nshift, ALLZEROS());
+    FOR ("i", CONST("1"), cfg_->CFG_BTB_SIZE);
+        SETBIT(comb.vb_pc_nshift, *i, OR2(BIT(comb.vb_pc_equal, DEC(*i)), 
+                                         BIT(comb.vb_pc_nshift, DEC(*i))));
+    ENDFOR();
+
+TEXT();
+    IF (NZ(AND2(i_we, INV(comb.v_dont_update))));
+        SETARRITEM(btb, CONST("0"), btb.arr_[0]->exec, i_e);
+        SETARRITEM(btb, CONST("0"), btb.arr_[0]->pc, i_we_pc);
+        SETARRITEM(btb, CONST("0"), btb.arr_[0]->npc, i_we_npc);
+        i = &FOR ("i", CONST("1"), cfg_->CFG_BTB_SIZE);
+            IF (EZ(BIT(comb.vb_pc_nshift, *i)));
+                SETARRITEM(btb, *i, btb, ARRITEM(btb, DEC(*i), btb));
+            ELSE();
+                SETARRITEM(btb, *i, btb, ARRITEM(btb, *i, btb));
+            ENDIF();
+        ENDFOR();
+    ENDIF();
+
+TEXT();
+    SYNC_RESET(*this, &i_flush_pipeline);
+
+TEXT();
+    i = &FOR("i", CONST("0"), cfg_->CFG_BP_DEPTH);
+        SETARRITEM(dbg_npc, *i, dbg_npc, BITS(comb.vb_addr, DEC(MUL2(INC(*i), cfg_->CFG_CPU_ADDR_BITS)),
+                                                            MUL2(*i, cfg_->CFG_CPU_ADDR_BITS)));
+    ENDFOR();
+    SETVAL(o_bp_npc, comb.vb_addr);
+    SETVAL(o_bp_exec, comb.vb_bp_exec);
+
 }
 
