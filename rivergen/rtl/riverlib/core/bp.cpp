@@ -36,7 +36,7 @@ BranchPredictor::BranchPredictor(GenObject *parent, river_cfg *cfg) :
     i_f_fetched_pc(this, "i_f_fetched_pc", "CFG_CPU_ADDR_BITS", "already requested and fetched address"),
     i_d_pc(this, "i_d_pc", "CFG_CPU_ADDR_BITS", "decoded instructions"),
     // struct declaration
-    PreDecTypeDef_(this, "PreDecType"),
+    PreDecTypeDef_(this, -1),
     // Signals
     wb_pd(this, "wb_pd"),
     w_btb_e(this, "w_btb_e", "1"),

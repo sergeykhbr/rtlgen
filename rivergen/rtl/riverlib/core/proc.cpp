@@ -83,25 +83,22 @@ Processor::Processor(GenObject *parent) :
     o_data_flush_valid(this, "o_data_flush_valid", "1", "Remove address from D$ is valid"),
     i_data_flush_end(this, "i_data_flush_end"),
     // struct declration
-    FetchTypeDef_(this, 0, "FetchType"),
-    InstructionDecodeTypeDef_(this, 0, "InstructionDecodeType"),
-    ExecuteTypeDef_(this, 0, "ExecuteType"),
-    MemoryTypeDef_(this, 0, "MemoryType"),
-    WriteBackTypeDef_(this, 0, "WriteBackType"),
-    IntRegsTypeDef_(this, 0, "IntRegsType"),
-    CsrTypeDef_(this, 0, "CsrType"),
-    DebugTypeDef_(this, 0, "DebugType"),
-    BranchPredictorTypeDef_(this, 0, "BranchPredictorType"),
-    PipelineTypeDef_(this, 0, &FetchTypeDef_, &InstructionDecodeTypeDef_,
-                        &ExecuteTypeDef_, &MemoryTypeDef_, &WriteBackTypeDef_,
-                        "PipelineType"),
+    FetchTypeDef_(this),
+    InstructionDecodeTypeDef_(this),
+    ExecuteTypeDef_(this),
+    MemoryTypeDef_(this),
+    WriteBackTypeDef_(this),
+    IntRegsTypeDef_(this),
+    CsrTypeDef_(this),
+    DebugTypeDef_(this),
+    BranchPredictorTypeDef_(this),
+    PipelineTypeDef_(this),
     // Internal signals
-    w(this, &PipelineTypeDef_, &FetchTypeDef_, &InstructionDecodeTypeDef_,
-      &ExecuteTypeDef_, &MemoryTypeDef_, &WriteBackTypeDef_, "w", "5-stages CPU pipeline"),
-    ireg(this, &IntRegsTypeDef_, "ireg"),
-    csr(this, &CsrTypeDef_, "csr"),
-    dbg(this, &DebugTypeDef_, "dbg"),
-    bp(this, &BranchPredictorTypeDef_, "bp"),
+    w(this, "w", "5-stages CPU pipeline"),
+    ireg(this, "ireg"),
+    csr(this, "csr"),
+    dbg(this, "dbg"),
+    bp(this, "bp"),
     _CsrBridge0_(this),
     _CsrBridge1_(this, "csr bridge to executor unit"),
     iccsr_m0_req_ready(this, "iccsr_m0_req_ready"),
@@ -232,7 +229,7 @@ void Processor::proc_comb() {
 
     SETVAL(o_flush_valid, w_flush_pipeline);
     SETVAL(o_flush_address, comb.vb_flush_address);
-    SETALLONE(o_data_flush_address);
+    SETVAL(o_data_flush_address, ALLONES());
     SETVAL(o_data_flush_valid, w.m.flushd);
     SETVAL(o_req_ctrl_valid, w.f.imem_req_valid);
     SETVAL(o_req_ctrl_addr, w.f.imem_req_addr);

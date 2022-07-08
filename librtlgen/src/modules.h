@@ -44,9 +44,9 @@ class ModuleObject : public GenObject {
  protected:
     std::string generate_sysc_h();
     std::string generate_sysc_cpp();
-    std::string generate_sysc_sensitivity(std::string prefix, GenObject *obj);
-    std::string generate_sysc_vcd(std::string prefix, GenObject *obj, bool regonly);
-    std::string generate_sysc_cpp_proc(int cnt, GenObject *proc);
+    std::string generate_sysc_sensitivity(std::string prefix, std::string name, GenObject *obj);
+    std::string generate_sysc_vcd(std::string name1, std::string name2, GenObject *obj);
+    std::string generate_sysc_cpp_proc(GenObject *proc);
     std::string generate_sv_pkg();
     std::string generate_sv_mod();
 

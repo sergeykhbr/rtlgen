@@ -19,6 +19,7 @@
 #include "genobjects.h"
 #include "values.h"
 #include "logic.h"
+#include "modules.h"
 #include <iostream>
 #include <list>
 
@@ -35,10 +36,13 @@ class Operation : public GenObject {
     static void push_obj(GenObject *obj);
     static void pop_obj();
     static void set_space(int n);
+    static int get_space();
     static std::string addspaces();
     static std::string obj2varname(const char *prefix, EGenerateType v, GenObject *obj);
     static std::string obj2varname(EGenerateType v, GenObject *obj);
+    static std::string obj2varval(GenObject *obj);
     static std::string addtext(EGenerateType v, GenObject *obj, size_t curpos);
+    static std::string reset(std::string prefix, ModuleObject *m);
 
     virtual void add_arg(GenObject *arg) {
         args[argcnt_++] = arg;
@@ -62,10 +66,20 @@ class Operation : public GenObject {
 };
 
 void TEXT(const char *comment="");
+Operation &ALLZEROS(const char *comment="");
+Operation &ALLONES(const char *comment="");
+Operation &BIT(GenObject &a, GenObject &b, const char *comment="");
+Operation &BIT(GenObject &a, int b, const char *comment="");
+Operation &BITS(GenObject &a, GenObject &h, GenObject &l, const char *comment="");
+Operation &BITS(GenObject &a, int h, int l, const char *comment="");
+Operation &CONST(const char *val);
+Operation &CONST(const char *val, int width);
 Operation &SETZERO(GenObject &a, const char *comment="");
 Operation &SETONE(GenObject &a, const char *comment="");
-Operation &SETALLONE(GenObject &a, const char *comment="");
-Operation &SETBIT(GenObject &a, GenObject &b, const char *comment="");
+Operation &SETBIT(GenObject &a, GenObject &b, GenObject &val, const char *comment="");
+Operation &SETBIT(GenObject &a, int b, GenObject &val, const char *comment="");
+Operation &SETBITS(GenObject &a, GenObject &h, GenObject &l, GenObject &val, const char *comment="");
+Operation &SETBITS(GenObject &a, int h, int l, GenObject &val, const char *comment="");
 Operation &SETVAL(GenObject &a, GenObject &b, const char *comment="");
 Operation &TO_INT(GenObject &a, const char *comment="");
 Operation &EQ(GenObject &a, GenObject &b, const char *comment="");  // ==
@@ -75,9 +89,11 @@ Operation &INV(GenObject &a, const char *comment="");        // logical inversio
 Operation &OR2(GenObject &a, GenObject &b, const char *comment="");
 Operation &OR3(GenObject &a, GenObject &b, GenObject &c, const char *comment="");
 Operation &OR4(GenObject &a, GenObject &b, GenObject &c, GenObject &d, const char *comment="");
+Operation &ADD2(GenObject &a, GenObject &b, const char *comment="");
 Operation &AND2(GenObject &a, GenObject &b, const char *comment="");
 Operation &AND3(GenObject &a, GenObject &b, GenObject &c, const char *comment="");
 Operation &AND4(GenObject &a, GenObject &b, GenObject &c, GenObject &d, const char *comment="");
+Operation &DEC(GenObject &a, const char *comment="");
 Operation &INC(GenObject &a, const char *comment="");
 
 Operation &SELECTARRITEM(GenObject &arr, GenObject &mux, const char *comment="");

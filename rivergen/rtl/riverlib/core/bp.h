@@ -76,27 +76,18 @@ class BranchPredictor : public ModuleObject {
     class PreDecStructDefinition : public StructObject,
                                    public PreDecSignals {
      public:
-        // Structure definition
-        PreDecStructDefinition(GenObject *parent, const char *name, const char *comment="")
-            : StructObject(parent, 0, name, comment), PreDecSignals(this) {}
-
-        // Create structure as an array item
-        PreDecStructDefinition(GenObject *parent, const char *name, int idx, const char *comment="")
-            : StructObject(parent, name, idx, comment), PreDecSignals(this) {}
+        PreDecStructDefinition(GenObject *parent, int idx, const char *comment="")
+            : StructObject(parent, "PreDecStruct", "", idx, comment), PreDecSignals(this) {}
     } PreDecTypeDef_;
 
     class PreDecStructArray : public ArrayObject {
      public:
        PreDecStructArray(GenObject *parent, const char *name, const char *comment="")
-            : ArrayObject(parent, "PreDecType", name, "2", comment) {
-                char tstr[64];
+            : ArrayObject(parent, name, "2", comment) {
                 arr_ = new PreDecStructDefinition *[depth_.getValue()];
-                arr_[0] = new PreDecStructDefinition(this, "0", 0);
-                for (int i = 1; i < static_cast<int>(depth_.getValue()); i++) {
-                    RISCV_sprintf(tstr, sizeof(tstr), "%d", i);
-                    arr_[i] = new PreDecStructDefinition(this, tstr, i);
+                for (int i = 0; i < static_cast<int>(depth_.getValue()); i++) {
+                    arr_[i] = new PreDecStructDefinition(this, i);
                 }
-
             }
         PreDecStructDefinition **arr_;
     } wb_pd;

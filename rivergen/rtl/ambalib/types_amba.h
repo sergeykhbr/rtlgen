@@ -43,7 +43,7 @@ class types_amba : public FileObject {
             ret_("REQ_MEM_TYPE_BITS", "ret", "", this) {
             types_amba *p = static_cast<types_amba *>(parent_);
             SETZERO(ret_);
-            SETBIT(ret_, p->REQ_MEM_TYPE_CACHED);
+            SETBIT(ret_, p->REQ_MEM_TYPE_CACHED, CONST("1"));
         }
         virtual GenObject *getpReturn() override { return &ret_; }
      protected:
@@ -57,8 +57,8 @@ class types_amba : public FileObject {
             ret_("REQ_MEM_TYPE_BITS", "ret", "", this) {
             types_amba *p = static_cast<types_amba *>(parent_);
             SETZERO(ret_);
-            SETBIT(ret_, p->REQ_MEM_TYPE_CACHED);
-            SETBIT(ret_, p->REQ_MEM_TYPE_UNIQUE);
+            SETBIT(ret_, p->REQ_MEM_TYPE_CACHED, CONST("1"));
+            SETBIT(ret_, p->REQ_MEM_TYPE_UNIQUE, CONST("1"));
         }
         virtual GenObject *getpReturn() override { return &ret_; }
      protected:
@@ -72,7 +72,7 @@ class types_amba : public FileObject {
             ret_("REQ_MEM_TYPE_BITS", "ret", "", this) {
             types_amba *p = static_cast<types_amba *>(parent_);
             SETZERO(ret_);
-            SETBIT(ret_, p->REQ_MEM_TYPE_WRITE);
+            SETBIT(ret_, p->REQ_MEM_TYPE_WRITE, CONST("1"));
         }
         virtual GenObject *getpReturn() override { return &ret_; }
      protected:
@@ -86,9 +86,9 @@ class types_amba : public FileObject {
             ret_("REQ_MEM_TYPE_BITS", "ret", "", this) {
             types_amba *p = static_cast<types_amba *>(parent_);
             SETZERO(ret_);
-            SETBIT(ret_, p->REQ_MEM_TYPE_WRITE);
-            SETBIT(ret_, p->REQ_MEM_TYPE_CACHED);
-            SETBIT(ret_, p->REQ_MEM_TYPE_UNIQUE);
+            SETBIT(ret_, p->REQ_MEM_TYPE_WRITE, CONST("1"));
+            SETBIT(ret_, p->REQ_MEM_TYPE_CACHED, CONST("1"));
+            SETBIT(ret_, p->REQ_MEM_TYPE_UNIQUE, CONST("1"));
         }
         virtual GenObject *getpReturn() override { return &ret_; }
      protected:
@@ -102,8 +102,8 @@ class types_amba : public FileObject {
             ret_("REQ_MEM_TYPE_BITS", "ret", "", this) {
             types_amba *p = static_cast<types_amba *>(parent_);
             SETZERO(ret_);
-            SETBIT(ret_, p->REQ_MEM_TYPE_WRITE);
-            SETBIT(ret_, p->REQ_MEM_TYPE_CACHED);
+            SETBIT(ret_, p->REQ_MEM_TYPE_WRITE, CONST("1"));
+            SETBIT(ret_, p->REQ_MEM_TYPE_CACHED, CONST("1"));
         }
         virtual GenObject *getpReturn() override { return &ret_; }
      protected:

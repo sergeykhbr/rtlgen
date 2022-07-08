@@ -85,27 +85,20 @@ class RegIntBank : public ModuleObject {
 
 
     class RegValueTypeDefinition : public StructObject,
-                         public RegsType {
+                                   public RegsType {
      public:
-        // Structure definition
-        RegValueTypeDefinition(GenObject *parent, const char *name, const char *comment="")
-            : StructObject(parent, 0, name, comment), RegsType(this) {}
-
-        // Create structure as an array item
-        RegValueTypeDefinition(GenObject *parent, const char *name, int idx, const char *comment="")
-            : StructObject(parent, name, idx, comment), RegsType(this) {}
+        RegValueTypeDefinition(GenObject *parent, int idx, const char *comment="")
+            : StructObject(parent, "RegValueType", "", idx, comment), RegsType(this) {}
     } RegValueTypeDef_;
 
     class RegArrayType : public ArrayObject {
      public:
        RegArrayType(GenObject *parent, const char *name, const char *comment="")
-            : ArrayObject(parent, "RegValueType", name, "REGS_TOTAL", comment) {
-                char tstr[64];
+            : ArrayObject(parent, name, "REGS_TOTAL", comment) {
+                reg_ = true;
                 arr_ = new RegValueTypeDefinition *[depth_.getValue()];
-                arr_[0] = new RegValueTypeDefinition(this, "0", 0);
-                for (int i = 1; i < static_cast<int>(depth_.getValue()); i++) {
-                    RISCV_sprintf(tstr, sizeof(tstr), "%d", i);
-                    arr_[i] = new RegValueTypeDefinition(this, tstr, i);
+                for (int i = 0; i < static_cast<int>(depth_.getValue()); i++) {
+                    arr_[i] = new RegValueTypeDefinition(this, i);
                 }
 
             }

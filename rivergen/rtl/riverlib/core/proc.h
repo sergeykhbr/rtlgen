@@ -107,8 +107,8 @@ class Processor : public ModuleObject {
 
     class FetchType : public StructObject {
      public:
-        FetchType(GenObject *parent, StructObject *def, const char *name, const char *comment="")
-            : StructObject(parent, def, name, comment),
+        FetchType(GenObject *parent, const char *name="", const char *comment="")
+            : StructObject(parent, "FetchType", name, -1, comment),
             instr_load_fault(this, "instr_load_fault"),
             instr_executable(this, "instr_executable"),
             requested_pc(this, "requested_pc", "CFG_CPU_ADDR_BITS", "requested but responded address"),
@@ -131,8 +131,8 @@ class Processor : public ModuleObject {
 
     class InstructionDecodeType : public StructObject {
      public:
-        InstructionDecodeType(GenObject *parent, StructObject *def, const char *name, const char *comment="")
-            : StructObject(parent, def, name, comment),
+        InstructionDecodeType(GenObject *parent, const char *name="", const char *comment="")
+            : StructObject(parent, "InstructionDecode", name, -1, comment),
             pc(this, "pc", "CFG_CPU_ADDR_BITS"),
             instr(this, "instr", "32"),
             memop_store(this, "memop_store"),
@@ -182,8 +182,8 @@ class Processor : public ModuleObject {
 
     class ExecuteType : public StructObject {
      public:
-        ExecuteType(GenObject *parent, StructObject *def, const char *name, const char *comment="")
-            : StructObject(parent, def, name, comment),
+        ExecuteType(GenObject *parent, const char *name="", const char *comment="")
+            : StructObject(parent, "ExecuteType", name, -1, comment),
         valid(this, "valid"),
         instr(this, "instr", "32"),
         pc(this, "pc", "CFG_CPU_ADDR_BITS"),
@@ -251,8 +251,8 @@ class Processor : public ModuleObject {
 
     class MemoryType : public StructObject {
      public:
-        MemoryType(GenObject *parent, StructObject *def, const char *name, const char *comment="")
-            : StructObject(parent, def, name, comment),
+        MemoryType(GenObject *parent, const char *name="", const char *comment="")
+            : StructObject(parent, "MemoryType", name, -1, comment),
             memop_ready(this, "memop_ready"),
             flushd(this, "flushd"),
             pc(this, "pc", "CFG_CPU_ADDR_BITS"),
@@ -268,8 +268,8 @@ class Processor : public ModuleObject {
 
     class WriteBackType : public StructObject {
      public:
-        WriteBackType(GenObject *parent, StructObject *def, const char *name, const char *comment="")
-            : StructObject(parent, def, name, comment),
+        WriteBackType(GenObject *parent, const char *name="", const char *comment="")
+            : StructObject(parent, "WriteBackType", name, -1, comment),
             wena(this, "wena"),
             waddr(this, "waddr", "6"),
             wdata(this, "wdata", "RISCV_ARCH"),
@@ -283,8 +283,8 @@ class Processor : public ModuleObject {
 
     class IntRegsType : public StructObject {
      public:
-        IntRegsType(GenObject *parent, StructObject *def, const char *name, const char *comment="")
-            : StructObject(parent, def, name, comment),
+        IntRegsType(GenObject *parent, const char *name="", const char *comment="")
+            : StructObject(parent, "IntRegsType", name, -1, comment),
         rdata1(this, "rdata1", "RISCV_ARCH"),
         rtag1(this, "rtag1", "CFG_REG_TAG_WIDTH"),
         rdata2(this, "rdata2", "RISCV_ARCH"),
@@ -304,8 +304,8 @@ class Processor : public ModuleObject {
 
     class CsrType : public StructObject {
      public:
-        CsrType(GenObject *parent, StructObject *def, const char *name, const char *comment="")
-            : StructObject(parent, def, name, comment),
+        CsrType(GenObject *parent, const char *name="", const char *comment="")
+            : StructObject(parent, "CsrType", name, -1, comment),
         req_ready(this, "req_ready", "1", "CSR module is ready to accept request"),
         resp_valid(this, "resp_valid", "1", "CSR module Response is valid"),
         resp_data(this, "resp_data", "RISCV_ARCH", "Responded CSR data"),
@@ -341,8 +341,8 @@ class Processor : public ModuleObject {
 
     class DebugType : public StructObject {
      public:
-        DebugType(GenObject *parent, StructObject *def, const char *name, const char *comment="")
-            : StructObject(parent, def, name, comment),
+        DebugType(GenObject *parent, const char *name="", const char *comment="")
+            : StructObject(parent, "DebugType", name, -1, comment),
         csr_req_valid(this, "csr_req_valid"),
         csr_req_type(this, "csr_req_type", "CsrReq_TotalBits"),
         csr_req_addr(this, "csr_req_addr", "12", "Address of the sub-region register"),
@@ -382,8 +382,8 @@ class Processor : public ModuleObject {
 
     class BranchPredictorType : public StructObject {
      public:
-        BranchPredictorType(GenObject *parent, StructObject *def, const char *name, const char *comment="")
-            : StructObject(parent, def, name, comment),
+        BranchPredictorType(GenObject *parent, const char *name="", const char *comment="")
+            : StructObject(parent, "BranchPredictorType", name, -1, comment),
             f_valid(this, "f_valid"),
             f_pc(this, "f_pc", "CFG_CPU_ADDR_BITS") {}
      public:
@@ -394,20 +394,14 @@ class Processor : public ModuleObject {
     class PipelineType : public StructObject {
      public:
         PipelineType(GenObject *parent,
-                    StructObject *def, 
-                    FetchType *FetchTypeDef,
-                    InstructionDecodeType *InstructionDecodeTypeDef,
-                    ExecuteType *ExecuteTypeDef,
-                    MemoryType *MemoryTypeDef,
-                    WriteBackType *WriteBackTypeDef,
-                    const char *name,
+                    const char *name="",
                     const char *comment="")
-            : StructObject(parent, def, name, comment),
-            f(this, FetchTypeDef, "f", "Fetch instruction stage"),
-            d(this, InstructionDecodeTypeDef, "d", "Decode instruction stage"),
-            e(this, ExecuteTypeDef, "e", "Execute instruction"),
-            m(this, MemoryTypeDef, "m", "Memory load/store"),
-            w(this, WriteBackTypeDef, "w", "Write back registers value") {
+            : StructObject(parent, "PipelineType", name, -1, comment),
+            f(this, "f", "Fetch instruction stage"),
+            d(this, "d", "Decode instruction stage"),
+            e(this, "e", "Execute instruction"),
+            m(this, "m", "Memory load/store"),
+            w(this, "w", "Write back registers value") {
         }
      public:
         FetchType f;

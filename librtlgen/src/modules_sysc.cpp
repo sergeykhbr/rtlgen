@@ -217,53 +217,132 @@ std::string ModuleObject::generate_sysc_h() {
     return out;
 }
 
-std::string ModuleObject::generate_sysc_sensitivity(std::string prefix, GenObject *obj) {
+std::string ModuleObject::generate_sysc_sensitivity(std::string prefix,
+                                                    std::string name, 
+                                                    GenObject *obj) {
     std::string ret = "";
-    std::string ln;
-    for (auto &s: obj->getEntries()) {
-        ln = prefix;
-        if (s->isReg()) {
-            ln += "r.";
-        }
+    bool prefix_applied = true;
+    if (obj->getId() == ID_STRUCT_DEF) {
+        return ret;
+    }
 
-        if (s->getId() == ID_INPUT && s->getName() != "i_clk") {
-            ret += ln + s->getName() + ";\n";
-        } else if (s->getId() == ID_SIGNAL) {
-            ret += ln + s->getName() + ";\n";
-        } else if (s->getId() == ID_ARRAY_DEF) {
-            ln = "    " + ln + s->getName() + "[i].";
-            ret += "    for (int i = 0; i < " + s->getDepth(SYSC_ALL) + "; i++) {\n";
-            std::list<GenObject *>::iterator it = s->getEntries().begin();
-            ret += generate_sysc_sensitivity(ln, *it);
-            ret += "    }\n";
+    for (int i = 0; i < prefix.size(); i++) {
+        if (i >= name.size()
+            || prefix.c_str()[i] != name.c_str()[i]) {
+            prefix_applied = false;
+            break;
+        }
+    }
+
+    if ((obj->getId() == ID_SIGNAL && obj->getParent()->getId() != ID_ARRAY_DEF)    // signal is a part of array not a child structure
+        || obj->getId() == ID_ARRAY_DEF
+        || obj->getId() == ID_STRUCT_INST) {
+        if (name.size()) {
+            name += ".";
+        }
+        name += obj->getName();
+        if (obj->isReg() && !prefix_applied) {
+            name = prefix + name;
+        }
+    }
+
+    if (obj->getId() == ID_INPUT && obj->getName() != "i_clk") {
+        ret += Operation::addspaces();
+        ret += "sensitive << " + obj->getName() + ";\n";
+    } else if  (obj->getId() == ID_SIGNAL) {
+        ret += Operation::addspaces();
+        ret += "sensitive << " + name + ";\n";
+    } else if (obj->getId() == ID_ARRAY_DEF) {
+        name += "[i]";
+        ret += Operation::addspaces();
+        ret += "for (int i = 0; i < " + obj->getDepth(SYSC_ALL) + "; i++) {\n";
+        std::list<GenObject *>::iterator it = obj->getEntries().begin();
+        Operation::set_space(Operation::get_space() + 1);
+        if ((*it)->getEntries().size() == 0) {
+            ret += generate_sysc_sensitivity(prefix, name, (*it));
+        } else {
+            for (auto &s: (*it)->getEntries()) {
+                ret += generate_sysc_sensitivity(prefix, name, s);
+            }
+        }
+        Operation::set_space(Operation::get_space() - 1);
+        ret += Operation::addspaces();
+        ret += "}\n";
+    } else if (obj->getId() == ID_STRUCT_INST) {
+        for (auto &s: obj->getEntries()) {
+            ret += generate_sysc_sensitivity(prefix, name, s);
+        }
+    } else {
+        for (auto &s: obj->getEntries()) {
+            ret += generate_sysc_sensitivity(prefix, name, s);
         }
     }
     return ret;
 }
 
-std::string ModuleObject::generate_sysc_vcd(std::string prefix, GenObject *obj, bool regonly) {
+std::string ModuleObject::generate_sysc_vcd(std::string name1, std::string name2, GenObject *obj) {
     std::string ret = "";
-    std::string ln;
-    for (auto &s: obj->getEntries()) {
-        // TODO: check top level module instead of hardcoded name
-        if (obj->getName() != "RiverTop"
-            && (s->getName() == "i_clk" || s->getName() == "i_nrst")) {
-            continue;
-        }
-        ln = prefix;
-        if (s->isReg()) {
-            ln += "r.";
-        }
+    bool prefix_applied = true;
+    if (obj->getId() == ID_STRUCT_DEF) {
+        return ret;
+    }
 
-        if (s->getId() == ID_INPUT || s->getId() == ID_OUTPUT
-             || s->getId() == ID_SIGNAL) {
-            ret += "        sc_trace(o_vcd, " + ln + s->getName() + ", " + ln + s->getName() + ".name());\n";
-        } else if (s->getId() == ID_ARRAY_DEF) {
-            ln += s->getName() + "[i].";
-            ret += "        for (int i = 0; i < " + s->getDepth(SYSC_ALL) + "; i++) {\n";
-            std::list<GenObject *>::iterator it = s->getEntries().begin();
-            ret += generate_sysc_vcd(ln, *it, true);
-            ret += "        }\n";
+    // TODO: check top level module instead of hardcoded name
+    if (getName() != "RiverTop"
+        && (obj->getName() == "i_clk" || obj->getName() == "i_nrst")) {
+        return ret;
+    }
+
+
+    if (name1.size() < 2
+        || name1.c_str()[0] != 'r' || name1.c_str()[1] != '.') {
+        prefix_applied = false;
+    }
+
+    if ((obj->getId() == ID_SIGNAL && obj->getParent()->getId() != ID_ARRAY_DEF)    // signal is a part of array not a child structure
+        || obj->getId() == ID_ARRAY_DEF
+        || obj->getId() == ID_STRUCT_INST) {
+        if (name1.size()) {
+            name1 += ".";
+            name2 += "_";
+        }
+        name1 += obj->getName();
+        name2 += obj->getName();
+        if (obj->isReg() && !prefix_applied) {
+            name1 = "r." + name1;
+            name2 = ".r_" + name2;
+        }
+    }
+
+    if (obj->getId() == ID_INPUT || obj->getId() == ID_OUTPUT) {
+        ret += Operation::addspaces();
+        ret += "sc_trace(o_vcd, " + obj->getName() + ", " + obj->getName() + ".name());\n";
+    } else if (obj->getId() == ID_ARRAY_DEF && obj->isReg()) {
+        name1 += "[i]";
+        name2 += "%d";
+        ret += Operation::addspaces();
+        ret += "for (int i = 0; i < " + obj->getDepth(SYSC_ALL) + "; i++) {\n";
+        std::list<GenObject *>::iterator it = obj->getEntries().begin();
+        Operation::set_space(Operation::get_space() + 1);
+
+        ret += Operation::addspaces();
+        ret += "char tstr[1024];\n";
+        ret += generate_sysc_vcd(name1, name2, *it);
+
+        Operation::set_space(Operation::get_space() - 1);
+        ret += Operation::addspaces();
+        ret += "}\n";
+    } else if (obj->getId() == ID_SIGNAL && obj->isReg()) {
+        ret += Operation::addspaces();
+        if (obj->getParent()->getId() == ID_ARRAY_ITEM) {
+            ret += "RISCV_sprintf(tstr, sizeof(tstr), \"%s" + name2 + "\", pn.c_str(), i);\n";
+            ret += Operation::addspaces() + "sc_trace(o_vcd, " + name1 + ", tstr);\n";
+        } else {
+            ret += "sc_trace(o_vcd, " + name1 + ", pn + \"" + name2 + "\");\n";
+        }
+    } else {
+        for (auto &s: obj->getEntries()) {
+            ret += generate_sysc_vcd(name1, name2, s);
         }
     }
 
@@ -337,6 +416,7 @@ std::string ModuleObject::generate_sysc_cpp() {
 
     // Process sensitivity list:
     std::list<GenObject *> objlist;
+    std::string prefix1 = "r.";
     for (auto &p: entries_) {
         if (p->getId() != ID_PROCESS) {
             continue;
@@ -344,8 +424,9 @@ std::string ModuleObject::generate_sysc_cpp() {
         out += "\n";
         out += "    SC_METHOD(" + p->getName() + ");\n";
 
-        ln = std::string("    sensitive << ");
-        out += generate_sysc_sensitivity(ln, this);
+        ln = std::string("");
+        Operation::set_space(1);
+        out += generate_sysc_sensitivity(prefix1, ln, this);
     }
     if (isRegProcess()) {
         out += "\n";
@@ -369,44 +450,15 @@ std::string ModuleObject::generate_sysc_cpp() {
 
     // generateVCD function
     out += "void " + getName() + "::generateVCD(sc_trace_file *i_vcd, sc_trace_file *o_vcd) {\n";
+    if (isRegProcess()) {
+        out += "    std::string pn(name());\n";
+    }
     out += "    if (o_vcd) {\n";
 
     ln = "";
-    //out += generate_sysc_vcd(ln, this);
-
-    for (auto &p: entries_) {
-        if (p->getId() != ID_INPUT && p->getId() != ID_OUTPUT) {
-            continue;
-        }
-        // TODO: check top level module instead of hardcoded name
-        if (getName() != "RiverTop") {
-            if (p->getName() == "i_clk" || p->getName() == "i_nrst" ) {
-                // i_clk and i_nrst generate only on top level module
-                continue;
-            }
-        }
-        out += "        sc_trace(o_vcd, " + p->getName() + ", " + p->getName() + ".name());\n";
-    }
-    // Add all registers to trace file:
-    bool twodim = is2DimReg();;
-    if (isRegProcess()) {
-        out += "\n";
-        out += "        std::string pn(name());\n";
-        for (auto &p: entries_) {
-            if (!p->isReg()) {
-                continue;
-            }
-            if (p->getId() == ID_ARRAY_DEF) {
-                p->getSignals(objlist);
-                for (auto &s: objlist) {
-                    std::string fname = s->getFullName(SYSC_ALL, p);
-                    out += "        sc_trace(o_vcd, r." + fname + ", pn + \".r_" + fname + "\");\n";
-                }
-            } else {
-                out += "        sc_trace(o_vcd, r." + p->getName() + ", pn + \".r_" + p->getName() + "\");\n";
-            }
-        }
-    }
+    std::string ln2 = "";
+    Operation::set_space(2);
+    out += generate_sysc_vcd(ln, ln2, this);
 
     out += "    }\n";
     out += "\n";
@@ -422,44 +474,20 @@ std::string ModuleObject::generate_sysc_cpp() {
 
 
     // Process
-    int proccnt = 0;
     for (auto &p: entries_) {
         if (p->getId() != ID_PROCESS) {
             continue;
         }
-        out += generate_sysc_cpp_proc(proccnt, p);
-        proccnt++;
+        out += generate_sysc_cpp_proc(p);
     }
 
     if (isRegProcess()) {
+        prefix1 = "r";
+        Operation::set_space(1);
+
         out += "void " + getName() + "::registers() {\n";
-        out += "    if (async_reset_ && i_nrst.read() == 0) {\n";
-        if (!twodim) {
-            // reset using function
-            out += "        " + getName() + "_r_reset(r);\n";
-        } else {
-            // reset each register separatly
-            for (auto &p: entries_) {
-                if (!p->isReg()) {
-                    continue;
-                }
-                if (p->getId() == ID_ARRAY_DEF) {
-                    out += "        for (int i = 0; i < " + p->getDepth(SYSC_ALL) + "; i++) {\n";
-                    std::list<GenObject *>::iterator it = p->getEntries().begin();  // element[0]
-                    ln = "            r." + p->getName() + "[i]";
-                    for (auto &s: (*it)->getEntries()) {
-                        out += ln + "." + s->getName() + " = " + s->getValue(SYSC_ALL) + ";\n";
-                    }
-                    if ((*it)->getEntries().size() == 0) {
-                        out += ln + " = " + p->getValue(SYSC_ALL);
-                    }
-                    out += "        }\n";
-                } else {
-                    out += "        r." + p->getName() + " = " + p->getValue(SYSC_ALL) + ";\n";
-                }
-            }
-        }
-        out += "    } else {\n";
+        out += Operation::reset(prefix1, this);
+        out += " else {\n";
         out += "        r = v;\n";
         out += "    }\n";
         out += "}\n";
@@ -469,7 +497,7 @@ std::string ModuleObject::generate_sysc_cpp() {
     return out;
 }
 
-std::string ModuleObject::generate_sysc_cpp_proc(int proccnt, GenObject *proc) {
+std::string ModuleObject::generate_sysc_cpp_proc(GenObject *proc) {
     std::string ret = "";
     ret += "void " + getName() + "::" + proc->getName() + "() {\n";
     
@@ -486,7 +514,7 @@ std::string ModuleObject::generate_sysc_cpp_proc(int proccnt, GenObject *proc) {
     if (tcnt) {
         ret += "\n";
     }
-    if (proccnt == 0 && isRegProcess()) {
+    if (isRegProcess()) {
         ret += "    v = r;\n";
     }
     ret += "\n";

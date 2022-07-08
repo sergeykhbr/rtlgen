@@ -27,13 +27,9 @@ class StructObject : public GenObject {
  public:
     // Declare structure type and create on instance
     StructObject(GenObject *parent,
-                 StructObject *type,
+                 const char *type,
                  const char *name,
-                 const char *comment="");
-    // Create structure as an array item
-    StructObject(GenObject *parent,
-                 const char *name,
-                 int idx,
+                 int idx = -1,
                  const char *comment="");
 
     /** GenObject generic methods */

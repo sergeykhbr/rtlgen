@@ -38,6 +38,12 @@ class Logic : public GenValue {
           GenObject *parent=0,
           const char *comment="");
 
+    Logic(GenObject *parent,
+          const char *name,
+          const char *width,
+          const char *comment="") :
+        Logic(width, name, "", parent, comment) {}
+
     virtual std::string getType(EGenerateType);
     virtual std::string getValue(EGenerateType v) override;
 };

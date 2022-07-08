@@ -22,26 +22,21 @@
 namespace sysvc {
 
 StructObject::StructObject(GenObject *parent,
-                           StructObject *type,
-                           const char *name,
-                           const char *comment)
-    : GenObject(parent, type ? ID_STRUCT_INST : ID_STRUCT_DEF, name, comment) {
-    type_ = std::string("");
-    idx_ = -1;
-    if (type) {
-        type_ = type->getName();
-    }
-}
-
-StructObject::StructObject(GenObject *parent,
+                           const char *type,
                            const char *name,
                            int idx,
                            const char *comment)
-    : GenObject(parent, ID_ARRAY_ITEM, name, comment) {
+    : GenObject(parent,
+                idx != -1 ? ID_ARRAY_ITEM 
+                          : name[0] ? ID_STRUCT_INST : ID_STRUCT_DEF, name, comment) {
+    type_ = std::string(type);
     idx_ = idx;
-    type_ = parent_->getName();
+    if (idx != -1) {
+        char tstr[256];
+        RISCV_sprintf(tstr, sizeof(tstr), "%d", idx);
+        name_ = std::string(tstr);
+    }
 }
-
 
 std::string StructObject::getName() {
     std::string ret = GenObject::getName();
@@ -77,7 +72,7 @@ std::string StructObject::generate_sysc() {
     if (getComment().size()) {
         ret += "    // " + getComment() + "\n";
     }
-    ret += "    struct " + getName() + " {\n";
+    ret += "    struct " + getType(SYSC_ALL) + " {\n";
     for (auto &p: entries_) {
         ln = "        " + p->getType(SYSC_ALL) + " " + p->getName();
         if (p->getDepth()) {
@@ -100,7 +95,7 @@ std::string StructObject::generate_sysc() {
 
 std::string StructObject::generate_sysv() {
     std::string ret = "";
-    ret += "    struct " + getName() + " {\n";
+    ret += "    struct " + getType(SV_ALL) + " {\n";
     for (auto &p: entries_) {
         ret += "        " + p->getType(SV_ALL) + " " + p->getName() + ";\n";
     }

@@ -20,13 +20,19 @@
 namespace sysvc {
 
 ArrayObject::ArrayObject(GenObject *parent,
-                         const char *type,
                          const char *name,
                          const char *depth,
                          const char *comment)
     : GenObject(parent, ID_ARRAY_DEF, name, comment), depth_(depth) {
-    type_ = std::string(type);
     sel_ = 0;
+}
+
+std::string ArrayObject::getType(EGenerateType v) {
+    std::string ret = "";
+    if (getEntries().size()) {
+        return (*getEntries().begin())->getType(v);
+    }
+    return ret;
 }
 
 }
