@@ -84,11 +84,12 @@ class BranchPredictor : public ModuleObject {
      public:
        PreDecStructArray(GenObject *parent, const char *name, const char *comment="")
             : ArrayObject(parent, name, "2", comment) {
-                arr_ = new PreDecStructDefinition *[depth_.getValue()];
-                for (int i = 0; i < static_cast<int>(depth_.getValue()); i++) {
-                    arr_[i] = new PreDecStructDefinition(this, i);
-                }
+            arr_ = new PreDecStructDefinition *[depth_.getValue()];
+            for (int i = 0; i < static_cast<int>(depth_.getValue()); i++) {
+                arr_[i] = new PreDecStructDefinition(this, i);
             }
+        }
+        virtual GenObject *getItem() { return arr_[0]; }
         PreDecStructDefinition **arr_;
     } wb_pd;
 

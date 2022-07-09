@@ -39,7 +39,6 @@ enum EIdType {
     ID_STRUCT_DEF,
     ID_STRUCT_INST,
     ID_ARRAY_DEF,
-    ID_ARRAY_ITEM,
     ID_PROCESS,
     ID_COMMENT,
     ID_EMPTYLINE,
@@ -68,13 +67,10 @@ class GenObject {
     virtual std::string getFile();
     virtual void add_entry(GenObject *p);
     virtual std::list<GenObject *> &getEntries() { return entries_; }
-    virtual void getSignals(std::list<GenObject *> &objlist);
 
     virtual EIdType getId() { return id_; }
     virtual GenObject *getParent() { return parent_; }
     virtual std::string getName() { return name_; }
-    virtual std::string getFullName(EGenerateType v, GenObject *top);
-    virtual std::string getNameSpliter(EGenerateType v);
     virtual std::string getComment() { return comment_; }
     virtual std::string getType(EGenerateType) = 0;
     virtual uint64_t getValue() { return 0; }

@@ -27,7 +27,7 @@ StructObject::StructObject(GenObject *parent,
                            int idx,
                            const char *comment)
     : GenObject(parent,
-                idx != -1 ? ID_ARRAY_ITEM 
+                idx != -1 ? ID_STRUCT_INST 
                           : name[0] ? ID_STRUCT_INST : ID_STRUCT_DEF, name, comment) {
     type_ = std::string(type);
     idx_ = idx;
@@ -64,7 +64,7 @@ std::string StructObject::getName() {
 
 std::string StructObject::generate(EGenerateType v) {
     std::string ret = "";
-    if (getId() == ID_STRUCT_INST || getId() == ID_ARRAY_ITEM) {
+    if (getId() == ID_STRUCT_INST) {
         return ret;
     }
     if (v == SYSC_ALL || v == SYSC_H || v == SYSC_CPP) {

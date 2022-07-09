@@ -39,9 +39,8 @@ class Operation : public GenObject {
     static void set_space(int n);
     static int get_space();
     static std::string addspaces();
-    static std::string obj2varname(const char *prefix, EGenerateType v, GenObject *obj);
-    static std::string obj2varname(EGenerateType v, GenObject *obj);
-    static std::string obj2varval(GenObject *obj);
+    static std::string obj2varname(GenObject *obj, const char *prefix="r");
+    static std::string fullname(const char *prefix, std::string name, GenObject *obj);
     static std::string addtext(EGenerateType v, GenObject *obj, size_t curpos);
     static std::string reset(std::string prefix, ModuleObject *m, std::string xrst);
 

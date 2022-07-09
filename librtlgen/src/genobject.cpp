@@ -52,42 +52,4 @@ void GenObject::add_entry(GenObject *p) {
     entries_.push_back(p);
 }
 
-void GenObject::getSignals(std::list<GenObject *> &objlist) {
-    if (getId() == ID_STRUCT_DEF) {
-        // Only signal instance
-        return;
-    }
-    if (getId() == ID_SIGNAL) {
-        objlist.push_back(this);
-    }
-    for (auto &e: entries_) {
-        if (e->getId() == ID_STRUCT_DEF) {
-            continue;
-        }
-        e->getSignals(objlist);
-    }
-}
-
-std::string GenObject::getFullName(EGenerateType v, GenObject *top) {
-    std::string ret = getName();
-    GenObject *p = this;
-    if (top != p) {
-        do {
-            p = p->getParent();
-            ret = p->getName() + p->getNameSpliter(v) + ret;
-        } while (p != top);
-    }
-    return ret;
-}
-
-std::string GenObject::getNameSpliter(EGenerateType v) {
-    std::string ret = std::string(".");
-    if (getId() == ID_ARRAY_ITEM) {
-        ret = std::string("].");
-    } else if (getId() == ID_ARRAY_DEF) {
-        ret = std::string("[");
-    }
-    return ret;
-}
-
 }

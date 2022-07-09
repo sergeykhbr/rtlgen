@@ -87,12 +87,14 @@ class BpBTB : public ModuleObject {
      public:
        BtbEntryTypeArray(GenObject *parent, const char *name, const char *comment="")
             : ArrayObject(parent, name, "CFG_BTB_SIZE", comment) {
-                reg_ = true;
-                arr_ = new BtbEntryTypeDefinition *[depth_.getValue()];
-                for (int i = 0; i < static_cast<int>(depth_.getValue()); i++) {
-                    arr_[i] = new BtbEntryTypeDefinition(this, i);
-                }
+            reg_ = true;
+            arr_ = new BtbEntryTypeDefinition *[depth_.getValue()];
+            for (int i = 0; i < static_cast<int>(depth_.getValue()); i++) {
+                arr_[i] = new BtbEntryTypeDefinition(this, i);
             }
+        }
+        virtual GenObject *getItem() { return arr_[0]; }
+
         BtbEntryTypeDefinition **arr_;
     } btb;
 
@@ -100,13 +102,15 @@ class BpBTB : public ModuleObject {
      public:
        DbgNpcArray(GenObject *parent, const char *name, const char *comment="")
             : ArrayObject(parent, name, "CFG_BP_DEPTH", comment) {
-                char tstr[64];
-                arr_ = new Signal *[depth_.getValue()];
-                for (int i = 0; i < static_cast<int>(depth_.getValue()); i++) {
-                    RISCV_sprintf(tstr, sizeof(tstr), "%d", i);
-                    arr_[i] = new Signal(this, tstr, "CFG_CPU_ADDR_BITS");
-                }
+            char tstr[64];
+            arr_ = new Signal *[depth_.getValue()];
+            for (int i = 0; i < static_cast<int>(depth_.getValue()); i++) {
+                RISCV_sprintf(tstr, sizeof(tstr), "%d", i);
+                arr_[i] = new Signal(this, tstr, "CFG_CPU_ADDR_BITS");
             }
+        }
+        virtual GenObject *getItem() { return arr_[0]; }
+
         Signal **arr_;
     } dbg_npc;
 

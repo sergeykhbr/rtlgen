@@ -95,13 +95,15 @@ class RegIntBank : public ModuleObject {
      public:
        RegArrayType(GenObject *parent, const char *name, const char *comment="")
             : ArrayObject(parent, name, "REGS_TOTAL", comment) {
-                reg_ = true;
-                arr_ = new RegValueTypeDefinition *[depth_.getValue()];
-                for (int i = 0; i < static_cast<int>(depth_.getValue()); i++) {
-                    arr_[i] = new RegValueTypeDefinition(this, i);
-                }
-
+            reg_ = true;
+            arr_ = new RegValueTypeDefinition *[depth_.getValue()];
+            for (int i = 0; i < static_cast<int>(depth_.getValue()); i++) {
+                arr_[i] = new RegValueTypeDefinition(this, i);
             }
+
+        }
+        virtual GenObject *getItem() { return arr_[0]; }
+
         RegValueTypeDefinition **arr_;
     } arr;
 

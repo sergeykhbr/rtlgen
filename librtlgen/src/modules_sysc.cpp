@@ -24,6 +24,7 @@
 #include "structs.h"
 #include "regs.h"
 #include "operations.h"
+#include "array.h"
 
 namespace sysvc {
 
@@ -256,12 +257,12 @@ std::string ModuleObject::generate_sysc_sensitivity(std::string prefix,
         name += "[i]";
         ret += Operation::addspaces();
         ret += "for (int i = 0; i < " + obj->getDepth(SYSC_ALL) + "; i++) {\n";
-        std::list<GenObject *>::iterator it = obj->getEntries().begin();
+        GenObject *item = static_cast<ArrayObject *>(obj)->getItem();
         Operation::set_space(Operation::get_space() + 1);
-        if ((*it)->getEntries().size() == 0) {
-            ret += generate_sysc_sensitivity(prefix, name, (*it));
+        if (item->getEntries().size() == 0) {
+            ret += generate_sysc_sensitivity(prefix, name, item);
         } else {
-            for (auto &s: (*it)->getEntries()) {
+            for (auto &s: item->getEntries()) {
                 ret += generate_sysc_sensitivity(prefix, name, s);
             }
         }
@@ -299,7 +300,11 @@ std::string ModuleObject::generate_sysc_vcd(std::string name1, std::string name2
         prefix_applied = false;
     }
 
-    if ((obj->getId() == ID_SIGNAL && obj->getParent()->getId() != ID_ARRAY_DEF)    // signal is a part of array not a child structure
+    if (obj->getParent()->getId() == ID_ARRAY_DEF) {
+        name1 += "[";
+        name1 += obj->getName();
+        name1 += "]";
+    } else if ((obj->getId() == ID_SIGNAL && obj->getParent()->getId() != ID_ARRAY_DEF)    // signal is a part of array not a child structure
         || obj->getId() == ID_ARRAY_DEF
         || obj->getId() == ID_STRUCT_INST) {
         if (name1.size()) {
@@ -318,7 +323,7 @@ std::string ModuleObject::generate_sysc_vcd(std::string name1, std::string name2
         ret += Operation::addspaces();
         ret += "sc_trace(o_vcd, " + obj->getName() + ", " + obj->getName() + ".name());\n";
     } else if (obj->getId() == ID_ARRAY_DEF && obj->isReg()) {
-        name1 += "[i]";
+        static_cast<ArrayObject *>(obj)->setSelector(new I32D("0", "i"));
         name2 += "%d";
         ret += Operation::addspaces();
         ret += "for (int i = 0; i < " + obj->getDepth(SYSC_ALL) + "; i++) {\n";
@@ -334,7 +339,8 @@ std::string ModuleObject::generate_sysc_vcd(std::string name1, std::string name2
         ret += "}\n";
     } else if (obj->getId() == ID_SIGNAL && obj->isReg()) {
         ret += Operation::addspaces();
-        if (obj->getParent()->getId() == ID_ARRAY_ITEM) {
+        if (obj->getParent()->getId() == ID_ARRAY_DEF
+            || obj->getParent()->getParent()->getId() == ID_ARRAY_DEF) {
             ret += "RISCV_sprintf(tstr, sizeof(tstr), \"%s" + name2 + "\", pn.c_str(), i);\n";
             ret += Operation::addspaces() + "sc_trace(o_vcd, " + name1 + ", tstr);\n";
         } else {

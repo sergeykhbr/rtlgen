@@ -35,6 +35,7 @@ class ArrayObject : public GenObject {
     virtual std::string getDepth(EGenerateType v) override { return depth_.getValue(v); }
     virtual void setSelector(GenObject *sel) { sel_ = sel; }
     virtual GenObject *getSelector() { return sel_; }
+    virtual GenObject *getItem() = 0;
  protected:
     I32D depth_;
     GenObject *sel_;
