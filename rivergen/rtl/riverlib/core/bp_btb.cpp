@@ -16,8 +16,8 @@
 
 #include "bp_btb.h"
 
-BpBTB::BpBTB(GenObject *parent, river_cfg *cfg) :
-    ModuleObject(parent, "BpBTB"),
+BpBTB::BpBTB(GenObject *parent, const char *name, river_cfg *cfg) :
+    ModuleObject(parent, "BpBTB", name),
     cfg_(cfg),
     i_clk(this, "i_clk", "1", "CPU clock"),
     i_nrst(this, "i_nrst", "1", "Reset: active LOW"),
@@ -41,6 +41,8 @@ BpBTB::BpBTB(GenObject *parent, river_cfg *cfg) :
 }
 
 void BpBTB::proc_comb() {
+    Operation::start(this);
+
     SETVAL(comb.vb_hit, ALLZEROS());
     SETVAL(comb.vb_bp_exec, ALLZEROS());
     SETBITS(comb.vb_addr, DEC(cfg_->CFG_CPU_ADDR_BITS), CONST("0"), i_bp_pc);

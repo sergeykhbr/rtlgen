@@ -21,12 +21,12 @@
 
 class cache_folder : public FolderObject {
  public:
-    cache_folder(GenObject *parent) :
+    cache_folder(GenObject *parent, river_cfg *cfg) :
         FolderObject(parent, "cache"),
-        cache_top_(this) {}
+        cache_top_(this, cfg) {}
 
  protected:
     // subfolders:
     // files
-    cache_top cache_top_;
+    cache_top_file cache_top_;
 };

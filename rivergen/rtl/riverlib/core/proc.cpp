@@ -16,8 +16,8 @@
 
 #include "proc.h"
 
-Processor::Processor(GenObject *parent) :
-    ModuleObject(parent, "Processor"),
+Processor::Processor(GenObject *parent, const char *name, river_cfg *cfg) :
+    ModuleObject(parent, "Processor", name),
     hartid(this, "hartid", "0"),
     fpu_ena(this, "fpu_ena", "true"),
     tracer_ena(this, "tracer_ena", "true"),
@@ -128,100 +128,87 @@ Processor::Processor(GenObject *parent) :
     w_reg_inorder(this, "w_reg_inorder"),
     w_reg_ignored(this, "w_reg_ignored"),
     // process
-    comb(this)
+    comb(this),
+    predic0(this, "predic0", cfg),
+    iccsr0(this, "iccsr0", cfg),
+    iregs0(this, "iregs0", cfg)
 {
-    ModuleObject *p;
+    Operation::start(this);
 
     // Create and connet Sub-modules:
-    p = static_cast<ModuleObject *>(SCV_get_module("BranchPredictor"));
-    if (p) {
-        predic0 = p->createInstance(this, "predic0");
-        predic0->connect_io("i_clk", &i_clk);
-        predic0->connect_io("i_nrst", &i_nrst);
-        predic0->connect_io("i_flush_pipeline", &w_flush_pipeline);
-        predic0->connect_io("i_resp_mem_valid", &i_resp_ctrl_valid);
-        predic0->connect_io("i_resp_mem_addr", &i_resp_ctrl_addr);
-        predic0->connect_io("i_resp_mem_data", &i_resp_ctrl_data);
-        predic0->connect_io("i_e_jmp", &w.e.jmp);
-        predic0->connect_io("i_e_pc", &w.e.pc);
-        predic0->connect_io("i_e_npc", &w.e.npc);
-        predic0->connect_io("i_ra", &ireg.ra);
-        predic0->connect_io("o_f_valid", &bp.f_valid);
-        predic0->connect_io("o_f_pc", &bp.f_pc);
-        predic0->connect_io("i_f_requested_pc", &w.f.requested_pc);
-        predic0->connect_io("i_f_fetching_pc", &w.f.fetching_pc);
-        predic0->connect_io("i_f_fetched_pc", &w.f.pc);
-        predic0->connect_io("i_d_pc", &w.d.pc);
-    } else {
-        SHOW_ERROR("%s", "BranchPredictor not found");
-        predic0 = 0;
-    }
+    NEW(predic0, predic0.getName().c_str());
+    CONNECT(predic0, 0, predic0.i_clk, i_clk);
+    CONNECT(predic0, 0, predic0.i_nrst, i_nrst);
+    CONNECT(predic0, 0, predic0.i_flush_pipeline, w_flush_pipeline);
+    CONNECT(predic0, 0, predic0.i_resp_mem_valid, i_resp_ctrl_valid);
+    CONNECT(predic0, 0, predic0.i_resp_mem_addr, i_resp_ctrl_addr);
+    CONNECT(predic0, 0, predic0.i_resp_mem_data, i_resp_ctrl_data);
+    CONNECT(predic0, 0, predic0.i_e_jmp, w.e.jmp);
+    CONNECT(predic0, 0, predic0.i_e_pc, w.e.pc);
+    CONNECT(predic0, 0, predic0.i_e_npc, w.e.npc);
+    CONNECT(predic0, 0, predic0.i_ra, ireg.ra);
+    CONNECT(predic0, 0, predic0.o_f_valid, bp.f_valid);
+    CONNECT(predic0, 0, predic0.o_f_pc, bp.f_pc);
+    CONNECT(predic0, 0, predic0.i_f_requested_pc, w.f.requested_pc);
+    CONNECT(predic0, 0, predic0.i_f_fetching_pc, w.f.fetching_pc);
+    CONNECT(predic0, 0, predic0.i_f_fetched_pc, w.f.pc);
+    CONNECT(predic0, 0, predic0.i_d_pc, w.d.pc);
 
-    p = static_cast<ModuleObject *>(SCV_get_module("RegIntBank"));
-    if (p) {
-        iregs0 = p->createInstance(this, "iregs0");
-        iregs0->connect_io("i_clk", &i_clk);
-        iregs0->connect_io("i_nrst", &i_nrst);
-        iregs0->connect_io("i_radr1", &w.e.radr1);
-        iregs0->connect_io("o_rdata1", &ireg.rdata1);
-        iregs0->connect_io("o_rtag1", &ireg.rtag1);
-        iregs0->connect_io("i_radr2", &w.e.radr2);
-        iregs0->connect_io("o_rdata2", &ireg.rdata2);
-        iregs0->connect_io("o_rtag2", &ireg.rtag2);
-        iregs0->connect_io("i_waddr", &wb_reg_waddr);
-        iregs0->connect_io("i_wena", &w_reg_wena);
-        iregs0->connect_io("i_wtag", &wb_reg_wtag);
-        iregs0->connect_io("i_wdata", &wb_reg_wdata);
-        iregs0->connect_io("i_inorder", &w_reg_inorder);
-        iregs0->connect_io("o_ignored", &w_reg_ignored);
-        iregs0->connect_io("i_dport_addr", &dbg.ireg_addr);
-        iregs0->connect_io("i_dport_ena", &dbg.ireg_ena);
-        iregs0->connect_io("i_dport_write", &dbg.ireg_write);
-        iregs0->connect_io("i_dport_wdata", &dbg.ireg_wdata);
-        iregs0->connect_io("o_dport_rdata", &ireg.dport_rdata);
-        iregs0->connect_io("o_ra", &ireg.ra);
-        iregs0->connect_io("o_sp", &ireg.sp);
-    } else {
-        SHOW_ERROR("%s", "RegIntBank not found");
-        iregs0 = 0;
-    }
+TEXT();
+    NEW(iregs0, iregs0.getName().c_str());
+    CONNECT(iregs0, 0, iregs0.i_clk, i_clk);
+    CONNECT(iregs0, 0, iregs0.i_nrst, i_nrst);
+    CONNECT(iregs0, 0, iregs0.i_radr1, w.e.radr1);
+    CONNECT(iregs0, 0, iregs0.o_rdata1, ireg.rdata1);
+    CONNECT(iregs0, 0, iregs0.o_rtag1, ireg.rtag1);
+    CONNECT(iregs0, 0, iregs0.i_radr2, w.e.radr2);
+    CONNECT(iregs0, 0, iregs0.o_rdata2, ireg.rdata2);
+    CONNECT(iregs0, 0, iregs0.o_rtag2, ireg.rtag2);
+    CONNECT(iregs0, 0, iregs0.i_waddr, wb_reg_waddr);
+    CONNECT(iregs0, 0, iregs0.i_wena, w_reg_wena);
+    CONNECT(iregs0, 0, iregs0.i_wtag, wb_reg_wtag);
+    CONNECT(iregs0, 0, iregs0.i_wdata, wb_reg_wdata);
+    CONNECT(iregs0, 0, iregs0.i_inorder, w_reg_inorder);
+    CONNECT(iregs0, 0, iregs0.o_ignored, w_reg_ignored);
+    CONNECT(iregs0, 0, iregs0.i_dport_addr, dbg.ireg_addr);
+    CONNECT(iregs0, 0, iregs0.i_dport_ena, dbg.ireg_ena);
+    CONNECT(iregs0, 0, iregs0.i_dport_write, dbg.ireg_write);
+    CONNECT(iregs0, 0, iregs0.i_dport_wdata, dbg.ireg_wdata);
+    CONNECT(iregs0, 0, iregs0.o_dport_rdata, ireg.dport_rdata);
+    CONNECT(iregs0, 0, iregs0.o_ra, ireg.ra);
+    CONNECT(iregs0, 0, iregs0.o_sp, ireg.sp);
 
-    p = static_cast<ModuleObject *>(SCV_get_module("ic_csr_m2_s1"));
-    if (p) {
-        iccsr0 = p->createInstance(this, "iccsr0");
-        iccsr0->connect_io("i_clk", &i_clk);
-        iccsr0->connect_io("i_nrst", &i_nrst);
-        iccsr0->connect_io("i_m0_req_valid", &w.e.csr_req_valid);
-        iccsr0->connect_io("o_m0_req_ready", &iccsr_m0_req_ready);
-        iccsr0->connect_io("i_m0_req_type", &w.e.csr_req_type);
-        iccsr0->connect_io("i_m0_req_addr", &w.e.csr_req_addr);
-        iccsr0->connect_io("i_m0_req_data", &w.e.csr_req_data);
-        iccsr0->connect_io("o_m0_resp_valid", &iccsr_m0_resp_valid);
-        iccsr0->connect_io("i_m0_resp_ready", &w.e.csr_resp_ready);
-        iccsr0->connect_io("o_m0_resp_data", &iccsr_m0_resp_data);
-        iccsr0->connect_io("o_m0_resp_exception", &iccsr_m0_resp_exception);
-        iccsr0->connect_io("i_m1_req_valid", &dbg.csr_req_valid);
-        iccsr0->connect_io("o_m1_req_ready", &iccsr_m1_req_ready);
-        iccsr0->connect_io("i_m1_req_type", &dbg.csr_req_type);
-        iccsr0->connect_io("i_m1_req_addr", &dbg.csr_req_addr);
-        iccsr0->connect_io("i_m1_req_data", &dbg.csr_req_data);
-        iccsr0->connect_io("o_m1_resp_valid", &iccsr_m1_resp_valid);
-        iccsr0->connect_io("i_m1_resp_ready", &dbg.csr_resp_ready);
-        iccsr0->connect_io("o_m1_resp_data", &iccsr_m1_resp_data);
-        iccsr0->connect_io("o_m1_resp_exception", &iccsr_m1_resp_exception);
-        iccsr0->connect_io("o_s0_req_valid", &iccsr_s0_req_valid);
-        iccsr0->connect_io("i_s0_req_ready", &csr.req_ready);
-        iccsr0->connect_io("o_s0_req_type", &iccsr_s0_req_type);
-        iccsr0->connect_io("o_s0_req_addr", &iccsr_s0_req_addr);
-        iccsr0->connect_io("o_s0_req_data", &iccsr_s0_req_data);
-        iccsr0->connect_io("i_s0_resp_valid", &csr.resp_valid);
-        iccsr0->connect_io("o_s0_resp_ready", &iccsr_s0_resp_ready);
-        iccsr0->connect_io("i_s0_resp_data", &csr.resp_data);
-        iccsr0->connect_io("i_s0_resp_exception", &csr.resp_exception);
-    } else {
-        SHOW_ERROR("%s", "ic_csr_m2_s1 not found");
-        iccsr0 = 0;
-    }
+TEXT();
+    NEW(iccsr0, iccsr0.getName().c_str());
+    CONNECT(iccsr0, 0, iccsr0.i_clk, i_clk);
+    CONNECT(iccsr0, 0, iccsr0.i_nrst, i_nrst);
+    CONNECT(iccsr0, 0, iccsr0.i_m0_req_valid, w.e.csr_req_valid);
+    CONNECT(iccsr0, 0, iccsr0.o_m0_req_ready, iccsr_m0_req_ready);
+    CONNECT(iccsr0, 0, iccsr0.i_m0_req_type, w.e.csr_req_type);
+    CONNECT(iccsr0, 0, iccsr0.i_m0_req_addr, w.e.csr_req_addr);
+    CONNECT(iccsr0, 0, iccsr0.i_m0_req_data, w.e.csr_req_data);
+    CONNECT(iccsr0, 0, iccsr0.o_m0_resp_valid, iccsr_m0_resp_valid);
+    CONNECT(iccsr0, 0, iccsr0.i_m0_resp_ready, w.e.csr_resp_ready);
+    CONNECT(iccsr0, 0, iccsr0.o_m0_resp_data, iccsr_m0_resp_data);
+    CONNECT(iccsr0, 0, iccsr0.o_m0_resp_exception, iccsr_m0_resp_exception);
+    CONNECT(iccsr0, 0, iccsr0.i_m1_req_valid, dbg.csr_req_valid);
+    CONNECT(iccsr0, 0, iccsr0.o_m1_req_ready, iccsr_m1_req_ready);
+    CONNECT(iccsr0, 0, iccsr0.i_m1_req_type, dbg.csr_req_type);
+    CONNECT(iccsr0, 0, iccsr0.i_m1_req_addr, dbg.csr_req_addr);
+    CONNECT(iccsr0, 0, iccsr0.i_m1_req_data, dbg.csr_req_data);
+    CONNECT(iccsr0, 0, iccsr0.o_m1_resp_valid, iccsr_m1_resp_valid);
+    CONNECT(iccsr0, 0, iccsr0.i_m1_resp_ready, dbg.csr_resp_ready);
+    CONNECT(iccsr0, 0, iccsr0.o_m1_resp_data, iccsr_m1_resp_data);
+    CONNECT(iccsr0, 0, iccsr0.o_m1_resp_exception, iccsr_m1_resp_exception);
+    CONNECT(iccsr0, 0, iccsr0.o_s0_req_valid, iccsr_s0_req_valid);
+    CONNECT(iccsr0, 0, iccsr0.i_s0_req_ready, csr.req_ready);
+    CONNECT(iccsr0, 0, iccsr0.o_s0_req_type, iccsr_s0_req_type);
+    CONNECT(iccsr0, 0, iccsr0.o_s0_req_addr, iccsr_s0_req_addr);
+    CONNECT(iccsr0, 0, iccsr0.o_s0_req_data, iccsr_s0_req_data);
+    CONNECT(iccsr0, 0, iccsr0.i_s0_resp_valid, csr.resp_valid);
+    CONNECT(iccsr0, 0, iccsr0.o_s0_resp_ready, iccsr_s0_resp_ready);
+    CONNECT(iccsr0, 0, iccsr0.i_s0_resp_data, csr.resp_data);
+    CONNECT(iccsr0, 0, iccsr0.i_s0_resp_exception, csr.resp_exception);
 }
 
 void Processor::proc_comb() {
@@ -258,11 +245,4 @@ void Processor::proc_comb() {
     SETVAL(o_req_ctrl_valid, w.f.imem_req_valid);
     SETVAL(o_req_ctrl_addr, w.f.imem_req_addr);
     SETVAL(o_halted, w.e.halted);
-}
-
-
-proc::proc(GenObject *parent) :
-    FileObject(parent, "proc"),
-    proc_(this)
-{
 }

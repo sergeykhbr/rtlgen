@@ -16,8 +16,8 @@
 
 #include "regibank.h"
 
-RegIntBank::RegIntBank(GenObject *parent, river_cfg *cfg) :
-    ModuleObject(parent, "RegIntBank"),
+RegIntBank::RegIntBank(GenObject *parent, const char *name, river_cfg *cfg) :
+    ModuleObject(parent, "RegIntBank", name),
     cfg_(cfg),
     i_clk(this, "i_clk", "1", "CPU clock"),
     i_nrst(this, "i_nrst", "1", "Reset: active LOW"),
@@ -96,8 +96,3 @@ TEXT();
 
 }
 
-regibank_file::regibank_file(GenObject *parent, river_cfg *cfg) :
-    FileObject(parent, "regibank"),
-    mod_(this, cfg)
-{
-}

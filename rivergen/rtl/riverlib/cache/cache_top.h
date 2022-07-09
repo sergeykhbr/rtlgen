@@ -23,9 +23,9 @@ using namespace sysvc;
 
 class CacheTop : public ModuleObject {
  public:
-    CacheTop(GenObject *parent);
+    CacheTop(GenObject *parent, const char *name, river_cfg *cfg);
 
- protected:
+ public:
     DefParamBOOL coherence_ena;
 
     InPort i_clk;
@@ -97,9 +97,11 @@ class CacheTop : public ModuleObject {
     RegSignal test;
 };
 
-class cache_top : public FileObject {
+class cache_top_file : public FileObject {
  public:
-    cache_top(GenObject *parent);
+    cache_top_file(GenObject *parent, river_cfg *cfg) :
+        FileObject(parent, "cache_top"),
+        cache_(this, "", cfg) {}
 
  private:
     CacheTop cache_;

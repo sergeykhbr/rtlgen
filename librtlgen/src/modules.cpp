@@ -25,28 +25,21 @@
 
 namespace sysvc {
 
-ModuleObject::ModuleObject(GenObject *parent, const char *name) :
-    GenObject(parent, ID_MODULE, name) {
-    SCV_register_module(this);
-    Operation::start(this);     // set operation parent to this module
+ModuleObject::ModuleObject(GenObject *parent, const char *type, const char *name) :
+    GenObject(parent, name[0] ? ID_MODULE_INST : ID_MODULE, name) {
+    if (getId() == ID_MODULE) {
+        SCV_register_module(this);
+    }
+    type_ = std::string(type);
+    //Operation::start(this);
 }
 
-std::string ModuleObject::getType(EGenerateType v) {
-    std::string out = "";
-    if (v == SYSC_ALL) {
-        out += "SC_MODULE";
-    } else if (v == SV_ALL) {
-        out += "module";
-    } else {
-    }
-    return out;
-}
 
 MInstanceObject *ModuleObject::createInstance(GenObject *parent, const char *name) {
     MInstanceObject *inst = new MInstanceObject(this, parent, name);
     instances_.push_back(inst);
 
-    GenObject *p = parent;
+    /*GenObject *p = parent;
     while (p) {
         if (p->getId() != ID_FILE) {
             p = p->getParent();
@@ -56,14 +49,15 @@ MInstanceObject *ModuleObject::createInstance(GenObject *parent, const char *nam
         std::string fulpath = getFullPath();
         static_cast<FileObject *>(p)->notifyAccess(fulpath);
         break;
-    }
+    }*/
+
     return inst;
 }
 
 bool ModuleObject::isAsyncReset() {
     for (auto &e: entries_) {
-        if (e->getId() == ID_MINSTANCE) {
-            if (static_cast<MInstanceObject *>(e)->isAsyncReset()) {
+        if (e->getId() == ID_MODULE_INST) {
+            if (static_cast<ModuleObject *>(e)->isAsyncReset()) {
                 return true;
             }
         } else if (e->isReg()) {

@@ -31,9 +31,9 @@ class core_folder : public FolderObject {
         bp_predec_(this, cfg),
         bp_btb_(this, cfg),
         bp_(this, cfg),
-        ic_(this),
+        ic_(this, cfg),
         regint_(this, cfg),
-        proc_(this) {}
+        proc_(this, cfg) {}
 
  protected:
     // subfolders:
@@ -43,5 +43,5 @@ class core_folder : public FolderObject {
     bp_file bp_;
     ic_csr_m2_s1_file ic_;
     regibank_file regint_;
-    proc proc_;
+    proc_file proc_;
 };

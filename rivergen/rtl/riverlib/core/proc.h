@@ -18,12 +18,15 @@
 
 #include <api.h>
 #include "../river_cfg.h"
+#include "bp.h"
+#include "ic_csr_m2_s1.h"
+#include "regibank.h"
 
 using namespace sysvc;
 
 class Processor : public ModuleObject {
  public:
-    Processor(GenObject *parent);
+    Processor(GenObject *parent, const char *name, river_cfg *cfg);
 
     DefParamUI32D hartid;
     DefParamBOOL fpu_ena;
@@ -97,6 +100,7 @@ class Processor : public ModuleObject {
             : ProcObject(parent, "comb"),
             vb_flush_address("CFG_CPU_ADDR_BITS", "vb_flush_address", "", this) {
             Processor *p = static_cast<Processor *>(parent);
+            Operation::start(this);
             p->proc_comb();
         }
      public:
@@ -450,14 +454,16 @@ class Processor : public ModuleObject {
     CombProcess comb;
 
     // Sub-module instances:
-    MInstanceObject *predic0;
-    MInstanceObject *iccsr0;
-    MInstanceObject *iregs0;
+    BranchPredictor predic0;
+    ic_csr_m2_s1 iccsr0;
+    RegIntBank iregs0;
 };
 
-class proc : public FileObject {
+class proc_file : public FileObject {
  public:
-    proc(GenObject *parent);
+    proc_file(GenObject *parent, river_cfg *cfg) :
+        FileObject(parent, "proc"),
+        proc_(this, "", cfg) {}
 
  private:
     Processor proc_;

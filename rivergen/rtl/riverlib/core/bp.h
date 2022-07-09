@@ -18,12 +18,14 @@
 
 #include <api.h>
 #include "../river_cfg.h"
+#include "bp_predec.h"
+#include "bp_btb.h"
 
 using namespace sysvc;
 
 class BranchPredictor : public ModuleObject {
  public:
-    BranchPredictor(GenObject *parent, river_cfg *cfg);
+    BranchPredictor(GenObject *parent, const char *name, river_cfg *cfg);
 
     class CombProcess : public ProcObject {
      public:
@@ -89,6 +91,7 @@ class BranchPredictor : public ModuleObject {
  protected:
     river_cfg *cfg_;
 
+ public:
     InPort i_clk;
     InPort i_nrst;
     InPort i_flush_pipeline;
@@ -106,6 +109,7 @@ class BranchPredictor : public ModuleObject {
     InPort i_f_fetched_pc;
     InPort i_d_pc;
 
+ protected:
     class PreDecSignals {
      public:
         PreDecSignals(GenObject *parent) :
@@ -124,24 +128,24 @@ class BranchPredictor : public ModuleObject {
         Signal npc;
     };
     
-    class PreDecStructDefinition : public StructObject,
+    class PreDecTypeDefinition : public StructObject,
                                    public PreDecSignals {
      public:
-        PreDecStructDefinition(GenObject *parent, int idx, const char *comment="")
-            : StructObject(parent, "PreDecStruct", "", idx, comment), PreDecSignals(this) {}
+        PreDecTypeDefinition(GenObject *parent, int idx, const char *comment="")
+            : StructObject(parent, "PreDecType", "", idx, comment), PreDecSignals(this) {}
     } PreDecTypeDef_;
 
     class PreDecStructArray : public ArrayObject {
      public:
        PreDecStructArray(GenObject *parent, const char *name, const char *comment="")
             : ArrayObject(parent, name, "2", comment) {
-            arr_ = new PreDecStructDefinition *[depth_.getValue()];
+            arr_ = new PreDecTypeDefinition *[depth_.getValue()];
             for (int i = 0; i < static_cast<int>(depth_.getValue()); i++) {
-                arr_[i] = new PreDecStructDefinition(this, i);
+                arr_[i] = new PreDecTypeDefinition(this, i);
             }
         }
         virtual GenObject *getItem() { return arr_[0]; }
-        PreDecStructDefinition **arr_;
+        PreDecTypeDefinition **arr_;
     } wb_pd;
 
     Signal w_btb_e;
@@ -157,14 +161,30 @@ class BranchPredictor : public ModuleObject {
     CombProcess comb;
 
     // Sub-module instances:
-    MInstanceObject *btb;
-    MInstanceObject *predec[2];
+    BpBTB btb;
+
+    class BpPreDecoderArray : public ArrayObject {
+     public:
+        BpPreDecoderArray(GenObject *parent, const char *name, river_cfg *cfg, const char *comment="")
+            : ArrayObject(parent, name, "2", comment) {
+            arr_ = new BpPreDecoder *[depth_.getValue()];
+            char tstr[64];
+            for (int i = 0; i < static_cast<int>(depth_.getValue()); i++) {
+                RISCV_sprintf(tstr, sizeof(tstr), "predec%d", i);
+                arr_[i] = new BpPreDecoder(this, tstr, cfg);
+            }
+        }
+
+        virtual GenObject *getItem() { return arr_[0]; }
+        
+        BpPreDecoder **arr_;
+    } predec;
 };
 
 class bp_file : public FileObject {
  public:
     bp_file(GenObject *parent, river_cfg *cfg) : FileObject(parent, "bp"),
-    bp_(this, cfg) {}
+    bp_(this, "", cfg) {}
 
  private:
     BranchPredictor bp_;

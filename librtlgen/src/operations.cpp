@@ -116,16 +116,18 @@ std::string Operation::fullname(const char *prefix, std::string name, GenObject 
     return curname;
 }
 
-std::string Operation::obj2varname(GenObject *obj, const char *prefix) {
+std::string Operation::obj2varname(GenObject *obj, const char *prefix, bool nameonly) {
     std::string ret = "";
     if (!obj) {
         return ret;
     }
     ret = fullname(prefix, ret, obj);
 
-    if (obj->getId() == ID_INPUT) {
-        if (SCV_is_sysc()) {
-            ret += ".read()";
+    if (!nameonly) {
+        if (obj->getId() == ID_INPUT) {
+            if (SCV_is_sysc()) {
+                ret += ".read()";
+            }
         }
     }
     return ret;
@@ -339,26 +341,15 @@ Operation &BITS(GenObject &a, int h, int l, const char *comment) {
 }
 
 // CONST
-std::string CONST_gen(EGenerateType v, GenObject **args) {
-    std::string ret = Operation::obj2varname(args[1]);
-    return ret;
-}
-
-Operation &CONST(const char *val) {
-    Operation *p = new Operation(0, "");
-    p->igen_ = CONST_gen;
-    p->add_arg(p);
-    p->add_arg(new I32D(val));
+GenObject &CONST(const char *val) {
+    GenObject *p = new I32D(val);
     return *p;
 }
 
-Operation &CONST(const char *val, int width) {
-    Operation *p = new Operation(0, "");
+GenObject &CONST(const char *val, int width) {
     char tstr[64];
-    p->igen_ = CONST_gen;
-    p->add_arg(p);
     RISCV_sprintf(tstr, sizeof(tstr), "%d", width);
-    p->add_arg(new Logic(tstr, "", val));
+    GenObject *p = new Logic(tstr, "", val);
     return *p;
 }
 
@@ -818,6 +809,30 @@ Operation &MUL2(GenObject &a, GenObject &b, const char *comment) {
     return *p;
 }
 
+// CC2
+std::string CC2_gen(EGenerateType v, GenObject **args) {
+    std::string A = Operation::obj2varname(args[1]);
+    std::string B = Operation::obj2varname(args[2]);
+    if (args[2]->getId() == ID_CONST) {
+        int w = args[2]->getWidth();
+        A = "(" + A + " << " + args[2]->getWidth(SYSC_ALL) + ")";
+        if (args[2]->getValue() != 0) {
+            A = "(" + A + " | " + args[2]->getValue(SYSC_ALL) + ")";
+        }
+    } else {
+        A = "(" + A + "," + B + ")";
+    }
+    return A;
+}
+
+Operation &CC2(GenObject &a, GenObject &b, const char *comment) {
+    Operation *p = new Operation(0, comment);
+    p->igen_ = CC2_gen;
+    p->add_arg(p);
+    p->add_arg(&a);
+    p->add_arg(&b);
+    return *p;
+}
 
 // Select item in 2-dimensional array
 std::string SELECTARRITEM_gen(EGenerateType v, GenObject **args) {
@@ -881,7 +896,6 @@ Operation &SETARRITEM(GenObject &arr, GenObject &idx, GenObject &item, GenObject
     p->add_arg(&var);
     return *p;
 }
-
 
 // IF
 std::string IF_gen(EGenerateType v, GenObject **args) {
@@ -1029,6 +1043,90 @@ void SYNC_RESET(GenObject &a, GenObject *xrst, const char *comment) {
     p->add_arg(p);
     p->add_arg(&a);
     p->add_arg(xrst);
+}
+
+
+// NEW module instance
+std::string NEW_gen(EGenerateType v, GenObject **args) {
+    std::string ret = "";
+    std::string idx = "";
+    std::string name = Operation::obj2varname(args[2]);
+    ModuleObject *mod = static_cast<ModuleObject *>(args[1]);
+    if (args[3]) {
+        idx = Operation::obj2varname(args[3]);
+        ret += Operation::addspaces();
+        ret += "char tstr[256];\n";
+        ret += Operation::addspaces();
+        ret += "RISCV_sprintf(tstr, sizeof(tstr), \"" + name + "%d\", " + idx + ");\n";
+    }
+    ret += Operation::addspaces();
+    ret += name;
+    if (idx.size()) {
+        ret += "[" + idx + "]";
+    }
+    ret += " = new " + args[1]->getType(v);
+    ret += "(";
+    if (idx.size()) {
+        ret += "tstr";
+    } else {
+        ret += "\"" + name + "\"";
+    }
+    if (mod->isAsyncReset()) {
+        ret += ", async_reset";
+    }
+
+    ret += ");\n";
+    return ret;
+}
+
+void NEW(GenObject &m, const char *name, GenObject *idx, const char *comment) {
+    Operation *p = new Operation(comment);
+    Operation::push_obj(p);
+    p->igen_ = NEW_gen;
+    p->add_arg(p);
+    p->add_arg(&m);
+    p->add_arg(new TextLine(0, name));
+    p->add_arg(idx);
+}
+
+// CONNECT
+std::string CONNECT_gen(EGenerateType v, GenObject **args) {
+    std::string ret = "";
+    Operation *p = static_cast<Operation *>(args[0]);
+    ret += Operation::addspaces();
+    ret += args[1]->getName();
+    if (args[2]) {
+        ret += "[" + Operation::obj2varname(args[2]) + "]";
+    }
+    ret += "->";
+    ret += Operation::obj2varname(args[3], "", true);
+    ret += "(";
+    ret += Operation::obj2varname(args[4], "", true);
+    ret += ");\n";
+    return ret;
+}
+
+void CONNECT(GenObject &inst, GenObject *idx, GenObject &port, GenObject &s, const char *comment) {
+    Operation *p = new Operation(comment);
+    p->igen_ = CONNECT_gen;
+    p->add_arg(p);
+    p->add_arg(&inst);
+    p->add_arg(idx);
+    p->add_arg(&port);
+    p->add_arg(&s);
+}
+
+// ENDNEW
+std::string ENDNEW_gen(EGenerateType v, GenObject **args) {
+    std::string ret = "";
+    return ret;
+}
+
+void ENDNEW(const char *comment) {
+    Operation::pop_obj();
+    Operation *p = new Operation(comment);
+    p->igen_ = ENDNEW_gen;
+    p->add_arg(p);
 }
 
 }

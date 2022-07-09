@@ -27,9 +27,9 @@ class riverlib_folder : public FolderObject {
     riverlib_folder(GenObject *parent) :
         FolderObject(parent, "riverlib"),
         river_cfg_(this),
-        cache_(this),
+        cache_(this, &river_cfg_),
         core_(this, &river_cfg_),
-        river_top_(this) {}
+        river_top_(this, &river_cfg_) {}
 
  protected:
     river_cfg river_cfg_;

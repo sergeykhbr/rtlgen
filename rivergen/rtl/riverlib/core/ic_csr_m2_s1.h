@@ -23,11 +23,12 @@ using namespace sysvc;
 
 class ic_csr_m2_s1 : public ModuleObject {
  public:
-    ic_csr_m2_s1(GenObject *parent);
+    ic_csr_m2_s1(GenObject *parent, const char *name, river_cfg *cfg);
 
     class CombProcess : public ProcObject {
      public:
         CombProcess(GenObject *parent) : ProcObject(parent, "comb") {
+            Operation::start(this);
             ic_csr_m2_s1 *p = static_cast<ic_csr_m2_s1 *>(parent);
             p->proc_comb();
         }
@@ -35,7 +36,7 @@ class ic_csr_m2_s1 : public ModuleObject {
 
     void proc_comb();
 
- protected:
+ public:
     InPort i_clk;
     InPort i_nrst;
     TextLine _Master0_;
@@ -69,6 +70,7 @@ class ic_csr_m2_s1 : public ModuleObject {
     InPort i_s0_resp_data;
     InPort i_s0_resp_exception;
 
+ protected:
     RegSignal midx;
     RegSignal acquired;
 
@@ -78,7 +80,9 @@ class ic_csr_m2_s1 : public ModuleObject {
 
 class ic_csr_m2_s1_file : public FileObject {
  public:
-    ic_csr_m2_s1_file(GenObject *parent);
+    ic_csr_m2_s1_file(GenObject *parent, river_cfg *cfg) :
+        FileObject(parent, "ic_csr_m2_s1"),
+        ic_(this, "", cfg) {}
 
  private:
     ic_csr_m2_s1 ic_;

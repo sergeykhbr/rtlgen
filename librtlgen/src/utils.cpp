@@ -62,6 +62,12 @@ std::string SCV_get_cfg_file(std::string &name) {
     return info.file;
 }
 
+std::string SCV_get_cfg_fullname(std::string &name) {
+    CfgParameterInfo &info = cfgParamters_[name];
+    std::string ret = info.path;
+    return ret;
+}
+
 uint64_t SCV_get_cfg_parameter(std::string &name) {
     CfgParameterInfo &info = cfgParamters_[name];
     if (accessListener_) {
@@ -76,7 +82,7 @@ void SCV_register_module(GenObject *m) {
 
 GenObject *SCV_get_module(const char *name) {
     for (auto &m: modules_) {
-        if (m->getName() == std::string(name)) {
+        if (m->getType(SYSC_ALL) == std::string(name)) {
             return m;
             break;
         }

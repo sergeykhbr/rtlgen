@@ -16,8 +16,8 @@
 
 #include "bp.h"
 
-BranchPredictor::BranchPredictor(GenObject *parent, river_cfg *cfg) :
-    ModuleObject(parent, "BranchPredictor"),
+BranchPredictor::BranchPredictor(GenObject *parent, const char *name, river_cfg *cfg) :
+    ModuleObject(parent, "BranchPredictor", name),
     cfg_(cfg),
     i_clk(this, "i_clk", "1", "CPU clock"),
     i_nrst(this, "i_nrst", "1", "Reset: active LOW"),
@@ -46,36 +46,43 @@ BranchPredictor::BranchPredictor(GenObject *parent, river_cfg *cfg) :
     wb_start_pc(this, "wb_start_pc", "CFG_CPU_ADDR_BITS"),
     wb_npc(this, "wb_npc", "MUL(CFG_BP_DEPTH,CFG_CPU_ADDR_BITS)"),
     wb_bp_exec(this, "wb_bp_exec", "CFG_BP_DEPTH", "Predicted value was jump-executed before"),
-
+    predec(this, "predec", cfg),
+    btb(this, "btb", cfg),
     // registers
     // process
     comb(this, cfg)
 {
-    ModuleObject *p;
+    Operation::start(this);
 
     // Create and connet Sub-modules:
-    p = static_cast<ModuleObject *>(SCV_get_module("BpBTB"));
-    if (p) {
-        btb = p->createInstance(this, "btb");
-        btb->connect_io("i_clk", &i_clk);
-        btb->connect_io("i_nrst", &i_nrst);
-        btb->connect_io("i_flush_pipeline", &i_flush_pipeline);
-        btb->connect_io("i_e", &w_btb_e);
-        btb->connect_io("i_we", &w_btb_we);
-        btb->connect_io("i_we_pc", &wb_btb_we_pc);
-        btb->connect_io("i_we_npc", &wb_btb_we_npc);
-        btb->connect_io("i_bp_pc", &wb_start_pc);
-        btb->connect_io("o_bp_npc", &wb_npc);
-        btb->connect_io("o_bp_exec", &wb_bp_exec);
-    } else {
-        SHOW_ERROR("%s", "BpBTB not found");
-        btb = 0;
-    }
+    GenObject &i = FOR ("i", CONST("0"), CONST("2"), "++");
+        NEW(*predec.arr_[0], predec.getName().c_str(), &i);
+            CONNECT(predec, &i, predec.arr_[0]->i_c_valid, ARRITEM(wb_pd, i, wb_pd.arr_[0]->c_valid));
+            CONNECT(predec, &i, predec.arr_[0]->i_addr, ARRITEM(wb_pd, i, wb_pd.arr_[0]->addr));
+            CONNECT(predec, &i, predec.arr_[0]->i_data, ARRITEM(wb_pd, i, wb_pd.arr_[0]->data));
+            CONNECT(predec, &i, predec.arr_[0]->i_ra, i_ra);
+            CONNECT(predec, &i, predec.arr_[0]->o_jmp, ARRITEM(wb_pd, i, wb_pd.arr_[0]->jmp));
+            CONNECT(predec, &i, predec.arr_[0]->o_pc, ARRITEM(wb_pd, i, wb_pd.arr_[0]->pc));
+            CONNECT(predec, &i, predec.arr_[0]->o_npc, ARRITEM(wb_pd, i, wb_pd.arr_[0]->npc));
+        ENDNEW();
+    ENDFOR();
 
+    NEW(btb, btb.getName().c_str());
+    CONNECT(btb, 0, btb.i_clk, i_clk);
+    CONNECT(btb, 0, btb.i_nrst, i_nrst);
+    CONNECT(btb, 0, btb.i_flush_pipeline, i_flush_pipeline);
+    CONNECT(btb, 0, btb.i_e, w_btb_e);
+    CONNECT(btb, 0, btb.i_we, w_btb_we);
+    CONNECT(btb, 0, btb.i_we_pc, wb_btb_we_pc);
+    CONNECT(btb, 0, btb.i_we_npc, wb_btb_we_npc);
+    CONNECT(btb, 0, btb.i_bp_pc, wb_start_pc);
+    CONNECT(btb, 0, btb.o_bp_npc, wb_npc);
+    CONNECT(btb, 0, btb.o_bp_exec, wb_bp_exec);
 }
 
 void BranchPredictor::CombProcess::proc_comb() {
     BranchPredictor *p = static_cast<BranchPredictor *>(getParent());
+    Operation::start(this);
 
     TEXT("Transform address into 2-dimesional array for convinience");
     GenObject *i = &FOR ("i", CONST("0"), cfg_->CFG_BP_DEPTH, "++");
@@ -94,7 +101,7 @@ TEXT();
         i = &FOR ("i", n,  CONST("4"), "++");
             IF (EQ(BITS(ARRITEM(vb_addr, n, vb_addr), DEC(cfg_->CFG_CPU_ADDR_BITS), CONST("2")),
                    ARRITEM(vb_piped, *i, vb_piped)));
-                SETBIT(vb_hit, n, CONST("1"));
+                SETBIT(vb_hit, n, CONST("1", 1));
             ENDIF();
         ENDFOR();
     ENDFOR();
@@ -169,7 +176,6 @@ TEXT();
 
 TEXT();
     SETVAL(p->o_f_valid, CONST("1", 1));
-    //o_f_pc = (vb_fetch_npc >> 2) << 2;
-
+    SETVAL(p->o_f_pc, CC2(BITS(vb_fetch_npc, DEC(cfg_->CFG_CPU_ADDR_BITS), CONST("2")), CONST("0", 2)));
 }
 

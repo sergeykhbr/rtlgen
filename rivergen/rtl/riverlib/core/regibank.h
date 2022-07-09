@@ -23,7 +23,7 @@ using namespace sysvc;
 
 class RegIntBank : public ModuleObject {
  public:
-    RegIntBank(GenObject *parent, river_cfg *cfg);
+    RegIntBank(GenObject *parent, const char *name, river_cfg *cfg);
 
     class CombProcess : public ProcObject {
      public:
@@ -35,6 +35,7 @@ class RegIntBank : public ModuleObject {
             v_inordered("1", "v_inordered", "", this),
             next_tag("CFG_REG_TAG_WIDTH", "next_tag", "", this) {
             RegIntBank *p = static_cast<RegIntBank *>(parent);
+            Operation::start(this);
             p->proc_comb();
         }
     public:
@@ -48,7 +49,7 @@ class RegIntBank : public ModuleObject {
 
     void proc_comb();
 
- protected:
+ public:
     river_cfg *cfg_;
     InPort i_clk;
     InPort i_nrst;
@@ -72,6 +73,7 @@ class RegIntBank : public ModuleObject {
     OutPort o_ra;
     OutPort o_sp;
 
+ protected:
     class RegsType {
      public:
         // Structure definition
@@ -113,7 +115,9 @@ class RegIntBank : public ModuleObject {
 
 class regibank_file : public FileObject {
  public:
-    regibank_file(GenObject *parent, river_cfg *cfg);
+    regibank_file(GenObject *parent, river_cfg *cfg) :
+        FileObject(parent, "regibank"),
+        mod_(this, "", cfg) { }
 
  private:
     RegIntBank mod_;

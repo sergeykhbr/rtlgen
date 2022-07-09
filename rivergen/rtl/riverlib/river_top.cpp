@@ -16,8 +16,9 @@
 
 #include "river_top.h"
 
-RiverTop::RiverTop(GenObject *parent) :
-    ModuleObject(parent, "RiverTop"),
+RiverTop::RiverTop(GenObject *parent, const char *name, river_cfg *cfg) :
+    ModuleObject(parent, "RiverTop", name),
+    cfg_(cfg),
     // Generic parameters
     hartid(this, "hartid", "0"),
     fpu_ena(this, "fpu_ena", "true"),
@@ -106,144 +107,132 @@ RiverTop::RiverTop(GenObject *parent) :
     w_flush_valid(this, "w_flush_valid"),
     wb_data_flush_address(this, "wb_data_flush_address", "CFG_CPU_ADDR_BITS"),
     w_data_flush_valid(this, "w_data_flush_valid"),
-    w_data_flush_end(this, "w_data_flush_end")
+    w_data_flush_end(this, "w_data_flush_end"),
+    proc0(this, "proc0", cfg),
+    cache0(this, "cache0", cfg)
 {
-    // Create and connet Sub-modules:
-    ModuleObject *p = static_cast<ModuleObject *>(SCV_get_module("Processor"));
-    if (p) {
-        proc0 = p->createInstance(this, "proc0");
-        proc0->connect_param("hartid", &hartid);
-        proc0->connect_param("fpu_ena", &fpu_ena);
-        proc0->connect_param("tracer_ena", &tracer_ena);
-        proc0->connect_io("i_clk", &i_clk);
-        proc0->connect_io("i_nrst", &i_nrst);
-        proc0->connect_io("i_req_ctrl_ready", &w_req_ctrl_ready);
-        proc0->connect_io("o_req_ctrl_valid", &w_req_ctrl_valid);
-        proc0->connect_io("o_req_ctrl_addr", &wb_req_ctrl_addr);
-        proc0->connect_io("i_resp_ctrl_valid", &w_resp_ctrl_valid);
-        proc0->connect_io("i_resp_ctrl_addr", &wb_resp_ctrl_addr);
-        proc0->connect_io("i_resp_ctrl_data", &wb_resp_ctrl_data);
-        proc0->connect_io("i_resp_ctrl_load_fault", &w_resp_ctrl_load_fault);
-        proc0->connect_io("i_resp_ctrl_executable", &w_resp_ctrl_executable);
-        proc0->connect_io("o_resp_ctrl_ready", &w_resp_ctrl_ready);
-        proc0->connect_io("i_req_data_ready", &w_req_data_ready);
-        proc0->connect_io("o_req_data_valid", &w_req_data_valid);
-        proc0->connect_io("o_req_data_type", &wb_req_data_type);
-        proc0->connect_io("o_req_data_addr", &wb_req_data_addr);
-        proc0->connect_io("o_req_data_wdata", &wb_req_data_wdata);
-        proc0->connect_io("o_req_data_wstrb", &wb_req_data_wstrb);
-        proc0->connect_io("o_req_data_size", &wb_req_data_size);
-        proc0->connect_io("i_resp_data_valid", &w_resp_data_valid);
-        proc0->connect_io("i_resp_data_addr", &wb_resp_data_addr);
-        proc0->connect_io("i_resp_data_data", &wb_resp_data_data);
-        proc0->connect_io("i_resp_data_fault_addr", &wb_resp_data_fault_addr);
-        proc0->connect_io("i_resp_data_load_fault", &w_resp_data_load_fault);
-        proc0->connect_io("i_resp_data_store_fault", &w_resp_data_store_fault);
-        proc0->connect_io("i_resp_data_er_mpu_load", &w_resp_data_er_mpu_load);
-        proc0->connect_io("i_resp_data_er_mpu_store", &w_resp_data_er_mpu_store);
-        proc0->connect_io("o_resp_data_ready", &w_resp_data_ready);
-        proc0->connect_io("i_msip", &i_msip);
-        proc0->connect_io("i_mtip", &i_mtip);
-        proc0->connect_io("i_meip", &i_meip);
-        proc0->connect_io("i_seip", &i_seip);
-        proc0->connect_io("o_mpu_region_we", &w_mpu_region_we);
-        proc0->connect_io("o_mpu_region_idx", &wb_mpu_region_idx);
-        proc0->connect_io("o_mpu_region_addr", &wb_mpu_region_addr);
-        proc0->connect_io("o_mpu_region_mask", &wb_mpu_region_mask);
-        proc0->connect_io("o_mpu_region_flags", &wb_mpu_region_flags);
-        proc0->connect_io("i_haltreq", &i_haltreq);
-        proc0->connect_io("i_resumereq", &i_resumereq);
-        proc0->connect_io("i_dport_req_valid", &i_dport_req_valid);
-        proc0->connect_io("i_dport_type", &i_dport_type);
-        proc0->connect_io("i_dport_addr", &i_dport_addr);
-        proc0->connect_io("i_dport_wdata", &i_dport_wdata);
-        proc0->connect_io("i_dport_size", &i_dport_size);
-        proc0->connect_io("o_dport_req_ready", &o_dport_req_ready);
-        proc0->connect_io("i_dport_resp_ready", &i_dport_resp_ready);
-        proc0->connect_io("o_dport_resp_valid", &o_dport_resp_valid);
-        proc0->connect_io("o_dport_resp_error", &o_dport_resp_error);
-        proc0->connect_io("o_dport_rdata", &o_dport_rdata);
-        proc0->connect_io("i_progbuf", &i_progbuf);
-        proc0->connect_io("o_halted", &o_halted);
-        proc0->connect_io("o_flush_address", &wb_flush_address);
-        proc0->connect_io("o_flush_valid", &w_flush_valid);
-        proc0->connect_io("o_data_flush_address", &wb_data_flush_address);
-        proc0->connect_io("o_data_flush_valid", &w_data_flush_valid);
-        proc0->connect_io("i_data_flush_end", &w_data_flush_end);
-    } else {
-        SHOW_ERROR("%s", "Processor not found");
-        proc0 = 0;
-    }
-    p = static_cast<ModuleObject *>(SCV_get_module("CacheTop"));
-    if (p) {
-        cache0 = p->createInstance(this, "cache0");
-        cache0->connect_param("coherence_ena", &coherence_ena);
-        cache0->connect_io("i_clk", &i_clk);
-        cache0->connect_io("i_nrst", &i_nrst);
-        cache0->connect_io("i_req_ctrl_valid", &w_req_ctrl_valid);
-        cache0->connect_io("i_req_ctrl_addr", &wb_req_ctrl_addr);
-        cache0->connect_io("o_req_ctrl_ready", &w_req_ctrl_ready);
-        cache0->connect_io("o_resp_ctrl_valid", &w_resp_ctrl_valid);
-        cache0->connect_io("o_resp_ctrl_addr", &wb_resp_ctrl_addr);
-        cache0->connect_io("o_resp_ctrl_data", &wb_resp_ctrl_data);
-        cache0->connect_io("o_resp_ctrl_load_fault", &w_resp_ctrl_load_fault);
-        cache0->connect_io("o_resp_ctrl_executable", &w_resp_ctrl_executable);
-        cache0->connect_io("i_resp_ctrl_ready", &w_resp_ctrl_ready);
-        cache0->connect_io("i_req_data_valid", &w_req_data_valid);
-        cache0->connect_io("i_req_data_type", &wb_req_data_type);
-        cache0->connect_io("i_req_data_addr", &wb_req_data_addr);
-        cache0->connect_io("i_req_data_wdata", &wb_req_data_wdata);
-        cache0->connect_io("i_req_data_wstrb", &wb_req_data_wstrb);
-        cache0->connect_io("i_req_data_size", &wb_req_data_size);
-        cache0->connect_io("o_req_data_ready", &w_req_data_ready);
-        cache0->connect_io("o_resp_data_valid", &w_resp_data_valid);
-        cache0->connect_io("o_resp_data_addr", &wb_resp_data_addr);
-        cache0->connect_io("o_resp_data_data", &wb_resp_data_data);
-        cache0->connect_io("o_resp_data_fault_addr", &wb_resp_data_fault_addr);
-        cache0->connect_io("o_resp_data_load_fault", &w_resp_data_load_fault);
-        cache0->connect_io("o_resp_data_store_fault", &w_resp_data_store_fault);
-        cache0->connect_io("o_resp_data_er_mpu_load", &w_resp_data_er_mpu_load);
-        cache0->connect_io("o_resp_data_er_mpu_store", &w_resp_data_er_mpu_store);
-        cache0->connect_io("i_resp_data_ready", &w_resp_data_ready);
-        cache0->connect_io("i_req_mem_ready", &i_req_mem_ready);
-        cache0->connect_io("o_req_mem_path", &o_req_mem_path);
-        cache0->connect_io("o_req_mem_valid", &o_req_mem_valid);
-        cache0->connect_io("o_req_mem_type", &o_req_mem_type);
-        cache0->connect_io("o_req_mem_size", &o_req_mem_size);
-        cache0->connect_io("o_req_mem_addr", &o_req_mem_addr);
-        cache0->connect_io("o_req_mem_strob", &o_req_mem_strob);
-        cache0->connect_io("o_req_mem_data", &o_req_mem_data);
-        cache0->connect_io("i_resp_mem_valid", &i_resp_mem_valid);
-        cache0->connect_io("i_resp_mem_path", &i_resp_mem_path);
-        cache0->connect_io("i_resp_mem_data", &i_resp_mem_data);
-        cache0->connect_io("i_resp_mem_load_fault", &i_resp_mem_load_fault);
-        cache0->connect_io("i_resp_mem_store_fault", &i_resp_mem_store_fault);
-        cache0->connect_io("i_mpu_region_we", &w_mpu_region_we);
-        cache0->connect_io("i_mpu_region_idx", &wb_mpu_region_idx);
-        cache0->connect_io("i_mpu_region_addr", &wb_mpu_region_addr);
-        cache0->connect_io("i_mpu_region_mask", &wb_mpu_region_mask);
-        cache0->connect_io("i_mpu_region_flags", &wb_mpu_region_flags);
-        cache0->connect_io("i_req_snoop_valid", &i_req_snoop_valid);
-        cache0->connect_io("i_req_snoop_type", &i_req_snoop_type);
-        cache0->connect_io("o_req_snoop_ready", &o_req_snoop_ready);
-        cache0->connect_io("i_req_snoop_addr", &i_req_snoop_addr);
-        cache0->connect_io("i_resp_snoop_ready", &i_resp_snoop_ready);
-        cache0->connect_io("o_resp_snoop_valid", &o_resp_snoop_valid);
-        cache0->connect_io("o_resp_snoop_data", &o_resp_snoop_data);
-        cache0->connect_io("o_resp_snoop_flags", &o_resp_snoop_flags);
-        cache0->connect_io("i_flush_address", &wb_flush_address);
-        cache0->connect_io("i_flush_valid", &w_flush_valid);
-        cache0->connect_io("i_data_flush_address", &wb_data_flush_address);
-        cache0->connect_io("i_data_flush_valid", &w_data_flush_valid);
-        cache0->connect_io("o_data_flush_end", &w_data_flush_end);
-    } else {
-        SHOW_ERROR("%s", "CacheTop not found");
-        cache0 = 0;
-    }
-}
+    Operation::start(this);
 
-river_top::river_top(GenObject *parent) :
-    FileObject(parent, "river_top"),
-    top_(this)
-{
+    // Create and connet Sub-modules:
+    NEW(proc0, proc0.getName().c_str());
+    //CONNECT(proc0, 0, proc0.hartid, hartid);
+    //CONNECT(proc0, 0, proc0.fpu_ena, fpu_ena);
+    //CONNECT(proc0, 0, proc0.tracer_ena, tracer_ena);
+    CONNECT(proc0, 0, proc0.i_clk, i_clk);
+    CONNECT(proc0, 0, proc0.i_nrst, i_nrst);
+    CONNECT(proc0, 0, proc0.i_req_ctrl_ready, w_req_ctrl_ready);
+    CONNECT(proc0, 0, proc0.o_req_ctrl_valid, w_req_ctrl_valid);
+    CONNECT(proc0, 0, proc0.o_req_ctrl_addr, wb_req_ctrl_addr);
+    CONNECT(proc0, 0, proc0.i_resp_ctrl_valid, w_resp_ctrl_valid);
+    CONNECT(proc0, 0, proc0.i_resp_ctrl_addr, wb_resp_ctrl_addr);
+    CONNECT(proc0, 0, proc0.i_resp_ctrl_data, wb_resp_ctrl_data);
+    CONNECT(proc0, 0, proc0.i_resp_ctrl_load_fault, w_resp_ctrl_load_fault);
+    CONNECT(proc0, 0, proc0.i_resp_ctrl_executable, w_resp_ctrl_executable);
+    CONNECT(proc0, 0, proc0.o_resp_ctrl_ready, w_resp_ctrl_ready);
+    CONNECT(proc0, 0, proc0.i_req_data_ready, w_req_data_ready);
+    CONNECT(proc0, 0, proc0.o_req_data_valid, w_req_data_valid);
+    CONNECT(proc0, 0, proc0.o_req_data_type, wb_req_data_type);
+    CONNECT(proc0, 0, proc0.o_req_data_addr, wb_req_data_addr);
+    CONNECT(proc0, 0, proc0.o_req_data_wdata, wb_req_data_wdata);
+    CONNECT(proc0, 0, proc0.o_req_data_wstrb, wb_req_data_wstrb);
+    CONNECT(proc0, 0, proc0.o_req_data_size, wb_req_data_size);
+    CONNECT(proc0, 0, proc0.i_resp_data_valid, w_resp_data_valid);
+    CONNECT(proc0, 0, proc0.i_resp_data_addr, wb_resp_data_addr);
+    CONNECT(proc0, 0, proc0.i_resp_data_data, wb_resp_data_data);
+    CONNECT(proc0, 0, proc0.i_resp_data_fault_addr, wb_resp_data_fault_addr);
+    CONNECT(proc0, 0, proc0.i_resp_data_load_fault, w_resp_data_load_fault);
+    CONNECT(proc0, 0, proc0.i_resp_data_store_fault, w_resp_data_store_fault);
+    CONNECT(proc0, 0, proc0.i_resp_data_er_mpu_load, w_resp_data_er_mpu_load);
+    CONNECT(proc0, 0, proc0.i_resp_data_er_mpu_store, w_resp_data_er_mpu_store);
+    CONNECT(proc0, 0, proc0.o_resp_data_ready, w_resp_data_ready);
+    CONNECT(proc0, 0, proc0.i_msip, i_msip);
+    CONNECT(proc0, 0, proc0.i_mtip, i_mtip);
+    CONNECT(proc0, 0, proc0.i_meip, i_meip);
+    CONNECT(proc0, 0, proc0.i_seip, i_seip);
+    CONNECT(proc0, 0, proc0.o_mpu_region_we, w_mpu_region_we);
+    CONNECT(proc0, 0, proc0.o_mpu_region_idx, wb_mpu_region_idx);
+    CONNECT(proc0, 0, proc0.o_mpu_region_addr, wb_mpu_region_addr);
+    CONNECT(proc0, 0, proc0.o_mpu_region_mask, wb_mpu_region_mask);
+    CONNECT(proc0, 0, proc0.o_mpu_region_flags, wb_mpu_region_flags);
+    CONNECT(proc0, 0, proc0.i_haltreq, i_haltreq);
+    CONNECT(proc0, 0, proc0.i_resumereq, i_resumereq);
+    CONNECT(proc0, 0, proc0.i_dport_req_valid, i_dport_req_valid);
+    CONNECT(proc0, 0, proc0.i_dport_type, i_dport_type);
+    CONNECT(proc0, 0, proc0.i_dport_addr, i_dport_addr);
+    CONNECT(proc0, 0, proc0.i_dport_wdata, i_dport_wdata);
+    CONNECT(proc0, 0, proc0.i_dport_size, i_dport_size);
+    CONNECT(proc0, 0, proc0.o_dport_req_ready, o_dport_req_ready);
+    CONNECT(proc0, 0, proc0.i_dport_resp_ready, i_dport_resp_ready);
+    CONNECT(proc0, 0, proc0.o_dport_resp_valid, o_dport_resp_valid);
+    CONNECT(proc0, 0, proc0.o_dport_resp_error, o_dport_resp_error);
+    CONNECT(proc0, 0, proc0.o_dport_rdata, o_dport_rdata);
+    CONNECT(proc0, 0, proc0.i_progbuf, i_progbuf);
+    CONNECT(proc0, 0, proc0.o_halted, o_halted);
+    CONNECT(proc0, 0, proc0.o_flush_address, wb_flush_address);
+    CONNECT(proc0, 0, proc0.o_flush_valid, w_flush_valid);
+    CONNECT(proc0, 0, proc0.o_data_flush_address, wb_data_flush_address);
+    CONNECT(proc0, 0, proc0.o_data_flush_valid, w_data_flush_valid);
+    CONNECT(proc0, 0, proc0.i_data_flush_end, w_data_flush_end);
+
+TEXT();
+    NEW(cache0, cache0.getName().c_str());
+    //CONNECT(cache0, 0, cache0.coherence_ena, coherence_ena);
+    CONNECT(cache0, 0, cache0.i_clk, i_clk);
+    CONNECT(cache0, 0, cache0.i_nrst, i_nrst);
+    CONNECT(cache0, 0, cache0.i_req_ctrl_valid, w_req_ctrl_valid);
+    CONNECT(cache0, 0, cache0.i_req_ctrl_addr, wb_req_ctrl_addr);
+    CONNECT(cache0, 0, cache0.o_req_ctrl_ready, w_req_ctrl_ready);
+    CONNECT(cache0, 0, cache0.o_resp_ctrl_valid, w_resp_ctrl_valid);
+    CONNECT(cache0, 0, cache0.o_resp_ctrl_addr, wb_resp_ctrl_addr);
+    CONNECT(cache0, 0, cache0.o_resp_ctrl_data, wb_resp_ctrl_data);
+    CONNECT(cache0, 0, cache0.o_resp_ctrl_load_fault, w_resp_ctrl_load_fault);
+    CONNECT(cache0, 0, cache0.o_resp_ctrl_executable, w_resp_ctrl_executable);
+    CONNECT(cache0, 0, cache0.i_resp_ctrl_ready, w_resp_ctrl_ready);
+    CONNECT(cache0, 0, cache0.i_req_data_valid, w_req_data_valid);
+    CONNECT(cache0, 0, cache0.i_req_data_type, wb_req_data_type);
+    CONNECT(cache0, 0, cache0.i_req_data_addr, wb_req_data_addr);
+    CONNECT(cache0, 0, cache0.i_req_data_wdata, wb_req_data_wdata);
+    CONNECT(cache0, 0, cache0.i_req_data_wstrb, wb_req_data_wstrb);
+    CONNECT(cache0, 0, cache0.i_req_data_size, wb_req_data_size);
+    CONNECT(cache0, 0, cache0.o_req_data_ready, w_req_data_ready);
+    CONNECT(cache0, 0, cache0.o_resp_data_valid, w_resp_data_valid);
+    CONNECT(cache0, 0, cache0.o_resp_data_addr, wb_resp_data_addr);
+    CONNECT(cache0, 0, cache0.o_resp_data_data, wb_resp_data_data);
+    CONNECT(cache0, 0, cache0.o_resp_data_fault_addr, wb_resp_data_fault_addr);
+    CONNECT(cache0, 0, cache0.o_resp_data_load_fault, w_resp_data_load_fault);
+    CONNECT(cache0, 0, cache0.o_resp_data_store_fault, w_resp_data_store_fault);
+    CONNECT(cache0, 0, cache0.o_resp_data_er_mpu_load, w_resp_data_er_mpu_load);
+    CONNECT(cache0, 0, cache0.o_resp_data_er_mpu_store, w_resp_data_er_mpu_store);
+    CONNECT(cache0, 0, cache0.i_resp_data_ready, w_resp_data_ready);
+    CONNECT(cache0, 0, cache0.i_req_mem_ready, i_req_mem_ready);
+    CONNECT(cache0, 0, cache0.o_req_mem_path, o_req_mem_path);
+    CONNECT(cache0, 0, cache0.o_req_mem_valid, o_req_mem_valid);
+    CONNECT(cache0, 0, cache0.o_req_mem_type, o_req_mem_type);
+    CONNECT(cache0, 0, cache0.o_req_mem_size, o_req_mem_size);
+    CONNECT(cache0, 0, cache0.o_req_mem_addr, o_req_mem_addr);
+    CONNECT(cache0, 0, cache0.o_req_mem_strob, o_req_mem_strob);
+    CONNECT(cache0, 0, cache0.o_req_mem_data, o_req_mem_data);
+    CONNECT(cache0, 0, cache0.i_resp_mem_valid, i_resp_mem_valid);
+    CONNECT(cache0, 0, cache0.i_resp_mem_path, i_resp_mem_path);
+    CONNECT(cache0, 0, cache0.i_resp_mem_data, i_resp_mem_data);
+    CONNECT(cache0, 0, cache0.i_resp_mem_load_fault, i_resp_mem_load_fault);
+    CONNECT(cache0, 0, cache0.i_resp_mem_store_fault, i_resp_mem_store_fault);
+    CONNECT(cache0, 0, cache0.i_mpu_region_we, w_mpu_region_we);
+    CONNECT(cache0, 0, cache0.i_mpu_region_idx, wb_mpu_region_idx);
+    CONNECT(cache0, 0, cache0.i_mpu_region_addr, wb_mpu_region_addr);
+    CONNECT(cache0, 0, cache0.i_mpu_region_mask, wb_mpu_region_mask);
+    CONNECT(cache0, 0, cache0.i_mpu_region_flags, wb_mpu_region_flags);
+    CONNECT(cache0, 0, cache0.i_req_snoop_valid, i_req_snoop_valid);
+    CONNECT(cache0, 0, cache0.i_req_snoop_type, i_req_snoop_type);
+    CONNECT(cache0, 0, cache0.o_req_snoop_ready, o_req_snoop_ready);
+    CONNECT(cache0, 0, cache0.i_req_snoop_addr, i_req_snoop_addr);
+    CONNECT(cache0, 0, cache0.i_resp_snoop_ready, i_resp_snoop_ready);
+    CONNECT(cache0, 0, cache0.o_resp_snoop_valid, o_resp_snoop_valid);
+    CONNECT(cache0, 0, cache0.o_resp_snoop_data, o_resp_snoop_data);
+    CONNECT(cache0, 0, cache0.o_resp_snoop_flags, o_resp_snoop_flags);
+    CONNECT(cache0, 0, cache0.i_flush_address, wb_flush_address);
+    CONNECT(cache0, 0, cache0.i_flush_valid, w_flush_valid);
+    CONNECT(cache0, 0, cache0.i_data_flush_address, wb_data_flush_address);
+    CONNECT(cache0, 0, cache0.i_data_flush_valid, w_data_flush_valid);
+    CONNECT(cache0, 0, cache0.o_data_flush_end, w_data_flush_end);
 }

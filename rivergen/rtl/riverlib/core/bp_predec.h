@@ -23,7 +23,7 @@ using namespace sysvc;
 
 class BpPreDecoder : public ModuleObject {
  public:
-    BpPreDecoder(GenObject *parent, river_cfg *cfg);
+    BpPreDecoder(GenObject *parent, const char *name, river_cfg *cfg);
 
     class CombProcess : public ProcObject {
      public:
@@ -38,6 +38,7 @@ class BpPreDecoder : public ModuleObject {
             vb_c_j_off(this, "vb_c_j_off", "CFG_CPU_ADDR_BITS"),
             vb_c_j_addr(this, "vb_c_j_addr", "CFG_CPU_ADDR_BITS") {
             BpPreDecoder *p = static_cast<BpPreDecoder *>(parent);
+            Operation::start(this);
             p->proc_comb();
         }
      public:
@@ -57,6 +58,7 @@ class BpPreDecoder : public ModuleObject {
  protected:
     river_cfg *cfg_;
 
+ public:
     InPort i_c_valid;
     InPort i_addr;
     InPort i_data;
@@ -65,6 +67,7 @@ class BpPreDecoder : public ModuleObject {
     OutPort o_pc;
     OutPort o_npc;
 
+ protected:
     Signal vb_npc;
     Signal v_jal;
     Signal v_branch;
@@ -78,7 +81,7 @@ class BpPreDecoder : public ModuleObject {
 class bp_predec_file : public FileObject {
  public:
     bp_predec_file(GenObject *parent, river_cfg *cfg) : FileObject(parent, "bp_predec"),
-    bp_predec_(this, cfg) {}
+    bp_predec_(this, "", cfg) {}
 
  private:
     BpPreDecoder bp_predec_;

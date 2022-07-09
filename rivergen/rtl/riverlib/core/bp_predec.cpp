@@ -16,8 +16,8 @@
 
 #include "bp_predec.h"
 
-BpPreDecoder::BpPreDecoder(GenObject *parent, river_cfg *cfg) :
-    ModuleObject(parent, "BpPreDecoder"),
+BpPreDecoder::BpPreDecoder(GenObject *parent, const char *name, river_cfg *cfg) :
+    ModuleObject(parent, "BpPreDecoder", name),
     cfg_(cfg),
     i_c_valid(this, "i_c_valid", "1", "Use compressed for prediction"),
     i_addr(this, "i_addr", "CFG_CPU_ADDR_BITS", "Memory response address"),

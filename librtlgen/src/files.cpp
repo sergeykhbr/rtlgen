@@ -23,16 +23,6 @@ namespace sysvc {
 FileObject::FileObject(GenObject *parent,
                            const char *name)
     : GenObject(parent, ID_FILE, name) {
-    SCV_set_access_listener(static_cast<AccessListener *>(this));
-}
-
-void FileObject::notifyAccess(std::string &file) {
-    for (auto &d: depfiles_) {
-        if (d == file) {
-            return;
-        }
-    }
-    depfiles_.push_back(file);
 }
 
 
@@ -89,6 +79,33 @@ std::string FileObject::fullPath2fileRelative(const char *fullpath) {
     return ret;
 }
 
+void FileObject::list_of_modules(GenObject *p, std::map<std::string, int> &fpath) {
+    GenObject *f = 0;
+    if (!p) {
+        return;
+    }
+    if (p->getId() == ID_MODULE
+        || p->getId() == ID_PARAM) {
+        f = p->getParent();
+    } else if (p->getId() == ID_MODULE_INST) {
+        f = SCV_get_module(p->getType(SYSC_ALL).c_str());
+    }
+
+    // search file owner of the module
+    while (f) {
+        if (f->getId() != ID_FILE) {
+            f = f->getParent();
+            continue;
+        }
+        fpath[f->getFullPath()]++;
+        break;
+    }
+
+    for (auto &e: p->getEntries()) {
+        list_of_modules(e, fpath);
+    }
+}
+
 std::string FileObject::generate(EGenerateType v) {
     if (v == SYSC_ALL) {
         generate_sysc();
@@ -113,11 +130,18 @@ void FileObject::generate_sysc() {
         "#include <systemc.h>\n";
 
     // Automatic Dependency detection
-    for (auto &d : depfiles_) {
-        if (d == getFullPath()) {
+    std::string thisfile = getFullPath();
+    std::map<std::string, int> filelist;
+    std::map<std::string, int>::iterator it;
+    std::string hack_include_cfg_file = "CFG_VENDOR_ID";
+    
+    filelist[SCV_get_cfg_fullname(hack_include_cfg_file)]++;
+    list_of_modules(this, filelist);
+    for (auto it : filelist) {
+        if (it.first == thisfile) {
             continue;
         }
-        out += "#include \"" + fullPath2fileRelative(d.c_str()) + ".h\"\n";
+        out += "#include \"" + fullPath2fileRelative(it.first.c_str()) + ".h\"\n";
     }
     out += "\n";
     out += 
@@ -178,12 +202,16 @@ void FileObject::generate_sysv() {
     out += "\n";
 
     // Automatic Dependency detection
+    std::string thisfile = getFullPath();
+    std::map<std::string, int> filelist;
     std::vector<std::string> subs;
-    for (auto &d : depfiles_) {
-        if (d == getFullPath()) {
+    std::map<std::string, int>::iterator it;
+    list_of_modules(this, filelist);
+    for (auto it : filelist) {
+        if (it.first == thisfile) {
             continue;
         }
-        fullPath2vector(d.c_str(), subs);
+        fullPath2vector(it.first.c_str(), subs);
         out += "import " + subs.back() + "_pkg::*;\n";
     }
     out += "\n";

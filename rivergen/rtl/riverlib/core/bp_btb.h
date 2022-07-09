@@ -23,7 +23,7 @@ using namespace sysvc;
 
 class BpBTB : public ModuleObject {
  public:
-    BpBTB(GenObject *parent, river_cfg *cfg);
+    BpBTB(GenObject *parent, const char *name, river_cfg *cfg);
 
     class CombProcess : public ProcObject {
      public:
@@ -52,6 +52,7 @@ class BpBTB : public ModuleObject {
  protected:
     river_cfg *cfg_;
 
+ public:
     InPort i_clk;
     InPort i_nrst;
     InPort i_flush_pipeline;
@@ -62,6 +63,8 @@ class BpBTB : public ModuleObject {
     InPort i_bp_pc;
     OutPort o_bp_npc;
     OutPort o_bp_exec;
+
+ protected:
 
     class BtbEntryTypeSignals {
      public:
@@ -122,7 +125,7 @@ class BpBTB : public ModuleObject {
 class bp_btb_file : public FileObject {
  public:
     bp_btb_file(GenObject *parent, river_cfg *cfg) : FileObject(parent, "bp_btb"),
-    bp_btb_(this, cfg) {}
+    bp_btb_(this, "", cfg) {}
 
  private:
     BpBTB bp_btb_;

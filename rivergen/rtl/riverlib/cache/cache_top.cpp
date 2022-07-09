@@ -16,8 +16,8 @@
 
 #include "cache_top.h"
 
-CacheTop::CacheTop(GenObject *parent) :
-    ModuleObject(parent, "CacheTop"),
+CacheTop::CacheTop(GenObject *parent, const char *name, river_cfg *cfg) :
+    ModuleObject(parent, "CacheTop", name),
     coherence_ena(this, "coherence_ena", "false"),
     i_clk(this, "i_clk", "1", "CPU clock"),
     i_nrst(this, "i_nrst", "1", "Reset: active LOW"),
@@ -85,11 +85,5 @@ CacheTop::CacheTop(GenObject *parent) :
     o_data_flush_end(this, "o_data_flush_end"),
 
     test(this, "test", "32", "0", "test register")
-{
-}
-
-cache_top::cache_top(GenObject *parent) :
-    FileObject(parent, "cache_top"),
-    cache_(this)
 {
 }

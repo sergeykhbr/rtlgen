@@ -25,9 +25,10 @@ using namespace sysvc;
 
 class RiverTop : public ModuleObject {
  public:
-    RiverTop(GenObject *parent);
+    RiverTop(GenObject *parent, const char *name, river_cfg *cfg);
 
  protected:
+    river_cfg *cfg_;
     DefParamUI32D hartid;
     DefParamBOOL fpu_ena;
     DefParamBOOL coherence_ena;
@@ -79,10 +80,6 @@ class RiverTop : public ModuleObject {
     InPort i_progbuf;
     OutPort o_halted;
 
-    // Sub-module instances:
-    MInstanceObject *proc0;
-    MInstanceObject *cache0;
-
     // Signals:
     TextLine _ControlPath0_;
     Signal w_req_ctrl_ready;
@@ -121,11 +118,17 @@ class RiverTop : public ModuleObject {
     Signal wb_data_flush_address;
     Signal w_data_flush_valid;
     Signal w_data_flush_end;
+
+    // Sub-module instances:
+    Processor proc0;
+    CacheTop cache0;
 };
 
 class river_top : public FileObject {
  public:
-    river_top(GenObject *parent);
+    river_top(GenObject *parent, river_cfg *cfg) :
+        FileObject(parent, "river_top"),
+        top_(this, "", cfg) { }
 
  private:
     RiverTop top_;

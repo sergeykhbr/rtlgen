@@ -28,9 +28,9 @@ namespace sysvc {
  */
 class ModuleObject : public GenObject {
  public:
-    ModuleObject(GenObject *parent, const char *name);
+    ModuleObject(GenObject *parent, const char *type, const char *name="");
 
-    virtual std::string getType(EGenerateType v);
+    virtual std::string getType(EGenerateType v) { return type_; }
     virtual std::string generate(EGenerateType v) override;
     virtual MInstanceObject *createInstance(GenObject *parent, const char *name);
 
@@ -52,6 +52,8 @@ class ModuleObject : public GenObject {
 
  protected:
     std::list<MInstanceObject *> instances_;
+    std::list<GenObject *> instop_;
+    std::string type_;
 };
 
 }  // namespace sysvc

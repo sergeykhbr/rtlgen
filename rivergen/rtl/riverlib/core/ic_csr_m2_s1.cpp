@@ -16,8 +16,8 @@
 
 #include "ic_csr_m2_s1.h"
 
-ic_csr_m2_s1::ic_csr_m2_s1(GenObject *parent) :
-    ModuleObject(parent, "ic_csr_m2_s1"),
+ic_csr_m2_s1::ic_csr_m2_s1(GenObject *parent, const char *name, river_cfg *cfg) :
+    ModuleObject(parent, "ic_csr_m2_s1", name),
     i_clk(this, "i_clk", "1", "CPU clock"),
     i_nrst(this, "i_nrst", "1", "Reset: active LOW"),
     _Master0_(this, "master[0]:"),
@@ -55,7 +55,7 @@ ic_csr_m2_s1::ic_csr_m2_s1(GenObject *parent) :
     acquired(this, "acquired"),
    // process
     comb(this)
- {
+{
 }
 
 void ic_csr_m2_s1::proc_comb() {
@@ -108,10 +108,4 @@ TEXT();
 
 TEXT();
     SYNC_RESET(*this);
-}
-
-ic_csr_m2_s1_file::ic_csr_m2_s1_file(GenObject *parent) :
-    FileObject(parent, "ic_csr_m2_s1"),
-    ic_(this)
-{
 }

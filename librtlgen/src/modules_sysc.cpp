@@ -34,7 +34,7 @@ std::string ModuleObject::generate_sysc_h() {
     std::string text = "";
 
     out +=
-        "SC_MODULE(" + getName() + ") {\n";
+        "SC_MODULE(" + getType(SYSC_ALL) + ") {\n";
 
     // Input/Output signal declaration
     for (auto &p: entries_) {
@@ -78,13 +78,13 @@ std::string ModuleObject::generate_sysc_h() {
     }
     if (hasProcess) {
         out += "\n";
-        out += "    SC_HAS_PROCESS(" + getName() + ");\n";
+        out += "    SC_HAS_PROCESS(" + getType(SYSC_ALL) + ");\n";
     }
 
 
     out += "\n";
     // Constructor delcartion:
-    std::string space1 = "    " + getName() + "(";
+    std::string space1 = "    " + getType(SYSC_ALL) + "(";
     out += space1 + "sc_module_name name";
     if (isAsyncReset()) {
         ln = "";
@@ -109,7 +109,7 @@ std::string ModuleObject::generate_sysc_h() {
     }
     out += ");\n";
     // Destructor declaration
-    out += "    virtual ~" + getName() + "();\n";
+    out += "    virtual ~" + getType(SYSC_ALL) + "();\n";
     out += "\n";
 
     // Mandatory VCD generator
@@ -139,7 +139,7 @@ std::string ModuleObject::generate_sysc_h() {
     // Register structure definition
     bool twodim = false;        // if 2-dimensional register array, then do not use reset function
     if (isRegProcess()) {
-        out += "    struct " + getName() + "_registers {\n";
+        out += "    struct " + getType(SYSC_ALL) + "_registers {\n";
         for (auto &p: entries_) {
             if (!p->isReg()) {
                 continue;
@@ -162,7 +162,7 @@ std::string ModuleObject::generate_sysc_h() {
         out += "\n";
         // Reset function only if no two-dimensial signals
         if (!twodim) {
-            out += "    void " + getName() + "_r_reset(" + getName() + "_registers &iv) {\n";
+            out += "    void " + getType(SYSC_ALL) + "_r_reset(" + getType(SYSC_ALL) + "_registers &iv) {\n";
             for (auto &p: entries_) {
                 if (!p->isReg()) {
                     continue;
@@ -179,7 +179,7 @@ std::string ModuleObject::generate_sysc_h() {
 
     // Signals list
     text = "";
-    for (auto &p: entries_) {
+    for (auto &p: getEntries()) {
         if (p->isReg() || (p->getId() != ID_SIGNAL
                         && p->getId() != ID_STRUCT_INST
                         && p->getId() != ID_ARRAY_DEF)) {
@@ -190,25 +190,43 @@ std::string ModuleObject::generate_sysc_h() {
             }
             continue;
         }
+        if (p->getId() == ID_ARRAY_DEF) {
+            ArrayObject *a = static_cast<ArrayObject *>(p);
+            if (a->getItem()->getId() == ID_MODULE_INST) {
+                text = "";
+                continue;
+            }
+        }
         if (text.size()) {
             out += text;
             text = "";
         }
-        out += "    " + p->getType(SYSC_ALL) + " " + p->getName();
+        ln = "    " + p->getType(SYSC_ALL) + " " + p->getName();
         if (p->getDepth()) {
-            out += "[" + p->getDepth(SYSC_ALL) + "]";
+            ln += "[" + p->getDepth(SYSC_ALL) + "]";
         }
-        out += ";\n";
+        ln += ";";
+        if (p->getComment().size()) {
+            while (ln.size() < 60) {
+                ln += " ";
+            }
+            ln += "// " + p->getComment();
+        }
+        out += ln + "\n";
     }
     out += "\n";
 
     // Sub-module list
     for (auto &p: entries_) {
-        if (p->getId() != ID_MINSTANCE) {
-            continue;
+        if (p->getId() == ID_MODULE_INST) {
+            out += "    " + p->getType(SYSC_ALL) + " *" + p->getName() + ";\n";
+        } else if (p->getId() == ID_ARRAY_DEF) {
+            ArrayObject *a = static_cast<ArrayObject *>(p);
+            if (a->getItem()->getId() == ID_MODULE_INST) {
+                out += "    " + a->getType(SYSC_ALL) + " *" + p->getName();
+                out += "[" + a->getDepth(SYSC_ALL) + "];\n";
+            }
         }
-        out += "    " + p->getType(SYSC_ALL);
-        out += " *" + p->getName() + ";\n";
     }
     out += "\n";
 
@@ -224,8 +242,15 @@ std::string ModuleObject::generate_sysc_sensitivity(std::string prefix,
     std::string ret = "";
     bool prefix_applied = true;
     if (obj->getId() == ID_STRUCT_DEF
+        || obj->getId() == ID_MODULE_INST
         || obj->getId() == ID_PROCESS) {
         return ret;
+    }
+    if (obj->getId() == ID_ARRAY_DEF) {
+        // Check when array stores module instantiation:
+        if (static_cast<ArrayObject *>(obj)->getItem()->getId() == ID_MODULE_INST) {
+            return ret;
+        }
     }
 
     for (int i = 0; i < prefix.size(); i++) {
@@ -285,7 +310,9 @@ std::string ModuleObject::generate_sysc_sensitivity(std::string prefix,
 std::string ModuleObject::generate_sysc_vcd(std::string name1, std::string name2, GenObject *obj) {
     std::string ret = "";
     bool prefix_applied = true;
-    if (obj->getId() == ID_STRUCT_DEF) {
+    if (obj->getId() == ID_STRUCT_DEF
+        || obj->getId() == ID_MODULE_INST
+        || obj->getId() == ID_PROCESS) {
         return ret;
     }
 
@@ -362,7 +389,7 @@ std::string ModuleObject::generate_sysc_cpp() {
     std::string text = "";
 
     // Constructor delcartion:
-    std::string space1 = getName() + "::" + getName() + "(";
+    std::string space1 = getType(SYSC_ALL) + "::" + getType(SYSC_ALL) + "(";
     out += space1 + "sc_module_name name";
     if (isAsyncReset()) {
         ln = "";
@@ -413,8 +440,10 @@ std::string ModuleObject::generate_sysc_cpp() {
     }
 
     // Sub-module instantiation
+    Operation::set_space(1);
     for (auto &p: entries_) {
-        if (p->getId() != ID_MINSTANCE) {
+        if (p->getId() != ID_MINSTANCE
+        && p->getId() != ID_OPERATION) {
             continue;
         }
         out += "\n";
@@ -445,18 +474,24 @@ std::string ModuleObject::generate_sysc_cpp() {
 
 
     // Destructor delcartion:
-    out += "\n" + getName() + "::~" + getName() + "() {\n";
+    out += "\n" + getType(SYSC_ALL) + "::~" + getType(SYSC_ALL) + "() {\n";
     for (auto &p: entries_) {
-        if (p->getId() != ID_MINSTANCE) {
-            continue;
+        if (p->getId() == ID_MODULE_INST) {
+            out += "    delete " + p->getName() + ";\n";
+        } else if (p->getId() == ID_ARRAY_DEF) {
+            ArrayObject *a = static_cast<ArrayObject *>(p);
+            if (a->getItem()->getId() == ID_MODULE_INST) {
+                out += "    for (int i = 0; i < " + a->getDepth(SYSC_ALL) + "; i++) {\n";
+                out += "        delete " + p->getName() + "[i];\n";
+                out += "    }\n";
+            }
         }
-        out += "    delete " + p->getName() + ";\n";
     }
     out += "}\n";
     out += "\n";
 
     // generateVCD function
-    out += "void " + getName() + "::generateVCD(sc_trace_file *i_vcd, sc_trace_file *o_vcd) {\n";
+    out += "void " + getType(SYSC_ALL) + "::generateVCD(sc_trace_file *i_vcd, sc_trace_file *o_vcd) {\n";
     if (isRegProcess()) {
         out += "    std::string pn(name());\n";
     }
@@ -471,10 +506,16 @@ std::string ModuleObject::generate_sysc_cpp() {
     out += "\n";
     // Sub modules:
     for (auto &p: entries_) {
-        if (p->getId() != ID_MINSTANCE) {
-            continue;
+        if (p->getId() == ID_MODULE_INST) {
+            out += "    " + p->getName() + "->generateVCD(i_vcd, o_vcd);\n";
+        } else if (p->getId() == ID_ARRAY_DEF) {
+            ArrayObject *a = static_cast<ArrayObject *>(p);
+            if (a->getItem()->getId() == ID_MODULE_INST) {
+                out += "    for (int i = 0; i < " + a->getDepth(SYSC_ALL) + "; i++) {\n";
+                out += "        " + p->getName() + "[i]->generateVCD(i_vcd, o_vcd);\n";
+                out += "    }\n";
+            }
         }
-        out += "    " + p->getName() + "->generateVCD(i_vcd, o_vcd);\n";
     }
     out += "}\n";
     out += "\n";
@@ -493,7 +534,7 @@ std::string ModuleObject::generate_sysc_cpp() {
         std::string xrst = "";
         Operation::set_space(1);
 
-        out += "void " + getName() + "::registers() {\n";
+        out += "void " + getType(SYSC_ALL) + "::registers() {\n";
         out += Operation::reset(prefix1, this, xrst);
         out += " else {\n";
         out += "        r = v;\n";
@@ -507,7 +548,7 @@ std::string ModuleObject::generate_sysc_cpp() {
 
 std::string ModuleObject::generate_sysc_cpp_proc(GenObject *proc) {
     std::string ret = "";
-    ret += "void " + getName() + "::" + proc->getName() + "() {\n";
+    ret += "void " + getType(SYSC_ALL) + "::" + proc->getName() + "() {\n";
     
     // process variables declaration
     int tcnt = 0;

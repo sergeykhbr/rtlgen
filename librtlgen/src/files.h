@@ -21,11 +21,11 @@
 #include <iostream>
 #include <vector>
 #include <list>
+#include <map>
 
 namespace sysvc {
 
-class FileObject : public GenObject,
-                   public AccessListener {
+class FileObject : public GenObject {
  public:
     FileObject(GenObject *parent,
                  const char *name);
@@ -33,9 +33,6 @@ class FileObject : public GenObject,
     virtual std::string getFullPath() override;
     virtual std::string getType(EGenerateType v) { return std::string(""); }
     virtual std::string generate(EGenerateType) override;
-
-    /** Access Listener */
-    virtual void notifyAccess(std::string &file);
 
  protected:
     void generate_sysc();
@@ -45,9 +42,7 @@ class FileObject : public GenObject,
  private:
     void fullPath2vector(const char *fullpath, std::vector<std::string> &subs);
     std::string fullPath2fileRelative(const char *fullpath);
-
- protected:
-    std::list<std::string> depfiles_;   // dependency files
+    void list_of_modules(GenObject *p, std::map<std::string, int> &fpath);
 };
 
 }  // namespace sysvc

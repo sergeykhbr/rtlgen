@@ -39,7 +39,7 @@ class Operation : public GenObject {
     static void set_space(int n);
     static int get_space();
     static std::string addspaces();
-    static std::string obj2varname(GenObject *obj, const char *prefix="r");
+    static std::string obj2varname(GenObject *obj, const char *prefix="r", bool nameonly=false);
     static std::string fullname(const char *prefix, std::string name, GenObject *obj);
     static std::string addtext(EGenerateType v, GenObject *obj, size_t curpos);
     static std::string reset(std::string prefix, ModuleObject *m, std::string xrst);
@@ -72,8 +72,8 @@ Operation &BIT(GenObject &a, GenObject &b, const char *comment="");
 Operation &BIT(GenObject &a, int b, const char *comment="");
 Operation &BITS(GenObject &a, GenObject &h, GenObject &l, const char *comment="");
 Operation &BITS(GenObject &a, int h, int l, const char *comment="");
-Operation &CONST(const char *val);
-Operation &CONST(const char *val, int width);
+GenObject &CONST(const char *val);
+GenObject &CONST(const char *val, int width);
 Operation &SETZERO(GenObject &a, const char *comment="");
 Operation &SETONE(GenObject &a, const char *comment="");
 Operation &SETBIT(GenObject &a, GenObject &b, GenObject &val, const char *comment="");
@@ -97,6 +97,7 @@ Operation &AND4(GenObject &a, GenObject &b, GenObject &c, GenObject &d, const ch
 Operation &DEC(GenObject &a, const char *comment="");
 Operation &INC(GenObject &a, const char *comment="");
 Operation &MUL2(GenObject &a, GenObject &b, const char *comment="");
+Operation &CC2(GenObject &a, GenObject &b, const char *comment="");     // concatation
 
 Operation &SELECTARRITEM(GenObject &arr, GenObject &mux, const char *comment="");   // DELME:
 Operation &ARRITEM(GenObject &arr, GenObject &idx, GenObject &item, const char *comment="");
@@ -112,5 +113,10 @@ void ENDFOR(const char *comment="");
 
 // xrst is an additional reset signal
 void SYNC_RESET(GenObject &a, GenObject *xrst=0, const char *comment="");
+
+// Create new module
+void NEW(GenObject &m, const char *name, GenObject *idx=0, const char *comment="");
+void CONNECT(GenObject &inst, GenObject *idx, GenObject &port, GenObject &s, const char *comment="");
+void ENDNEW(const char *comment="");
 
 }  // namespace sysvc
