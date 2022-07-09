@@ -223,7 +223,8 @@ std::string ModuleObject::generate_sysc_sensitivity(std::string prefix,
                                                     GenObject *obj) {
     std::string ret = "";
     bool prefix_applied = true;
-    if (obj->getId() == ID_STRUCT_DEF) {
+    if (obj->getId() == ID_STRUCT_DEF
+        || obj->getId() == ID_PROCESS) {
         return ret;
     }
 
@@ -511,11 +512,18 @@ std::string ModuleObject::generate_sysc_cpp_proc(GenObject *proc) {
     // process variables declaration
     int tcnt = 0;
     for (auto &e: proc->getEntries()) {
-        if (e->getId() != ID_VALUE) {
+        if (e->getId() == ID_VALUE) {
+            ret += "    " + e->getType(SYSC_ALL) + " " + e->getName();
+            tcnt++;
+        } else if (e->getId() == ID_ARRAY_DEF) {
+            ret += "    " + e->getType(SYSC_ALL) + " " + e->getName();
+            ret += "[";
+            ret += e->getDepth(SYSC_ALL);
+            ret += "]";
+        } else {
             continue;
         }
-        ret += "    " + e->getType(SYSC_ALL) + " " + e->getName() + ";\n";
-        tcnt++;
+        ret += ";\n";
     }
 
     if (tcnt) {

@@ -18,6 +18,7 @@
 #include "array.h"
 #include "utils.h"
 #include "modules.h"
+#include "comments.h"
 
 namespace sysvc {
 
@@ -697,6 +698,22 @@ Operation &ADD2(GenObject &a, GenObject &b, const char *comment) {
     return *p;
 }
 
+// AND_REDCE
+std::string AND_REDUCE_gen(EGenerateType v, GenObject **args) {
+    std::string A = Operation::obj2varname(args[1]);
+    A += ".and_reduce()";
+    return A;
+}
+
+Operation &AND_REDUCE(GenObject &a, const char *comment) {
+    Operation *p = new Operation(0, comment);
+    p->igen_ = AND_REDUCE_gen;
+    p->add_arg(p);
+    p->add_arg(&a);
+    return *p;
+}
+
+
 // AND2
 std::string AND2_gen(EGenerateType v, GenObject **args) {
     std::string A = Operation::obj2varname(args[1]);
@@ -950,28 +967,25 @@ std::string FOR_gen(EGenerateType v, GenObject **args) {
     std::string ret = Operation::addspaces();
     std::string i = Operation::obj2varname(args[1]);
     spaces_++;
-    bool less = args[2]->getValue() < args[3]->getValue();
+    std::string start = Operation::obj2varname(args[2]);
+    std::string end = Operation::obj2varname(args[3]);
+    std::string dir = Operation::obj2varname(args[4]);
 
     ret += "for (int " + i + " = ";
-    ret += Operation::obj2varname(args[2]) + "; ";
-    ret += i + " ";
-    if (less) {
-        ret += "<";
-    } else {
-        ret += ">=";
-    }
-    ret += " " + Operation::obj2varname(args[3]) + "; ";
+    ret += start + "; ";
     ret += i;
-    if (less) {
-        ret += "++";
+    if (dir == "++") {
+        ret += " < ";
     } else {
-        ret += "--";
+        ret += " >= ";
     }
+    ret += end + "; ";
+    ret += i + dir;
     ret += ") {\n";
     return ret;
 }
 
-GenObject &FOR(const char *i, GenObject &start, GenObject &end, const char *comment) {
+GenObject &FOR(const char *i, GenObject &start, GenObject &end, const char *dir, const char *comment) {
     Operation *p = new Operation(comment);
     I32D *ret = new I32D("0", i);
     Operation::push_obj(p);
@@ -980,6 +994,7 @@ GenObject &FOR(const char *i, GenObject &start, GenObject &end, const char *comm
     p->add_arg(ret);
     p->add_arg(&start);
     p->add_arg(&end);
+    p->add_arg(new TextLine(0, dir));
     return *ret;
 }
 

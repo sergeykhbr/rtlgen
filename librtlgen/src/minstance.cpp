@@ -17,6 +17,7 @@
 #include "minstance.h"
 #include "modules.h"
 #include "files.h"
+#include "operations.h"
 #include "utils.h"
 
 namespace sysvc {
@@ -81,13 +82,9 @@ std::string MInstanceObject::generate_sysc() {
             SHOW_ERROR("io '%s' not connected", io->getName());
         } else {
             GenObject *port = io_[io->getName()];
-            GenObject *pstruct = port->getParent();
-            ln = "";
-            while (pstruct->getId() == ID_STRUCT_DEF) {
-                ln = pstruct->getName() + "." + ln;
-                pstruct = pstruct->getParent();
-            }
-            ret += ln + port->getName();
+            std::string sname = "";
+            sname = Operation::fullname("r", sname, port);
+            ret += sname;
         }
         ret += ");\n";
     }

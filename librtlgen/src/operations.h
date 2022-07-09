@@ -90,6 +90,7 @@ Operation &OR2(GenObject &a, GenObject &b, const char *comment="");
 Operation &OR3(GenObject &a, GenObject &b, GenObject &c, const char *comment="");
 Operation &OR4(GenObject &a, GenObject &b, GenObject &c, GenObject &d, const char *comment="");
 Operation &ADD2(GenObject &a, GenObject &b, const char *comment="");
+Operation &AND_REDUCE(GenObject &a, const char *comment="");
 Operation &AND2(GenObject &a, GenObject &b, const char *comment="");
 Operation &AND3(GenObject &a, GenObject &b, GenObject &c, const char *comment="");
 Operation &AND4(GenObject &a, GenObject &b, GenObject &c, GenObject &d, const char *comment="");
@@ -106,7 +107,7 @@ void ELSIF(GenObject &a, const char *comment="");
 void ELSE(const char *comment="");
 void ENDIF(const char *comment="");
 
-GenObject &FOR(const char *i, GenObject &start, GenObject &end, const char *comment="");
+GenObject &FOR(const char *i, GenObject &start, GenObject &end, const char *dir, const char *comment="");
 void ENDFOR(const char *comment="");
 
 // xrst is an additional reset signal

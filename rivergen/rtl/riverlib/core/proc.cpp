@@ -133,6 +133,30 @@ Processor::Processor(GenObject *parent) :
     ModuleObject *p;
 
     // Create and connet Sub-modules:
+    p = static_cast<ModuleObject *>(SCV_get_module("BranchPredictor"));
+    if (p) {
+        predic0 = p->createInstance(this, "predic0");
+        predic0->connect_io("i_clk", &i_clk);
+        predic0->connect_io("i_nrst", &i_nrst);
+        predic0->connect_io("i_flush_pipeline", &w_flush_pipeline);
+        predic0->connect_io("i_resp_mem_valid", &i_resp_ctrl_valid);
+        predic0->connect_io("i_resp_mem_addr", &i_resp_ctrl_addr);
+        predic0->connect_io("i_resp_mem_data", &i_resp_ctrl_data);
+        predic0->connect_io("i_e_jmp", &w.e.jmp);
+        predic0->connect_io("i_e_pc", &w.e.pc);
+        predic0->connect_io("i_e_npc", &w.e.npc);
+        predic0->connect_io("i_ra", &ireg.ra);
+        predic0->connect_io("o_f_valid", &bp.f_valid);
+        predic0->connect_io("o_f_pc", &bp.f_pc);
+        predic0->connect_io("i_f_requested_pc", &w.f.requested_pc);
+        predic0->connect_io("i_f_fetching_pc", &w.f.fetching_pc);
+        predic0->connect_io("i_f_fetched_pc", &w.f.pc);
+        predic0->connect_io("i_d_pc", &w.d.pc);
+    } else {
+        SHOW_ERROR("%s", "BranchPredictor not found");
+        predic0 = 0;
+    }
+
     p = static_cast<ModuleObject *>(SCV_get_module("RegIntBank"));
     if (p) {
         iregs0 = p->createInstance(this, "iregs0");

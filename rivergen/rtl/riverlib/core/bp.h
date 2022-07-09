@@ -27,13 +27,64 @@ class BranchPredictor : public ModuleObject {
 
     class CombProcess : public ProcObject {
      public:
-        CombProcess(GenObject *parent) : ProcObject(parent, "comb") {
-            BranchPredictor *p = static_cast<BranchPredictor *>(parent);
-            p->proc_comb();
+        CombProcess(GenObject *parent, river_cfg *cfg) :
+            ProcObject(parent, "comb"),
+            cfg_(cfg),
+            vb_addr(this, "vb_addr"),
+            vb_piped(this, "vb_piped"),
+            vb_fetch_npc(this, "vb_fetch_npc", "CFG_CPU_ADDR_BITS"),
+            v_btb_we(this, "v_btb_we", "1"),
+            vb_btb_we_pc(this, "vb_btb_we_pc", "CFG_CPU_ADDR_BITS"),
+            vb_btb_we_npc(this, "vb_btb_we_npc", "CFG_CPU_ADDR_BITS"),
+            vb_hit(this, "vb_hit", "4"),
+            vb_ignore_pd(this, "vb_ignore_pd", "2") {
+            proc_comb();
         }
-    };
 
-    void proc_comb();
+        void proc_comb();
+
+     protected:
+        river_cfg *cfg_;
+
+        class AddrArray : public ArrayObject {
+         public:
+           AddrArray(GenObject *parent, const char *name, const char *comment="")
+                : ArrayObject(parent, name, "CFG_BP_DEPTH", comment) {
+                char tstr[64];
+                arr_ = new Logic *[depth_.getValue()];
+                for (int i = 0; i < static_cast<int>(depth_.getValue()); i++) {
+                    RISCV_sprintf(tstr, sizeof(tstr), "%d", i);
+                    arr_[i] = new Logic(this, tstr, "CFG_CPU_ADDR_BITS");
+                }
+            }
+            virtual GenObject *getItem() { return arr_[0]; }
+
+            Logic **arr_;
+        } vb_addr;
+
+        class PipedArray : public ArrayObject {
+         public:
+           PipedArray(GenObject *parent, const char *name, const char *comment="")
+                : ArrayObject(parent, name, "4", comment) {
+                char tstr[64];
+                arr_ = new Logic *[depth_.getValue()];
+                for (int i = 0; i < static_cast<int>(depth_.getValue()); i++) {
+                    RISCV_sprintf(tstr, sizeof(tstr), "%d", i);
+                    arr_[i] = new Logic(this, tstr, "CFG_CPU_ADDR_BITS");
+                }
+            }
+            virtual GenObject *getItem() { return arr_[0]; }
+
+            Logic **arr_;
+        } vb_piped;
+
+        Logic vb_fetch_npc;
+        Logic v_btb_we;
+        Logic vb_btb_we_pc;
+        Logic vb_btb_we_npc;
+        Logic vb_hit;
+        Logic vb_ignore_pd;
+    };
 
  protected:
     river_cfg *cfg_;
@@ -104,6 +155,10 @@ class BranchPredictor : public ModuleObject {
 
     // process should be intialized last to make all signals available
     CombProcess comb;
+
+    // Sub-module instances:
+    MInstanceObject *btb;
+    MInstanceObject *predec[2];
 };
 
 class bp_file : public FileObject {

@@ -47,10 +47,10 @@ void BpBTB::proc_comb() {
     SETBIT(comb.vb_bp_exec, 0, i_e);
 
 TEXT();
-    GenObject *i = &FOR("i", CONST("1"), cfg_->CFG_BP_DEPTH);
+    GenObject *i = &FOR("i", CONST("1"), cfg_->CFG_BP_DEPTH, "++");
         SETVAL(comb.t_addr, BITS(comb.vb_addr, MUL2(*i, DEC(cfg_->CFG_CPU_ADDR_BITS)),
                                                MUL2(DEC(*i), cfg_->CFG_CPU_ADDR_BITS)));
-        GenObject &n = FOR("n", DEC(cfg_->CFG_BTB_SIZE), CONST("0"));
+        GenObject &n = FOR("n", DEC(cfg_->CFG_BTB_SIZE), CONST("0"), "--");
             IF (EQ(comb.t_addr, ARRITEM(btb, n, btb.arr_[0]->pc)));
                 SETBITS(comb.vb_addr, DEC(MUL2(INC(*i), cfg_->CFG_CPU_ADDR_BITS)),
                                       MUL2(*i, cfg_->CFG_CPU_ADDR_BITS), ARRITEM(btb, n, btb.arr_[0]->npc));
@@ -66,14 +66,14 @@ TEXT();
 TEXT();
     SETVAL(comb.v_dont_update, ALLZEROS());
     SETVAL(comb.vb_pc_equal, ALLZEROS());
-    i = &FOR("i", CONST("0"), cfg_->CFG_BTB_SIZE);
+    i = &FOR("i", CONST("0"), cfg_->CFG_BTB_SIZE, "++");
         IF (EQ(ARRITEM(btb, *i, btb.arr_[0]->pc), i_we_pc));
             SETBIT(comb.vb_pc_equal, *i, CONST("1"));
             SETVAL(comb.v_dont_update, AND2(ARRITEM(btb, *i, btb.arr_[0]->exec), INV(i_e)));
         ENDIF();
     ENDFOR();
     SETVAL(comb.vb_pc_nshift, ALLZEROS());
-    FOR ("i", CONST("1"), cfg_->CFG_BTB_SIZE);
+    FOR ("i", CONST("1"), cfg_->CFG_BTB_SIZE, "++");
         SETBIT(comb.vb_pc_nshift, *i, OR2(BIT(comb.vb_pc_equal, DEC(*i)), 
                                          BIT(comb.vb_pc_nshift, DEC(*i))));
     ENDFOR();
@@ -83,7 +83,7 @@ TEXT();
         SETARRITEM(btb, CONST("0"), btb.arr_[0]->exec, i_e);
         SETARRITEM(btb, CONST("0"), btb.arr_[0]->pc, i_we_pc);
         SETARRITEM(btb, CONST("0"), btb.arr_[0]->npc, i_we_npc);
-        i = &FOR ("i", CONST("1"), cfg_->CFG_BTB_SIZE);
+        i = &FOR ("i", CONST("1"), cfg_->CFG_BTB_SIZE, "++");
             IF (EZ(BIT(comb.vb_pc_nshift, *i)));
                 SETARRITEM(btb, *i, btb, ARRITEM(btb, DEC(*i), btb));
             ELSE();
@@ -96,7 +96,7 @@ TEXT();
     SYNC_RESET(*this, &i_flush_pipeline);
 
 TEXT();
-    i = &FOR("i", CONST("0"), cfg_->CFG_BP_DEPTH);
+    i = &FOR("i", CONST("0"), cfg_->CFG_BP_DEPTH, "++");
         SETARRITEM(dbg_npc, *i, dbg_npc, BITS(comb.vb_addr, DEC(MUL2(INC(*i), cfg_->CFG_CPU_ADDR_BITS)),
                                                             MUL2(*i, cfg_->CFG_CPU_ADDR_BITS)));
     ENDFOR();

@@ -450,6 +450,7 @@ class Processor : public ModuleObject {
     CombProcess comb;
 
     // Sub-module instances:
+    MInstanceObject *predic0;
     MInstanceObject *iccsr0;
     MInstanceObject *iregs0;
 };
