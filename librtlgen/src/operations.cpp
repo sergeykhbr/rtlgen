@@ -1074,6 +1074,11 @@ std::string NEW_gen(EGenerateType v, GenObject **args) {
     if (mod->isAsyncReset()) {
         ret += ", async_reset";
     }
+    std::list<GenObject *>genlist;
+    mod->getParamList(genlist);
+    for (auto &g : genlist) {
+        ret += ", " + g->getName();
+    }
 
     ret += ");\n";
     return ret;

@@ -136,7 +136,7 @@ class Processor : public ModuleObject {
     class InstructionDecodeType : public StructObject {
      public:
         InstructionDecodeType(GenObject *parent, const char *name="", const char *comment="")
-            : StructObject(parent, "InstructionDecode", name, -1, comment),
+            : StructObject(parent, "InstructionDecodeType", name, -1, comment),
             pc(this, "pc", "CFG_CPU_ADDR_BITS"),
             instr(this, "instr", "32"),
             memop_store(this, "memop_store"),
@@ -455,8 +455,8 @@ class Processor : public ModuleObject {
 
     // Sub-module instances:
     BranchPredictor predic0;
-    ic_csr_m2_s1 iccsr0;
     RegIntBank iregs0;
+    ic_csr_m2_s1 iccsr0;
 };
 
 class proc_file : public FileObject {

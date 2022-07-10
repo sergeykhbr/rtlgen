@@ -23,8 +23,21 @@ namespace sysvc {
 FileObject::FileObject(GenObject *parent,
                            const char *name)
     : GenObject(parent, ID_FILE, name) {
+    SCV_set_access_listener(static_cast<AccessListener *>(this));
 }
 
+void FileObject::notifyAccess(std::string &file) {
+    bool found = false;
+    for (auto &f: depfiles_) {
+        if (f == file) {
+            found = true;
+            break;
+        }
+    }
+    if (!found) {
+        depfiles_.push_back(file);
+    }
+}
 
 std::string FileObject::getFullPath() {
     std::string path = GenObject::getFullPath() + "/";
@@ -79,7 +92,7 @@ std::string FileObject::fullPath2fileRelative(const char *fullpath) {
     return ret;
 }
 
-void FileObject::list_of_modules(GenObject *p, std::map<std::string, int> &fpath) {
+void FileObject::list_of_modules(GenObject *p, std::list<std::string> &fpath) {
     GenObject *f = 0;
     if (!p) {
         return;
@@ -97,12 +110,25 @@ void FileObject::list_of_modules(GenObject *p, std::map<std::string, int> &fpath
             f = f->getParent();
             continue;
         }
-        fpath[f->getFullPath()]++;
+        notifyAccess(f->getFullPath());
         break;
     }
 
-    for (auto &e: p->getEntries()) {
-        list_of_modules(e, fpath);
+    // Do not include sub-sub-module
+    f = p->getParent();
+    bool go_deeper = true;
+    while (f) {
+        if (f->getId() == ID_MODULE || f->getId() == ID_MODULE_INST) {
+            go_deeper = false;
+            break;
+        }
+        f = f->getParent();
+    }
+
+    if (go_deeper) {
+        for (auto &e: p->getEntries()) {
+            list_of_modules(e, fpath);
+        }
     }
 }
 
@@ -131,17 +157,12 @@ void FileObject::generate_sysc() {
 
     // Automatic Dependency detection
     std::string thisfile = getFullPath();
-    std::map<std::string, int> filelist;
-    std::map<std::string, int>::iterator it;
-    std::string hack_include_cfg_file = "CFG_VENDOR_ID";
-    
-    filelist[SCV_get_cfg_fullname(hack_include_cfg_file)]++;
-    list_of_modules(this, filelist);
-    for (auto it : filelist) {
-        if (it.first == thisfile) {
+    list_of_modules(this, depfiles_);
+    for (auto &f: depfiles_) {
+        if (f == thisfile) {
             continue;
         }
-        out += "#include \"" + fullPath2fileRelative(it.first.c_str()) + ".h\"\n";
+        out += "#include \"" + fullPath2fileRelative(f.c_str()) + ".h\"\n";
     }
     out += "\n";
     out += 
@@ -171,6 +192,7 @@ void FileObject::generate_sysc() {
         out += 
             "\n"
             "#include \"" + getName() + ".h\"\n"
+            "#include \"api_core.h\"\n"
             "\n";
         out += 
             "namespace debugger {\n"
@@ -202,16 +224,13 @@ void FileObject::generate_sysv() {
     out += "\n";
 
     // Automatic Dependency detection
-    std::string thisfile = getFullPath();
-    std::map<std::string, int> filelist;
     std::vector<std::string> subs;
-    std::map<std::string, int>::iterator it;
-    list_of_modules(this, filelist);
-    for (auto it : filelist) {
-        if (it.first == thisfile) {
+    list_of_modules(this, depfiles_);
+    for (auto &f : depfiles_) {
+        if (f == getFullPath()) {
             continue;
         }
-        fullPath2vector(it.first.c_str(), subs);
+        fullPath2vector(f.c_str(), subs);
         out += "import " + subs.back() + "_pkg::*;\n";
     }
     out += "\n";

@@ -19,7 +19,6 @@
 #include "ports.h"
 #include "signals.h"
 #include "utils.h"
-#include "minstance.h"
 #include "files.h"
 
 namespace sysvc {

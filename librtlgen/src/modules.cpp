@@ -19,7 +19,6 @@
 #include "ports.h"
 #include "signals.h"
 #include "utils.h"
-#include "minstance.h"
 #include "files.h"
 #include "operations.h"
 
@@ -31,28 +30,8 @@ ModuleObject::ModuleObject(GenObject *parent, const char *type, const char *name
         SCV_register_module(this);
     }
     type_ = std::string(type);
-    //Operation::start(this);
 }
 
-
-MInstanceObject *ModuleObject::createInstance(GenObject *parent, const char *name) {
-    MInstanceObject *inst = new MInstanceObject(this, parent, name);
-    instances_.push_back(inst);
-
-    /*GenObject *p = parent;
-    while (p) {
-        if (p->getId() != ID_FILE) {
-            p = p->getParent();
-            continue;
-        }
-        // to build include dependencies
-        std::string fulpath = getFullPath();
-        static_cast<FileObject *>(p)->notifyAccess(fulpath);
-        break;
-    }*/
-
-    return inst;
-}
 
 bool ModuleObject::isAsyncReset() {
     for (auto &e: entries_) {

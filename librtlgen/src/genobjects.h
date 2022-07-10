@@ -33,7 +33,6 @@ enum EIdType {
     ID_FUNCTION,
     ID_MODULE,
     ID_MODULE_INST,
-    ID_MINSTANCE,   // module instance
     ID_INPUT,
     ID_OUTPUT,
     ID_SIGNAL,

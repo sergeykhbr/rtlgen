@@ -130,8 +130,8 @@ Processor::Processor(GenObject *parent, const char *name, river_cfg *cfg) :
     // process
     comb(this),
     predic0(this, "predic0", cfg),
-    iccsr0(this, "iccsr0", cfg),
-    iregs0(this, "iregs0", cfg)
+    iregs0(this, "iregs0", cfg),
+    iccsr0(this, "iccsr0", cfg)
 {
     Operation::start(this);
 

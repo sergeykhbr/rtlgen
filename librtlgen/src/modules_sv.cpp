@@ -19,7 +19,6 @@
 #include "ports.h"
 #include "signals.h"
 #include "utils.h"
-#include "minstance.h"
 #include "files.h"
 #include <list>
 
@@ -136,7 +135,7 @@ std::string ModuleObject::generate_sv_mod() {
 
     // Sub module instances:
     for (auto &p: entries_) {
-        if (p->getId() != ID_MINSTANCE) {
+        if (p->getId() != ID_MODULE_INST) {
             continue;
         }
         ret += "\n";

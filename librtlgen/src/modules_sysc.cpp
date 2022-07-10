@@ -19,7 +19,6 @@
 #include "ports.h"
 #include "signals.h"
 #include "utils.h"
-#include "minstance.h"
 #include "files.h"
 #include "structs.h"
 #include "regs.h"
@@ -442,8 +441,7 @@ std::string ModuleObject::generate_sysc_cpp() {
     // Sub-module instantiation
     Operation::set_space(1);
     for (auto &p: entries_) {
-        if (p->getId() != ID_MINSTANCE
-        && p->getId() != ID_OPERATION) {
+        if (p->getId() != ID_OPERATION) {
             continue;
         }
         out += "\n";

@@ -36,7 +36,6 @@
 #include "regs.h"
 #include "structs.h"
 #include "array.h"
-#include "minstance.h"
 
 namespace sysvc {
 
