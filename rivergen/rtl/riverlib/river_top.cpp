@@ -16,9 +16,8 @@
 
 #include "river_top.h"
 
-RiverTop::RiverTop(GenObject *parent, const char *name, river_cfg *cfg) :
+RiverTop::RiverTop(GenObject *parent, const char *name) :
     ModuleObject(parent, "RiverTop", name),
-    cfg_(cfg),
     // Generic parameters
     hartid(this, "hartid", "0"),
     fpu_ena(this, "fpu_ena", "true"),
@@ -108,8 +107,8 @@ RiverTop::RiverTop(GenObject *parent, const char *name, river_cfg *cfg) :
     wb_data_flush_address(this, "wb_data_flush_address", "CFG_CPU_ADDR_BITS"),
     w_data_flush_valid(this, "w_data_flush_valid"),
     w_data_flush_end(this, "w_data_flush_end"),
-    proc0(this, "proc0", cfg),
-    cache0(this, "cache0", cfg)
+    proc0(this, "proc0"),
+    cache0(this, "cache0")
 {
     Operation::start(this);
 

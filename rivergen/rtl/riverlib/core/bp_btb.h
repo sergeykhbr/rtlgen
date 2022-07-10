@@ -23,7 +23,7 @@ using namespace sysvc;
 
 class BpBTB : public ModuleObject {
  public:
-    BpBTB(GenObject *parent, const char *name, river_cfg *cfg);
+    BpBTB(GenObject *parent, const char *name);
 
     class CombProcess : public ProcObject {
      public:
@@ -36,6 +36,8 @@ class BpBTB : public ModuleObject {
             vb_bp_exec(this, "vb_bp_exec", "CFG_BP_DEPTH"),
             v_dont_update(this, "v_dont_update", "1") {
             BpBTB *p = static_cast<BpBTB *>(parent);
+            Operation::start(this);
+
             p->proc_comb();
         }
         Logic vb_addr;
@@ -48,9 +50,6 @@ class BpBTB : public ModuleObject {
     };
 
     void proc_comb();
-
- protected:
-    river_cfg *cfg_;
 
  public:
     InPort i_clk;
@@ -66,56 +65,22 @@ class BpBTB : public ModuleObject {
 
  protected:
 
-    class BtbEntryTypeSignals {
+    class BtbEntryType : public StructObject {
      public:
-        BtbEntryTypeSignals(GenObject *parent) :
-            pc(parent, "pc", "CFG_CPU_ADDR_BITS", "0xffffffffffffffff"),
-            npc(parent, "npc", "CFG_CPU_ADDR_BITS"),
-            exec(parent, "exec", "1", "0", "0=predec; 1=exec (high priority)") {}
+        // Structure definition
+        BtbEntryType(GenObject *parent, int idx, const char *comment="")
+            : StructObject(parent, "BtbEntryType", "", idx, comment),
+            pc(this, "pc", "CFG_CPU_ADDR_BITS", "0xffffffffffffffff"),
+            npc(this, "npc", "CFG_CPU_ADDR_BITS"),
+            exec(this, "exec", "1", "0", "0=predec; 1=exec (high priority)") {}
      public:
         RegSignal pc;
         RegSignal npc;
         RegSignal exec;
-    };
-    
-    class BtbEntryTypeDefinition : public StructObject,
-                                   public BtbEntryTypeSignals {
-     public:
-        // Structure definition
-        BtbEntryTypeDefinition(GenObject *parent, int idx, const char *comment="")
-            : StructObject(parent, "BtbEntryType", "", idx, comment), BtbEntryTypeSignals(this) {}
     } BtbEntryTypeDef_;
 
-    class BtbEntryTypeArray : public ArrayObject {
-     public:
-       BtbEntryTypeArray(GenObject *parent, const char *name, const char *comment="")
-            : ArrayObject(parent, name, "CFG_BTB_SIZE", comment) {
-            reg_ = true;
-            arr_ = new BtbEntryTypeDefinition *[depth_.getValue()];
-            for (int i = 0; i < static_cast<int>(depth_.getValue()); i++) {
-                arr_[i] = new BtbEntryTypeDefinition(this, i);
-            }
-        }
-        virtual GenObject *getItem() { return arr_[0]; }
-
-        BtbEntryTypeDefinition **arr_;
-    } btb;
-
-    class DbgNpcArray : public ArrayObject {
-     public:
-       DbgNpcArray(GenObject *parent, const char *name, const char *comment="")
-            : ArrayObject(parent, name, "CFG_BP_DEPTH", comment) {
-            char tstr[64];
-            arr_ = new Signal *[depth_.getValue()];
-            for (int i = 0; i < static_cast<int>(depth_.getValue()); i++) {
-                RISCV_sprintf(tstr, sizeof(tstr), "%d", i);
-                arr_[i] = new Signal(this, tstr, "CFG_CPU_ADDR_BITS");
-            }
-        }
-        virtual GenObject *getItem() { return arr_[0]; }
-
-        Signal **arr_;
-    } dbg_npc;
+    TStructArray<BtbEntryType> btb;
+    WireArray<Signal> dbg_npc;
 
 
     // process should be intialized last to make all signals available
@@ -124,8 +89,8 @@ class BpBTB : public ModuleObject {
 
 class bp_btb_file : public FileObject {
  public:
-    bp_btb_file(GenObject *parent, river_cfg *cfg) : FileObject(parent, "bp_btb"),
-    bp_btb_(this, "", cfg) {}
+    bp_btb_file(GenObject *parent) : FileObject(parent, "bp_btb"),
+    bp_btb_(this, "") {}
 
  private:
     BpBTB bp_btb_;

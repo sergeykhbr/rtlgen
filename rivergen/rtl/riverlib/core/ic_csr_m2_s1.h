@@ -23,7 +23,7 @@ using namespace sysvc;
 
 class ic_csr_m2_s1 : public ModuleObject {
  public:
-    ic_csr_m2_s1(GenObject *parent, const char *name, river_cfg *cfg);
+    ic_csr_m2_s1(GenObject *parent, const char *name);
 
     class CombProcess : public ProcObject {
      public:
@@ -80,9 +80,9 @@ class ic_csr_m2_s1 : public ModuleObject {
 
 class ic_csr_m2_s1_file : public FileObject {
  public:
-    ic_csr_m2_s1_file(GenObject *parent, river_cfg *cfg) :
+    ic_csr_m2_s1_file(GenObject *parent) :
         FileObject(parent, "ic_csr_m2_s1"),
-        ic_(this, "", cfg) {}
+        ic_(this, "") {}
 
  private:
     ic_csr_m2_s1 ic_;

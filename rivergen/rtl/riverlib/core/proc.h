@@ -26,7 +26,7 @@ using namespace sysvc;
 
 class Processor : public ModuleObject {
  public:
-    Processor(GenObject *parent, const char *name, river_cfg *cfg);
+    Processor(GenObject *parent, const char *name);
 
     DefParamUI32D hartid;
     DefParamBOOL fpu_ena;
@@ -461,9 +461,9 @@ class Processor : public ModuleObject {
 
 class proc_file : public FileObject {
  public:
-    proc_file(GenObject *parent, river_cfg *cfg) :
+    proc_file(GenObject *parent) :
         FileObject(parent, "proc"),
-        proc_(this, "", cfg) {}
+        proc_(this, "") {}
 
  private:
     Processor proc_;

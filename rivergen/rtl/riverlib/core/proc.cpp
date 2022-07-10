@@ -16,7 +16,7 @@
 
 #include "proc.h"
 
-Processor::Processor(GenObject *parent, const char *name, river_cfg *cfg) :
+Processor::Processor(GenObject *parent, const char *name) :
     ModuleObject(parent, "Processor", name),
     hartid(this, "hartid", "0"),
     fpu_ena(this, "fpu_ena", "true"),
@@ -129,9 +129,9 @@ Processor::Processor(GenObject *parent, const char *name, river_cfg *cfg) :
     w_reg_ignored(this, "w_reg_ignored"),
     // process
     comb(this),
-    predic0(this, "predic0", cfg),
-    iregs0(this, "iregs0", cfg),
-    iccsr0(this, "iccsr0", cfg)
+    predic0(this, "predic0"),
+    iregs0(this, "iregs0"),
+    iccsr0(this, "iccsr0")
 {
     Operation::start(this);
 

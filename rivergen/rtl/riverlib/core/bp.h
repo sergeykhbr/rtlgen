@@ -25,15 +25,14 @@ using namespace sysvc;
 
 class BranchPredictor : public ModuleObject {
  public:
-    BranchPredictor(GenObject *parent, const char *name, river_cfg *cfg);
+    BranchPredictor(GenObject *parent, const char *name);
 
     class CombProcess : public ProcObject {
      public:
-        CombProcess(GenObject *parent, river_cfg *cfg) :
+        CombProcess(GenObject *parent) :
             ProcObject(parent, "comb"),
-            cfg_(cfg),
-            vb_addr(this, "vb_addr"),
-            vb_piped(this, "vb_piped"),
+            vb_addr(this, "vb_addr", "CFG_CPU_ADDR_BITS", "CFG_BP_DEPTH"),
+            vb_piped(this, "vb_piped", "CFG_CPU_ADDR_BITS", "4"),
             vb_fetch_npc(this, "vb_fetch_npc", "CFG_CPU_ADDR_BITS"),
             v_btb_we(this, "v_btb_we", "1"),
             vb_btb_we_pc(this, "vb_btb_we_pc", "CFG_CPU_ADDR_BITS"),
@@ -46,40 +45,8 @@ class BranchPredictor : public ModuleObject {
         void proc_comb();
 
      protected:
-        river_cfg *cfg_;
-
-        class AddrArray : public ArrayObject {
-         public:
-           AddrArray(GenObject *parent, const char *name, const char *comment="")
-                : ArrayObject(parent, name, "CFG_BP_DEPTH", comment) {
-                char tstr[64];
-                arr_ = new Logic *[depth_.getValue()];
-                for (int i = 0; i < static_cast<int>(depth_.getValue()); i++) {
-                    RISCV_sprintf(tstr, sizeof(tstr), "%d", i);
-                    arr_[i] = new Logic(this, tstr, "CFG_CPU_ADDR_BITS");
-                }
-            }
-            virtual GenObject *getItem() { return arr_[0]; }
-
-            Logic **arr_;
-        } vb_addr;
-
-        class PipedArray : public ArrayObject {
-         public:
-           PipedArray(GenObject *parent, const char *name, const char *comment="")
-                : ArrayObject(parent, name, "4", comment) {
-                char tstr[64];
-                arr_ = new Logic *[depth_.getValue()];
-                for (int i = 0; i < static_cast<int>(depth_.getValue()); i++) {
-                    RISCV_sprintf(tstr, sizeof(tstr), "%d", i);
-                    arr_[i] = new Logic(this, tstr, "CFG_CPU_ADDR_BITS");
-                }
-            }
-            virtual GenObject *getItem() { return arr_[0]; }
-
-            Logic **arr_;
-        } vb_piped;
-
+        WireArray<Logic> vb_addr;
+        WireArray<Logic> vb_piped;
         Logic vb_fetch_npc;
         Logic v_btb_we;
         Logic vb_btb_we_pc;
@@ -87,9 +54,6 @@ class BranchPredictor : public ModuleObject {
         Logic vb_hit;
         Logic vb_ignore_pd;
     };
-
- protected:
-    river_cfg *cfg_;
 
  public:
     InPort i_clk;
@@ -110,15 +74,17 @@ class BranchPredictor : public ModuleObject {
     InPort i_d_pc;
 
  protected:
-    class PreDecSignals {
+    
+    class PreDecType : public StructObject {
      public:
-        PreDecSignals(GenObject *parent) :
-            c_valid(parent, "c_valid", "1"),
-            addr(parent, "addr", "CFG_CPU_ADDR_BITS"),
-            data(parent, "data", "32"),
-            jmp(parent, "jmp", "1"),
-            pc(parent, "pc", "CFG_CPU_ADDR_BITS"),
-            npc(parent, "npc", "CFG_CPU_ADDR_BITS") {}
+        PreDecType(GenObject *parent, int idx, const char *comment="")
+            : StructObject(parent, "PreDecType", "", idx, comment),
+            c_valid(this, "c_valid", "1"),
+            addr(this, "addr", "CFG_CPU_ADDR_BITS"),
+            data(this, "data", "32"),
+            jmp(this, "jmp", "1"),
+            pc(this, "pc", "CFG_CPU_ADDR_BITS"),
+            npc(this, "npc", "CFG_CPU_ADDR_BITS") {}
      public:
         Signal c_valid;
         Signal addr;
@@ -126,27 +92,9 @@ class BranchPredictor : public ModuleObject {
         Signal jmp;
         Signal pc;
         Signal npc;
-    };
-    
-    class PreDecTypeDefinition : public StructObject,
-                                   public PreDecSignals {
-     public:
-        PreDecTypeDefinition(GenObject *parent, int idx, const char *comment="")
-            : StructObject(parent, "PreDecType", "", idx, comment), PreDecSignals(this) {}
     } PreDecTypeDef_;
 
-    class PreDecStructArray : public ArrayObject {
-     public:
-       PreDecStructArray(GenObject *parent, const char *name, const char *comment="")
-            : ArrayObject(parent, name, "2", comment) {
-            arr_ = new PreDecTypeDefinition *[depth_.getValue()];
-            for (int i = 0; i < static_cast<int>(depth_.getValue()); i++) {
-                arr_[i] = new PreDecTypeDefinition(this, i);
-            }
-        }
-        virtual GenObject *getItem() { return arr_[0]; }
-        PreDecTypeDefinition **arr_;
-    } wb_pd;
+    TStructArray<PreDecType> wb_pd;
 
     Signal w_btb_e;
     Signal w_btb_we;
@@ -162,29 +110,13 @@ class BranchPredictor : public ModuleObject {
 
     // Sub-module instances:
     BpBTB btb;
-
-    class BpPreDecoderArray : public ArrayObject {
-     public:
-        BpPreDecoderArray(GenObject *parent, const char *name, river_cfg *cfg, const char *comment="")
-            : ArrayObject(parent, name, "2", comment) {
-            arr_ = new BpPreDecoder *[depth_.getValue()];
-            char tstr[64];
-            for (int i = 0; i < static_cast<int>(depth_.getValue()); i++) {
-                RISCV_sprintf(tstr, sizeof(tstr), "predec%d", i);
-                arr_[i] = new BpPreDecoder(this, tstr, cfg);
-            }
-        }
-
-        virtual GenObject *getItem() { return arr_[0]; }
-        
-        BpPreDecoder **arr_;
-    } predec;
+    ModuleArray<BpPreDecoder> predec;
 };
 
 class bp_file : public FileObject {
  public:
-    bp_file(GenObject *parent, river_cfg *cfg) : FileObject(parent, "bp"),
-    bp_(this, "", cfg) {}
+    bp_file(GenObject *parent) : FileObject(parent, "bp"),
+    bp_(this, "") {}
 
  private:
     BranchPredictor bp_;

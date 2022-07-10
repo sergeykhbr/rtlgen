@@ -16,9 +16,8 @@
 
 #include "bp_predec.h"
 
-BpPreDecoder::BpPreDecoder(GenObject *parent, const char *name, river_cfg *cfg) :
+BpPreDecoder::BpPreDecoder(GenObject *parent, const char *name) :
     ModuleObject(parent, "BpPreDecoder", name),
-    cfg_(cfg),
     i_c_valid(this, "i_c_valid", "1", "Use compressed for prediction"),
     i_addr(this, "i_addr", "CFG_CPU_ADDR_BITS", "Memory response address"),
     i_data(this, "i_data", "32", "Memory response value"),
@@ -38,15 +37,17 @@ BpPreDecoder::BpPreDecoder(GenObject *parent, const char *name, river_cfg *cfg) 
 }
 
 void BpPreDecoder::proc_comb() {
+    river_cfg *cfg = glob_river_cfg_;
+
     SETVAL(comb.vb_pc, i_addr);
     SETVAL(comb.vb_tmp, i_data);
 
 TEXT();
     TEXT("Unconditional jump \"J\"");
     IF (NZ(BIT(comb.vb_tmp, 31)));
-        SETBITS(comb.vb_jal_off, DEC(cfg_->CFG_CPU_ADDR_BITS), CONST("20"), ALLONES());
+        SETBITS(comb.vb_jal_off, DEC(cfg->CFG_CPU_ADDR_BITS), CONST("20"), ALLONES());
     ELSE();
-        SETBITS(comb.vb_jal_off, DEC(cfg_->CFG_CPU_ADDR_BITS), CONST("20"), ALLZEROS());
+        SETBITS(comb.vb_jal_off, DEC(cfg->CFG_CPU_ADDR_BITS), CONST("20"), ALLZEROS());
     ENDIF();
     SETBITS(comb.vb_jal_off, 19, 12, BITS(comb.vb_tmp, 19, 12));
     SETBIT(comb.vb_jal_off, 11, BIT(comb.vb_tmp, 20));
@@ -64,9 +65,9 @@ TEXT();
     TEXT("Conditional branches \"BEQ\", \"BNE\", \"BLT\", \"BGE\", \"BLTU\", \"BGEU\"");
     TEXT("Only negative offset leads to predicted jumps");
     IF (BIT(comb.vb_tmp, 31));
-        SETBITS(comb.vb_branch_off, DEC(cfg_->CFG_CPU_ADDR_BITS), CONST("12"), ALLONES());
+        SETBITS(comb.vb_branch_off, DEC(cfg->CFG_CPU_ADDR_BITS), CONST("12"), ALLONES());
     ELSE();
-        SETBITS(comb.vb_branch_off, DEC(cfg_->CFG_CPU_ADDR_BITS), CONST("12"), ALLZEROS());
+        SETBITS(comb.vb_branch_off, DEC(cfg->CFG_CPU_ADDR_BITS), CONST("12"), ALLZEROS());
     ENDIF();
     SETBIT(comb.vb_branch_off, 11, BIT(comb.vb_tmp, 7));
     SETBITS(comb.vb_branch_off, 10, 5,  BITS(comb.vb_tmp, 30, 25));
@@ -84,9 +85,9 @@ TEXT();
 TEXT();
     TEXT("Check Compressed \"C_J\" unconditional jump");
     IF (BIT(comb.vb_tmp, 12));
-        SETBITS(comb.vb_c_j_off, DEC(cfg_->CFG_CPU_ADDR_BITS), CONST("11"), ALLONES());
+        SETBITS(comb.vb_c_j_off, DEC(cfg->CFG_CPU_ADDR_BITS), CONST("11"), ALLONES());
     ELSE();
-        SETBITS(comb.vb_c_j_off, DEC(cfg_->CFG_CPU_ADDR_BITS), CONST("11"), ALLZEROS());
+        SETBITS(comb.vb_c_j_off, DEC(cfg->CFG_CPU_ADDR_BITS), CONST("11"), ALLZEROS());
     ENDIF();
     SETBIT(comb.vb_c_j_off, 10, BIT(comb.vb_tmp, 8));
     SETBITS(comb.vb_c_j_off, 9, 8, BITS(comb.vb_tmp, 10, 9));

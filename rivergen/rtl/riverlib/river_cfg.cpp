@@ -16,6 +16,8 @@
 
 #include "river_cfg.h"
 
+river_cfg *glob_river_cfg_ = 0;
+
 river_cfg::river_cfg(GenObject *parent) :
     FileObject(parent, "river_cfg"),
     _1_(this, ""),
@@ -239,4 +241,5 @@ river_cfg::river_cfg(GenObject *parent) :
     MemopType_Total(this, "MemopType_Total", "4"),
     _n_(this)
 {
+    glob_river_cfg_ = this;
 }

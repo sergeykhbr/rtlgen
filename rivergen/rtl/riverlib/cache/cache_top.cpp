@@ -16,7 +16,7 @@
 
 #include "cache_top.h"
 
-CacheTop::CacheTop(GenObject *parent, const char *name, river_cfg *cfg) :
+CacheTop::CacheTop(GenObject *parent, const char *name) :
     ModuleObject(parent, "CacheTop", name),
     coherence_ena(this, "coherence_ena", "false"),
     i_clk(this, "i_clk", "1", "CPU clock"),

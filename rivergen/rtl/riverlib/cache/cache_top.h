@@ -23,7 +23,7 @@ using namespace sysvc;
 
 class CacheTop : public ModuleObject {
  public:
-    CacheTop(GenObject *parent, const char *name, river_cfg *cfg);
+    CacheTop(GenObject *parent, const char *name);
 
  public:
     DefParamBOOL coherence_ena;
@@ -99,9 +99,9 @@ class CacheTop : public ModuleObject {
 
 class cache_top_file : public FileObject {
  public:
-    cache_top_file(GenObject *parent, river_cfg *cfg) :
+    cache_top_file(GenObject *parent) :
         FileObject(parent, "cache_top"),
-        cache_(this, "", cfg) {}
+        cache_(this, "") {}
 
  private:
     CacheTop cache_;

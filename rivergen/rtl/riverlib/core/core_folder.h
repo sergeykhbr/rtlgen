@@ -26,14 +26,14 @@
 
 class core_folder : public FolderObject {
  public:
-    core_folder(GenObject *parent, river_cfg *cfg) :
+    core_folder(GenObject *parent) :
         FolderObject(parent, "core"),
-        bp_predec_(this, cfg),
-        bp_btb_(this, cfg),
-        bp_(this, cfg),
-        ic_(this, cfg),
-        regint_(this, cfg),
-        proc_(this, cfg) {}
+        bp_predec_(this),
+        bp_btb_(this),
+        bp_(this),
+        ic_(this),
+        regint_(this),
+        proc_(this) {}
 
  protected:
     // subfolders:

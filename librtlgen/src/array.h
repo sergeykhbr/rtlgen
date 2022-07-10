@@ -18,6 +18,8 @@
 
 #include "genobjects.h"
 #include "values.h"
+#include "signals.h"
+#include "utils.h"
 #include <iostream>
 #include <list>
 
@@ -40,5 +42,59 @@ class ArrayObject : public GenObject {
     I32D depth_;
     GenObject *sel_;
 };
+
+// T = signal or logic
+template<class T>
+class WireArray : public ArrayObject {
+ public:
+    WireArray(GenObject *parent, const char *name, const char *width, const char *depth, bool reg=false, const char *comment="")
+        : ArrayObject(parent, name, depth, comment) {
+        char tstr[64];
+        reg_ = reg;
+        arr_ = new T *[depth_.getValue()];
+        for (int i = 0; i < static_cast<int>(depth_.getValue()); i++) {
+            RISCV_sprintf(tstr, sizeof(tstr), "%d", i);
+            arr_[i] = new T(this, tstr, width);
+        }
+    }
+    virtual GenObject *getItem() { return arr_[0]; }
+
+    T **arr_;
+};
+
+template<class T>
+class TStructArray : public ArrayObject {
+    public:
+    TStructArray(GenObject *parent, const char *name, const char *depth, bool reg=false, const char *comment="")
+        : ArrayObject(parent, name, depth, comment) {
+        reg_ = reg;
+        arr_ = new T *[depth_.getValue()];
+        for (int i = 0; i < static_cast<int>(depth_.getValue()); i++) {
+            arr_[i] = new T(this, i);
+        }
+    }
+    virtual GenObject *getItem() { return arr_[0]; }
+
+    T **arr_;
+};
+
+template<class T>
+class ModuleArray : public ArrayObject {
+ public:
+    ModuleArray(GenObject *parent, const char *name, const char *depth, const char *comment="")
+        : ArrayObject(parent, name, depth, comment) {
+        arr_ = new T *[depth_.getValue()];
+        char tstr[64];
+        for (int i = 0; i < static_cast<int>(depth_.getValue()); i++) {
+            RISCV_sprintf(tstr, sizeof(tstr), "%s%d", name, i);
+            arr_[i] = new T(this, tstr);
+        }
+    }
+
+    virtual GenObject *getItem() { return arr_[0]; }
+        
+    T **arr_;
+};
+
 
 }  // namespace sysvc

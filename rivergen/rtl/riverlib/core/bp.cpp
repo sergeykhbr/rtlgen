@@ -16,9 +16,8 @@
 
 #include "bp.h"
 
-BranchPredictor::BranchPredictor(GenObject *parent, const char *name, river_cfg *cfg) :
+BranchPredictor::BranchPredictor(GenObject *parent, const char *name) :
     ModuleObject(parent, "BranchPredictor", name),
-    cfg_(cfg),
     i_clk(this, "i_clk", "1", "CPU clock"),
     i_nrst(this, "i_nrst", "1", "Reset: active LOW"),
     i_flush_pipeline(this, "i_flush_pipeline", "1", "sync reset BTB"),
@@ -38,7 +37,7 @@ BranchPredictor::BranchPredictor(GenObject *parent, const char *name, river_cfg 
     // struct declaration
     PreDecTypeDef_(this, -1),
     // Signals
-    wb_pd(this, "wb_pd"),
+    wb_pd(this, "wb_pd", "2"),
     w_btb_e(this, "w_btb_e", "1"),
     w_btb_we(this, "w_btb_we", "1"),
     wb_btb_we_pc(this, "wb_btb_we_pc", "CFG_CPU_ADDR_BITS"),
@@ -46,11 +45,11 @@ BranchPredictor::BranchPredictor(GenObject *parent, const char *name, river_cfg 
     wb_start_pc(this, "wb_start_pc", "CFG_CPU_ADDR_BITS"),
     wb_npc(this, "wb_npc", "MUL(CFG_BP_DEPTH,CFG_CPU_ADDR_BITS)"),
     wb_bp_exec(this, "wb_bp_exec", "CFG_BP_DEPTH", "Predicted value was jump-executed before"),
-    predec(this, "predec", cfg),
-    btb(this, "btb", cfg),
+    predec(this, "predec", "2"),
+    btb(this, "btb"),
     // registers
     // process
-    comb(this, cfg)
+    comb(this)
 {
     Operation::start(this);
 
@@ -83,23 +82,24 @@ BranchPredictor::BranchPredictor(GenObject *parent, const char *name, river_cfg 
 void BranchPredictor::CombProcess::proc_comb() {
     BranchPredictor *p = static_cast<BranchPredictor *>(getParent());
     Operation::start(this);
+    river_cfg *cfg = glob_river_cfg_;
 
     TEXT("Transform address into 2-dimesional array for convinience");
-    GenObject *i = &FOR ("i", CONST("0"), cfg_->CFG_BP_DEPTH, "++");
-        SETARRITEM(vb_addr, *i, vb_addr, BITS(p->wb_npc, DEC(MUL2(INC(*i), cfg_->CFG_CPU_ADDR_BITS)),
-                                                         MUL2(*i, cfg_->CFG_CPU_ADDR_BITS)));
+    GenObject *i = &FOR ("i", CONST("0"), cfg->CFG_BP_DEPTH, "++");
+        SETARRITEM(vb_addr, *i, vb_addr, BITS(p->wb_npc, DEC(MUL2(INC(*i), cfg->CFG_CPU_ADDR_BITS)),
+                                                         MUL2(*i, cfg->CFG_CPU_ADDR_BITS)));
     ENDFOR();
 
 TEXT();
-    SETARRITEM(vb_piped, CONST("0"), vb_piped, BITS(p->i_d_pc, DEC(cfg_->CFG_CPU_ADDR_BITS), CONST("2")));
-    SETARRITEM(vb_piped, CONST("1"), vb_piped, BITS(p->i_f_fetched_pc, DEC(cfg_->CFG_CPU_ADDR_BITS), CONST("2")));
-    SETARRITEM(vb_piped, CONST("2"), vb_piped, BITS(p->i_f_fetching_pc, DEC(cfg_->CFG_CPU_ADDR_BITS), CONST("2")));
-    SETARRITEM(vb_piped, CONST("3"), vb_piped, BITS(p->i_f_requested_pc, DEC(cfg_->CFG_CPU_ADDR_BITS), CONST("2")));
+    SETARRITEM(vb_piped, CONST("0"), vb_piped, BITS(p->i_d_pc, DEC(cfg->CFG_CPU_ADDR_BITS), CONST("2")));
+    SETARRITEM(vb_piped, CONST("1"), vb_piped, BITS(p->i_f_fetched_pc, DEC(cfg->CFG_CPU_ADDR_BITS), CONST("2")));
+    SETARRITEM(vb_piped, CONST("2"), vb_piped, BITS(p->i_f_fetching_pc, DEC(cfg->CFG_CPU_ADDR_BITS), CONST("2")));
+    SETARRITEM(vb_piped, CONST("3"), vb_piped, BITS(p->i_f_requested_pc, DEC(cfg->CFG_CPU_ADDR_BITS), CONST("2")));
 
     SETVAL(vb_hit, ALLZEROS());
     GenObject &n = FOR ("n", CONST("0"), CONST("4"), "++");
         i = &FOR ("i", n,  CONST("4"), "++");
-            IF (EQ(BITS(ARRITEM(vb_addr, n, vb_addr), DEC(cfg_->CFG_CPU_ADDR_BITS), CONST("2")),
+            IF (EQ(BITS(ARRITEM(vb_addr, n, vb_addr), DEC(cfg->CFG_CPU_ADDR_BITS), CONST("2")),
                    ARRITEM(vb_piped, *i, vb_piped)));
                 SETBIT(vb_hit, n, CONST("1", 1));
             ENDIF();
@@ -107,7 +107,7 @@ TEXT();
     ENDFOR();
 
 TEXT();
-    SETVAL(vb_fetch_npc, ARRITEM(vb_addr, DEC(cfg_->CFG_BP_DEPTH), vb_addr));
+    SETVAL(vb_fetch_npc, ARRITEM(vb_addr, DEC(cfg->CFG_BP_DEPTH), vb_addr));
     i = &FOR ("i", CONST("3"), CONST("0"), "--");
         IF (EZ(BIT(vb_hit, *i)));
             SETVAL(vb_fetch_npc, ARRITEM(vb_addr, *i, vb_addr));
@@ -129,11 +129,11 @@ TEXT();
     ENDFOR();
     SETVAL(vb_ignore_pd, ALLZEROS());
     i = &FOR ("i", CONST("0"), CONST("4"), "++");
-        IF (EQ(BITS(ARRITEM(p->wb_pd, CONST("0"), p->wb_pd.arr_[0]->npc), DEC(cfg_->CFG_CPU_ADDR_BITS), CONST("2")),
+        IF (EQ(BITS(ARRITEM(p->wb_pd, CONST("0"), p->wb_pd.arr_[0]->npc), DEC(cfg->CFG_CPU_ADDR_BITS), CONST("2")),
                ARRITEM(vb_piped, *i, vb_piped)));
             SETBIT(vb_ignore_pd, 0, CONST("1", 1));
         ENDIF();
-        IF (EQ(BITS(ARRITEM(p->wb_pd, CONST("1"), p->wb_pd.arr_[0]->npc), DEC(cfg_->CFG_CPU_ADDR_BITS), CONST("2")),
+        IF (EQ(BITS(ARRITEM(p->wb_pd, CONST("1"), p->wb_pd.arr_[0]->npc), DEC(cfg->CFG_CPU_ADDR_BITS), CONST("2")),
                ARRITEM(vb_piped, *i, vb_piped)));
             SETBIT(vb_ignore_pd, 1, CONST("1", 1));
         ENDIF();
@@ -176,6 +176,6 @@ TEXT();
 
 TEXT();
     SETVAL(p->o_f_valid, CONST("1", 1));
-    SETVAL(p->o_f_pc, CC2(BITS(vb_fetch_npc, DEC(cfg_->CFG_CPU_ADDR_BITS), CONST("2")), CONST("0", 2)));
+    SETVAL(p->o_f_pc, CC2(BITS(vb_fetch_npc, DEC(cfg->CFG_CPU_ADDR_BITS), CONST("2")), CONST("0", 2)));
 }
 

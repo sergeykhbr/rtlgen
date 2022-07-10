@@ -21,8 +21,10 @@
 #include "params.h"
 #include "logic.h"
 #include "modules.h"
+#include "utils.h"
 #include <iostream>
 #include <list>
+#include <map>
 
 namespace sysvc {
 
@@ -47,6 +49,20 @@ class Operation : public GenObject {
     virtual void add_arg(GenObject *arg) {
         args[argcnt_++] = arg;
     }
+    virtual void add_connection(std::string port, GenObject *arg) {
+        connection_[port] = arg;
+    }
+    virtual std::string gen_connection(EGenerateType v, std::string port) {
+        std::string ret = "";
+        if (connection_.find(port) != connection_.end()) {
+            ret = connection_[port]->generate(v);
+        } else {
+            SHOW_ERROR("Port %s not found", port.c_str());
+        }
+        return ret;
+    }
+    virtual bool isGen(generate_type t) { return t == igen_; }
+    virtual GenObject *getArg(int cnt) { return args[cnt]; }
     virtual std::string getType(EGenerateType v) { return std::string(""); }
     virtual std::string generate(EGenerateType v) {
         std::string ret = igen_(v, args);
@@ -63,6 +79,7 @@ class Operation : public GenObject {
  protected:
     GenObject *args[16];
     int argcnt_;
+    std::map<std::string, GenObject *> connection_;
 };
 
 void TEXT(const char *comment="");
@@ -82,6 +99,7 @@ Operation &SETBITS(GenObject &a, GenObject &h, GenObject &l, GenObject &val, con
 Operation &SETBITS(GenObject &a, int h, int l, GenObject &val, const char *comment="");
 Operation &SETVAL(GenObject &a, GenObject &b, const char *comment="");
 Operation &TO_INT(GenObject &a, const char *comment="");
+Operation &BIG_TO_U64(GenObject &a, const char *comment="");        // explicit conersion of biguint to uint64 (sysc only)
 Operation &EQ(GenObject &a, GenObject &b, const char *comment="");  // ==
 Operation &EZ(GenObject &a, const char *comment="");        // equal-zero
 Operation &NZ(GenObject &a, const char *comment="");        // Non-zero

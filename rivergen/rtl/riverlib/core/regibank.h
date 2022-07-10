@@ -23,7 +23,7 @@ using namespace sysvc;
 
 class RegIntBank : public ModuleObject {
  public:
-    RegIntBank(GenObject *parent, const char *name, river_cfg *cfg);
+    RegIntBank(GenObject *parent, const char *name);
 
     class CombProcess : public ProcObject {
      public:
@@ -50,7 +50,6 @@ class RegIntBank : public ModuleObject {
     void proc_comb();
 
  public:
-    river_cfg *cfg_;
     InPort i_clk;
     InPort i_nrst;
     InPort i_radr1;
@@ -74,40 +73,18 @@ class RegIntBank : public ModuleObject {
     OutPort o_sp;
 
  protected:
-    class RegsType {
+    class RegValueType : public StructObject {
      public:
-        // Structure definition
-        RegsType(GenObject *parent) :
-            val(parent, "val", "RISCV_ARCH"),
-            tag(parent, "tag", "CFG_REG_TAG_WIDTH") {}
+        RegValueType(GenObject *parent, int idx, const char *comment="")
+            : StructObject(parent, "RegValueType", "", idx, comment),
+            val(this, "val", "RISCV_ARCH"),
+            tag(this, "tag", "CFG_REG_TAG_WIDTH") {}
      public:
         RegSignal val;
         RegSignal tag;
-    };
-
-
-    class RegValueTypeDefinition : public StructObject,
-                                   public RegsType {
-     public:
-        RegValueTypeDefinition(GenObject *parent, int idx, const char *comment="")
-            : StructObject(parent, "RegValueType", "", idx, comment), RegsType(this) {}
     } RegValueTypeDef_;
 
-    class RegArrayType : public ArrayObject {
-     public:
-       RegArrayType(GenObject *parent, const char *name, const char *comment="")
-            : ArrayObject(parent, name, "REGS_TOTAL", comment) {
-            reg_ = true;
-            arr_ = new RegValueTypeDefinition *[depth_.getValue()];
-            for (int i = 0; i < static_cast<int>(depth_.getValue()); i++) {
-                arr_[i] = new RegValueTypeDefinition(this, i);
-            }
-
-        }
-        virtual GenObject *getItem() { return arr_[0]; }
-
-        RegValueTypeDefinition **arr_;
-    } arr;
+    TStructArray<RegValueType> reg;
 
     // process should be intialized last to make all signals available
     CombProcess comb;
@@ -115,9 +92,9 @@ class RegIntBank : public ModuleObject {
 
 class regibank_file : public FileObject {
  public:
-    regibank_file(GenObject *parent, river_cfg *cfg) :
+    regibank_file(GenObject *parent) :
         FileObject(parent, "regibank"),
-        mod_(this, "", cfg) { }
+        mod_(this, "") { }
 
  private:
     RegIntBank mod_;

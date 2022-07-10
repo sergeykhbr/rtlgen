@@ -25,10 +25,9 @@ using namespace sysvc;
 
 class RiverTop : public ModuleObject {
  public:
-    RiverTop(GenObject *parent, const char *name, river_cfg *cfg);
+    RiverTop(GenObject *parent, const char *name);
 
  protected:
-    river_cfg *cfg_;
     DefParamUI32D hartid;
     DefParamBOOL fpu_ena;
     DefParamBOOL coherence_ena;
@@ -126,9 +125,9 @@ class RiverTop : public ModuleObject {
 
 class river_top : public FileObject {
  public:
-    river_top(GenObject *parent, river_cfg *cfg) :
+    river_top(GenObject *parent) :
         FileObject(parent, "river_top"),
-        top_(this, "", cfg) { }
+        top_(this, "") { }
 
  private:
     RiverTop top_;

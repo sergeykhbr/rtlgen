@@ -523,6 +523,24 @@ Operation &SETVAL(GenObject &a, GenObject &b, const char *comment) {
     return *p;
 }
 
+// BIG_TO_U64: explicit conersion of biguint to uint64 (sysc only)
+std::string BIG_TO_U64_gen(EGenerateType v, GenObject **args) {
+    std::string A = "";
+    if (SCV_is_sysc()) {
+        A = Operation::obj2varname(args[1]) + ".to_uint64()";
+    }
+    return A;
+}
+
+Operation &BIG_TO_U64(GenObject &a, const char *comment) {
+    Operation *p = new Operation(0, comment);
+    p->igen_ = BIG_TO_U64_gen;
+    p->add_arg(p);
+    p->add_arg(&a);
+    return *p;
+}
+
+
 // TO_INT
 std::string TO_INT_gen(EGenerateType v, GenObject **args) {
     std::string A = Operation::obj2varname(args[1]);
@@ -1081,6 +1099,17 @@ std::string NEW_gen(EGenerateType v, GenObject **args) {
     }
 
     ret += ");\n";
+
+    std::list<GenObject *>iolist;
+    mod->getIoList(iolist);
+    for (auto &io : iolist) {
+        ret += Operation::addspaces();
+        ret += name;
+        ret += static_cast<Operation *>(args[0])->gen_connection(v, io->getName());
+        ret += ";";
+        // todo comments
+        ret += "\n";
+    }
     return ret;
 }
 
@@ -1098,27 +1127,26 @@ void NEW(GenObject &m, const char *name, GenObject *idx, const char *comment) {
 std::string CONNECT_gen(EGenerateType v, GenObject **args) {
     std::string ret = "";
     Operation *p = static_cast<Operation *>(args[0]);
-    ret += Operation::addspaces();
-    ret += args[1]->getName();
     if (args[2]) {
         ret += "[" + Operation::obj2varname(args[2]) + "]";
     }
     ret += "->";
-    ret += Operation::obj2varname(args[3], "", true);
+    ret += args[3]->getName();
     ret += "(";
     ret += Operation::obj2varname(args[4], "", true);
-    ret += ");\n";
+    ret += ")";
     return ret;
 }
 
 void CONNECT(GenObject &inst, GenObject *idx, GenObject &port, GenObject &s, const char *comment) {
-    Operation *p = new Operation(comment);
+    Operation *p = new Operation(0, comment);
     p->igen_ = CONNECT_gen;
     p->add_arg(p);
     p->add_arg(&inst);
     p->add_arg(idx);
     p->add_arg(&port);
     p->add_arg(&s);
+    static_cast<Operation *>(stackobj_[stackcnt_])->add_connection(port.getName(), p);
 }
 
 // ENDNEW

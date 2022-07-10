@@ -397,4 +397,4 @@ class river_cfg : public FileObject {
     TextLine _n_;
 };
 
-
+extern river_cfg *glob_river_cfg_;
