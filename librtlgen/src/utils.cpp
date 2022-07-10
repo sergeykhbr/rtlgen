@@ -33,7 +33,8 @@ struct CfgParameterInfo {
     uint64_t value;
 };
 
-static std::map<std::string, CfgParameterInfo> cfgParamters_;
+static std::map<std::string, CfgParameterInfo> cfgParamters_;           // global parameters
+static std::map<std::string, CfgParameterInfo> cfgLocalParamters_;     // local paramater visible only inside of module
 static std::list<GenObject *> modules_;
 AccessListener *accessListener_ = 0;
 static EGenerateType gentype_ = GEN_UNDEFINED;
@@ -49,7 +50,22 @@ void SCV_set_cfg_parameter(std::string &path,
     cfgParamters_[std::string(name)] = cfg;
 }
 
+void SCV_set_cfg_local_parameter(std::string &path,
+                               std::string &file,
+                               const char *name,
+                               uint64_t v) {
+        CfgParameterInfo cfg;
+    cfg.path = path;
+    cfg.file = file;
+    cfg.value = v;
+    cfgLocalParamters_[std::string(name)] = cfg;
+}
+
 int SCV_is_cfg_parameter(std::string &name) {
+    // search first local parameters
+    if (cfgLocalParamters_.find(name) != cfgLocalParamters_.end()) {
+        return 1;
+    }
     if (cfgParamters_.find(name) == cfgParamters_.end()) {
         // not found
         return 0;
@@ -69,20 +85,27 @@ std::string SCV_get_cfg_fullname(std::string &name) {
 }
 
 uint64_t SCV_get_cfg_parameter(std::string &name) {
-    CfgParameterInfo &info = cfgParamters_[name];
-    if (accessListener_) {
-        accessListener_->notifyAccess(info.path);
+    CfgParameterInfo *info;
+    if (cfgLocalParamters_.find(name) != cfgLocalParamters_.end()) {
+        info = &cfgLocalParamters_[name];
+        return info->value;
     }
-    return info.value;
+
+    info = &cfgParamters_[name];
+    if (accessListener_) {
+        accessListener_->notifyAccess(info->path);
+    }
+    return info->value;
 }
 
 void SCV_register_module(GenObject *m) {
     modules_.push_back(m);
+    cfgLocalParamters_.clear();
 }
 
 GenObject *SCV_get_module(const char *name) {
     for (auto &m: modules_) {
-        if (m->getType(SYSC_ALL) == std::string(name)) {
+        if (m->getType() == std::string(name)) {
             return m;
             break;
         }
@@ -177,6 +200,13 @@ int SCV_is_sysc() {
 
 int SCV_is_sv() {
     if (gentype_ == SV_ALL || gentype_ == SV_MOD || gentype_ == SV_PKG) {
+        return gentype_;
+    }
+    return 0;
+}
+
+int SCV_is_sv_pkg() {
+    if (gentype_ == SV_PKG) {
         return gentype_;
     }
     return 0;

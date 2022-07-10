@@ -14,22 +14,19 @@
 //  limitations under the License.
 // 
 
-#pragma once
+#include "ram.h"
 
-#include "genobjects.h"
-#include "logic.h"
-#include <iostream>
-
-namespace sysvc {
-
-class ProcObject : public GenObject {
- public:
-    ProcObject(GenObject *parent,
-               const char *name,
-               const char *comment="");
-
-    virtual std::string getType() { return std::string(""); }
- protected:
-};
-
-}  // namespace sysvc
+ram::ram(GenObject *parent, const char *name) :
+    ModuleObject(parent, "ram", name),
+    abits(this, "abits", "6"),
+    dbits(this, "dbits", "8"),
+    i_clk(this, "i_clk", "1", "CPU clock"),
+    i_adr(this, "i_adr", &abits),
+    i_wena(this, "i_wena", "1"),
+    i_wdata(this, "i_wdata", &dbits),
+    o_rdata(this, "o_rdata", &dbits),
+    DEPTH(this, "DEPTH", "POW2(1,abits)"),
+    adr(this, "adr", "abits", "0"),
+    mem(this, "mem", "dbits", "DEPTH", true)
+{
+}

@@ -27,10 +27,10 @@ ArrayObject::ArrayObject(GenObject *parent,
     sel_ = 0;
 }
 
-std::string ArrayObject::getType(EGenerateType v) {
+std::string ArrayObject::getType() {
     std::string ret = "";
     if (getEntries().size()) {
-        return (*getEntries().begin())->getType(v);
+        return (*getEntries().begin())->getType();
     }
     return ret;
 }

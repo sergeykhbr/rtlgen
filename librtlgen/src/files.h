@@ -34,8 +34,8 @@ class FileObject : public GenObject,
     virtual void notifyAccess(std::string &file);
 
     virtual std::string getFullPath() override;
-    virtual std::string getType(EGenerateType v) { return std::string(""); }
-    virtual std::string generate(EGenerateType) override;
+    virtual std::string getType() { return std::string(""); }
+    virtual std::string generate() override;
 
  protected:
     void generate_sysc();

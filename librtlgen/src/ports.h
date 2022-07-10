@@ -40,7 +40,7 @@ class InPort : public Logic {
            GenValue *width,
            const char *comment="");
 
-    virtual std::string getType(EGenerateType v) override;
+    virtual std::string getType() override;
 };
 
 class OutPort : public Logic {
@@ -55,7 +55,7 @@ class OutPort : public Logic {
            GenValue *width,
            const char *comment="");
 
-    virtual std::string getType(EGenerateType v) override;
+    virtual std::string getType() override;
 };
 
 }  // namespace sysvc

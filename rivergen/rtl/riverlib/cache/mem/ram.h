@@ -16,20 +16,38 @@
 
 #pragma once
 
-#include "genobjects.h"
-#include "logic.h"
-#include <iostream>
+#include <api.h>
+#include "../../river_cfg.h"
 
-namespace sysvc {
+using namespace sysvc;
 
-class ProcObject : public GenObject {
+class ram : public ModuleObject {
  public:
-    ProcObject(GenObject *parent,
-               const char *name,
-               const char *comment="");
+    ram(GenObject *parent, const char *name);
 
-    virtual std::string getType() { return std::string(""); }
- protected:
+ public:
+    TmplParamI32D abits;
+    TmplParamI32D dbits;
+
+    InPort i_clk;
+    InPort i_adr;
+    InPort i_wena;
+    InPort i_wdata;
+    OutPort o_rdata;
+
+    ParamI32D DEPTH;
+
+    RegSignal adr;
+    WireArray<Signal> mem;
 };
 
-}  // namespace sysvc
+class ram_file : public FileObject {
+ public:
+    ram_file(GenObject *parent) :
+        FileObject(parent, "ram"),
+        ram_(this, "") {}
+
+ private:
+    ram ram_;
+};
+

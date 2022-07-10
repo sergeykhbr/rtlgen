@@ -32,9 +32,9 @@ class ArrayObject : public GenObject {
                 const char *depth,
                 const char *comment="");
 
-    virtual std::string getType(EGenerateType v);
+    virtual std::string getType();
     virtual int getDepth() override { return static_cast<int>(depth_.getValue()); }    // two-dimensional object
-    virtual std::string getDepth(EGenerateType v) override { return depth_.getValue(v); }
+    virtual std::string getStrDepth() override { return depth_.getStrValue(); }
     virtual void setSelector(GenObject *sel) { sel_ = sel; }
     virtual GenObject *getSelector() { return sel_; }
     virtual GenObject *getItem() = 0;

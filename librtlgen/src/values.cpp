@@ -28,8 +28,24 @@ GenValue::GenValue(const char *width, const char *val, const char *name,
     uint64_t twidth;
     parse(width, 0, twidth, width_sysc_, width_sv_, width_sv_pkg_, width_vhdl_);
     width_ = static_cast<int>(twidth);
-    if (val[0] && name[0] && parent) {
-        //SCV_set_value(getName(), val_);
+}
+
+GenValue::GenValue(GenValue *width, const char *val, const char *name,
+                   GenObject *parent, const char *comment)
+    : GenObject(parent, (name[0] ? ID_VALUE : ID_CONST), name, comment) {
+    parse(val, 0, val_, sysc_, sv_, sv_pkg_, vhdl_);
+
+    width_ = static_cast<int>(width->getValue());
+    if (width->getId() == ID_CONST) {
+        width_sysc_ = width->getStrValue();
+        width_sv_ = width->getStrValue();
+        width_sv_pkg_ = width->getStrValue();
+        width_vhdl_ = width->getStrValue();
+    } else {
+        width_sysc_ = width->getName();
+        width_sv_ = width->getName();
+        width_sv_pkg_ = width->getName();
+        width_vhdl_ = width->getName();
     }
 }
 
@@ -135,69 +151,83 @@ size_t GenValue::parse(const char *val, size_t pos,
     return pos;
 }
 
-std::string GenValue::getValue(EGenerateType v) {
-    if (v == SYSC_ALL || v == SYSC_H || v == SYSC_CPP) {
+std::string GenValue::getStrValue() {
+    if (SCV_is_sysc()) {
         return sysc_;
-    } else if (v == SV_ALL || v == SV_MOD) {
-        return sv_;
-    } else if (v == SV_PKG) {
+    } else if (SCV_is_sv_pkg()) {
         return sv_pkg_;
+    } else if (SCV_is_sv()) {
+        return sv_;
     } else {
         return vhdl_;
     }
 }
 
-std::string GenValue::getWidth(EGenerateType v) {
-    if (v == SYSC_ALL || v == SYSC_H || v == SYSC_CPP) {
+std::string GenValue::getStrWidth() {
+    if (SCV_is_sysc()) {
         return width_sysc_;
-    } else if (v == SV_ALL || v == SV_MOD) {
-        return width_sv_;
-    } else if (v == SV_PKG) {
+    } else if (SCV_is_sv_pkg()) {
         return width_sv_pkg_;
+    } else if (SCV_is_sv()) {
+        return width_sv_;
     } else {
         return width_vhdl_;
     }
 }
 
+bool GenValue::isLocal() {
+    bool local = false;
+    GenObject *p = getParent();
+    while (p) {
+        if (p->getId() == ID_MODULE) {
+            local = true;
+            break;
+        } else if (p->getId() == ID_FILE) {
+            break;
+        }
+        p = p->getParent();
+    }
+    return local;
+}
 
 
-std::string BOOL::getType(EGenerateType v) {
+std::string BOOL::getType() {
     std::string ret = "";
-    if (v == SYSC_ALL || v == SYSC_H || v == SYSC_CPP) {
+    if (SCV_is_sysc()) {
         ret = std::string("bool");
-    } else if (v == SV_ALL || v == SV_PKG || v == SV_MOD) {
+    } else if (SCV_is_sv()) {
         ret = std::string("bit");
     }
     return ret;
 }
 
 
-std::string I32D::getType(EGenerateType v) {
+std::string I32D::getType() {
     std::string ret = "";
-    if (v == SYSC_ALL || v == SYSC_H || v == SYSC_CPP) {
+    if (SCV_is_sysc()) {
         ret = std::string("int");
-    } else if (v == SV_ALL || v == SV_PKG || v == SV_MOD) {
+    } else if (SCV_is_sv()) {
         ret = std::string("int");
     }
     return ret;
 }
 
-std::string UI32D::getType(EGenerateType v) {
+std::string UI32D::getType() {
     std::string ret = "";
-    if (v == SYSC_ALL || v == SYSC_H || v == SYSC_CPP) {
+    if (SCV_is_sysc()) {
         ret = std::string("uint32_t");
-    } else if (v == SV_ALL || v == SV_PKG || v == SV_MOD) {
+    } else if (SCV_is_sv()) {
         ret = std::string("int unsigned");
     }
     return ret;
 }
 
 
-std::string UI64H::getType(EGenerateType v) {
+std::string UI64H::getType() {
     std::string ret = "";
-    if (v == SYSC_ALL || v == SYSC_H || v == SYSC_CPP) {
+    if (SCV_is_sysc()) {
         ret = std::string("uint64_t");
-    } else if (v == SV_ALL || v == SV_PKG || v == SV_MOD) {
+    } else if (SCV_is_sv()) {
         ret = std::string("longint unsigned");
     }
     return ret;

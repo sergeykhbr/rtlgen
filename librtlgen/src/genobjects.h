@@ -30,6 +30,7 @@ enum EIdType {
     ID_ENUM,
     ID_PARAM,
     ID_DEF_PARAM,   // Generic parameter used in ifdef/endif statements
+    ID_TMPL_PARAM,  // The same as DEF_PARAM in sv but need to generate templates in systemc
     ID_FUNCTION,
     ID_MODULE,
     ID_MODULE_INST,
@@ -72,17 +73,17 @@ class GenObject {
     virtual GenObject *getParent() { return parent_; }
     virtual std::string getName() { return name_; }
     virtual std::string getComment() { return comment_; }
-    virtual std::string getType(EGenerateType) = 0;
+    virtual std::string getType() = 0;
     virtual uint64_t getValue() { return 0; }
-    virtual std::string getValue(EGenerateType) { return std::string(""); }
+    virtual std::string getStrValue() { return std::string(""); }
     virtual int getWidth() { return 0; }
-    virtual std::string getWidth(EGenerateType) { return std::string(""); }
+    virtual std::string getStrWidth() { return std::string(""); }
     virtual int getDepth() { return 0; }    // two-dimensional object
-    virtual std::string getDepth(EGenerateType) { return std::string(""); }
+    virtual std::string getStrDepth() { return std::string(""); }
     virtual void setReg() { reg_ = true; };
     virtual bool isReg() { return reg_; }
 
-    virtual std::string generate(EGenerateType) { return std::string(""); }
+    virtual std::string generate() { return std::string(""); }
 
     virtual bool isNumber(std::string &s) {
         return s.c_str()[0] >= '0' && s.c_str()[0] <= '9';

@@ -18,15 +18,18 @@
 
 #include <api.h>
 #include "cache_top.h"
+#include "mem/mem_folder.h"
 
 class cache_folder : public FolderObject {
  public:
     cache_folder(GenObject *parent) :
         FolderObject(parent, "cache"),
+        mem_folder_(this),
         cache_top_(this) {}
 
  protected:
     // subfolders:
+    mem_folder mem_folder_;
     // files
     cache_top_file cache_top_;
 };

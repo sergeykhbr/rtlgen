@@ -29,24 +29,25 @@ class ModuleObject : public GenObject {
  public:
     ModuleObject(GenObject *parent, const char *type, const char *name="");
 
-    virtual std::string getType(EGenerateType v) { return type_; }
-    virtual std::string generate(EGenerateType v) override;
+    virtual std::string getType() { return type_; }
+    virtual std::string generate_sysc_h();
+    virtual std::string generate_sysc_cpp();
+    virtual std::string generate_sv_pkg();
+    virtual std::string generate_sv_mod();
 
     // Check registers in current module and all sub-modules to create
     // async_reset logic and always (ff) process
     virtual bool isAsyncReset();
     virtual bool isRegProcess();
     virtual bool is2DimReg();
+    virtual void getTmplParamList(std::list<GenObject *> &genlist);
     virtual void getParamList(std::list<GenObject *> &genlist);
     virtual void getIoList(std::list<GenObject *> &genlist);
  protected:
-    std::string generate_sysc_h();
-    std::string generate_sysc_cpp();
+    std::string generate_sysc_proc_registers();
     std::string generate_sysc_sensitivity(std::string prefix, std::string name, GenObject *obj);
     std::string generate_sysc_vcd(std::string name1, std::string name2, GenObject *obj);
     std::string generate_sysc_cpp_proc(GenObject *proc);
-    std::string generate_sv_pkg();
-    std::string generate_sv_mod();
 
  protected:
     std::string type_;

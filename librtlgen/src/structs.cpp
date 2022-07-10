@@ -48,13 +48,9 @@ std::string StructObject::getName() {
         return ret;
     }
     if (sel->getId() == ID_CONST) {
-        if (SCV_is_sysc()) {
-            ret = sel->getValue(SYSC_ALL);
-        } else if (SCV_is_sv()) {
-            ret = sel->getValue(SV_ALL);
-        }
+        ret = sel->getStrValue();
     } else if (sel->getId() == ID_OPERATION) {
-        ret = sel->generate(SYSC_ALL);
+        ret = sel->generate();
     } else {
         ret = sel->getName();
     }
@@ -62,14 +58,14 @@ std::string StructObject::getName() {
 }
 
 
-std::string StructObject::generate(EGenerateType v) {
+std::string StructObject::generate() {
     std::string ret = "";
     if (getId() == ID_STRUCT_INST) {
         return ret;
     }
-    if (v == SYSC_ALL || v == SYSC_H || v == SYSC_CPP) {
+    if (SCV_is_sysc()) {
         ret += generate_sysc();
-    } else if (v == SV_ALL || v == SV_PKG || v == SV_MOD) {
+    } else if (SCV_is_sv()) {
         ret += generate_sysv();
     } else {
         ret += generate_vhdl();
@@ -84,11 +80,11 @@ std::string StructObject::generate_sysc() {
     if (getComment().size()) {
         ret += "    // " + getComment() + "\n";
     }
-    ret += "    struct " + getType(SYSC_ALL) + " {\n";
+    ret += "    struct " + getType() + " {\n";
     for (auto &p: entries_) {
-        ln = "        " + p->getType(SYSC_ALL) + " " + p->getName();
+        ln = "        " + p->getType() + " " + p->getName();
         if (p->getDepth()) {
-            ln += "[" + p->getDepth(SYSC_ALL) + "]";
+            ln += "[" + p->getStrDepth() + "]";
 
         }
         ln += ";";
@@ -107,9 +103,9 @@ std::string StructObject::generate_sysc() {
 
 std::string StructObject::generate_sysv() {
     std::string ret = "";
-    ret += "    struct " + getType(SV_ALL) + " {\n";
+    ret += "    struct " + getType() + " {\n";
     for (auto &p: entries_) {
-        ret += "        " + p->getType(SV_ALL) + " " + p->getName() + ";\n";
+        ret += "        " + p->getType() + " " + p->getName() + ";\n";
     }
     ret += "    };\n";
     ret += "\n";

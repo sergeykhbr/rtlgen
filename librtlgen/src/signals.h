@@ -43,7 +43,7 @@ class Signal : public Logic {
            bool usereg,
            const char *comment="");
 
-    virtual std::string getType(EGenerateType v) override;
+    virtual std::string getType() override;
 };
 
 }  // namespace sysvc

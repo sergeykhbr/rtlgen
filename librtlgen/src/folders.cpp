@@ -31,7 +31,7 @@ std::string FolderObject::getFullPath() {
     return path;
 }
 
-std::string FolderObject::generate(EGenerateType v) {
+std::string FolderObject::generate() {
     std::string path = getFullPath();
 
     if (!SCV_is_dir_exists(path.c_str())) {
@@ -39,10 +39,10 @@ std::string FolderObject::generate(EGenerateType v) {
     }
 
     for (auto &p: entries_) {
-        p->generate(v);
+        p->generate();
     }
 
-    return GenObject::generate(v);
+    return GenObject::generate();
 }
 
 }

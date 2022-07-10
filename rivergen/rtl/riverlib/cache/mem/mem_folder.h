@@ -16,20 +16,17 @@
 
 #pragma once
 
-#include "genobjects.h"
-#include "logic.h"
-#include <iostream>
+#include <api.h>
+#include "ram.h"
 
-namespace sysvc {
-
-class ProcObject : public GenObject {
+class mem_folder : public FolderObject {
  public:
-    ProcObject(GenObject *parent,
-               const char *name,
-               const char *comment="");
+    mem_folder(GenObject *parent) :
+        FolderObject(parent, "mem"),
+        ram_file_(this) {}
 
-    virtual std::string getType() { return std::string(""); }
  protected:
+    // subfolders:
+    // files
+    ram_file ram_file_;
 };
-
-}  // namespace sysvc

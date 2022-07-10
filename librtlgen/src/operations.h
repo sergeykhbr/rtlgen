@@ -28,7 +28,7 @@
 
 namespace sysvc {
 
-typedef std::string (*generate_type)(EGenerateType v, GenObject **args);
+typedef std::string (*generate_type)(GenObject **args);
 
 class Operation : public GenObject {
  public:
@@ -43,8 +43,9 @@ class Operation : public GenObject {
     static std::string addspaces();
     static std::string obj2varname(GenObject *obj, const char *prefix="r", bool nameonly=false);
     static std::string fullname(const char *prefix, std::string name, GenObject *obj);
-    static std::string addtext(EGenerateType v, GenObject *obj, size_t curpos);
-    static std::string reset(std::string prefix, ModuleObject *m, std::string xrst);
+    static std::string addtext(GenObject *obj, size_t curpos);
+    static std::string copyreg(const char *dst, const char *src, ModuleObject *m);
+    static std::string reset(const char *dst, const char *src, ModuleObject *m, std::string xrst);
 
     virtual void add_arg(GenObject *arg) {
         args[argcnt_++] = arg;
@@ -52,10 +53,10 @@ class Operation : public GenObject {
     virtual void add_connection(std::string port, GenObject *arg) {
         connection_[port] = arg;
     }
-    virtual std::string gen_connection(EGenerateType v, std::string port) {
+    virtual std::string gen_connection(std::string port) {
         std::string ret = "";
         if (connection_.find(port) != connection_.end()) {
-            ret = connection_[port]->generate(v);
+            ret = connection_[port]->generate();
         } else {
             SHOW_ERROR("Port %s not found", port.c_str());
         }
@@ -63,14 +64,14 @@ class Operation : public GenObject {
     }
     virtual bool isGen(generate_type t) { return t == igen_; }
     virtual GenObject *getArg(int cnt) { return args[cnt]; }
-    virtual std::string getType(EGenerateType v) { return std::string(""); }
-    virtual std::string generate(EGenerateType v) {
-        std::string ret = igen_(v, args);
+    virtual std::string getType() { return std::string(""); }
+    virtual std::string generate() override {
+        std::string ret = igen_(args);
         for (auto &e: entries_) {
             if (e->getId() != ID_OPERATION) {
                 continue;
             }
-            ret += e->generate(v);
+            ret += e->generate();
         }
         return ret;
     }
@@ -117,7 +118,6 @@ Operation &INC(GenObject &a, const char *comment="");
 Operation &MUL2(GenObject &a, GenObject &b, const char *comment="");
 Operation &CC2(GenObject &a, GenObject &b, const char *comment="");     // concatation
 
-Operation &SELECTARRITEM(GenObject &arr, GenObject &mux, const char *comment="");   // DELME:
 Operation &ARRITEM(GenObject &arr, GenObject &idx, GenObject &item, const char *comment="");
 Operation &SETARRITEM(GenObject &arr, GenObject &idx, GenObject &item, GenObject &val, const char *comment="");
 

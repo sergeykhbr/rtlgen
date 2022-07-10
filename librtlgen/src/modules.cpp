@@ -68,6 +68,15 @@ bool ModuleObject::is2DimReg() {
     return false;
 }
 
+void ModuleObject::getTmplParamList(std::list<GenObject *> &genlist) {
+    for (auto &e : entries_) {
+        if (e->getId() != ID_TMPL_PARAM) {
+            continue;
+        }
+        genlist.push_back(e);
+    }
+}
+
 void ModuleObject::getParamList(std::list<GenObject *> &genlist) {
     for (auto &e : entries_) {
         if (e->getId() != ID_DEF_PARAM) {
@@ -84,23 +93,6 @@ void ModuleObject::getIoList(std::list<GenObject *> &iolist) {
         }
         iolist.push_back(e);
     }
-}
-
-
-
-std::string ModuleObject::generate(EGenerateType v) {
-    std::string out = "";
-    Operation::set_space(0);
-    if (v == SYSC_H) {
-        out += generate_sysc_h();
-    } else if (v == SYSC_CPP) {
-        out += generate_sysc_cpp();
-    } else if (v == SV_PKG) {
-        out += generate_sv_pkg();
-    } else if (v == SV_MOD) {
-        out += generate_sv_mod();
-    }
-    return out;
 }
 
 }

@@ -25,9 +25,10 @@ namespace sysvc {
 
 class ParamGeneric {
  public:
+    // if local = false, then register parameter using method SCV_..
     ParamGeneric(GenValue *parent);
 
-    virtual std::string genparam(EGenerateType v, GenValue *p);
+    virtual std::string genparam(GenValue *p);
 };
 
 class ParamBOOL : public BOOL,
@@ -39,8 +40,23 @@ class ParamBOOL : public BOOL,
         ParamGeneric(static_cast<GenValue *>(this)) {
         id_ = ID_PARAM;
     }
-    virtual std::string generate(EGenerateType v) override {
-        return genparam(v, static_cast<GenValue *>(this));
+    virtual std::string generate() override {
+        return genparam(static_cast<GenValue *>(this));
+    }
+};
+
+
+class TmplParamI32D : public I32D,
+                      public ParamGeneric {
+ public:
+    TmplParamI32D(GenObject *parent, const char *name, const char *val,
+                  const char *comment="")
+        : I32D(val, name, parent, comment),
+        ParamGeneric(static_cast<GenValue *>(this)) {
+        id_ = ID_TMPL_PARAM;
+    }
+    virtual std::string generate() override {
+        return genparam(static_cast<GenValue *>(this));
     }
 };
 
@@ -51,9 +67,11 @@ class ParamI32D : public I32D,
     ParamI32D(GenObject *parent, const char *name, const char *val,
         const char *comment="")
         : I32D(val, name, parent, comment),
-        ParamGeneric(static_cast<GenValue *>(this)) {}
-    virtual std::string generate(EGenerateType v) override {
-        return genparam(v, static_cast<GenValue *>(this));
+        ParamGeneric(static_cast<GenValue *>(this)) {
+            id_ = ID_PARAM;
+        }
+    virtual std::string generate() override {
+        return genparam(static_cast<GenValue *>(this));
     }
 };
 
@@ -72,8 +90,8 @@ class ParamLogic : public Logic,
         ParamGeneric(static_cast<GenValue *>(this)) {
         id_ = ID_PARAM;
     }
-    virtual std::string generate(EGenerateType v) override {
-        return genparam(v, static_cast<GenValue *>(this));
+    virtual std::string generate() override {
+        return genparam(static_cast<GenValue *>(this));
     }
 };
 

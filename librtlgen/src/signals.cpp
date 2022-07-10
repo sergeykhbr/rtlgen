@@ -15,6 +15,7 @@
 // 
 
 #include "signals.h"
+#include "utils.h"
 
 namespace sysvc {
 
@@ -36,12 +37,12 @@ Signal::Signal(GenObject *parent, const char *name, const char *width,
 }
 
 
-std::string Signal::getType(EGenerateType v) {
+std::string Signal::getType() {
     std::string out = "";
-    if (v == SYSC_ALL || v == SYSC_H || v == SYSC_CPP) {
-        out += "sc_signal<" + Logic::getType(v) + ">";
-    } else if (v == SV_ALL || v == SV_PKG || v == SV_MOD) {
-        out += Logic::getType(v);
+    if (SCV_is_sysc()) {
+        out += "sc_signal<" + Logic::getType() + ">";
+    } else if (SCV_is_sv()) {
+        out += Logic::getType();
     } else {
     }
     return out;

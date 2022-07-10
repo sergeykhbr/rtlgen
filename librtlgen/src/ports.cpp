@@ -15,6 +15,7 @@
 // 
 
 #include "ports.h"
+#include "utils.h"
 
 namespace sysvc {
 
@@ -40,23 +41,23 @@ OutPort::OutPort(GenObject *parent, const char *name, GenValue *width,
 }
 
 
-std::string InPort::getType(EGenerateType v) {
+std::string InPort::getType() {
     std::string out = "";
-    if (v == SYSC_ALL || v == SYSC_H || v == SYSC_CPP) {
-        out += "sc_in<" + Logic::getType(v) + ">";
-    } else if (v == SV_ALL || v == SV_PKG || v == SV_MOD) {
-        out += "input " + Logic::getType(v);
+    if (SCV_is_sysc()) {
+        out += "sc_in<" + Logic::getType() + ">";
+    } else if (SCV_is_sv()) {
+        out += "input " + Logic::getType();
     } else {
     }
     return out;
 }
 
-std::string OutPort::getType(EGenerateType v) {
+std::string OutPort::getType() {
     std::string out = "";
-    if (v == SYSC_ALL || v == SYSC_H || v == SYSC_CPP) {
-        out += "sc_out<" + Logic::getType(v) + ">";
-    } else if (v == SV_ALL || v == SV_PKG || v == SV_MOD) {
-        out += "output " + Logic::getType(v);
+    if (SCV_is_sysc()) {
+        out += "sc_out<" + Logic::getType() + ">";
+    } else if (SCV_is_sv()) {
+        out += "output " + Logic::getType();
     } else {
     }
     return out;

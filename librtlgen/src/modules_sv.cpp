@@ -49,8 +49,8 @@ std::string ModuleObject::generate_sv_mod() {
             ret += "\n";
         }
         for (auto &p : genparam) {
-            ret += "    parameter " + p->getType(SV_ALL);
-            ret += " " + p->getName() + " = " + p->getValue(SV_ALL);
+            ret += "    parameter " + p->getType();
+            ret += " " + p->getName() + " = " + p->getStrValue();
             if (p != genparam.back()) {
                 ret += ",";
             }
@@ -71,7 +71,7 @@ std::string ModuleObject::generate_sv_mod() {
     for (auto &p: entries_) {
         if (p->getId() != ID_INPUT && p->getId() != ID_OUTPUT) {
             if (p->getId() == ID_COMMENT) {
-                text += "    " + p->generate(SV_ALL);
+                text += "    " + p->generate();
             } else {
                 text = "";
             }
@@ -82,7 +82,7 @@ std::string ModuleObject::generate_sv_mod() {
             text = "";
         }
         ln = "";
-        ln += "    " + p->getType(SV_PKG);
+        ln += "    " + p->getType();
         ln += " " + p->getName();
         if (--port_cnt) {
             ln += ",";
@@ -108,7 +108,7 @@ std::string ModuleObject::generate_sv_mod() {
     for (auto &p: entries_) {
         if (p->getId() != ID_SIGNAL) {
             if (p->getId() == ID_COMMENT) {
-                text = p->generate(SV_MOD);
+                text = p->generate();
             } else {
                 text = "";
             }
@@ -118,7 +118,7 @@ std::string ModuleObject::generate_sv_mod() {
             ret += text;
             text = "";
         }
-        ret += static_cast<Signal *>(p)->getType(SV_MOD);
+        ret += static_cast<Signal *>(p)->getType();
         ret += " " + p->getName() + ";\n";
     }
 
@@ -128,7 +128,7 @@ std::string ModuleObject::generate_sv_mod() {
             continue;
         }
         ret += "assign ";
-        ret += p->generate(SV_MOD);
+        ret += p->generate();
         ret += "\n";
     }
 
@@ -139,7 +139,7 @@ std::string ModuleObject::generate_sv_mod() {
             continue;
         }
         ret += "\n";
-        ret += p->generate(SV_MOD);
+        ret += p->generate();
     }
     ret += "endmodule: " + getName() + "\n";
 

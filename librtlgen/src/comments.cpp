@@ -15,6 +15,7 @@
 // 
 
 #include "comments.h"
+#include "utils.h"
 
 namespace sysvc {
 
@@ -28,10 +29,15 @@ TextLine::TextLine(GenObject *parent)
     empty_ = true;
 }
 
-std::string TextLine::generate(EGenerateType v) {
+std::string TextLine::generate() {
     std::string ret = "";
     if (!empty_) {
-        ret += "// " + getName();
+        if (SCV_is_vhdl()) {
+            ret += "-- ";
+        } else {
+            ret += "// ";
+        }
+        ret += getName();
     }
     ret += "\n";
     return ret;
@@ -57,10 +63,15 @@ CommentLicense::CommentLicense()
     str15(this, "") {
 }
 
-std::string CommentLicense::generate(EGenerateType v) {
+std::string CommentLicense::generate() {
     std::string ret = "";
     for (auto &p: entries_) {
-        ret += "// " + p->getName() + "\n";
+        if (SCV_is_vhdl()) {
+            ret += "-- ";
+        } else {
+            ret += "// ";
+        }
+        ret += p->getName() + "\n";
     }
     return ret;
 }

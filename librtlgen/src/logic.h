@@ -44,8 +44,8 @@ class Logic : public GenValue {
           const char *comment="") :
         Logic(width, name, "", parent, comment) {}
 
-    virtual std::string getType(EGenerateType);
-    virtual std::string getValue(EGenerateType v) override;
+    virtual std::string getType();
+    virtual std::string getStrValue() override;
 };
 
 }  // namespace sysvc

@@ -29,8 +29,8 @@ class FunctionObject : public GenObject {
                    const char *name,
                    const char *comment="");
 
-    virtual std::string getType(EGenerateType v) { return std::string(""); }
-    virtual std::string generate(EGenerateType v);
+    virtual std::string getType() { return std::string(""); }
+    virtual std::string generate();
     virtual GenObject *getpReturn() { return 0; }
 
  protected:

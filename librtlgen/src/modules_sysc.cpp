@@ -31,22 +31,36 @@ std::string ModuleObject::generate_sysc_h() {
     std::string out = "";
     std::string ln;
     std::string text = "";
+    std::list<GenObject *> tmpllist;
+    int tcnt = 0;
 
-    out +=
-        "SC_MODULE(" + getType(SYSC_ALL) + ") {\n";
+    getTmplParamList(tmpllist);
+    if (tmpllist.size()) {
+        out += "template<";
+        for (auto &e: tmpllist) {
+            if (tcnt++) {
+                out += ", ";
+            }
+            out += e->getType() + " " + e->getName() + " = " + e->getStrValue();
+        }
+        out += ">\n";
+    }
+
+    tcnt = 0;
+    out += "SC_MODULE(" + getType() + ") {\n";
 
     // Input/Output signal declaration
     for (auto &p: entries_) {
         if (p->getId() != ID_INPUT && p->getId() != ID_OUTPUT) {
             if (p->getId() == ID_COMMENT) {
-                text = "    " + p->generate(SYSC_ALL);
+                text = "    " + p->generate();
             } else {
                 text = "";
             }
             continue;
         }
         ln = "";
-        ln += "    " + p->getType(SYSC_ALL);
+        ln += "    " + p->getType();
         ln += " " + p->getName() + ";";
         if (p->getComment().size()) {
             while (ln.size() < 60) {
@@ -77,13 +91,13 @@ std::string ModuleObject::generate_sysc_h() {
     }
     if (hasProcess) {
         out += "\n";
-        out += "    SC_HAS_PROCESS(" + getType(SYSC_ALL) + ");\n";
+        out += "    SC_HAS_PROCESS(" + getType() + ");\n";
     }
 
 
     out += "\n";
     // Constructor delcartion:
-    std::string space1 = "    " + getType(SYSC_ALL) + "(";
+    std::string space1 = "    " + getType() + "(";
     out += space1 + "sc_module_name name";
     if (isAsyncReset()) {
         ln = "";
@@ -102,51 +116,79 @@ std::string ModuleObject::generate_sysc_h() {
         while (ln.size() < space1.size()) {
             ln += " ";
         }
-        ln += p->getType(SYSC_ALL);
+        ln += p->getType();
         ln += " " + p->getName();
         out += ln;
     }
     out += ");\n";
     // Destructor declaration
-    out += "    virtual ~" + getType(SYSC_ALL) + "();\n";
+    out += "    virtual ~" + getType() + "();\n";
     out += "\n";
 
     // Mandatory VCD generator
     out += "    void generateVCD(sc_trace_file *i_vcd, sc_trace_file *o_vcd);\n";
     out += "\n";
     out += " private:\n";
+
     // Generic parameter local storage:
+    tcnt = 0;
     if (isAsyncReset()) {
-        out += "    " + (new Logic())->getType(SYSC_ALL) + " async_reset_;\n";
+        out += "    " + (new Logic())->getType() + " async_reset_;\n";
+        tcnt++;
     }
     for (auto &p: entries_) {
         if (p->getId() != ID_DEF_PARAM) {
             continue;
         }
-        out += "    " + p->getType(SYSC_ALL) + " " + p->getName() + "_;\n";
+        out += "    " + p->getType() + " " + p->getName() + "_;\n";
+        tcnt++;
     }
-    out += "\n";
+    if (tcnt) {
+        out += "\n";
+        tcnt = 0;
+    }
+
+    // Local paramaters visible inside of module
+    for (auto &p: entries_) {
+        if (p->getId() != ID_PARAM) {
+            continue;
+        }
+        if (!static_cast<GenValue *>(p)->isLocal()) {
+            continue;
+        }
+        out += "    static const " + p->getType() + " " + p->getName();
+        out += " = " + p->getStrValue() + ";\n";
+        tcnt++;
+    }
+    if (tcnt) {
+        out += "\n";
+        tcnt = 0;
+    }
 
     // struct definitions
     for (auto &p: entries_) {
         if (p->getId() != ID_STRUCT_DEF) {
             continue;
         }
-        out += p->generate(SYSC_ALL);
+        out += p->generate();
+        tcnt++;
     }
-    out += "\n";
+    if (tcnt) {
+        out += "\n";
+        tcnt = 0;
+    }
     // Register structure definition
     bool twodim = false;        // if 2-dimensional register array, then do not use reset function
     if (isRegProcess()) {
-        out += "    struct " + getType(SYSC_ALL) + "_registers {\n";
+        out += "    struct " + getType() + "_registers {\n";
         for (auto &p: entries_) {
             if (!p->isReg()) {
                 continue;
             }
-            ln = "        " + p->getType(SYSC_ALL) + " " + p->getName();
+            ln = "        " + p->getType() + " " + p->getName();
             if (p->getDepth()) {
                 twodim = true;
-                ln += "[" + p->getDepth(SYSC_ALL) + "]";
+                ln += "[" + p->getStrDepth() + "]";
             }
             ln += ";";
             if (p->getComment().size()) {
@@ -161,13 +203,13 @@ std::string ModuleObject::generate_sysc_h() {
         out += "\n";
         // Reset function only if no two-dimensial signals
         if (!twodim) {
-            out += "    void " + getType(SYSC_ALL) + "_r_reset(" + getType(SYSC_ALL) + "_registers &iv) {\n";
+            out += "    void " + getType() + "_r_reset(" + getType() + "_registers &iv) {\n";
             for (auto &p: entries_) {
                 if (!p->isReg()) {
                     continue;
                 }
                 out += "        iv." + p->getName() + " = ";
-                out += p->getValue(SYSC_ALL);
+                out += p->getStrValue();
                 out += ";\n";
             }
             out += "    }\n";
@@ -183,7 +225,7 @@ std::string ModuleObject::generate_sysc_h() {
                         && p->getId() != ID_STRUCT_INST
                         && p->getId() != ID_ARRAY_DEF)) {
             if (p->getId() == ID_COMMENT) {
-                text += "    " + p->generate(SYSC_ALL);
+                text += "    " + p->generate();
             } else {
                 text = "";
             }
@@ -200,9 +242,9 @@ std::string ModuleObject::generate_sysc_h() {
             out += text;
             text = "";
         }
-        ln = "    " + p->getType(SYSC_ALL) + " " + p->getName();
+        ln = "    " + p->getType() + " " + p->getName();
         if (p->getDepth()) {
-            ln += "[" + p->getDepth(SYSC_ALL) + "]";
+            ln += "[" + p->getStrDepth() + "]";
         }
         ln += ";";
         if (p->getComment().size()) {
@@ -212,26 +254,90 @@ std::string ModuleObject::generate_sysc_h() {
             ln += "// " + p->getComment();
         }
         out += ln + "\n";
+        tcnt++;
     }
-    out += "\n";
+    if (tcnt) {
+        out += "\n";
+        tcnt = 0;
+    }
 
     // Sub-module list
     for (auto &p: entries_) {
         if (p->getId() == ID_MODULE_INST) {
-            out += "    " + p->getType(SYSC_ALL) + " *" + p->getName() + ";\n";
+            out += "    " + p->getType() + " *" + p->getName() + ";\n";
+            tcnt ++;
         } else if (p->getId() == ID_ARRAY_DEF) {
             ArrayObject *a = static_cast<ArrayObject *>(p);
             if (a->getItem()->getId() == ID_MODULE_INST) {
-                out += "    " + a->getType(SYSC_ALL) + " *" + p->getName();
-                out += "[" + a->getDepth(SYSC_ALL) + "];\n";
+                out += "    " + a->getType() + " *" + p->getName();
+                out += "[" + a->getStrDepth() + "];\n";
             }
+            tcnt ++;
         }
     }
-    out += "\n";
+    if (tcnt) {
+        out += "\n";
+        tcnt = 0;
+    }
+
 
     out += 
         "};\n"
         "\n";
+
+    // Templates only. Generated in h-file
+    if (isRegProcess()) {
+        Operation::set_space(1);
+        out += generate_sysc_proc_registers();
+    }
+    return out;
+}
+
+std::string ModuleObject::generate_sysc_proc_registers() {
+    std::string out = "";
+    std::string xrst = "";
+    std::list<GenObject *> tmpllist;
+    int tcnt = 0;
+
+    getTmplParamList(tmpllist);
+    if (tmpllist.size()) {
+        out += Operation::addspaces();
+        out += "template<";
+        for (auto &e: tmpllist) {
+            if (tcnt++) {
+                out += ", ";
+            }
+            out += e->getType() + " " + e->getName();
+        }
+        out += ">\n";
+    }
+    tcnt = 0;
+
+    out += Operation::addspaces();
+    out += "void " + getType();
+    if (tmpllist.size()) {
+        out += "<";
+        for (auto &e: tmpllist) {
+            if (tcnt++) {
+                out += ", ";
+            }
+            out += e->getName();
+        }
+        out += ">";
+    }
+    out += "::registers() {\n";
+    Operation::set_space(Operation::get_space() + 1);
+    out += Operation::reset("r", 0, this, xrst);
+    out += " else {\n";
+    Operation::set_space(Operation::get_space() + 1);
+    out += Operation::copyreg("r", "v", this);
+    Operation::set_space(Operation::get_space() - 1);
+    out += Operation::addspaces();
+    out += "}\n";
+    Operation::set_space(Operation::get_space() - 1);
+    out += Operation::addspaces();
+    out += "}\n";
+    out += "\n";
     return out;
 }
 
@@ -281,7 +387,7 @@ std::string ModuleObject::generate_sysc_sensitivity(std::string prefix,
     } else if (obj->getId() == ID_ARRAY_DEF) {
         name += "[i]";
         ret += Operation::addspaces();
-        ret += "for (int i = 0; i < " + obj->getDepth(SYSC_ALL) + "; i++) {\n";
+        ret += "for (int i = 0; i < " + obj->getStrDepth() + "; i++) {\n";
         GenObject *item = static_cast<ArrayObject *>(obj)->getItem();
         Operation::set_space(Operation::get_space() + 1);
         if (item->getEntries().size() == 0) {
@@ -353,7 +459,7 @@ std::string ModuleObject::generate_sysc_vcd(std::string name1, std::string name2
         static_cast<ArrayObject *>(obj)->setSelector(new I32D("0", "i"));
         name2 += "%d";
         ret += Operation::addspaces();
-        ret += "for (int i = 0; i < " + obj->getDepth(SYSC_ALL) + "; i++) {\n";
+        ret += "for (int i = 0; i < " + obj->getStrDepth() + "; i++) {\n";
         std::list<GenObject *>::iterator it = obj->getEntries().begin();
         Operation::set_space(Operation::get_space() + 1);
 
@@ -388,7 +494,7 @@ std::string ModuleObject::generate_sysc_cpp() {
     std::string text = "";
 
     // Constructor delcartion:
-    std::string space1 = getType(SYSC_ALL) + "::" + getType(SYSC_ALL) + "(";
+    std::string space1 = getType() + "::" + getType() + "(";
     out += space1 + "sc_module_name name";
     if (isAsyncReset()) {
         ln = "";
@@ -407,7 +513,7 @@ std::string ModuleObject::generate_sysc_cpp() {
         while (ln.size() < space1.size()) {
             ln += " ";
         }
-        ln += p->getType(SYSC_ALL);
+        ln += p->getType();
         ln += " " + p->getName();
         out += ln;
     }
@@ -427,7 +533,7 @@ std::string ModuleObject::generate_sysc_cpp() {
     }
     out += "{\n";
     out += "\n";
-    // Generic parameter local storage:
+    // local copy of the generic parameters:
     if (isAsyncReset()) {
         out += "    async_reset_ = async_reset;\n";
     }
@@ -445,7 +551,7 @@ std::string ModuleObject::generate_sysc_cpp() {
             continue;
         }
         out += "\n";
-        out += p->generate(SYSC_ALL);
+        out += p->generate();
     }
 
     // Process sensitivity list:
@@ -472,14 +578,14 @@ std::string ModuleObject::generate_sysc_cpp() {
 
 
     // Destructor delcartion:
-    out += "\n" + getType(SYSC_ALL) + "::~" + getType(SYSC_ALL) + "() {\n";
+    out += "\n" + getType() + "::~" + getType() + "() {\n";
     for (auto &p: entries_) {
         if (p->getId() == ID_MODULE_INST) {
             out += "    delete " + p->getName() + ";\n";
         } else if (p->getId() == ID_ARRAY_DEF) {
             ArrayObject *a = static_cast<ArrayObject *>(p);
             if (a->getItem()->getId() == ID_MODULE_INST) {
-                out += "    for (int i = 0; i < " + a->getDepth(SYSC_ALL) + "; i++) {\n";
+                out += "    for (int i = 0; i < " + a->getStrDepth() + "; i++) {\n";
                 out += "        delete " + p->getName() + "[i];\n";
                 out += "    }\n";
             }
@@ -489,7 +595,7 @@ std::string ModuleObject::generate_sysc_cpp() {
     out += "\n";
 
     // generateVCD function
-    out += "void " + getType(SYSC_ALL) + "::generateVCD(sc_trace_file *i_vcd, sc_trace_file *o_vcd) {\n";
+    out += "void " + getType() + "::generateVCD(sc_trace_file *i_vcd, sc_trace_file *o_vcd) {\n";
     if (isRegProcess()) {
         out += "    std::string pn(name());\n";
     }
@@ -509,7 +615,7 @@ std::string ModuleObject::generate_sysc_cpp() {
         } else if (p->getId() == ID_ARRAY_DEF) {
             ArrayObject *a = static_cast<ArrayObject *>(p);
             if (a->getItem()->getId() == ID_MODULE_INST) {
-                out += "    for (int i = 0; i < " + a->getDepth(SYSC_ALL) + "; i++) {\n";
+                out += "    for (int i = 0; i < " + a->getStrDepth() + "; i++) {\n";
                 out += "        " + p->getName() + "[i]->generateVCD(i_vcd, o_vcd);\n";
                 out += "    }\n";
             }
@@ -528,17 +634,8 @@ std::string ModuleObject::generate_sysc_cpp() {
     }
 
     if (isRegProcess()) {
-        prefix1 = "r";
-        std::string xrst = "";
-        Operation::set_space(1);
-
-        out += "void " + getType(SYSC_ALL) + "::registers() {\n";
-        out += Operation::reset(prefix1, this, xrst);
-        out += " else {\n";
-        out += "        r = v;\n";
-        out += "    }\n";
-        out += "}\n";
-        out += "\n";
+        Operation::set_space(0);
+        out += generate_sysc_proc_registers();
     }
 
     return out;
@@ -546,18 +643,18 @@ std::string ModuleObject::generate_sysc_cpp() {
 
 std::string ModuleObject::generate_sysc_cpp_proc(GenObject *proc) {
     std::string ret = "";
-    ret += "void " + getType(SYSC_ALL) + "::" + proc->getName() + "() {\n";
+    ret += "void " + getType() + "::" + proc->getName() + "() {\n";
     
     // process variables declaration
     int tcnt = 0;
     for (auto &e: proc->getEntries()) {
         if (e->getId() == ID_VALUE) {
-            ret += "    " + e->getType(SYSC_ALL) + " " + e->getName();
+            ret += "    " + e->getType() + " " + e->getName();
             tcnt++;
         } else if (e->getId() == ID_ARRAY_DEF) {
-            ret += "    " + e->getType(SYSC_ALL) + " " + e->getName();
+            ret += "    " + e->getType() + " " + e->getName();
             ret += "[";
-            ret += e->getDepth(SYSC_ALL);
+            ret += e->getStrDepth();
             ret += "]";
         } else {
             continue;
@@ -569,9 +666,10 @@ std::string ModuleObject::generate_sysc_cpp_proc(GenObject *proc) {
         ret += "\n";
     }
     if (isRegProcess()) {
-        ret += "    v = r;\n";
+        Operation::set_space(1);
+        ret += Operation::copyreg("v", "r", this);
+        ret += "\n";
     }
-    ret += "\n";
 
     // Generate operations:
     Operation::set_space(1);
@@ -579,7 +677,7 @@ std::string ModuleObject::generate_sysc_cpp_proc(GenObject *proc) {
         if (e->getId() != ID_OPERATION) {
             continue;
         }
-        ret += e->generate(SYSC_ALL);
+        ret += e->generate();
     }
 
     ret += "}\n";

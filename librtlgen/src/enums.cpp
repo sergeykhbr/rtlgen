@@ -38,11 +38,11 @@ void EnumObject::add_value(const char *name) {
                           total);
 }
 
-std::string EnumObject::generate(EGenerateType v) {
+std::string EnumObject::generate() {
     std::string ret = "";
-    if (v == SYSC_ALL || v == SYSC_H || v == SYSC_CPP) {
+    if (SCV_is_sysc()) {
         ret += generate_sysc();
-    } else if (v == SV_ALL || v == SV_PKG || v == SV_MOD) {
+    } else if (SCV_is_sv()) {
         ret += generate_sysv();
     } else {
         ret += generate_vhdl();
@@ -55,7 +55,7 @@ std::string EnumObject::generate_sysc() {
     ret += "enum " + getName() + " {\n";
     for (auto &p: entries_) {
         ret += "    " + p->getName() + " = ";
-        ret += static_cast<I32D *>(p)->getValue(SYSC_ALL);
+        ret += static_cast<I32D *>(p)->getStrValue();
         if (&p != &entries_.back()) {
             ret += ",";
         }
@@ -69,7 +69,7 @@ std::string EnumObject::generate_sysv() {
     std::string ret = "";
     for (auto &p: entries_) {
         ret += "localparam int " + p->getName() + " = ";
-        ret += static_cast<I32D *>(p)->getValue(SV_ALL);
+        ret += static_cast<I32D *>(p)->getStrValue();
         ret += ";\n";
     }
     return ret;

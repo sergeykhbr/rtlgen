@@ -30,8 +30,8 @@ class TextLine : public GenObject {
     TextLine(GenObject *parent, const char *comment);
     TextLine(GenObject *parent);
 
-    virtual std::string getType(EGenerateType v) { return std::string(""); }
-    virtual std::string generate(EGenerateType) override;
+    virtual std::string getType() { return std::string(""); }
+    virtual std::string generate() override;
  protected:
     bool empty_;
 };
@@ -40,8 +40,8 @@ class CommentLicense : public GenObject {
  public:
     CommentLicense();
 
-    virtual std::string getType(EGenerateType v) { return std::string(""); }
-    virtual std::string generate(EGenerateType) override;
+    virtual std::string getType() { return std::string(""); }
+    virtual std::string generate() override;
  protected:
     TextLine str01;
     TextLine str02;

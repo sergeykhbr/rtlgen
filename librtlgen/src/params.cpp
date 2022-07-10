@@ -20,29 +20,34 @@
 namespace sysvc {
 
 ParamGeneric::ParamGeneric(GenValue *parent) {
-
     std::string path = parent->getFullPath();
     std::string file = parent->getFile();
-    SCV_set_cfg_parameter(path,
-                          file,
-                          parent->getName().c_str(),
-                          parent->getValue());
+    if (parent->isLocal()) {
+        SCV_set_cfg_local_parameter(path,
+                                    file,
+                                    parent->getName().c_str(),
+                                    parent->getValue());
+    } else {
+        SCV_set_cfg_parameter(path,
+                              file,
+                              parent->getName().c_str(),
+                              parent->getValue());
+    }
 }
 
-std::string ParamGeneric::genparam(EGenerateType v, GenValue *p) {
+std::string ParamGeneric::genparam(GenValue *p) {
     std::string ret = "";
 
-    if (v == SYSC_ALL || v == SYSC_H || v == SYSC_CPP) {
+    if (SCV_is_sysc()) {
         ret += "static const ";
-    } else if (v == SV_ALL || v == SV_PKG || v == SV_MOD) {
+    } else if (SCV_is_sv()) {
         ret += "localparam ";
-        v = SV_ALL;     // no need to print package_name::param_name
     } else {
         ret += "const ";
     }
-    ret += p->getType(v) + " ";
+    ret += p->getType() + " ";
     ret += p->getName() + " = ";
-    ret += p->getValue(v) + ";";
+    ret += p->getStrValue() + ";";
 
     // One line comment
     if (p->getComment().size()) {

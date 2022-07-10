@@ -34,26 +34,26 @@ Logic::Logic(GenValue *width,
               const char *val,
               GenObject *parent,
               const char *comment)
-    : GenValue(width->getValue(SYSC_ALL).c_str(), val, name, parent, comment) {
+    : GenValue(width, val, name, parent, comment) {
 }
 
 
-std::string Logic::getType(EGenerateType v) {
+std::string Logic::getType() {
     std::string ret = "";
 
-    if (v == SYSC_ALL || v == SYSC_H || v == SYSC_CPP) {
+    if (SCV_is_sysc()) {
         if (getWidth() <= 1) {
             ret += "bool";
         } else if (getWidth() > 64) {
-            ret += "sc_biguint<" + getWidth(v) + ">";
+            ret += "sc_biguint<" + getStrWidth() + ">";
         } else {
-            ret += "sc_uint<" + getWidth(v) + ">";
+            ret += "sc_uint<" + getStrWidth() + ">";
         }
-    } else if (v == SV_ALL || v == SV_PKG || v == SV_MOD) {
+    } else if (SCV_is_sv()) {
         ret = std::string("logic");
         if (getWidth() > 1) {
             ret += " [";
-            std::string w = getWidth(v);
+            std::string w = getStrWidth();
             if (isNumber(w)) {
                 char tstr[256];
                 RISCV_sprintf(tstr, sizeof(tstr), "%d", getWidth() - 1);
@@ -67,10 +67,10 @@ std::string Logic::getType(EGenerateType v) {
     return ret;
 }
 
-std::string Logic::getValue(EGenerateType v) {
+std::string Logic::getStrValue() {
     std::string ret = "";
-    std::string t = GenValue::getValue(v);
-    if ((v == SV_ALL || v == SV_PKG || v == SV_MOD) && isNumber(t)) {
+    std::string t = GenValue::getStrValue();
+    if (SCV_is_sv() && isNumber(t)) {
         char fmt[64] = "%d'h%";
         char tstr[256];
         int w = getWidth();

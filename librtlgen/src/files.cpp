@@ -16,6 +16,7 @@
 
 #include "files.h"
 #include "comments.h"
+#include "modules.h"
 #include "utils.h"
 
 namespace sysvc {
@@ -101,7 +102,7 @@ void FileObject::list_of_modules(GenObject *p, std::list<std::string> &fpath) {
         || p->getId() == ID_PARAM) {
         f = p->getParent();
     } else if (p->getId() == ID_MODULE_INST) {
-        f = SCV_get_module(p->getType(SYSC_ALL).c_str());
+        f = SCV_get_module(p->getType().c_str());
     }
 
     // search file owner of the module
@@ -132,24 +133,24 @@ void FileObject::list_of_modules(GenObject *p, std::list<std::string> &fpath) {
     }
 }
 
-std::string FileObject::generate(EGenerateType v) {
-    if (v == SYSC_ALL) {
+std::string FileObject::generate() {
+    if (SCV_is_sysc()) {
         generate_sysc();
-    } else if (v == SV_ALL) {
+    } else if (SCV_is_sv()) {
         generate_sysv();
     } else {
         generate_vhdl();
     }
-    return GenObject::generate(v);
+    return GenObject::generate();
 }
 
 void FileObject::generate_sysc() {
-    bool is_module = false;
+    bool module_cpp = false;
     std::string out = "";
     std::string filename = getFullPath();
     filename = filename + ".h";
 
-    out += CommentLicense().generate(SYSC_ALL);
+    out += CommentLicense().generate();
     out += 
         "#pragma once\n"
         "\n"
@@ -171,10 +172,17 @@ void FileObject::generate_sysc() {
 
     // header
     for (auto &p: entries_) {
-        if (p->getId() == ID_MODULE) {
-            is_module = true;
+        if (p->getId() != ID_MODULE) {
+            out += p->generate();
+            continue;
         }
-        out += p->generate(SYSC_H);
+        // Template modules do not require cpp-files
+        std::list<GenObject *> genlist;
+        static_cast<ModuleObject *>(p)->getTmplParamList(genlist);
+        if (genlist.size() == 0) {
+            module_cpp = true;
+        }
+        out += static_cast<ModuleObject *>(p)->generate_sysc_h();
     }
     out += 
         "}  // namespace debugger\n"
@@ -183,12 +191,12 @@ void FileObject::generate_sysc() {
     SCV_write_file(filename.c_str(), out.c_str(), out.size());
 
     // source file if any module defined in this file
-    if (is_module) {
+    if (module_cpp) {
         out = "";
         filename = getFullPath();
         filename = filename + ".cpp";
 
-        out += CommentLicense().generate(SYSC_ALL);
+        out += CommentLicense().generate();
         out += 
             "\n"
             "#include \"" + getName() + ".h\"\n"
@@ -201,9 +209,10 @@ void FileObject::generate_sysc() {
         // module definition
         for (auto &p: entries_) {
             if (p->getId() == ID_MODULE) {
-                is_module = true;
+                out += static_cast<ModuleObject *>(p)->generate_sysc_cpp();
+            } else {
+                out += p->generate();
             }
-            out += p->generate(SYSC_CPP);
         }
         out += 
             "}  // namespace debugger\n"
@@ -219,7 +228,7 @@ void FileObject::generate_sysv() {
     std::string filename = getFullPath();
     filename = filename + "_pkg.sv";
 
-    out += CommentLicense().generate(SV_ALL);
+    out += CommentLicense().generate();
     out += "package " + getName() + "_pkg;\n";
     out += "\n";
 
@@ -239,8 +248,10 @@ void FileObject::generate_sysv() {
     for (auto &p: entries_) {
         if (p->getId() == ID_MODULE) {
             is_module = true;
+            out += static_cast<ModuleObject *>(p)->generate_sv_pkg();
+        } else {
+            out += p->generate();
         }
-        out += p->generate(SV_PKG);
     }
 
     out += "endpackage: " + getName() + "_pkg\n";
@@ -254,7 +265,7 @@ void FileObject::generate_sysv() {
         filename = getFullPath();
         filename = filename + ".sv";
 
-        out += CommentLicense().generate(SV_ALL);
+        out += CommentLicense().generate();
         out += 
             "\n"
             "`timescale 1ns/10ps\n"
@@ -264,8 +275,10 @@ void FileObject::generate_sysv() {
         for (auto &p: entries_) {
             if (p->getId() == ID_MODULE) {
                 is_module = true;
+                out += static_cast<ModuleObject *>(p)->generate_sv_mod();
+            } else {
+                out += p->generate();
             }
-            out += p->generate(SV_MOD);
         }
         SCV_write_file(filename.c_str(), out.c_str(), out.size());
     }

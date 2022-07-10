@@ -22,7 +22,6 @@
 
 namespace sysvc {
 
-
 class DefParamBOOL : public BOOL {
  public:
     DefParamBOOL(GenObject *parent, const char *name, const char *val,

@@ -33,9 +33,9 @@ class StructObject : public GenObject {
                  const char *comment="");
 
     /** GenObject generic methods */
-    virtual std::string getType(EGenerateType) { return type_; }
+    virtual std::string getType() { return type_; }
     std::string getName() override;
-    virtual std::string generate(EGenerateType v);
+    virtual std::string generate();
 
  protected:
     std::string generate_sysc();

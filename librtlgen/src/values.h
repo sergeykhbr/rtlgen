@@ -27,11 +27,14 @@ class GenValue : public GenObject {
  public:
     GenValue(const char *width, const char *val, const char *name,
              GenObject *parent, const char *comment="");
+    GenValue(GenValue *width, const char *val, const char *name,
+             GenObject *parent, const char *comment="");
 
     virtual uint64_t getValue() override { return val_; }
-    virtual std::string getValue(EGenerateType) override;
+    virtual std::string getStrValue() override;
     virtual int getWidth() override { return width_; }
-    virtual std::string getWidth(EGenerateType) override ;
+    virtual std::string getStrWidth() override ;
+    virtual bool isLocal();
 
  protected:
     virtual size_t parse(const char *ops, size_t pos,
@@ -62,7 +65,7 @@ class BOOL : public GenValue {
         GenObject *parent=0, const char *comment=""):
         GenValue("1", val, name, parent, comment) {}
 
-    virtual std::string getType(EGenerateType);
+    virtual std::string getType();
 };
 
 class I32D : public GenValue {
@@ -71,7 +74,7 @@ class I32D : public GenValue {
         GenObject *parent=0, const char *comment=""):
         GenValue("32", val, name, parent, comment) {}
 
-    virtual std::string getType(EGenerateType);
+    virtual std::string getType();
 };
 
 class UI32D : public GenValue {
@@ -80,7 +83,7 @@ class UI32D : public GenValue {
         GenObject *parent=0, const char *comment=""):
         GenValue("32", val, name, parent, comment) {}
 
-    virtual std::string getType(EGenerateType);
+    virtual std::string getType();
 };
 
 class UI64H : public GenValue {
@@ -89,7 +92,7 @@ class UI64H : public GenValue {
         GenObject *parent=0, const char *comment=""):
         GenValue("64", val, name, parent, comment) {}
 
-    virtual std::string getType(EGenerateType);
+    virtual std::string getType();
 };
 
 }  // namespace sysvc

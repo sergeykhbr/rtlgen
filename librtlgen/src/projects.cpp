@@ -27,16 +27,16 @@ ProjectObject::ProjectObject(const char *name,
 }
 
 
-std::string ProjectObject::generate(EGenerateType v) {
+std::string ProjectObject::generate() {
     if (!SCV_is_dir_exists(rootpath_.c_str())) {
         SCV_create_dir(rootpath_.c_str());
     }
 
     for (auto &p: entries_) {
-        p->generate(v);
+        p->generate();
     }
 
-    return GenObject::generate(v);
+    return GenObject::generate();
 }
 
 }  // namespace sysvc

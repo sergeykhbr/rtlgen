@@ -28,8 +28,8 @@ class ProjectObject : public GenObject {
                   const char *comment);
 
     virtual std::string getFullPath() override { return rootpath_; }
-    virtual std::string getType(EGenerateType v) { return std::string(""); }
-    virtual std::string generate(EGenerateType) override;
+    virtual std::string getType() { return std::string(""); }
+    virtual std::string generate() override;
 
  protected:
     std::string rootpath_;
