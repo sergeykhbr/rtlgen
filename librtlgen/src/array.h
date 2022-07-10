@@ -57,6 +57,7 @@ class WireArray : public ArrayObject {
             arr_[i] = new T(this, tstr, width);
         }
     }
+    // No need to redfine operator '->' because we use this object directly
     virtual GenObject *getItem() { return arr_[0]; }
 
     T **arr_;
@@ -73,6 +74,7 @@ class TStructArray : public ArrayObject {
             arr_[i] = new T(this, i);
         }
     }
+    T *operator->() const { return arr_[0]; }
     virtual GenObject *getItem() { return arr_[0]; }
 
     T **arr_;
@@ -90,7 +92,7 @@ class ModuleArray : public ArrayObject {
             arr_[i] = new T(this, tstr);
         }
     }
-
+    T *operator->() const { return arr_[0]; }
     virtual GenObject *getItem() { return arr_[0]; }
         
     T **arr_;
