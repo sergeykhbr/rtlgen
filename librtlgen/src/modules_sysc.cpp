@@ -48,6 +48,7 @@ std::string ModuleObject::generate_sysc_h() {
 
     tcnt = 0;
     out += "SC_MODULE(" + getType() + ") {\n";
+    out += " public:\n";
 
     // Input/Output signal declaration
     for (auto &p: entries_) {
@@ -468,7 +469,7 @@ std::string ModuleObject::generate_sysc_vcd_entries(std::string name1, std::stri
     return ret;
 }
 
-std::string ModuleObject::generate_sysc_template_f_name() {
+std::string ModuleObject::generate_sysc_template_f_name(bool usevoid) {
     std::string ret = "";
     int tcnt = 0;
     std::list<GenObject *> tmpllist;
@@ -488,7 +489,11 @@ std::string ModuleObject::generate_sysc_template_f_name() {
     tcnt = 0;
 
     ret += Operation::addspaces();
-    ret += "void " + getType();
+    if (usevoid) {
+        // desctructor without void
+        ret += "void ";
+    }
+    ret += getType();
     if (tmpllist.size()) {
         ret += "<";
         for (auto &e: tmpllist) {
@@ -524,7 +529,7 @@ std::string ModuleObject::generate_sysc_constructor() {
     tcnt = 0;
 
     ret += Operation::addspaces();
-    std::string space1 = "void " + getType();
+    std::string space1 = getType();
     if (tmpllist.size()) {
         space1 += "<";
         for (auto &e: tmpllist) {
@@ -625,8 +630,8 @@ std::string ModuleObject::generate_sysc_constructor() {
 std::string ModuleObject::generate_sysc_destructor() {
     std::string ret = "";
 
-    ret += generate_sysc_template_f_name();
-    ret += getType() + "::~" + getType() + "() {\n";
+    ret += generate_sysc_template_f_name(false);
+    ret += "::~" + getType() + "() {\n";
     Operation::set_space(Operation::get_space() + 1);
     for (auto &p: entries_) {
         if (p->getId() == ID_MODULE_INST) {

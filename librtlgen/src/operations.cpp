@@ -124,7 +124,9 @@ std::string Operation::obj2varname(GenObject *obj, const char *prefix, bool name
     ret = fullname(prefix, ret, obj);
 
     if (!nameonly) {
-        if (obj->getId() == ID_INPUT) {
+        if (obj->getId() == ID_INPUT
+            //|| (prefix[0] == 'r' && obj->getId() == ID_SIGNAL)    // failed on sub-module connection
+            ) {
             if (SCV_is_sysc()) {
                 ret += ".read()";
             }
