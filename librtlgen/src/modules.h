@@ -40,14 +40,19 @@ class ModuleObject : public GenObject {
     virtual bool isAsyncReset();
     virtual bool isRegProcess();
     virtual bool is2DimReg();
+    virtual bool isSubModules();
     virtual void getTmplParamList(std::list<GenObject *> &genlist);
     virtual void getParamList(std::list<GenObject *> &genlist);
     virtual void getIoList(std::list<GenObject *> &genlist);
  protected:
     std::string generate_sysc_proc_registers();
+    std::string generate_sysc_constructor();
+    std::string generate_sysc_destructor();
+    std::string generate_sysc_vcd();
+    std::string generate_sysc_proc(GenObject *proc);
+    std::string generate_sysc_template_f_name();
     std::string generate_sysc_sensitivity(std::string prefix, std::string name, GenObject *obj);
-    std::string generate_sysc_vcd(std::string name1, std::string name2, GenObject *obj);
-    std::string generate_sysc_cpp_proc(GenObject *proc);
+    std::string generate_sysc_vcd_entries(std::string name1, std::string name2, GenObject *obj);
 
  protected:
     std::string type_;

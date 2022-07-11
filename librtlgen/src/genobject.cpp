@@ -23,6 +23,8 @@ GenObject::GenObject(GenObject *parent, EIdType id,
     id_ = id;
     parent_ = parent;
     reg_ = false;
+    reset_disabled_ = false;
+    vcd_enabled_ = true;
     name_ = std::string(name);
     comment_ = std::string(comment);
     if (parent_) {

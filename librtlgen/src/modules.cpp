@@ -34,6 +34,16 @@ ModuleObject::ModuleObject(GenObject *parent, const char *type, const char *name
 
 
 bool ModuleObject::isAsyncReset() {
+    bool nrst_exist = false;
+    for (auto &e: entries_) {
+        if (e->getName() == "i_nrst") {
+            nrst_exist = true;
+            break;
+        }
+    }
+    if (!nrst_exist) {
+        return false;
+    }
     for (auto &e: entries_) {
         if (e->getId() == ID_MODULE_INST) {
             if (static_cast<ModuleObject *>(e)->isAsyncReset()) {
@@ -62,6 +72,15 @@ bool ModuleObject::is2DimReg() {
         }
         if (p->getDepth()) {
             // two-dimensional array is presence in a register list
+            return true;
+        }
+    }
+    return false;
+}
+
+bool ModuleObject::isSubModules() {
+    for (auto &p: entries_) {
+        if (p->getId() == ID_MODULE_INST) {
             return true;
         }
     }

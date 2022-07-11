@@ -27,6 +27,24 @@ ram::ram(GenObject *parent, const char *name) :
     o_rdata(this, "o_rdata", &dbits),
     DEPTH(this, "DEPTH", "POW2(1,abits)"),
     adr(this, "adr", "abits", "0"),
-    mem(this, "mem", "dbits", "DEPTH", true)
+    mem(this, "mem", "dbits", "DEPTH", true),
+    // process
+    comb(this)
 {
+    mem.disableReset();
+    disableVcd();
 }
+
+void ram::proc_comb() {
+    river_cfg *cfg = glob_river_cfg_;
+
+    SETVAL(adr, i_adr);
+
+    IF (NZ(i_wena));
+        SETARRITEM(mem, TO_INT(i_adr), mem, i_wdata);
+    ENDIF();
+
+TEXT();
+    SETVAL(o_rdata, ARRITEM(mem, TO_INT(adr), mem));
+}
+

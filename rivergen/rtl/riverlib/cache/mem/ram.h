@@ -25,6 +25,18 @@ class ram : public ModuleObject {
  public:
     ram(GenObject *parent, const char *name);
 
+    class CombProcess : public ProcObject {
+     public:
+        CombProcess(GenObject *parent) :
+            ProcObject(parent, "comb") {
+            Operation::start(this);
+            ram *p = static_cast<ram *>(getParent());
+            p->proc_comb();
+        }
+    };
+
+    void proc_comb();
+
  public:
     TmplParamI32D abits;
     TmplParamI32D dbits;
@@ -39,6 +51,9 @@ class ram : public ModuleObject {
 
     RegSignal adr;
     WireArray<Signal> mem;
+
+    // process should be intialized last to make all signals available
+    CombProcess comb;
 };
 
 class ram_file : public FileObject {

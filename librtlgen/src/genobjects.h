@@ -80,8 +80,11 @@ class GenObject {
     virtual std::string getStrWidth() { return std::string(""); }
     virtual int getDepth() { return 0; }    // two-dimensional object
     virtual std::string getStrDepth() { return std::string(""); }
-    virtual void setReg() { reg_ = true; };
     virtual bool isReg() { return reg_; }
+    virtual void disableReset() { reset_disabled_ = true; }
+    virtual bool isResetDisabled() { return reset_disabled_; }
+    virtual void disableVcd() { vcd_enabled_ = false; }
+    virtual bool isVcd() { return vcd_enabled_; }
 
     virtual std::string generate() { return std::string(""); }
 
@@ -93,6 +96,8 @@ class GenObject {
     EIdType id_;
     GenObject *parent_;
     bool reg_;              // Mark object (signal, value, port, structure) as a Flip-flop
+    bool reset_disabled_;   // register without reset (memory)
+    bool vcd_enabled_;      // show instance in VCD trace file
     std::string name_;
     std::string comment_;
     std::list<GenObject *> entries_;

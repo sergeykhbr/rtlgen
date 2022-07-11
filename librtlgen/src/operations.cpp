@@ -143,9 +143,10 @@ std::string Operation::copyreg(const char *dst, const char *src, ModuleObject *m
         if (src == 0) {
             // reset using function
             ret += Operation::addspaces();
-            ret += m->getName() + "_r_reset(" + std::string(dst) + ")";
+            ret += m->getType() + "_r_reset(" + std::string(dst) + ")";
         } else {
             // copy data from src into dst
+            ret += Operation::addspaces();
             ret += std::string(dst) + " = " + std::string(src);
         }
         ret += ";\n";
@@ -153,6 +154,9 @@ std::string Operation::copyreg(const char *dst, const char *src, ModuleObject *m
         // reset each register separatly
         for (auto &p: m->getEntries()) {
             if (!p->isReg()) {
+                continue;
+            }
+            if (src == 0 && p->isResetDisabled()) {
                 continue;
             }
             if (p->getId() == ID_ARRAY_DEF) {
