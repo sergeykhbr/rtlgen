@@ -41,7 +41,7 @@ class Operation : public GenObject {
     static void set_space(int n);
     static int get_space();
     static std::string addspaces();
-    static std::string obj2varname(GenObject *obj, const char *prefix="r", bool nameonly=false);
+    static std::string obj2varname(GenObject *obj, const char *prefix="r", bool read=false);
     static std::string fullname(const char *prefix, std::string name, GenObject *obj);
     static std::string addtext(GenObject *obj, size_t curpos);
     static std::string copyreg(const char *dst, const char *src, ModuleObject *m);
@@ -119,6 +119,7 @@ Operation &MUL2(GenObject &a, GenObject &b, const char *comment="");
 Operation &CC2(GenObject &a, GenObject &b, const char *comment="");     // concatation
 
 Operation &ARRITEM(GenObject &arr, GenObject &idx, GenObject &item, const char *comment="");
+Operation &ARRITEM_B(GenObject &arr, GenObject &idx, GenObject &item, const char *comment="");  // .read() for signals and ports in bits operations
 Operation &SETARRITEM(GenObject &arr, GenObject &idx, GenObject &item, GenObject &val, const char *comment="");
 
 void IF(GenObject &a, const char *comment="");

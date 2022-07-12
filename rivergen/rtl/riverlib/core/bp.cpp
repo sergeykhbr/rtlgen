@@ -86,8 +86,8 @@ void BranchPredictor::CombProcess::proc_comb() {
 
     TEXT("Transform address into 2-dimesional array for convinience");
     GenObject *i = &FOR ("i", CONST("0"), cfg->CFG_BP_DEPTH, "++");
-        SETARRITEM(vb_addr, *i, vb_addr, BIG_TO_U64(BITS(p->wb_npc, DEC(MUL2(INC(*i), cfg->CFG_CPU_ADDR_BITS)),
-                                                                   MUL2(*i, cfg->CFG_CPU_ADDR_BITS))));
+        SETARRITEM(vb_addr, *i, vb_addr, BITS(p->wb_npc, DEC(MUL2(INC(*i), cfg->CFG_CPU_ADDR_BITS)),
+                                                         MUL2(*i, cfg->CFG_CPU_ADDR_BITS)));
     ENDFOR();
 
 TEXT();
@@ -129,11 +129,11 @@ TEXT();
     ENDFOR();
     SETVAL(vb_ignore_pd, ALLZEROS());
     i = &FOR ("i", CONST("0"), CONST("4"), "++");
-        IF (EQ(BITS(ARRITEM(p->wb_pd, CONST("0"), p->wb_pd->npc), DEC(cfg->CFG_CPU_ADDR_BITS), CONST("2")),
+        IF (EQ(BITS(ARRITEM_B(p->wb_pd, CONST("0"), p->wb_pd->npc), DEC(cfg->CFG_CPU_ADDR_BITS), CONST("2")),
                ARRITEM(vb_piped, *i, vb_piped)));
             SETBIT(vb_ignore_pd, 0, CONST("1", 1));
         ENDIF();
-        IF (EQ(BITS(ARRITEM(p->wb_pd, CONST("1"), p->wb_pd->npc), DEC(cfg->CFG_CPU_ADDR_BITS), CONST("2")),
+        IF (EQ(BITS(ARRITEM_B(p->wb_pd, CONST("1"), p->wb_pd->npc), DEC(cfg->CFG_CPU_ADDR_BITS), CONST("2")),
                ARRITEM(vb_piped, *i, vb_piped)));
             SETBIT(vb_ignore_pd, 1, CONST("1", 1));
         ENDIF();

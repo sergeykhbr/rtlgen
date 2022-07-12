@@ -116,17 +116,16 @@ std::string Operation::fullname(const char *prefix, std::string name, GenObject 
     return curname;
 }
 
-std::string Operation::obj2varname(GenObject *obj, const char *prefix, bool nameonly) {
+std::string Operation::obj2varname(GenObject *obj, const char *prefix, bool read) {
     std::string ret = "";
     if (!obj) {
         return ret;
     }
     ret = fullname(prefix, ret, obj);
 
-    if (!nameonly) {
+    if (read) {
         if (obj->getId() == ID_INPUT
-            //|| (prefix[0] == 'r' && obj->getId() == ID_SIGNAL)    // failed on sub-module connection
-            ) {
+            || (prefix[0] == 'r' && obj->getId() == ID_SIGNAL)) {
             if (SCV_is_sysc()) {
                 ret += ".read()";
             }
@@ -299,10 +298,10 @@ Operation &ALLONES(const char *comment) {
 // BIT
 std::string BIT_gen(GenObject **args) {
     std::string ret = "";
-    ret += Operation::obj2varname(args[1]);
+    ret += Operation::obj2varname(args[1], "r", true);
     if (SCV_is_sysc()) {
          ret += "[";
-         ret += Operation::obj2varname(args[2]);
+         ret += Operation::obj2varname(args[2], "r", true);
          ret += "]";
     } else if (SCV_is_sv()) {
          ret += "[";
@@ -339,12 +338,12 @@ Operation &BIT(GenObject &a, int b, const char *comment) {
 // BITS
 std::string BITS_gen(GenObject **args) {
     std::string ret = "";
-    ret += Operation::obj2varname(args[1]);
+    ret += Operation::obj2varname(args[1], "r", true);
     if (SCV_is_sysc()) {
          ret += "(";
-         ret += Operation::obj2varname(args[2]);
+         ret += Operation::obj2varname(args[2], "r", true);
          ret += ", ";
-         ret += Operation::obj2varname(args[3]);
+         ret += Operation::obj2varname(args[3], "r", true);
          ret += ")";
     } else if (SCV_is_sv()) {
          ret += "[";
@@ -588,7 +587,7 @@ Operation &BIG_TO_U64(GenObject &a, const char *comment) {
 
 // TO_INT
 std::string TO_INT_gen(GenObject **args) {
-    std::string A = Operation::obj2varname(args[1]);
+    std::string A = Operation::obj2varname(args[1], "r", true);
     A = A + ".to_int()";
     return A;
 }
@@ -603,8 +602,8 @@ Operation &TO_INT(GenObject &a, const char *comment) {
 
 // EQ
 std::string EQ_gen(GenObject **args) {
-    std::string A = Operation::obj2varname(args[1]);
-    std::string B = Operation::obj2varname(args[2]);
+    std::string A = Operation::obj2varname(args[1], "r", true);
+    std::string B = Operation::obj2varname(args[2], "r", true);
     A = "(" + A + " == " + B + ")";
     return A;
 }
@@ -621,7 +620,7 @@ Operation &EQ(GenObject &a, GenObject &b, const char *comment) {
 
 // EZ
 std::string EZ_gen(GenObject **args) {
-    std::string A = Operation::obj2varname(args[1]);
+    std::string A = Operation::obj2varname(args[1], "r", true);
     if (args[1]->getWidth() > 1) {
         if (SCV_is_sysc()) {
             A += ".or_reduce()";
@@ -643,7 +642,7 @@ Operation &EZ(GenObject &a, const char *comment) {
 
 // NZ
 std::string NZ_gen(GenObject **args) {
-    std::string A = Operation::obj2varname(args[1]);
+    std::string A = Operation::obj2varname(args[1], "r", true);
     if (args[1]->getWidth() > 1) {
         if (SCV_is_sysc()) {
             A += ".or_reduce()";
@@ -666,7 +665,7 @@ Operation &NZ(GenObject &a, const char *comment) {
 // INV
 std::string INV_gen(GenObject **args) {
     std::string A = Operation::obj2varname(args[1]);
-    A = "(~" + A + ")";
+    A = "(!" + A + ")";
     return A;
 }
 
@@ -737,8 +736,8 @@ Operation &OR4(GenObject &a, GenObject &b, GenObject &c, GenObject &d, const cha
 
 // ADD2
 std::string ADD2_gen(GenObject **args) {
-    std::string A = Operation::obj2varname(args[1]);
-    std::string B = Operation::obj2varname(args[2]);
+    std::string A = Operation::obj2varname(args[1], "r", true);
+    std::string B = Operation::obj2varname(args[2], "r", true);
     A = "(" + A + " + " + B + ")";
     return A;
 }
@@ -900,18 +899,35 @@ Operation &CC2(GenObject &a, GenObject &b, const char *comment) {
 // ARRITEM
 std::string ARRITEM_gen(GenObject **args) {
     ArrayObject *arr = static_cast<ArrayObject *>(args[1]);
+    std::string ret = "";
     arr->setSelector(args[2]);
-    std::string ret = Operation::obj2varname(args[3]);
+    if (args[4]) {
+        ret = Operation::obj2varname(args[3], "r", true);
+    } else {
+        ret = Operation::obj2varname(args[3]);
+    }
     return ret;
 }
 
 Operation &ARRITEM(GenObject &arr, GenObject &idx, GenObject &item, const char *comment) {
     Operation *p = new Operation(0, comment);
     p->igen_ = ARRITEM_gen;
-    p->add_arg(p);
-    p->add_arg(&arr);
-    p->add_arg(&idx);
-    p->add_arg(&item);
+    p->add_arg(p);      // 0
+    p->add_arg(&arr);   // 1
+    p->add_arg(&idx);   // 2
+    p->add_arg(&item);  // 3
+    p->add_arg(0);      // [4] do not use .read()
+    return *p;
+}
+
+Operation &ARRITEM_B(GenObject &arr, GenObject &idx, GenObject &item, const char *comment) {
+    Operation *p = new Operation(0, comment);
+    p->igen_ = ARRITEM_gen;
+    p->add_arg(p);      // 0
+    p->add_arg(&arr);   // 1
+    p->add_arg(&idx);   // 2
+    p->add_arg(&item);  // 3
+    p->add_arg(p);      // [4] use .read()
     return *p;
 }
 
@@ -1160,7 +1176,7 @@ std::string CONNECT_gen(GenObject **args) {
     ret += "->";
     ret += args[3]->getName();
     ret += "(";
-    ret += Operation::obj2varname(args[4], "", true);
+    ret += Operation::obj2varname(args[4]);
     ret += ")";
     return ret;
 }

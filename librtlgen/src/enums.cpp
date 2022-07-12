@@ -24,11 +24,11 @@ EnumObject::EnumObject(GenObject *parent,
     : GenObject(parent, ID_ENUM, name) {
 }
 
-void EnumObject::add_value(const char *name) {
+void EnumObject::add_value(const char *name, const char *comment) {
     char tstr[64];
     int total = static_cast<int>(entries_.size());
     RISCV_sprintf(tstr, sizeof(tstr), "%d", total);
-    new I32D(tstr, name, this);
+    new I32D(tstr, name, this, comment);
 
     std::string path = getFullPath();
     std::string file = getFile();

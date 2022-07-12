@@ -103,6 +103,13 @@ void FileObject::list_of_modules(GenObject *p, std::list<std::string> &fpath) {
         f = p->getParent();
     } else if (p->getId() == ID_MODULE_INST) {
         f = SCV_get_module(p->getType().c_str());
+    } else if (p->getId() == ID_ARRAY_DEF) {
+        for (auto &e: p->getEntries()) {
+            if (e->getId() == ID_MODULE_INST) {
+                f = SCV_get_module(e->getType().c_str());
+                break;
+            }
+        }
     }
 
     // search file owner of the module

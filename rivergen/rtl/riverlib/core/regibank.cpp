@@ -58,14 +58,14 @@ void RegIntBank::proc_comb() {
     SETVAL(comb.int_radr2, TO_INT(i_radr2));
 
 TEXT();
-    SETVAL(comb.next_tag, INC(ARRITEM(reg, comb.int_waddr, reg->tag)));
+    SETVAL(comb.next_tag, INC(ARRITEM_B(reg, comb.int_waddr, reg->tag)));
     IF (EQ(comb.next_tag, i_wtag));
         SETONE(comb.v_inordered);
     ENDIF();
 
 TEXT();
     TEXT("Debug port has lower priority to avoid system hangup due the tags error");
-    IF (AND3(NZ(i_wena), NZ(i_waddr), OR2(EZ(i_inorder), comb.v_inordered)));
+    IF (AND3(NZ(i_wena), NZ(i_waddr), OR2(INV(i_inorder), comb.v_inordered)));
         SETARRITEM(reg, comb.int_waddr, reg->val, i_wdata);
         SETARRITEM(reg, comb.int_waddr, reg->tag, i_wtag);
     ELSIF (AND2(i_dport_ena, i_dport_write));
@@ -84,8 +84,8 @@ TEXT();
     SETVAL(o_rdata2, ARRITEM(reg, comb.int_radr2, reg->val));
     SETVAL(o_rtag2, ARRITEM(reg, comb.int_radr2, reg->tag));
     SETVAL(o_dport_rdata, ARRITEM(reg, comb.int_daddr, reg->val));
-    SETVAL(o_ra, ARRITEM(reg, cfg->Reg_ra, reg->val));
-    SETVAL(o_sp, ARRITEM(reg, cfg->Reg_sp, reg->val));
+    SETVAL(o_ra, ARRITEM(reg, cfg->REG_RA, reg->val));
+    SETVAL(o_sp, ARRITEM(reg, cfg->REG_SP, reg->val));
 
 }
 
