@@ -75,6 +75,21 @@ class ParamI32D : public I32D,
     }
 };
 
+
+class ParamUI32D : public UI32D,
+                   public ParamGeneric {
+ public:
+    ParamUI32D(GenObject *parent, const char *name, const char *val,
+        const char *comment="")
+        : UI32D(val, name, parent, comment),
+        ParamGeneric(static_cast<GenValue *>(this)) {
+            id_ = ID_PARAM;
+        }
+    virtual std::string generate() override {
+        return genparam(static_cast<GenValue *>(this));
+    }
+};
+
 class ParamLogic : public Logic,
                    public ParamGeneric {
  public:

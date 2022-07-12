@@ -1038,6 +1038,93 @@ void ENDIF(const char *comment) {
 }
 
 
+// SWITCH
+std::string SWITCH_gen(GenObject **args) {
+    std::string ret = Operation::addspaces();
+    std::string A = Operation::obj2varname(args[1], "r", true);
+    spaces_++;
+
+    if (A.c_str()[0] == '(') {
+    } else {
+        A = "(" + A + ")";
+    }
+    ret += "switch " + A + " {\n";
+    return ret;
+}
+
+void SWITCH(GenObject &a, const char *comment) {
+    Operation *p = new Operation(comment);
+    Operation::push_obj(p);
+    p->igen_ = SWITCH_gen;
+    p->add_arg(p);
+    p->add_arg(&a);
+}
+
+// CASE
+std::string CASE_gen(GenObject **args) {
+    std::string ret = "";
+    std::string A = Operation::obj2varname(args[1]);
+    spaces_--;
+    ret += Operation::addspaces() + "case " + A + " :\n";
+    spaces_++;
+    return ret;
+}
+
+void CASE(GenObject &a, const char *comment) {
+    Operation *p = new Operation(comment);
+    Operation::pop_obj();
+    Operation::push_obj(p);
+    p->igen_ = CASE_gen;
+    p->add_arg(p);
+    p->add_arg(&a);
+}
+
+// CASEDEF
+std::string CASEDEF_gen(GenObject **args) {
+    std::string ret = "";
+    spaces_--;
+    ret += Operation::addspaces() + "default:";
+
+    ret += "\n";
+    spaces_++;
+    return ret;
+}
+
+void CASEDEF(const char *comment) {
+    Operation *p = new Operation(comment);
+    Operation::pop_obj();
+    Operation::push_obj(p);
+    p->igen_ = CASEDEF_gen;
+    p->add_arg(p);
+}
+
+// ENDCASE
+std::string ENDCASE_gen(GenObject **args) {
+    std::string ret = Operation::addspaces() + "break;\n";
+    return ret;
+}
+
+void ENDCASE(const char *comment) {
+    Operation *p = new Operation(comment);
+    p->igen_ = ENDCASE_gen;
+    p->add_arg(p);
+}
+
+// ENDSWITCH
+std::string ENDSWITCH_gen(GenObject **args) {
+    spaces_--;
+    std::string ret = Operation::addspaces() + "}\n";
+    return ret;
+}
+
+void ENDSWITCH(const char *comment) {
+    Operation::pop_obj();
+    Operation *p = new Operation(comment);
+    p->igen_ = ENDSWITCH_gen;
+    p->add_arg(p);
+}
+
+
 // FOR
 std::string FOR_gen(GenObject **args) {
     std::string ret = Operation::addspaces();

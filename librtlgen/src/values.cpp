@@ -24,17 +24,16 @@ namespace sysvc {
 GenValue::GenValue(const char *width, const char *val, const char *name,
                     GenObject *parent, const char *comment)
     : GenObject(parent, (name[0] ? ID_VALUE : ID_CONST), name, comment) {
-    parse(val, 0, val_, sysc_, sv_, sv_pkg_, vhdl_);
     uint64_t twidth;
     parse(width, 0, twidth, width_sysc_, width_sv_, width_sv_pkg_, width_vhdl_);
     width_ = static_cast<int>(twidth);
+    // width first, then value
+    parse(val, 0, val_, sysc_, sv_, sv_pkg_, vhdl_);
 }
 
 GenValue::GenValue(GenValue *width, const char *val, const char *name,
                    GenObject *parent, const char *comment)
     : GenObject(parent, (name[0] ? ID_VALUE : ID_CONST), name, comment) {
-    parse(val, 0, val_, sysc_, sv_, sv_pkg_, vhdl_);
-
     width_ = static_cast<int>(width->getValue());
     if (width->getId() == ID_CONST) {
         width_sysc_ = width->getStrValue();
@@ -47,6 +46,7 @@ GenValue::GenValue(GenValue *width, const char *val, const char *name,
         width_sv_pkg_ = width->getName();
         width_vhdl_ = width->getName();
     }
+    parse(val, 0, val_, sysc_, sv_, sv_pkg_, vhdl_);
 }
 
 size_t GenValue::parse(const char *val, size_t pos,
@@ -79,6 +79,17 @@ size_t GenValue::parse(const char *val, size_t pos,
         sysc = std::string(buf);
         sv = std::string(buf);        // !! need to check
         sv_pkg = sv;
+        return pos;
+    }
+    if (buf[0] == '-' && buf[1] == '1') {
+        if (getWidth() <= 32) {
+            sysc = std::string("~0ul");
+        } else {
+            sysc = std::string("~0ull");
+        }
+        sv = std::string("'1");        // !! need to check
+        sv_pkg = sv;
+        vhdl = std::string("(others => '1')");
         return pos;
     }
     if (strcmp(buf, "true") == 0 || strcmp(buf, "false") == 0) {

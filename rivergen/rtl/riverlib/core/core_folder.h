@@ -21,6 +21,7 @@
 #include "bp_predec.h"
 #include "bp_btb.h"
 #include "bp.h"
+#include "fetch.h"
 #include "ic_csr_m2_s1.h"
 #include "regibank.h"
 
@@ -31,6 +32,7 @@ class core_folder : public FolderObject {
         bp_predec_(this),
         bp_btb_(this),
         bp_(this),
+        fetch_(this),
         ic_(this),
         regint_(this),
         proc_(this) {}
@@ -41,6 +43,7 @@ class core_folder : public FolderObject {
     bp_predec_file bp_predec_;
     bp_btb_file bp_btb_;
     bp_file bp_;
+    fetch_file fetch_;
     ic_csr_m2_s1_file ic_;
     regibank_file regint_;
     proc_file proc_;

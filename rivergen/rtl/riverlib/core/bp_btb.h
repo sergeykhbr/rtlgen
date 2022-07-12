@@ -70,7 +70,7 @@ class BpBTB : public ModuleObject {
         // Structure definition
         BtbEntryType(GenObject *parent, int idx, const char *comment="")
             : StructObject(parent, "BtbEntryType", "", idx, comment),
-            pc(this, "pc", "CFG_CPU_ADDR_BITS", "0xffffffffffffffff"),
+            pc(this, "pc", "CFG_CPU_ADDR_BITS", "-1"),
             npc(this, "npc", "CFG_CPU_ADDR_BITS"),
             exec(this, "exec", "1", "0", "0=predec; 1=exec (high priority)") {}
      public:

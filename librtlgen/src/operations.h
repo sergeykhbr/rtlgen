@@ -86,14 +86,15 @@ class Operation : public GenObject {
 void TEXT(const char *comment="");
 Operation &ALLZEROS(const char *comment="");
 Operation &ALLONES(const char *comment="");
+Operation &SETZERO(GenObject &a, const char *comment="");
+Operation &SETONE(GenObject &a, const char *comment="");
+
 Operation &BIT(GenObject &a, GenObject &b, const char *comment="");
 Operation &BIT(GenObject &a, int b, const char *comment="");
 Operation &BITS(GenObject &a, GenObject &h, GenObject &l, const char *comment="");
 Operation &BITS(GenObject &a, int h, int l, const char *comment="");
 GenObject &CONST(const char *val);
 GenObject &CONST(const char *val, int width);
-Operation &SETZERO(GenObject &a, const char *comment="");
-Operation &SETONE(GenObject &a, const char *comment="");
 Operation &SETBIT(GenObject &a, GenObject &b, GenObject &val, const char *comment="");
 Operation &SETBIT(GenObject &a, int b, GenObject &val, const char *comment="");
 Operation &SETBITS(GenObject &a, GenObject &h, GenObject &l, GenObject &val, const char *comment="");
@@ -126,6 +127,12 @@ void IF(GenObject &a, const char *comment="");
 void ELSIF(GenObject &a, const char *comment="");
 void ELSE(const char *comment="");
 void ENDIF(const char *comment="");
+
+void SWITCH(GenObject &a, const char *comment="");
+void CASE(GenObject &a, const char *comment="");
+void CASEDEF(const char *comment="");
+void ENDCASE(const char *comment="");
+void ENDSWITCH(const char *comment="");
 
 GenObject &FOR(const char *i, GenObject &start, GenObject &end, const char *dir, const char *comment="");
 void ENDFOR(const char *comment="");
