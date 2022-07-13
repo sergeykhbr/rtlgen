@@ -744,6 +744,7 @@ std::string ADD2_gen(GenObject **args) {
 
 Operation &ADD2(GenObject &a, GenObject &b, const char *comment) {
     Operation *p = new Operation(0, comment);
+    p->setValue(a.getValue() + b.getValue());
     p->igen_ = ADD2_gen;
     p->add_arg(p);
     p->add_arg(&a);

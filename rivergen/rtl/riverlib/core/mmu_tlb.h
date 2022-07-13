@@ -17,20 +17,21 @@
 #pragma once
 
 #include <api.h>
-#include "../../river_cfg.h"
+#include "../river_cfg.h"
+#include "../cache/mem/ram.h"
 
 using namespace sysvc;
 
-class ram : public ModuleObject {
+class MmuTlb : public ModuleObject {
  public:
-    ram(GenObject *parent, const char *name, const char *gen_abits="6", const char *gen_dbits="8");
+    MmuTlb(GenObject *parent, const char *name);
 
     class CombProcess : public ProcObject {
      public:
         CombProcess(GenObject *parent) :
             ProcObject(parent, "comb") {
             Operation::start(this);
-            ram *p = static_cast<ram *>(getParent());
+            MmuTlb *p = static_cast<MmuTlb *>(getParent());
             p->proc_comb();
         }
     };
@@ -38,31 +39,41 @@ class ram : public ModuleObject {
     void proc_comb();
 
  public:
-    TmplParamI32D abits;
-    TmplParamI32D dbits;
-
     InPort i_clk;
     InPort i_adr;
     InPort i_wena;
     InPort i_wdata;
     OutPort o_rdata;
 
-    ParamI32D DEPTH;
+ protected:
+    class MemType : public StructObject {
+     public:
+        MemType(GenObject *parent, int idx, const char *comment="")
+            : StructObject(parent, "MemType", "", idx, comment),
+            rdata(this, "rdata", "8"),
+            wdata(this, "wdata", "8") {}
+     public:
+        Signal rdata;
+        Signal wdata;
+    } MemTypeDef_;
 
-    RegSignal adr;
-    WireArray<Signal> mem;
+    TStructArray<MemType> wb_mem_data;
+
+
+    // Sub-modules:
+    ModuleArray<ram> mem;
 
     // process should be intialized last to make all signals available
     CombProcess comb;
 };
 
-class ram_file : public FileObject {
+class mmu_tlb_file : public FileObject {
  public:
-    ram_file(GenObject *parent) :
-        FileObject(parent, "ram"),
-        ram_(this, "") {}
+    mmu_tlb_file(GenObject *parent) :
+        FileObject(parent, "mmu_tlb"),
+        MmuTlb_(this, "") {}
 
  private:
-    ram ram_;
+    MmuTlb MmuTlb_;
 };
 

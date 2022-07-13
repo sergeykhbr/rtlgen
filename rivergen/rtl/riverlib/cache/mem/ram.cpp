@@ -16,10 +16,10 @@
 
 #include "ram.h"
 
-ram::ram(GenObject *parent, const char *name) :
+ram::ram(GenObject *parent, const char *name, const char *gen_abits, const char *gen_dbits) :
     ModuleObject(parent, "ram", name),
-    abits(this, "abits", "6"),
-    dbits(this, "dbits", "8"),
+    abits(this, "abits", gen_abits),
+    dbits(this, "dbits", gen_dbits),
     i_clk(this, "i_clk", "1", "CPU clock"),
     i_adr(this, "i_adr", &abits),
     i_wena(this, "i_wena", "1"),

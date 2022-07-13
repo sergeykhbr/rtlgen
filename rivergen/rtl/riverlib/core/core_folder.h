@@ -22,6 +22,8 @@
 #include "bp_btb.h"
 #include "bp.h"
 #include "fetch.h"
+#include "mmu_tlb.h"
+#include "mmu.h"
 #include "ic_csr_m2_s1.h"
 #include "regibank.h"
 
@@ -33,6 +35,8 @@ class core_folder : public FolderObject {
         bp_btb_(this),
         bp_(this),
         fetch_(this),
+        mmu_tlb_(this),
+        mmu_(this),
         ic_(this),
         regint_(this),
         proc_(this) {}
@@ -44,6 +48,8 @@ class core_folder : public FolderObject {
     bp_btb_file bp_btb_;
     bp_file bp_;
     fetch_file fetch_;
+    mmu_tlb_file mmu_tlb_;
+    mmu_file mmu_;
     ic_csr_m2_s1_file ic_;
     regibank_file regint_;
     proc_file proc_;

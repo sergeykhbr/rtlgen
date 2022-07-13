@@ -74,7 +74,8 @@ class GenObject {
     virtual std::string getName() { return name_; }
     virtual std::string getComment() { return comment_; }
     virtual std::string getType() = 0;
-    virtual uint64_t getValue() { return 0; }
+    virtual void setValue(uint64_t v) { value_ = v; }
+    virtual uint64_t getValue() { return value_; }
     virtual std::string getStrValue() { return std::string(""); }
     virtual int getWidth() { return 0; }
     virtual std::string getStrWidth() { return std::string(""); }
@@ -98,6 +99,7 @@ class GenObject {
  protected:
     EIdType id_;
     GenObject *parent_;
+    uint64_t value_;
     bool reg_;              // Mark object (signal, value, port, structure) as a Flip-flop
     bool reset_disabled_;   // register without reset (memory)
     bool vcd_enabled_;      // show instance in VCD trace file

@@ -340,6 +340,12 @@ class river_cfg : public FileObject {
     ParamI32D CFG_MPU_FL_CACHABLE;
     ParamI32D CFG_MPU_FL_ENA;
     ParamI32D CFG_MPU_FL_TOTAL;
+    TextLine _mmu0_;
+    TextLine _mmu1_;
+    ParamI32D CFG_MMU_TLB_AWIDTH;
+    ParamI32D CFG_MMU_TLB_SIZE;
+    ParamI32D CFG_MMU_PTE_DWIDTH;
+    ParamI32D CFG_MMU_PTE_DBYTES;
     TextLine _70_;
     TextLine _71_;
     EnumMemopSize MEMOP;

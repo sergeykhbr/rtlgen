@@ -150,6 +150,13 @@ river_cfg::river_cfg(GenObject *parent) :
     CFG_MPU_FL_CACHABLE(this, "CFG_MPU_FL_CACHABLE", "3"),
     CFG_MPU_FL_ENA(this, "CFG_MPU_FL_ENA", "4"),
     CFG_MPU_FL_TOTAL(this, "CFG_MPU_FL_TOTAL", "5"),
+    _mmu0_(this),
+    _mmu1_(this, "MMU config. Fetch and Data pathes have its own MMU block"),
+    CFG_MMU_TLB_AWIDTH(this, "CFG_MMU_TLB_AWIDTH", "9", "TLB memory address bus width"),
+    CFG_MMU_TLB_SIZE(this, "CFG_MMU_TLB_SIZE", "POW2(1,CFG_MMU_TLB_AWIDTH)", "Number of PTE entries in a table"),
+    CFG_MMU_PTE_DWIDTH(this, "CFG_MMU_PTE_DWIDTH", "ADD(MUL(2,RISCV_ARCH),8)", "PTE entry size in bits: pa + va + 8 flags"),
+    CFG_MMU_PTE_DBYTES(this, "CFG_MMU_PTE_DBYTES", "DIV(CFG_MMU_PTE_DWIDTH,8)", "PTE entry size in bytes"),
+
     _70_(this),
     _71_(this),
     MEMOP(this),

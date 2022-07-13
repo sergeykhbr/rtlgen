@@ -44,7 +44,9 @@ class Operation : public GenObject {
     static std::string obj2varname(GenObject *obj, const char *prefix="r", bool read=false);
     static std::string fullname(const char *prefix, std::string name, GenObject *obj);
     static std::string addtext(GenObject *obj, size_t curpos);
+    // Copy signals marked as 'reg' from v to r or vise versa
     static std::string copyreg(const char *dst, const char *src, ModuleObject *m);
+    // Reset signals marked as 'reg'
     static std::string reset(const char *dst, const char *src, ModuleObject *m, std::string xrst);
 
     virtual void add_arg(GenObject *arg) {
