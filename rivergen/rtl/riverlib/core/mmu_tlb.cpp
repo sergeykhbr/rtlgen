@@ -36,10 +36,10 @@ MmuTlb::MmuTlb(GenObject *parent, const char *name) :
     Operation::start(this);
 
     // Create and connet Sub-modules:
+    mem.changeTmplParameter("abits", "CFG_MMU_TLB_AWIDTH");
+    mem.changeTmplParameter("dbits", "8");
     GenObject &i = FOR ("i", CONST("0"), CONST("CFG_MMU_PTE_DBYTES"), "++");
         NEW(*mem.arr_[0], mem.getName().c_str(), &i);
-            CONNECT(mem, &i, mem->abits, glob_river_cfg_->CFG_MMU_TLB_AWIDTH);
-            CONNECT(mem, &i, mem->dbits, CONST("8"));
             CONNECT(mem, &i, mem->i_clk, i_clk);
             CONNECT(mem, &i, mem->i_adr, i_adr);
             CONNECT(mem, &i, mem->i_wena, i_wena);

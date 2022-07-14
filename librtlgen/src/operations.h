@@ -107,11 +107,14 @@ Operation &BIG_TO_U64(GenObject &a, const char *comment="");        // explicit 
 Operation &EQ(GenObject &a, GenObject &b, const char *comment="");  // ==
 Operation &EZ(GenObject &a, const char *comment="");        // equal-zero
 Operation &NZ(GenObject &a, const char *comment="");        // Non-zero
+Operation &GT(GenObject &a, GenObject &b, const char *comment="");        // Greater (>)
+Operation &LS(GenObject &a, GenObject &b, const char *comment="");        // Less (<)
 Operation &INV(GenObject &a, const char *comment="");        // logical inversion
 Operation &OR2(GenObject &a, GenObject &b, const char *comment="");
 Operation &OR3(GenObject &a, GenObject &b, GenObject &c, const char *comment="");
 Operation &OR4(GenObject &a, GenObject &b, GenObject &c, GenObject &d, const char *comment="");
 Operation &ADD2(GenObject &a, GenObject &b, const char *comment="");
+Operation &SUB2(GenObject &a, GenObject &b, const char *comment="");
 Operation &AND_REDUCE(GenObject &a, const char *comment="");
 Operation &AND2(GenObject &a, GenObject &b, const char *comment="");
 Operation &AND3(GenObject &a, GenObject &b, GenObject &c, const char *comment="");

@@ -26,6 +26,7 @@
 #include "mmu.h"
 #include "ic_csr_m2_s1.h"
 #include "regibank.h"
+#include "csr.h"
 
 class core_folder : public FolderObject {
  public:
@@ -39,6 +40,7 @@ class core_folder : public FolderObject {
         mmu_(this),
         ic_(this),
         regint_(this),
+        csr_(this),
         proc_(this) {}
 
  protected:
@@ -52,5 +54,6 @@ class core_folder : public FolderObject {
     mmu_file mmu_;
     ic_csr_m2_s1_file ic_;
     regibank_file regint_;
+    csr_file csr_;
     proc_file proc_;
 };

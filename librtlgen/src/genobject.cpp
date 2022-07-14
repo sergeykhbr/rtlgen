@@ -22,6 +22,8 @@ GenObject::GenObject(GenObject *parent, EIdType id,
                      const char *name, const char *comment) {
     id_ = id;
     parent_ = parent;
+    value_ = 0;
+    width_ = 0;
     reg_ = false;
     reset_disabled_ = false;
     vcd_enabled_ = true;

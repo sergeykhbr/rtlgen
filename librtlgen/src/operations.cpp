@@ -103,6 +103,8 @@ std::string Operation::fullname(const char *prefix, std::string name, GenObject 
             curname += ".";
         }
         curname += name;
+    } else if (obj->getId() == ID_DEF_PARAM) {
+        curname = obj->getName() + name + "_";
     } else {
         curname = obj->getName() + name;
     }
@@ -594,6 +596,7 @@ std::string TO_INT_gen(GenObject **args) {
 
 Operation &TO_INT(GenObject &a, const char *comment) {
     Operation *p = new Operation(0, comment);
+    p->setWidth(32);
     p->igen_ = TO_INT_gen;
     p->add_arg(p);
     p->add_arg(&a);
@@ -610,6 +613,7 @@ std::string EQ_gen(GenObject **args) {
 
 Operation &EQ(GenObject &a, GenObject &b, const char *comment) {
     Operation *p = new Operation(0, comment);
+    p->setWidth(1);
     p->igen_ = EQ_gen;
     p->add_arg(p);
     p->add_arg(&a);
@@ -635,6 +639,7 @@ std::string EZ_gen(GenObject **args) {
 Operation &EZ(GenObject &a, const char *comment) {
     Operation *p = new Operation(0, comment);
     p->igen_ = EZ_gen;
+    p->setWidth(1);
     p->add_arg(p);
     p->add_arg(&a);
     return *p;
@@ -657,8 +662,45 @@ std::string NZ_gen(GenObject **args) {
 Operation &NZ(GenObject &a, const char *comment) {
     Operation *p = new Operation(0, comment);
     p->igen_ = NZ_gen;
+    p->setWidth(1);
     p->add_arg(p);
     p->add_arg(&a);
+    return *p;
+}
+
+// GT
+std::string GT_gen(GenObject **args) {
+    std::string A = Operation::obj2varname(args[1], "r", true);
+    std::string B = Operation::obj2varname(args[2], "r", true);
+    A = "(" + A + " > " + B + ")";
+    return A;
+}
+
+Operation &GT(GenObject &a, GenObject &b, const char *comment) {
+    Operation *p = new Operation(0, comment);
+    p->igen_ = GT_gen;
+    p->setWidth(1);
+    p->add_arg(p);
+    p->add_arg(&a);
+    p->add_arg(&b);
+    return *p;
+}
+
+// LS
+std::string LS_gen(GenObject **args) {
+    std::string A = Operation::obj2varname(args[1], "r", true);
+    std::string B = Operation::obj2varname(args[2], "r", true);
+    A = "(" + A + " < " + B + ")";
+    return A;
+}
+
+Operation &LS(GenObject &a, GenObject &b, const char *comment) {
+    Operation *p = new Operation(0, comment);
+    p->igen_ = LS_gen;
+    p->setWidth(1);
+    p->add_arg(p);
+    p->add_arg(&a);
+    p->add_arg(&b);
     return *p;
 }
 
@@ -671,6 +713,7 @@ std::string INV_gen(GenObject **args) {
 
 Operation &INV(GenObject &a, const char *comment) {
     Operation *p = new Operation(0, comment);
+    p->setWidth(a.getWidth());
     p->igen_ = INV_gen;
     p->add_arg(p);
     p->add_arg(&a);
@@ -687,6 +730,7 @@ std::string OR2_gen(GenObject **args) {
 
 Operation &OR2(GenObject &a, GenObject &b, const char *comment) {
     Operation *p = new Operation(0, comment);
+    p->setWidth(a.getWidth() > b.getWidth() ? a.getWidth() : b.getWidth());
     p->igen_ = OR2_gen;
     p->add_arg(p);
     p->add_arg(&a);
@@ -744,6 +788,7 @@ std::string ADD2_gen(GenObject **args) {
 
 Operation &ADD2(GenObject &a, GenObject &b, const char *comment) {
     Operation *p = new Operation(0, comment);
+    p->setWidth(a.getWidth() > b.getWidth() ? a.getWidth() : b.getWidth());
     p->setValue(a.getValue() + b.getValue());
     p->igen_ = ADD2_gen;
     p->add_arg(p);
@@ -752,7 +797,26 @@ Operation &ADD2(GenObject &a, GenObject &b, const char *comment) {
     return *p;
 }
 
-// AND_REDCE
+// SUB2
+std::string SUB2_gen(GenObject **args) {
+    std::string A = Operation::obj2varname(args[1], "r", true);
+    std::string B = Operation::obj2varname(args[2], "r", true);
+    A = "(" + A + " - " + B + ")";
+    return A;
+}
+
+Operation &SUB2(GenObject &a, GenObject &b, const char *comment) {
+    Operation *p = new Operation(0, comment);
+    p->setWidth(a.getWidth() > b.getWidth() ? a.getWidth() : b.getWidth());
+    p->setValue(a.getValue() - b.getValue());
+    p->igen_ = SUB2_gen;
+    p->add_arg(p);
+    p->add_arg(&a);
+    p->add_arg(&b);
+    return *p;
+}
+
+// AND_REDUCE
 std::string AND_REDUCE_gen(GenObject **args) {
     std::string A = Operation::obj2varname(args[1]);
     A += ".and_reduce()";
@@ -761,6 +825,7 @@ std::string AND_REDUCE_gen(GenObject **args) {
 
 Operation &AND_REDUCE(GenObject &a, const char *comment) {
     Operation *p = new Operation(0, comment);
+    p->setWidth(1);
     p->igen_ = AND_REDUCE_gen;
     p->add_arg(p);
     p->add_arg(&a);
@@ -778,6 +843,7 @@ std::string AND2_gen(GenObject **args) {
 
 Operation &AND2(GenObject &a, GenObject &b, const char *comment) {
     Operation *p = new Operation(0, comment);
+    p->setWidth(a.getWidth() > b.getWidth() ? a.getWidth() : b.getWidth());
     p->igen_ = AND2_gen;
     p->add_arg(p);
     p->add_arg(&a);
@@ -827,7 +893,7 @@ Operation &AND4(GenObject &a, GenObject &b, GenObject &c, GenObject &d, const ch
 
 // DECC
 std::string DEC_gen(GenObject **args) {
-    std::string A = Operation::obj2varname(args[1]);
+    std::string A = Operation::obj2varname(args[1], "r", true);
     A = "(" + A + " - 1)";
     return A;
 }
@@ -842,7 +908,7 @@ Operation &DEC(GenObject &a, const char *comment) {
 
 // INC
 std::string INC_gen(GenObject **args) {
-    std::string A = Operation::obj2varname(args[1]);
+    std::string A = Operation::obj2varname(args[1], "r", true);
     A = "(" + A + " + 1)";
     return A;
 }
@@ -857,8 +923,8 @@ Operation &INC(GenObject &a, const char *comment) {
 
 // MUL2
 std::string MUL2_gen(GenObject **args) {
-    std::string A = Operation::obj2varname(args[1]);
-    std::string B = Operation::obj2varname(args[2]);
+    std::string A = Operation::obj2varname(args[1], "r", true);
+    std::string B = Operation::obj2varname(args[2], "r", true);
     A = "(" + A + " * " + B + ")";
     return A;
 }
@@ -1066,7 +1132,15 @@ std::string CASE_gen(GenObject **args) {
     std::string ret = "";
     std::string A = Operation::obj2varname(args[1]);
     spaces_--;
-    ret += Operation::addspaces() + "case " + A + " :\n";
+    ret += Operation::addspaces() + "case " + A + ":";
+    Operation *p = static_cast<Operation *>(args[0]);
+    if (p->getComment().size()) {
+        while (ret.size() < 60) {
+            ret += " ";
+        }
+        ret += "// " + p->getComment();
+    }
+    ret += "\n";
     spaces_++;
     return ret;
 }
@@ -1198,7 +1272,9 @@ void SYNC_RESET(GenObject &a, GenObject *xrst, const char *comment) {
 // NEW module instance
 std::string NEW_gen(GenObject **args) {
     std::string ret = "";
+    std::string ln = "";
     std::string idx = "";
+    int tcnt = 0;
     std::string name = Operation::obj2varname(args[2]);
     ModuleObject *mod = static_cast<ModuleObject *>(args[1]);
     if (args[3]) {
@@ -1208,12 +1284,32 @@ std::string NEW_gen(GenObject **args) {
         ret += Operation::addspaces();
         ret += "RISCV_sprintf(tstr, sizeof(tstr), \"" + name + "%d\", " + idx + ");\n";
     }
-    ret += Operation::addspaces();
-    ret += name;
+    ln = Operation::addspaces();
+    ln += name;
     if (idx.size()) {
-        ret += "[" + idx + "]";
+        ln += "[" + idx + "]";
     }
-    ret += " = new " + args[1]->getType();
+    ln += " = new " + args[1]->getType();
+    ret += ln;
+    
+    std::list<GenObject *>tmpllist;
+    mod->getTmplParamList(tmpllist);
+    tcnt = 0;
+    if (tmpllist.size()) {
+        ret += "<";
+        for (auto &e : tmpllist) {
+            if (tcnt) {
+                ret += ",\n";
+                for (int i = 0; i <= ln.size(); i++) {
+                    ret += " ";
+                }
+            }
+            ret += e->getStrValue();
+            tcnt++;
+        }
+        ret += ">";
+    }
+
     ret += "(";
     if (idx.size()) {
         ret += "tstr";

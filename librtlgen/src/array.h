@@ -20,6 +20,7 @@
 #include "values.h"
 #include "signals.h"
 #include "utils.h"
+#include "params.h"
 #include <iostream>
 #include <list>
 
@@ -94,6 +95,9 @@ class ModuleArray : public ArrayObject {
     }
     T *operator->() const { return arr_[0]; }
     virtual GenObject *getItem() { return arr_[0]; }
+    virtual void changeTmplParameter(const char *name, const char *val) {
+        static_cast<ModuleObject *>(getItem())->changeTmplParameter(name, val);
+    }
         
     T **arr_;
 };

@@ -269,12 +269,16 @@ std::string ModuleObject::generate_sysc_h() {
     // Sub-module list
     for (auto &p: entries_) {
         if (p->getId() == ID_MODULE_INST) {
-            out += "    " + p->getType() + " *" + p->getName() + ";\n";
+            out += "    " + p->getType();
+            out += generate_sysc_template_param(p);
+            out += " *" + p->getName() + ";\n";
             tcnt ++;
         } else if (p->getId() == ID_ARRAY_DEF) {
             ArrayObject *a = static_cast<ArrayObject *>(p);
             if (a->getItem()->getId() == ID_MODULE_INST) {
-                out += "    " + a->getType() + " *" + p->getName();
+                out += "    " + a->getType();
+                out += generate_sysc_template_param(a->getItem());
+                out += " *" + p->getName();
                 out += "[" + a->getStrDepth() + "];\n";
             }
             tcnt ++;
@@ -466,6 +470,25 @@ std::string ModuleObject::generate_sysc_vcd_entries(std::string name1, std::stri
         }
     }
 
+    return ret;
+}
+
+std::string ModuleObject::generate_sysc_template_param(GenObject *p) {
+    std::string ret = "";
+    int tcnt = 0;
+    std::list<GenObject *> tmpllist;
+
+    static_cast<ModuleObject *>(p)->getTmplParamList(tmpllist);
+    if (tmpllist.size()) {
+        ret += "<";
+        for (auto &e: tmpllist) {
+            if (tcnt++) {
+                ret += ", ";
+            }
+            ret += e->getStrValue();
+        }
+        ret += ">";
+    }
     return ret;
 }
 

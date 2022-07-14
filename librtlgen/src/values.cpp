@@ -28,7 +28,7 @@ GenValue::GenValue(const char *width, const char *val, const char *name,
     parse(width, 0, twidth, width_sysc_, width_sv_, width_sv_pkg_, width_vhdl_);
     width_ = static_cast<int>(twidth);
     // width first, then value
-    parse(val, 0, val_, sysc_, sv_, sv_pkg_, vhdl_);
+    parse(val, 0, value_, sysc_, sv_, sv_pkg_, vhdl_);
 }
 
 GenValue::GenValue(GenValue *width, const char *val, const char *name,
@@ -46,7 +46,7 @@ GenValue::GenValue(GenValue *width, const char *val, const char *name,
         width_sv_pkg_ = width->getName();
         width_vhdl_ = width->getName();
     }
-    parse(val, 0, val_, sysc_, sv_, sv_pkg_, vhdl_);
+    parse(val, 0, value_, sysc_, sv_, sv_pkg_, vhdl_);
 }
 
 size_t GenValue::parse(const char *val, size_t pos,

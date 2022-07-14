@@ -30,9 +30,7 @@ class GenValue : public GenObject {
     GenValue(GenValue *width, const char *val, const char *name,
              GenObject *parent, const char *comment="");
 
-    virtual uint64_t getValue() override { return val_; }
     virtual std::string getStrValue() override;
-    virtual int getWidth() override { return width_; }
     virtual std::string getStrWidth() override ;
     virtual bool isLocal();
 
@@ -45,9 +43,6 @@ class GenValue : public GenObject {
                         std::string &vhdl);
 
  protected:
-    uint64_t val_;
-    int width_;
-
     std::string sysc_;  // systemc representation
     std::string sv_;    // system verilog
     std::string sv_pkg_;// system verilog with the package name

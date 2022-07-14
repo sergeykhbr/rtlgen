@@ -77,7 +77,8 @@ class GenObject {
     virtual void setValue(uint64_t v) { value_ = v; }
     virtual uint64_t getValue() { return value_; }
     virtual std::string getStrValue() { return std::string(""); }
-    virtual int getWidth() { return 0; }
+    virtual void setWidth(int w) { width_ = w; }
+    virtual int getWidth() { return width_; }
     virtual std::string getStrWidth() { return std::string(""); }
     virtual int getDepth() { return 0; }    // two-dimensional object
     virtual std::string getStrDepth() { return std::string(""); }
@@ -100,6 +101,7 @@ class GenObject {
     EIdType id_;
     GenObject *parent_;
     uint64_t value_;
+    int width_;
     bool reg_;              // Mark object (signal, value, port, structure) as a Flip-flop
     bool reset_disabled_;   // register without reset (memory)
     bool vcd_enabled_;      // show instance in VCD trace file
