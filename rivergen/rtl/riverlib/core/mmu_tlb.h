@@ -29,11 +29,14 @@ class MmuTlb : public ModuleObject {
     class CombProcess : public ProcObject {
      public:
         CombProcess(GenObject *parent) :
-            ProcObject(parent, "comb") {
+            ProcObject(parent, "comb"),
+            vb_rdata(this, "vb_rdata", "CFG_MMU_PTE_DWIDTH") {
             Operation::start(this);
             MmuTlb *p = static_cast<MmuTlb *>(getParent());
             p->proc_comb();
         }
+
+        Logic vb_rdata;
     };
 
     void proc_comb();

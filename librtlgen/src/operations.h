@@ -109,6 +109,7 @@ Operation &EZ(GenObject &a, const char *comment="");        // equal-zero
 Operation &NZ(GenObject &a, const char *comment="");        // Non-zero
 Operation &GT(GenObject &a, GenObject &b, const char *comment="");        // Greater (>)
 Operation &LS(GenObject &a, GenObject &b, const char *comment="");        // Less (<)
+Operation &LE(GenObject &a, GenObject &b, const char *comment="");        // Less-Equal (<=)
 Operation &INV(GenObject &a, const char *comment="");        // logical inversion
 Operation &OR2(GenObject &a, GenObject &b, const char *comment="");
 Operation &OR3(GenObject &a, GenObject &b, GenObject &c, const char *comment="");

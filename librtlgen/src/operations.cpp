@@ -704,6 +704,24 @@ Operation &LS(GenObject &a, GenObject &b, const char *comment) {
     return *p;
 }
 
+// LE
+std::string LE_gen(GenObject **args) {
+    std::string A = Operation::obj2varname(args[1], "r", true);
+    std::string B = Operation::obj2varname(args[2], "r", true);
+    A = "(" + A + " <= " + B + ")";
+    return A;
+}
+
+Operation &LE(GenObject &a, GenObject &b, const char *comment) {
+    Operation *p = new Operation(0, comment);
+    p->igen_ = LE_gen;
+    p->setWidth(1);
+    p->add_arg(p);
+    p->add_arg(&a);
+    p->add_arg(&b);
+    return *p;
+}
+
 // INV
 std::string INV_gen(GenObject **args) {
     std::string A = Operation::obj2varname(args[1]);

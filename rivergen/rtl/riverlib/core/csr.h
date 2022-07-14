@@ -114,6 +114,9 @@ class CsrRegs : public ModuleObject {
     OutPort o_mpu_region_addr;
     OutPort o_mpu_region_mask;
     OutPort o_mpu_region_flags;
+    TextLine _io2_;
+    OutPort o_mmu_ena;
+    OutPort o_mmu_ppn;
 
  protected:
     DefParamUI32D hartid;
@@ -128,6 +131,7 @@ class CsrRegs : public ModuleObject {
     ParamUI32D State_Resume;
     ParamUI32D State_Wfi;
     ParamUI32D State_Response;
+    ParamLogic SATP_MODE_SV48;
 
     RegSignal state;
     RegSignal cmd_type;
@@ -147,6 +151,9 @@ class CsrRegs : public ModuleObject {
     RegSignal mpu_idx;
     RegSignal mpu_flags;
     RegSignal mpu_we;
+    RegSignal mmu_ena;
+    RegSignal satp_ppn;
+    RegSignal satp_mode;
     RegSignal mepc;
     RegSignal uepc;
     RegSignal mode;

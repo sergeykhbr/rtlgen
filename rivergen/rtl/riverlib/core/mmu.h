@@ -38,7 +38,7 @@ class Mmu : public ModuleObject {
             vb_fetch_data(this, "vb_fetch_data", "64"),
             v_fetch_load_fault(this, "v_fetch_load_fault", "1"),
             v_fetch_executable(this, "v_fetch_executable", "1"),
-            v_mem_addr_valid(this, "v_fetch_executable", "1"),
+            v_mem_addr_valid(this, "v_mem_addr_valid", "1"),
             vb_mem_addr(this, "vb_mem_addr", "CFG_CPU_ADDR_BITS"),
             v_mem_resp_ready(this, "v_mem_resp_ready", "1") {
             Operation::start(this);

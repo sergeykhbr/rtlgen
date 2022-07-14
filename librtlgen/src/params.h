@@ -63,6 +63,19 @@ class TmplParamI32D : public I32D,
     }
 };
 
+class ParamUI16D : public UI16D,
+                   public ParamGeneric {
+ public:
+    ParamUI16D(GenObject *parent, const char *name, const char *val,
+        const char *comment="")
+        : UI16D(val, name, parent, comment),
+        ParamGeneric(static_cast<GenValue *>(this)) {
+            id_ = ID_PARAM;
+        }
+    virtual std::string generate() override {
+        return genparam(static_cast<GenValue *>(this));
+    }
+};
 
 class ParamI32D : public I32D,
                   public ParamGeneric {

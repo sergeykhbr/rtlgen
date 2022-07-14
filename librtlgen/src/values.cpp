@@ -217,6 +217,16 @@ std::string BOOL::getType() {
     return ret;
 }
 
+std::string UI16D::getType() {
+    std::string ret = "";
+    if (SCV_is_sysc()) {
+        ret = std::string("uint16_t");
+    } else if (SCV_is_sv()) {
+        ret = std::string("short unsigned");
+    }
+    return ret;
+}
+
 
 std::string I32D::getType() {
     std::string ret = "";

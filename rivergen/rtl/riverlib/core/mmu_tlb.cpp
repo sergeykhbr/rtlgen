@@ -51,10 +51,11 @@ MmuTlb::MmuTlb(GenObject *parent, const char *name) :
 
 void MmuTlb::proc_comb() {
     GenObject &i = FOR ("i", CONST("0"), CONST("CFG_MMU_PTE_DBYTES"), "++");
-        SETVAL(ARRITEM(wb_mem_data, i, wb_mem_data->wdata), BITS(i_wdata, DEC(MUL2(CONST("8"), INC(i))),
-                                                                          MUL2(CONST("8"), i)));
-        SETBITS(o_rdata, DEC(MUL2(CONST("8"), INC(i))),
-                         MUL2(CONST("8"), i),
-                         ARRITEM(wb_mem_data, i, wb_mem_data->rdata));
+        SETVAL(ARRITEM(wb_mem_data, i, wb_mem_data->wdata), BIG_TO_U64(BITS(i_wdata, DEC(MUL2(CONST("8"), INC(i))),
+                                                                                     MUL2(CONST("8"), i))));
+        SETBITS(comb.vb_rdata, DEC(MUL2(CONST("8"), INC(i))),
+                                   MUL2(CONST("8"), i),
+                               ARRITEM(wb_mem_data, i, wb_mem_data->rdata));
     ENDFOR();
+    SETVAL(o_rdata, comb.vb_rdata);
 }

@@ -58,6 +58,9 @@ CsrRegs::CsrRegs(GenObject *parent, const char *name) :
     o_mpu_region_addr(this, "o_mpu_region_addr", "CFG_CPU_ADDR_BITS", "MPU region base address"),
     o_mpu_region_mask(this, "o_mpu_region_mask", "CFG_CPU_ADDR_BITS", "MPU region mask"),
     o_mpu_region_flags(this, "o_mpu_region_flags", "CFG_MPU_FL_TOTAL", "{ena, cachable, r, w, x}"),
+    _io2_(this),
+    o_mmu_ena(this, "o_mmu_ena", "1", "MMU enabled in U and S modes. Sv48 only."),
+    o_mmu_ppn(this, "o_mmu_ppn", "44", "Physical Page Number"),
     // param
     State_Idle(this, "State_Idle", "0"),
     State_RW(this, "State_RW", "1"),
@@ -69,6 +72,7 @@ CsrRegs::CsrRegs(GenObject *parent, const char *name) :
     State_Resume(this, "State_Resume", "7"),
     State_Wfi(this, "State_Wfi", "8"),
     State_Response(this, "State_Response", "9"),
+    SATP_MODE_SV48(this, "4", "SATP_MODE_SV48", "9", "48-bits Page mode"),
     // registers
     state(this, "state", "4", "State_Idle"),
     cmd_type(this, "cmd_type", "CsrReq_TotalBits"),
@@ -88,6 +92,9 @@ CsrRegs::CsrRegs(GenObject *parent, const char *name) :
     mpu_idx(this, "mpu_idx", "CFG_MPU_TBL_WIDTH"),
     mpu_flags(this, "mpu_flags", "CFG_MPU_FL_TOTAL"),
     mpu_we(this, "mpu_we", "1"),
+    mmu_ena(this, "mmu_ena", "1", "0", "MMU SV48 enabled in U- and S- modes"),
+    satp_ppn(this, "satp_ppn", "44", "0", "Physcal Page Number"),
+    satp_mode(this, "satp_mode", "4", "0", "Supervisor Address Translation and Protection mode"),
     mepc(this, "mepc", "CFG_CPU_ADDR_BITS"),
     uepc(this, "uepc", "CFG_CPU_ADDR_BITS"),
     mode(this, "mode", "2", "PRV_M"),
@@ -267,6 +274,8 @@ TEXT();
         ENDCASE();
     CASE (State_RW);
         SETVAL(state, State_Response);
+        TEXT("csr[9:8] encode the loweset priviledge level that can access to CSR");
+        TEXT("csr[11:10] register is read/write (00, 01 or 10) or read-only (11)");
         IF (LS(mode, BITS(cmd_addr,9,8)));
             TEXT("Not enough priv to access this register");
             SETONE(cmd_exception);
@@ -275,7 +284,8 @@ TEXT();
             SETVAL(comb.v_csr_wena, BIT(cmd_type, cfg->CsrReq_WriteBit));
         ENDIF();
         TEXT("All operation into CSR implemented through the Read-Modify-Write");
-        TEXT("we cannot generate exception on write access into read-only regs");
+        TEXT("and we cannot generate exception on write access into read-only regs");
+        TEXT("So do not check bits csr[11:10], otherwise always will be the exception.");
         ENDCASE();
     CASE (State_Wfi);
         SETVAL(state, State_Response);
@@ -432,6 +442,19 @@ TEXT();
             SETVAL(mscratch, cmd_data);
         ENDIF();
         ENDCASE();
+    CASE (cfg->CSR_satp, "Supervisor Address Translation and Protection");
+        TEXT("Writing unssoprted MODE[63:60], entire write has no effect");
+        TEXT("    MODE = 0 Bare. No translation or protection");
+        TEXT("    MODE = 9 Sv48. Page based 48-bit virtual addressing");
+        SETBITS(comb.vb_rdata, 43, 0, satp_ppn);
+        SETBITS(comb.vb_rdata, 63, 60, satp_mode);
+        IF (AND2(NZ(comb.v_csr_wena),
+                 OR2(EZ(BITS(cmd_data, 63, 60)),
+                     EQ(BITS(cmd_data, 63, 60), SATP_MODE_SV48))));
+            SETVAL(satp_ppn, BITS(cmd_data, 43, 0));
+            SETVAL(satp_mode, BITS(cmd_data, 63, 60));
+        ENDIF();
+        ENDCASE();
     CASE (cfg->CSR_mepc, "Machine program counter");
         SETVAL(comb.vb_rdata, mepc);
         IF (comb.v_csr_wena);
@@ -573,11 +596,21 @@ TEXT();
             SETVAL(mie, mpie);
             SETONE(mpie);
             SETVAL(mode, mpp);
+            IF (AND2(LE(mpp, cfg->PRV_S), EQ(satp_mode, SATP_MODE_SV48)));
+                SETONE(mmu_ena);
+            ELSE();
+                SETZERO(mmu_ena);
+            ENDIF();
             SETVAL(mpp, cfg->PRV_U);
         ELSIF (AND2(EQ(mode, cfg->PRV_U), EQ(cmd_addr, cfg->CSR_uepc)));
             SETVAL(mie, mpie);
             SETZERO(mpie, "Interrupts in a user mode actually not supported");
             SETVAL(mode, mpp);
+            IF (AND2(LE(mpp, cfg->PRV_S), EQ(satp_mode, SATP_MODE_SV48)));
+                SETONE(mmu_ena);
+            ELSE();
+                SETZERO(mmu_ena);
+            ENDIF();
             SETVAL(mpp, cfg->PRV_U);
         ELSE();
             SETONE(cmd_exception);
@@ -593,16 +626,12 @@ TEXT();
         SETVAL(trap_cause, comb.wb_trap_cause);
         SETVAL(trap_irq, comb.v_trap_irq);
         SETVAL(mode, cfg->PRV_M);
-        SWITCH (mode);
-        CASE (cfg->PRV_U);
+        SETZERO(mmu_ena);
+        IF (EQ(mode, cfg->PRV_U));
             SETVAL(mpie, uie);
-            ENDCASE();
-        CASE (cfg->PRV_M);
+        ELSIF (EQ(mode, cfg->PRV_M));
             SETVAL(mpie, mie);
-            ENDCASE();
-        CASEDEF();
-            ENDCASE();
-        ENDSWITCH();
+        ENDIF();
     ENDIF();
 
 TEXT();
@@ -677,6 +706,8 @@ TEXT();
     SETVAL(o_mpu_region_addr, mpu_addr);
     SETVAL(o_mpu_region_mask, mpu_mask);
     SETVAL(o_mpu_region_flags, mpu_flags);
+    SETVAL(o_mmu_ena, mmu_ena);
+    SETVAL(o_mmu_ppn, satp_ppn);
     SETVAL(o_step, dcsr_step);
     SETVAL(o_flushi_ena, flushi_ena);
     SETVAL(o_flushi_addr, flushi_addr);

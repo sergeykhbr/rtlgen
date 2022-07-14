@@ -52,14 +52,21 @@ std::string EnumObject::generate() {
 
 std::string EnumObject::generate_sysc() {
     std::string ret = "";
+    std::string ln = "";
     ret += "enum " + getName() + " {\n";
     for (auto &p: entries_) {
-        ret += "    " + p->getName() + " = ";
-        ret += static_cast<I32D *>(p)->getStrValue();
+        ln = "    " + p->getName() + " = ";
+        ln += static_cast<I32D *>(p)->getStrValue();
         if (&p != &entries_.back()) {
-            ret += ",";
+            ln += ",";
         }
-        ret += "\n";
+        if (p->getComment().size()) {
+            while (ln.size() < 60) {
+                ln += " ";
+            }
+            ln += "// " + p->getComment();
+        }
+        ret += ln + "\n";
     }
     ret += "};\n";
     return ret;
@@ -67,10 +74,17 @@ std::string EnumObject::generate_sysc() {
 
 std::string EnumObject::generate_sysv() {
     std::string ret = "";
+    std::string ln = "";
     for (auto &p: entries_) {
-        ret += "localparam int " + p->getName() + " = ";
-        ret += static_cast<I32D *>(p)->getStrValue();
-        ret += ";\n";
+        ln = "localparam int " + p->getName() + " = ";
+        ln += static_cast<I32D *>(p)->getStrValue() + ";";
+        if (p->getComment().size()) {
+            while (ln.size() < 60) {
+                ln += " ";
+            }
+            ln += "// " + p->getComment();
+        }
+        ret += ln + "\n";
     }
     return ret;
 }
