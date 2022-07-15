@@ -29,9 +29,6 @@ class Mmu : public ModuleObject {
     class CombProcess : public ProcObject {
      public:
         CombProcess(GenObject *parent) : ProcObject(parent, "comb"),
-            v_sv39(this, "v_sv39", "1"),
-            v_sv48(this, "v_sv48", "1"),
-            v_mmu_ena(this, "v_mmu_ena", "1"),
             v_fetch_req_ready(this, "v_fetch_req_ready", "1"),
             v_fetch_data_valid(this, "v_fetch_data_valid", "1"),
             vb_fetch_data_addr(this, "vb_fetch_data_addr", "CFG_CPU_ADDR_BITS"),
@@ -40,15 +37,23 @@ class Mmu : public ModuleObject {
             v_fetch_executable(this, "v_fetch_executable", "1"),
             v_mem_addr_valid(this, "v_mem_addr_valid", "1"),
             vb_mem_addr(this, "vb_mem_addr", "CFG_CPU_ADDR_BITS"),
-            v_mem_resp_ready(this, "v_mem_resp_ready", "1") {
+            v_mem_resp_ready(this, "v_mem_resp_ready", "1"),
+            v_mpu_fault(this, "v_mpu_fault", "1"),
+            v_tlb_wena(this, "v_tlb_wena", "1"),
+            vb_tlb_adr(this, "vb_tlb_adr", "CFG_MMU_TLB_AWIDTH"),
+            vb_pte_start_va(this, "vb_pte_start_va", "SUB(CFG_CPU_ADDR_BITS,12)"),
+            vb_pte_base_va(this, "vb_pte_base_va", "SUB(CFG_CPU_ADDR_BITS,12)"),
+            vb_level0_off(this, "vb_level0_off", "12"),
+            vb_level1_off(this, "vb_level1_off", "12"),
+            vb_level2_off(this, "vb_level2_off", "12"),
+            vb_level3_off(this, "vb_level3_off", "12"),
+            t_req_pa(this, "t_req_pa", "CFG_CPU_ADDR_BITS"),
+            t_tlb_wdata(this, "t_tlb_wdata", "CFG_MMU_PTE_DWIDTH") {
             Operation::start(this);
             Mmu *p = static_cast<Mmu *>(parent);
             p->proc_comb();
         }
      public:
-        Logic v_sv39;
-        Logic v_sv48;
-        Logic v_mmu_ena;
         Logic v_fetch_req_ready;
         Logic v_fetch_data_valid;
         Logic vb_fetch_data_addr;
@@ -58,6 +63,17 @@ class Mmu : public ModuleObject {
         Logic v_mem_addr_valid;
         Logic vb_mem_addr;
         Logic v_mem_resp_ready;
+        Logic v_mpu_fault;
+        Logic v_tlb_wena;
+        Logic vb_tlb_adr;
+        Logic vb_pte_start_va;
+        Logic vb_pte_base_va;
+        Logic vb_level0_off;
+        Logic vb_level1_off;
+        Logic vb_level2_off;
+        Logic vb_level3_off;
+        Logic t_req_pa;
+        Logic t_tlb_wdata;
     };
 
     void proc_comb();
@@ -73,6 +89,7 @@ class Mmu : public ModuleObject {
     OutPort o_fetch_data;
     OutPort o_fetch_load_fault;
     OutPort o_fetch_executable;
+    OutPort o_fetch_page_fault;
     InPort i_fetch_resp_ready;
     InPort i_mem_req_ready;
     OutPort o_mem_addr_valid;
@@ -83,15 +100,28 @@ class Mmu : public ModuleObject {
     InPort i_mem_load_fault;
     InPort i_mem_executable;
     OutPort o_mem_resp_ready;
-    InPort i_prv;
-    InPort i_satp;
+    InPort i_mmu_ena;
+    InPort i_mmu_ppn;
     InPort i_flush_pipeline;
 
  protected:
     ParamUI32D Idle;
     ParamUI32D CheckTlb;
-    ParamUI32D WaitReqAccept;
+    ParamUI32D CacheReq;
     ParamUI32D WaitResp;
+    ParamUI32D HandleResp;
+    ParamUI32D UpdateTlb;
+    ParamUI32D AcceptFetch;
+    ParamUI32D FlushTlb;
+
+    ParamI32D PTE_V;
+    ParamI32D PTE_R;
+    ParamI32D PTE_W;
+    ParamI32D PTE_X;
+    ParamI32D PTE_U;
+    ParamI32D PTE_G;
+    ParamI32D PTE_A;
+    ParamI32D PTE_D;
 
     Signal wb_tlb_adr;
     Signal w_tlb_wena;
@@ -99,17 +129,23 @@ class Mmu : public ModuleObject {
     Signal wb_tlb_rdata;
 
     RegSignal state;
-    RegSignal req_va;
+    RegSignal req_x;
+    RegSignal req_r;
+    RegSignal req_w;
+    RegSignal req_pa;
     RegSignal last_va;
     RegSignal last_pa;
-    RegSignal req_valid;
-    RegSignal resp_ready;
-    RegSignal req_addr;
-    RegSignal mem_resp_shadow;
-    RegSignal pc;
-    RegSignal instr;
-    RegSignal instr_load_fault;
-    RegSignal instr_executable;
+    RegSignal resp_addr;
+    RegSignal resp_data;
+    RegSignal pte_permission;
+    RegSignal ex_load_fault;
+    RegSignal ex_mpu_executable;
+    RegSignal ex_page_fault;
+    RegSignal tlb_hit;
+    RegSignal tlb_level;
+    RegSignal tlb_wdata;
+    RegSignal tlb_flush_cnt;
+    RegSignal tlb_flush_adr;
 
     // process should be intialized last to make all signals available
     CombProcess comb;

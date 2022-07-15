@@ -154,7 +154,7 @@ river_cfg::river_cfg(GenObject *parent) :
     _mmu1_(this, "MMU config. Fetch and Data pathes have its own MMU block"),
     CFG_MMU_TLB_AWIDTH(this, "CFG_MMU_TLB_AWIDTH", "9", "TLB memory address bus width"),
     CFG_MMU_TLB_SIZE(this, "CFG_MMU_TLB_SIZE", "POW2(1,CFG_MMU_TLB_AWIDTH)", "Number of PTE entries in a table"),
-    CFG_MMU_PTE_DWIDTH(this, "CFG_MMU_PTE_DWIDTH", "ADD(MUL(2,RISCV_ARCH),8)", "PTE entry size in bits: pa + va + 8 flags"),
+    CFG_MMU_PTE_DWIDTH(this, "CFG_MMU_PTE_DWIDTH", "SUB(MUL(2,RISCV_ARCH),12)", "PTE entry size in bits"),
     CFG_MMU_PTE_DBYTES(this, "CFG_MMU_PTE_DBYTES", "DIV(CFG_MMU_PTE_DWIDTH,8)", "PTE entry size in bytes"),
 
     _70_(this),

@@ -365,6 +365,7 @@ std::string BITS_gen(GenObject **args) {
 
 Operation &BITS(GenObject &a, GenObject &h, GenObject &l, const char *comment) {
     Operation *p = new Operation(0, comment);
+    p->setWidth(static_cast<int>(h.getValue() - l.getValue()) + 1);
     p->igen_ = BITS_gen;
     p->add_arg(p);
     p->add_arg(&a);
@@ -375,6 +376,7 @@ Operation &BITS(GenObject &a, GenObject &h, GenObject &l, const char *comment) {
 
 Operation &BITS(GenObject &a, int h, int l, const char *comment) {
     Operation *p = new Operation(0, comment);
+    p->setWidth(h - l + 1);
     char tstr[64];
     p->igen_ = BITS_gen;
     p->add_arg(p);
@@ -967,17 +969,43 @@ std::string CC2_gen(GenObject **args) {
             A = "(" + A + " | " + args[2]->getStrValue() + ")";
         }
     } else {
-        A = "(" + A + "," + B + ")";
+        A = "(" + A + ", " + B + ")";
     }
     return A;
 }
 
 Operation &CC2(GenObject &a, GenObject &b, const char *comment) {
     Operation *p = new Operation(0, comment);
+    p->setWidth(a.getWidth() + b.getWidth());
     p->igen_ = CC2_gen;
     p->add_arg(p);
     p->add_arg(&a);
     p->add_arg(&b);
+    return *p;
+}
+
+// LSH: left shift
+std::string LSH_gen(GenObject **args) {
+    std::string A = Operation::obj2varname(args[1], "r", true);
+    std::string B = Operation::obj2varname(args[2]);
+    if (SCV_is_sysc()) {
+        A = "(" + A + " << " + B + ")";
+    } else if (SCV_is_sv()) {
+        A = "{" + A + "," + B + "'d0}";
+    } else {
+    }
+    return A;
+}
+
+Operation &LSH(GenObject &a, int sz, const char *comment) {
+    Operation *p = new Operation(0, comment);
+    char tstr[64];
+    p->setWidth(a.getWidth());
+    p->igen_ = LSH_gen;
+    p->add_arg(p);
+    p->add_arg(&a);
+    RISCV_sprintf(tstr, sizeof(tstr), "%d", sz);
+    p->add_arg(new I32D(tstr));
     return *p;
 }
 
