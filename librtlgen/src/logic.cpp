@@ -42,15 +42,33 @@ std::string Logic::getType() {
     std::string ret = "";
 
     if (SCV_is_sysc()) {
-        if (getWidth() <= 1) {
-            ret += "bool";
-        } else if (getWidth() > 64) {
-            ret += "sc_biguint<" + getStrWidth() + ">";
+        if (getId() == ID_PARAM) {
+            if (getWidth() <= 1) {
+                ret += "bool";
+            } else if (getWidth() <= 8) {
+                ret += "uint8_t";
+            } else if (getWidth() <= 16) {
+                ret += "uint16_t";
+            } else if (getWidth() <= 32) {
+                ret += "uint32_t";
+            } else {
+                ret += "uint64_t";
+            }
         } else {
-            ret += "sc_uint<" + getStrWidth() + ">";
+            if (getWidth() <= 1) {
+                ret += "bool";
+            } else if (getWidth() > 64) {
+                ret += "sc_biguint<" + getStrWidth() + ">";
+            } else {
+                ret += "sc_uint<" + getStrWidth() + ">";
+            }
         }
     } else if (SCV_is_sv()) {
-        ret = std::string("logic");
+        if (getId() == ID_PARAM) {
+            ret = std::string("bit");
+        } else {
+            ret = std::string("logic");
+        }
         if (getWidth() > 1) {
             ret += " [";
             std::string w = getStrWidth();

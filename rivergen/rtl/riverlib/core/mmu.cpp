@@ -68,7 +68,7 @@ Mmu::Mmu(GenObject *parent, const char *name) :
     wb_tlb_wdata(this, "wb_tlb_wdata", "CFG_MMU_PTE_DWIDTH"),
     wb_tlb_rdata(this, "wb_tlb_rdata", "CFG_MMU_PTE_DWIDTH"),
     // registers
-    state(this, "state", "2", "Idle"),
+    state(this, "state", "3", "FlushTlb"),
     req_x(this, "req_x", "1"),
     req_r(this, "req_r", "1"),
     req_w(this, "req_w", "1"),
@@ -84,8 +84,8 @@ Mmu::Mmu(GenObject *parent, const char *name) :
     tlb_hit(this, "tlb_hit", "1"),
     tlb_level(this, "tlb_level", "4"),
     tlb_wdata(this, "tlb_wdata", "CFG_MMU_PTE_DWIDTH"),
-    tlb_flush_cnt(this, "tlb_flush_cnt", "CFG_MMU_PTE_AWIDTH"),
-    tlb_flush_adr(this, "tlb_flush_adr", "CFG_MMU_PTE_AWIDTH"),
+    tlb_flush_cnt(this, "tlb_flush_cnt", "CFG_MMU_TLB_AWIDTH", "-1"),
+    tlb_flush_adr(this, "tlb_flush_adr", "CFG_MMU_TLB_AWIDTH"),
     // process
     comb(this),
     // sub-modules
@@ -139,14 +139,9 @@ TEXT();
     SETBITS(comb.t_req_pa, DEC(cfg->CFG_CPU_ADDR_BITS), CONST("12"),
                            BIG_TO_U64(BITS(wb_tlb_rdata, DEC(cfg->CFG_CPU_ADDR_BITS), CONST("12"))));
     SETBITS(comb.t_req_pa, 11, 0, BITS(last_va, 11, 0));
-    SETZERO(comb.t_tlb_wdata);
-    SETBITS(comb.t_tlb_wdata, 115, 64, comb.vb_pte_base_va);
-    IF (NZ(BIT(resp_data, 53)));
-        SETBITS(comb.t_tlb_wdata, 63, 56, ALLONES());
-    ELSE();
-        SETBITS(comb.t_tlb_wdata, 63, 56, ALLZEROS());
-    ENDIF();
-    SETBITS(comb.t_tlb_wdata, 55, 12, BITS(resp_data, 53, 10));
+TEXT();
+    SETBITS(comb.t_tlb_wdata, 115, 64, BITS(last_va, 63, 12));
+    SETBITS(comb.t_tlb_wdata, 63, 12, comb.vb_pte_base_va);
     SETBITS(comb.t_tlb_wdata, 7, 0, BITS(resp_data, 7, 0));
 
 TEXT();
@@ -209,7 +204,7 @@ TEXT();
     CASE(CacheReq);
         SETONE(comb.v_mem_addr_valid);
         SETVAL(comb.vb_mem_addr, req_pa);
-        IF (i_mem_req_ready);
+        IF (NZ(i_mem_req_ready));
             SETVAL(state, WaitResp);
         ENDIF();
         ENDCASE();
@@ -250,11 +245,11 @@ TEXT();
             ENDIF();
         ELSE();
             TEXT("PTE is a leaf");
-            IF (AND2(NZ(req_x), EZ(BIT(wb_tlb_rdata, PTE_X))));
+            IF (AND2(NZ(req_x), EZ(BIT(resp_data, PTE_X))));
                 SETVAL(state, AcceptFetch);
                 SETONE(ex_page_fault);
-            ELSIF (OR2(EZ(BIT(wb_tlb_rdata, PTE_A)),
-                       AND2(req_w, INV(BIT(wb_tlb_rdata, PTE_D)))));
+            ELSIF (OR2(EZ(BIT(resp_data, PTE_A)),
+                       AND2(req_w, INV(BIT(resp_data, PTE_D)))));
                 TEXT("Implement option 1: raise a page-fault instead of (2) memory update with the new A,D-bits");
                 SETVAL(state, AcceptFetch);
                 SETONE(ex_page_fault);
@@ -290,6 +285,8 @@ TEXT();
     CASE(FlushTlb);
         SETONE(comb.v_tlb_wena);
         SETVAL(comb.vb_tlb_adr, tlb_flush_adr);
+        SETVAL(last_va, ALLONES());
+        SETVAL(last_pa, ALLONES());
         IF (EZ(tlb_flush_cnt));
             SETVAL(state, Idle);
         ELSE();

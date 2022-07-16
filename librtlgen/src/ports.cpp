@@ -46,7 +46,9 @@ std::string InPort::getType() {
     if (SCV_is_sysc()) {
         out += "sc_in<" + Logic::getType() + ">";
     } else if (SCV_is_sv()) {
+        SCV_set_generator(SV_PKG);  // to generate with package name
         out += "input " + Logic::getType();
+        SCV_set_generator(SV_ALL);
     } else {
     }
     return out;
@@ -57,7 +59,9 @@ std::string OutPort::getType() {
     if (SCV_is_sysc()) {
         out += "sc_out<" + Logic::getType() + ">";
     } else if (SCV_is_sv()) {
+        SCV_set_generator(SV_PKG);  // to generate with package name
         out += "output " + Logic::getType();
+        SCV_set_generator(SV_ALL);
     } else {
     }
     return out;

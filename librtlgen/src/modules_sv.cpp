@@ -37,12 +37,12 @@ std::string ModuleObject::generate_sv_mod() {
     std::list<GenObject *> genparam;
     getParamList(genparam);
 
-    ret += "module " + getName();
+    ret += "module " + getType();
     // Generic parameters
     if (isAsyncReset() || genparam.size()) {
         ret += " #(\n";
         if (isAsyncReset()) {
-            ret += "    parameter bit async_reset = 1'b1";           // Mandatory generic parameter
+            ret += "    parameter bit async_reset = 1'b0";           // Mandatory generic parameter
             if (genparam.size()) {
                 ret += ",";
             }
@@ -141,7 +141,7 @@ std::string ModuleObject::generate_sv_mod() {
         ret += "\n";
         ret += p->generate();
     }
-    ret += "endmodule: " + getName() + "\n";
+    ret += "endmodule: " + getType() + "\n";
 
 
     return ret;
