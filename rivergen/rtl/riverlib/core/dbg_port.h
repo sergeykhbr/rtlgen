@@ -18,6 +18,7 @@
 
 #include <api.h>
 #include "../river_cfg.h"
+#include "stacktrbuf.h"
 
 using namespace sysvc;
 
@@ -156,6 +157,8 @@ class DbgPort : public ModuleObject {
 
     // process should be intialized last to make all signals available
     CombProcess comb;
+
+    StackTraceBuffer trbuf0;
 };
 
 class dbg_port_file : public FileObject {

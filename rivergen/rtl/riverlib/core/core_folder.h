@@ -21,6 +21,7 @@
 #include "bp_predec.h"
 #include "bp_btb.h"
 #include "bp.h"
+#include "stacktrbuf.h"
 #include "dbg_port.h"
 #include "fetch.h"
 #include "mmu_tlb.h"
@@ -36,6 +37,7 @@ class core_folder : public FolderObject {
         bp_predec_(this),
         bp_btb_(this),
         bp_(this),
+        stacktrbuf_(this),
         dbg_port_(this),
         fetch_(this),
         mmu_tlb_(this),
@@ -51,6 +53,7 @@ class core_folder : public FolderObject {
     bp_predec_file bp_predec_;
     bp_btb_file bp_btb_;
     bp_file bp_;
+    stacktrbuf_file stacktrbuf_;
     dbg_port_file dbg_port_;
     fetch_file fetch_;
     mmu_tlb_file mmu_tlb_;

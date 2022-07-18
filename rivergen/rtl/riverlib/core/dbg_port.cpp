@@ -83,7 +83,7 @@ DbgPort::DbgPort(GenObject *parent, const char *name) :
     wait_to_accept(this, "4", "wait_to_accept", "11"),
     // signals
     wb_stack_raddr(this, "wb_stack_raddr", "CFG_LOG2_STACK_TRACE_ADDR"),
-    wb_stack_rdata(this, "wb_stack_rdata", "MUL(2,2*CFG_CPU_ADDR_BITS)"),
+    wb_stack_rdata(this, "wb_stack_rdata", "MUL(2,CFG_CPU_ADDR_BITS)"),
     w_stack_we(this, "w_stack_we", "1"),
     wb_stack_waddr(this, "wb_stack_waddr", "CFG_LOG2_STACK_TRACE_ADDR"),
     wb_stack_wdata(this, "wb_stack_wdata", "MUL(2,CFG_CPU_ADDR_BITS)"),
@@ -102,8 +102,20 @@ DbgPort::DbgPort(GenObject *parent, const char *name) :
     progbuf_pc(this, "progbuf_pc", "CFG_CPU_ADDR_BITS"),
     progbuf_instr(this, "progbuf_instr", "64"),
     // process
-    comb(this)
+    comb(this),
+    trbuf0(this, "trbuf0")
 {
+    Operation::start(this);
+
+    IF (NZ(glob_river_cfg_->CFG_LOG2_STACK_TRACE_ADDR));
+        NEW(trbuf0, trbuf0.getName().c_str());
+        CONNECT(trbuf0, 0, trbuf0.i_clk, i_clk);
+        CONNECT(trbuf0, 0, trbuf0.i_raddr, wb_stack_raddr);
+        CONNECT(trbuf0, 0, trbuf0.o_rdata, wb_stack_rdata);
+        CONNECT(trbuf0, 0, trbuf0.i_we, w_stack_we);
+        CONNECT(trbuf0, 0, trbuf0.i_waddr, wb_stack_waddr);
+        CONNECT(trbuf0, 0, trbuf0.i_wdata, wb_stack_wdata);
+    ENDIF();
 }
 
 void DbgPort::proc_comb() {
