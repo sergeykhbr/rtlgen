@@ -624,6 +624,25 @@ Operation &EQ(GenObject &a, GenObject &b, const char *comment) {
 }
 
 
+// NE
+std::string NE_gen(GenObject **args) {
+    std::string A = Operation::obj2varname(args[1], "r", true);
+    std::string B = Operation::obj2varname(args[2], "r", true);
+    A = "(" + A + " != " + B + ")";
+    return A;
+}
+
+Operation &NE(GenObject &a, GenObject &b, const char *comment) {
+    Operation *p = new Operation(0, comment);
+    p->setWidth(1);
+    p->igen_ = NE_gen;
+    p->add_arg(p);
+    p->add_arg(&a);
+    p->add_arg(&b);
+    return *p;
+}
+
+
 // EZ
 std::string EZ_gen(GenObject **args) {
     std::string A = Operation::obj2varname(args[1], "r", true);
@@ -681,6 +700,24 @@ std::string GT_gen(GenObject **args) {
 Operation &GT(GenObject &a, GenObject &b, const char *comment) {
     Operation *p = new Operation(0, comment);
     p->igen_ = GT_gen;
+    p->setWidth(1);
+    p->add_arg(p);
+    p->add_arg(&a);
+    p->add_arg(&b);
+    return *p;
+}
+
+// GE
+std::string GE_gen(GenObject **args) {
+    std::string A = Operation::obj2varname(args[1], "r", true);
+    std::string B = Operation::obj2varname(args[2], "r", true);
+    A = "(" + A + " >= " + B + ")";
+    return A;
+}
+
+Operation &GE(GenObject &a, GenObject &b, const char *comment) {
+    Operation *p = new Operation(0, comment);
+    p->igen_ = GE_gen;
     p->setWidth(1);
     p->add_arg(p);
     p->add_arg(&a);

@@ -105,9 +105,11 @@ Operation &SETVAL(GenObject &a, GenObject &b, const char *comment="");
 Operation &TO_INT(GenObject &a, const char *comment="");
 Operation &BIG_TO_U64(GenObject &a, const char *comment="");        // explicit conersion of biguint to uint64 (sysc only)
 Operation &EQ(GenObject &a, GenObject &b, const char *comment="");  // ==
+Operation &NE(GenObject &a, GenObject &b, const char *comment="");  // !=
 Operation &EZ(GenObject &a, const char *comment="");        // equal-zero
 Operation &NZ(GenObject &a, const char *comment="");        // Non-zero
 Operation &GT(GenObject &a, GenObject &b, const char *comment="");        // Greater (>)
+Operation &GE(GenObject &a, GenObject &b, const char *comment="");        // Greater-Equal (>=)
 Operation &LS(GenObject &a, GenObject &b, const char *comment="");        // Less (<)
 Operation &LE(GenObject &a, GenObject &b, const char *comment="");        // Less-Equal (<=)
 Operation &INV(GenObject &a, const char *comment="");        // logical inversion
