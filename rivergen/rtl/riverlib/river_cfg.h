@@ -59,19 +59,6 @@ class river_cfg : public FileObject {
         }
     };
 
-    class EnumEIsaType : public EnumObject {
-     public:
-        EnumEIsaType(GenObject *parent) : EnumObject(parent, "EIsaType") {
-            add_value("ISA_R_type");
-            add_value("ISA_I_type");
-            add_value("ISA_S_type");
-            add_value("ISA_SB_type");
-            add_value("ISA_U_type");
-            add_value("ISA_UJ_type");
-            add_value("ISA_Total");
-        }
-    };
-
     class EnumEInstructionType : public EnumObject {
      public:
         EnumEInstructionType(GenObject *parent) : EnumObject(parent, "EInstructionType") {
@@ -519,7 +506,13 @@ class river_cfg : public FileObject {
     TextLine _csr53_;
     TextLine _IsaType0_;
     TextLine _IsaType1_;
-    EnumEIsaType EIsaType;
+    ParamLogic ISA_R_type;
+    ParamLogic ISA_I_type;
+    ParamLogic ISA_S_type;
+    ParamLogic ISA_SB_type;
+    ParamLogic ISA_U_type;
+    ParamLogic ISA_UJ_type;
+    ParamLogic ISA_Total;
     TextLine _IsaType2_;
     TextLine _InstrList0_;
     EnumEInstructionType EInstructionType;

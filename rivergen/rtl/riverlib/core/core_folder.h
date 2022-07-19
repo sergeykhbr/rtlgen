@@ -24,6 +24,7 @@
 #include "stacktrbuf.h"
 #include "dbg_port.h"
 #include "fetch.h"
+#include "dec_rv.h"
 #include "mmu_tlb.h"
 #include "mmu.h"
 #include "ic_csr_m2_s1.h"
@@ -40,6 +41,7 @@ class core_folder : public FolderObject {
         stacktrbuf_(this),
         dbg_port_(this),
         fetch_(this),
+        dec_rv_(this),
         mmu_tlb_(this),
         mmu_(this),
         ic_(this),
@@ -56,6 +58,7 @@ class core_folder : public FolderObject {
     stacktrbuf_file stacktrbuf_;
     dbg_port_file dbg_port_;
     fetch_file fetch_;
+    dec_rv_file dec_rv_;
     mmu_tlb_file mmu_tlb_;
     mmu_file mmu_;
     ic_csr_m2_s1_file ic_;

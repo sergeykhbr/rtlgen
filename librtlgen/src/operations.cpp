@@ -326,15 +326,15 @@ Operation &BIT(GenObject &a, GenObject &b, const char *comment) {
     return *p;
 }
 
+Operation &BIT(GenObject &a, const char *b, const char *comment) {
+    GenObject *t1 = new I32D(b);
+    return BIT(a, *t1, comment);
+}
+
 Operation &BIT(GenObject &a, int b, const char *comment) {
-    Operation *p = new Operation(0, comment);
     char tstr[64];
-    p->igen_ = BIT_gen;
-    p->add_arg(p);
-    p->add_arg(&a);
     RISCV_sprintf(tstr, sizeof(tstr), "%d", b);
-    p->add_arg(new I32D(tstr));
-    return *p;
+    return (BIT(a, tstr, comment));
 }
 
 // BITS
@@ -483,15 +483,52 @@ Operation &SETBIT(GenObject &a, GenObject &b, GenObject &val, const char *commen
 }
 
 Operation &SETBIT(GenObject &a, int b, GenObject &val, const char *comment) {
-    Operation *p = new Operation(comment);
     char tstr[64];
-    p->igen_ = SETBIT_gen;
+    RISCV_sprintf(tstr, sizeof(tstr), "%d", b);
+    GenObject *t1 = new I32D(tstr);
+    return SETBIT(a, *t1, val, comment);
+}
+
+// SETBITONE
+std::string SETBITONE_gen(GenObject **args) {
+    std::string ret = Operation::addspaces();
+    ret += Operation::obj2varname(args[1], "v");
+    if (SCV_is_sysc()) {
+        ret += "[";
+        ret += Operation::obj2varname(args[2]);
+        ret += "] = 1;";
+    } else if (SCV_is_sv()) {
+        ret += "[";
+        ret += Operation::obj2varname(args[2]);
+        ret += "] = 1'b1;";
+    } else {
+        ret += "(";
+        ret += Operation::obj2varname(args[2]);
+        ret += ") := '1';";
+    }
+    ret += Operation::addtext(args[0], ret.size());
+    ret += "\n";
+    return ret;
+}
+
+Operation &SETBITONE(GenObject &a, GenObject &b, const char *comment) {
+    Operation *p = new Operation(comment);
+    p->setWidth(1);
+    p->igen_ = SETBITONE_gen;
     p->add_arg(p);
     p->add_arg(&a);
-    RISCV_sprintf(tstr, sizeof(tstr), "%d", b);
-    p->add_arg(new I32D(tstr));
-    p->add_arg(&val);
+    p->add_arg(&b);
     return *p;
+}
+Operation &SETBITONE(GenObject &a, const char *b, const char *comment) {
+    GenObject *t1 = new I32D(b);
+    return SETBITONE(a, *t1, comment);
+}
+
+Operation &SETBITONE(GenObject &a, int b, const char *comment) {
+    char tstr[64];
+    RISCV_sprintf(tstr, sizeof(tstr), "%d", b);
+    return SETBITONE(a, tstr, comment);
 }
 
 // SETBITS
