@@ -80,7 +80,7 @@ class Operation : public GenObject {
 
     generate_type igen_;
  protected:
-    GenObject *args[16];
+    GenObject *args[256];
     int argcnt_;
     std::map<std::string, GenObject *> connection_;
 };
@@ -103,6 +103,9 @@ Operation &SETBIT(GenObject &a, int b, GenObject &val, const char *comment="");
 Operation &SETBITONE(GenObject &a, GenObject &b, const char *comment="");
 Operation &SETBITONE(GenObject &a, const char *b, const char *comment="");
 Operation &SETBITONE(GenObject &a, int b, const char *comment="");
+Operation &SETBITZERO(GenObject &a, GenObject &b, const char *comment="");
+Operation &SETBITZERO(GenObject &a, const char *b, const char *comment="");
+Operation &SETBITZERO(GenObject &a, int b, const char *comment="");
 Operation &SETBITS(GenObject &a, GenObject &h, GenObject &l, GenObject &val, const char *comment="");
 Operation &SETBITS(GenObject &a, int h, int l, GenObject &val, const char *comment="");
 Operation &SETVAL(GenObject &a, GenObject &b, const char *comment="");
@@ -120,6 +123,7 @@ Operation &INV(GenObject &a, const char *comment="");        // logical inversio
 Operation &OR2(GenObject &a, GenObject &b, const char *comment="");
 Operation &OR3(GenObject &a, GenObject &b, GenObject &c, const char *comment="");
 Operation &OR4(GenObject &a, GenObject &b, GenObject &c, GenObject &d, const char *comment="");
+//Operation &ORx(size_t cnt, ...);
 Operation &ADD2(GenObject &a, GenObject &b, const char *comment="");
 Operation &SUB2(GenObject &a, GenObject &b, const char *comment="");
 Operation &AND_REDUCE(GenObject &a, const char *comment="");
@@ -130,6 +134,7 @@ Operation &DEC(GenObject &a, const char *comment="");
 Operation &INC(GenObject &a, const char *comment="");
 Operation &MUL2(GenObject &a, GenObject &b, const char *comment="");
 Operation &CC2(GenObject &a, GenObject &b, const char *comment="");     // concatation
+Operation &CC3(GenObject &a, GenObject &b, GenObject &c, const char *comment="");     // concatation
 Operation &LSH(GenObject &a, int sz, const char *comment="");           // left shift
 
 Operation &ARRITEM(GenObject &arr, GenObject &idx, GenObject &item, const char *comment="");

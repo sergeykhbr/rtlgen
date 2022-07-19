@@ -319,6 +319,7 @@ std::string BIT_gen(GenObject **args) {
 
 Operation &BIT(GenObject &a, GenObject &b, const char *comment) {
     Operation *p = new Operation(0, comment);
+    p->setWidth(1);
     p->igen_ = BIT_gen;
     p->add_arg(p);
     p->add_arg(&a);
@@ -526,6 +527,48 @@ Operation &SETBITONE(GenObject &a, const char *b, const char *comment) {
 }
 
 Operation &SETBITONE(GenObject &a, int b, const char *comment) {
+    char tstr[64];
+    RISCV_sprintf(tstr, sizeof(tstr), "%d", b);
+    return SETBITONE(a, tstr, comment);
+}
+
+// SETBITZERO
+std::string SETBITZERO_gen(GenObject **args) {
+    std::string ret = Operation::addspaces();
+    ret += Operation::obj2varname(args[1], "v");
+    if (SCV_is_sysc()) {
+        ret += "[";
+        ret += Operation::obj2varname(args[2]);
+        ret += "] = 0;";
+    } else if (SCV_is_sv()) {
+        ret += "[";
+        ret += Operation::obj2varname(args[2]);
+        ret += "] = 1'b01;";
+    } else {
+        ret += "(";
+        ret += Operation::obj2varname(args[2]);
+        ret += ") := '0';";
+    }
+    ret += Operation::addtext(args[0], ret.size());
+    ret += "\n";
+    return ret;
+}
+
+Operation &SETBITZERO(GenObject &a, GenObject &b, const char *comment) {
+    Operation *p = new Operation(comment);
+    p->setWidth(1);
+    p->igen_ = SETBITZERO_gen;
+    p->add_arg(p);
+    p->add_arg(&a);
+    p->add_arg(&b);
+    return *p;
+}
+Operation &SETBITZERO(GenObject &a, const char *b, const char *comment) {
+    GenObject *t1 = new I32D(b);
+    return SETBITONE(a, *t1, comment);
+}
+
+Operation &SETBITZERO(GenObject &a, int b, const char *comment) {
     char tstr[64];
     RISCV_sprintf(tstr, sizeof(tstr), "%d", b);
     return SETBITONE(a, tstr, comment);
@@ -872,6 +915,40 @@ Operation &OR4(GenObject &a, GenObject &b, GenObject &c, GenObject &d, const cha
     return *p;
 }
 
+// ORx
+std::string ORx_gen(GenObject **args) {
+    std::string ret = "(";
+    size_t cnt = reinterpret_cast<size_t>(args[1]);
+    Operation::set_space(Operation::get_space() + 2);
+    for (size_t i = 0; i < cnt; i++) {
+        if (i > 0) {
+            ret += "\n";
+            ret += Operation::addspaces();
+            ret += "|| ";
+        }
+        ret += Operation::obj2varname(args[2 + i]);
+    }
+    Operation::set_space(Operation::get_space() - 2);
+    ret += ")";
+    return ret;
+}
+
+/*Operation &ORx(size_t cnt, ...) {
+    Operation *p = new Operation(0, "");
+    GenObject *obj;
+    p->igen_ = ORx_gen;
+    p->add_arg(p);
+    p->add_arg(reinterpret_cast<GenObject *>(cnt));
+    va_list arg;
+    va_start(arg, cnt);
+    for (int i = 0; i < cnt; i++) {
+        obj = va_arg(arg, GenObject *);
+        p->add_arg(obj);
+    }
+    va_end(arg);
+    return *p;
+}*/
+
 // ADD2
 std::string ADD2_gen(GenObject **args) {
     std::string A = Operation::obj2varname(args[1], "r", true);
@@ -1055,6 +1132,26 @@ Operation &CC2(GenObject &a, GenObject &b, const char *comment) {
     p->add_arg(p);
     p->add_arg(&a);
     p->add_arg(&b);
+    return *p;
+}
+
+// CC3
+std::string CC3_gen(GenObject **args) {
+    std::string A = Operation::obj2varname(args[1]);
+    std::string B = Operation::obj2varname(args[2]);
+    std::string C = Operation::obj2varname(args[3]);
+    A = "(" + A + ", " + B + ", " + C + ")";
+    return A;
+}
+
+Operation &CC3(GenObject &a, GenObject &b, GenObject &c, const char *comment) {
+    Operation *p = new Operation(0, comment);
+    p->setWidth(a.getWidth() + b.getWidth() + c.getWidth());
+    p->igen_ = CC3_gen;
+    p->add_arg(p);
+    p->add_arg(&a);
+    p->add_arg(&b);
+    p->add_arg(&c);
     return *p;
 }
 
