@@ -152,22 +152,6 @@ CsrRegs::CsrRegs(GenObject *parent, const char *name) :
 void CsrRegs::proc_comb() {
     river_cfg *cfg = glob_river_cfg_;
     //SETVAL(dbg_e_valid, i_e_valid, "used in RtlWrapper to count executed instructions");
-    SETZERO(comb.vb_rdata);
-    SETZERO(comb.v_req_halt);
-    SETZERO(comb.v_req_resume);
-    SETZERO(comb.v_req_progbuf);
-    SETZERO(flushi_ena);
-    SETZERO(flushi_addr);
-    SETZERO(comb.v_req_ready);
-    SETZERO(comb.v_resp_valid);
-    SETZERO(comb.v_csr_rena);
-    SETZERO(comb.v_csr_wena);
-    SETZERO(comb.v_csr_trapreturn);
-    SETZERO(comb.w_trap_valid);
-    SETZERO(comb.v_trap_irq);
-    SETZERO(comb.wb_trap_cause);
-    SETZERO(comb.vb_mtval);
-    SETZERO(mpu_we);
     SETVAL(comb.vb_mtvec_off, CC2(BITS(mtvec, DEC(cfg->RISCV_ARCH), CONST("2")), CONST("0",2)));
 
 TEXT();

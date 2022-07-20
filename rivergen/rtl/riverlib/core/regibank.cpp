@@ -51,7 +51,6 @@ RegIntBank::RegIntBank(GenObject *parent, const char *name) :
 void RegIntBank::proc_comb() {
     river_cfg *cfg = glob_river_cfg_;
 
-    SETZERO(comb.v_inordered);
     SETVAL(comb.int_daddr, TO_INT(i_dport_addr));
     SETVAL(comb.int_waddr, TO_INT(i_waddr));
     SETVAL(comb.int_radr1, TO_INT(i_radr1));

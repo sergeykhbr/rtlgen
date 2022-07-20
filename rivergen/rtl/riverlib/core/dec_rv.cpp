@@ -100,24 +100,7 @@ DecoderRv::DecoderRv(GenObject *parent, const char *name) :
 void DecoderRv::proc_comb() {
     river_cfg *cfg = glob_river_cfg_;
 
-    SETZERO(comb.v_error);
-    SETZERO(comb.v_compressed);
     SETVAL(comb.vb_instr, i_f_instr);
-    SETZERO(comb.vb_dec);
-    SETZERO(comb.vb_isa_type);
-    SETZERO(comb.vb_radr1);
-    SETZERO(comb.vb_radr2);
-    SETZERO(comb.vb_waddr);
-    SETZERO(comb.vb_csr_addr);
-    SETZERO(comb.vb_imm);
-    SETZERO(comb.v_memop_store);
-    SETZERO(comb.v_memop_load);
-    SETZERO(comb.v_memop_sign_ext);
-    SETZERO(comb.vb_memop_size);
-    SETZERO(comb.v_unsigned_op);
-    SETZERO(comb.v_rv32);
-    SETZERO(comb.v_f64);
-    SETZERO(comb.v_amo);
 
 TEXT();
     IF (NE(BITS(comb.vb_instr, 1, 0), CONST("0x3", 2)));

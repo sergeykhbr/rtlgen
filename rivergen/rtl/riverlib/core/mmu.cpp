@@ -125,29 +125,6 @@ Mmu::Mmu(GenObject *parent, const char *name) :
 void Mmu::proc_comb() {
     river_cfg *cfg = glob_river_cfg_;
 
-    SETZERO(comb.v_core_req_x);
-    SETZERO(comb.v_core_req_r);
-    SETZERO(comb.v_core_req_w);
-    SETZERO(comb.last_page_fault_x);
-    SETZERO(comb.last_page_fault_r);
-    SETZERO(comb.last_page_fault_w);
-    SETZERO(comb.v_core_req_ready);
-    SETZERO(comb.v_core_resp_valid);
-    SETZERO(comb.vb_core_resp_addr);
-    SETZERO(comb.vb_core_resp_data);
-    SETZERO(comb.v_core_resp_executable);
-    SETZERO(comb.v_core_resp_load_fault);
-    SETZERO(comb.v_core_resp_store_fault);
-    SETZERO(comb.v_mem_req_valid);
-    SETZERO(comb.vb_mem_req_addr);
-    SETZERO(comb.vb_mem_req_type);
-    SETZERO(comb.vb_mem_req_wdata);
-    SETZERO(comb.vb_mem_req_wstrb);
-    SETZERO(comb.vb_mem_req_size);
-    SETZERO(comb.v_mem_resp_ready);
-    SETZERO(comb.vb_pte_start_va);
-    SETZERO(comb.vb_pte_base_va);
-    SETZERO(comb.v_tlb_wena);
     SETVAL(comb.vb_tlb_adr, BITS(i_core_req_addr, DEC(CONST("ADD(12,CFG_MMU_TLB_AWIDTH)")), CONST("12")));
 
 TEXT();

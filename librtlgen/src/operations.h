@@ -135,6 +135,8 @@ Operation &INC(GenObject &a, const char *comment="");
 Operation &MUL2(GenObject &a, GenObject &b, const char *comment="");
 Operation &CC2(GenObject &a, GenObject &b, const char *comment="");     // concatation
 Operation &CC3(GenObject &a, GenObject &b, GenObject &c, const char *comment="");     // concatation
+Operation &CC4(GenObject &a, GenObject &b, GenObject &c, GenObject &d, const char *comment="");     // concatation
+Operation &CCx(size_t cnt, ...);     // concatation
 Operation &LSH(GenObject &a, int sz, const char *comment="");           // left shift
 
 Operation &ARRITEM(GenObject &arr, GenObject &idx, GenObject &item, const char *comment="");

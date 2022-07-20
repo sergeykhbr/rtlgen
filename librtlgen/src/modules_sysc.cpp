@@ -783,6 +783,21 @@ std::string ModuleObject::generate_sysc_proc(GenObject *proc) {
         ret += ";\n";
     }
 
+    // nullify all local variables to avoid latches:
+    for (auto &e: proc->getEntries()) {
+        if (e->getId() == ID_VALUE) {
+            ret += "    " + e->getName() + " = 0;";
+            tcnt++;
+        } else if (e->getId() == ID_ARRAY_DEF) {
+            ret += "    for (int i = 0; i < " + e->getStrDepth() + "; i++) {\n";
+            ret += "        " + e->getName() + "[i] = 0;\n";
+            ret += "    }";
+        } else {
+            continue;
+        }
+        ret += "\n";
+    }
+
     if (tcnt) {
         ret += "\n";
     }

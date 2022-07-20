@@ -1109,6 +1109,39 @@ Operation &MUL2(GenObject &a, GenObject &b, const char *comment) {
     return *p;
 }
 
+// CCx
+// ORx
+std::string CCx_gen(GenObject **args) {
+    std::string ret = "(";
+    size_t cnt = reinterpret_cast<size_t>(args[1]);
+    Operation::set_space(Operation::get_space() + 2);
+    for (size_t i = 0; i < cnt; i++) {
+        if (i > 0) {
+            ret += ", ";
+        }
+        ret += Operation::obj2varname(args[2 + i]);
+    }
+    Operation::set_space(Operation::get_space() - 2);
+    ret += ")";
+    return ret;
+}
+
+Operation &CCx(size_t cnt, ...) {
+    Operation *p = new Operation(0, "");
+    GenObject *obj;
+    p->igen_ = CCx_gen;
+    p->add_arg(p);
+    p->add_arg(reinterpret_cast<GenObject *>(cnt));
+    va_list arg;
+    va_start(arg, cnt);
+    for (int i = 0; i < cnt; i++) {
+        obj = va_arg(arg, GenObject *);
+        p->add_arg(obj);
+    }
+    va_end(arg);
+    return *p;
+}
+
 // CC2
 std::string CC2_gen(GenObject **args) {
     std::string A = Operation::obj2varname(args[1]);
@@ -1152,6 +1185,28 @@ Operation &CC3(GenObject &a, GenObject &b, GenObject &c, const char *comment) {
     p->add_arg(&a);
     p->add_arg(&b);
     p->add_arg(&c);
+    return *p;
+}
+
+// CC4
+std::string CC4_gen(GenObject **args) {
+    std::string A = Operation::obj2varname(args[1]);
+    std::string B = Operation::obj2varname(args[2]);
+    std::string C = Operation::obj2varname(args[3]);
+    std::string D = Operation::obj2varname(args[4]);
+    A = "(" + A + ", " + B + ", " + C + + ", " + D + ")";
+    return A;
+}
+
+Operation &CC4(GenObject &a, GenObject &b, GenObject &c, GenObject &d, const char *comment) {
+    Operation *p = new Operation(0, comment);
+    p->setWidth(a.getWidth() + b.getWidth() + c.getWidth() + d.getWidth());
+    p->igen_ = CC4_gen;
+    p->add_arg(p);
+    p->add_arg(&a);
+    p->add_arg(&b);
+    p->add_arg(&c);
+    p->add_arg(&d);
     return *p;
 }
 

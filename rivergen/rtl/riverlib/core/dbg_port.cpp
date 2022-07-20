@@ -121,23 +121,7 @@ DbgPort::DbgPort(GenObject *parent, const char *name) :
 void DbgPort::proc_comb() {
     river_cfg *cfg = glob_river_cfg_;
 
-    SETZERO(comb.v_csr_req_valid);
-    SETZERO(comb.v_csr_resp_ready);
-    SETZERO(comb.vb_csr_req_type);
-    SETZERO(comb.vb_csr_req_addr);
-    SETZERO(comb.vb_csr_req_data);
-    SETZERO(comb.vb_o_ireg_addr);
-    SETZERO(comb.vb_o_ireg_wdata);
     SETVAL(comb.vb_idx, BITS(i_dport_addr, 11, 0));
-    SETZERO(comb.v_o_ireg_ena);
-    SETZERO(comb.v_o_ireg_write);
-    SETZERO(comb.v_mem_req_valid);
-    SETZERO(wb_stack_raddr);
-    SETZERO(w_stack_we);
-    SETZERO(wb_stack_waddr);
-    SETZERO(wb_stack_wdata);
-    SETZERO(comb.v_req_ready);
-    SETZERO(comb.v_resp_valid);
     SETVAL(comb.vrdata, dport_rdata);
 
 TEXT();

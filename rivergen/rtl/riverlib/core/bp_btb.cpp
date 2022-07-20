@@ -42,8 +42,6 @@ BpBTB::BpBTB(GenObject *parent, const char *name) :
 void BpBTB::proc_comb() {
     river_cfg *cfg = glob_river_cfg_;
 
-    SETVAL(comb.vb_hit, ALLZEROS());
-    SETVAL(comb.vb_bp_exec, ALLZEROS());
     SETBITS(comb.vb_addr, DEC(cfg->CFG_CPU_ADDR_BITS), CONST("0"), i_bp_pc);
     SETBIT(comb.vb_bp_exec, 0, i_e);
 
