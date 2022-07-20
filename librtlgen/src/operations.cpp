@@ -1109,6 +1109,23 @@ Operation &MUL2(GenObject &a, GenObject &b, const char *comment) {
     return *p;
 }
 
+// DIV2
+std::string DIV2_gen(GenObject **args) {
+    std::string A = Operation::obj2varname(args[1], "r", true);
+    std::string B = Operation::obj2varname(args[2], "r", true);
+    A = "(" + A + " / " + B + ")";
+    return A;
+}
+
+Operation &DIV2(GenObject &a, GenObject &b, const char *comment) {
+    Operation *p = new Operation(0, comment);
+    p->igen_ = DIV2_gen;
+    p->add_arg(p);
+    p->add_arg(&a);
+    p->add_arg(&b);
+    return *p;
+}
+
 // CCx
 // ORx
 std::string CCx_gen(GenObject **args) {

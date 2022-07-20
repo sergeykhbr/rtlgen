@@ -133,6 +133,7 @@ Operation &AND4(GenObject &a, GenObject &b, GenObject &c, GenObject &d, const ch
 Operation &DEC(GenObject &a, const char *comment="");
 Operation &INC(GenObject &a, const char *comment="");
 Operation &MUL2(GenObject &a, GenObject &b, const char *comment="");
+Operation &DIV2(GenObject &a, GenObject &b, const char *comment="");
 Operation &CC2(GenObject &a, GenObject &b, const char *comment="");     // concatation
 Operation &CC3(GenObject &a, GenObject &b, GenObject &c, const char *comment="");     // concatation
 Operation &CC4(GenObject &a, GenObject &b, GenObject &c, GenObject &d, const char *comment="");     // concatation
