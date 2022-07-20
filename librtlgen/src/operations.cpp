@@ -933,7 +933,7 @@ std::string ORx_gen(GenObject **args) {
     return ret;
 }
 
-/*Operation &ORx(size_t cnt, ...) {
+Operation &ORx(size_t cnt, ...) {
     Operation *p = new Operation(0, "");
     GenObject *obj;
     p->igen_ = ORx_gen;
@@ -947,7 +947,7 @@ std::string ORx_gen(GenObject **args) {
     }
     va_end(arg);
     return *p;
-}*/
+}
 
 // ADD2
 std::string ADD2_gen(GenObject **args) {
