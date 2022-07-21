@@ -517,6 +517,8 @@ class river_cfg : public FileObject {
     TextLine _InstrList0_;
     EnumEInstructionType EInstructionType;
     TextLine _InstrList1_;
+    ParamI32D Instr_FPU_First;
+    ParamI32D Instr_FPU_Last;
     ParamI32D Instr_FPU_Total;
     TextLine _InstrList2_;
     TextLine _prv0_;

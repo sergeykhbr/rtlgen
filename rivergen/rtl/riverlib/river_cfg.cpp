@@ -350,6 +350,8 @@ river_cfg::river_cfg(GenObject *parent) :
     _InstrList0_(this, "Implemented instruction list and its indexes"),
     EInstructionType(this),
     _InstrList1_(this),
+    Instr_FPU_First(this, "Instr_FPU_First", "Instr_FADD_D"),
+    Instr_FPU_Last(this, "Instr_FPU_Last", "Instr_FSUB_D"),
     Instr_FPU_Total(this, "Instr_FPU_Total", "ADD(SUB(Instr_FSUB_D,Instr_FADD_D),1)"),
     _InstrList2_(this),
     _prv0_(this),

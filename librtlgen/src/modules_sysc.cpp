@@ -777,10 +777,17 @@ std::string ModuleObject::generate_sysc_proc(GenObject *proc) {
             ret += "[";
             ret += e->getStrDepth();
             ret += "]";
+        } else if (e->getId() == ID_STRUCT_INST) {
+            ret += "    " + e->getType() + " " + e->getName();
         } else {
             continue;
         }
+        tcnt++;
         ret += ";\n";
+    }
+    if (tcnt) {
+        ret += "\n";
+        tcnt = 0;
     }
 
     // nullify all local variables to avoid latches:
