@@ -24,41 +24,6 @@ class river_cfg : public FileObject {
  public:
     river_cfg(GenObject *parent);
 
-    class EExceptions : public EnumObject {
-     public:
-        EExceptions(GenObject *parent) : EnumObject(parent, "EExceptions") {
-            add_value("EXCEPTION_InstrMisalign", "Instruction address misaligned");
-            add_value("EXCEPTION_InstrFault", "Instruction access fault");
-            add_value("EXCEPTION_InstrIllegal", "Illegal instruction");
-            add_value("EXCEPTION_Breakpoint", "Breakpoint");
-            add_value("EXCEPTION_LoadMisalign", "Load address misaligned");
-            add_value("EXCEPTION_LoadFault", "Load access fault");
-            add_value("EXCEPTION_StoreMisalign", "Store/AMO address misaligned");
-            add_value("EXCEPTION_StoreFault", "Store/AMO access fault");
-            add_value("EXCEPTION_CallFromUmode", "Environment call from U-mode");
-            add_value("EXCEPTION_CallFromSmode", "Environment call from S-mode");
-            add_value("EXCEPTION_CallFromHmode", "Environment call from H-mode");
-            add_value("EXCEPTION_CallFromMmode", "Environment call from M-mode");
-            add_value("EXCEPTION_InstrPageFault", "Instruction page fault");
-            add_value("EXCEPTION_LoadPageFault", "Load page fault");
-            add_value("EXCEPTION_rsrv14", "reserved");
-            add_value("EXCEPTION_StorePageFault", "Store/AMO page fault");
-            add_value("EXCEPTION_StackOverflow", "Stack overflow");
-            add_value("EXCEPTION_StackUnderflow", "Stack underflow");
-            add_value("EXCEPTIONS_Total");
-        }
-    };
-
-    class EInterrupts : public EnumObject {
-     public:
-        EInterrupts(GenObject *parent) : EnumObject(parent, "EInterrupts") {
-            add_value("INTERRUPT_XSoftware");
-            add_value("INTERRUPT_XTimer");
-            add_value("INTERRUPT_XExternal");
-            add_value("INTERRUPT_Total");
-        }
-    };
-
     class EnumEInstructionType : public EnumObject {
      public:
         EnumEInstructionType(GenObject *parent) : EnumObject(parent, "EInstructionType") {
@@ -557,9 +522,30 @@ class river_cfg : public FileObject {
     ParamLogic PROGBUF_ERR_BUS;
     ParamLogic PROGBUF_ERR_OTHER;
     TextLine _expt0_;
-    EExceptions EExceptions_;
+    ParamI32D EXCEPTION_InstrMisalign;
+    ParamI32D EXCEPTION_InstrFault;
+    ParamI32D EXCEPTION_InstrIllegal;
+    ParamI32D EXCEPTION_Breakpoint;
+    ParamI32D EXCEPTION_LoadMisalign;
+    ParamI32D EXCEPTION_LoadFault;
+    ParamI32D EXCEPTION_StoreMisalign;
+    ParamI32D EXCEPTION_StoreFault;
+    ParamI32D EXCEPTION_CallFromUmode;
+    ParamI32D EXCEPTION_CallFromSmode;
+    ParamI32D EXCEPTION_CallFromHmode;
+    ParamI32D EXCEPTION_CallFromMmode;
+    ParamI32D EXCEPTION_InstrPageFault;
+    ParamI32D EXCEPTION_LoadPageFault;
+    ParamI32D EXCEPTION_rsrv14;
+    ParamI32D EXCEPTION_StorePageFault;
+    ParamI32D EXCEPTION_StackOverflow;
+    ParamI32D EXCEPTION_StackUnderflow;
+    ParamI32D EXCEPTIONS_Total;
     TextLine _expt1_;
-    EInterrupts EInterrupts_;
+    ParamI32D INTERRUPT_XSoftware;
+    ParamI32D INTERRUPT_XTimer;
+    ParamI32D INTERRUPT_XExternal;
+    ParamI32D INTERRUPT_Total;
     TextLine _expt2_;
     ParamI32D SIGNAL_Exception;
     ParamI32D SIGNAL_XSoftware;

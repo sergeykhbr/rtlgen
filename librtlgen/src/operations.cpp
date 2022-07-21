@@ -841,6 +841,22 @@ Operation &LE(GenObject &a, GenObject &b, const char *comment) {
     return *p;
 }
 
+// INV_L
+std::string INV_L_gen(GenObject **args) {
+    std::string A = Operation::obj2varname(args[1], "r", true);
+    A = "(~" + A + ")";
+    return A;
+}
+
+Operation &INV_L(GenObject &a, const char *comment) {
+    Operation *p = new Operation(0, comment);
+    p->setWidth(a.getWidth());
+    p->igen_ = INV_L_gen;
+    p->add_arg(p);
+    p->add_arg(&a);
+    return *p;
+}
+
 // INV
 std::string INV_gen(GenObject **args) {
     std::string A = Operation::obj2varname(args[1]);
@@ -854,6 +870,24 @@ Operation &INV(GenObject &a, const char *comment) {
     p->igen_ = INV_gen;
     p->add_arg(p);
     p->add_arg(&a);
+    return *p;
+}
+
+// OR2_L
+std::string OR2_L_gen(GenObject **args) {
+    std::string A = Operation::obj2varname(args[1], "r", true);
+    std::string B = Operation::obj2varname(args[2], "r", true);
+    A = "(" + A + " | " + B + ")";
+    return A;
+}
+
+Operation &OR2_L(GenObject &a, GenObject &b, const char *comment) {
+    Operation *p = new Operation(0, comment);
+    p->setWidth(a.getWidth() > b.getWidth() ? a.getWidth() : b.getWidth());
+    p->igen_ = OR2_L_gen;
+    p->add_arg(p);
+    p->add_arg(&a);
+    p->add_arg(&b);
     return *p;
 }
 
@@ -1000,6 +1034,24 @@ Operation &AND_REDUCE(GenObject &a, const char *comment) {
     p->igen_ = AND_REDUCE_gen;
     p->add_arg(p);
     p->add_arg(&a);
+    return *p;
+}
+
+// AND2_L
+std::string AND2_L_gen(GenObject **args) {
+    std::string A = Operation::obj2varname(args[1], "r", true);
+    std::string B = Operation::obj2varname(args[2], "r", true);
+    A = "(" + A + " & " + B + ")";
+    return A;
+}
+
+Operation &AND2_L(GenObject &a, GenObject &b, const char *comment) {
+    Operation *p = new Operation(0, comment);
+    p->setWidth(a.getWidth() > b.getWidth() ? a.getWidth() : b.getWidth());
+    p->igen_ = AND2_L_gen;
+    p->add_arg(p);
+    p->add_arg(&a);
+    p->add_arg(&b);
     return *p;
 }
 

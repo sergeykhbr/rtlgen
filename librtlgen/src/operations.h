@@ -119,11 +119,14 @@ Operation &GT(GenObject &a, GenObject &b, const char *comment="");        // Gre
 Operation &GE(GenObject &a, GenObject &b, const char *comment="");        // Greater-Equal (>=)
 Operation &LS(GenObject &a, GenObject &b, const char *comment="");        // Less (<)
 Operation &LE(GenObject &a, GenObject &b, const char *comment="");        // Less-Equal (<=)
+Operation &INV_L(GenObject &a, const char *comment="");        // bits inversion
 Operation &INV(GenObject &a, const char *comment="");        // logical inversion
+Operation &OR2_L(GenObject &a, GenObject &b, const char *comment="");   // bitwise OR
 Operation &OR2(GenObject &a, GenObject &b, const char *comment="");
 Operation &OR3(GenObject &a, GenObject &b, GenObject &c, const char *comment="");
 Operation &OR4(GenObject &a, GenObject &b, GenObject &c, GenObject &d, const char *comment="");
 Operation &ORx(size_t cnt, ...);
+Operation &AND2_L(GenObject &a, GenObject &b, const char *comment="");
 Operation &ADD2(GenObject &a, GenObject &b, const char *comment="");
 Operation &SUB2(GenObject &a, GenObject &b, const char *comment="");
 Operation &AND_REDUCE(GenObject &a, const char *comment="");

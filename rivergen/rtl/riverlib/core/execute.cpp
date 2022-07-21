@@ -379,7 +379,7 @@ TEXT();
 TEXT();
     SETVAL(comb.v_instr_misaligned, BIT(comb.mux.pc, 0));
     IF (ORx(3, &AND2(NZ(BIT(comb.wv, "Instr_LD")), NZ(BITS(comb.vb_memop_memaddr_load, 2, 0))),
-               &AND2(NZ(OR2(BIT(comb.wv, "Instr_LW"), BIT(comb.wv, "Instr_LWU]"))), NZ(BITS(comb.vb_memop_memaddr_load, 1, 0))),
+               &AND2(NZ(OR2(BIT(comb.wv, "Instr_LW"), BIT(comb.wv, "Instr_LWU"))), NZ(BITS(comb.vb_memop_memaddr_load, 1, 0))),
                &AND2(NZ(OR2(BIT(comb.wv, "Instr_LH"), BIT(comb.wv, "Instr_LHU"))), NZ(BIT(comb.vb_memop_memaddr_load, 0)))));
         SETONE(comb.v_load_misaligned);
     ENDIF();
@@ -416,5 +416,242 @@ TEXT();
         SETVAL(mem_ex_addr, i_mem_ex_addr);
     ENDIF();
 
+TEXT();
+    SETVAL(comb.opcode_len, CONST("4", 3));
+    IF (NZ(comb.mux.compressed));
+        SETVAL(comb.opcode_len, CONST("2", 3));
+    ENDIF();
+    SETVAL(comb.vb_npc_incr, ADD2(comb.mux.pc, comb.opcode_len));
+
+TEXT();
+    IF (NZ(comb.v_pc_branch));
+        SETVAL(comb.vb_prog_npc, ADD2(comb.mux.pc, BITS(comb.vb_off, DEC(cfg->CFG_CPU_ADDR_BITS), CONST("0"))));
+    ELSIF (NZ(BIT(comb.wv, "Instr_JAL")));
+        SETVAL(comb.vb_prog_npc, ADD2(BITS(comb.vb_rdata1, DEC(cfg->CFG_CPU_ADDR_BITS), CONST("0")),
+                                      BITS(comb.vb_off, DEC(cfg->CFG_CPU_ADDR_BITS), CONST("0"))));
+    ELSIF (NZ(BIT(comb.wv, "Instr_JALR")));
+        SETVAL(comb.vb_prog_npc, ADD2(BITS(comb.vb_rdata1, DEC(cfg->CFG_CPU_ADDR_BITS), CONST("0")),
+                                      BITS(comb.vb_rdata2, DEC(cfg->CFG_CPU_ADDR_BITS), CONST("0"))));
+        SETBITZERO(comb.vb_prog_npc, 0);
+    ELSE();
+        SETVAL(comb.vb_prog_npc, comb.vb_npc_incr);
+    ENDIF();
+
+TEXT();
+    SETBIT(comb.vb_select, Res_Reg2, ORx(2, &BIT(comb.mux.memop_type, cfg->MemopType_Store),
+                                            &BIT(comb.wv, "Instr_LUI")));
+    SETBITZERO(comb.vb_select, Res_Npc);
+    SETBIT(comb.vb_select, Res_Ra, ORx(5, &comb.v_pc_branch,
+                                          &BIT(comb.wv, "Instr_JAL"),
+                                          &BIT(comb.wv, "Instr_JALR"),
+                                          &BIT(comb.wv, "Instr_MRET"),
+                                          &BIT(comb.wv, "Instr_URET")));
+    SETBIT(comb.vb_select, Res_Csr, ORx(6, &BIT(comb.wv, "Instr_CSRRC"),
+                                           &BIT(comb.wv, "Instr_CSRRCI"),
+                                           &BIT(comb.wv, "Instr_CSRRS"),
+                                           &BIT(comb.wv, "Instr_CSRRSI"),
+                                           &BIT(comb.wv, "Instr_CSRRW"),
+                                           &BIT(comb.wv, "Instr_CSRRWI")));
+    SETBIT(comb.vb_select, Res_Alu, ORx(12, &BIT(comb.wv, "Instr_AND"),
+                                            &BIT(comb.wv, "Instr_ANDI"),
+                                            &BIT(comb.wv, "Instr_OR"),
+                                            &BIT(comb.wv, "Instr_ORI"),
+                                            &BIT(comb.wv, "Instr_XOR"),
+                                            &BIT(comb.wv, "Instr_XORI"),
+                                            &BIT(comb.wv, "Instr_AMOOR_D"),
+                                            &BIT(comb.wv, "Instr_AMOOR_W"),
+                                            &BIT(comb.wv, "Instr_AMOAND_D"),
+                                            &BIT(comb.wv, "Instr_AMOAND_W"),
+                                            &BIT(comb.wv, "Instr_AMOXOR_D"),
+                                            &BIT(comb.wv, "Instr_AMOXOR_W")));
+    SETBIT(comb.vb_select, Res_AddSub, ORx(23, &BIT(comb.wv, "Instr_ADD"),
+                                             &BIT(comb.wv, "Instr_ADDI"),
+                                             &BIT(comb.wv, "Instr_AUIPC"),
+                                             &BIT(comb.wv, "Instr_ADDW"),
+                                             &BIT(comb.wv, "Instr_ADDIW"),
+                                             &BIT(comb.wv, "Instr_SUB"),
+                                             &BIT(comb.wv, "Instr_SUBW"),
+                                             &BIT(comb.wv, "Instr_SLT"),
+                                             &BIT(comb.wv, "Instr_SLTI"),
+                                             &BIT(comb.wv, "Instr_SLTU"),
+                                             &BIT(comb.wv, "Instr_SLTIU"),
+                                             &BIT(comb.wv, "Instr_AMOADD_D"),
+                                             &BIT(comb.wv, "Instr_AMOADD_W"),
+                                             &BIT(comb.wv, "Instr_AMOMIN_D"),
+                                             &BIT(comb.wv, "Instr_AMOMIN_W"),
+                                             &BIT(comb.wv, "Instr_AMOMAX_D"),
+                                             &BIT(comb.wv, "Instr_AMOMAX_W"),
+                                             &BIT(comb.wv, "Instr_AMOMINU_D"),
+                                             &BIT(comb.wv, "Instr_AMOMINU_W"),
+                                             &BIT(comb.wv, "Instr_AMOMAXU_D"),
+                                             &BIT(comb.wv, "Instr_AMOMAXU_W"),
+                                             &BIT(comb.wv, "Instr_AMOSWAP_D"),
+                                             &BIT(comb.wv, "Instr_AMOSWAP_W")));
+    SETBIT(comb.vb_select, Res_Shifter, ORx(13, &BIT(comb.wv, "Instr_SLL"),
+                                              &BIT(comb.wv, "Instr_SLLI"),
+                                              &BIT(comb.wv, "Instr_SLLW"),
+                                              &BIT(comb.wv, "Instr_SLLIW"),
+                                              &BIT(comb.wv, "Instr_SRL"),
+                                              &BIT(comb.wv, "Instr_SRLI"),
+                                              &BIT(comb.wv, "Instr_SRLW"),
+                                              &BIT(comb.wv, "Instr_SRLIW"),
+                                              &BIT(comb.wv, "Instr_SRA"),
+                                              &BIT(comb.wv, "Instr_SRAI"),
+                                              &BIT(comb.wv, "Instr_SRAW"),
+                                              &BIT(comb.wv, "Instr_SRAW"),
+                                              &BIT(comb.wv, "Instr_SRAIW")));
+    SETBIT(comb.vb_select, Res_IMul, ORx(5, &BIT(comb.wv, "Instr_MUL"),
+                                         &BIT(comb.wv, "Instr_MULW"),
+                                         &BIT(comb.wv, "Instr_MULH"),
+                                         &BIT(comb.wv, "Instr_MULHSU"),
+                                         &BIT(comb.wv, "Instr_MULHU")));
+    SETBIT(comb.vb_select, Res_IDiv, ORx(8, &BIT(comb.wv, "Instr_DIV"),
+                                        &BIT(comb.wv, "Instr_DIVU"),
+                                        &BIT(comb.wv, "Instr_DIVW"),
+                                        &BIT(comb.wv, "Instr_DIVUW"),
+                                        &BIT(comb.wv, "Instr_REM"),
+                                        &BIT(comb.wv, "Instr_REMU"),
+                                        &BIT(comb.wv, "Instr_REMW"),
+                                        &BIT(comb.wv, "Instr_REMUW")));
+    IF (fpu_ena);
+        SETBIT(comb.vb_select, Res_FPU, AND2(comb.mux.f64, INV(OR2(BIT(comb.wv, "Instr_FSD"),
+                                                                   BIT(comb.wv, "Instr_FLD")))));
+    ENDIF();
+    IF (EZ(BITS(comb.vb_select, DEC(Res_Total), INC(Res_Zero))));
+        SETBITONE(comb.vb_select, Res_Zero, "load memory, fence");
+    ENDIF();
+
+TEXT();
+    IF (AND2(NZ(OR2(BIT(comb.wv, "Instr_JAL"), BIT(comb.wv, "Instr_JALR"))),
+             EQ(comb.mux.waddr, cfg->REG_RA)));
+        SETONE(comb.v_call);
+    ENDIF();
+    IF (AND4(NZ(BIT(comb.wv, "Instr_JALR")),
+             EZ(comb.vb_rdata2),
+             NE(comb.mux.waddr, cfg->REG_RA),
+             EQ(comb.mux.radr1, cfg->REG_RA)));
+        SETONE(comb.v_ret);
+    ENDIF();
+
+    SETVAL(comb.v_mem_ex, ORx(4, &mem_ex_load_fault,
+                                 &mem_ex_store_fault,
+                                 &mem_ex_mpu_store,
+                                 &mem_ex_mpu_load));
+    SETVAL(comb.v_csr_cmd_ena, ORx(25, &i_haltreq,
+                                    &AND2(i_step, stepdone),
+                                    &i_unsup_exception,
+                                    &i_instr_load_fault,
+                                    &comb.v_mem_ex,
+                                    &INV(i_instr_executable),
+                                    &stack_overflow,
+                                    &stack_underflow,
+                                    &comb.v_instr_misaligned,
+                                    &comb.v_load_misaligned,
+                                    &comb.v_store_misaligned,
+                                    &i_irq_software,
+                                    &i_irq_timer,
+                                    &i_irq_external,
+                                    &BIT(comb.wv, "Instr_WFI"),
+                                    &BIT(comb.wv, "Instr_EBREAK"),
+                                    &BIT(comb.wv, "Instr_ECALL"),
+                                    &BIT(comb.wv, "Instr_MRET"),
+                                    &BIT(comb.wv, "Instr_URET"),
+                                    &BIT(comb.wv, "Instr_CSRRC"),
+                                    &BIT(comb.wv, "Instr_CSRRCI"),
+                                    &BIT(comb.wv, "Instr_CSRRS"),
+                                    &BIT(comb.wv, "Instr_CSRRSI"),
+                                    &BIT(comb.wv, "Instr_CSRRW"),
+                                    &BIT(comb.wv, "Instr_CSRRWI")));
+    IF (NZ(i_haltreq));
+        SETVAL(comb.vb_csr_cmd_type, cfg->CsrReq_HaltCmd);
+        SETVAL(comb.vb_csr_cmd_addr, cfg->HALT_CAUSE_HALTREQ);
+    ELSIF (AND2(NZ(i_step), NZ(stepdone)));
+        SETVAL(comb.vb_csr_cmd_type, cfg->CsrReq_HaltCmd);
+        SETVAL(comb.vb_csr_cmd_addr, cfg->HALT_CAUSE_STEP);
+    ELSIF (NZ(comb.v_instr_misaligned));
+        SETVAL(comb.vb_csr_cmd_type, cfg->CsrReq_ExceptionCmd);
+        SETVAL(comb.vb_csr_cmd_addr, cfg->EXCEPTION_InstrMisalign, "Instruction address misaligned");
+        SETVAL(comb.vb_csr_cmd_wdata, comb.mux.pc);
+    ELSIF (OR2(NZ(i_instr_load_fault), EZ(i_instr_executable)));
+        SETVAL(comb.vb_csr_cmd_type, cfg->CsrReq_ExceptionCmd);
+        SETVAL(comb.vb_csr_cmd_addr, cfg->EXCEPTION_InstrFault, "Instruction access fault");
+        SETVAL(comb.vb_csr_cmd_wdata, comb.mux.pc);
+    ELSIF (i_unsup_exception);
+        SETVAL(comb.vb_csr_cmd_type, cfg->CsrReq_ExceptionCmd);
+        SETVAL(comb.vb_csr_cmd_addr, cfg->EXCEPTION_InstrIllegal, "Illegal instruction");
+        SETVAL(comb.vb_csr_cmd_wdata, comb.mux.instr);
+    ELSIF (NZ(BIT(comb.wv, "Instr_EBREAK")));
+        SETVAL(comb.vb_csr_cmd_type, cfg->CsrReq_BreakpointCmd);
+        SETVAL(comb.vb_csr_cmd_addr, cfg->EXCEPTION_Breakpoint);
+    ELSIF (NZ(comb.v_load_misaligned));
+        SETVAL(comb.vb_csr_cmd_type, cfg->CsrReq_ExceptionCmd);
+        SETVAL(comb.vb_csr_cmd_addr, cfg->EXCEPTION_LoadMisalign, "Load address misaligned");
+        SETVAL(comb.vb_csr_cmd_wdata, comb.vb_memop_memaddr_load);
+    ELSIF (NZ(OR2(mem_ex_load_fault, mem_ex_mpu_load)));
+        SETVAL(comb.vb_csr_cmd_type, cfg->CsrReq_ExceptionCmd);
+        SETVAL(comb.vb_csr_cmd_addr, cfg->EXCEPTION_LoadFault, "Load access fault");
+        SETVAL(comb.vb_csr_cmd_wdata, mem_ex_addr);
+    ELSIF (NZ(comb.v_store_misaligned));
+        SETVAL(comb.vb_csr_cmd_type, cfg->CsrReq_ExceptionCmd);
+        SETVAL(comb.vb_csr_cmd_addr, cfg->EXCEPTION_StoreMisalign, "Store/AMO address misaligned");
+        SETVAL(comb.vb_csr_cmd_wdata, comb.vb_memop_memaddr_store);
+    ELSIF (NZ(OR2(mem_ex_store_fault, mem_ex_mpu_store)));
+        SETVAL(comb.vb_csr_cmd_type, cfg->CsrReq_ExceptionCmd);
+        SETVAL(comb.vb_csr_cmd_addr, cfg->EXCEPTION_StoreFault, "Store/AMO access fault");
+        SETVAL(comb.vb_csr_cmd_wdata, mem_ex_addr);
+    ELSIF (NZ(stack_overflow));
+        SETVAL(comb.vb_csr_cmd_type, cfg->CsrReq_ExceptionCmd);
+        SETVAL(comb.vb_csr_cmd_addr, cfg->EXCEPTION_StackOverflow, "Stack overflow");
+    ELSIF (NZ(stack_underflow));
+        SETVAL(comb.vb_csr_cmd_type, cfg->CsrReq_ExceptionCmd);
+        SETVAL(comb.vb_csr_cmd_addr, cfg->EXCEPTION_StackUnderflow, "Stack Underflow");
+    ELSIF (NZ(BIT(comb.wv, "Instr_ECALL")));
+        SETVAL(comb.vb_csr_cmd_type, cfg->CsrReq_ExceptionCmd);
+        SETVAL(comb.vb_csr_cmd_addr, cfg->EXCEPTION_CallFromXMode, "Environment call");
+    ELSIF (NZ(i_irq_software));
+        SETVAL(comb.vb_csr_cmd_type, cfg->CsrReq_InterruptCmd);
+        SETVAL(comb.vb_csr_cmd_addr, cfg->INTERRUPT_XSoftware, "Software interrupt request");
+    ELSIF (NZ(i_irq_timer));
+        SETVAL(comb.vb_csr_cmd_type, cfg->CsrReq_InterruptCmd);
+        SETVAL(comb.vb_csr_cmd_addr, cfg->INTERRUPT_XTimer, "Timer interrupt request");
+    ELSIF (NZ(i_irq_external));
+        SETVAL(comb.vb_csr_cmd_type, cfg->CsrReq_InterruptCmd);
+        SETVAL(comb.vb_csr_cmd_addr, cfg->INTERRUPT_XExternal, "PLIC interrupt request");
+    ELSIF (NZ(BIT(comb.wv, "Instr_WFI")));
+        SETVAL(comb.vb_csr_cmd_type, cfg->CsrReq_WfiCmd);
+        SETVAL(comb.vb_csr_cmd_addr, BITS(comb.mux.instr, 14, 12), "PRIV field");
+    ELSIF (NZ(BIT(comb.wv, "Instr_MRET")));
+        SETVAL(comb.vb_csr_cmd_type, cfg->CsrReq_TrapReturnCmd);
+        SETVAL(comb.vb_csr_cmd_addr, cfg->CSR_mepc);
+    ELSIF (NZ(BIT(comb.wv, "Instr_URET")));
+        SETVAL(comb.vb_csr_cmd_type, cfg->CsrReq_TrapReturnCmd);
+        SETVAL(comb.vb_csr_cmd_addr, cfg->CSR_uepc);
+    ELSIF (NZ(BIT(comb.wv, "Instr_CSRRC")));
+        SETVAL(comb.vb_csr_cmd_type, cfg->CsrReq_ReadCmd);
+        SETVAL(comb.vb_csr_cmd_addr, i_d_csr_addr);
+        SETVAL(comb.vb_csr_cmd_wdata, AND2_L(i_csr_resp_data, INV_L(rdata1)));
+    ELSIF (NZ(BIT(comb.wv, "Instr_CSRRCI")));
+        SETVAL(comb.vb_csr_cmd_type, cfg->CsrReq_ReadCmd);
+        SETVAL(comb.vb_csr_cmd_addr, i_d_csr_addr);
+        SETBITS(comb.vb_csr_cmd_wdata, DEC(cfg->RISCV_ARCH), CONST("5"), BITS(i_csr_resp_data, DEC(cfg->RISCV_ARCH), CONST("5")));
+        SETBITS(comb.vb_csr_cmd_wdata, 4, 0, AND2_L(BITS(i_csr_resp_data, 4, 0), INV_L(BITS(radr1, 4, 0))), "zero-extending 5 to 64-bits");
+    ELSIF (NZ(BIT(comb.wv, "Instr_CSRRS")));
+        SETVAL(comb.vb_csr_cmd_type, cfg->CsrReq_ReadCmd);
+        SETVAL(comb.vb_csr_cmd_addr, i_d_csr_addr);
+        SETVAL(comb.vb_csr_cmd_wdata, OR2_L(i_csr_resp_data, rdata1));
+    ELSIF (NZ(BIT(comb.wv, "Instr_CSRRSI")));
+        SETVAL(comb.vb_csr_cmd_type, cfg->CsrReq_ReadCmd);
+        SETVAL(comb.vb_csr_cmd_addr, i_d_csr_addr);
+        SETBITS(comb.vb_csr_cmd_wdata, DEC(cfg->RISCV_ARCH), CONST("5"), BITS(i_csr_resp_data, DEC(cfg->RISCV_ARCH), CONST("5")));
+        SETBITS(comb.vb_csr_cmd_wdata, 4, 0, OR2_L(BITS(i_csr_resp_data, 4, 0), BITS(radr1, 4, 0)), "zero-extending 5 to 64-bits");
+    ELSIF (NZ(BIT(comb.wv, "Instr_CSRRW")));
+        SETVAL(comb.vb_csr_cmd_type, cfg->CsrReq_ReadCmd);
+        SETVAL(comb.vb_csr_cmd_addr, i_d_csr_addr);
+        SETVAL(comb.vb_csr_cmd_wdata, rdata1);
+    ELSIF (NZ(BIT(comb.wv, "Instr_CSRRWI")));
+        SETVAL(comb.vb_csr_cmd_type, cfg->CsrReq_ReadCmd);
+        SETVAL(comb.vb_csr_cmd_addr, i_d_csr_addr);
+        SETBITS(comb.vb_csr_cmd_wdata, 4, 0, BITS(radr1, 4, 0), "zero-extending 5 to 64-bits");
+    ENDIF();
 }
 
