@@ -31,6 +31,7 @@
 #include "mmu_tlb.h"
 #include "mmu.h"
 #include "ic_csr_m2_s1.h"
+#include "queue.h"
 #include "regibank.h"
 #include "csr.h"
 
@@ -51,6 +52,7 @@ class core_folder : public FolderObject {
         mmu_tlb_(this),
         mmu_(this),
         ic_(this),
+        queue_(this),
         regint_(this),
         csr_(this),
         proc_(this) {}
@@ -71,6 +73,7 @@ class core_folder : public FolderObject {
     mmu_tlb_file mmu_tlb_;
     mmu_file mmu_;
     ic_csr_m2_s1_file ic_;
+    queue_file queue_;
     regibank_file regint_;
     csr_file csr_;
     proc_file proc_;
