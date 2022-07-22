@@ -112,10 +112,17 @@ class InstrExecute : public ModuleObject {
             vb_csr_cmd_type(this, "vb_csr_cmd_type", "CsrReq_TotalBits"),
             v_dbg_mem_req_ready(this, "v_dbg_mem_req_ready", "1"),
             v_dbg_mem_req_error(this, "v_dbg_mem_req_error", "1"),
+            v_halted(this, "v_halted", "1"),
             mux(this, "mux"),
             vb_o_npc(this, "vb_o_npc", "CFG_CPU_ADDR_BITS"),
             t_radr1("0", "t_radr1", this),
-            t_radr2("0", "t_radr2", this)
+            t_radr2("0", "t_radr2", this),
+            t_waddr("0", "t_waddr", this),
+            t_type(this, "t_type", "MemopType_Total"),
+            t_tagcnt_wr(this, "t_tagcnt_wr", "CFG_REG_TAG_WIDTH"),
+            t_alu_mode(this, "t_alu_mode", "3"),
+            t_addsub_mode(this, "t_addsub_mode", "7"),
+            t_shifter_mode(this, "t_shifter_mode", "4")
         {
             Operation::start(this);
             InstrExecute *p = static_cast<InstrExecute *>(parent);
@@ -169,10 +176,17 @@ class InstrExecute : public ModuleObject {
         Logic vb_csr_cmd_type;
         Logic v_dbg_mem_req_ready;
         Logic v_dbg_mem_req_error;
+        Logic v_halted;
         input_mux_type mux;
         Logic vb_o_npc;
         I32D t_radr1;
         I32D t_radr2;
+        I32D t_waddr;
+        Logic t_type;
+        Logic t_tagcnt_wr;
+        Logic t_alu_mode;
+        Logic t_addsub_mode;
+        Logic t_shifter_mode;
     };
 
     void proc_comb();
@@ -335,8 +349,6 @@ class InstrExecute : public ModuleObject {
 
     Signal w_hazard1;
     Signal w_hazard2;
-    //int t_waddr;
-    //int t_tagcnt_wr;
     Signal wb_rdata1;
     Signal wb_rdata2;
     Signal wb_shifter_a1;

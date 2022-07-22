@@ -133,6 +133,7 @@ Operation &AND_REDUCE(GenObject &a, const char *comment="");
 Operation &AND2(GenObject &a, GenObject &b, const char *comment="");
 Operation &AND3(GenObject &a, GenObject &b, GenObject &c, const char *comment="");
 Operation &AND4(GenObject &a, GenObject &b, GenObject &c, GenObject &d, const char *comment="");
+Operation &ANDx(size_t cnt, ...);
 Operation &DEC(GenObject &a, const char *comment="");
 Operation &INC(GenObject &a, const char *comment="");
 Operation &MUL2(GenObject &a, GenObject &b, const char *comment="");

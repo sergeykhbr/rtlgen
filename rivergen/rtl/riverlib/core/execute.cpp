@@ -157,8 +157,6 @@ InstrExecute::InstrExecute(GenObject *parent, const char *name) :
     w_ex_fpu_inexact(this, "w_ex_fpu_inexact", "1", "FPU Exception: inexact"),
     w_hazard1(this, "w_hazard1", "1"),
     w_hazard2(this, "w_hazard2", "1"),
-    //int t_waddr;
-    //int t_tagcnt_wr;
     wb_rdata1(this, "wb_rdata1", "RISCV_ARCH"),
     wb_rdata2(this, "wb_rdata2", "RISCV_ARCH"),
     wb_shifter_a1(this, "wb_shifter_a1", "RISCV_ARCH", "Shifters operand 1"),
@@ -653,5 +651,563 @@ TEXT();
         SETVAL(comb.vb_csr_cmd_addr, i_d_csr_addr);
         SETBITS(comb.vb_csr_cmd_wdata, 4, 0, BITS(radr1, 4, 0), "zero-extending 5 to 64-bits");
     ENDIF();
+
+TEXT();
+    SETARRITEM(wb_select, Res_Zero, wb_select->res, ALLZEROS());
+    SETARRITEM(wb_select, Res_Reg2, wb_select->res, rdata2);
+    SETARRITEM(wb_select, Res_Csr, wb_select->res, res_csr);
+    SETARRITEM(wb_select, Res_Npc, wb_select->res, res_npc);
+    SETARRITEM(wb_select, Res_Ra, wb_select->res, res_ra);
+
+TEXT();
+    TEXT("Select result:");
+    IF (NZ(BIT(select, Res_Reg2)));
+        SETVAL(comb.vb_res, ARRITEM(wb_select, Res_Reg2, wb_select->res));
+    ELSIF (NZ(BIT(select, Res_Npc)));
+        SETVAL(comb.vb_res, ARRITEM(wb_select, Res_Npc, wb_select->res));
+    ELSIF (NZ(BIT(select, Res_Ra)));
+        SETVAL(comb.vb_res, ARRITEM(wb_select, Res_Ra, wb_select->res));
+    ELSIF (NZ(BIT(select, Res_Csr)));
+        SETVAL(comb.vb_res, ARRITEM(wb_select, Res_Csr, wb_select->res));
+    ELSIF (NZ(BIT(select, Res_Alu)));
+        SETVAL(comb.vb_res, ARRITEM(wb_select, Res_Alu, wb_select->res));
+    ELSIF (NZ(BIT(select, Res_AddSub)));
+        SETVAL(comb.vb_res, ARRITEM(wb_select, Res_AddSub, wb_select->res));
+    ELSIF (NZ(BIT(select, Res_Shifter)));
+        SETVAL(comb.vb_res, ARRITEM(wb_select, Res_Shifter, wb_select->res));
+    ELSIF (NZ(BIT(select, Res_IMul)));
+        SETVAL(comb.vb_res, ARRITEM(wb_select, Res_IMul, wb_select->res));
+    ELSIF (NZ(BIT(select, Res_IDiv)));
+        SETVAL(comb.vb_res, ARRITEM(wb_select, Res_IDiv, wb_select->res));
+    ELSIF (NZ(BIT(select, Res_FPU)));
+        SETVAL(comb.vb_res, ARRITEM(wb_select, Res_FPU, wb_select->res));
+    ELSE();
+        SETZERO(comb.vb_res);
+    ENDIF();
+
+TEXT();
+    IF (ORx(2, &ANDx(3, &EQ(i_d_pc, npc),
+                        &EZ(i_d_progbuf_ena),
+                        &EZ(i_dbg_progbuf_ena)),
+                &ANDx(3, &EQ(i_d_pc, dnpc),
+                         &NZ(i_d_progbuf_ena),
+                         &NZ(i_dbg_progbuf_ena))));
+        SETONE(comb.v_d_valid);
+    ENDIF();
+
+TEXT();
+    SWITCH (state);
+    CASE (State_Idle);
+        IF (AND2(NZ(memop_valid), EZ(i_memop_ready)));
+            TEXT("Do nothing, previous memaccess request wasn't accepted. queue is full.");
+        ELSIF (AND3(NZ(comb.v_d_valid), EZ(w_hazard1), EZ(w_hazard2)));
+            SETONE(comb.v_latch_input);
+            TEXT("opencocd doesn't clear 'step' value in dcsr after step has been done");
+            SETVAL(stepdone, AND2(i_step, INV(i_dbg_progbuf_ena)));
+            IF (NZ(i_dbg_mem_req_valid));
+                SETONE(comb.v_dbg_mem_req_ready);
+                SETVAL(comb.v_dbg_mem_req_error, comb.v_debug_misaligned);
+                IF (NZ(comb.v_debug_misaligned));
+                    SETVAL(state, State_DebugMemError);
+                ELSE();
+                    SETVAL(state, State_DebugMemRequest);
+                ENDIF();
+                SETZERO(memop_halted);
+                SETZERO(memop_sign_ext);
+                SETBIT(comb.t_type, cfg->MemopType_Store, i_dbg_mem_req_write);
+                SETVAL(memop_type, comb.t_type);
+                SETVAL(memop_size, i_dbg_mem_req_size);
+            ELSIF (NZ(comb.v_csr_cmd_ena));
+                SETVAL(state, State_Csr);
+                SETVAL(csrstate, CsrState_Req);
+                SETVAL(csr_req_type, comb.vb_csr_cmd_type);
+                SETVAL(csr_req_addr, comb.vb_csr_cmd_addr);
+                SETVAL(csr_req_data, comb.vb_csr_cmd_wdata);
+                SETVAL(csr_req_rmw, BIT(comb.vb_csr_cmd_type, cfg->CsrReq_ReadBit), "read/modify/write");
+                SETZERO(mem_ex_load_fault);
+                SETZERO(mem_ex_store_fault);
+                SETZERO(mem_ex_mpu_store);
+                SETZERO(mem_ex_mpu_load);
+                SETZERO(stack_overflow);
+                SETZERO(stack_underflow);
+            ELSIF (NZ(OR3(BIT(comb.vb_select, Res_IMul), BIT(comb.vb_select, Res_IDiv), BIT(comb.vb_select, Res_FPU))));
+                SETVAL(state, State_WaitMulti);
+            ELSIF (NZ(i_amo));
+                SETONE(comb.v_memop_ena);
+                SETVAL(comb.vb_memop_memaddr, BITS(comb.vb_rdata1, DEC(cfg->CFG_CPU_ADDR_BITS), CONST("0")));
+                SETVAL(comb.vb_memop_wdata, comb.vb_rdata2);
+                SETVAL(state, State_Amo);
+                IF (EZ(i_memop_ready));
+                    SETVAL(amostate, AmoState_WaitMemAccess);
+                ELSE();
+                    SETVAL(amostate, AmoState_Read);
+                ENDIF();
+            ELSIF (NZ(OR2(i_memop_load, i_memop_store)));
+                SETONE(comb.v_memop_ena);
+                SETVAL(comb.vb_memop_wdata, comb.vb_rdata2);
+                IF (EZ(i_memop_ready));
+                    TEXT("Wait cycles until FIFO to memoryaccess becomes available");
+                    SETVAL(state, State_WaitMemAcces);
+                ELSE();
+                    SETONE(valid);
+                ENDIF();
+            ELSIF (NZ(OR2(comb.v_fence_i, comb.v_fence_d)));
+                SETVAL(comb.vb_memop_memaddr, ALLONES());
+                IF (EZ(i_memop_ready));
+                    SETVAL(state, State_WaitFlushingAccept);
+                ELSIF (NZ(comb.v_fence_i));
+                    SETVAL(state, State_Flushing_I, "Flushing I need to wait ending of flashing D");
+                ELSE();
+                    SETONE(valid);
+                ENDIF();
+            ELSE();
+                SETONE(valid);
+                IF (AND2(NZ(i_d_waddr), EZ(i_memop_load)));
+                    SETONE(comb.v_reg_ena, "should be written by memaccess, but tag must be updated");
+                ENDIF();
+            ENDIF();
+        ENDIF();
+        ENDCASE();
+    CASE (State_WaitMemAcces);
+        TEXT("Fifo exec => memacess is full");
+        SETVAL(comb.vb_memop_memaddr, memop_memaddr);
+        IF (NZ(i_memop_ready));
+            SETVAL(state, State_Idle);
+            SETONE(valid);
+        ENDIF();
+        ENDCASE();
+    CASE (State_Csr);
+        TEXT("Request throught CSR bus");
+        SWITCH (csrstate);
+        CASE (CsrState_Req);
+            SETONE(comb.v_csr_req_valid);
+            IF (NZ(i_csr_req_ready));
+                SETVAL(csrstate, CsrState_Resp);
+            ENDIF();
+            ENDCASE();
+        CASE (CsrState_Resp);
+            SETONE(comb.v_csr_resp_ready);
+            IF (NZ(i_csr_resp_valid));
+                SETVAL(csrstate, CsrState_Idle);
+                IF (NZ(i_csr_resp_exception));
+                    IF (NZ(i_dbg_progbuf_ena));
+                        SETZERO(valid);
+                        SETVAL(state, State_Halted);
+                    ELSE();
+                        TEXT("Invalid access rights");
+                        SETVAL(csrstate, CsrState_Req);
+                        SETVAL(csr_req_type, cfg->CsrReq_ExceptionCmd);
+                        SETVAL(csr_req_addr, cfg->EXCEPTION_InstrIllegal);
+                        SETVAL(csr_req_data, comb.mux.instr);
+                        SETZERO(csr_req_rmw);
+                    ENDIF();
+                ELSIF (NZ(BIT(csr_req_type, cfg->CsrReq_HaltBit)));
+                    SETZERO(valid);
+                    SETVAL(state, State_Halted);
+                ELSIF (NZ(BIT(csr_req_type, cfg->CsrReq_BreakpointBit)));
+                    SETZERO(valid);
+                    IF (NZ(BIT(i_csr_resp_data, 0)));
+                        TEXT("ebreakm is set");
+                        SETVAL(state, State_Halted);
+                    ELSE();
+                        SETVAL(state, State_Idle);
+                        IF (EZ(i_dbg_progbuf_ena));
+                            SETVAL(npc, i_csr_resp_data);
+                        ENDIF();
+                    ENDIF();
+                ELSIF (NZ(ORx(3, &BIT(csr_req_type, cfg->CsrReq_ExceptionBit),
+                                 &BIT(csr_req_type, cfg->CsrReq_InterruptBit),
+                                 &BIT(csr_req_type, cfg->CsrReq_ResumeBit))));
+                    SETZERO(valid, "No valid strob should be generated");
+                    SETVAL(state, State_Idle);
+                    IF (EZ(i_dbg_progbuf_ena)); 
+                        SETVAL(npc, i_csr_resp_data);
+                    ENDIF();
+                ELSIF (NZ(BIT(csr_req_type, cfg->CsrReq_WfiBit)));
+                    IF (NZ(BIT(i_csr_resp_data, 0)));
+                        TEXT("Invalid WFI instruction in current mode");
+                        SETVAL(csrstate, CsrState_Req);
+                        SETVAL(csr_req_type, cfg->CsrReq_ExceptionCmd);
+                        SETVAL(csr_req_addr, cfg->EXCEPTION_InstrIllegal);
+                        SETVAL(csr_req_data, comb.mux.instr);
+                        SETZERO(csr_req_rmw);
+                    ELSE();
+                        SETONE(valid);
+                        SETVAL(state, State_Wfi);
+                    ENDIF();
+                ELSIF (NZ(BIT(csr_req_type, cfg->CsrReq_TrapReturnBit)));
+                    SETONE(valid);
+                    SETVAL(state, State_Idle);
+                    IF (EZ(i_dbg_progbuf_ena));
+                        SETVAL(npc, i_csr_resp_data);
+                    ENDIF();
+                ELSIF (NZ(csr_req_rmw));
+                    SETVAL(csrstate, CsrState_Req);
+                    SETVAL(csr_req_type, cfg->CsrReq_WriteCmd);
+                    SETVAL(csr_req_data, comb.vb_csr_cmd_wdata);
+                    SETZERO(csr_req_rmw);
+                    
+                    TEXT();
+                    TEXT("Store result int cpu register on next clock");
+                    SETVAL(res_csr, i_csr_resp_data);
+                    IF (NZ(waddr));
+                        SETONE(comb.v_reg_ena);
+                    ENDIF();
+                    SETVAL(comb.vb_reg_waddr, waddr);
+                ELSE();
+                    SETVAL(state, State_Idle);
+                    SETONE(valid);
+                ENDIF();
+            ENDIF();
+            ENDCASE();
+        CASEDEF();
+            ENDCASE();
+        ENDSWITCH();
+        ENDCASE();
+    CASE (State_Amo);
+        SWITCH (amostate);
+        CASE (AmoState_WaitMemAccess);
+            TEXT("No need to make memop_valid active");
+            IF (NZ(i_memop_ready));
+                SETVAL(amostate, AmoState_Read);
+            ENDIF();
+            ENDCASE();
+        CASE (AmoState_Read);
+            SETVAL(amostate, AmoState_Modify);
+            IF (NZ(OR2(BIT(comb.wv, "Instr_AMOSWAP_D"), BIT(comb.wv, "Instr_AMOSWAP_W"))));
+                SETZERO(radr1);
+            ELSE();
+                SETVAL(radr1, waddr);
+            ENDIF();
+            ENDCASE();
+        CASE (AmoState_Modify);
+            IF (AND2(EZ(w_hazard1), EZ(w_hazard2)));
+                TEXT("Need to wait 1 clock to latch addsub/alu output");
+                SETVAL(amostate, AmoState_Write);
+                SETBITONE(comb.mux.memop_type, cfg->MemopType_Store, "no need to do this in rtl, just assign to v.memop_type[0]");
+                SETVAL(memop_type, comb.mux.memop_type);
+            ENDIF();
+            ENDCASE();
+        CASE (AmoState_Write);
+            SETONE(comb.v_memop_ena);
+            SETVAL(comb.vb_memop_memaddr, memop_memaddr);
+            SETVAL(comb.vb_memop_wdata, comb.vb_res);
+            IF (NZ(i_memop_ready));
+                SETVAL(state, State_Idle);
+                SETVAL(amostate, AmoState_WaitMemAccess);
+                SETONE(valid);
+            ENDIF();
+            ENDCASE();
+        CASEDEF();
+            ENDCASE();
+        ENDSWITCH();
+        ENDCASE();
+    CASE (State_WaitMulti);
+        TEXT("Wait end of multiclock instructions");
+        IF (NZ(ORx(3, &ARRITEM(wb_select, Res_IMul, wb_select->valid),
+                      &ARRITEM(wb_select, Res_IDiv, wb_select->valid),
+                      &ARRITEM(wb_select, Res_FPU, wb_select->valid))));
+            SETVAL(state, State_Idle);
+            IF (NZ(waddr));
+                SETONE(comb.v_reg_ena);
+            ENDIF();
+            SETVAL(comb.vb_reg_waddr, waddr);
+            SETONE(valid);
+        ENDIF();
+        ENDCASE();
+    CASE (State_WaitFlushingAccept);
+        TEXT("Fifo exec => memacess is full");
+        SETVAL(comb.vb_memop_memaddr, ALLONES());
+        IF (NZ(i_memop_ready));
+            SETZERO(flushd);
+            SETZERO(flushi);
+            IF (NZ(BIT(comb.mux.ivec, "Instr_FENCE")));
+                TEXT("no need to wait ending of D-flashing");
+                SETVAL(state, State_Idle);
+                SETONE(valid);
+            ELSE();
+                SETVAL(state, State_Flushing_I);
+            ENDIF();
+        ENDIF();
+        ENDCASE();
+    CASE (State_Flushing_I);
+        TEXT("Flushing DataCache could take much more time than flushing I");
+        TEXT("so that we should wait D-cache finish before requesting new");
+        TEXT("instruction to avoid reading obsolete data.");
+        SETZERO(flushd);
+        SETZERO(flushi);
+        IF (NZ(i_flushd_end));
+            SETVAL(state, State_Idle);
+            SETONE(valid);
+        ENDIF();
+        ENDCASE();
+    CASE (State_Halted);
+        SETZERO(stepdone);
+        IF (OR2(NZ(i_resumereq), NZ(i_dbg_progbuf_ena)));
+            SETVAL(state, State_Csr);
+            SETVAL(csrstate, CsrState_Req);
+            SETVAL(csr_req_type, cfg->CsrReq_ResumeCmd);
+            SETZERO(csr_req_addr);
+            SETZERO(csr_req_data);
+        ELSIF (NZ(i_dbg_mem_req_valid));
+            SETONE(comb.v_dbg_mem_req_ready);
+            SETVAL(comb.v_dbg_mem_req_error, comb.v_debug_misaligned);
+            IF (NZ(comb.v_debug_misaligned));
+                SETVAL(state, State_DebugMemError);
+            ELSE();
+                SETVAL(state, State_DebugMemRequest);
+            ENDIF();
+            SETONE(memop_halted);
+            SETZERO(memop_sign_ext);
+            SETBIT(comb.t_type, cfg->MemopType_Store, i_dbg_mem_req_write);
+            SETVAL(memop_type, comb.t_type);
+            SETVAL(memop_size, i_dbg_mem_req_size);
+        ENDIF();
+        ENDCASE();
+    CASE (State_DebugMemRequest);
+        SETONE(comb.v_memop_ena);
+        SETONE(comb.v_memop_debug);
+        SETVAL(comb.vb_memop_memaddr, i_dbg_mem_req_addr);
+        SETVAL(comb.vb_memop_wdata, i_dbg_mem_req_wdata);
+        IF (NZ(i_memop_ready));
+            IF (NZ(memop_halted));
+                SETVAL(state, State_Halted);
+            ELSE();
+                SETVAL(state, State_Idle);
+            ENDIF();
+        ENDIF();
+        ENDCASE();
+    CASE (State_DebugMemError);
+        IF (NZ(memop_halted));
+            SETVAL(state, State_Halted);
+        ELSE();
+            SETVAL(state, State_Idle);
+        ENDIF();
+        ENDCASE();
+    CASE (State_Wfi);
+        IF (NZ(OR4(i_haltreq, i_irq_software, i_irq_external, i_irq_timer)));
+            SETVAL(state, State_Idle);
+        ENDIF();
+        ENDCASE();
+    CASEDEF();
+        ENDCASE();
+    ENDSWITCH();
+
+TEXT();
+    TEXT("Next tags:");
+    SETVAL(comb.t_waddr, TO_INT(comb.vb_reg_waddr));
+TEXT();
+    SETVAL(comb.t_tagcnt_wr, INC(BITS(tagcnt, DEC(MUL2(cfg->CFG_REG_TAG_WIDTH, INC(comb.t_waddr))),
+                                         MUL2(cfg->CFG_REG_TAG_WIDTH, comb.t_waddr))));
+
+TEXT();
+    SETVAL(comb.vb_tagcnt_next, tagcnt);
+    SETBITS(comb.vb_tagcnt_next, DEC(MUL2(cfg->CFG_REG_TAG_WIDTH, INC(comb.t_waddr))),
+                                 MUL2(cfg->CFG_REG_TAG_WIDTH, comb.t_waddr),
+                                 comb.t_tagcnt_wr);
+    SETBITS(comb.vb_tagcnt_next, DEC(cfg->CFG_REG_TAG_WIDTH), CONST("0"), ALLZEROS(), "r0 always 0");
+
+    IF (EZ(i_dbg_progbuf_ena));
+        SETZERO(dnpc);
+    ENDIF();
+
+TEXT();
+    TEXT("Latch decoder's data into internal registers:");
+    IF (NZ(comb.v_latch_input));
+        IF (NZ(i_dbg_progbuf_ena));
+            SETVAL(dnpc, ADD2(dnpc, comb.opcode_len));
+        ELSE();
+            SETZERO(dnpc);;
+            SETVAL(pc, i_d_pc);
+            SETVAL(npc, comb.vb_prog_npc, "Actually this value will be restored on resume request");
+        ENDIF();
+        SETVAL(radr1, i_d_radr1);
+        SETVAL(radr2, i_d_radr2);
+        SETVAL(waddr, i_d_waddr);
+        SETVAL(rdata1, comb.vb_rdata1);
+        SETVAL(rdata2, comb.vb_rdata2);
+        SETVAL(imm, i_d_imm);
+        SETVAL(ivec, i_ivec);
+        SETVAL(isa_type, i_isa_type);
+        SETVAL(unsigned_op, i_unsigned_op);
+        SETVAL(rv32, i_rv32);
+        SETVAL(compressed, i_compressed);
+        SETVAL(f64, i_f64);
+        SETVAL(instr, i_d_instr);
+        SETVAL(flushd, OR2(comb.v_fence_i, comb.v_fence_d));
+        SETVAL(flushi, comb.v_fence_i);
+        IF (NZ(comb.v_fence_i));
+            SETVAL(flushi_addr, ALLONES());
+        ELSIF (NZ(BIT(comb.wv, "Instr_EBREAK")));
+            SETVAL(flushi_addr, i_d_pc);
+        ENDIF();
+        SETVAL(call, comb.v_call);
+        SETVAL(ret, comb.v_ret);
+        SETVAL(jmp, ORx(5, &comb.v_pc_branch,
+                           &BIT(comb.wv, "Instr_JAL"),
+                           &BIT(comb.wv, "Instr_JALR"),
+                           &BIT(comb.wv, "Instr_MRET"),
+                           &BIT(comb.wv, "Instr_URET")));
+        SETVAL(res_npc, comb.vb_prog_npc);
+        SETVAL(res_ra, comb.vb_npc_incr);
+
+TEXT();
+        SETARRITEM(wb_select, Res_IMul, wb_select->ena, BIT(comb.vb_select, Res_IMul));
+        SETARRITEM(wb_select, Res_IDiv, wb_select->ena, BIT(comb.vb_select, Res_IDiv));
+        SETARRITEM(wb_select, Res_FPU, wb_select->ena, BIT(comb.vb_select, Res_FPU));
+        SETVAL(select, comb.vb_select);
+    ENDIF();
+    IF (NZ(comb.v_reg_ena));
+        SETONE(reg_write);
+        SETVAL(tagcnt, comb.vb_tagcnt_next);
+        SETVAL(reg_waddr, comb.vb_reg_waddr);
+        SETVAL(reg_wtag, comb.t_tagcnt_wr);
+    ENDIF();
+    IF (NZ(comb.v_memop_ena));
+        SETONE(memop_valid);
+        SETVAL(memop_debug, comb.v_memop_debug);
+        SETVAL(memop_type, comb.mux.memop_type);
+        SETVAL(memop_sign_ext, comb.mux.memop_sign_ext);
+        SETVAL(memop_size, comb.mux.memop_size);
+        SETVAL(memop_memaddr, comb.vb_memop_memaddr);
+        SETVAL(memop_wdata, comb.vb_memop_wdata);
+        IF (ANDx(2, &EZ(comb.v_memop_debug),
+                    &ORx(2, &EZ(BIT(comb.mux.memop_type, cfg->MemopType_Store)),
+                            &NZ(BIT(comb.mux.memop_type, cfg->MemopType_Release)))));
+            TEXT("Error code of the instruction SC (store with release) should");
+            TEXT("be written into register");
+            SETVAL(tagcnt, comb.vb_tagcnt_next);
+            SETVAL(reg_waddr, comb.vb_reg_waddr);
+            SETVAL(reg_wtag, comb.t_tagcnt_wr);
+        ENDIF();
+    ELSIF (NZ(i_memop_ready));
+        SETZERO(memop_valid);
+        SETZERO(memop_debug);
+    ENDIF();
+
+TEXT();
+    SYNC_RESET(*this);
+
+TEXT();
+    SETVAL(wb_rdata1, comb.vb_rdata1);
+    SETVAL(wb_rdata2, comb.vb_rdata2);
+
+TEXT();
+    SETBIT(comb.t_alu_mode, 2, ORx(4, &BIT(comb.wv, "Instr_XOR"),
+                                       &BIT(comb.wv, "Instr_XORI"),
+                                       &BIT(comb.wv, "Instr_AMOXOR_D"),
+                                       &BIT(comb.wv, "Instr_AMOXOR_W")));
+    SETBIT(comb.t_alu_mode, 1, ORx(4, &BIT(comb.wv, "Instr_OR"),
+                                      &BIT(comb.wv, "Instr_ORI"),
+                                      &BIT(comb.wv, "Instr_AMOOR_D"),
+                                      &BIT(comb.wv, "Instr_AMOOR_W")));
+    SETBIT(comb.t_alu_mode, 0, ORx(4, &BIT(comb.wv, "Instr_AND"),
+                                      &BIT(comb.wv, "Instr_ANDI"),
+                                      &BIT(comb.wv, "Instr_AMOAND_D"),
+                                      &BIT(comb.wv, "Instr_AMOAND_W")));
+    SETVAL(wb_alu_mode, comb.t_alu_mode);
+
+TEXT();
+    SETBIT(comb.t_addsub_mode, 6, ORx(4, &BIT(comb.wv, "Instr_AMOMAX_D"),
+                    &BIT(comb.wv, "Instr_AMOMAX_W"),
+                    &BIT(comb.wv, "Instr_AMOMAXU_D"),
+                    &BIT(comb.wv, "Instr_AMOMAXU_W")));
+    SETBIT(comb.t_addsub_mode, 5, ORx(4, &BIT(comb.wv, "Instr_AMOMIN_D"),
+                    &BIT(comb.wv, "Instr_AMOMIN_W"),
+                    &BIT(comb.wv, "Instr_AMOMINU_D"),
+                    &BIT(comb.wv, "Instr_AMOMINU_W")));
+    SETBIT(comb.t_addsub_mode, 4, ORx(4, &BIT(comb.wv, "Instr_SLT"),
+                    &BIT(comb.wv, "Instr_SLTI"),
+                    &BIT(comb.wv, "Instr_SLTU"),
+                    &BIT(comb.wv, "Instr_SLTIU")));
+    SETBIT(comb.t_addsub_mode, 3, ORx(2, &BIT(comb.wv, "Instr_SUB"),
+                    &BIT(comb.wv, "Instr_SUBW")));
+    SETBIT(comb.t_addsub_mode, 2, ORx(9, &BIT(comb.wv, "Instr_ADD"),
+                    &BIT(comb.wv, "Instr_ADDI"),
+                    &BIT(comb.wv, "Instr_ADDW"),
+                    &BIT(comb.wv, "Instr_ADDIW"),
+                    &BIT(comb.wv, "Instr_AUIPC"),
+                    &BIT(comb.wv, "Instr_AMOADD_D"),
+                    &BIT(comb.wv, "Instr_AMOADD_W"),
+                    &BIT(comb.wv, "Instr_AMOSWAP_D"),
+                    &BIT(comb.wv, "Instr_AMOSWAP_W")));
+    SETBIT(comb.t_addsub_mode, 1, ORx(6, &BIT(comb.wv, "Instr_SLTU"),
+                    &BIT(comb.wv, "Instr_SLTIU"),
+                    &BIT(comb.wv, "Instr_AMOMINU_D"),
+                    &BIT(comb.wv, "Instr_AMOMINU_W"),
+                    &BIT(comb.wv, "Instr_AMOMAXU_D"),
+                    &BIT(comb.wv, "Instr_AMOMAXU_W", "unsigned")));
+    SETBIT(comb.t_addsub_mode, 0, comb.mux.rv32);
+    SETVAL(wb_addsub_mode, comb.t_addsub_mode);
+
+TEXT();
+    SETBIT(comb.t_shifter_mode, 3, ORx(5, &BIT(comb.wv, "Instr_SRA"),
+                                        &BIT(comb.wv, "Instr_SRAI"),
+                                        &BIT(comb.wv, "Instr_SRAW"),
+                                        &BIT(comb.wv, "Instr_SRAW"),
+                                        &BIT(comb.wv, "Instr_SRAIW")));
+    SETBIT(comb.t_shifter_mode, 2, ORx(4, &BIT(comb.wv, "Instr_SRL"),
+                                        &BIT(comb.wv, "Instr_SRLI"),
+                                        &BIT(comb.wv, "Instr_SRLW"),
+                                        &BIT(comb.wv, "Instr_SRLIW")));
+    SETBIT(comb.t_shifter_mode, 1, ORx(4, &BIT(comb.wv, "Instr_SLL"),
+                                        &BIT(comb.wv, "Instr_SLLI"),
+                                        &BIT(comb.wv, "Instr_SLLW"),
+                                        &BIT(comb.wv, "Instr_SLLIW")));
+    SETBIT(comb.t_shifter_mode, 0, comb.mux.rv32);
+    SETVAL(wb_shifter_mode, comb.t_shifter_mode);
+
+TEXT();
+    SETVAL(wb_shifter_a1, comb.vb_rdata1);
+    SETVAL(wb_shifter_a2, BITS(comb.vb_rdata2, 5, 0));
+
+TEXT();
+    IF (NZ(i_dbg_progbuf_ena));
+        SETVAL(comb.vb_o_npc, dnpc);
+    ELSE();
+        SETVAL(comb.vb_o_npc, npc);
+    ENDIF();
+    IF (EQ(state, State_Halted));
+        SETONE(comb.v_halted);
+    ENDIF();
+
+TEXT();
+    SETVAL(o_radr1, comb.mux.radr1);
+    SETVAL(o_radr2, comb.mux.radr2);
+    SETVAL(o_reg_wena, reg_write);
+    SETVAL(o_reg_waddr, reg_waddr);
+    SETVAL(o_reg_wtag, reg_wtag);
+    SETVAL(o_reg_wdata, comb.vb_res);
+    SETVAL(o_memop_valid, memop_valid);
+    SETVAL(o_memop_debug, memop_debug);
+    SETVAL(o_memop_sign_ext, memop_sign_ext);
+    SETVAL(o_memop_type, memop_type);
+    SETVAL(o_memop_size, memop_size);
+    SETVAL(o_memop_memaddr, memop_memaddr);
+    SETVAL(o_memop_wdata, memop_wdata);
+    SETVAL(o_csr_req_valid, comb.v_csr_req_valid);
+    SETVAL(o_csr_req_type, csr_req_type);
+    SETVAL(o_csr_req_addr, csr_req_addr);
+    SETVAL(o_csr_req_data, csr_req_data);
+    SETVAL(o_csr_resp_ready, comb.v_csr_resp_ready);
+    SETVAL(o_dbg_mem_req_ready, comb.v_dbg_mem_req_ready);
+    SETVAL(o_dbg_mem_req_error, comb.v_dbg_mem_req_error);
+    SETVAL(o_valid, valid);
+    SETVAL(o_pc, pc);
+    SETVAL(o_npc, comb.vb_o_npc);
+    SETVAL(o_instr, instr);
+    SETVAL(o_flushd, flushd, "must be post in a memory queue to avoid to early flushing");
+    SETVAL(o_flushi, flushi);
+    SETVAL(o_flushi_addr, flushi_addr);
+    SETVAL(o_call, call);
+    SETVAL(o_ret, ret);
+    SETVAL(o_jmp, jmp);
+    SETVAL(o_halted, comb.v_halted);
+
+TEXT();
+    TEXT("Debug rtl only:!!");
+    GenObject &i = FOR ("i", CONST("0"), cfg->INTREGS_TOTAL, "++");
+        SETARRITEM(tag_expected, i, tag_expected, BITS(tagcnt, DEC(MUL2(cfg->CFG_REG_TAG_WIDTH, INC(i))), MUL2(cfg->CFG_REG_TAG_WIDTH, i)));
+    ENDFOR();
 }
 
