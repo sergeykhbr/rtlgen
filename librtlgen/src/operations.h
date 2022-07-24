@@ -128,6 +128,7 @@ Operation &OR4(GenObject &a, GenObject &b, GenObject &c, GenObject &d, const cha
 Operation &ORx(size_t cnt, ...);
 Operation &AND2_L(GenObject &a, GenObject &b, const char *comment="");
 Operation &ADD2(GenObject &a, GenObject &b, const char *comment="");
+Operation &CALCWIDTHx(size_t cnt, ...);
 Operation &SUB2(GenObject &a, GenObject &b, const char *comment="");
 Operation &AND_REDUCE(GenObject &a, const char *comment="");
 Operation &AND2(GenObject &a, GenObject &b, const char *comment="");
@@ -141,7 +142,8 @@ Operation &DIV2(GenObject &a, GenObject &b, const char *comment="");
 Operation &CC2(GenObject &a, GenObject &b, const char *comment="");     // concatation
 Operation &CC3(GenObject &a, GenObject &b, GenObject &c, const char *comment="");     // concatation
 Operation &CC4(GenObject &a, GenObject &b, GenObject &c, GenObject &d, const char *comment="");     // concatation
-Operation &CCx(size_t cnt, ...);     // concatation
+Operation &CCx(size_t cnt, ...);                    // concatation
+Operation &SPLx(GenObject &a, size_t cnt, ...);     // cplit concatated bus
 Operation &LSH(GenObject &a, int sz, const char *comment="");           // left shift
 
 Operation &ARRITEM(GenObject &arr, GenObject &idx, GenObject &item, const char *comment="");

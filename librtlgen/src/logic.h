@@ -48,4 +48,20 @@ class Logic : public GenValue {
     virtual std::string getStrValue() override;
 };
 
+class Logic1 : public Logic {
+ public:
+    Logic1(const char *name="",
+          const char *val="",
+          GenObject *parent=0,
+          const char *comment="") :
+        Logic("1", name, val, parent, comment) {}
+
+    Logic1(GenObject *parent,
+          const char *name,
+          const char *comment="") :
+        Logic("1", name, "", parent, comment) {}
+
+    std::string getType() override;
+};
+
 }  // namespace sysvc

@@ -49,6 +49,24 @@ GenValue::GenValue(GenValue *width, const char *val, const char *name,
     parse(val, 0, value_, sysc_, sv_, sv_pkg_, vhdl_);
 }
 
+GenValue::GenValue(const char *width, GenObject *val, const char *name,
+                   GenObject *parent, const char *comment)
+    : GenObject(parent, (name[0] ? ID_VALUE : ID_CONST), name, comment) {
+    uint64_t twidth;
+    parse(width, 0, twidth, width_sysc_, width_sv_, width_sv_pkg_, width_vhdl_);
+    width_ = static_cast<int>(twidth);
+    if (val->getId() == ID_OPERATION) {
+        value_ = val->getValue();
+        sysc_ = val->generate();
+        sv_ = val->generate();
+        sv_pkg_ = val->generate();
+        vhdl_ = val->generate();
+    } else {
+        SHOW_ERROR("Unsupported value ID=%d", val->getId());
+    }
+}
+
+
 size_t GenValue::parse(const char *val, size_t pos,
                         uint64_t &out,
                         std::string &sysc,
@@ -174,8 +192,10 @@ std::string GenValue::getStrValue() {
         return sv_pkg_;
     } else if (SCV_is_sv()) {
         return sv_;
-    } else {
+    } else if (SCV_is_vhdl()) {
         return vhdl_;
+    } else {
+        return sysc_;
     }
 }
 
@@ -186,8 +206,10 @@ std::string GenValue::getStrWidth() {
         return width_sv_pkg_;
     } else if (SCV_is_sv()) {
         return width_sv_;
-    } else {
+    } else if (SCV_is_vhdl()) {
         return width_vhdl_;
+    } else {
+        return width_sysc_;
     }
 }
 

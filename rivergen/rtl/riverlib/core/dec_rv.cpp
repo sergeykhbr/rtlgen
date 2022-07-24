@@ -646,7 +646,6 @@ TEXT();
         ENDCASE();
     CASEDEF();
         IF (fpu_ena);
-        ENDIF();
             SWITCH (comb.vb_opcode1);
             CASE (OPCODE_FPU_LD);
                 SETBITONE(comb.vb_isa_type, cfg->ISA_I_type);
@@ -771,6 +770,7 @@ TEXT();
         ELSE();
             TEXT("FPU disabled");
             SETONE(comb.v_error);
+        ENDIF();
         ENDCASE();
     ENDSWITCH();
 

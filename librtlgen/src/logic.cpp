@@ -85,6 +85,21 @@ std::string Logic::getType() {
     return ret;
 }
 
+std::string Logic1::getType() {
+    std::string ret = "";
+
+    if (SCV_is_sysc()) {
+        if (getId() == ID_PARAM) {
+            ret += "bool";
+        } else {
+            ret += "sc_uint<1>";
+        }
+    } else if (SCV_is_sv()) {
+        ret = std::string("logic");
+    }
+    return ret;
+}
+
 std::string Logic::getStrValue() {
     std::string ret = "";
     std::string t = GenValue::getStrValue();

@@ -383,11 +383,10 @@ TEXT();
         SETVAL(comb.vb_memop_size, cfg->MEMOP_4B);
     ELSE();
         SETVAL(comb.vb_memop_size, cfg->MEMOP_8B);
-    ELSE();
+    ENDIF();
     SETVAL(comb.v_rv32, OR3(BIT(comb.vb_dec, "Instr_ADDW"),
                             BIT(comb.vb_dec, "Instr_ADDIW"),
                             BIT(comb.vb_dec, "Instr_SUBW")));
-    ENDIF();
        
 TEXT();
     SETVAL(pc, i_f_pc);

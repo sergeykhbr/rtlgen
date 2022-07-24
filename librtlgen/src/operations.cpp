@@ -1003,6 +1003,49 @@ Operation &ADD2(GenObject &a, GenObject &b, const char *comment) {
     return *p;
 }
 
+// CALCWIDTHx
+std::string CALCWIDTHx_gen(GenObject **args) {
+    int w;
+    char tstr[64];
+    std::string ret = "(";
+    size_t cnt = reinterpret_cast<size_t>(args[1]);
+    Operation::set_space(Operation::get_space() + 2);
+    for (size_t i = 0; i < cnt; i++) {
+        if (i > 0) {
+            ret += "\n";
+            ret += Operation::addspaces();
+            ret += "+ ";
+        }
+        w = args[2 + i]->getWidth();
+        RISCV_sprintf(tstr, sizeof(tstr), "%d", w);
+        ret += args[2 + i]->getStrWidth() + "  // " + args[2 + i]->getName();
+    }
+    Operation::set_space(Operation::get_space() - 2);
+    ret += "\n" + Operation::addspaces() + ")";
+    return ret;
+}
+
+Operation &CALCWIDTHx(size_t cnt, ...) {
+    Operation *p = new Operation(0, "");
+    uint64_t w = 0;
+    GenObject *obj;
+    p->igen_ = CALCWIDTHx_gen;
+    p->add_arg(p);
+    p->add_arg(reinterpret_cast<GenObject *>(cnt));
+    va_list arg;
+    va_start(arg, cnt);
+    for (int i = 0; i < cnt; i++) {
+        obj = va_arg(arg, GenObject *);
+        p->add_arg(obj);
+        w += obj->getWidth();
+    }
+    va_end(arg);
+    p->setWidth(32);
+    p->setValue(w);
+    return *p;
+}
+
+
 // SUB2
 std::string SUB2_gen(GenObject **args) {
     std::string A = Operation::obj2varname(args[1], "r", true);
@@ -1222,7 +1265,8 @@ std::string CCx_gen(GenObject **args) {
     Operation::set_space(Operation::get_space() + 2);
     for (size_t i = 0; i < cnt; i++) {
         if (i > 0) {
-            ret += ", ";
+            ret += ",\n";
+            ret += Operation::addspaces();
         }
         ret += Operation::obj2varname(args[2 + i]);
     }
@@ -1236,6 +1280,47 @@ Operation &CCx(size_t cnt, ...) {
     GenObject *obj;
     p->igen_ = CCx_gen;
     p->add_arg(p);
+    p->add_arg(reinterpret_cast<GenObject *>(cnt));
+    va_list arg;
+    va_start(arg, cnt);
+    for (int i = 0; i < cnt; i++) {
+        obj = va_arg(arg, GenObject *);
+        p->add_arg(obj);
+    }
+    va_end(arg);
+    return *p;
+}
+
+// CCx
+std::string SPLx_gen(GenObject **args) {
+    std::string ret = "";
+    size_t cnt = reinterpret_cast<size_t>(args[2]);
+    int w = args[1]->getWidth();
+    char tstr[64];
+    for (size_t i = 0; i < cnt; i++) {
+        ret += Operation::addspaces();
+        ret += Operation::obj2varname(args[3 + i]);
+        ret += " = ";
+        ret += Operation::obj2varname(args[1], "r", true);
+        if (args[3 + i]->getWidth() > 1) {
+            RISCV_sprintf(tstr, sizeof(tstr), "(%d, %d)", w - 1, w - args[3 + i]->getWidth());
+            ret += std::string(tstr);
+        } else {
+            RISCV_sprintf(tstr, sizeof(tstr), "[%d]", w - 1);
+            ret += std::string(tstr);
+        }
+        ret += ";\n";
+        w -= args[3 + i]->getWidth();
+    }
+    return ret;
+}
+
+Operation &SPLx(GenObject &a, size_t cnt, ...) {
+    Operation *p = new Operation("");
+    GenObject *obj;
+    p->igen_ = SPLx_gen;
+    p->add_arg(p);
+    p->add_arg(&a);
     p->add_arg(reinterpret_cast<GenObject *>(cnt));
     va_list arg;
     va_start(arg, cnt);

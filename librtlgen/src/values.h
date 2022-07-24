@@ -29,6 +29,8 @@ class GenValue : public GenObject {
              GenObject *parent, const char *comment="");
     GenValue(GenValue *width, const char *val, const char *name,
              GenObject *parent, const char *comment="");
+    GenValue(const char *width, GenObject *val, const char *name,
+             GenObject *parent, const char *comment="");
 
     virtual std::string getStrValue() override;
     virtual std::string getStrWidth() override ;
@@ -76,6 +78,9 @@ class I32D : public GenValue {
  public:
     I32D(const char *val, const char *name="",
         GenObject *parent=0, const char *comment=""):
+        GenValue("32", val, name, parent, comment) {}
+    I32D(GenObject *val, const char *name,
+        GenObject *parent, const char *comment="") :
         GenValue("32", val, name, parent, comment) {}
 
     virtual std::string getType();

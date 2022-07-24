@@ -86,6 +86,12 @@ class ParamI32D : public I32D,
         ParamGeneric(static_cast<GenValue *>(this)) {
             id_ = ID_PARAM;
         }
+    ParamI32D(GenObject *parent, const char *name, GenObject *val,
+        const char *comment="")
+        : I32D(val, name, parent, comment),
+        ParamGeneric(static_cast<GenValue *>(this)) {
+            id_ = ID_PARAM;
+        }
     virtual std::string generate() override {
         return genparam(static_cast<GenValue *>(this));
     }

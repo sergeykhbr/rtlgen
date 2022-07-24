@@ -28,6 +28,7 @@
 #include "dec_rvc.h"
 #include "decoder.h"
 #include "execute.h"
+#include "memaccess.h"
 #include "mmu_tlb.h"
 #include "mmu.h"
 #include "ic_csr_m2_s1.h"
@@ -49,6 +50,7 @@ class core_folder : public FolderObject {
         dec_rvc_(this),
         decoder_(this),
         execute_(this),
+        memaccess_(this),
         mmu_tlb_(this),
         mmu_(this),
         ic_(this),
@@ -70,6 +72,7 @@ class core_folder : public FolderObject {
     dec_rvc_file dec_rvc_;
     decoder_file decoder_;
     execute_file execute_;
+    memaccess_file memaccess_;
     mmu_tlb_file mmu_tlb_;
     mmu_file mmu_;
     ic_csr_m2_s1_file ic_;

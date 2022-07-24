@@ -226,6 +226,12 @@ InstrExecute::InstrExecute(GenObject *parent, const char *name) :
 void InstrExecute::proc_comb() {
     river_cfg *cfg = glob_river_cfg_;
 
+    SETZERO(valid);
+    SETZERO(call);
+    SETZERO(ret);
+    SETZERO(reg_write);
+    SETZERO(flushi_addr);
+
     SETVAL(comb.vb_reg_waddr, i_d_waddr);
 
 TEXT();
@@ -318,12 +324,12 @@ TEXT();
     SETVAL(comb.t_radr2, TO_INT(comb.mux.radr2));
 
     SETZERO(w_hazard1);
-    IF (NE(BITS(tagcnt, DEC(MUL2(INC(cfg->CFG_REG_TAG_WIDTH), comb.t_radr1)),
+    IF (NE(BITS(tagcnt, ADD2(MUL2(cfg->CFG_REG_TAG_WIDTH, comb.t_radr1), DEC(cfg->CFG_REG_TAG_WIDTH)),
                         MUL2(cfg->CFG_REG_TAG_WIDTH, comb.t_radr1)), i_rtag1));
         SETVAL(w_hazard1, comb.v_check_tag1);
     ENDIF();
     SETZERO(w_hazard2);
-    IF (NE(BITS(tagcnt, DEC(MUL2(INC(cfg->CFG_REG_TAG_WIDTH), comb.t_radr2)),
+    IF (NE(BITS(tagcnt, ADD2(MUL2(cfg->CFG_REG_TAG_WIDTH, comb.t_radr2), DEC(cfg->CFG_REG_TAG_WIDTH)),
                         MUL2(cfg->CFG_REG_TAG_WIDTH, comb.t_radr2)), i_rtag2));
         SETVAL(w_hazard2, comb.v_check_tag2);
     ENDIF();
@@ -361,7 +367,7 @@ TEXT();
     ENDIF();
 
 TEXT();
-    SETVAL(wb_fpu_vec, BITS(comb.wv, cfg->Instr_FPU_Last, cfg->Instr_FPU_First), "directly connected i_ivec");
+    SETVAL(wb_fpu_vec, BIG_TO_U64(BITS(comb.wv, cfg->Instr_FPU_Last, cfg->Instr_FPU_First)), "directly connected i_ivec");
     SETVAL(comb.v_fence_d, BIT(comb.wv, "Instr_FENCE"));
     SETVAL(comb.v_fence_i, BIT(comb.wv, "Instr_FENCE_I"));
     SETVAL(w_arith_residual_high, ORx(7, &BIT(comb.wv, "Instr_REM"),
@@ -997,12 +1003,12 @@ TEXT();
     TEXT("Next tags:");
     SETVAL(comb.t_waddr, TO_INT(comb.vb_reg_waddr));
 TEXT();
-    SETVAL(comb.t_tagcnt_wr, INC(BITS(tagcnt, DEC(MUL2(cfg->CFG_REG_TAG_WIDTH, INC(comb.t_waddr))),
+    SETVAL(comb.t_tagcnt_wr, INC(BITS(tagcnt, ADD2(MUL2(cfg->CFG_REG_TAG_WIDTH, comb.t_waddr), DEC(cfg->CFG_REG_TAG_WIDTH)),
                                          MUL2(cfg->CFG_REG_TAG_WIDTH, comb.t_waddr))));
 
 TEXT();
     SETVAL(comb.vb_tagcnt_next, tagcnt);
-    SETBITS(comb.vb_tagcnt_next, DEC(MUL2(cfg->CFG_REG_TAG_WIDTH, INC(comb.t_waddr))),
+    SETBITS(comb.vb_tagcnt_next, ADD2(MUL2(cfg->CFG_REG_TAG_WIDTH, comb.t_waddr), DEC(cfg->CFG_REG_TAG_WIDTH)),
                                  MUL2(cfg->CFG_REG_TAG_WIDTH, comb.t_waddr),
                                  comb.t_tagcnt_wr);
     SETBITS(comb.vb_tagcnt_next, DEC(cfg->CFG_REG_TAG_WIDTH), CONST("0"), ALLZEROS(), "r0 always 0");
@@ -1207,7 +1213,8 @@ TEXT();
 TEXT();
     TEXT("Debug rtl only:!!");
     GenObject &i = FOR ("i", CONST("0"), cfg->INTREGS_TOTAL, "++");
-        SETARRITEM(tag_expected, i, tag_expected, BITS(tagcnt, DEC(MUL2(cfg->CFG_REG_TAG_WIDTH, INC(i))), MUL2(cfg->CFG_REG_TAG_WIDTH, i)));
+        SETARRITEM(tag_expected, i, tag_expected, BIG_TO_U64(BITS(tagcnt, ADD2(MUL2(cfg->CFG_REG_TAG_WIDTH, i), DEC(cfg->CFG_REG_TAG_WIDTH)),
+                                                                               MUL2(cfg->CFG_REG_TAG_WIDTH, i))));
     ENDFOR();
 }
 
