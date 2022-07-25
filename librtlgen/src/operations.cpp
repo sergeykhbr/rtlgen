@@ -565,13 +565,13 @@ Operation &SETBITZERO(GenObject &a, GenObject &b, const char *comment) {
 }
 Operation &SETBITZERO(GenObject &a, const char *b, const char *comment) {
     GenObject *t1 = new I32D(b);
-    return SETBITONE(a, *t1, comment);
+    return SETBITZERO(a, *t1, comment);
 }
 
 Operation &SETBITZERO(GenObject &a, int b, const char *comment) {
     char tstr[64];
     RISCV_sprintf(tstr, sizeof(tstr), "%d", b);
-    return SETBITONE(a, tstr, comment);
+    return SETBITZERO(a, tstr, comment);
 }
 
 // SETBITS
