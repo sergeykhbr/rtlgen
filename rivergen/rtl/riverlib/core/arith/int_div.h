@@ -18,7 +18,7 @@
 
 #include <api.h>
 #include "../../river_cfg.h"
-#include "divstage.h"
+#include "divstage64.h"
 
 using namespace sysvc;
 

@@ -18,7 +18,7 @@
 
 #include <api.h>
 #include "alu_logic.h"
-#include "divstage.h"
+#include "divstage64.h"
 #include "int_addsub.h"
 #include "int_div.h"
 #include "int_mul.h"
@@ -29,7 +29,7 @@ class arith_folder : public FolderObject {
     arith_folder(GenObject *parent) :
         FolderObject(parent, "arith"),
         alu_logic_(this),
-        divstage_(this),
+        divstage64_(this),
         int_addsub_(this),
         int_div_(this),
         int_mul_(this),
@@ -39,7 +39,7 @@ class arith_folder : public FolderObject {
     // subfolders:
     // files
     alu_logic_file alu_logic_;
-    divstage_file divstage_;
+    divstage64_file divstage64_;
     int_addsub_file int_addsub_;
     int_div_file int_div_;
     int_mul_file int_mul_;

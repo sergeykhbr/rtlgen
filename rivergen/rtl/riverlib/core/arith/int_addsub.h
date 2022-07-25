@@ -28,10 +28,20 @@ class IntAddSub : public ModuleObject {
     class CombProcess : public ProcObject {
      public:
         CombProcess(GenObject *parent) :
-            ProcObject(parent, "comb") {
+            ProcObject(parent, "comb"),
+            vb_rdata1(this, "vb_rdata1", "RISCV_ARCH"),
+            vb_rdata2(this, "vb_rdata2", "RISCV_ARCH"),
+            vb_add(this, "vb_add", "RISCV_ARCH"),
+            vb_sub(this, "vb_sub", "RISCV_ARCH"),
+            vb_res(this, "vb_res", "RISCV_ARCH") {
         }
 
      public:
+        Logic vb_rdata1;
+        Logic vb_rdata2;
+        Logic vb_add;
+        Logic vb_sub;
+        Logic vb_res;
     };
 
     void proc_comb();

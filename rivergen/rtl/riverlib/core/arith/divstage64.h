@@ -28,10 +28,12 @@ class divstage64 : public ModuleObject {
     class CombProcess : public ProcObject {
      public:
         CombProcess(GenObject *parent) :
-            ProcObject(parent, "comb") {
+            ProcObject(parent, "comb"),
+            vb_bits(this, "vb_bits", "4") {
         }
 
      public:
+        Logic vb_bits;
     };
 
     void proc_comb();
@@ -43,17 +45,37 @@ class divstage64 : public ModuleObject {
     OutPort o_bits;
 
  protected:
+    WireArray<Signal> wb_thresh;
+    Signal wb_dif;
+    Signal wb_divx1;
+    Signal wb_divx2;
+    Signal wb_divx3;
+    Signal wb_divx4;
+    Signal wb_divx5;
+    Signal wb_divx6;
+    Signal wb_divx7;
+    Signal wb_divx8;
+    Signal wb_divx9;
+    Signal wb_divx10;
+    Signal wb_divx11;
+    Signal wb_divx12;
+    Signal wb_divx13;
+    Signal wb_divx14;
+    Signal wb_divx15;
+    Signal wb_divx16;
+    Signal wb_divident;
+    Signal wb_divisor;
 
     // process should be intialized last to make all signals available
     CombProcess comb;
 };
 
-class divstage_file : public FileObject {
+class divstage64_file : public FileObject {
  public:
-    divstage_file(GenObject *parent) : FileObject(parent, "divstage"),
-    divstage_(this, "") {}
+    divstage64_file(GenObject *parent) : FileObject(parent, "divstage64"),
+    divstage64_(this, "") {}
 
  private:
-    divstage64 divstage_;
+    divstage64 divstage64_;
 };
 

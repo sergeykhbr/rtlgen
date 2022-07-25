@@ -36,10 +36,86 @@ IntAddSub::IntAddSub(GenObject *parent, const char *name) :
 void IntAddSub::proc_comb() {
     river_cfg *cfg = glob_river_cfg_;
 
+    TEXT("To support 32-bits instruction transform 32-bits operands to 64 bits");
+    IF (NZ(BIT(i_mode, 0)));
+        SETBITS(comb.vb_rdata1, 31, 0, BITS(i_a1, 31, 0));
+        SETBITS(comb.vb_rdata2, 31, 0, BITS(i_a2, 31, 0));
+        IF (NZ(BIT(comb.vb_rdata1, 31)));
+            SETBITS(comb.vb_rdata1, 63, 32, ALLONES());
+        ENDIF();
+        IF (NZ(BIT(comb.vb_rdata2, 31)));
+            SETBITS(comb.vb_rdata2, 63, 32, ALLONES());
+        ENDIF();
+    ELSE();
+        SETVAL(comb.vb_rdata1, i_a1);
+        SETVAL(comb.vb_rdata2, i_a2);
+    ENDIF();
+
+TEXT();
+    SETVAL(comb.vb_add, ADD2(comb.vb_rdata1, comb.vb_rdata2));
+    SETVAL(comb.vb_sub, SUB2(comb.vb_rdata1, comb.vb_rdata2));
+    IF (NZ(BIT(i_mode, 2)));
+        SETVAL(comb.vb_res, comb.vb_add);
+    ELSIF (NZ(BIT(i_mode, 3)));
+        SETVAL(comb.vb_res, comb.vb_sub);
+    ELSIF (NZ(BIT(i_mode, 4)));
+        IF (NZ(BIT(i_mode, 1)));
+            TEXT("unsigned less");
+            IF (LS(comb.vb_rdata1, comb.vb_rdata2));
+                SETBITONE(comb.vb_res, 0);
+            ENDIF();
+        ELSE();
+            TEXT("signed less");
+            SETBIT(comb.vb_res, 0, BIT(comb.vb_sub, 63));
+        ENDIF();
+    ELSIF (NZ(BIT(i_mode, 5)));
+        IF (NZ(BIT(i_mode, 1)));
+            TEXT("unsigned min");
+            IF (LS(comb.vb_rdata1, comb.vb_rdata2));
+                SETVAL(comb.vb_res, comb.vb_rdata1);
+            ELSE();
+                SETVAL(comb.vb_res, comb.vb_rdata2);
+            ENDIF();
+        ELSE();
+            TEXT("signed min");
+            IF (NZ(BIT(comb.vb_sub, 63)));
+                SETVAL(comb.vb_res, comb.vb_rdata1);
+            ELSE();
+                SETVAL(comb.vb_res, comb.vb_rdata2);
+            ENDIF();
+        ENDIF();
+    ELSIF (NZ(BIT(i_mode, 6)));
+        IF (NZ(BIT(i_mode, 1)));
+            TEXT("unsigned max");
+            IF (LS(comb.vb_rdata1, comb.vb_rdata2));
+                SETVAL(comb.vb_res, comb.vb_rdata2);
+            ELSE();
+                SETVAL(comb.vb_res, comb.vb_rdata1);
+            ENDIF();
+        ELSE();
+            TEXT("signed max");
+            IF (NZ(BIT(comb.vb_sub, 63)));
+                SETVAL(comb.vb_res, comb.vb_rdata2);
+            ELSE();
+                SETVAL(comb.vb_res, comb.vb_rdata1);
+            ENDIF();
+        ENDIF();
+    ENDIF();
+    IF (NZ(BIT(i_mode, 0)));
+        IF (NZ(BIT(comb.vb_res, 31)));
+            SETBITS(comb.vb_res, 63, 32, ALLONES());
+        ELSE();
+            SETBITS(comb.vb_res, 63, 32, ALLZEROS());
+        ENDIF();
+    ENDIF();
+
+TEXT();
+    SETVAL(res, comb.vb_res);
 
 TEXT();
     SYNC_RESET(*this);
 
 TEXT();
+    SETVAL(o_res, res);
 }
 
