@@ -218,9 +218,95 @@ InstrExecute::InstrExecute(GenObject *parent, const char *name) :
     flushi_addr(this, "flushi_addr", "CFG_CPU_ADDR_BITS"),
     stepdone(this, "stepdone", "1"),
     // process
-    comb(this)
+    comb(this),
+    // sub-modules
+    alu0(this, "alu0"),
+    addsub0(this, "addsub0"),
+    mul0(this, "mul0"),
+    div0(this, "div0"),
+    sh0(this, "sh0"),
+    fpu0(this, "fpu0")
 {
     Operation::start(this);
+
+    NEW(alu0, alu0.getName().c_str());
+    CONNECT(alu0, 0, alu0.i_clk, i_clk);
+    CONNECT(alu0, 0, alu0.i_nrst, i_nrst);
+    CONNECT(alu0, 0, alu0.i_mode, wb_alu_mode);
+    CONNECT(alu0, 0, alu0.i_a1, wb_rdata1);
+    CONNECT(alu0, 0, alu0.i_a2, wb_rdata2);
+    CONNECT(alu0, 0, alu0.o_res, ARRITEM(wb_select, Res_Alu, wb_select->res));
+
+TEXT();
+    NEW(addsub0, addsub0.getName().c_str());
+    CONNECT(addsub0, 0, addsub0.i_clk, i_clk);
+    CONNECT(addsub0, 0, addsub0.i_nrst, i_nrst);
+    CONNECT(addsub0, 0, addsub0.i_mode, wb_addsub_mode);
+    CONNECT(addsub0, 0, addsub0.i_a1, wb_rdata1);
+    CONNECT(addsub0, 0, addsub0.i_a2, wb_rdata2);
+    CONNECT(addsub0, 0, addsub0.o_res, ARRITEM(wb_select, Res_AddSub, wb_select->res));
+
+TEXT();
+    NEW(mul0, mul0.getName().c_str());
+    CONNECT(mul0, 0, mul0.i_clk, i_clk);
+    CONNECT(mul0, 0, mul0.i_nrst, i_nrst);
+    CONNECT(mul0, 0, mul0.i_ena, ARRITEM(wb_select, Res_IMul, wb_select->ena));
+    CONNECT(mul0, 0, mul0.i_unsigned, i_unsigned_op);
+    CONNECT(mul0, 0, mul0.i_hsu, w_mul_hsu);
+    CONNECT(mul0, 0, mul0.i_high, w_arith_residual_high);
+    CONNECT(mul0, 0, mul0.i_rv32, i_rv32);
+    CONNECT(mul0, 0, mul0.i_a1, wb_rdata1);
+    CONNECT(mul0, 0, mul0.i_a2, wb_rdata2);
+    CONNECT(mul0, 0, mul0.o_res, ARRITEM(wb_select, Res_IMul, wb_select->res));
+    CONNECT(mul0, 0, mul0.o_valid, ARRITEM(wb_select, Res_IMul, wb_select->valid));
+
+TEXT();
+    NEW(div0, div0.getName().c_str());
+    CONNECT(div0, 0, div0.i_clk, i_clk);
+    CONNECT(div0, 0, div0.i_nrst, i_nrst);
+    CONNECT(div0, 0, div0.i_ena, ARRITEM(wb_select, Res_IDiv, wb_select->ena));
+    CONNECT(div0, 0, div0.i_unsigned, i_unsigned_op);
+    CONNECT(div0, 0, div0.i_residual, w_arith_residual_high);
+    CONNECT(div0, 0, div0.i_rv32, i_rv32);
+    CONNECT(div0, 0, div0.i_a1, wb_rdata1);
+    CONNECT(div0, 0, div0.i_a2, wb_rdata2);
+    CONNECT(div0, 0, div0.o_res, ARRITEM(wb_select, Res_IDiv, wb_select->res));
+    CONNECT(div0, 0, div0.o_valid, ARRITEM(wb_select, Res_IDiv, wb_select->valid));
+
+TEXT();
+    NEW(sh0, sh0.getName().c_str());
+    CONNECT(sh0, 0, sh0.i_clk, i_clk);
+    CONNECT(sh0, 0, sh0.i_nrst, i_nrst);
+    CONNECT(sh0, 0, sh0.i_mode, wb_shifter_mode);
+    CONNECT(sh0, 0, sh0.i_a1, wb_shifter_a1);
+    CONNECT(sh0, 0, sh0.i_a2, wb_shifter_a2);
+    CONNECT(sh0, 0, sh0.o_res, ARRITEM(wb_select, Res_Shifter, wb_select->res));
+
+TEXT();
+    IF (fpu_ena);
+        NEW(fpu0, fpu0.getName().c_str());
+        CONNECT(fpu0, 0, fpu0.i_clk, i_clk);
+        CONNECT(fpu0, 0, fpu0.i_nrst, i_nrst);
+        CONNECT(fpu0, 0, fpu0.i_ena, ARRITEM(wb_select, Res_FPU, wb_select->ena));
+        CONNECT(fpu0, 0, fpu0.i_ivec, wb_fpu_vec);
+        CONNECT(fpu0, 0, fpu0.i_a, wb_rdata1);
+        CONNECT(fpu0, 0, fpu0.i_b, wb_rdata2);
+        CONNECT(fpu0, 0, fpu0.o_res, ARRITEM(wb_select, Res_FPU, wb_select->res));
+        CONNECT(fpu0, 0, fpu0.o_ex_invalidop, w_ex_fpu_invalidop);
+        CONNECT(fpu0, 0, fpu0.o_ex_divbyzero, w_ex_fpu_divbyzero);
+        CONNECT(fpu0, 0, fpu0.o_ex_overflow, w_ex_fpu_overflow);
+        CONNECT(fpu0, 0, fpu0.o_ex_underflow, w_ex_fpu_underflow);
+        CONNECT(fpu0, 0, fpu0.o_ex_inexact, w_ex_fpu_inexact);
+        CONNECT(fpu0, 0, fpu0.o_valid, ARRITEM(wb_select, Res_FPU, wb_select->valid));
+    ELSE();
+        SETZERO(ARRITEM(wb_select, Res_FPU, wb_select->res));
+        SETZERO(ARRITEM(wb_select, Res_FPU, wb_select->valid));
+        SETZERO(w_ex_fpu_invalidop);
+        SETZERO(w_ex_fpu_divbyzero);
+        SETZERO(w_ex_fpu_overflow);
+        SETZERO(w_ex_fpu_underflow);
+        SETZERO(w_ex_fpu_inexact);
+    ENDIF();
 }
 
 void InstrExecute::proc_comb() {
@@ -231,6 +317,9 @@ void InstrExecute::proc_comb() {
     SETZERO(ret);
     SETZERO(reg_write);
     SETZERO(flushi_addr);
+    GenObject &i1 = FOR ("i", CONST("0"), Res_Total, "++");
+        SETZERO(ARRITEM(wb_select, i1, wb_select->ena));
+    ENDFOR();
 
     SETVAL(comb.vb_reg_waddr, i_d_waddr);
 

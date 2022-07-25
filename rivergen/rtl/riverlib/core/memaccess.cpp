@@ -60,7 +60,7 @@ MemAccess::MemAccess(GenObject *parent, const char *name) :
     State_WaitResponse(this, "2", "State_WaitResponse", "2"),
     State_Hold(this, "2", "State_Hold", "3"),
     // registers
-    state(this, "state", "2", "0", "State_Idle"),
+    state(this, "state", "2", "State_Idle"),
     memop_type(this, "memop_type", "MemopType_Total"),
     memop_addr(this, "memop_addr", "CFG_CPU_ADDR_BITS"),
     memop_wdata(this, "memop_wdata", "64"),

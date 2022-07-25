@@ -18,6 +18,12 @@
 
 #include <api.h>
 #include "../river_cfg.h"
+#include "arith/alu_logic.h"
+#include "arith/int_addsub.h"
+#include "arith/int_mul.h"
+#include "arith/int_div.h"
+#include "arith/shift.h"
+#include "fpu_d/fpu_top.h"
 
 using namespace sysvc;
 
@@ -412,6 +418,13 @@ class InstrExecute : public ModuleObject {
 
     // process should be intialized last to make all signals available
     CombProcess comb;
+    // Sub-modules
+    AluLogic alu0;
+    IntAddSub addsub0;
+    IntMul mul0;
+    IntDiv div0;
+    Shifter sh0;
+    FpuTop fpu0;
 };
 
 class execute_file : public FileObject {

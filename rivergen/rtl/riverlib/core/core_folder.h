@@ -27,6 +27,8 @@
 #include "dec_rv.h"
 #include "dec_rvc.h"
 #include "decoder.h"
+#include "arith/arith_folder.h"
+#include "fpu_d/fpu_d_folder.h"
 #include "execute.h"
 #include "memaccess.h"
 #include "mmu_tlb.h"
@@ -49,6 +51,8 @@ class core_folder : public FolderObject {
         dec_rv_(this),
         dec_rvc_(this),
         decoder_(this),
+        arith_folder_(this),
+        fpu_d_folder_(this),
         execute_(this),
         memaccess_(this),
         mmu_tlb_(this),
@@ -71,6 +75,8 @@ class core_folder : public FolderObject {
     dec_rv_file dec_rv_;
     dec_rvc_file dec_rvc_;
     decoder_file decoder_;
+    arith_folder arith_folder_;
+    fpu_d_folder fpu_d_folder_;
     execute_file execute_;
     memaccess_file memaccess_;
     mmu_tlb_file mmu_tlb_;

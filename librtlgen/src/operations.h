@@ -126,6 +126,7 @@ Operation &OR2(GenObject &a, GenObject &b, const char *comment="");
 Operation &OR3(GenObject &a, GenObject &b, GenObject &c, const char *comment="");
 Operation &OR4(GenObject &a, GenObject &b, GenObject &c, GenObject &d, const char *comment="");
 Operation &ORx(size_t cnt, ...);
+Operation &XOR2(GenObject &a, GenObject &b, const char *comment="");
 Operation &AND2_L(GenObject &a, GenObject &b, const char *comment="");
 Operation &ADD2(GenObject &a, GenObject &b, const char *comment="");
 Operation &CALCWIDTHx(size_t cnt, ...);
