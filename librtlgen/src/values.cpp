@@ -239,6 +239,16 @@ std::string BOOL::getType() {
     return ret;
 }
 
+std::string STRING::getType() {
+    std::string ret = "";
+    if (SCV_is_sysc()) {
+        ret = std::string("const char *");
+    } else if (SCV_is_sv()) {
+        ret = std::string("string");
+    }
+    return ret;
+}
+
 std::string UI16D::getType() {
     std::string ret = "";
     if (SCV_is_sysc()) {

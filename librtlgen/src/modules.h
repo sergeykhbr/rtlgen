@@ -48,6 +48,7 @@ class ModuleObject : public GenObject {
  protected:
     std::string generate_sysc_proc_registers();
     std::string generate_sysc_constructor();
+    std::string generate_sysc_submodule_nullify();
     std::string generate_sysc_destructor();
     std::string generate_sysc_vcd();
     std::string generate_sysc_proc(GenObject *proc);

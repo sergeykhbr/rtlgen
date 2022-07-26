@@ -17,7 +17,6 @@
 #pragma once
 
 #include <api.h>
-#include "proc.h"
 #include "bp_predec.h"
 #include "bp_btb.h"
 #include "bp.h"
@@ -37,6 +36,8 @@
 #include "queue.h"
 #include "regibank.h"
 #include "csr.h"
+#include "tracer.h"
+#include "proc.h"
 
 class core_folder : public FolderObject {
  public:
@@ -61,6 +62,7 @@ class core_folder : public FolderObject {
         queue_(this),
         regint_(this),
         csr_(this),
+        tracer_(this),
         proc_(this) {}
 
  protected:
@@ -85,5 +87,6 @@ class core_folder : public FolderObject {
     queue_file queue_;
     regibank_file regint_;
     csr_file csr_;
+    tracer_file tracer_;
     proc_file proc_;
 };

@@ -161,8 +161,13 @@ std::string ModuleObject::generate_sysc_h() {
         if (!static_cast<GenValue *>(p)->isLocal()) {
             continue;
         }
-        out += "    static const " + p->getType() + " " + p->getName();
-        out += " = " + p->getStrValue() + ";\n";
+        if (p->getType() == "const char *") {
+            out += "    static " + p->getType() + " " + p->getName();
+                out += " = \"" + p->getStrValue() + "\";\n";
+        } else {
+            out += "    static const " + p->getType() + " " + p->getName();
+            out += " = " + p->getStrValue() + ";\n";
+        }
         tcnt++;
     }
     if (tcnt) {
@@ -615,12 +620,13 @@ std::string ModuleObject::generate_sysc_constructor() {
 
     // Sub-module instantiation
     Operation::set_space(1);
+    ret += generate_sysc_submodule_nullify();
     for (auto &p: entries_) {
         if (p->getId() != ID_OPERATION) {
             continue;
         }
-        ret += "\n";
         ret += p->generate();
+        ret += "\n";
     }
 
     // Process sensitivity list:
@@ -650,6 +656,34 @@ std::string ModuleObject::generate_sysc_constructor() {
     return ret;
 }
 
+std::string ModuleObject::generate_sysc_submodule_nullify() {
+    std::string ret = "";
+    int icnt = 0;
+
+    for (auto &p: entries_) {
+        if (p->getId() == ID_MODULE_INST) {
+            ret += Operation::addspaces() + "" + p->getName() + " = 0;\n";
+            icnt++;
+        } else if (p->getId() == ID_ARRAY_DEF) {
+            ArrayObject *a = static_cast<ArrayObject *>(p);
+            if (a->getItem()->getId() == ID_MODULE_INST) {
+                icnt++;
+                ret += Operation::addspaces();
+                ret += "for (int i = 0; i < " + a->getStrDepth() + "; i++) {\n";
+                Operation::set_space(Operation::get_space() + 1);
+                ret += Operation::addspaces() + p->getName() + "[i] = 0;\n";
+                Operation::set_space(Operation::get_space() - 1);
+                ret += Operation::addspaces() + "}\n";
+            }
+        }
+    }
+    if (icnt) {
+        ret += "\n";
+    }
+    return ret;
+}
+
+
 std::string ModuleObject::generate_sysc_destructor() {
     std::string ret = "";
 
@@ -658,15 +692,22 @@ std::string ModuleObject::generate_sysc_destructor() {
     Operation::set_space(Operation::get_space() + 1);
     for (auto &p: entries_) {
         if (p->getId() == ID_MODULE_INST) {
-            ret += Operation::addspaces();
-            ret += "delete " + p->getName() + ";\n";
+            ret += Operation::addspaces() + "if (" + p->getName() + ") {\n";
+            Operation::set_space(Operation::get_space() + 1);
+            ret += Operation::addspaces() + "delete " + p->getName() + ";\n";
+            Operation::set_space(Operation::get_space() - 1);
+            ret += Operation::addspaces() + "}\n";
         } else if (p->getId() == ID_ARRAY_DEF) {
             ArrayObject *a = static_cast<ArrayObject *>(p);
             if (a->getItem()->getId() == ID_MODULE_INST) {
                 ret += Operation::addspaces();
                 ret += "for (int i = 0; i < " + a->getStrDepth() + "; i++) {\n";
                 Operation::set_space(Operation::get_space() + 1);
+                ret += Operation::addspaces() + "if (" + p->getName() + "[i]) {\n";
+                Operation::set_space(Operation::get_space() + 1);
                 ret += Operation::addspaces() + "delete " + p->getName() + "[i];\n";
+                Operation::set_space(Operation::get_space() - 1);
+                ret += Operation::addspaces() + "}\n";
                 Operation::set_space(Operation::get_space() - 1);
                 ret += Operation::addspaces() + "}\n";
             }

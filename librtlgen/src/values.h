@@ -65,6 +65,20 @@ class BOOL : public GenValue {
     virtual std::string getType();
 };
 
+class STRING : public GenValue {
+ public:
+    STRING(const char *val, const char *name="",
+        GenObject *parent=0, const char *comment=""):
+        GenValue("0", "0", name, parent, comment) {
+        sysc_ = std::string(val);
+        sv_ = std::string(val);
+        sv_pkg_ = std::string(val);
+        vhdl_ = std::string(val);
+    }
+
+    virtual std::string getType();
+};
+
 class UI16D : public GenValue {
  public:
     UI16D(const char *val, const char *name="",

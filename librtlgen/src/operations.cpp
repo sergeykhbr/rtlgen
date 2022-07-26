@@ -395,11 +395,15 @@ GenObject &CONST(const char *val) {
     return *p;
 }
 
+GenObject &CONST(const char *val, const char *width) {
+    GenObject *p = new Logic(width, "", val);
+    return *p;
+}
+
 GenObject &CONST(const char *val, int width) {
     char tstr[64];
     RISCV_sprintf(tstr, sizeof(tstr), "%d", width);
-    GenObject *p = new Logic(tstr, "", val);
-    return *p;
+    return CONST(val, tstr);
 }
 
 // SETZERO

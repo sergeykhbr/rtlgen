@@ -39,4 +39,12 @@ class DefParamUI32D : public UI32D {
     }
 };
 
+class DefParamString : public STRING {
+ public:
+    DefParamString(GenObject *parent, const char *name, const char *val,
+                const char *comment="") : STRING(val, name, parent, comment) {
+        id_ = ID_DEF_PARAM;
+    }
+};
+
 }  // namespace sysvc

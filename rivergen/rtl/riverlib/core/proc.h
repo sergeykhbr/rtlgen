@@ -18,9 +18,17 @@
 
 #include <api.h>
 #include "../river_cfg.h"
+#include "fetch.h"
+#include "decoder.h"
+#include "execute.h"
+#include "memaccess.h"
+#include "mmu.h"
 #include "bp.h"
 #include "ic_csr_m2_s1.h"
 #include "regibank.h"
+#include "csr.h"
+#include "tracer.h"
+#include "dbg_port.h"
 
 using namespace sysvc;
 
@@ -31,6 +39,7 @@ class Processor : public ModuleObject {
     DefParamUI32D hartid;
     DefParamBOOL fpu_ena;
     DefParamBOOL tracer_ena;
+    ParamString trace_file;
 
     InPort i_clk;
     InPort i_nrst;
@@ -120,7 +129,8 @@ class Processor : public ModuleObject {
             pc(this, "pc", "CFG_CPU_ADDR_BITS"),
             instr(this, "instr", "64"),
             imem_req_valid(this, "imem_req_valid"),
-            imem_req_addr(this, "imem_req_addr", "CFG_CPU_ADDR_BITS") {
+            imem_req_addr(this, "imem_req_addr", "CFG_CPU_ADDR_BITS"),
+            imem_resp_ready(this, "imem_resp_ready", "1") {
         }
      public:
         Signal instr_load_fault;
@@ -131,7 +141,36 @@ class Processor : public ModuleObject {
         Signal instr;
         Signal imem_req_valid;
         Signal imem_req_addr;
+        Signal imem_resp_ready;
     } FetchTypeDef_;
+
+    class MmuType : public StructObject {
+     public:
+        MmuType(GenObject *parent, const char *name="", const char *comment="")
+            : StructObject(parent, "MmuType", name, -1, comment),
+        fetch_req_ready(this, "fetch_req_ready", "1"),
+        fetch_data_valid(this, "fetch_data_valid", "1"),
+        fetch_data_addr(this, "fetch_data_addr", "CFG_CPU_ADDR_BITS"),
+        fetch_data(this, "fetch_data", "64"),
+        fetch_executable(this, "fetch_executable", "1"),
+        load_fault(this, "load_fault", "1"),
+        store_fault(this, "store_fault", "1"),
+        page_fault_x(this, "page_fault_x", "1"),
+        page_fault_r(this, "page_fault_r", "1"),
+        page_fault_w(this, "page_fault_w", "1") {}
+     public:
+        Signal fetch_req_ready;
+        Signal fetch_data_valid;
+        Signal fetch_data_addr;
+        Signal fetch_data;
+        Signal fetch_executable;
+        Signal load_fault;
+        Signal store_fault;
+        Signal page_fault_x;
+        Signal page_fault_r;
+        Signal page_fault_w;
+    } MmuTypeDef_;
+
 
     class InstructionDecodeType : public StructObject {
      public:
@@ -417,6 +456,7 @@ class Processor : public ModuleObject {
 
  protected:
     PipelineType w;
+    MmuType immu;
     IntRegsType ireg;
     CsrType csr;
     DebugType dbg;
@@ -450,13 +490,28 @@ class Processor : public ModuleObject {
     Signal wb_reg_wtag;
     Signal w_reg_inorder;
     Signal w_reg_ignored;
+    Signal w_mmu_ena;
+    Signal wb_mmu_ppn;
+    Signal unused_immu_mem_req_type;
+    Signal unused_immu_mem_req_wdata;
+    Signal unused_immu_mem_req_wstrb;
+    Signal unused_immu_mem_req_size;
+
 
     CombProcess comb;
 
     // Sub-module instances:
+    InstrFetch fetch0;
+    InstrDecoder dec0;
+    InstrExecute exec0;
+    MemAccess mem0;
+    Mmu immu0;
     BranchPredictor predic0;
     RegIntBank iregs0;
     ic_csr_m2_s1 iccsr0;
+    CsrRegs csr0;
+    Tracer trace0;
+    DbgPort dbg0;
 };
 
 class proc_file : public FileObject {

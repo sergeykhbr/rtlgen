@@ -28,6 +28,13 @@ IntDiv::IntDiv(GenObject *parent, const char *name) :
     i_a2(this, "i_a2", "RISCV_ARCH", "Operand 2"),
     o_res(this, "o_res", "RISCV_ARCH", "Result"),
     o_valid(this, "o_valid", "1", "Result is valid"),
+    // signals
+    wb_divisor0_i(this, "wb_divisor0_i", "124"),
+    wb_divisor1_i(this, "wb_divisor1_i", "124"),
+    wb_resid0_o(this, "wb_resid0_o", "64"),
+    wb_resid1_o(this, "wb_resid1_o", "64"),
+    wb_bits0_o(this, "wb_bits0_o", "4"),
+    wb_bits1_o(this, "wb_bits1_o", "4"),
     // registers
     rv32(this, "rv32", "1"),
     resid(this, "resid", "1"),
@@ -53,10 +60,162 @@ IntDiv::IntDiv(GenObject *parent, const char *name) :
 void IntDiv::proc_comb() {
     river_cfg *cfg = glob_river_cfg_;
 
+    IF (NZ(i_rv32));
+        IF (OR2(NZ(i_unsigned), EZ(BIT(i_a1, 31))));
+            SETBITS(comb.vb_a1, 31, 0, BITS(i_a1, 31, 0));
+        ELSE();
+            SETBITS(comb.vb_a1, 31, 0, INC(INV_L(BITS(i_a1, 31, 0))));
+        ENDIF();
+        IF (OR2(NZ(i_unsigned), EZ(BIT(i_a2, 31))));
+            SETBITS(comb.vb_a2, 31, 0, BITS(i_a2, 31, 0));
+        ELSE();
+            SETBITS(comb.vb_a2, 31, 0, INC(INV_L(BITS(i_a2, 31, 0))));
+        ENDIF();
+    ELSE();
+        IF (OR2(NZ(i_unsigned), EZ(BIT(i_a1, 63))));
+            SETBITS(comb.vb_a1, 63, 0,  i_a1);
+        ELSE();
+            SETBITS(comb.vb_a1, 63, 0, INC(INV_L(i_a1)));
+        ENDIF();
+        IF (OR2(NZ(i_unsigned), EZ(BIT(i_a2, 63))));
+            SETBITS(comb.vb_a2, 63, 0, i_a2);
+        ELSE();
+            SETBITS(comb.vb_a2, 63, 0, INC(INV_L(i_a2)));
+        ENDIF();
+    ENDIF();
+
+TEXT();
+    IF(AND2(NZ(BIT(comb.vb_a1, 63)), EZ(BITS(comb.vb_a1, 62, 0))));
+        SETONE(comb.v_a1_m0, "= (1ull << 63)");
+    ENDIF();
+    IF (NZ(AND_REDUCE(comb.vb_a2)));
+        SETONE(comb.v_a2_m1, "= -1ll");
+    ENDIF();
+
+TEXT();
+    SETVAL(comb.v_ena, AND2(i_ena, INV(busy)));
+    SETVAL(ena, CC2(BITS(ena, 8, 0), comb.v_ena));
+
+TEXT();
+    IF (NZ(invert));
+        SETVAL(comb.vb_rem, INC(INV_L(BIG_TO_U64(divident_i))));
+    ELSE();
+        SETVAL(comb.vb_rem, divident_i);
+    ENDIF();
+
+TEXT();
+    IF (NZ(invert));
+        SETVAL(comb.vb_div, INC(INV_L(BIG_TO_U64(bits_i))));
+    ELSE();
+        SETVAL(comb.vb_div, bits_i);
+    ENDIF();
+
+TEXT();
+    TEXT("DIVW, DIVUW, REMW and REMUW sign-extended accordingly with");
+    TEXT("User Level ISA v2.2");
+    IF (NZ(rv32) );
+        SETBITS(comb.vb_div, 63, 32, CONST("0", 32));
+        SETBITS(comb.vb_rem, 63, 32, CONST("0", 32));
+        IF (NZ(BIT(comb.vb_div,31)));
+            SETBITS(comb.vb_div,63, 32, ALLONES());
+        ENDIF();
+        IF (NZ(BIT(comb.vb_rem, 31)));
+            SETBITS(comb.vb_rem, 63, 32, ALLONES());
+        ENDIF();
+    ENDIF();
+
+TEXT();
+    IF (NZ(i_ena));
+        SETONE(busy);
+        SETVAL(rv32, i_rv32);
+        SETVAL(resid, i_residual);
+
+TEXT();
+        SETVAL(divident_i, comb.vb_a1);
+        SETBITS(comb.t_divisor, 119, 56, comb.vb_a2);
+        SETVAL(divisor_i, comb.t_divisor);
+
+        SETVAL(comb.v_invert32,
+            ANDx(2, &INV(i_unsigned),
+                    &ORx(2, &AND2(INV(i_residual), XOR2(BIT(i_a1, 31), BIT(i_a2, 31))),
+                            &AND2(i_residual, BIT(i_a1, 31)))));
+        SETVAL(comb.v_invert64,
+            ANDx(2, &INV(i_unsigned),
+                    &ORx(2, &AND2(INV(i_residual), XOR2(BIT(i_a1, 63), BIT(i_a2, 63))),
+                           &AND2(i_residual,  BIT(i_a1, 63)))));
+        SETVAL(invert, ORx(2, &AND2(INV(i_rv32), comb.v_invert64),
+                              &AND2(i_rv32, comb.v_invert32)));
+
+TEXT();
+        IF (NZ(i_rv32));
+            IF (NZ(i_unsigned));
+                SETZERO(div_on_zero);
+                IF (EZ(BITS(i_a2, 31, 0)));
+                    SETONE(div_on_zero);
+                ENDIF();
+                SETZERO(overflow);
+            ELSE();
+                SETZERO(div_on_zero);
+                IF (EZ(BITS(i_a2, 30, 0)));
+                    SETONE(div_on_zero);
+                ENDIF();
+                SETVAL(overflow, AND2(comb.v_a1_m0, comb.v_a2_m1));
+            ENDIF();
+        ELSE();
+            IF (NZ(i_unsigned));
+                SETZERO(div_on_zero);
+                IF (EZ(BITS(i_a2, 63, 0)));
+                    SETONE(div_on_zero);
+                ENDIF();
+                SETZERO(overflow);
+            ELSE();
+                SETZERO(div_on_zero);
+                IF (EZ(BITS(i_a2, 62, 0)));
+                    SETONE(div_on_zero);
+                ENDIF();
+                SETVAL(overflow, AND2(comb.v_a1_m0, comb.v_a2_m1));
+            ENDIF();
+        ENDIF();
+
+        SETVAL(a1_dbg, i_a1);
+        SETVAL(a2_dbg, i_a2);
+        TEXT("v.reference_div = compute_reference(i_unsigned.read(), i_rv32.read(),");
+        TEXT("                             i_residual.read(),");
+        TEXT("                             i_a1.read(), i_a2.read());");
+    ELSIF (NZ(BIT(ena, 8)));
+        SETZERO(busy);
+        IF (NZ(resid));
+            IF (NZ(overflow));
+                SETZERO(result);
+            ELSE();
+                SETVAL(result, comb.vb_rem);
+            ENDIF();
+        ELSIF (NZ(div_on_zero));
+            SETVAL(result, ALLONES());
+        ELSIF (NZ(overflow));
+            SETBITS(result, 62, 0, ALLZEROS());
+            SETBIT(result, 63, CONST("1", 1));
+        ELSE();
+            SETVAL(result, comb.vb_div);
+        ENDIF();
+    ELSIF (NZ(busy));
+        SETVAL(divident_i, wb_resid1_o);
+        SETVAL(divisor_i, CC2(CONST("0", 8), BITS(divisor_i, 119, 8)));
+        SETVAL(bits_i, CC3(BITS(bits_i, 55, 8), wb_bits0_o, wb_bits1_o));
+    ENDIF();
+
+    //sc_uint<4> t_zero4;
+    //t_zero4 = 0;
+    //wb_divisor0_i = (r.divisor_i.read(), t_zero4);
+    //wb_divisor1_i = (t_zero4, r.divisor_i.read());
+    SETVAL(wb_divisor0_i, CC2(divisor_i, CONST("0", 4)));
+    SETVAL(wb_divisor1_i, CC2(CONST("0", 4), divisor_i));
 
 TEXT();
     SYNC_RESET(*this);
 
 TEXT();
+    SETVAL(o_res, result);
+    SETVAL(o_valid, BIT(ena, 9));
 }
 

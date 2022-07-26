@@ -45,6 +45,20 @@ class ParamBOOL : public BOOL,
     }
 };
 
+class ParamString : public STRING,
+                    public ParamGeneric {
+ public:
+    ParamString(GenObject *parent, const char *name,
+                const char *val, const char *comment="")
+        : STRING(val, name, parent, comment),
+        ParamGeneric(static_cast<GenValue *>(this)) {
+        id_ = ID_PARAM;
+    }
+    virtual std::string generate() override {
+        return genparam(static_cast<GenValue *>(this));
+    }
+};
+
 
 class TmplParamI32D : public I32D,
                       public ParamGeneric {

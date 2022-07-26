@@ -97,6 +97,7 @@ Operation &BIT(GenObject &a, int b, const char *comment="");
 Operation &BITS(GenObject &a, GenObject &h, GenObject &l, const char *comment="");
 Operation &BITS(GenObject &a, int h, int l, const char *comment="");
 GenObject &CONST(const char *val);
+GenObject &CONST(const char *val, const char *width);
 GenObject &CONST(const char *val, int width);
 Operation &SETBIT(GenObject &a, GenObject &b, GenObject &val, const char *comment="");
 Operation &SETBIT(GenObject &a, int b, GenObject &val, const char *comment="");

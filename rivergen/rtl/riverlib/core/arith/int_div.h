@@ -29,10 +29,30 @@ class IntDiv : public ModuleObject {
     class CombProcess : public ProcObject {
      public:
         CombProcess(GenObject *parent) :
-            ProcObject(parent, "comb") {
+            ProcObject(parent, "comb"),
+            v_invert64(this, "v_invert64", "1"),
+            v_invert32(this, "v_invert32", "1"),
+            vb_a1(this, "vb_a1", "64"),
+            vb_a2(this, "vb_a2", "64"),
+            vb_rem(this, "vb_rem", "64"),
+            vb_div(this, "vb_div", "64"),
+            v_a1_m0(this, "v_a1_m0", "1", "a1 == -0ll"),
+            v_a2_m1(this, "v_a2_m1", "1", "a2 == -1ll"),
+            v_ena(this, "v_ena", "1"),
+            t_divisor(this, "t_divisor", "120") {
         }
 
      public:
+        Logic v_invert64;
+        Logic v_invert32;
+        Logic vb_a1;
+        Logic vb_a2;
+        Logic vb_rem;
+        Logic vb_div;
+        Logic v_a1_m0;
+        Logic v_a2_m1;
+        Logic v_ena;
+        Logic t_divisor;
     };
 
     void proc_comb();
@@ -50,6 +70,13 @@ class IntDiv : public ModuleObject {
     OutPort o_valid;
 
  protected:
+    Signal wb_divisor0_i;
+    Signal wb_divisor1_i;
+    Signal wb_resid0_o;
+    Signal wb_resid1_o;
+    Signal wb_bits0_o;
+    Signal wb_bits1_o;
+
     RegSignal rv32;
     RegSignal resid;
     RegSignal invert;
