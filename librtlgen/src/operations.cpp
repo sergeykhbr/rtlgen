@@ -672,6 +672,28 @@ Operation &BIG_TO_U64(GenObject &a, const char *comment) {
     return *p;
 }
 
+// TO_BIG
+std::string TO_BIG_gen(GenObject **args) {
+    std::string A = "";
+    if (SCV_is_sysc()) {
+        char tstr[64];
+        size_t sz = reinterpret_cast<size_t>(args[1]);
+        RISCV_sprintf(tstr, sizeof(tstr), "%d", sz);
+        A = "sc_biguint<" + std::string(tstr) + ">(";
+        A += Operation::obj2varname(args[2]) + ")";
+    }
+    return A;
+}
+
+Operation &TO_BIG(size_t sz, GenObject &a) {
+    Operation *p = new Operation(0, "");
+    p->setWidth(static_cast<int>(sz));
+    p->igen_ = TO_BIG_gen;
+    p->add_arg(p);
+    p->add_arg(reinterpret_cast<GenObject *>(sz));
+    p->add_arg(&a);
+    return *p;
+}
 
 // TO_INT
 std::string TO_INT_gen(GenObject **args) {
@@ -1024,6 +1046,42 @@ Operation &ADD2(GenObject &a, GenObject &b, const char *comment) {
     p->add_arg(&b);
     return *p;
 }
+
+// ADDx
+std::string ADDx_gen(GenObject **args) {
+    std::string ret = "(";
+    size_t cnt = reinterpret_cast<size_t>(args[1]);
+    Operation::set_space(Operation::get_space() + 2);
+    for (size_t i = 0; i < cnt; i++) {
+        if (i > 0) {
+            ret += "\n";
+            ret += Operation::addspaces();
+            ret += "+ ";
+        }
+        ret += Operation::obj2varname(args[2 + i]);
+    }
+    Operation::set_space(Operation::get_space() - 2);
+    ret += ")";
+    return ret;
+}
+
+Operation &ADDx(size_t cnt, ...) {
+    Operation *p = new Operation(0, "");
+    p->setWidth(1);
+    GenObject *obj;
+    p->igen_ = ADDx_gen;
+    p->add_arg(p);
+    p->add_arg(reinterpret_cast<GenObject *>(cnt));
+    va_list arg;
+    va_start(arg, cnt);
+    for (int i = 0; i < cnt; i++) {
+        obj = va_arg(arg, GenObject *);
+        p->add_arg(obj);
+    }
+    va_end(arg);
+    return *p;
+}
+
 
 // CALCWIDTHx
 std::string CALCWIDTHx_gen(GenObject **args) {

@@ -112,6 +112,7 @@ Operation &SETBITS(GenObject &a, int h, int l, GenObject &val, const char *comme
 Operation &SETVAL(GenObject &a, GenObject &b, const char *comment="");
 Operation &TO_INT(GenObject &a, const char *comment="");
 Operation &BIG_TO_U64(GenObject &a, const char *comment="");        // explicit conersion of biguint to uint64 (sysc only)
+Operation &TO_BIG(size_t sz, GenObject &a); // convert to biguint
 Operation &EQ(GenObject &a, GenObject &b, const char *comment="");  // ==
 Operation &NE(GenObject &a, GenObject &b, const char *comment="");  // !=
 Operation &EZ(GenObject &a, const char *comment="");        // equal-zero
@@ -130,6 +131,7 @@ Operation &ORx(size_t cnt, ...);
 Operation &XOR2(GenObject &a, GenObject &b, const char *comment="");
 Operation &AND2_L(GenObject &a, GenObject &b, const char *comment="");
 Operation &ADD2(GenObject &a, GenObject &b, const char *comment="");
+Operation &ADDx(size_t cnt, ...);
 Operation &CALCWIDTHx(size_t cnt, ...);
 Operation &SUB2(GenObject &a, GenObject &b, const char *comment="");
 Operation &AND_REDUCE(GenObject &a, const char *comment="");

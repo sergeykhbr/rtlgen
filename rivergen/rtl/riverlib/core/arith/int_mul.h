@@ -28,10 +28,35 @@ class IntMul : public ModuleObject {
     class CombProcess : public ProcObject {
      public:
         CombProcess(GenObject *parent) :
-            ProcObject(parent, "comb") {
+            ProcObject(parent, "comb"),
+            wb_mux_lvl0(this, "wb_mux_lvl0", "2"),
+            wb_lvl0(this, "wb_lvl0", "66", "32"),
+            wb_lvl2(this, "wb_lvl2", "74", "8"),
+            wb_lvl4(this, "wb_lvl4", "100", "2"),
+            wb_lvl5(this, "wb_lvl5", "128"),
+            wb_res32(this, "wb_res32", "128"),
+            wb_res(this, "wb_res", "64"),
+            vb_a1s(this, "vb_a1s", "64"),
+            vb_a2s(this, "vb_a2s", "64"),
+            v_a1s_nzero(this, "v_a1s_nzero", "1"),
+            v_a2s_nzero(this, "v_a2s_nzero", "1"),
+            v_ena(this, "v_ena")
+        {
         }
 
      public:
+        Logic wb_mux_lvl0;
+        WireArray<Logic> wb_lvl0;
+        WireArray<Logic> wb_lvl2;
+        WireArray<Logic> wb_lvl4;
+        Logic wb_lvl5;
+        Logic wb_res32;
+        Logic wb_res;
+        Logic vb_a1s;
+        Logic vb_a2s;
+        Logic v_a1s_nzero;
+        Logic v_a2s_nzero;
+        Logic1 v_ena;
     };
 
     void proc_comb();
@@ -63,6 +88,8 @@ class IntMul : public ModuleObject {
     RegSignal a1_dbg;
     RegSignal a2_dbg;
     RegSignal reference_mul;
+    WireArray<Signal> lvl1;
+    WireArray<Signal> lvl3;
 
 
     // process should be intialized last to make all signals available

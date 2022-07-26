@@ -51,7 +51,7 @@ class IntDiv : public ModuleObject {
         Logic vb_div;
         Logic v_a1_m0;
         Logic v_a2_m1;
-        Logic v_ena;
+        Logic1 v_ena;
         Logic t_divisor;
     };
 
