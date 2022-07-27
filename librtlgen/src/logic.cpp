@@ -103,7 +103,9 @@ std::string Logic1::getType() {
 std::string Logic::getStrValue() {
     std::string ret = "";
     std::string t = GenValue::getStrValue();
-    if (SCV_is_sv() && isNumber(t)) {
+    if (SCV_is_sysc() && isNumber(t) && (getWidth() > 32)) {
+        ret = t + "ull";
+    } else if (SCV_is_sv() && isNumber(t)) {
         char fmt[64] = "%d'h%";
         char tstr[256];
         int w = getWidth();

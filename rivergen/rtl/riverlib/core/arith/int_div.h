@@ -94,6 +94,9 @@ class IntDiv : public ModuleObject {
 
     // process should be intialized last to make all signals available
     CombProcess comb;
+    // sub-modules
+    divstage64 stage0;
+    divstage64 stage1;
 };
 
 class int_div_file : public FileObject {

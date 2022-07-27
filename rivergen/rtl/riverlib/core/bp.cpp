@@ -67,16 +67,17 @@ BranchPredictor::BranchPredictor(GenObject *parent, const char *name) :
     ENDFOR();
 
     NEW(btb, btb.getName().c_str());
-    CONNECT(btb, 0, btb.i_clk, i_clk);
-    CONNECT(btb, 0, btb.i_nrst, i_nrst);
-    CONNECT(btb, 0, btb.i_flush_pipeline, i_flush_pipeline);
-    CONNECT(btb, 0, btb.i_e, w_btb_e);
-    CONNECT(btb, 0, btb.i_we, w_btb_we);
-    CONNECT(btb, 0, btb.i_we_pc, wb_btb_we_pc);
-    CONNECT(btb, 0, btb.i_we_npc, wb_btb_we_npc);
-    CONNECT(btb, 0, btb.i_bp_pc, wb_start_pc);
-    CONNECT(btb, 0, btb.o_bp_npc, wb_npc);
-    CONNECT(btb, 0, btb.o_bp_exec, wb_bp_exec);
+        CONNECT(btb, 0, btb.i_clk, i_clk);
+        CONNECT(btb, 0, btb.i_nrst, i_nrst);
+        CONNECT(btb, 0, btb.i_flush_pipeline, i_flush_pipeline);
+        CONNECT(btb, 0, btb.i_e, w_btb_e);
+        CONNECT(btb, 0, btb.i_we, w_btb_we);
+        CONNECT(btb, 0, btb.i_we_pc, wb_btb_we_pc);
+        CONNECT(btb, 0, btb.i_we_npc, wb_btb_we_npc);
+        CONNECT(btb, 0, btb.i_bp_pc, wb_start_pc);
+        CONNECT(btb, 0, btb.o_bp_npc, wb_npc);
+        CONNECT(btb, 0, btb.o_bp_exec, wb_bp_exec);
+    ENDNEW();
 }
 
 void BranchPredictor::CombProcess::proc_comb() {

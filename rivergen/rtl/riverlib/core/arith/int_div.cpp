@@ -51,8 +51,26 @@ IntDiv::IntDiv(GenObject *parent, const char *name) :
     a1_dbg(this, "a1_dbg", "64", "0", "Store this value for output in a case of error"),
     a2_dbg(this, "a2_dbg", "64"),
     // process
-    comb(this)
+    comb(this),
+    stage0(this, "stage0"),
+    stage1(this, "stage1")
 {
+    Operation::start(this);
+
+    NEW(stage0, stage0.getName().c_str());
+        CONNECT(stage0, 0, stage0.i_divident, divident_i);
+        CONNECT(stage0, 0, stage0.i_divisor, wb_divisor0_i);
+        CONNECT(stage0, 0, stage0.o_bits, wb_bits0_o);
+        CONNECT(stage0, 0, stage0.o_resid, wb_resid0_o);
+    ENDNEW();
+
+    NEW(stage1, stage1.getName().c_str());
+        CONNECT(stage1, 0, stage1.i_divident, wb_resid0_o);
+        CONNECT(stage1, 0, stage1.i_divisor, wb_divisor1_i);
+        CONNECT(stage1, 0, stage1.o_bits, wb_bits1_o);
+        CONNECT(stage1, 0, stage1.o_resid, wb_resid1_o);
+    ENDNEW();
+
     Operation::start(&comb);
     proc_comb();
 }
@@ -193,21 +211,16 @@ TEXT();
         ELSIF (NZ(div_on_zero));
             SETVAL(result, ALLONES());
         ELSIF (NZ(overflow));
-            SETBITS(result, 62, 0, ALLZEROS());
-            SETBIT(result, 63, CONST("1", 1));
+            SETVAL(result, CONST("0x8000000000000000", 64));
         ELSE();
             SETVAL(result, comb.vb_div);
         ENDIF();
     ELSIF (NZ(busy));
         SETVAL(divident_i, wb_resid1_o);
         SETVAL(divisor_i, CC2(CONST("0", 8), BITS(divisor_i, 119, 8)));
-        SETVAL(bits_i, CC3(BITS(bits_i, 55, 8), wb_bits0_o, wb_bits1_o));
+        SETVAL(bits_i, CC3(bits_i, wb_bits0_o, wb_bits1_o));
     ENDIF();
 
-    //sc_uint<4> t_zero4;
-    //t_zero4 = 0;
-    //wb_divisor0_i = (r.divisor_i.read(), t_zero4);
-    //wb_divisor1_i = (t_zero4, r.divisor_i.read());
     SETVAL(wb_divisor0_i, CC2(divisor_i, CONST("0", 4)));
     SETVAL(wb_divisor1_i, CC2(CONST("0", 4), divisor_i));
 

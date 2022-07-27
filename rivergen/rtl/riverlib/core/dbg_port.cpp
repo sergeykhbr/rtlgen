@@ -109,12 +109,13 @@ DbgPort::DbgPort(GenObject *parent, const char *name) :
 
     IF (NZ(glob_river_cfg_->CFG_LOG2_STACK_TRACE_ADDR));
         NEW(trbuf0, trbuf0.getName().c_str());
-        CONNECT(trbuf0, 0, trbuf0.i_clk, i_clk);
-        CONNECT(trbuf0, 0, trbuf0.i_raddr, wb_stack_raddr);
-        CONNECT(trbuf0, 0, trbuf0.o_rdata, wb_stack_rdata);
-        CONNECT(trbuf0, 0, trbuf0.i_we, w_stack_we);
-        CONNECT(trbuf0, 0, trbuf0.i_waddr, wb_stack_waddr);
-        CONNECT(trbuf0, 0, trbuf0.i_wdata, wb_stack_wdata);
+            CONNECT(trbuf0, 0, trbuf0.i_clk, i_clk);
+            CONNECT(trbuf0, 0, trbuf0.i_raddr, wb_stack_raddr);
+            CONNECT(trbuf0, 0, trbuf0.o_rdata, wb_stack_rdata);
+            CONNECT(trbuf0, 0, trbuf0.i_we, w_stack_we);
+            CONNECT(trbuf0, 0, trbuf0.i_waddr, wb_stack_waddr);
+            CONNECT(trbuf0, 0, trbuf0.i_wdata, wb_stack_wdata);
+        ENDNEW();
     ENDIF();
 }
 

@@ -659,7 +659,7 @@ Operation &SETVAL(GenObject &a, GenObject &b, const char *comment) {
 std::string BIG_TO_U64_gen(GenObject **args) {
     std::string A = "";
     if (SCV_is_sysc()) {
-        A = Operation::obj2varname(args[1]) + ".to_uint64()";
+        A = Operation::obj2varname(args[1], "r", true) + ".to_uint64()";
     }
     return A;
 }

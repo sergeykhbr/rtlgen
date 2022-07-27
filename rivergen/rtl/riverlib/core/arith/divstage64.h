@@ -29,11 +29,51 @@ class divstage64 : public ModuleObject {
      public:
         CombProcess(GenObject *parent) :
             ProcObject(parent, "comb"),
-            vb_bits(this, "vb_bits", "4") {
+            wb_bits(this, "wb_bits", "4"),
+            wb_dif(this, "wb_dif", "64"),
+            wb_divx1(this, "wb_divx1", "65"),
+            wb_divx2(this, "wb_divx2", "65"),
+            wb_divx3(this, "wb_divx3", "65"),
+            wb_divx4(this, "wb_divx4", "65"),
+            wb_divx5(this, "wb_divx5", "65"),
+            wb_divx6(this, "wb_divx6", "65"),
+            wb_divx7(this, "wb_divx7", "65"),
+            wb_divx8(this, "wb_divx8", "65"),
+            wb_divx9(this, "wb_divx9", "65"),
+            wb_divx10(this, "wb_divx10", "65"),
+            wb_divx11(this, "wb_divx11", "65"),
+            wb_divx12(this, "wb_divx12", "65"),
+            wb_divx13(this, "wb_divx13", "65"),
+            wb_divx14(this, "wb_divx14", "65"),
+            wb_divx15(this, "wb_divx15", "65"),
+            wb_divx16(this, "wb_divx16", "65"),
+            wb_divident(this, "wb_divident", "65"),
+            wb_divisor(this, "wb_divisor", "124"),
+            wb_thresh(this, "wb_thresh", "66", "16") {
         }
 
      public:
-        Logic vb_bits;
+        Logic wb_bits;
+        Logic wb_dif;
+        Logic wb_divx1;
+        Logic wb_divx2;
+        Logic wb_divx3;
+        Logic wb_divx4;
+        Logic wb_divx5;
+        Logic wb_divx6;
+        Logic wb_divx7;
+        Logic wb_divx8;
+        Logic wb_divx9;
+        Logic wb_divx10;
+        Logic wb_divx11;
+        Logic wb_divx12;
+        Logic wb_divx13;
+        Logic wb_divx14;
+        Logic wb_divx15;
+        Logic wb_divx16;
+        Logic wb_divident;
+        Logic wb_divisor;
+        WireArray<Logic> wb_thresh;
     };
 
     void proc_comb();
@@ -45,27 +85,6 @@ class divstage64 : public ModuleObject {
     OutPort o_bits;
 
  protected:
-    WireArray<Signal> wb_thresh;
-    Signal wb_dif;
-    Signal wb_divx1;
-    Signal wb_divx2;
-    Signal wb_divx3;
-    Signal wb_divx4;
-    Signal wb_divx5;
-    Signal wb_divx6;
-    Signal wb_divx7;
-    Signal wb_divx8;
-    Signal wb_divx9;
-    Signal wb_divx10;
-    Signal wb_divx11;
-    Signal wb_divx12;
-    Signal wb_divx13;
-    Signal wb_divx14;
-    Signal wb_divx15;
-    Signal wb_divx16;
-    Signal wb_divident;
-    Signal wb_divisor;
-
     // process should be intialized last to make all signals available
     CombProcess comb;
 };
