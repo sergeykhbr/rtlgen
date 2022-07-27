@@ -17,7 +17,7 @@
 #include "prj_river.h"
 
 RiverProject::RiverProject(const char *rootpath) :
-    ProjectObject("river_v3", rootpath, "River v3.0 CPU generator"),
+    ProjectObject(rootpath, "River v3.0 CPU generator"),
     rtl_(this)
 {
 }

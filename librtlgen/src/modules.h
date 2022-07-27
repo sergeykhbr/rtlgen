@@ -47,6 +47,7 @@ class ModuleObject : public GenObject {
     virtual void getIoList(std::list<GenObject *> &genlist);
  protected:
     std::string generate_sysc_proc_registers();
+    std::string generate_sysc_param_strings();
     std::string generate_sysc_constructor();
     std::string generate_sysc_submodule_nullify();
     std::string generate_sysc_destructor();

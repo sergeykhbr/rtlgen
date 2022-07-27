@@ -136,6 +136,13 @@ Processor::Processor(GenObject *parent, const char *name) :
     unused_immu_mem_req_wdata(this, "unused_immu_mem_req_wdata", "64"),
     unused_immu_mem_req_wstrb(this, "unused_immu_mem_req_wstrb", "8"),
     unused_immu_mem_req_size(this, "unused_immu_mem_req_size", "2"),
+    unused_immu_core_req_fetch(this, "unused_immu_core_req_fetch", "1"),
+    unused_immu_core_req_type(this, "unused_immu_core_req_type", "MemopType_Total"),
+    unused_immu_core_req_wdata(this, "unused_immu_core_req_wdata", "64"),
+    unused_immu_core_req_wstrb(this, "unused_immu_core_req_wstrb", "8"),
+    unused_immu_core_req_size(this, "unused_immu_core_req_size", "2"),
+    unused_immu_mem_resp_store_fault(this, "unused_immu_mem_resp_store_fault", "1"),
+    unused_immu_fence_addr(this, "unused_immu_fence_addr", "CFG_MMU_TLB_AWIDTH"),
     // process
     comb(this),
     // sub-modules
@@ -186,11 +193,11 @@ Processor::Processor(GenObject *parent, const char *name) :
         CONNECT(immu0, 0, immu0.o_core_req_ready, immu.fetch_req_ready);
         CONNECT(immu0, 0, immu0.i_core_req_valid, w.f.imem_req_valid);
         CONNECT(immu0, 0, immu0.i_core_req_addr, w.f.imem_req_addr);
-        CONNECT(immu0, 0, immu0.i_core_req_fetch, CONST("1", 1));
-        CONNECT(immu0, 0, immu0.i_core_req_type, CONST("0", "MemopType_Total"));
-        CONNECT(immu0, 0, immu0.i_core_req_wdata, CONST("0", "64"));
-        CONNECT(immu0, 0, immu0.i_core_req_wstrb, CONST("0", "8"));
-        CONNECT(immu0, 0, immu0.i_core_req_size, CONST("0", "2"));
+        CONNECT(immu0, 0, immu0.i_core_req_fetch, unused_immu_core_req_fetch);
+        CONNECT(immu0, 0, immu0.i_core_req_type, unused_immu_core_req_type);
+        CONNECT(immu0, 0, immu0.i_core_req_wdata, unused_immu_core_req_wdata);
+        CONNECT(immu0, 0, immu0.i_core_req_wstrb, unused_immu_core_req_wstrb);
+        CONNECT(immu0, 0, immu0.i_core_req_size, unused_immu_core_req_size);
         CONNECT(immu0, 0, immu0.o_core_resp_valid, immu.fetch_data_valid);
         CONNECT(immu0, 0, immu0.o_core_resp_addr, immu.fetch_data_addr);
         CONNECT(immu0, 0, immu0.o_core_resp_data, immu.fetch_data);
@@ -213,12 +220,12 @@ Processor::Processor(GenObject *parent, const char *name) :
         CONNECT(immu0, 0, immu0.i_mem_resp_data, i_resp_ctrl_data);
         CONNECT(immu0, 0, immu0.i_mem_resp_executable, i_resp_ctrl_executable);
         CONNECT(immu0, 0, immu0.i_mem_resp_load_fault, i_resp_ctrl_load_fault);
-        CONNECT(immu0, 0, immu0.i_mem_resp_store_fault, CONST("0", 1));
+        CONNECT(immu0, 0, immu0.i_mem_resp_store_fault, unused_immu_mem_resp_store_fault);
         CONNECT(immu0, 0, immu0.o_mem_resp_ready, o_resp_ctrl_ready);
         CONNECT(immu0, 0, immu0.i_mmu_ena, w_mmu_ena);
         CONNECT(immu0, 0, immu0.i_mmu_ppn, wb_mmu_ppn);
         CONNECT(immu0, 0, immu0.i_fence, w_flush_pipeline);
-        CONNECT(immu0, 0, immu0.i_fence_addr, CONST("0", "CFG_CPU_ADDR_BITS"));
+        CONNECT(immu0, 0, immu0.i_fence_addr, unused_immu_fence_addr);
     ENDNEW();
 
     NEW(dec0, dec0.getName().c_str());
@@ -604,6 +611,14 @@ void Processor::proc_comb() {
         TEXT("request through debug interface to clear cache");
         SETVAL(comb.vb_flush_address, csr.flushi_addr);
     ENDIF();
+
+    SETZERO(unused_immu_core_req_fetch);
+    SETZERO(unused_immu_core_req_type);
+    SETZERO(unused_immu_core_req_wdata);
+    SETZERO(unused_immu_core_req_wstrb);
+    SETZERO(unused_immu_core_req_size);
+    SETZERO(unused_immu_mem_resp_store_fault);
+    SETZERO(unused_immu_fence_addr);
 
     SETVAL(o_flush_valid, w_flush_pipeline);
     SETVAL(o_flush_address, comb.vb_flush_address);

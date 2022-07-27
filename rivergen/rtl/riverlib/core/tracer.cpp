@@ -43,6 +43,7 @@ Tracer::Tracer(GenObject *parent, const char *name) :
     i_reg_ignored(this, "i_reg_ignored", "1"),
     // params
     TRACE_TBL_SZ(this, "TRACE_TBL_SZ", "64"),
+    TaskDisassembler(this),
     // struct declaration
     MemopActionTypeDef_(this, -1),
     RegActionTypeDef_(this, -1),

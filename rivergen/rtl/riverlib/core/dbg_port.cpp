@@ -107,7 +107,7 @@ DbgPort::DbgPort(GenObject *parent, const char *name) :
 {
     Operation::start(this);
 
-    IF (NZ(glob_river_cfg_->CFG_LOG2_STACK_TRACE_ADDR));
+    IF (NE(glob_river_cfg_->CFG_LOG2_STACK_TRACE_ADDR, CONST("0")));
         NEW(trbuf0, trbuf0.getName().c_str());
             CONNECT(trbuf0, 0, trbuf0.i_clk, i_clk);
             CONNECT(trbuf0, 0, trbuf0.i_raddr, wb_stack_raddr);
@@ -126,7 +126,7 @@ void DbgPort::proc_comb() {
     SETVAL(comb.vrdata, dport_rdata);
 
 TEXT();
-    IF (NZ(cfg->CFG_LOG2_STACK_TRACE_ADDR));
+    IF (NE(cfg->CFG_LOG2_STACK_TRACE_ADDR, CONST("0")));
         IF (AND2(NZ(i_e_call), 
             NE(stack_trace_cnt, DEC(cfg->STACK_TRACE_BUF_SIZE))));
             SETONE(w_stack_we);

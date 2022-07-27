@@ -162,8 +162,7 @@ std::string ModuleObject::generate_sysc_h() {
             continue;
         }
         if (p->getType() == "const char *") {
-            out += "    static " + p->getType() + " " + p->getName();
-                out += " = \"" + p->getStrValue() + "\";\n";
+            continue;
         } else {
             out += "    static const " + p->getType() + " " + p->getName();
             out += " = " + p->getStrValue() + ";\n";
@@ -537,6 +536,29 @@ std::string ModuleObject::generate_sysc_template_f_name(bool usevoid) {
     return ret;
 }
 
+std::string ModuleObject::generate_sysc_param_strings() {
+    std::string ret = "";
+    int tcnt = 0;
+    for (auto &p: getEntries()) {
+        if (p->getId() != ID_PARAM) {
+            continue;
+        }
+        if (!static_cast<GenValue *>(p)->isLocal()) {
+            continue;
+        }
+        if (p->getType() != "const char *") {
+            continue;
+        }
+        ret += "static " + p->getType() + " " + p->getName();
+        ret += " = \"" + p->getStrValue() + "\";\n";
+
+        tcnt++;
+    }
+    if (tcnt) {
+        ret += "\n";
+    }
+    return ret;
+}
 
 std::string ModuleObject::generate_sysc_constructor() {
     std::string ret = "";
@@ -767,6 +789,10 @@ std::string ModuleObject::generate_sysc_cpp() {
     std::string out = "";
     std::string ln;
     std::string text = "";
+
+    // static strings
+    Operation::set_space(0);
+    out += generate_sysc_param_strings();
 
     // Constructor
     Operation::set_space(0);

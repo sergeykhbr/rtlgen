@@ -20,16 +20,14 @@
 namespace sysvc {
 
 ProjectObject::ProjectObject(const char *name,
-                         const char *rootpath,
                          const char *comment)
     : GenObject(0, ID_PROJECT, name, comment) {
-    rootpath_ = std::string(rootpath);
 }
 
 
 std::string ProjectObject::generate() {
-    if (!SCV_is_dir_exists(rootpath_.c_str())) {
-        SCV_create_dir(rootpath_.c_str());
+    if (!SCV_is_dir_exists(name_.c_str())) {
+        SCV_create_dir(name_.c_str());
     }
 
     for (auto &p: entries_) {

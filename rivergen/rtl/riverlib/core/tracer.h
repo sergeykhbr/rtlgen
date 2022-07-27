@@ -25,6 +25,16 @@ class Tracer : public ModuleObject {
  public:
     Tracer(GenObject *parent, const char *name);
 
+    class FunctionTaskDisassembler : public FunctionObject {
+     public:
+        FunctionTaskDisassembler(GenObject *parent)
+            : FunctionObject(parent, "TaskDisassembler"),
+            instr(this, "instr", "32") {
+        }
+     protected:
+        InPort instr;
+    };
+
     class CombProcess : public ProcObject {
      public:
         CombProcess(GenObject *parent) : ProcObject(parent, "comb") {
@@ -61,6 +71,7 @@ class Tracer : public ModuleObject {
 
  protected:
     ParamI32D TRACE_TBL_SZ;
+    FunctionTaskDisassembler TaskDisassembler;
 
  protected:
     class MemopActionType : public StructObject {

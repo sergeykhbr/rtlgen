@@ -24,15 +24,14 @@ namespace sysvc {
 class ProjectObject : public GenObject {
  public:
     ProjectObject(const char *name,
-                  const char *rootpath,
                   const char *comment);
 
-    virtual std::string getFullPath() override { return rootpath_; }
+    virtual std::string getFullPath() override { return getName(); }
     virtual std::string getType() { return std::string(""); }
     virtual std::string generate() override;
 
  protected:
-    std::string rootpath_;
+    //std::string rootpath_;
 };
 
 }  // namespace sysvc

@@ -496,7 +496,13 @@ class Processor : public ModuleObject {
     Signal unused_immu_mem_req_wdata;
     Signal unused_immu_mem_req_wstrb;
     Signal unused_immu_mem_req_size;
-
+    Signal unused_immu_core_req_fetch;
+    Signal unused_immu_core_req_type;
+    Signal unused_immu_core_req_wdata;
+    Signal unused_immu_core_req_wstrb;
+    Signal unused_immu_core_req_size;
+    Signal unused_immu_mem_resp_store_fault;
+    Signal unused_immu_fence_addr;
 
     CombProcess comb;
 

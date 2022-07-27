@@ -72,6 +72,7 @@ class GenObject {
     virtual EIdType getId() { return id_; }
     virtual GenObject *getParent() { return parent_; }
     virtual std::string getName() { return name_; }
+    virtual void setName(const char *n) { name_ = std::string(n); }
     virtual std::string getComment() { return comment_; }
     virtual std::string getType() = 0;
     virtual void setValue(uint64_t v) { value_ = v; }
