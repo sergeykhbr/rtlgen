@@ -442,7 +442,9 @@ std::string ModuleObject::generate_sysc_vcd_entries(std::string name1, std::stri
         }
     }
 
-    if (obj->getId() == ID_INPUT || obj->getId() == ID_OUTPUT) {
+    if (!obj->isVcd()) {
+        // skip it
+    } else if (obj->getId() == ID_INPUT || obj->getId() == ID_OUTPUT) {
         ret += Operation::addspaces();
         ret += "sc_trace(o_vcd, " + obj->getName() + ", " + obj->getName() + ".name());\n";
     } else if (obj->getId() == ID_ARRAY_DEF && obj->isReg()) {

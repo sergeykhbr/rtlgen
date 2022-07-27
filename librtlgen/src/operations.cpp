@@ -184,7 +184,7 @@ std::string Operation::copyreg(const char *dst, const char *src, ModuleObject *m
                     ret +=  std::string(dst) + "." + p->getName() + "[i]" + " = ";
                     if (src == 0) {
                         // reset
-                        ret += p->getStrValue();
+                        ret += static_cast<ArrayObject *>(p)->getItem()->getStrValue();
                     } else {
                         // copy data
                         ret += std::string(src) + "." + p->getName() + "[i]";
@@ -680,7 +680,7 @@ std::string TO_BIG_gen(GenObject **args) {
         size_t sz = reinterpret_cast<size_t>(args[1]);
         RISCV_sprintf(tstr, sizeof(tstr), "%d", sz);
         A = "sc_biguint<" + std::string(tstr) + ">(";
-        A += Operation::obj2varname(args[2]) + ")";
+        A += Operation::obj2varname(args[2], "r", true) + ")";
     }
     return A;
 }

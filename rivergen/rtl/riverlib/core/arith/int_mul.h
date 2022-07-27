@@ -29,6 +29,8 @@ class IntMul : public ModuleObject {
      public:
         CombProcess(GenObject *parent) :
             ProcObject(parent, "comb"),
+            vb_a1(this, "vb_a1", "RISCV_ARCH"),
+            vb_a2(this, "vb_a2", "RISCV_ARCH"),
             wb_mux_lvl0(this, "wb_mux_lvl0", "2"),
             wb_lvl0(this, "wb_lvl0", "66", "32"),
             wb_lvl2(this, "wb_lvl2", "74", "8"),
@@ -45,6 +47,8 @@ class IntMul : public ModuleObject {
         }
 
      public:
+        Logic vb_a1;
+        Logic vb_a2;
         Logic wb_mux_lvl0;
         WireArray<Logic> wb_lvl0;
         WireArray<Logic> wb_lvl2;
@@ -88,8 +92,8 @@ class IntMul : public ModuleObject {
     RegSignal a1_dbg;
     RegSignal a2_dbg;
     RegSignal reference_mul;
-    WireArray<Signal> lvl1;
-    WireArray<Signal> lvl3;
+    WireArray<RegSignal> lvl1;
+    WireArray<RegSignal> lvl3;
 
 
     // process should be intialized last to make all signals available

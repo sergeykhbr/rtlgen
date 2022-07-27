@@ -48,6 +48,8 @@ IntMul::IntMul(GenObject *parent, const char *name) :
     // process
     comb(this)
 {
+    lvl1.disableVcd();
+    lvl3.disableVcd();
     Operation::start(&comb);
     proc_comb();
 }
@@ -86,13 +88,13 @@ TEXT();
         SETZERO(inv);
         SETZERO(zero);
         IF (NZ(i_rv32));
-            SETVAL(a1, BITS(i_a1, 31, 0));
+            SETVAL(comb.vb_a1, BITS(i_a1, 31, 0));
             IF (AND2(EZ(i_unsigned), NZ(BIT(i_a1,31))));
-                SETBITS(a1, 63, 32, ALLONES());
+                SETBITS(comb.vb_a1, 63, 32, ALLONES());
             ENDIF();
-            SETVAL(a2, BITS(i_a2, 31, 0));
+            SETVAL(comb.vb_a2, BITS(i_a2, 31, 0));
             IF (AND2(EZ(i_unsigned), NZ(BIT(i_a2, 31))));
-                SETBITS(a2, 63, 32, ALLONES());
+                SETBITS(comb.vb_a2, 63, 32, ALLONES());
             ENDIF();
         ELSIF (NZ(i_high));
             IF (NZ(i_hsu));
@@ -100,21 +102,23 @@ TEXT();
                     SETONE(zero);
                 ENDIF();
                 SETVAL(inv, BIT(i_a1, 63));
-                SETVAL(a1, comb.vb_a1s);
-                SETVAL(a2, i_a2);
+                SETVAL(comb.vb_a1, comb.vb_a1s);
+                SETVAL(comb.vb_a2, i_a2);
             ELSIF (NZ(i_unsigned));
-                SETVAL(a1, i_a1);
-                SETVAL(a2, i_a2);
+                SETVAL(comb.vb_a1, i_a1);
+                SETVAL(comb.vb_a2, i_a2);
             ELSE();
                 SETVAL(zero, OR2(INV(comb.v_a1s_nzero), INV(comb.v_a2s_nzero)));
                 SETVAL(inv, XOR2(BIT(i_a1, 63), BIT(i_a2, 63)));
-                SETVAL(a1, comb.vb_a1s);
-                SETVAL(a2, comb.vb_a2s);
+                SETVAL(comb.vb_a1, comb.vb_a1s);
+                SETVAL(comb.vb_a2, comb.vb_a2s);
             ENDIF();
         ELSE();
-            SETVAL(a1, i_a1);
-            SETVAL(a2, i_a2);
+            SETVAL(comb.vb_a1, i_a1);
+            SETVAL(comb.vb_a2, i_a2);
         ENDIF();
+        SETVAL(a1, comb.vb_a1);
+        SETVAL(a2, comb.vb_a2);
         SETVAL(rv32, i_rv32);
         SETVAL(unsign, i_unsigned);
         SETVAL(high, i_high);
