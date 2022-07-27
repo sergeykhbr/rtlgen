@@ -22,7 +22,7 @@ Shifter::Shifter(GenObject *parent, const char *name) :
     i_nrst(this, "i_nrst", "1", "Reset: active LOW"),
     i_mode(this, "i_mode", "4", "operation type: [0]0=rv64;1=rv32;[1]=sll;[2]=srl;[3]=sra"),
     i_a1(this, "i_a1", "RISCV_ARCH", "Operand 1"),
-    i_a2(this, "i_a2", "RISCV_ARCH", "Operand 2"),
+    i_a2(this, "i_a2", "6", "Operand 2"),
     o_res(this, "o_res", "RISCV_ARCH", "Result"),
     // registers
     res(this, "res", "RISCV_ARCH"),
@@ -53,7 +53,7 @@ TEXT();
     ENDIF();
 
 TEXT();
-    SWITCH (BITS(i_a2, 5, 0));
+    SWITCH (i_a2);
     CASE (CONST("0", 6));
         SETVAL(comb.wb_sll, comb.v64);
         SETVAL(comb.wb_srl, comb.v64);
