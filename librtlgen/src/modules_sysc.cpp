@@ -903,6 +903,9 @@ std::string ModuleObject::generate_sysc_func(GenObject *func) {
     ret += ") {\n";
     
     // process variables declaration
+    if (func->getType() == "std::string") {
+        ret += "    char tstr[256];\n";
+    }
     tcnt = 0;
     bool skiparg;
     for (auto &e: func->getEntries()) {

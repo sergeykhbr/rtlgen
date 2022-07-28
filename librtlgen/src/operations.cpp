@@ -139,6 +139,64 @@ std::string Operation::obj2varname(GenObject *obj, const char *prefix, bool read
 
 // dst = r or v
 // src = r, v or 0
+std::string Operation::copyreg_entry(const char *dst, const char *src, GenObject *p) {
+    std::string ret = "";
+    char idx[3] = {'i', '0' + static_cast<char>(spaces_)};
+    std::string i = std::string(idx);
+    if (p->getId() == ID_ARRAY_DEF) {
+        ret += Operation::addspaces();
+        ret += "for (int "+i+" = 0; "+i+" < " + p->getStrDepth() + "; "+i+"++) {\n";
+        spaces_++;
+        std::list<GenObject *>::iterator it = p->getEntries().begin();  // element[0]
+        if ((*it)->getEntries().size() == 0) {
+            ret += Operation::addspaces();
+            ret +=  std::string(dst) + "." + p->getName() + "["+i+"]" + " = ";
+            if (src == 0) {
+                // reset
+                ret += static_cast<ArrayObject *>(p)->getItem()->getStrValue();
+            } else {
+                // copy data
+                ret += std::string(src) + "." + p->getName() + "["+i+"]";
+            }
+            ret +=  ";\n";
+        } else {
+            for (auto &s: (*it)->getEntries()) {
+                if (s->getId() == ID_ARRAY_DEF) {
+                    spaces_++;
+                    ret += copyreg_entry(dst, src, s);
+                    spaces_--;
+                } else {
+                    ret += Operation::addspaces();
+                    ret +=  std::string(dst) + "." + p->getName() + "["+i+"]." + s->getName() + " = ";
+                    if (src == 0) {
+                        // reset
+                        ret += s->getStrValue();
+                    } else {
+                        // copy data
+                        ret += std::string(src) + "." + p->getName() + "["+i+"]." + s->getName();
+                    }
+                    ret +=  ";\n";
+                }
+            }
+        }
+        spaces_--;
+        ret += Operation::addspaces();
+        ret += "}\n";
+    } else {
+        ret += Operation::addspaces();
+        ret += std::string(dst) + "." + p->getName() + " = ";
+        if (src == 0) {
+            // reset
+            ret += p->getStrValue();
+        } else {
+            // copy value
+            ret += std::string(src) + "." + p->getName();
+        }
+        ret += ";\n";
+    }
+    return ret;
+}
+
 std::string Operation::copyreg(const char *dst, const char *src, ModuleObject *m) {
     std::string ret = "";
     // reset dst
@@ -162,50 +220,7 @@ std::string Operation::copyreg(const char *dst, const char *src, ModuleObject *m
             if (src == 0 && p->isResetDisabled()) {
                 continue;
             }
-            if (p->getId() == ID_ARRAY_DEF) {
-                ret += Operation::addspaces();
-                ret += "for (int i = 0; i < " + p->getStrDepth() + "; i++) {\n";
-                spaces_++;
-                std::list<GenObject *>::iterator it = p->getEntries().begin();  // element[0]
-                for (auto &s: (*it)->getEntries()) {
-                    ret += Operation::addspaces();
-                    ret +=  std::string(dst) + "." + p->getName() + "[i]." + s->getName() + " = ";
-                    if (src == 0) {
-                        // reset
-                        ret += s->getStrValue();
-                    } else {
-                        // copy data
-                        ret += std::string(src) + "." + p->getName() + "[i]." + s->getName();
-                    }
-                    ret +=  ";\n";
-                }
-                if ((*it)->getEntries().size() == 0) {
-                    ret += Operation::addspaces();
-                    ret +=  std::string(dst) + "." + p->getName() + "[i]" + " = ";
-                    if (src == 0) {
-                        // reset
-                        ret += static_cast<ArrayObject *>(p)->getItem()->getStrValue();
-                    } else {
-                        // copy data
-                        ret += std::string(src) + "." + p->getName() + "[i]";
-                    }
-                    ret +=  ";\n";
-                }
-                spaces_--;
-                ret += Operation::addspaces();
-                ret += "}\n";
-            } else {
-                ret += Operation::addspaces();
-                ret += std::string(dst) + "." + p->getName() + " = ";
-                if (src == 0) {
-                    // reset
-                    ret += p->getStrValue();
-                } else {
-                    // copy value
-                    ret += std::string(src) + "." + p->getName();
-                }
-                ret += ";\n";
-            }
+            ret += copyreg_entry(dst, src, p);
         }
     }
     return ret;
@@ -678,6 +693,8 @@ std::string SETSTRF_gen(GenObject **args) {
         ret += Operation::obj2varname(args[4 + i]);
     }
     ret += ");\n";
+    ret += Operation::addspaces() + Operation::obj2varname(args[1]);
+    ret += " = std::string(tstr);\n";
     return ret;
 }
 
@@ -1581,6 +1598,23 @@ Operation &ARRITEM_B(GenObject &arr, GenObject &idx, GenObject &item, const char
     p->add_arg(&idx);   // 2
     p->add_arg(&item);  // 3
     p->add_arg(p);      // [4] use .read()
+    return *p;
+}
+
+// SETARRIDX
+std::string SETARRIDX_gen(GenObject **args) {
+    ArrayObject *arr = static_cast<ArrayObject *>(args[1]);
+    std::string ret = "";
+    arr->setSelector(args[2]);
+    return ret;
+}
+
+Operation &SETARRIDX(GenObject &arr, GenObject &idx) {
+    Operation *p = new Operation("");
+    p->igen_ = SETARRIDX_gen;
+    p->add_arg(p);      // 0
+    p->add_arg(&arr);   // 1
+    p->add_arg(&idx);   // 2
     return *p;
 }
 

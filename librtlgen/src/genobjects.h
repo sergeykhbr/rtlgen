@@ -89,9 +89,6 @@ class GenObject {
     virtual bool isResetDisabled() { return reset_disabled_; }
     virtual void disableVcd() { vcd_enabled_ = false; }
     virtual bool isVcd() { return vcd_enabled_; }
-    virtual bool isMnemonic() { return mnemonic_.size() != 0; }
-    virtual void setMnemonic(std::string m) { mnemonic_ = m; }
-    virtual std::string getMnemonic() { return mnemonic_; }
 
     virtual std::string generate() { return std::string(""); }
 

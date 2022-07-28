@@ -40,9 +40,13 @@ class Tracer : public ModuleObject {
 
     class CombProcess : public ProcObject {
      public:
-        CombProcess(GenObject *parent) : ProcObject(parent, "comb") {
+        CombProcess(GenObject *parent) : ProcObject(parent, "comb"),
+            tr_wcnt_nxt(this, "tr_wcnt_nxt", "TRACE_TBL_ABITS"),
+            checked(this, "checked", "1") {
         }
     public:
+        Logic tr_wcnt_nxt;
+        Logic checked;
     };
 
     void proc_comb();
@@ -73,6 +77,7 @@ class Tracer : public ModuleObject {
     InPort i_reg_ignored;
 
  protected:
+    ParamI32D TRACE_TBL_ABITS;
     ParamI32D TRACE_TBL_SZ;
     class RegisterNameArray : public StringArray {
      public:
@@ -131,7 +136,34 @@ class Tracer : public ModuleObject {
     } RegActionTypeDef_;
 
 
-    TStructArray<MemopActionType> memaction;
+    class TraceStepType : public StructObject {
+     public:
+        TraceStepType(GenObject *parent, int idx, const char *comment="")
+            : StructObject(parent, "TraceStepType", "", idx, comment),
+            exec_cnt(this, "exec_cnt", "64"),
+            pc(this, "pc", "64"),
+            instr(this, "instr", "32"),
+            regactioncnt(this, "regactioncnt", "32"),
+            memactioncnt(this, "memactioncnt", "32"),
+            regaction(this, "regaction", "TRACE_TBL_SZ", true),
+            memaction(this, "memaction", "TRACE_TBL_SZ", true),
+            completed(this, "completed", "1") {}
+     public:
+        Signal exec_cnt;
+        Signal pc;
+        Signal instr;
+        Signal regactioncnt;
+        Signal memactioncnt;
+        TStructArray<RegActionType> regaction;
+        TStructArray<MemopActionType> memaction;
+        Signal completed;
+    } TraceStepTypeDef_;
+
+    TStructArray<TraceStepType> trace_tbl;
+    RegSignal tr_wcnt;
+    RegSignal tr_rcnt;
+    RegSignal tr_total;
+    RegSignal tr_opened;
 
     // process should be intialized last to make all signals available
     CombProcess comb;

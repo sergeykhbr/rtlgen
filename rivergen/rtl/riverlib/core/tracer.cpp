@@ -42,18 +42,24 @@ Tracer::Tracer(GenObject *parent, const char *name) :
     i_m_wdata(this, "i_m_wdata", "RISCV_ARCH"),
     i_reg_ignored(this, "i_reg_ignored", "1"),
     // params
+    TRACE_TBL_ABITS(this, "TRACE_TBL_ABITS", "6"),
     TRACE_TBL_SZ(this, "TRACE_TBL_SZ", "64"),
     rname(this),
     TaskDisassembler(this),
     // struct declaration
     MemopActionTypeDef_(this, -1),
     RegActionTypeDef_(this, -1),
+    TraceStepTypeDef_(this, -1),
     // registers
-    memaction(this, "memaction", "TRACE_TBL_SZ", true),
+    trace_tbl(this, "trace_tbl", "TRACE_TBL_SZ", true),
+    tr_wcnt(this, "tr_wcnt", "TRACE_TBL_ABITS"),
+    tr_rcnt(this, "tr_rcnt", "TRACE_TBL_ABITS"),
+    tr_total(this, "tr_total", "TRACE_TBL_ABITS"),
+    tr_opened(this, "tr_opened", "TRACE_TBL_ABITS"),
     // process
     comb(this)
 {
-    memaction.disableVcd();
+    trace_tbl.disableVcd();
     Operation::start(this);
 
     Operation::start(&comb);
@@ -859,13 +865,103 @@ Tracer::FunctionTaskDisassembler::FunctionTaskDisassembler(GenObject *parent)
             ENDCASE();
         ENDSWITCH();
     ENDIF();
-
-    SETSTR(ostr, "");
 }
 
 void Tracer::proc_comb() {
     river_cfg *cfg = glob_river_cfg_;
+    GenObject *i;
 
+    //TraceStepType *p_e_wr = &trace_tbl_[tr_wcnt_];
+    SETVAL(comb.tr_wcnt_nxt, INC(tr_wcnt));
+    IF (NZ(i_e_valid));
+        SETARRITEM(trace_tbl, tr_wcnt, trace_tbl->exec_cnt, INC(i_dbg_executed_cnt));
+        SETARRITEM(trace_tbl, tr_wcnt, trace_tbl->pc, i_e_pc);
+        SETARRITEM(trace_tbl, tr_wcnt, trace_tbl->instr, i_e_instr);
+
+TEXT();
+        SETVAL(tr_wcnt, INC(tr_wcnt));
+        TEXT("Clear next element:");
+        SETARRITEM(trace_tbl, comb.tr_wcnt_nxt, trace_tbl->exec_cnt, ALLZEROS());
+        SETARRITEM(trace_tbl, comb.tr_wcnt_nxt, trace_tbl->pc, ALLZEROS());
+        SETARRITEM(trace_tbl, comb.tr_wcnt_nxt, trace_tbl->instr, ALLZEROS());
+        SETARRITEM(trace_tbl, comb.tr_wcnt_nxt, trace_tbl->regactioncnt, ALLZEROS());
+        SETARRITEM(trace_tbl, comb.tr_wcnt_nxt, trace_tbl->memactioncnt, ALLZEROS());
+        SETARRITEM(trace_tbl, comb.tr_wcnt_nxt, trace_tbl->completed, ALLZEROS());
+        i = &FOR("i", CONST("0"), CONST("TRACE_TBL_SZ"), "++");
+            SETARRIDX(trace_tbl->regaction, *i);
+            SETARRIDX(trace_tbl->memaction, *i);
+            SETARRITEM(trace_tbl, comb.tr_wcnt_nxt, trace_tbl->regaction->waddr, ALLZEROS());
+            SETARRITEM(trace_tbl, comb.tr_wcnt_nxt, trace_tbl->regaction->wres, ALLZEROS());
+            SETARRITEM(trace_tbl, comb.tr_wcnt_nxt, trace_tbl->memaction->store, ALLZEROS());
+            SETARRITEM(trace_tbl, comb.tr_wcnt_nxt, trace_tbl->memaction->size, ALLZEROS());
+            SETARRITEM(trace_tbl, comb.tr_wcnt_nxt, trace_tbl->memaction->memaddr, ALLZEROS());
+            SETARRITEM(trace_tbl, comb.tr_wcnt_nxt, trace_tbl->memaction->data, ALLZEROS());
+            SETARRITEM(trace_tbl, comb.tr_wcnt_nxt, trace_tbl->memaction->regaddr, ALLZEROS());
+            SETARRITEM(trace_tbl, comb.tr_wcnt_nxt, trace_tbl->memaction->complete, ALLZEROS());
+            SETARRITEM(trace_tbl, comb.tr_wcnt_nxt, trace_tbl->memaction->sc_release, ALLZEROS());
+            SETARRITEM(trace_tbl, comb.tr_wcnt_nxt, trace_tbl->memaction->ignored, ALLZEROS());
+        ENDFOR();
+    ENDIF();
+
+TEXT();
+    IF (AND2(NZ(i_e_memop_valid), NZ(i_m_memop_ready)));
+        //MemopActionType *pm = &p_e_wr->memaction[p_e_wr->memactioncnt++];
+        SETARRIDX(trace_tbl->memaction, ARRITEM(trace_tbl, tr_wcnt, trace_tbl->memactioncnt));
+        SETARRITEM(trace_tbl, tr_wcnt, trace_tbl->memactioncnt, INC(trace_tbl->memactioncnt));
+        SETARRITEM(trace_tbl, tr_wcnt, trace_tbl->memaction->store, BIT(i_e_memop_type, cfg->MemopType_Store));
+        SETARRITEM(trace_tbl, tr_wcnt, trace_tbl->memaction->memaddr, i_e_memop_addr);
+        SETARRITEM(trace_tbl, tr_wcnt, trace_tbl->memaction->size, i_e_memop_size);
+        SETARRITEM(trace_tbl, tr_wcnt, trace_tbl->memaction->data, i_e_memop_wdata);
+        SETARRITEM(trace_tbl, tr_wcnt, trace_tbl->memaction->regaddr, i_e_waddr);
+        SETARRITEM(trace_tbl, tr_wcnt, trace_tbl->memaction->ignored, ALLZEROS());
+        SETARRITEM(trace_tbl, tr_wcnt, trace_tbl->memaction->complete, ALLZEROS());
+        IF (ORx(2, &EZ(i_e_waddr),
+                   &ANDx(2, &NZ(BIT(i_e_memop_type, cfg->MemopType_Store)),
+                            &EZ(BIT(i_e_memop_type, cfg->MemopType_Release)))));
+            SETARRITEM(trace_tbl, tr_wcnt, trace_tbl->memaction->complete, ALLONES());
+        ENDIF();
+        SETARRITEM(trace_tbl, tr_wcnt, trace_tbl->memaction->sc_release, BIT(i_e_memop_type, cfg->MemopType_Release));
+    ENDIF();
+
+TEXT();
+    IF (NZ(i_e_wena));
+        TEXT("Direct register writting if it is not a Load operation");
+        //RegActionType *pr = &p_e_wr->regaction[p_e_wr->regactioncnt++];
+        SETARRIDX(trace_tbl->regaction, ARRITEM(trace_tbl, tr_wcnt, trace_tbl->regactioncnt));
+        SETARRITEM(trace_tbl, tr_wcnt, trace_tbl->regactioncnt, INC(trace_tbl->regactioncnt));
+        SETARRITEM(trace_tbl, tr_wcnt, trace_tbl->regaction->waddr, i_e_waddr);
+        SETARRITEM(trace_tbl, tr_wcnt, trace_tbl->regaction->wres, i_e_wdata);
+    ELSIF (NZ(i_m_wena));
+        TEXT("Update current rd memory action (memory operations are strictly ordered)");
+        SETZERO(comb.checked);
+        i = &FOR("i", CONST("0"), ARRITEM(trace_tbl, tr_rcnt, trace_tbl->memactioncnt), "++");
+            SETARRIDX(trace_tbl->memaction, *i);
+            IF (ANDx(2, &EZ(ARRITEM(trace_tbl, tr_rcnt, trace_tbl->memaction->complete)),
+                        &EZ(comb.checked)));
+                SETONE(comb.checked);
+                SETARRITEM(trace_tbl, tr_rcnt, trace_tbl->memaction->complete, ALLONES());
+                SETARRITEM(trace_tbl, tr_rcnt, trace_tbl->memaction->ignored, i_reg_ignored);
+                IF (NZ(ARRITEM(trace_tbl, tr_rcnt, trace_tbl->memaction->sc_release)));
+                    IF (EQ(i_m_wdata, CONST("1", 64)));
+                        SETARRITEM(trace_tbl, tr_rcnt, trace_tbl->memaction->ignored, ALLONES());
+                    ENDIF();
+                    TEXT("do not re-write stored value by returning error status");
+                ELSE();
+                    SETARRITEM(trace_tbl, tr_rcnt, trace_tbl->memaction->data, i_m_wdata);
+                ENDIF();
+
+TEXT();
+                IF (EZ(i_reg_ignored));
+                    SETARRIDX(trace_tbl->regaction, ARRITEM(trace_tbl, tr_rcnt, trace_tbl->regactioncnt));
+                    SETARRITEM(trace_tbl, tr_rcnt, trace_tbl->regactioncnt, INC(trace_tbl->regactioncnt));
+                    //RegActionType *pr = &p->regaction[p->regactioncnt++];
+                    SETARRITEM(trace_tbl, tr_rcnt, trace_tbl->regaction->waddr, i_m_waddr);
+                    SETARRITEM(trace_tbl, tr_rcnt, trace_tbl->regaction->wres, i_m_wdata);
+                ENDIF();
+                //break;
+            ENDIF();
+        ENDFOR();
+    ENDIF();
 TEXT();
     SYNC_RESET(*this);
 

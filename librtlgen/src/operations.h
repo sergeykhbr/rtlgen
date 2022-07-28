@@ -45,6 +45,7 @@ class Operation : public GenObject {
     static std::string fullname(const char *prefix, std::string name, GenObject *obj);
     static std::string addtext(GenObject *obj, size_t curpos);
     // Copy signals marked as 'reg' from v to r or vise versa
+    static std::string copyreg_entry(const char *dst, const char *src, GenObject *obj);
     static std::string copyreg(const char *dst, const char *src, ModuleObject *m);
     // Reset signals marked as 'reg'
     static std::string reset(const char *dst, const char *src, ModuleObject *m, std::string xrst);
@@ -155,6 +156,7 @@ Operation &LSH(GenObject &a, int sz, const char *comment="");           // left 
 Operation &ARRITEM(GenObject &arr, GenObject &idx, GenObject &item, const char *comment="");
 Operation &ARRITEM_B(GenObject &arr, GenObject &idx, GenObject &item, const char *comment="");  // .read() for signals and ports in bits operations
 Operation &SETARRITEM(GenObject &arr, GenObject &idx, GenObject &item, GenObject &val, const char *comment="");
+Operation &SETARRIDX(GenObject &arr, GenObject &idx);
 
 void IF(GenObject &a, const char *comment="");
 void ELSIF(GenObject &a, const char *comment="");
