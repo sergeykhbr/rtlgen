@@ -242,7 +242,7 @@ std::string BOOL::getType() {
 std::string STRING::getType() {
     std::string ret = "";
     if (SCV_is_sysc()) {
-        ret = std::string("const char *");
+        ret = std::string("std::string");
     } else if (SCV_is_sv()) {
         ret = std::string("string");
     }

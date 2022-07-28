@@ -31,6 +31,7 @@ class FunctionObject : public GenObject {
 
     virtual std::string getType() { return std::string(""); }
     virtual std::string generate();
+    virtual void getArgsList(std::list<GenObject *> &args) {}
     virtual GenObject *getpReturn() { return 0; }
 
  protected:

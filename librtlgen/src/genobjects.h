@@ -40,6 +40,7 @@ enum EIdType {
     ID_STRUCT_DEF,
     ID_STRUCT_INST,
     ID_ARRAY_DEF,
+    ID_ARRAY_STRING,
     ID_PROCESS,
     ID_COMMENT,
     ID_EMPTYLINE,

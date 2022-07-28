@@ -27,12 +27,15 @@ class Tracer : public ModuleObject {
 
     class FunctionTaskDisassembler : public FunctionObject {
      public:
-        FunctionTaskDisassembler(GenObject *parent)
-            : FunctionObject(parent, "TaskDisassembler"),
-            instr(this, "instr", "32") {
+        FunctionTaskDisassembler(GenObject *parent);
+        virtual std::string getType() override { return ostr.getType(); }
+        virtual void getArgsList(std::list<GenObject *> &args) {
+            args.push_back(&instr);
         }
+        virtual GenObject *getpReturn() { return &ostr; }
      protected:
-        InPort instr;
+        Logic instr;
+        STRING ostr;
     };
 
     class CombProcess : public ProcObject {
@@ -71,6 +74,25 @@ class Tracer : public ModuleObject {
 
  protected:
     ParamI32D TRACE_TBL_SZ;
+    class RegisterNameArray : public StringArray {
+     public:
+        RegisterNameArray(GenObject *parent) :
+            StringArray(parent, "rname", "64") {
+            static const char *RNAMES[64] = {
+                "zero", "ra", "sp", "gp", "tp", "t0", "t1", "t2",
+                "s0", "s1", "a0", "a1", "a2", "a3", "a4", "a5",
+                "a6", "a7", "s2", "s3", "s4", "s5", "s6", "s7",
+                "s8", "s9", "s10", "s11", "t3", "t4", "t5", "t6",
+                "ft0", "ft1", "ft2",  "ft3",  "ft4", "ft5", "ft6",  "ft7",
+                "fs0", "fs1", "fa0",  "fa1",  "fa2", "fa3", "fa4",  "fa5",
+                "fa6", "fa7", "fs2",  "fs3",  "fs4", "fs5", "fs6",  "fs7",
+                "fs8", "fs9", "fs10", "fs11", "ft8", "ft9", "ft10", "ft11"
+            };
+            for (int i = 0; i < 64; i++) {
+                setValue(i, RNAMES[i]);
+            }
+        }
+    } rname;
     FunctionTaskDisassembler TaskDisassembler;
 
  protected:

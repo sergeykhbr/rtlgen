@@ -70,10 +70,10 @@ class STRING : public GenValue {
     STRING(const char *val, const char *name="",
         GenObject *parent=0, const char *comment=""):
         GenValue("0", "0", name, parent, comment) {
-        sysc_ = std::string(val);
-        sv_ = std::string(val);
-        sv_pkg_ = std::string(val);
-        vhdl_ = std::string(val);
+        sysc_ = "\"" + std::string(val) + "\"";
+        sv_ = "\"" + std::string(val) + "\"";
+        sv_pkg_ = "\"" + std::string(val) + "\"";
+        vhdl_ = "\"" + std::string(val) + "\"";
     }
 
     virtual std::string getType();

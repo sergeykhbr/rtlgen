@@ -24,6 +24,7 @@
 #include "regs.h"
 #include "operations.h"
 #include "array.h"
+#include "funcs.h"
 
 namespace sysvc {
 
@@ -32,6 +33,7 @@ std::string ModuleObject::generate_sysc_h() {
     std::string ln;
     std::string text = "";
     std::list<GenObject *> tmpllist;
+    std::list<GenObject *> argslist;
     int tcnt = 0;
 
     getTmplParamList(tmpllist);
@@ -131,8 +133,27 @@ std::string ModuleObject::generate_sysc_h() {
     // VCD generator
     if (isVcd()) {
         out += "    void generateVCD(sc_trace_file *i_vcd, sc_trace_file *o_vcd);\n";
-        out += "\n";
     }
+    // Functions declaration:
+    for (auto &p: entries_) {
+        if (p->getId() != ID_FUNCTION) {
+            continue;
+        }
+        ln = "    " + p->getType();
+        ln += " " + p->getName();
+        out += ln + "(";
+        tcnt = 0;
+        static_cast<FunctionObject *>(p)->getArgsList(argslist);
+        for (auto &io: argslist) {
+            if (tcnt++) {
+                out += ", ";
+            }
+            out += io->getType() + " " + io->getName();
+        }
+        out += ");\n";
+    }
+
+    out += "\n";
     out += " private:\n";
 
     // Generic parameter local storage:
@@ -498,7 +519,7 @@ std::string ModuleObject::generate_sysc_template_param(GenObject *p) {
     return ret;
 }
 
-std::string ModuleObject::generate_sysc_template_f_name(bool usevoid) {
+std::string ModuleObject::generate_sysc_template_f_name(const char *rettype) {
     std::string ret = "";
     int tcnt = 0;
     std::list<GenObject *> tmpllist;
@@ -518,9 +539,9 @@ std::string ModuleObject::generate_sysc_template_f_name(bool usevoid) {
     tcnt = 0;
 
     ret += Operation::addspaces();
-    if (usevoid) {
-        // desctructor without void
-        ret += "void ";
+    ret += std::string(rettype);
+    if (rettype[0]) {
+        ret += " ";
     }
     ret += getType();
     if (tmpllist.size()) {
@@ -552,6 +573,25 @@ std::string ModuleObject::generate_sysc_param_strings() {
         ret += "static " + p->getType() + " " + p->getName();
         ret += " = \"" + p->getStrValue() + "\";\n";
 
+        tcnt++;
+    }
+    for (auto &p: getEntries()) {
+        if (p->getId() != ID_ARRAY_STRING) {
+            continue;
+        }
+        if (!static_cast<GenValue *>(p)->isLocal()) {
+            continue;
+        }
+        ret += "static " + p->getType() + " " + p->getName() + "[" + p->getStrDepth() +"]";
+        ret += " = {\n";
+        for (auto &e: p->getEntries()) {
+            ret += "    \"" + e->getName() + "\"";
+            if (e != p->getEntries().back()) {
+                ret += ",";
+            }
+            ret += "\n";
+        }
+        ret += "};\n";
         tcnt++;
     }
     if (tcnt) {
@@ -711,7 +751,7 @@ std::string ModuleObject::generate_sysc_submodule_nullify() {
 std::string ModuleObject::generate_sysc_destructor() {
     std::string ret = "";
 
-    ret += generate_sysc_template_f_name(false);
+    ret += generate_sysc_template_f_name("");
     ret += "::~" + getType() + "() {\n";
     Operation::set_space(Operation::get_space() + 1);
     for (auto &p: entries_) {
@@ -810,6 +850,14 @@ std::string ModuleObject::generate_sysc_cpp() {
         out += generate_sysc_vcd();
     }
 
+    // Functions
+    for (auto &p: entries_) {
+        if (p->getId() != ID_FUNCTION) {
+            continue;
+        }
+        Operation::set_space(0);
+        out += generate_sysc_func(p);
+    }
 
     // Process
     for (auto &p: entries_) {
@@ -826,6 +874,87 @@ std::string ModuleObject::generate_sysc_cpp() {
     }
 
     return out;
+}
+
+std::string ModuleObject::generate_sysc_func(GenObject *func) {
+    std::string ret = "";
+    std::list<GenObject *> argslist;
+    int tcnt = 0;
+    
+    static_cast<FunctionObject *>(func)->getArgsList(argslist);
+
+    ret += generate_sysc_template_f_name(func->getType().c_str());
+    ret += "::" + func->getName() + "(";
+    if (argslist.size() == 1) {
+        for (auto &e: argslist) {
+            ret += e->getType() + " " + e->getName();
+        }
+    } else if (argslist.size() > 1) {
+        Operation::set_space(Operation::get_space() + 2);
+        ret += "\n" + Operation::addspaces();
+        for (auto &e: argslist) {
+            ret += e->getType() + " " + e->getName();
+            if (e != argslist.back()) {
+                ret += ",\n" + Operation::addspaces();
+            }
+        }
+        Operation::set_space(Operation::get_space() - 2);
+    }
+    ret += ") {\n";
+    
+    // process variables declaration
+    tcnt = 0;
+    bool skiparg;
+    for (auto &e: func->getEntries()) {
+        skiparg = false;
+        for (auto &arg: argslist) {
+            if (e->getName() == arg->getName()) {
+                skiparg = true;
+                break;
+            }
+        }
+        if (skiparg) {
+            continue;
+        }
+
+        if (e->getId() == ID_VALUE) {
+            ret += "    " + e->getType() + " " + e->getName();
+            tcnt++;
+        } else if (e->getId() == ID_ARRAY_DEF) {
+            ret += "    " + e->getType() + " " + e->getName();
+            ret += "[";
+            ret += e->getStrDepth();
+            ret += "]";
+        } else if (e->getId() == ID_STRUCT_INST) {
+            ret += "    " + e->getType() + " " + e->getName();
+        } else {
+            continue;
+        }
+        tcnt++;
+        ret += ";\n";
+    }
+    if (tcnt) {
+        ret += "\n";
+        tcnt = 0;
+    }
+
+    // Generate operations:
+    Operation::set_space(1);
+    for (auto &e: func->getEntries()) {
+        if (e->getId() != ID_OPERATION) {
+            continue;
+        }
+        ret += e->generate();
+    }
+
+    // return value
+    if (static_cast<FunctionObject *>(func)->getpReturn()) {
+        ret += "    return " + static_cast<FunctionObject *>(func)->getpReturn()->getName() + ";\n";
+    }
+
+    ret += "}\n";
+    ret += "\n";
+    return ret;
 }
 
 std::string ModuleObject::generate_sysc_proc(GenObject *proc) {

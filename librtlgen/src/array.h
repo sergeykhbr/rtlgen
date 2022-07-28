@@ -102,5 +102,23 @@ class ModuleArray : public ArrayObject {
     T **arr_;
 };
 
+class StringArray : public ArrayObject {
+ public:
+    StringArray(GenObject *parent, const char *name, const char *depth, const char *comment="")
+        : ArrayObject(parent, name, depth, comment) {
+        id_ = ID_ARRAY_STRING;
+        arr_ = new ParamString *[depth_.getValue()];
+        char tstr[64];
+        for (int i = 0; i < static_cast<int>(depth_.getValue()); i++) {
+            RISCV_sprintf(tstr, sizeof(tstr), "%s%d", name, i);
+            arr_[i] = new ParamString(this, tstr, "");
+        }
+    }
+    ParamString *operator->() const { return arr_[0]; }
+    virtual GenObject *getItem() { return arr_[0]; }
+    virtual void setValue(int idx, const char *v) { arr_[idx]->setName(v); }
+        
+    ParamString **arr_;
+};
 
 }  // namespace sysvc

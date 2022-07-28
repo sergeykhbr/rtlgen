@@ -655,6 +655,50 @@ Operation &SETVAL(GenObject &a, GenObject &b, const char *comment) {
     return *p;
 }
 
+// SETSTR
+Operation &SETSTR(GenObject &a, const char *str, const char *comment) {
+    Operation *p = new Operation(comment);
+    p->igen_ = SETVAL_gen;
+    p->add_arg(p);
+    p->add_arg(&a);
+    p->add_arg(new STRING(str, ""));
+    return *p;
+}
+
+// SETSTRF
+std::string SETSTRF_gen(GenObject **args) {
+    std::string ret = Operation::addspaces();
+    ret += "RISCV_sprintf(tstr, sizeof(tstr), ";
+    ret += args[2]->getStrValue() + ", ";  // fmt
+    size_t cnt = reinterpret_cast<size_t>(args[3]);
+    for (size_t i = 0; i < cnt; i++) {
+        if (i > 0) {
+            ret += ", ";
+        }
+        ret += Operation::obj2varname(args[4 + i]);
+    }
+    ret += ");\n";
+    return ret;
+}
+
+Operation &SETSTRF(GenObject &a, const char *fmt, size_t cnt, ...) {
+    Operation *p = new Operation("");
+    GenObject *obj;
+    p->igen_ = SETSTRF_gen;
+    p->add_arg(p);
+    p->add_arg(&a);
+    p->add_arg(new STRING(fmt, ""));
+    p->add_arg(reinterpret_cast<GenObject *>(cnt));
+    va_list arg;
+    va_start(arg, cnt);
+    for (int i = 0; i < cnt; i++) {
+        obj = va_arg(arg, GenObject *);
+        p->add_arg(obj);
+    }
+    va_end(arg);
+    return *p;
+}
+
 // BIG_TO_U64: explicit conersion of biguint to uint64 (sysc only)
 std::string BIG_TO_U64_gen(GenObject **args) {
     std::string A = "";

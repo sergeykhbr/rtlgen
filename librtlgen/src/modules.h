@@ -52,9 +52,10 @@ class ModuleObject : public GenObject {
     std::string generate_sysc_submodule_nullify();
     std::string generate_sysc_destructor();
     std::string generate_sysc_vcd();
+    std::string generate_sysc_func(GenObject *func);
     std::string generate_sysc_proc(GenObject *proc);
     std::string generate_sysc_template_param(GenObject *p);
-    std::string generate_sysc_template_f_name(bool usevoid=true);
+    std::string generate_sysc_template_f_name(const char *rettype="void");
     std::string generate_sysc_sensitivity(std::string prefix, std::string name, GenObject *obj);
     std::string generate_sysc_vcd_entries(std::string name1, std::string name2, GenObject *obj);
 

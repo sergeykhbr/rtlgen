@@ -110,6 +110,8 @@ Operation &SETBITZERO(GenObject &a, int b, const char *comment="");
 Operation &SETBITS(GenObject &a, GenObject &h, GenObject &l, GenObject &val, const char *comment="");
 Operation &SETBITS(GenObject &a, int h, int l, GenObject &val, const char *comment="");
 Operation &SETVAL(GenObject &a, GenObject &b, const char *comment="");
+Operation &SETSTR(GenObject &a, const char *str, const char *comment="");
+Operation &SETSTRF(GenObject &a, const char *fmt, size_t cnt, ...);
 Operation &TO_INT(GenObject &a, const char *comment="");
 Operation &BIG_TO_U64(GenObject &a, const char *comment="");        // explicit conersion of biguint to uint64 (sysc only)
 Operation &TO_BIG(size_t sz, GenObject &a); // convert to biguint
