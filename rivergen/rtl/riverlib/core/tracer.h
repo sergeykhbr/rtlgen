@@ -38,18 +38,54 @@ class Tracer : public ModuleObject {
         STRING ostr;
     };
 
+    class FunctionTraceOutput : public FunctionObject {
+     public:
+        FunctionTraceOutput(GenObject *parent);
+        virtual std::string getType() override { return ostr.getType(); }
+        virtual void getArgsList(std::list<GenObject *> &args) {
+            args.push_back(&rcnt);
+        }
+        virtual GenObject *getpReturn() { return &ostr; }
+     protected:
+        Logic rcnt;
+        STRING ostr;
+        STRING disasm;
+        I32D ircnt;
+        I32D iwaddr;
+    };
+
     class CombProcess : public ProcObject {
      public:
         CombProcess(GenObject *parent) : ProcObject(parent, "comb"),
+            wcnt("0", "wcnt", this),
+            rcnt("0", "rcnt", this),
+            regcnt("0", "regcnt", this),
+            memcnt("0", "memcnt", this),
             tr_wcnt_nxt(this, "tr_wcnt_nxt", "TRACE_TBL_ABITS"),
-            checked(this, "checked", "1") {
+            checked(this, "checked", "1"),
+            entry_valid(this, "entry_valid", "1"),
+            rcnt_inc(this, "rcnt_inc", "TRACE_TBL_ABITS") {
         }
     public:
+        I32D wcnt;
+        I32D rcnt;
+        I32D regcnt;
+        I32D memcnt;
         Logic tr_wcnt_nxt;
         Logic checked;
+        Logic entry_valid;
+        Logic rcnt_inc;
+    };
+
+    class RegistersProcess : public ProcObject {
+     public:
+        RegistersProcess(GenObject *parent) : ProcObject(parent, "registers") {
+        }
+    public:
     };
 
     void proc_comb();
+    void proc_reg();
 
  public:
     DefParamString trace_file;
@@ -98,7 +134,6 @@ class Tracer : public ModuleObject {
             }
         }
     } rname;
-    FunctionTaskDisassembler TaskDisassembler;
 
  protected:
     class MemopActionType : public StructObject {
@@ -164,9 +199,15 @@ class Tracer : public ModuleObject {
     RegSignal tr_rcnt;
     RegSignal tr_total;
     RegSignal tr_opened;
+    STRING outstr;
+    FileValue fl;
 
+    // functions
+    FunctionTaskDisassembler TaskDisassembler;
+    FunctionTraceOutput TraceOutput;
     // process should be intialized last to make all signals available
     CombProcess comb;
+    RegistersProcess reg;
 };
 
 class tracer_file : public FileObject {

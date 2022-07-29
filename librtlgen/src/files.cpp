@@ -162,6 +162,18 @@ void FileObject::generate_sysc() {
         "#pragma once\n"
         "\n"
         "#include <systemc.h>\n";
+    // Check FILE presence
+    for (auto &p: entries_) {
+        if (p->getId() != ID_MODULE) {
+            continue;
+        }
+        if (!static_cast<ModuleObject *>(p)->isFileValue()) {
+            continue;
+        }
+        out += "#include <string>\n";
+        break;
+    }
+
 
     // Automatic Dependency detection
     std::string thisfile = getFullPath();

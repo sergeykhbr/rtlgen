@@ -44,7 +44,8 @@ enum EIdType {
     ID_PROCESS,
     ID_COMMENT,
     ID_EMPTYLINE,
-    ID_OPERATION
+    ID_OPERATION,
+    ID_FILEVALUE
 };
 
 enum EGenerateType {

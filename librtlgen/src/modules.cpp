@@ -87,6 +87,16 @@ bool ModuleObject::isSubModules() {
     return false;
 }
 
+bool ModuleObject::isFileValue() {
+    for (auto &p: entries_) {
+        if (p->getId() == ID_FILEVALUE) {
+            return true;
+        }
+    }
+    return false;
+}
+
+
 void ModuleObject::getTmplParamList(std::list<GenObject *> &genlist) {
     for (auto &e : entries_) {
         if (e->getId() != ID_TMPL_PARAM) {

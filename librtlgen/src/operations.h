@@ -45,7 +45,7 @@ class Operation : public GenObject {
     static std::string fullname(const char *prefix, std::string name, GenObject *obj);
     static std::string addtext(GenObject *obj, size_t curpos);
     // Copy signals marked as 'reg' from v to r or vise versa
-    static std::string copyreg_entry(const char *dst, const char *src, GenObject *obj);
+    static std::string copyreg_entry(char *idx, std::string dst, std::string src, GenObject *obj);
     static std::string copyreg(const char *dst, const char *src, ModuleObject *m);
     // Reset signals marked as 'reg'
     static std::string reset(const char *dst, const char *src, ModuleObject *m, std::string xrst);
@@ -113,7 +113,10 @@ Operation &SETBITS(GenObject &a, int h, int l, GenObject &val, const char *comme
 Operation &SETVAL(GenObject &a, GenObject &b, const char *comment="");
 Operation &SETSTR(GenObject &a, const char *str, const char *comment="");
 Operation &SETSTRF(GenObject &a, const char *fmt, size_t cnt, ...);
+Operation &ADDSTRF(GenObject &a, const char *fmt, size_t cnt, ...);
 Operation &TO_INT(GenObject &a, const char *comment="");
+Operation &TO_U64(GenObject &a, const char *comment="");
+Operation &TO_CSTR(GenObject &a, const char *comment="");
 Operation &BIG_TO_U64(GenObject &a, const char *comment="");        // explicit conersion of biguint to uint64 (sysc only)
 Operation &TO_BIG(size_t sz, GenObject &a); // convert to biguint
 Operation &EQ(GenObject &a, GenObject &b, const char *comment="");  // ==
@@ -172,8 +175,16 @@ void ENDSWITCH(const char *comment="");
 GenObject &FOR(const char *i, GenObject &start, GenObject &end, const char *dir, const char *comment="");
 void ENDFOR(const char *comment="");
 
+void WHILE(GenObject &a, const char *comment="");
+void ENDWHILE(const char *comment="");
+
 // xrst is an additional reset signal
 void SYNC_RESET(GenObject &a, GenObject *xrst=0, const char *comment="");
+// call function
+void CALLF(GenObject *ret, GenObject &a, size_t argcnt, ...);
+// write string into file
+void FOPEN(GenObject &f, GenObject &str);
+void FWRITE(GenObject &f, GenObject &str);
 
 // Create new module
 void NEW(GenObject &m, const char *name, GenObject *idx=0, const char *comment="");

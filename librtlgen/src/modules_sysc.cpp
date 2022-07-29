@@ -85,6 +85,9 @@ std::string ModuleObject::generate_sysc_h() {
         if (p->getId() != ID_PROCESS) {
             continue;
         }
+        if (p->getName() == "registers") {
+            continue;
+        }
         out += "    void " + p->getName() + "();\n";
         hasProcess = true;
     }
@@ -134,24 +137,6 @@ std::string ModuleObject::generate_sysc_h() {
     if (isVcd()) {
         out += "    void generateVCD(sc_trace_file *i_vcd, sc_trace_file *o_vcd);\n";
     }
-    // Functions declaration:
-    for (auto &p: entries_) {
-        if (p->getId() != ID_FUNCTION) {
-            continue;
-        }
-        ln = "    " + p->getType();
-        ln += " " + p->getName();
-        out += ln + "(";
-        tcnt = 0;
-        static_cast<FunctionObject *>(p)->getArgsList(argslist);
-        for (auto &io: argslist) {
-            if (tcnt++) {
-                out += ", ";
-            }
-            out += io->getType() + " " + io->getName();
-        }
-        out += ");\n";
-    }
 
     out += "\n";
     out += " private:\n";
@@ -189,6 +174,32 @@ std::string ModuleObject::generate_sysc_h() {
             out += " = " + p->getStrValue() + ";\n";
         }
         tcnt++;
+    }
+    if (tcnt) {
+        out += "\n";
+        tcnt = 0;
+    }
+
+    // Functions declaration:
+    tcnt = 0;
+    for (auto &p: entries_) {
+        if (p->getId() != ID_FUNCTION) {
+            continue;
+        }
+        tcnt++;
+        ln = "    " + p->getType();
+        ln += " " + p->getName();
+        out += ln + "(";
+        tcnt = 0;
+        argslist.clear();
+        static_cast<FunctionObject *>(p)->getArgsList(argslist);
+        for (auto &io: argslist) {
+            if (tcnt++) {
+                out += ", ";
+            }
+            out += io->getType() + " " + io->getName();
+        }
+        out += ");\n";
     }
     if (tcnt) {
         out += "\n";
@@ -252,6 +263,7 @@ std::string ModuleObject::generate_sysc_h() {
     text = "";
     for (auto &p: getEntries()) {
         if (p->isReg() || (p->getId() != ID_SIGNAL
+                        && p->getId() != ID_VALUE
                         && p->getId() != ID_STRUCT_INST
                         && p->getId() != ID_ARRAY_DEF)) {
             if (p->getId() == ID_COMMENT) {
@@ -284,6 +296,13 @@ std::string ModuleObject::generate_sysc_h() {
             ln += "// " + p->getComment();
         }
         out += ln + "\n";
+        tcnt++;
+    }
+    for (auto &p: getEntries()) {
+        if (p->getId() != ID_FILEVALUE) {
+            continue;
+        }
+        out += "    FILE *" + p->getName() + ";\n";
         tcnt++;
     }
     if (tcnt) {
@@ -343,6 +362,15 @@ std::string ModuleObject::generate_sysc_proc_registers() {
         Operation::set_space(Operation::get_space() - 1);
         out += Operation::addspaces();
         out += "}\n";
+    }
+    for (auto &e: getEntries()) {
+        if (e->getId() != ID_PROCESS || e->getName() != "registers") {
+            continue;
+        }
+        out += "\n";
+        for (auto &r: e->getEntries()) {
+            out += r->generate();
+        }
     }
     Operation::set_space(Operation::get_space() - 1);
     out += Operation::addspaces();
@@ -700,6 +728,9 @@ std::string ModuleObject::generate_sysc_constructor() {
         if (p->getId() != ID_PROCESS) {
             continue;
         }
+        if (p->getName() == "registers") {
+            continue;
+        }
         ret += "\n";
         ret += "    SC_METHOD(" + p->getName() + ");\n";
 
@@ -862,6 +893,9 @@ std::string ModuleObject::generate_sysc_cpp() {
     // Process
     for (auto &p: entries_) {
         if (p->getId() != ID_PROCESS) {
+            continue;
+        }
+        if (p->getName() == "registers") {
             continue;
         }
         Operation::set_space(0);
