@@ -58,9 +58,12 @@ class Tracer : public ModuleObject {
      public:
         CombProcess(GenObject *parent) : ProcObject(parent, "comb"),
             wcnt("0", "wcnt", this),
+            xcnt("0", "xcnt", this),
             rcnt("0", "rcnt", this),
             regcnt("0", "regcnt", this),
             memcnt("0", "memcnt", this),
+            mskoff(this, "mskoff", "7"),
+            mask(this, "mask", "64"),
             tr_wcnt_nxt(this, "tr_wcnt_nxt", "TRACE_TBL_ABITS"),
             checked(this, "checked", "1"),
             entry_valid(this, "entry_valid", "1"),
@@ -68,9 +71,12 @@ class Tracer : public ModuleObject {
         }
     public:
         I32D wcnt;
+        I32D xcnt;
         I32D rcnt;
         I32D regcnt;
         I32D memcnt;
+        Logic mskoff;
+        Logic mask;
         Logic tr_wcnt_nxt;
         Logic checked;
         Logic entry_valid;
@@ -142,6 +148,7 @@ class Tracer : public ModuleObject {
             : StructObject(parent, "MemopActionType", "", idx, comment),
             store(this, "store", "1", "0=load;1=store"),
             size(this, "size", "2"),
+            mask(this, "mask", "64"),
             memaddr(this, "memaddr", "64"),
             data(this, "data", "64"),
             regaddr(this, "regaddr", "6", "writeback address"),
@@ -151,6 +158,7 @@ class Tracer : public ModuleObject {
      public:
         Signal store;
         Signal size;
+        Signal mask;
         Signal memaddr;
         Signal data;
         Signal regaddr;
@@ -200,6 +208,7 @@ class Tracer : public ModuleObject {
     RegSignal tr_total;
     RegSignal tr_opened;
     STRING outstr;
+    STRING tracestr;
     FileValue fl;
 
     // functions

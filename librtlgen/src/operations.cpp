@@ -684,14 +684,21 @@ Operation &SETSTR(GenObject &a, const char *str, const char *comment) {
 std::string SETSTRF_gen(GenObject **args) {
     std::string ret = Operation::addspaces();
     ret += "RISCV_sprintf(tstr, sizeof(tstr), ";
-    ret += args[2]->getStrValue() + ", ";  // fmt
+    ret += args[2]->getStrValue();  // fmt
     size_t cnt = reinterpret_cast<size_t>(args[3]);
+    Operation::set_space(Operation::get_space() + 2);
+    if (cnt > 1) {
+        ret += ",\n" + Operation::addspaces();
+    } else {
+        ret += ", ";
+    }
     for (size_t i = 0; i < cnt; i++) {
         if (i > 0) {
-            ret += ", ";
+            ret += ",\n" + Operation::addspaces();
         }
         ret += Operation::obj2varname(args[5 + i]);
     }
+    Operation::set_space(Operation::get_space() - 2);
     ret += ");\n";
     ret += Operation::addspaces() + Operation::obj2varname(args[1]) + " ";
     if (args[4]) {
@@ -1990,12 +1997,14 @@ std::string CALLF_gen(GenObject **args) {
     ret += args[2]->getName();
     ret += "(";
     size_t cnt = reinterpret_cast<size_t>(args[3]);
+    Operation::set_space(Operation::get_space() + 2);
     for (size_t i = 0; i < cnt; i++) {
         if (i > 0) {
-            ret += ",";
+            ret += ",\n" + Operation::addspaces();
         }
         ret += Operation::obj2varname(args[4 + i]);
     }
+    Operation::set_space(Operation::get_space() - 2);
 
     ret += ");\n";
     return ret;
