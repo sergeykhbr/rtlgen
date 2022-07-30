@@ -17,16 +17,19 @@
 #pragma once
 
 #include <api.h>
+#include "d2l_d.h"
 #include "fpu_top.h"
 
 class fpu_d_folder : public FolderObject {
  public:
     fpu_d_folder(GenObject *parent) :
         FolderObject(parent, "fpu_d"),
+        d2l_d_(this),
         fpu_top_(this) {}
 
  protected:
     // subfolders:
     // files
+    d2l_d_file d2l_d_;
     fpu_top_file fpu_top_;
 };

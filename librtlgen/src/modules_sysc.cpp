@@ -996,6 +996,7 @@ std::string ModuleObject::generate_sysc_func(GenObject *func) {
 
 std::string ModuleObject::generate_sysc_proc(GenObject *proc) {
     std::string ret = "";
+    std::string ln;
     int tcnt = 0;
 
     ret += generate_sysc_template_f_name();
@@ -1004,21 +1005,29 @@ std::string ModuleObject::generate_sysc_proc(GenObject *proc) {
     // process variables declaration
     tcnt = 0;
     for (auto &e: proc->getEntries()) {
+        ln = "";
         if (e->getId() == ID_VALUE) {
-            ret += "    " + e->getType() + " " + e->getName();
+            ln += "    " + e->getType() + " " + e->getName();
             tcnt++;
         } else if (e->getId() == ID_ARRAY_DEF) {
-            ret += "    " + e->getType() + " " + e->getName();
-            ret += "[";
-            ret += e->getStrDepth();
-            ret += "]";
+            ln += "    " + e->getType() + " " + e->getName();
+            ln += "[";
+            ln += e->getStrDepth();
+            ln += "]";
         } else if (e->getId() == ID_STRUCT_INST) {
-            ret += "    " + e->getType() + " " + e->getName();
+            ln += "    " + e->getType() + " " + e->getName();
         } else {
             continue;
         }
         tcnt++;
-        ret += ";\n";
+        ln += ";";
+        if (e->getComment().size()) {
+            while (ln.size() < 60) {
+                ln += " ";
+            }
+            ln += "// " + e->getComment();
+        }
+        ret += ln + "\n";
     }
     if (tcnt) {
         ret += "\n";

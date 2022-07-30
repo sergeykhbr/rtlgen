@@ -155,6 +155,8 @@ Operation &CC4(GenObject &a, GenObject &b, GenObject &c, GenObject &d, const cha
 Operation &CCx(size_t cnt, ...);                    // concatation
 Operation &SPLx(GenObject &a, size_t cnt, ...);     // cplit concatated bus
 Operation &LSH(GenObject &a, int sz, const char *comment="");           // left shift
+Operation &RSH(GenObject &a, GenObject &sz, const char *comment="");    // right shift
+Operation &RSH(GenObject &a, int sz, const char *comment="");           // right shift
 
 Operation &ARRITEM(GenObject &arr, GenObject &idx, GenObject &item, const char *comment="");
 Operation &ARRITEM_B(GenObject &arr, GenObject &idx, GenObject &item, const char *comment="");  // .read() for signals and ports in bits operations

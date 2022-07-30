@@ -192,22 +192,27 @@ std::string Operation::copyreg_entry(char *idx, std::string dst, std::string src
 
 std::string Operation::copyreg(const char *dst, const char *src, ModuleObject *m) {
     std::string ret = "";
-    // reset each register separatly
-    for (auto &p: m->getEntries()) {
-        if (!p->isReg()) {
-            continue;
-        }
-        if (src == 0 && p->isResetDisabled()) {
-            continue;
-        }
+    if (!m->is2DimReg() && ((src[0] == 'r' || src[0] == 'v') && src[1] == '\0')) {
+        ret += Operation::addspaces();
+        ret += std::string(dst) + " = " + std::string(src) + ";\n";
+    } else {
+        // reset each register separatly
+        for (auto &p: m->getEntries()) {
+            if (!p->isReg()) {
+                continue;
+            }
+            if (src == 0 && p->isResetDisabled()) {
+                continue;
+            }
 
-        char idx[2] = "i";  // cycle index variable
-        std::string tdst = std::string(dst);
-        std::string tsrc;
-        if (src) {
-            tsrc = std::string(src);
+            char idx[2] = "i";  // cycle index variable
+            std::string tdst = std::string(dst);
+            std::string tsrc;
+            if (src) {
+                tsrc = std::string(src);
+            }
+            ret += copyreg_entry(idx, tdst, tsrc, p);
         }
-        ret += copyreg_entry(idx, tdst, tsrc, p);
     }
     return ret;
 }
@@ -1621,6 +1626,41 @@ Operation &LSH(GenObject &a, int sz, const char *comment) {
     char tstr[64];
     p->setWidth(a.getWidth());
     p->igen_ = LSH_gen;
+    p->add_arg(p);
+    p->add_arg(&a);
+    RISCV_sprintf(tstr, sizeof(tstr), "%d", sz);
+    p->add_arg(new I32D(tstr));
+    return *p;
+}
+
+// RSH: right shift
+std::string RSH_gen(GenObject **args) {
+    std::string A = Operation::obj2varname(args[1], "r", true);
+    std::string B = Operation::obj2varname(args[2]);
+    if (SCV_is_sysc()) {
+        A = "(" + A + " >> " + B + ")";
+    } else if (SCV_is_sv()) {
+        A = "{" + B + "'d0, "+ A + "}";
+    } else {
+    }
+    return A;
+}
+
+Operation &RSH(GenObject &a, GenObject &sz, const char *comment) {
+    Operation *p = new Operation(0, comment);
+    p->setWidth(a.getWidth());
+    p->igen_ = RSH_gen;
+    p->add_arg(p);
+    p->add_arg(&a);
+    p->add_arg(&sz);
+    return *p;
+}
+
+Operation &RSH(GenObject &a, int sz, const char *comment) {
+    Operation *p = new Operation(0, comment);
+    char tstr[64];
+    p->setWidth(a.getWidth());
+    p->igen_ = RSH_gen;
     p->add_arg(p);
     p->add_arg(&a);
     RISCV_sprintf(tstr, sizeof(tstr), "%d", sz);
