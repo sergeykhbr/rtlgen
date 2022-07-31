@@ -102,7 +102,7 @@ std::string ModuleObject::generate_sysc_h() {
 
 
     out += "\n";
-    // Constructor delcartion:
+    // Constructor declaration:
     std::string space1 = "    " + getType() + "(";
     out += space1 + "sc_module_name name";
     if (isAsyncReset()) {
@@ -167,7 +167,7 @@ std::string ModuleObject::generate_sysc_h() {
         if (!static_cast<GenValue *>(p)->isLocal()) {
             continue;
         }
-        if (p->getType() == "const char *") {
+        if (p->getType() == "std::string") {
             continue;
         } else {
             out += "    static const " + p->getType() + " " + p->getName();
@@ -422,7 +422,9 @@ std::string ModuleObject::generate_sysc_sensitivity(std::string prefix,
     } else if  (obj->getId() == ID_SIGNAL) {
         ret += Operation::addspaces();
         ret += "sensitive << " + name + ";\n";
-    } else if (obj->getId() == ID_ARRAY_DEF) {
+    } else if (obj->getId() == ID_ARRAY_DEF
+        && static_cast<ArrayObject *>(obj)->getItem()->getId() != ID_VALUE) {
+        // ignore value (not signals) declared in module scope
         name += "[i]";
         ret += Operation::addspaces();
         ret += "for (int i = 0; i < " + obj->getStrDepth() + "; i++) {\n";
@@ -595,11 +597,11 @@ std::string ModuleObject::generate_sysc_param_strings() {
         if (!static_cast<GenValue *>(p)->isLocal()) {
             continue;
         }
-        if (p->getType() != "const char *") {
+        if (p->getType() != "std::string") {
             continue;
         }
         ret += "static " + p->getType() + " " + p->getName();
-        ret += " = \"" + p->getStrValue() + "\";\n";
+        ret += " = " + p->getStrValue() + ";\n";
 
         tcnt++;
     }
@@ -835,16 +837,23 @@ std::string ModuleObject::generate_sysc_vcd() {
     // Sub modules:
     for (auto &p: entries_) {
         if (p->getId() == ID_MODULE_INST && p->isVcd()) {
-            ret += Operation::addspaces();
-            ret += p->getName() + "->generateVCD(i_vcd, o_vcd);\n";
+            ret += Operation::addspaces() + "if (" + p->getName() + ") {\n";
+            Operation::set_space(Operation::get_space() + 1);
+            ret += Operation::addspaces() + p->getName() + "->generateVCD(i_vcd, o_vcd);\n";
+            Operation::set_space(Operation::get_space() - 1);
+            ret += Operation::addspaces() + "}\n";
         } else if (p->getId() == ID_ARRAY_DEF) {
             ArrayObject *a = static_cast<ArrayObject *>(p);
             if (a->getItem()->getId() == ID_MODULE_INST && a->isVcd()) {
                 ret += Operation::addspaces();
                 ret += "for (int i = 0; i < " + a->getStrDepth() + "; i++) {\n";
                 Operation::set_space(Operation::get_space() + 1);
+                ret += Operation::addspaces() + "if (" + p->getName() + ") {\n";
+                Operation::set_space(Operation::get_space() + 1);
                 ret += Operation::addspaces();
                 ret += p->getName() + "[i]->generateVCD(i_vcd, o_vcd);\n";
+                Operation::set_space(Operation::get_space() - 1);
+                ret += Operation::addspaces() + "}\n";
                 Operation::set_space(Operation::get_space() - 1);
                 ret += Operation::addspaces() + "}\n";
             }

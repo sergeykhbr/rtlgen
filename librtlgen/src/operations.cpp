@@ -763,6 +763,7 @@ std::string BIG_TO_U64_gen(GenObject **args) {
 
 Operation &BIG_TO_U64(GenObject &a, const char *comment) {
     Operation *p = new Operation(0, comment);
+    p->setWidth(a.getWidth());
     p->igen_ = BIG_TO_U64_gen;
     p->add_arg(p);
     p->add_arg(&a);
@@ -1621,6 +1622,16 @@ std::string LSH_gen(GenObject **args) {
     return A;
 }
 
+Operation &LSH(GenObject &a, GenObject &sz, const char *comment) {
+    Operation *p = new Operation(0, comment);
+    p->setWidth(a.getWidth());
+    p->igen_ = LSH_gen;
+    p->add_arg(p);
+    p->add_arg(&a);
+    p->add_arg(&sz);
+    return *p;
+}
+
 Operation &LSH(GenObject &a, int sz, const char *comment) {
     Operation *p = new Operation(0, comment);
     char tstr[64];
@@ -1692,6 +1703,32 @@ Operation &ARRITEM(GenObject &arr, GenObject &idx, GenObject &item, const char *
     return *p;
 }
 
+Operation &ARRITEM(GenObject &arr, int idx, GenObject &item, const char *comment) {
+    Operation *p = new Operation(0, comment);
+    char tstr[256];
+    RISCV_sprintf(tstr, sizeof(tstr), "%d", idx);
+    p->igen_ = ARRITEM_gen;
+    p->add_arg(p);      // 0
+    p->add_arg(&arr);   // 1
+    p->add_arg(new I32D(tstr));   // 2
+    p->add_arg(&item);  // 3
+    p->add_arg(0);      // [4] do not use .read()
+    return *p;
+}
+
+Operation &ARRITEM(GenObject &arr, int idx) {
+    Operation *p = new Operation(0, "");
+    char tstr[256];
+    RISCV_sprintf(tstr, sizeof(tstr), "%d", idx);
+    p->igen_ = ARRITEM_gen;
+    p->add_arg(p);      // 0
+    p->add_arg(&arr);   // 1
+    p->add_arg(new I32D(tstr));   // 2
+    p->add_arg(&arr);  // 3
+    p->add_arg(0);      // [4] do not use .read()
+    return *p;
+}
+
 Operation &ARRITEM_B(GenObject &arr, GenObject &idx, GenObject &item, const char *comment) {
     Operation *p = new Operation(0, comment);
     p->igen_ = ARRITEM_gen;
@@ -1723,11 +1760,6 @@ Operation &SETARRIDX(GenObject &arr, GenObject &idx) {
 // SETARRITEM
 std::string SETARRITEM_gen(GenObject **args) {
     ArrayObject *arr = static_cast<ArrayObject *>(args[1]);
-#if 1
-    if (arr->getName() == "dbg_npc") {
-        bool st = true;
-    }
-#endif
     arr->setSelector(args[2]);
     std::string ret = Operation::addspaces();
     ret += Operation::obj2varname(args[3], "v");
@@ -1745,6 +1777,20 @@ Operation &SETARRITEM(GenObject &arr, GenObject &idx, GenObject &item, GenObject
     p->add_arg(&idx);
     p->add_arg(&item);
     p->add_arg(&var);
+    return *p;
+}
+
+// reduced formed
+Operation &SETARRITEM(GenObject &arr, int idx, GenObject &val) {
+    Operation *p = new Operation("");
+    char tstr[256];
+    RISCV_sprintf(tstr, sizeof(tstr), "%d", idx);
+    p->igen_ = SETARRITEM_gen;
+    p->add_arg(p);
+    p->add_arg(&arr);
+    p->add_arg(new I32D(tstr));
+    p->add_arg(&arr);
+    p->add_arg(&val);
     return *p;
 }
 

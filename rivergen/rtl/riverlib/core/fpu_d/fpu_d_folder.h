@@ -18,6 +18,8 @@
 
 #include <api.h>
 #include "d2l_d.h"
+#include "divstage53.h"
+#include "l2d_d.h"
 #include "fpu_top.h"
 
 class fpu_d_folder : public FolderObject {
@@ -25,11 +27,15 @@ class fpu_d_folder : public FolderObject {
     fpu_d_folder(GenObject *parent) :
         FolderObject(parent, "fpu_d"),
         d2l_d_(this),
+        divstage53_(this),
+        l2d_d_(this),
         fpu_top_(this) {}
 
  protected:
     // subfolders:
     // files
     d2l_d_file d2l_d_;
+    divstage53_file divstage53_;
+    l2d_d_file l2d_d_;
     fpu_top_file fpu_top_;
 };

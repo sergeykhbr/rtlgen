@@ -624,7 +624,5 @@ void Processor::proc_comb() {
     SETVAL(o_flush_address, comb.vb_flush_address);
     SETVAL(o_data_flush_address, ALLONES());
     SETVAL(o_data_flush_valid, w.m.flushd);
-    SETVAL(o_req_ctrl_valid, w.f.imem_req_valid);
-    SETVAL(o_req_ctrl_addr, w.f.imem_req_addr);
     SETVAL(o_halted, w.e.halted);
 }
