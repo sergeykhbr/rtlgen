@@ -53,6 +53,9 @@ class DoubleAdd : public ModuleObject {
             vb_mantAlign(this, "vb_mantAlign", "105"),
             vb_expPostScale(this, "vb_expPostScale", "12"),
             vb_mantPostScale(this, "vb_mantPostScale", "105"),
+            vb_mantSumInv(this, "vb_mantSumInv", "105"),
+            vb_lshift_p1(this, "vb_lshift_p1", "7"),
+            vb_lshift_p2(this, "vb_lshift_p2", "7"),
             mantShort(this, "mantShort", "53"),
             tmpMant05(this, "tmpMant05", "52"),
             mantOnes(this, "mantOnes", "1"),
@@ -100,6 +103,9 @@ class DoubleAdd : public ModuleObject {
         Logic vb_mantAlign;
         Logic vb_expPostScale;
         Logic vb_mantPostScale;
+        Logic vb_mantSumInv;
+        Logic vb_lshift_p1;
+        Logic vb_lshift_p2;
         Logic mantShort;
         Logic tmpMant05;
         Logic mantOnes;
