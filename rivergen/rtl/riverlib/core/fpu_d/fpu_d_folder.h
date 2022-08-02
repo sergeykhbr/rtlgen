@@ -19,6 +19,7 @@
 #include <api.h>
 #include "d2l_d.h"
 #include "divstage53.h"
+#include "idiv53.h"
 #include "fadd_d.h"
 #include "l2d_d.h"
 #include "fpu_top.h"
@@ -29,6 +30,7 @@ class fpu_d_folder : public FolderObject {
         FolderObject(parent, "fpu_d"),
         d2l_d_(this),
         divstage53_(this),
+        idiv53_(this),
         fadd_d_(this),
         l2d_d_(this),
         fpu_top_(this) {}
@@ -38,6 +40,7 @@ class fpu_d_folder : public FolderObject {
     // files
     d2l_d_file d2l_d_;
     divstage53_file divstage53_;
+    idiv53_file idiv53_;
     fadd_d_file fadd_d_;
     l2d_d_file l2d_d_;
     fpu_top_file fpu_top_;
