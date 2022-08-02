@@ -18,6 +18,7 @@
 
 #include <api.h>
 #include "../../river_cfg.h"
+#include "divstage53.h"
 
 using namespace sysvc;
 
@@ -77,6 +78,8 @@ class idiv53 : public ModuleObject {
 
     // process should be intialized last to make all signals available
     CombProcess comb;
+    // sumodule
+    divstage53 divstage0;
 };
 
 class idiv53_file : public FileObject {

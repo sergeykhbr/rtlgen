@@ -47,8 +47,22 @@ idiv53::idiv53(GenObject *parent, const char *name) :
     overflow(this, "overflow", "1"),
     zero_resid(this, "zero_resid", "1"),
     // process
-    comb(this)
+    comb(this),
+    divstage0(this, "divstage0")
 {
+    Operation::start(this);
+
+    NEW(divstage0, divstage0.getName().c_str());
+        CONNECT(divstage0, 0, divstage0.i_mux_ena, w_mux_ena_i);
+        CONNECT(divstage0, 0, divstage0.i_muxind, wb_muxind_i);
+        CONNECT(divstage0, 0, divstage0.i_divident, wb_divident_i);
+        CONNECT(divstage0, 0, divstage0.i_divisor, wb_divisor_i);
+        CONNECT(divstage0, 0, divstage0.o_dif, wb_dif_o);
+        CONNECT(divstage0, 0, divstage0.o_bits, wb_bits_o);
+        CONNECT(divstage0, 0, divstage0.o_muxind, wb_muxind_o);
+        CONNECT(divstage0, 0, divstage0.o_muxind_rdy, w_muxind_rdy_o);
+    ENDNEW();
+
     Operation::start(&comb);
     proc_comb();
 }
