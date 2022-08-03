@@ -20,6 +20,7 @@
 #include "d2l_d.h"
 #include "divstage53.h"
 #include "idiv53.h"
+#include "imul53.h"
 #include "fadd_d.h"
 #include "fdiv_d.h"
 #include "l2d_d.h"
@@ -32,6 +33,7 @@ class fpu_d_folder : public FolderObject {
         d2l_d_(this),
         divstage53_(this),
         idiv53_(this),
+        imul53_(this),
         fadd_d_(this),
         fdiv_d_(this),
         l2d_d_(this),
@@ -43,6 +45,7 @@ class fpu_d_folder : public FolderObject {
     d2l_d_file d2l_d_;
     divstage53_file divstage53_;
     idiv53_file idiv53_;
+    imul53_file imul53_;
     fadd_d_file fadd_d_;
     fdiv_d_file fdiv_d_;
     l2d_d_file l2d_d_;

@@ -131,7 +131,7 @@ TEXT();
         TEXT("multiplexer for operation with zero expanent");
         SETVAL(comb.divisor, comb.mantB);
         i = &FOR ("i", CONST("1"), CONST("53"), "++");
-            IF (AND2(EZ(comb.preShift), NZ(BIT(comb.mantB, SUB2(CONST("52"), *i))));
+            IF (AND2(EZ(comb.preShift), NZ(BIT(comb.mantB, SUB2(CONST("52"), *i)))));
                 SETVAL(comb.divisor, LSH(comb.mantB, *i));
                 SETVAL(comb.preShift, *i);
             ENDIF();
@@ -166,142 +166,136 @@ TEXT();
     ENDFOR();
 
 TEXT();
-    expShift = (0, r.preShift.read()) - (0, wb_idiv_lshift.read());
-    if (r.b.read()(62, 52) == 0 && r.a.read()(62, 52) != 0) {
-        expShift = expShift - 1;
-    } else if (r.b.read()(62, 52) != 0 && r.a.read()(62, 52) == 0) {
-        expShift = expShift + 1;
-    }
+    SETVAL(comb.expShift, SUB2(CC2(CONST("0", 6), preShift), CC2(CONST("0", 5), wb_idiv_lshift)));
+    IF (AND2(EZ(BITS(b, 62, 52)), NZ(BITS(a, 62, 52))));
+        SETVAL(comb.expShift, DEC(comb.expShift));
+    ELSIF (AND2(NZ(BITS(b, 62, 52)), EZ(BITS(a, 62, 52))));
+        SETVAL(comb.expShift, INC(comb.expShift));
+    ENDIF();
 
 TEXT();
-    expAlign = r.expAB.read() + (expShift[11], expShift);
-    if (expAlign[12] == 1) {
-        postShift = ~expAlign(11, 0) + 2;
-    } else {
-        postShift = 0;
-    }
+    SETVAL(comb.expAlign, ADD2(expAB, CC2(BIT(comb.expShift, 11), comb.expShift)));
+    IF (NZ(BIT(comb.expAlign, 12)));
+        SETVAL(comb.postShift, ADD2(INV_L(BITS(comb.expAlign, 11, 0)), CONST("2", 12)));
+    ELSE();
+        SETZERO(comb.postShift);
+    ENDIF();
 
 TEXT();
-    if (w_idiv_rdy == 1) {
-        v.expAlign = expAlign(11, 0);
-        v.mantAlign = mantAlign;
-        v.postShift = postShift;
+    IF (NZ(w_idiv_rdy));
+        SETVAL(expAlign, BITS(comb.expAlign, 11, 0));
+        SETVAL(mantAlign, comb.mantAlign);
+        SETVAL(postShift, comb.postShift);
 
 TEXT();
         TEXT("Exceptions:");
-        v.nanRes = 0;
-        if (expAlign == 0x7FF) {
-            v.nanRes = 1;
-        }
-        v.overflow = !expAlign[12] && expAlign[11];
-        v.underflow = expAlign[12] && expAlign[11];
-    }
+        SETZERO(nanRes);
+        IF (EQ(comb.expAlign, CONST("0x7FF", 13)));
+            SETONE(nanRes);
+        ENDIF();
+        SETVAL(overflow, AND2(INV(BIT(comb.expAlign, 12)), BIT(comb.expAlign, 11)));
+        SETVAL(underflow, AND2(BIT(comb.expAlign, 12), BIT(comb.expAlign, 11)));
+    ENDIF();
 
 TEXT();
     TEXT("Prepare to mantissa post-scale");
-    mantPostScale = 0;
-    if (r.postShift.read() == 0) {
-        mantPostScale = r.mantAlign.read();
-    } else if (r.postShift.read() < 105) {
-        for (unsigned i = 0; i < 105; i++) {
-            if (i == r.postShift.read()) {
-                mantPostScale = r.mantAlign.read() >> i;
-            }
-        }
-    }
-    if (r.ena.read()[2] == 1) {
-        v.mantPostScale = mantPostScale;
-    }
+    IF (EZ(postShift));
+        SETVAL(comb.mantPostScale, mantAlign);
+    ELSIF (LS(postShift, CONST("105", 12)));
+        i = &FOR ("i", CONST("0"), CONST("105"), "++");
+            IF (EQ(*i, postShift));
+                SETVAL(comb.mantPostScale, RSH(mantAlign, *i));
+            ENDIF();
+        ENDFOR();
+    ENDIF();
+    IF (NZ(BIT(ena, 2)));
+        SETVAL(mantPostScale, comb.mantPostScale);
+    ENDIF();
 
 TEXT();
     TEXT("Rounding bit");
-    mantShort = r.mantPostScale.read().range(104, 52).to_uint64();
-    tmpMant05 = r.mantPostScale.read().range(51, 0).to_uint64();
-    mantOnes = 0;
-    if (mantShort == 0x001fffffffffffff) {
-        mantOnes = 1;
-    }
-    mantEven = r.mantPostScale.read()[52];
-    mant05 = 0;
-    if (tmpMant05 == 0x0008000000000000) {
-        mant05 = 1;
-    }
-    rndBit = r.mantPostScale.read()[51] & !(mant05 & !mantEven);
+    SETVAL(comb.mantShort, BIG_TO_U64(BITS(mantPostScale, 104, 52)));
+    SETVAL(comb.tmpMant05, BIG_TO_U64(BITS(mantPostScale, 51, 0)));
+    IF (EQ(comb.mantShort, CONST("0x001fffffffffffff", 53)));
+        SETONE(comb.mantOnes);
+    ENDIF();
+    SETVAL(comb.mantEven, BIT(mantPostScale, 52));
+    IF (EQ(comb.tmpMant05, CONST("0x0008000000000000", 52)));
+        SETONE(comb.mant05);
+    ENDIF();
+    SETVAL(comb.rndBit, AND2(BIT(mantPostScale, 51), INV(AND2(comb.mant05, INV(comb.mantEven)))));
 
 TEXT();
     TEXT("Check Borders");
-    nanA = 0;
-    if (r.a.read()(62, 52) == 0x7ff) {
-        nanA = 1;
-    }
-    nanB = 0;
-    if (r.b.read()(62, 52) == 0x7ff) {
-        nanB = 1;
-    }
-    mantZeroA = 0;
-    if (r.a.read()(51, 0) == 0) {
-        mantZeroA = 1;
-    }
-    mantZeroB = 0;
-    if (r.b.read()(51, 0) == 0) {
-        mantZeroB = 1;
-    }
+    IF (EQ(BITS(a, 62, 52), CONST("0x7ff", 11)));
+        SETONE(comb.nanA);
+    ENDIF();
+    IF (EQ(BITS(b, 62, 52), CONST("0x7ff", 11)));
+        SETONE(comb.nanB);
+    ENDIF();
+    IF (EZ(BITS(a, 51, 0)));
+        SETONE(comb.mantZeroA);
+    ENDIF();
+    IF (EZ(BITS(b, 51, 0)));
+        SETONE(comb.mantZeroB);
+    ENDIF();
 
 TEXT();
     TEXT("Result multiplexers:");
-    if (nanA && mantZeroA && nanB && mantZeroB) {
-        res[63] = 1;
-    } else if (nanA && !mantZeroA) {
-        res[63] = signA;
-    } else if (nanB && !mantZeroB) {
-        res[63] = signB;
-    } else if (r.zeroA.read() && r.zeroB.read()) {
-        res[63] = 1;
-    } else {
-        res[63] = r.a.read()[63] ^ r.b.read()[63];
-    }
+    IF (AND4(comb.nanA, comb.mantZeroA, comb.nanB, comb.mantZeroB));
+        SETBIT(comb.res, 63, CONST("1", 1));
+    ELSIF (AND2(comb.nanA, INV(comb.mantZeroA)));
+        SETBIT(comb.res, 63, comb.signA);
+    ELSIF (AND2(comb.nanB, INV(comb.mantZeroB)));
+        SETBIT(comb.res, 63, comb.signB);
+    ELSIF (AND2(zeroA, zeroB));
+        SETBIT(comb.res, 63, CONST("1", 1));
+    ELSE();
+        SETBIT(comb.res, 63, XOR2(BIT(a, 63), BIT(b, 63)));
+    ENDIF();
 
 TEXT();
-    if (nanB && !mantZeroB) {
-        res(62, 52) = r.b.read()(62, 52);
-    } else if ((r.underflow.read() || r.zeroA.read()) && !r.zeroB.read()) {
-        res(62, 52) = 0;
-    } else if (r.overflow.read() || r.zeroB.read()) {
-        res(62, 52) = 0x7FF;
-    } else if (nanA) {
-        res(62, 52) = r.a.read()(62, 52);
-    } else if ((nanB && mantZeroB) || r.expAlign.read()[11]) {
-        res(62, 52) = 0;
-    } else {
-        res(62, 52) = r.expAlign.read()(10, 0)
-                       + (mantOnes && rndBit && !r.overflow.read());
-    }
+    IF (NZ(AND2(comb.nanB, INV(comb.mantZeroB))));
+        SETBITS(comb.res, 62, 52, BITS(b, 62, 52));
+    ELSIF (NZ(AND2(OR2(underflow, zeroA), INV(zeroB))));
+        SETBITS(comb.res, 62, 52, ALLZEROS());
+    ELSIF (NZ(OR2(overflow, zeroB)));
+        SETBITS(comb.res, 62, 52, ALLONES());
+    ELSIF (NZ(comb.nanA));
+        SETBITS(comb.res, 62, 52, BITS(a, 62, 52));
+    ELSIF (NZ(OR2(AND2(comb.nanB, comb.mantZeroB), BIT(expAlign, 11))));
+        SETBITS(comb.res, 62, 52, ALLZEROS());
+    ELSE();
+        SETBITS(comb.res, 62, 52, ADD2(BITS(expAlign, 10, 0),
+                       AND3(comb.mantOnes, comb.rndBit, INV(overflow))));
+    ENDIF();
 
 TEXT();
-    if ((r.zeroA.read() && r.zeroB.read())
-        || (nanA & mantZeroA & nanB & mantZeroB)) {
-        res[51] = 1;
-        res(50, 0) = 0;
-    } else if (nanA && !mantZeroA) {
-        res[51] = 1;
-        res(50, 0) = r.a.read()(50, 0);
-    } else if (nanB && !mantZeroB) {
-        res[51] = 1;
-        res(50, 0) = r.b.read()(50, 0);
-    } else if (r.overflow.read() | r.nanRes.read() | (nanA && mantZeroA)
-        || (nanB && mantZeroB)) {
-        res(51, 0) = 0;
-    } else {
-        res(51, 0) = mantShort(51, 0) + rndBit;
-    }
+    IF (NZ(ORx(2, &AND2(zeroA, zeroB),
+                  &AND4(comb.nanA, comb.mantZeroA, comb.nanB, comb.mantZeroB))));
+        SETBIT(comb.res, 51, CONST("1", 1));
+        SETBITS(comb.res, 50, 0, ALLZEROS());
+    ELSIF (NZ(AND2(comb.nanA, INV(comb.mantZeroA))));
+        SETBIT(comb.res, 51, CONST("1", 1));
+        SETBITS(comb.res, 50, 0, BITS(a, 50, 0));
+    ELSIF (NZ(AND2(comb.nanB, INV(comb.mantZeroB))));
+        SETBIT(comb.res, 51, CONST("1", 1));
+        SETBITS(comb.res, 50, 0, BITS(b, 50, 0));
+    ELSIF (NZ(ORx(4, &overflow,
+                     &nanRes,
+                     &AND2(comb.nanA, comb.mantZeroA),
+                     &AND2(comb.nanB, comb.mantZeroB))));
+        SETBITS(comb.res, 51, 0, ALLZEROS());
+    ELSE();
+        SETBITS(comb.res, 51, 0, ADD2(BITS(comb.mantShort, 51, 0), comb.rndBit));
+    ENDIF();
 
 TEXT();
-    if (r.ena.read()[3] == 1) {
-        v.result = res;
-        v.illegal_op = nanA | nanB;
-        v.busy = 0;
-    }
-
+    IF (NZ(BIT(ena, 3)));
+        SETVAL(result, comb.res);
+        SETVAL(illegal_op, OR2(comb.nanA, comb.nanB));
+        SETZERO(busy);
+    ENDIF();
 
 TEXT();
     SYNC_RESET(*this);
