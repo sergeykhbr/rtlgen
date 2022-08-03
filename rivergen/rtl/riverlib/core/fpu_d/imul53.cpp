@@ -43,34 +43,148 @@ imul53::imul53(GenObject *parent, const char *name) :
 
 void imul53::proc_comb() {
     river_cfg *cfg = glob_river_cfg_;
+    GenObject *i;
 
 TEXT();
     SETARRITEM(comb.vb_mux, 0, ALLZEROS());
     SETARRITEM(comb.vb_mux, 1, i_a);                            // 1*a
     SETARRITEM(comb.vb_mux, 2, CC2(i_a, CONST("0", 1)));        // 2*a
     SETARRITEM(comb.vb_mux, 3, ADD2(ARRITEM(comb.vb_mux, 2), ARRITEM(comb.vb_mux, 1)));          // 2*a + 1*a
-    SETARRITEM(comb.vb_mux, 4, i_a.read().to_uint64() << 2;    // 4*a
-    SETARRITEM(comb.vb_mux, 5, vb_mux[4] + vb_mux[1];          // 4*a + 1*a
-    SETARRITEM(comb.vb_mux, 6, vb_mux[4] + vb_mux[2];          // 4*a + 2*a
-    SETARRITEM(comb.vb_mux, 8, i_a.read().to_uint64() << 3;    // 8*a
-    SETARRITEM(comb.vb_mux, 7, vb_mux[8] - vb_mux[1];          // 8*a - 1*a
-    SETARRITEM(comb.vb_mux, 9, vb_mux[8] + vb_mux[1];          // 8*a + 1*a
-    SETARRITEM(comb.vb_mux, 10, vb_mux[8] + vb_mux[2];         // 8*a + 2*a
-    SETARRITEM(comb.vb_mux, 11, vb_mux[10] + vb_mux[1];        // (8*a + 2*a) + 1*a
-    SETARRITEM(comb.vb_mux, 12, vb_mux[8] + vb_mux[4];         // 8*a + 4*a
-    SETARRITEM(comb.vb_mux, 16, (i_a.read().to_uint64() << 4); // unused
-    SETARRITEM(comb.vb_mux, 13, vb_mux[16] - vb_mux[3];        // 16*a - (2*a + 1*a)
-    SETARRITEM(comb.vb_mux, 14, vb_mux[16] - vb_mux[2];        // 16*a - 2*a
-    SETARRITEM(comb.vb_mux, 15, vb_mux[16] - vb_mux[1];        // 16*a - 1*a
+    SETARRITEM(comb.vb_mux, 4, CC2(i_a, CONST("0", 2)));    // 4*a
+    SETARRITEM(comb.vb_mux, 5, ADD2(ARRITEM(comb.vb_mux, 4), ARRITEM(comb.vb_mux, 1)));          // 4*a + 1*a
+    SETARRITEM(comb.vb_mux, 6, ADD2(ARRITEM(comb.vb_mux, 4), ARRITEM(comb.vb_mux, 2)));          // 4*a + 2*a
+    SETARRITEM(comb.vb_mux, 8, CC2(i_a, CONST("0", 3)));    // 8*a
+    SETARRITEM(comb.vb_mux, 7, SUB2(ARRITEM(comb.vb_mux, 8), ARRITEM(comb.vb_mux, 1)));          // 8*a - 1*a
+    SETARRITEM(comb.vb_mux, 9, ADD2(ARRITEM(comb.vb_mux, 8), ARRITEM(comb.vb_mux, 1)));          // 8*a + 1*a
+    SETARRITEM(comb.vb_mux, 10, ADD2(ARRITEM(comb.vb_mux, 8), ARRITEM(comb.vb_mux, 2)));         // 8*a + 2*a
+    SETARRITEM(comb.vb_mux, 11, ADD2(ARRITEM(comb.vb_mux, 10), ARRITEM(comb.vb_mux, 1)));        // (8*a + 2*a) + 1*a
+    SETARRITEM(comb.vb_mux, 12, ADD2(ARRITEM(comb.vb_mux, 8), ARRITEM(comb.vb_mux, 4)));         // 8*a + 4*a
+    SETARRITEM(comb.vb_mux, 16, CC2(i_a, CONST("0", 4))); // unused
+    SETARRITEM(comb.vb_mux, 13, SUB2(ARRITEM(comb.vb_mux, 16), ARRITEM(comb.vb_mux, 3)));        // 16*a - (2*a + 1*a)
+    SETARRITEM(comb.vb_mux, 14, SUB2(ARRITEM(comb.vb_mux, 16), ARRITEM(comb.vb_mux, 2)));        // 16*a - 2*a
+    SETARRITEM(comb.vb_mux, 15, SUB2(ARRITEM(comb.vb_mux, 16), ARRITEM(comb.vb_mux, 1)));        // 16*a - 1*a
 
 TEXT();
     SETVAL(comb.v_ena, i_ena);
     SETVAL(delay, CC2(BITS(delay, 14, 0), comb.v_ena));
 
+TEXT();
+    IF (NZ(i_ena));
+        SETVAL(b, CC2(CONST("0", 3), i_b));
+        SETZERO(overflow);
+        SETONE(accum_ena);
+        SETZERO(sum);
+        SETZERO(shift);
+    ELSIF (NZ(BIT(delay, 13)));
+        SETZERO(accum_ena);
+    ENDIF();
+
+TEXT();
+    SWITCH (BITS(b, 55, 52));
+    CASE(CONST("1", 4));
+        SETVAL(comb.vb_sel, ARRITEM(comb.vb_mux, 1));
+        ENDCASE();
+    CASE(CONST("2", 4));
+        SETVAL(comb.vb_sel, ARRITEM(comb.vb_mux, 2));
+        ENDCASE();
+    CASE(CONST("3", 4));
+        SETVAL(comb.vb_sel, ARRITEM(comb.vb_mux, 3));
+        ENDCASE();
+    CASE(CONST("4", 4));
+        SETVAL(comb.vb_sel, ARRITEM(comb.vb_mux, 4));
+        ENDCASE();
+    CASE(CONST("5", 4));
+        SETVAL(comb.vb_sel, ARRITEM(comb.vb_mux, 5));
+        ENDCASE();
+    CASE(CONST("6", 4));
+        SETVAL(comb.vb_sel, ARRITEM(comb.vb_mux, 6));
+        ENDCASE();
+    CASE(CONST("7", 4));
+        SETVAL(comb.vb_sel, ARRITEM(comb.vb_mux, 7));
+        ENDCASE();
+    CASE(CONST("8", 4));
+        SETVAL(comb.vb_sel, ARRITEM(comb.vb_mux, 8));
+        ENDCASE();
+    CASE(CONST("9", 4));
+        SETVAL(comb.vb_sel, ARRITEM(comb.vb_mux, 9));
+        ENDCASE();
+    CASE(CONST("10", 4));
+        SETVAL(comb.vb_sel, ARRITEM(comb.vb_mux, 10));
+        ENDCASE();
+    CASE(CONST("11", 4));
+        SETVAL(comb.vb_sel, ARRITEM(comb.vb_mux, 11));
+        ENDCASE();
+    CASE(CONST("12", 4));
+        SETVAL(comb.vb_sel, ARRITEM(comb.vb_mux, 12));
+        ENDCASE();
+    CASE(CONST("13", 4));
+        SETVAL(comb.vb_sel, ARRITEM(comb.vb_mux, 13));
+        ENDCASE();
+    CASE(CONST("14", 4));
+        SETVAL(comb.vb_sel, ARRITEM(comb.vb_mux, 14));
+        ENDCASE();
+    CASE(CONST("15", 4));
+        SETVAL(comb.vb_sel, ARRITEM(comb.vb_mux, 15));
+        ENDCASE();
+    CASEDEF();
+        SETZERO(comb.vb_sel);
+        ENDCASE();
+    ENDCASE();
+    IF (NZ(accum_ena));
+        SETVAL(sum, ADD2(CC2(sum, CONST("0", 4)), comb.vb_sel));
+        SETVAL(b, CC2(b, CONST("0", 4)));
+    ENDIF();
+
+TEXT();
+    TEXT("To avoid timing constrains violation try to implement parallel demux");
+    TEXT("for Xilinx Vivado");
+    i = &FOR ("i", CONST("0"), CONST("104"), "++");
+        SETBIT(comb.vb_sumInv, INC(*i), BIT(sum, SUB2(CONST("103"), *i)));
+    ENDFOR();
+
+TEXT();
+    i = &FOR ("i", CONST("0"), CONST("64"), "++");
+        IF (AND2(EZ(comb.vb_lshift_p1), NZ(BIT(comb.vb_sumInv, *i))));
+            SETVAL(comb.vb_lshift_p1, *i);
+        ENDIF();
+    ENDFOR();
+
+TEXT();
+    i = &FOR ("i", CONST("0"), CONST("41"), "++");
+        IF (AND2(EZ(comb.vb_lshift_p2), NZ(BIT(comb.vb_sumInv, ADD2(CONST("64"), *i)))));
+            SETVAL(comb.vb_lshift_p2, *i);
+            SETBIT(comb.vb_lshift_p2, 6, CONST("1", 1));
+        ENDIF();
+    ENDFOR();
+
+TEXT();
+    IF (NZ(BIT(sum, 105)));
+        SETVAL(comb.vb_shift, ALLONES());
+        SETONE(overflow);
+    ELSIF (NZ(BIT(sum, 104)));
+        SETZERO(comb.vb_shift);
+    ELSIF (NZ(comb.vb_lshift_p1));
+        SETVAL(comb.vb_shift, comb.vb_lshift_p1);
+    ELSE();
+        SETVAL(comb.vb_shift, comb.vb_lshift_p2);
+    ENDIF();
+
+TEXT();
+    IF (NZ(BIT(delay, 14)));
+        SETVAL(shift, comb.vb_shift);
+        SETZERO(overflow);
+        IF (EQ(comb.vb_shift, CONST("0x7f", 7)));
+            SETONE(overflow);
+        ENDIF();
+    ENDIF();
 
 TEXT();
     SYNC_RESET(*this);
 
 TEXT();
+    SETVAL(o_result, sum);
+    SETVAL(o_shift, shift);
+    SETVAL(o_overflow, overflow);
+    SETVAL(o_rdy, BIT(delay, 15));
 }
 

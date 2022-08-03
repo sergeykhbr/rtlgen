@@ -32,7 +32,10 @@ class imul53 : public ModuleObject {
             v_ena(this, "v_ena"),
             vb_mux(this, "vb_mux", "57", "17"),
             vb_sel(this, "vb_sel", "57"),
-            vb_shift(this, "vb_shift", "7") {
+            vb_shift(this, "vb_shift", "7"),
+            vb_sumInv(this, "vb_sumInv", "105"),
+            vb_lshift_p1(this, "vb_lshift_p1", "7"),
+            vb_lshift_p2(this, "vb_lshift_p2", "7") {
         }
 
      public:
@@ -40,6 +43,9 @@ class imul53 : public ModuleObject {
         WireArray<Logic> vb_mux;
         Logic vb_sel;
         Logic vb_shift;
+        Logic vb_sumInv;
+        Logic vb_lshift_p1;
+        Logic vb_lshift_p2;
     };
 
     void proc_comb();
