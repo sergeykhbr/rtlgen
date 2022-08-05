@@ -23,6 +23,7 @@
 #include "imul53.h"
 #include "fadd_d.h"
 #include "fdiv_d.h"
+#include "fmul_d.h"
 #include "l2d_d.h"
 #include "fpu_top.h"
 
@@ -36,6 +37,7 @@ class fpu_d_folder : public FolderObject {
         imul53_(this),
         fadd_d_(this),
         fdiv_d_(this),
+        fmul_d_(this),
         l2d_d_(this),
         fpu_top_(this) {}
 
@@ -48,6 +50,7 @@ class fpu_d_folder : public FolderObject {
     imul53_file imul53_;
     fadd_d_file fadd_d_;
     fdiv_d_file fdiv_d_;
+    fmul_d_file fmul_d_;
     l2d_d_file l2d_d_;
     fpu_top_file fpu_top_;
 };
