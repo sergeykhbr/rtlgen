@@ -59,43 +59,43 @@ class FpuTop : public ModuleObject {
     OutPort o_valid;
 
  protected:
-    Logic w_fadd_d;
-    Logic w_fsub_d;
-    Logic w_feq_d;
-    Logic w_flt_d;
-    Logic w_fle_d;
-    Logic w_fmax_d;
-    Logic w_fmin_d;
-    Logic w_fcvt_signed;
-    Logic wb_res_fadd;
-    Logic w_valid_fadd;
-    Logic w_illegalop_fadd;
-    Logic w_overflow_fadd;
-    Logic w_busy_fadd;
+    Signal w_fadd_d;
+    Signal w_fsub_d;
+    Signal w_feq_d;
+    Signal w_flt_d;
+    Signal w_fle_d;
+    Signal w_fmax_d;
+    Signal w_fmin_d;
+    Signal w_fcvt_signed;
+    Signal wb_res_fadd;
+    Signal w_valid_fadd;
+    Signal w_illegalop_fadd;
+    Signal w_overflow_fadd;
+    Signal w_busy_fadd;
 
-    Logic wb_res_fdiv;
-    Logic w_valid_fdiv;
-    Logic w_illegalop_fdiv;
-    Logic w_divbyzero_fdiv;
-    Logic w_overflow_fdiv;
-    Logic w_underflow_fdiv;
-    Logic w_busy_fdiv;
+    Signal wb_res_fdiv;
+    Signal w_valid_fdiv;
+    Signal w_illegalop_fdiv;
+    Signal w_divbyzero_fdiv;
+    Signal w_overflow_fdiv;
+    Signal w_underflow_fdiv;
+    Signal w_busy_fdiv;
 
-    Logic wb_res_fmul;
-    Logic w_valid_fmul;
-    Logic w_illegalop_fmul;
-    Logic w_overflow_fmul;
-    Logic w_busy_fmul;
+    Signal wb_res_fmul;
+    Signal w_valid_fmul;
+    Signal w_illegalop_fmul;
+    Signal w_overflow_fmul;
+    Signal w_busy_fmul;
 
-    Logic wb_res_d2l;
-    Logic w_valid_d2l;
-    Logic w_overflow_d2l;
-    Logic w_underflow_d2l;
-    Logic w_busy_d2l;
+    Signal wb_res_d2l;
+    Signal w_valid_d2l;
+    Signal w_overflow_d2l;
+    Signal w_underflow_d2l;
+    Signal w_busy_d2l;
 
-    Logic wb_res_l2d;
-    Logic w_valid_l2d;
-    Logic w_busy_l2d;
+    Signal wb_res_l2d;
+    Signal w_valid_l2d;
+    Signal w_busy_l2d;
 
     RegSignal ivec;
     RegSignal busy;

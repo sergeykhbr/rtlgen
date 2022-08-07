@@ -1543,7 +1543,7 @@ Operation &SPLx(GenObject &a, size_t cnt, ...) {
 
 // CC2
 std::string CC2_gen(GenObject **args) {
-    std::string A = Operation::obj2varname(args[1]);
+    std::string A = Operation::obj2varname(args[1], "r", true);
     std::string B = Operation::obj2varname(args[2]);
     if (args[2]->getId() == ID_CONST) {
         int w = args[2]->getWidth();

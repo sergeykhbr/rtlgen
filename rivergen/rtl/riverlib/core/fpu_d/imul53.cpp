@@ -17,7 +17,7 @@
 #include "imul53.h"
 
 imul53::imul53(GenObject *parent, const char *name) :
-    ModuleObject(parent, "idiv53", name),
+    ModuleObject(parent, "imul53", name),
     i_clk(this, "i_clk", "1", "CPU clock"),
     i_nrst(this, "i_nrst", "1", "Reset: active LOW"),
     i_ena(this, "i_ena", "1", "enable pulse (1 clock)"),
@@ -129,7 +129,7 @@ TEXT();
     CASEDEF();
         SETZERO(comb.vb_sel);
         ENDCASE();
-    ENDCASE();
+    ENDSWITCH();
     IF (NZ(accum_ena));
         SETVAL(sum, ADD2(CC2(sum, CONST("0", 4)), comb.vb_sel));
         SETVAL(b, CC2(b, CONST("0", 4)));

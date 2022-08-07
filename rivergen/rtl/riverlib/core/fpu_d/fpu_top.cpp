@@ -72,11 +72,11 @@ FpuTop::FpuTop(GenObject *parent, const char *name) :
     a(this, "a", "64"),
     b(this, "b", "64"),
     result(this, "result", "64"),
-    ex_invalidop(this, "ex_invalidop", "1", "Exception: invalid operation"),
-    ex_divbyzero(this, "ex_divbyzero", "1", "Exception: divide by zero"),
-    ex_overflow(this, "ex_overflow", "1", "Exception: overflow"),
-    ex_underflow(this, "ex_underflow", "1", "Exception: underflow"),
-    ex_inexact(this, "ex_inexact", "1", "Exception: inexact"),
+    ex_invalidop(this, "ex_invalidop", "1", "0", "Exception: invalid operation"),
+    ex_divbyzero(this, "ex_divbyzero", "1", "0", "Exception: divide by zero"),
+    ex_overflow(this, "ex_overflow", "1", "0", "Exception: overflow"),
+    ex_underflow(this, "ex_underflow", "1", "0", "Exception: underflow"),
+    ex_inexact(this, "ex_inexact", "1", "0", "Exception: inexact"),
     ena_fadd(this, "ena_fadd", "1"),
     ena_fdiv(this, "ena_fdiv", "1"),
     ena_fmul(this, "ena_fmul", "1"),
@@ -216,61 +216,61 @@ TEXT();
                                &BIT(comb.iv, SUB2(CONST("Instr_FCVT_D_W"), CONST("Instr_FADD_D")))));
     ENDIF();
 
-#if 0
-    if (r.busy.read() == 1 && (r.ivec.read()[Instr_FMOV_X_D - Instr_FADD_D]
-                        | r.ivec.read()[Instr_FMOV_D_X - Instr_FADD_D]) == 1) {
-        v.busy = 0;
-        v.ready = 1;
-        v.result = r.a;
-    } else if (w_valid_fadd == 1) {
-        v.busy = 0;
-        v.ready = 1;
-        v.result = wb_res_fadd;
-        v.ex_invalidop = w_illegalop_fadd;
-        v.ex_overflow = w_overflow_fadd;
-    } else if (w_valid_fdiv == 1) {
-        v.busy = 0;
-        v.ready = 1;
-        v.result = wb_res_fdiv;
-        v.ex_invalidop = w_illegalop_fdiv;
-        v.ex_divbyzero = w_divbyzero_fdiv;
-        v.ex_overflow = w_overflow_fdiv;
-        v.ex_underflow = w_underflow_fdiv;
-    } else if (w_valid_fmul == 1) {
-        v.busy = 0;
-        v.ready = 1;
-        v.result = wb_res_fmul;
-        v.ex_invalidop = w_illegalop_fmul;
-        v.ex_overflow = w_overflow_fmul;
-    } else if (w_valid_d2l == 1) {
-        v.busy = 0;
-        v.ready = 1;
-        v.result = wb_res_d2l;
-        v.ex_overflow = w_overflow_d2l;
-        v.ex_underflow = w_underflow_d2l;
-    } else if (w_valid_l2d == 1) {
-        v.busy = 0;
-        v.ready = 1;
-        v.result = wb_res_l2d;
-    }
+    IF (ANDx(2, &NZ(busy),
+                &NZ(ORx(2, &BIT(ivec, SUB2(CONST("Instr_FMOV_X_D"), CONST("Instr_FADD_D"))),
+                           &BIT(ivec, SUB2(CONST("Instr_FMOV_D_X"), CONST("Instr_FADD_D")))))));
+        SETZERO(busy);
+        SETONE(ready);
+        SETVAL(result, a);
+    ELSIF (NZ(w_valid_fadd));
+        SETZERO(busy);
+        SETONE(ready);
+        SETVAL(result, wb_res_fadd);
+        SETVAL(ex_invalidop, w_illegalop_fadd);
+        SETVAL(ex_overflow, w_overflow_fadd);
+    ELSIF (NZ(w_valid_fdiv));
+        SETZERO(busy);
+        SETONE(ready);
+        SETVAL(result, wb_res_fdiv);
+        SETVAL(ex_invalidop, w_illegalop_fdiv);
+        SETVAL(ex_divbyzero, w_divbyzero_fdiv);
+        SETVAL(ex_overflow, w_overflow_fdiv);
+        SETVAL(ex_underflow, w_underflow_fdiv);
+    ELSIF (NZ(w_valid_fmul));
+        SETZERO(busy);
+        SETONE(ready);
+        SETVAL(result, wb_res_fmul);
+        SETVAL(ex_invalidop, w_illegalop_fmul);
+        SETVAL(ex_overflow, w_overflow_fmul);
+    ELSIF (NZ(w_valid_d2l));
+        SETZERO(busy);
+        SETONE(ready);
+        SETVAL(result, wb_res_d2l);
+        SETVAL(ex_overflow, w_overflow_d2l);
+        SETVAL(ex_underflow, w_underflow_d2l);
+    ELSIF (NZ(w_valid_l2d));
+        SETZERO(busy);
+        SETONE(ready);
+        SETVAL(result, wb_res_l2d);
+    ENDIF();
 
 
 TEXT();
     SYNC_RESET(*this);
 
 TEXT();
-    w_fadd_d = r.ivec.read()[Instr_FADD_D - Instr_FADD_D].to_bool();
-    w_fsub_d = r.ivec.read()[Instr_FSUB_D - Instr_FADD_D].to_bool();
-    w_feq_d = r.ivec.read()[Instr_FEQ_D - Instr_FADD_D].to_bool();
-    w_flt_d = r.ivec.read()[Instr_FLT_D - Instr_FADD_D].to_bool();
-    w_fle_d = r.ivec.read()[Instr_FLE_D - Instr_FADD_D].to_bool();
-    w_fmax_d = r.ivec.read()[Instr_FMAX_D - Instr_FADD_D].to_bool();
-    w_fmin_d = r.ivec.read()[Instr_FMIN_D - Instr_FADD_D].to_bool();
-    w_fcvt_signed = (r.ivec.read()[Instr_FCVT_L_D - Instr_FADD_D] |
-                     r.ivec.read()[Instr_FCVT_D_L - Instr_FADD_D] |
-                     r.ivec.read()[Instr_FCVT_W_D - Instr_FADD_D] |
-                     r.ivec.read()[Instr_FCVT_D_W - Instr_FADD_D]).to_bool();
-#endif
+    SETVAL(w_fadd_d, BIT(ivec, SUB2(CONST("Instr_FADD_D"), CONST("Instr_FADD_D"))));
+    SETVAL(w_fsub_d, BIT(ivec, SUB2(CONST("Instr_FSUB_D"), CONST("Instr_FADD_D"))));
+    SETVAL(w_feq_d, BIT(ivec, SUB2(CONST("Instr_FEQ_D"), CONST("Instr_FADD_D"))));
+    SETVAL(w_flt_d, BIT(ivec, SUB2(CONST("Instr_FLT_D"), CONST("Instr_FADD_D"))));
+    SETVAL(w_fle_d, BIT(ivec, SUB2(CONST("Instr_FLE_D"), CONST("Instr_FADD_D"))));
+    SETVAL(w_fmax_d, BIT(ivec, SUB2(CONST("Instr_FMAX_D"), CONST("Instr_FADD_D"))));
+    SETVAL(w_fmin_d, BIT(ivec, SUB2(CONST("Instr_FMIN_D"), CONST("Instr_FADD_D"))));
+    SETVAL(w_fcvt_signed, ORx(4, &BIT(ivec, SUB2(CONST("Instr_FCVT_L_D"), CONST("Instr_FADD_D"))),
+                     &BIT(ivec, SUB2(CONST("Instr_FCVT_D_L"), CONST("Instr_FADD_D"))),
+                     &BIT(ivec, SUB2(CONST("Instr_FCVT_W_D"), CONST("Instr_FADD_D"))),
+                     &BIT(ivec, SUB2(CONST("Instr_FCVT_D_W"), CONST("Instr_FADD_D")))));
+
 TEXT();
     SETVAL(o_res, result);
     SETVAL(o_ex_invalidop, ex_invalidop);
