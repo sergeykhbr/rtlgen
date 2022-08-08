@@ -589,6 +589,11 @@ std::string ModuleObject::generate_sysc_template_f_name(const char *rettype) {
 
 std::string ModuleObject::generate_sysc_param_strings() {
     std::string ret = "";
+#if 1
+    if (getType() == "Tracer") {
+        bool st = true;
+    }
+#endif
     int tcnt = 0;
     for (auto &p: getEntries()) {
         if (p->getId() != ID_PARAM) {
@@ -607,9 +612,6 @@ std::string ModuleObject::generate_sysc_param_strings() {
     }
     for (auto &p: getEntries()) {
         if (p->getId() != ID_ARRAY_STRING) {
-            continue;
-        }
-        if (!static_cast<GenValue *>(p)->isLocal()) {
             continue;
         }
         ret += "static " + p->getType() + " " + p->getName() + "[" + p->getStrDepth() +"]";
