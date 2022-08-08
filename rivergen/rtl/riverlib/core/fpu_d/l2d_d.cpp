@@ -76,7 +76,7 @@ TEXT();
 
 TEXT();
     TEXT("multiplexer, probably if/elsif in rtl:");
-    SETVAL(lshift, CONST("63", 6));
+    SETVAL(comb.lshift, CONST("63", 6));
     IF (NZ(BIT(absA ,63)));
         SETVAL(comb.mantAlign, absA);
     ELSE();
