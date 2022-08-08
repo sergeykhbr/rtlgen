@@ -60,7 +60,7 @@ ic_csr_m2_s1::ic_csr_m2_s1(GenObject *parent, const char *name) :
 
 void ic_csr_m2_s1::proc_comb() {
     IF (AND2(EZ(acquired),
-             OR2(i_m0_req_valid, i_m1_req_valid)));
+             NZ(OR2(i_m0_req_valid, i_m1_req_valid))));
 
         SETONE(acquired);
         IF (i_m0_req_valid);
@@ -70,13 +70,13 @@ void ic_csr_m2_s1::proc_comb() {
         ENDIF();
     ENDIF();
 
-    IF (OR2(AND3(EZ(midx), i_s0_resp_valid, i_m0_resp_ready),
-            AND3(midx, i_s0_resp_valid, i_m1_resp_ready)));
+    IF (ORx(2, &AND2(EZ(midx), NZ(AND2(i_s0_resp_valid, i_m0_resp_ready))),
+               &AND2(NZ(midx), NZ(AND2(i_s0_resp_valid, i_m1_resp_ready)))));
         SETZERO(acquired);
     ENDIF();
 
 TEXT();
-    IF (OR2(EZ(midx), AND2(EZ(acquired), i_m0_req_valid)));
+    IF (OR2(EZ(midx), NZ(AND2(INV(acquired), i_m0_req_valid))));
         SETVAL(o_s0_req_valid, i_m0_req_valid);
         SETVAL(o_m0_req_ready, i_s0_req_ready);
         SETVAL(o_s0_req_type, i_m0_req_type);
