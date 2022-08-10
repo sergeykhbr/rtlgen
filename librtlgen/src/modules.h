@@ -47,6 +47,10 @@ class ModuleObject : public GenObject {
     virtual void getParamList(std::list<GenObject *> &genlist);
     virtual void getIoList(std::list<GenObject *> &genlist);
  protected:
+    std::string generate_sv_genparam();     // generic parameters
+    std::string generate_sv_proc(GenObject *proc);
+    std::string generate_sv_proc_registers();
+
     std::string generate_sysc_proc_registers();
     std::string generate_sysc_param_strings();
     std::string generate_sysc_constructor();

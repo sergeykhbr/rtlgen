@@ -460,7 +460,7 @@ std::string SETONE_gen(GenObject **args) {
         ret += " = 1";
     } else if (SCV_is_sv()) {
         char tstr[64];
-        RISCV_sprintf(tstr, sizeof(tstr), "%dd'1", args[1]->getWidth());
+        RISCV_sprintf(tstr, sizeof(tstr), "%d'd1", args[1]->getWidth());
         ret += " = " + std::string(tstr);
     } else  {
         ret += " = '1'";
@@ -796,7 +796,11 @@ Operation &TO_BIG(size_t sz, GenObject &a) {
 // TO_INT
 std::string TO_INT_gen(GenObject **args) {
     std::string A = Operation::obj2varname(args[1], "r", true);
-    A = A + ".to_int()";
+    if (SCV_is_sysc()) {
+        A = A + ".to_int()";
+    } else {
+        A = "int'(" + A + ")";
+    }
     return A;
 }
 
@@ -888,7 +892,11 @@ std::string EZ_gen(GenObject **args) {
             A = "(|" + A + ")";
         }
     }
-    A = "(" + A + " == 0)";
+    if (SCV_is_sysc()) {
+        A = "(" + A + " == 0)";
+    } else {
+        A = "(" + A + " == 1'b0)";
+    }
     return A;
 }
 
@@ -911,7 +919,11 @@ std::string NZ_gen(GenObject **args) {
             A = "(|" + A + ")";
         }
     }
-    A = "(" + A + " == 1)";
+    if (SCV_is_sysc()) {
+        A = "(" + A + " == 1)";
+    } else {
+        A = "(" + A + " == 1'b1)";
+    }
     return A;
 }
 
@@ -1804,7 +1816,12 @@ std::string IF_gen(GenObject **args) {
     } else {
         A = "(" + A + ")";
     }
-    ret += "if " + A + " {\n";
+    ret += "if " + A;
+    if (SCV_is_sysc()) {
+        ret += " {\n";
+    } else {
+        ret += " begin\n";
+    }
     return ret;
 }
 
@@ -1826,7 +1843,11 @@ std::string ELSIF_gen(GenObject **args) {
         A = "(" + A + ")";
     }
     spaces_--;
-    ret += Operation::addspaces() + "} else if " + A + " {\n";
+    if (SCV_is_sysc()) {
+        ret += Operation::addspaces() + "} else if " + A + " {\n";
+    } else {
+        ret += Operation::addspaces() + "end else if " + A + " begin\n";
+    }
     spaces_++;
     return ret;
 }
@@ -1844,7 +1865,11 @@ void ELSIF(GenObject &a, const char *comment) {
 std::string ELSE_gen(GenObject **args) {
     std::string ret = "";
     spaces_--;
-    ret += Operation::addspaces() + "} else {\n";
+    if (SCV_is_sysc()) {
+        ret += Operation::addspaces() + "} else {\n";
+    } else {
+        ret += Operation::addspaces() + "end else begin\n";
+    }
     spaces_++;
     return ret;
 }
@@ -1860,8 +1885,13 @@ void ELSE(const char *comment) {
 
 // ENDIF
 std::string ENDIF_gen(GenObject **args) {
+    std::string ret = "";
     spaces_--;
-    std::string ret = Operation::addspaces() + "}\n";
+    if (SCV_is_sysc()) {
+        ret = Operation::addspaces() + "}\n";
+    } else {
+        ret = Operation::addspaces() + "end\n";
+    }
     return ret;
 }
 
@@ -1987,7 +2017,12 @@ std::string FOR_gen(GenObject **args) {
     }
     ret += end + "; ";
     ret += i + dir;
-    ret += ") {\n";
+    ret += ")";
+    if (SCV_is_sysc()) {
+        ret += " {\n";
+    } else {
+        ret += " begin\n";
+    }
     return ret;
 }
 
@@ -2006,8 +2041,13 @@ GenObject &FOR(const char *i, GenObject &start, GenObject &end, const char *dir,
 
 // ENDFOR
 std::string ENDFOR_gen(GenObject **args) {
+    std::string ret = "";
     spaces_--;
-    std::string ret = Operation::addspaces() + "}\n";
+    if (SCV_is_sysc()) {
+        ret = Operation::addspaces() + "}\n";
+    } else {
+        ret = Operation::addspaces() + "end\n";
+    }
     return ret;
 }
 
