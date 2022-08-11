@@ -2255,6 +2255,10 @@ std::string SYNC_RESET_gen(GenObject **args) {
     std::string xrst = Operation::obj2varname(args[2]);
     std::string ret = Operation::reset("v", 0, m, xrst);
     ret += "\n";
+    if (SCV_is_sv()) {
+        ret += "\n";
+        ret += Operation::copyreg("rin", "v", m);
+    }
     return ret;
 }
 
