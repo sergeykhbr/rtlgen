@@ -20,7 +20,11 @@
 #include "signals.h"
 #include "utils.h"
 #include "files.h"
+#include "structs.h"
+#include "regs.h"
 #include "operations.h"
+#include "array.h"
+#include "funcs.h"
 #include <list>
 
 namespace sysvc {
@@ -73,6 +77,10 @@ std::string ModuleObject::generate_sv_proc(GenObject *proc) {
     
     // process variables declaration
     tcnt = 0;
+    if (isRegProcess()) {
+        ret += "    " + getType() + "_registers v;\n";
+    }
+
     for (auto &e: proc->getEntries()) {
         ln = "";
         if (e->getId() == ID_VALUE) {
@@ -151,13 +159,14 @@ std::string ModuleObject::generate_sv_proc_registers() {
     if (isAsyncReset()) {
         out += Operation::addspaces() + "if (async_reset) begin: async_rst_gen\n";
         Operation::set_space(Operation::get_space() + 1);
+        out += "\n";
         out += Operation::addspaces() + "always_ff @(posedge i_clk or negedge i_nrst) begin: rg_proc\n";
+        Operation::set_space(Operation::get_space() + 1);
         out += Operation::reset("r", 0, this, xrst);
-        Operation::set_space(Operation::get_space() - 1);
-        out += " end else begin\n";
+        out += " else begin\n";
         Operation::set_space(Operation::get_space() + 1);
     }
-    out += Operation::copyreg("r", "v", this);
+    out += Operation::copyreg("r", "rin", this);
     if (isAsyncReset()) {
         Operation::set_space(Operation::get_space() - 1);
         out += Operation::addspaces();
@@ -173,8 +182,23 @@ std::string ModuleObject::generate_sv_proc_registers() {
         }
     }
     Operation::set_space(Operation::get_space() - 1);
-    out += Operation::addspaces();
-    out += "end\n";
+    out += Operation::addspaces() + "end: rg_proc\n";
+
+    Operation::set_space(Operation::get_space() - 1);
+    out += "\n";
+    out += Operation::addspaces() + "end: async_rst_gen\n";
+    out += Operation::addspaces() + "else begin: no_rst_gen\n";
+    Operation::set_space(Operation::get_space() + 1);
+    out += "\n";
+    out += Operation::addspaces() + "always_ff @(posedge i_clk) begin: rg_proc\n";
+    Operation::set_space(Operation::get_space() + 1);
+    out += Operation::copyreg("r", "rin", this);
+    Operation::set_space(Operation::get_space() - 1);
+    out += Operation::addspaces() + "end: rg_proc\n";
+    out += "\n";
+    Operation::set_space(Operation::get_space() - 1);
+    out += Operation::addspaces() + "end: no_rst_gen\n";
+    Operation::set_space(Operation::get_space() - 1);
     out += "endgenerate\n";
     out += "\n";
     return out;
@@ -182,6 +206,7 @@ std::string ModuleObject::generate_sv_proc_registers() {
 
 
 std::string ModuleObject::generate_sv_mod() {
+    int tcnt = 0;
     std::string ret = "";
     std::string text;
     std::string ln;
@@ -243,23 +268,62 @@ std::string ModuleObject::generate_sv_mod() {
 
 
     // Signal list:
+    tcnt = 0;
     text = "";
-    for (auto &p: entries_) {
-        if (p->getId() != ID_SIGNAL) {
+    for (auto &p: getEntries()) {
+        if (p->isReg() || (p->getId() != ID_SIGNAL
+                        && p->getId() != ID_VALUE
+                        && p->getId() != ID_STRUCT_INST
+                        && p->getId() != ID_ARRAY_DEF)) {
             if (p->getId() == ID_COMMENT) {
-                text = p->generate();
+                text += p->generate();
             } else {
                 text = "";
             }
             continue;
         }
+        if (p->getId() == ID_ARRAY_DEF) {
+            ArrayObject *a = static_cast<ArrayObject *>(p);
+            if (a->getItem()->getId() == ID_MODULE_INST) {
+                text = "";
+                continue;
+            }
+        }
         if (text.size()) {
             ret += text;
             text = "";
         }
-        ret += static_cast<Signal *>(p)->getType();
-        ret += " " + p->getName() + ";\n";
+        ln = p->getType() + " " + p->getName();
+        if (p->getDepth()) {
+            ln += "[" + p->getStrDepth() + "]";
+        }
+        ln += ";";
+        if (p->getComment().size()) {
+            while (ln.size() < 60) {
+                ln += " ";
+            }
+            ln += "// " + p->getComment();
+        }
+        ret += ln + "\n";
+        tcnt++;
     }
+    for (auto &p: getEntries()) {
+        if (p->getId() != ID_FILEVALUE) {
+            continue;
+        }
+        ret += "int " + p->getName() + ";\n";
+        tcnt++;
+    }
+
+    if (isRegProcess()) {
+        ret += getType() + "_registers r, rin;\n";
+        tcnt++;
+    }
+    if (tcnt) {
+        ret += "\n";
+        tcnt = 0;
+    }
+
 
     // Signal assignments:
     for (auto &p: entries_) {

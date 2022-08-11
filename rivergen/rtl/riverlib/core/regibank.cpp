@@ -64,10 +64,10 @@ TEXT();
 
 TEXT();
     TEXT("Debug port has lower priority to avoid system hangup due the tags error");
-    IF (AND3(NZ(i_wena), NZ(i_waddr), OR2(INV(i_inorder), comb.v_inordered)));
+    IF (AND3(NZ(i_wena), NZ(i_waddr), NZ(OR2(INV(i_inorder), comb.v_inordered))));
         SETARRITEM(reg, comb.int_waddr, reg->val, i_wdata);
         SETARRITEM(reg, comb.int_waddr, reg->tag, i_wtag);
-    ELSIF (AND2(i_dport_ena, i_dport_write));
+    ELSIF (NZ(AND2(i_dport_ena, i_dport_write)));
         IF (NZ(i_dport_addr));
             SETARRITEM(reg, comb.int_daddr, reg->val, i_dport_wdata);
         ENDIF();
@@ -77,7 +77,7 @@ TEXT();
     SYNC_RESET(*this);
 
 TEXT();
-    SETVAL(o_ignored, AND4(i_wena, NZ(i_waddr), i_inorder, INV(comb.v_inordered)));
+    SETVAL(o_ignored, AND4(i_wena, OR_REDUCE(i_waddr), i_inorder, INV(comb.v_inordered)));
     SETVAL(o_rdata1, ARRITEM(reg, comb.int_radr1, reg->val));
     SETVAL(o_rtag1, ARRITEM(reg, comb.int_radr1, reg->tag));
     SETVAL(o_rdata2, ARRITEM(reg, comb.int_radr2, reg->val));

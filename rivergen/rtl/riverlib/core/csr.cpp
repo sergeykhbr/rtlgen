@@ -151,6 +151,7 @@ CsrRegs::CsrRegs(GenObject *parent, const char *name) :
 
 void CsrRegs::proc_comb() {
     river_cfg *cfg = glob_river_cfg_;
+    SETZERO(mpu_we);
     //SETVAL(dbg_e_valid, i_e_valid, "used in RtlWrapper to count executed instructions");
     SETVAL(comb.vb_mtvec_off, CC2(BITS(mtvec, DEC(cfg->RISCV_ARCH), CONST("2")), CONST("0",2)));
 
@@ -165,19 +166,19 @@ TEXT();
             SETVAL(cmd_addr, i_req_addr);
             SETVAL(cmd_data, i_req_data);
             SETZERO(cmd_exception);
-            IF (BIT(i_req_type, cfg->CsrReq_ExceptionBit));
+            IF (NZ(BIT(i_req_type, cfg->CsrReq_ExceptionBit)));
                 SETVAL(state, State_Exception);
-            ELSIF(BIT(i_req_type, cfg->CsrReq_BreakpointBit));
+            ELSIF(NZ(BIT(i_req_type, cfg->CsrReq_BreakpointBit)));
                 SETVAL(state, State_Breakpoint);
-            ELSIF (BIT(i_req_type, cfg->CsrReq_HaltBit));
+            ELSIF (NZ(BIT(i_req_type, cfg->CsrReq_HaltBit)));
                 SETVAL(state, State_Halt);
-            ELSIF (BIT(i_req_type, cfg->CsrReq_ResumeBit));
+            ELSIF (NZ(BIT(i_req_type, cfg->CsrReq_ResumeBit)));
                 SETVAL(state, State_Resume);
-            ELSIF (BIT(i_req_type, cfg->CsrReq_InterruptBit));
+            ELSIF (NZ(BIT(i_req_type, cfg->CsrReq_InterruptBit)));
                 SETVAL(state, State_Interrupt);
-            ELSIF (BIT(i_req_type, cfg->CsrReq_TrapReturnBit));
+            ELSIF (NZ(BIT(i_req_type, cfg->CsrReq_TrapReturnBit)));
                 SETVAL(state, State_TrapReturn);
-            ELSIF (BIT(i_req_type, cfg->CsrReq_WfiBit));
+            ELSIF (NZ(BIT(i_req_type, cfg->CsrReq_WfiBit)));
                 SETVAL(state, State_Wfi);
             ELSE();
                 SETVAL(state, State_RW);
@@ -660,11 +661,11 @@ TEXT();
     IF (OR2(EZ(i_e_halted), EZ(dcsr_stopcount)));
         SETVAL(cycle_cnt, INC(cycle_cnt));
     ENDIF();
-    IF (OR2(AND2(i_e_valid, INV(dcsr_stopcount)),
-            AND2(i_e_valid, INV(AND2(i_dbg_progbuf_ena, dcsr_stopcount)))));
+    IF (ORx(2, &NZ(AND2(i_e_valid, INV(dcsr_stopcount))),
+                  &NZ(AND2(i_e_valid, INV(AND2(i_dbg_progbuf_ena, dcsr_stopcount))))));
         SETVAL(executed_cnt, INC(executed_cnt));
     ENDIF();
-    IF (INV(AND2(OR2(i_e_halted, i_dbg_progbuf_ena), dcsr_stoptimer)));
+    IF (EZ(AND2(OR2(i_e_halted, i_dbg_progbuf_ena), dcsr_stoptimer)));
         SETVAL(timer, INC(timer));
     ENDIF();
 
