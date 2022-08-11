@@ -207,6 +207,7 @@ std::string ModuleObject::generate_sysc_h() {
     }
 
     // struct definitions
+    Operation::set_space(1);
     for (auto &p: entries_) {
         if (p->getId() != ID_STRUCT_DEF) {
             continue;

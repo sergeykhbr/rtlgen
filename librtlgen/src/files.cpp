@@ -253,9 +253,10 @@ void FileObject::generate_sysv() {
 
     // Automatic Dependency detection
     std::vector<std::string> subs;
+    std::string thisfile = getFullPath();
     list_of_modules(this, depfiles_);
     for (auto &f : depfiles_) {
-        if (f == getFullPath()) {
+        if (f == thisfile) {
             continue;
         }
         fullPath2vector(f.c_str(), subs);

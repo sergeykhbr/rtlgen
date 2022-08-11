@@ -18,6 +18,7 @@
 #include "files.h"
 #include "utils.h"
 #include "array.h"
+#include "operations.h"
 
 namespace sysvc {
 
@@ -60,29 +61,24 @@ std::string StructObject::getName() {
 
 std::string StructObject::generate() {
     std::string ret = "";
+    std::string ln;
     if (getId() == ID_STRUCT_INST) {
         return ret;
     }
-    if (SCV_is_sysc()) {
-        ret += generate_sysc();
-    } else if (SCV_is_sv()) {
-        ret += generate_sysv();
-    } else {
-        ret += generate_vhdl();
-    }
-    return ret;
-}
-
-std::string StructObject::generate_sysc() {
-    std::string ret = "";
-    std::string ln;
 
     if (getComment().size()) {
         ret += "    // " + getComment() + "\n";
     }
-    ret += "    struct " + getType() + " {\n";
+    ret += Operation::addspaces();
+    if (SCV_is_sysc()) {
+        ret += "struct " + getType() + " {\n";
+    } else {
+        ret += "typedef struct {\n";
+    }
+    Operation::set_space(Operation::get_space() + 1);
     for (auto &p: entries_) {
-        ln = "        " + p->getType() + " " + p->getName();
+        ln = Operation::addspaces();
+        ln += p->getType() + " " + p->getName();
         if (p->getDepth()) {
             ln += "[" + p->getStrDepth() + "]";
 
@@ -96,26 +92,15 @@ std::string StructObject::generate_sysc() {
         }
         ret += ln + "\n";
     }
-    ret += "    };\n";
-    ret += "\n";
-    return ret;
-}
-
-std::string StructObject::generate_sysv() {
-    std::string ret = "";
-    ret += "    struct " + getType() + " {\n";
-    for (auto &p: entries_) {
-        ret += "        " + p->getType() + " " + p->getName() + ";\n";
+    Operation::set_space(Operation::get_space() - 1);
+    ret += Operation::addspaces();
+    if (SCV_is_sysc()) {
+        ret += "};\n";
+    } else  {
+        ret += "} " + getType() +";\n";
     }
-    ret += "    };\n";
     ret += "\n";
     return ret;
 }
-
-std::string StructObject::generate_vhdl() {
-    std::string ret = "";
-    return ret;
-}
-
 
 }

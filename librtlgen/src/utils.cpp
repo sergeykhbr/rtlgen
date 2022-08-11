@@ -136,27 +136,39 @@ int SCV_is_dir_exists(const char *path) {
 }
 
 void SCV_create_dir(const char *path) {
-    if (SCV_is_dir_exists(path)) {
+    std::string tpath = std::string(path);
+    if (SCV_is_sysc()) {
+        tpath = "_sysc" + tpath;
+    } else if (SCV_is_sv()) {
+        tpath = "_sv" + tpath;
+    }
+    if (SCV_is_dir_exists(tpath.c_str())) {
         return;
     }
 #if defined(_WIN32) || defined(__CYGWIN__)
     wchar_t wfulldir[4096];
 #endif
 #if defined(_WIN32) || defined(__CYGWIN__)
-    mbstowcs(wfulldir, path, 4096);
+    mbstowcs(wfulldir, tpath.c_str(), 4096);
     _wmkdir(wfulldir);
 #else
-    mkdir(path, S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);
+    mkdir(tpath.c_str(), S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);
 #endif
 }
 
 void SCV_write_file(const char *fname, const char *buf, size_t sz) {
-    FILE *f = fopen(fname, "wb");
+    std::string tname = std::string(fname);
+    if (SCV_is_sysc()) {
+        tname = "_sysc" + tname;
+    } else if (SCV_is_sv()) {
+        tname = "_sv" + tname;
+    }
+    FILE *f = fopen(tname.c_str(), "wb");
     if (f) {
         fwrite(buf, 1, sz, f);
         fclose(f);
     } else {
-        SHOW_ERROR("cannot open file %s", fname);
+        SHOW_ERROR("cannot open file %s", tname.c_str());
     }
 }
 

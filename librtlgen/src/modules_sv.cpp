@@ -29,9 +29,92 @@
 
 namespace sysvc {
 
+std::string ModuleObject::generate_sv_pkg_struct() {
+    std::string ret = "";
+    std::string ln = "";
+    int tcnt = 0;
+
+    // struct definitions
+    for (auto &p: entries_) {
+        if (p->getId() != ID_STRUCT_DEF) {
+            continue;
+        }
+        ret += p->generate();
+        tcnt++;
+    }
+    if (tcnt) {
+        ret += "\n";
+        tcnt = 0;
+    }
+    // Register structure definition
+    bool twodim = false;        // if 2-dimensional register array, then do not use reset function
+    if (isRegProcess()) {
+        ret += "typedef struct {\n";
+        for (auto &p: entries_) {
+            if (!p->isReg()) {
+                continue;
+            }
+            ln = "    " + p->getType() + " " + p->getName();
+            if (p->getDepth()) {
+                twodim = true;
+                ln += "[" + p->getStrDepth() + "]";
+            }
+            ln += ";";
+            if (p->getComment().size()) {
+                while (ln.size() < 60) {
+                    ln += " ";
+                }
+                ln += "// " + p->getComment();
+            }
+            ret += ln + "\n";
+        }
+        ret += "} " + getType() + "_registers;\n";
+        ret += "\n";
+
+        // Reset function only if no two-dimensial signals
+        tcnt = 0;
+        for (auto &p: entries_) {
+            if (p->isReg()) {
+                tcnt++;
+            }
+        }
+        if (!twodim) {
+            ret += "const " + getType() + "_registers " + getType() + "_r_reset = '{\n";
+            for (auto &p: entries_) {
+                if (!p->isReg()) {
+                    continue;
+                }
+                ln = "    ";
+                if (p->isNumber(p->getStrValue()) && p->getValue() == 0) {
+                    if (p->getWidth() == 1) {
+                        ln += "1'b0";
+                    } else {
+                        ln += "'0";
+                    }
+                } else {
+                    ln += p->getStrValue();
+                }
+                if (--tcnt) {
+                    ln += ",";
+                }
+                while (ln.size() < 40) {
+                    ln += " ";
+                }
+                ln += "// " + p->getName();
+                ret += ln + "\n";
+            }
+            ret += "};\n";
+            ret += "\n";
+        }
+    }
+    return ret;
+}
+
 
 std::string ModuleObject::generate_sv_pkg() {
     std::string ret = "";
+    Operation::set_space(0);
+    ret += generate_sv_pkg_struct();
     return ret;
 }
 
