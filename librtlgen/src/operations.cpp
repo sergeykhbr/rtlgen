@@ -2153,13 +2153,24 @@ void ENDSWITCH(const char *comment) {
 // FOR
 std::string FOR_gen(GenObject **args) {
     std::string ret = Operation::addspaces();
+    GenObject *op = args[0];
     std::string i = Operation::obj2varname(args[1]);
     spaces_++;
     std::string start = Operation::obj2varname(args[2]);
     std::string end = Operation::obj2varname(args[3]);
     std::string dir = Operation::obj2varname(args[4]);
+    STRING *gename = static_cast<STRING *>(args[5]);
 
-    ret += "for (int " + i + " = ";
+
+    if (SCV_is_sysc()) {
+        ret += "for (int " + i + " = ";
+    } else {
+        if (op->getParent()->getId() == ID_MODULE) {
+            ret += "for (genvar " + i + " = ";
+        } else {
+            ret += "for (int " + i + " = ";
+        }
+    }
     ret += start + "; ";
     ret += i;
     if (dir == "++") {
@@ -2173,7 +2184,11 @@ std::string FOR_gen(GenObject **args) {
     if (SCV_is_sysc()) {
         ret += " {\n";
     } else {
-        ret += " begin\n";
+        ret += " begin";
+        if (gename) {
+            ret += ": " + gename->getStrValue().substr(1, gename->getStrValue().size()-2);
+        }
+        ret += "\n";
     }
     return ret;
 }
@@ -2188,6 +2203,22 @@ GenObject &FOR(const char *i, GenObject &start, GenObject &end, const char *dir,
     p->add_arg(&start);
     p->add_arg(&end);
     p->add_arg(new TextLine(0, dir));
+    p->add_arg(0);
+    return *ret;
+}
+
+// 'generate' for cycle used in rtl, it is the same for in systemc
+GenObject &FORGEN(const char *i, GenObject &start, GenObject &end, const char *dir, STRING *name, const char *comment) {
+    Operation *p = new Operation(comment);
+    I32D *ret = new I32D("0", i);
+    Operation::push_obj(p);
+    p->igen_ = FOR_gen;
+    p->add_arg(p);
+    p->add_arg(ret);
+    p->add_arg(&start);
+    p->add_arg(&end);
+    p->add_arg(new TextLine(0, dir));
+    p->add_arg(name);
     return *ret;
 }
 
@@ -2198,7 +2229,12 @@ std::string ENDFOR_gen(GenObject **args) {
     if (SCV_is_sysc()) {
         ret = Operation::addspaces() + "}\n";
     } else {
-        ret = Operation::addspaces() + "end\n";
+        STRING *gename = static_cast<STRING *>(args[1]);
+        ret = Operation::addspaces() + "end";
+        if (gename) {
+            ret += ": " + gename->getStrValue().substr(1, gename->getStrValue().size()-2);
+        }
+        ret += "\n";
     }
     return ret;
 }
@@ -2208,7 +2244,17 @@ void ENDFOR(const char *comment) {
     Operation *p = new Operation(comment);
     p->igen_ = ENDFOR_gen;
     p->add_arg(p);
+    p->add_arg(0);
 }
+
+void ENDFORGEN(STRING *name, const char *comment) {
+    Operation::pop_obj();
+    Operation *p = new Operation(comment);
+    p->igen_ = ENDFOR_gen;
+    p->add_arg(p);
+    p->add_arg(name);
+}
+
 
 
 // WHILE
@@ -2351,6 +2397,75 @@ void FWRITE(GenObject &f, GenObject &str) {
 }
 
 // NEW module instance
+std::string NEW_gen_sv(Operation *op, ModuleObject *mod, std::string name) {
+    std::string ret = "";
+    std::string ln = "";
+    std::string idx = "";
+    int tcnt = 0;
+
+    ln = Operation::addspaces();
+    ln += mod->getType() + " ";
+    ret += ln;
+    
+    std::list<GenObject *>tmpllist;
+    mod->getTmplParamList(tmpllist);
+    mod->getParamList(tmpllist);    
+    tcnt = 0;
+    if (tmpllist.size()) {
+        ret += "#(\n";
+        Operation::set_space(Operation::get_space() + 1);
+        ret += Operation::addspaces();
+
+        for (auto &e : tmpllist) {
+            if (tcnt) {
+                ret += ",\n";
+            }
+            ret += "." + e->getStrValue() + "(" + e->getStrValue() + ")";
+            tcnt++;
+        }
+    }
+
+    if (mod->isAsyncReset() || tmpllist.size()) {
+        ret += "#(\n";
+        Operation::set_space(Operation::get_space() + 1);
+        if (mod->isAsyncReset()) {
+            ret += Operation::addspaces() + ".async_reset(async_reset)";
+            if (tmpllist.size()) {
+                ret += ",";
+            }
+            ret += "\n";
+            tcnt++;
+        }
+        for (auto &e : tmpllist) {
+            ret += "." + e->getStrValue() + "(" + e->getStrValue() + ")";
+            if (e != tmpllist.back()) {
+                ret += ",";
+            }
+            ret += "\n";
+            tcnt++;
+        }
+        Operation::set_space(Operation::get_space() - 1);
+        ret += Operation::addspaces() + ") ";
+    }
+    
+    ret += name + " (";
+    Operation::set_space(Operation::get_space() + 1);
+
+    std::list<GenObject *>iolist;
+    mod->getIoList(iolist);
+    ret += "\n";
+    for (auto &io : iolist) {
+        ret += op->gen_connection(io->getName());
+        if (io != iolist.back()) {
+            ret += ",";
+        }
+        ret += "\n";
+    }
+    Operation::set_space(Operation::get_space() - 1);
+    ret += Operation::addspaces() + ");";
+    return ret;
+}
+
 std::string NEW_gen(GenObject **args) {
     std::string ret = "";
     std::string ln = "";
@@ -2359,127 +2474,70 @@ std::string NEW_gen(GenObject **args) {
     std::string name = Operation::obj2varname(args[2]);
     ModuleObject *mod = static_cast<ModuleObject *>(args[1]);
 
-    ln = Operation::addspaces();
-    if (SCV_is_sysc()) {
-        if (args[3]) {
-            idx = Operation::obj2varname(args[3]);
-            ret += Operation::addspaces();
-            ret += "char tstr[256];\n";
-            ret += Operation::addspaces();
-            ret += "RISCV_sprintf(tstr, sizeof(tstr), \"" + name + "%d\", " + idx + ");\n";
-        }
-        ln += name;
-        if (idx.size()) {
-            ln += "[" + idx + "]";
-        }
-        ln += " = new " + mod->getType();
-    } else if (SCV_is_sv()) {
-        ln += mod->getType() + " ";
+    if (SCV_is_sv()) {
+        ret += NEW_gen_sv(static_cast<Operation *>(args[0]),
+                          mod,
+                          name);
+        return ret;
     }
+    ln = Operation::addspaces();
+    if (args[3]) {
+        idx = Operation::obj2varname(args[3]);
+        ret += Operation::addspaces();
+        ret += "char tstr[256];\n";
+        ret += Operation::addspaces();
+        ret += "RISCV_sprintf(tstr, sizeof(tstr), \"" + name + "%d\", " + idx + ");\n";
+    }
+    ln += name;
+    if (idx.size()) {
+        ln += "[" + idx + "]";
+    }
+    ln += " = new " + mod->getType();
     ret += ln;
     
     std::list<GenObject *>tmpllist;
     mod->getTmplParamList(tmpllist);
     tcnt = 0;
     if (tmpllist.size()) {
-        if (SCV_is_sysc()) {
-            ret += "<";
-        } else if (SCV_is_sv()) {
-            ret += "#(\n";
-            Operation::set_space(Operation::get_space() + 1);
-            ret += Operation::addspaces();
-        }
+        ret += "<";
         for (auto &e : tmpllist) {
             if (tcnt) {
                 ret += ",\n";
-                if (SCV_is_sysc()) {
-                    for (int i = 0; i <= ln.size(); i++) {
-                        ret += " ";
-                    }
+                for (int i = 0; i <= ln.size(); i++) {
+                    ret += " ";
                 }
             }
-            if (SCV_is_sysc()) {
-                ret += e->getStrValue();
-            } else if (SCV_is_sv()) {
-                ret += "." + e->getStrValue() + "(" + e->getStrValue() + ")";
-            }
+            ret += e->getStrValue();
             tcnt++;
         }
-        if (SCV_is_sysc()) {
-            ret += ">";
-        }
+        ret += ">";
     }
 
-    if (SCV_is_sysc()) {
-        ret += "(";
-        if (idx.size()) {
-            ret += "tstr";
-        } else {
-            ret += "\"" + name + "\"";
-        }
+    ret += "(";
+    if (idx.size()) {
+        ret += "tstr";
+    } else {
+        ret += "\"" + name + "\"";
     }
     if (mod->isAsyncReset()) {
-        if (SCV_is_sysc()) {
-            ret += ", async_reset";
-        } else if (SCV_is_sv()) {
-            if (tcnt == 0) {
-                // no template paramters
-                ret += "#(\n";
-                Operation::set_space(Operation::get_space() + 1);
-                tcnt++;
-            }
-            ret += Operation::addspaces() + ".async_reset(async_reset)";
-        }
+        ret += ", async_reset";
     }
     std::list<GenObject *>genlist;
     mod->getParamList(genlist);
     for (auto &g : genlist) {
-        if (SCV_is_sysc()) {
-            ret += ", " + g->getName();
-        } else {
-            ret += ",\n" + Operation::addspaces();
-            ret += "." + g->getName() + "(" + g->getName() + ")";
-        }
+        ret += ", " + g->getName();
     }
-
-    if (SCV_is_sysc()) {
-        ret += ");\n";
-    } else if (SCV_is_sv()) {
-        if (tcnt) {
-            ret += "\n";
-            Operation::set_space(Operation::get_space() - 1);
-        }
-        ret += Operation::addspaces();
-        if (tcnt) {
-            ret += ") ";
-        }
-        ret += name + " (";
-        Operation::set_space(Operation::get_space() + 1);
-    }
+    ret += ");\n";
 
     std::list<GenObject *>iolist;
     mod->getIoList(iolist);
-    if (SCV_is_sv()) {
-        ret += "\n";
-    }
     for (auto &io : iolist) {
         ret += Operation::addspaces();
-        if (SCV_is_sysc()) {
-            ret += name;
-            ret += static_cast<Operation *>(args[0])->gen_connection(io->getName());
-            ret += ";";
-        } else if (SCV_is_sv()) {
-            ret += static_cast<Operation *>(args[0])->gen_connection(io->getName());
-            if (io != iolist.back()) {
-                ret += ",";
-            }
-        }
+        ret += name;
+        ret += static_cast<Operation *>(args[0])->gen_connection(io->getName());
+        ret += ";";
         // todo comments
         ret += "\n";
-    }
-    if (SCV_is_sv()) {
-        Operation::set_space(Operation::get_space() - 1);
-        ret += Operation::addspaces() + ");";
     }
     return ret;
 }

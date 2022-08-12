@@ -54,7 +54,7 @@ BranchPredictor::BranchPredictor(GenObject *parent, const char *name) :
     Operation::start(this);
 
     // Create and connet Sub-modules:
-    GenObject &i = FOR ("i", CONST("0"), CONST("2"), "++");
+    GenObject &i = FORGEN ("i", CONST("0"), CONST("2"), "++", new STRING("predecx"));
         NEW(*predec.arr_[0], predec.getName().c_str(), &i);
             CONNECT(predec, &i, predec->i_c_valid, ARRITEM(wb_pd, i, wb_pd->c_valid));
             CONNECT(predec, &i, predec->i_addr, ARRITEM(wb_pd, i, wb_pd->addr));
@@ -64,7 +64,7 @@ BranchPredictor::BranchPredictor(GenObject *parent, const char *name) :
             CONNECT(predec, &i, predec->o_pc, ARRITEM(wb_pd, i, wb_pd->pc));
             CONNECT(predec, &i, predec->o_npc, ARRITEM(wb_pd, i, wb_pd->npc));
         ENDNEW();
-    ENDFOR();
+    ENDFORGEN(new STRING("predecx"));
 
     NEW(btb, btb.getName().c_str());
         CONNECT(btb, 0, btb.i_clk, i_clk);
