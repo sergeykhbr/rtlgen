@@ -29,6 +29,41 @@
 
 namespace sysvc {
 
+std::string ModuleObject::generate_sv_pkg_localparam() {
+    std::string ret = "";
+    std::string ln = "";
+    int tcnt = 0;
+    // Local paramaters visible inside of module
+    for (auto &p: entries_) {
+        if (p->getId() != ID_PARAM) {
+            continue;
+        }
+        if (!static_cast<GenValue *>(p)->isLocal()) {
+            continue;
+        }
+        if (p->getType() == "std::string") {
+            // exclude strings (tracer case)
+            continue;
+        } else {
+            ln = "localparam " + p->getType() + " " + p->getName();
+            ln += " = " + p->getStrValue() + ";";
+        }
+        if (p->getComment().size()) {
+            while (ln.size() < 60) {
+                ln += " ";
+            }
+            ln += "// " + p->getComment();
+        }
+        ret += ln + "\n";
+        tcnt++;
+    }
+    if (tcnt) {
+        ret += "\n";
+    }
+    return ret;
+}
+
+
 std::string ModuleObject::generate_sv_pkg_struct() {
     std::string ret = "";
     std::string ln = "";
@@ -114,6 +149,7 @@ std::string ModuleObject::generate_sv_pkg_struct() {
 std::string ModuleObject::generate_sv_pkg() {
     std::string ret = "";
     Operation::set_space(0);
+    ret += generate_sv_pkg_localparam();
     ret += generate_sv_pkg_struct();
     return ret;
 }
@@ -408,25 +444,16 @@ std::string ModuleObject::generate_sv_mod() {
     }
 
 
-    // Signal assignments:
+    // Sub-module instantiation
+    Operation::set_space(0);
     for (auto &p: entries_) {
         if (p->getId() != ID_OPERATION) {
             continue;
         }
-        ret += "assign ";
         ret += p->generate();
         ret += "\n";
     }
 
-
-    // Sub module instances:
-    for (auto &p: entries_) {
-        if (p->getId() != ID_MODULE_INST) {
-            continue;
-        }
-        ret += "\n";
-        ret += p->generate();
-    }
 
     // Process
     for (auto &p: entries_) {
