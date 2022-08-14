@@ -72,7 +72,7 @@ InstrDecoder::InstrDecoder(GenObject *parent, const char *name) :
 
     // Create and connet Sub-modules:
     {
-        GenObject &i = FOR ("i", CONST("0"), CONST("DEC_NUM"), "++");
+        GenObject &i = FORGEN ("i", CONST("0"), CONST("DEC_NUM"), "++", new STRING("rvx"));
             NEW(*rv.arr_[0], rv.getName().c_str(), &i);
                 CONNECT(rv, &i, rv->i_clk, i_clk);
                 CONNECT(rv, &i, rv->i_nrst, i_nrst);
@@ -105,11 +105,11 @@ InstrDecoder::InstrDecoder(GenObject *parent, const char *name) :
                 CONNECT(rv, &i, rv->o_instr_executable, ARRITEM(wd, MUL2(CONST("2"), i), wd->instr_executable));
                 CONNECT(rv, &i, rv->o_progbuf_ena, ARRITEM(wd, MUL2(CONST("2"), i), wd->progbuf_ena));
             ENDNEW();
-        ENDFOR();
+        ENDFORGEN(new STRING("rvx"));
     }
 
     {
-        GenObject &i = FOR ("i", CONST("0"), CONST("DEC_NUM"), "++");
+        GenObject &i = FORGEN ("i", CONST("0"), CONST("DEC_NUM"), "++", new STRING("rvcx"));
             NEW(*rvc.arr_[0], rvc.getName().c_str(), &i);
                 CONNECT(rvc, &i, rvc->i_clk, i_clk);
                 CONNECT(rvc, &i, rvc->i_nrst, i_nrst);
@@ -142,7 +142,7 @@ InstrDecoder::InstrDecoder(GenObject *parent, const char *name) :
                 CONNECT(rvc, &i, rvc->o_instr_executable, ARRITEM(wd, INC(MUL2(CONST("2"), i)), wd->instr_executable));
                 CONNECT(rvc, &i, rvc->o_progbuf_ena, ARRITEM(wd, INC(MUL2(CONST("2"), i)), wd->progbuf_ena));
             ENDNEW();
-        ENDFOR();
+        ENDFORGEN(new STRING("rvcx"));
     }
 }
 
@@ -185,8 +185,9 @@ TEXT();
     TEXT("generate decoders inputs with offset");
     i = &FOR("i", CONST("0"), DEC_NUM, "++");
         SETARRITEM(wb_f_pc, *i, wb_f_pc, ADD2(i_f_pc, MUL2(CONST("2"), *i)));
-        SETARRITEM(wb_f_instr, *i, wb_f_instr, BITS(i_f_instr, ADD2(MUL2(CONST("16"), *i), CONST("31")),
-                                                               MUL2(CONST("16"), *i)));
+        SETARRITEM(wb_f_instr, *i, wb_f_instr, BITSW(i_f_instr, 
+                                                     MUL2(CONST("16"), *i),
+                                                     CONST("32")));
     ENDFOR();
 
 TEXT();

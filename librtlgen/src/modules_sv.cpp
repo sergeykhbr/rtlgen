@@ -351,29 +351,30 @@ std::string ModuleObject::generate_sv_mod_proc_registers() {
         out += Operation::reset("r", 0, this, xrst);
         out += " else begin\n";
         Operation::set_space(Operation::get_space() + 1);
-    }
-    out += Operation::copyreg("r", "rin", this);
-    if (isAsyncReset()) {
+        out += Operation::copyreg("r", "rin", this);
         Operation::set_space(Operation::get_space() - 1);
         out += Operation::addspaces();
         out += "end\n";
-    }
-    for (auto &e: getEntries()) {
-        if (e->getId() != ID_PROCESS || e->getName() != "registers") {
-            continue;
-        }
-        out += "\n";
-        for (auto &r: e->getEntries()) {
-            out += r->generate();
-        }
-    }
-    Operation::set_space(Operation::get_space() - 1);
-    out += Operation::addspaces() + "end: rg_proc\n";
 
-    Operation::set_space(Operation::get_space() - 1);
-    out += "\n";
-    out += Operation::addspaces() + "end: async_rst_gen\n";
-    out += Operation::addspaces() + "else begin: no_rst_gen\n";
+        for (auto &e: getEntries()) {
+            if (e->getId() != ID_PROCESS || e->getName() != "registers") {
+                continue;
+            }
+            out += "\n";
+            for (auto &r: e->getEntries()) {
+                out += r->generate();
+            }
+        }
+        Operation::set_space(Operation::get_space() - 1);
+        out += Operation::addspaces() + "end: rg_proc\n";
+
+        Operation::set_space(Operation::get_space() - 1);
+        out += "\n";
+        out += Operation::addspaces() + "end: async_rst_gen\n";
+        out += Operation::addspaces() + "else begin: no_rst_gen\n";
+    } else {
+        out += Operation::addspaces() + "begin: no_rst_gen\n";
+    }
     Operation::set_space(Operation::get_space() + 1);
     out += "\n";
     out += Operation::addspaces() + "always_ff @(posedge i_clk) begin: rg_proc\n";

@@ -137,6 +137,20 @@ std::string Operation::obj2varname(GenObject *obj, const char *prefix, bool read
     return ret;
 }
 
+std::string Operation::obj2const(GenObject *obj, const char *prefix, bool read) {
+    if (SCV_is_sv() && obj->getId() == ID_CONST) {
+        char tstr[256];
+        int w = obj->getWidth();
+        uint64_t v = obj->getValue();
+        if (w == 1) {
+            RISCV_sprintf(tstr, sizeof(tstr), "1'b%" RV_PRI64 "x", v);
+        } else {
+            RISCV_sprintf(tstr, sizeof(tstr), "%d'h%" RV_PRI64 "x", w, v);
+        }
+        return std::string(tstr);
+    }
+    return obj2varname(obj, prefix, read);
+}
 
 // dst = r or v
 // src = r, v or 0
@@ -207,7 +221,11 @@ std::string Operation::copyreg_entry(char *idx, std::string dst, std::string src
         }
         if (src.size() == 0) {
             // reset
-            ret += p->getStrValue();
+            if (p->getWidth() > 64 && p->getValue() == 0) {
+                ret += "'0";
+            } else {
+                ret += p->getStrValue();
+            }
         } else {
             // copy value
             ret += src + "." + p->getName();
@@ -1768,8 +1786,8 @@ Operation &SPLx(GenObject &a, size_t cnt, ...) {
 
 // CC2
 std::string CC2_gen(GenObject **args) {
-    std::string A = Operation::obj2varname(args[1], "r", true);
-    std::string B = Operation::obj2varname(args[2]);
+    std::string A = Operation::obj2const(args[1], "r", true);
+    std::string B = Operation::obj2const(args[2]);
     if (SCV_is_sysc()) {
         if (args[2]->getId() == ID_CONST) {
             int w = args[2]->getWidth();
@@ -1781,19 +1799,6 @@ std::string CC2_gen(GenObject **args) {
             A = "(" + A + ", " + B + ")";
         }
     } else {
-        char tstr[256];
-        if (args[1]->getId() == ID_CONST) {
-            int w = args[1]->getWidth();
-            uint64_t v = args[1]->getValue();
-            RISCV_sprintf(tstr, sizeof(tstr), "%d'h%" RV_PRI64 "x", w, v);
-            A = std::string(tstr);
-        }
-        if (args[2]->getId() == ID_CONST) {
-            int w = args[2]->getWidth();
-            uint64_t v = args[2]->getValue();
-            RISCV_sprintf(tstr, sizeof(tstr), "%d'h%" RV_PRI64 "x", w, v);
-            B = std::string(tstr);
-        }
         A = "{" + A + ", " + B + "}";
     }
     return A;
@@ -1811,10 +1816,14 @@ Operation &CC2(GenObject &a, GenObject &b, const char *comment) {
 
 // CC3
 std::string CC3_gen(GenObject **args) {
-    std::string A = Operation::obj2varname(args[1]);
-    std::string B = Operation::obj2varname(args[2]);
-    std::string C = Operation::obj2varname(args[3]);
-    A = "(" + A + ", " + B + ", " + C + ")";
+    std::string A = Operation::obj2const(args[1]);
+    std::string B = Operation::obj2const(args[2]);
+    std::string C = Operation::obj2const(args[3]);
+    if (SCV_is_sysc()) {
+        A = "(" + A + ", " + B + ", " + C + ")";
+    } else {
+        A = "{" + A + ", " + B + ", " + C + "}";
+    }
     return A;
 }
 
@@ -1831,11 +1840,15 @@ Operation &CC3(GenObject &a, GenObject &b, GenObject &c, const char *comment) {
 
 // CC4
 std::string CC4_gen(GenObject **args) {
-    std::string A = Operation::obj2varname(args[1]);
-    std::string B = Operation::obj2varname(args[2]);
-    std::string C = Operation::obj2varname(args[3]);
-    std::string D = Operation::obj2varname(args[4]);
-    A = "(" + A + ", " + B + ", " + C + + ", " + D + ")";
+    std::string A = Operation::obj2const(args[1]);
+    std::string B = Operation::obj2const(args[2]);
+    std::string C = Operation::obj2const(args[3]);
+    std::string D = Operation::obj2const(args[4]);
+    if (SCV_is_sysc()) {
+        A = "(" + A + ", " + B + ", " + C + + ", " + D + ")";
+    } else {
+        A = "{" + A + ", " + B + ", " + C + + ", " + D + "}";
+    }
     return A;
 }
 
@@ -2569,7 +2582,11 @@ std::string NEW_gen_sv(Operation *op, ModuleObject *mod, std::string name) {
         }
         for (auto &e : tmpllist) {
             ret += Operation::addspaces();
-            ret += "." + e->getName() + "(" + e->getStrValue() + ")";
+            if (e->getId() == ID_TMPL_PARAM) {
+                ret += "." + e->getName() + "(" + e->getStrValue() + ")";
+            } else {
+                ret += "." + e->getName() + "(" + e->getName() + ")";
+            }
             if (e != tmpllist.back()) {
                 ret += ",";
             }

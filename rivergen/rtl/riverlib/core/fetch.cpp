@@ -82,13 +82,13 @@ void InstrFetch::proc_comb() {
         ENDIF();
         ENDCASE();
     CASE(WaitReqAccept);
-        IF (i_mem_req_ready);
+        IF (NZ(i_mem_req_ready));
             SETVAL(req_valid, AND2(i_bp_valid, INV(i_progbuf_ena)));
             SETVAL(req_addr, i_bp_pc);
             SETVAL(mem_resp_shadow, req_addr);
             SETONE(resp_ready);
             SETVAL(state, WaitResp);
-        ELSIF (i_bp_valid);
+        ELSIF (NZ(i_bp_valid));
             TEXT("re-write requested address (while it wasn't accepted)");
             SETVAL(req_addr, i_bp_pc);
         ENDIF();
@@ -109,7 +109,7 @@ void InstrFetch::proc_comb() {
                 ELSE();
                     SETVAL(state, WaitReqAccept);
                 ENDIF();
-            ELSIF (AND2(i_bp_valid, INV(i_progbuf_ena)));
+            ELSIF (AND2(NZ(i_bp_valid), EZ(i_progbuf_ena)));
                 SETVAL(req_addr, i_bp_pc);
                 SETVAL(state, WaitReqAccept);
             ELSE();

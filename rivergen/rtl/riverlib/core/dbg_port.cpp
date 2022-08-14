@@ -107,16 +107,18 @@ DbgPort::DbgPort(GenObject *parent, const char *name) :
 {
     Operation::start(this);
 
-    IF (NE(glob_river_cfg_->CFG_LOG2_STACK_TRACE_ADDR, CONST("0")));
-        NEW(trbuf0, trbuf0.getName().c_str());
-            CONNECT(trbuf0, 0, trbuf0.i_clk, i_clk);
-            CONNECT(trbuf0, 0, trbuf0.i_raddr, wb_stack_raddr);
-            CONNECT(trbuf0, 0, trbuf0.o_rdata, wb_stack_rdata);
-            CONNECT(trbuf0, 0, trbuf0.i_we, w_stack_we);
-            CONNECT(trbuf0, 0, trbuf0.i_waddr, wb_stack_waddr);
-            CONNECT(trbuf0, 0, trbuf0.i_wdata, wb_stack_wdata);
-        ENDNEW();
-    ENDIF();
+    GENERATE("tb");
+        IFGEN (NE(glob_river_cfg_->CFG_LOG2_STACK_TRACE_ADDR, CONST("0")), new STRING("tracebuf_en"));
+            NEW(trbuf0, trbuf0.getName().c_str());
+                CONNECT(trbuf0, 0, trbuf0.i_clk, i_clk);
+                CONNECT(trbuf0, 0, trbuf0.i_raddr, wb_stack_raddr);
+                CONNECT(trbuf0, 0, trbuf0.o_rdata, wb_stack_rdata);
+                CONNECT(trbuf0, 0, trbuf0.i_we, w_stack_we);
+                CONNECT(trbuf0, 0, trbuf0.i_waddr, wb_stack_waddr);
+                CONNECT(trbuf0, 0, trbuf0.i_wdata, wb_stack_wdata);
+            ENDNEW();
+        ENDIFGEN(new STRING("tracebuf_en"));
+    ENDGENERATE("tb");
 }
 
 void DbgPort::proc_comb() {
@@ -246,15 +248,14 @@ TEXT();
         ELSIF (NZ(i_e_memop_valid));
             SETVAL(dstate, exec_progbuf_waitmemop);
         ELSE();
-            SETVAL(comb.t_idx, BITS(i_e_npc,5,1));
-            SETVAL(progbuf_pc, CC2(CONST("0"), (CC2(BITS(i_e_npc, 5, 2), CONST("0",2)))));
-            IF (EQ(comb.t_idx, CONST("0xf", 5)));
+            SETVAL(comb.t_idx, BITS(i_e_npc,5,2));
+            SETVAL(progbuf_pc, CC2(CONST("0", 58), (CC2(BITS(i_e_npc, 5, 2), CONST("0",2)))));
+            IF (EQ(comb.t_idx, CONST("0xf", 4)));
                 SETVAL(progbuf_instr, BIG_TO_U64(CC2(CONST("0", 32),
-                                                     BITS(i_progbuf, ADD2(MUL2(CONST("32"), comb.t_idx), CONST("63")),
-                                                                     MUL2(CONST("32"), comb.t_idx)))));
+                                                     BITS(i_progbuf, CONST("255"), CONST("224")))));
             ELSE();
-                SETVAL(progbuf_instr, BIG_TO_U64(BITS(i_progbuf, ADD2(MUL2(CONST("32"), comb.t_idx), CONST("31")),
-                                                                 MUL2(CONST("32"), comb.t_idx))));
+                SETVAL(progbuf_instr, BIG_TO_U64(BITSW(i_progbuf, MUL2(CONST("32"), comb.t_idx),
+                                                                 CONST("64"))));
             ENDIF();
         ENDIF();
         ENDCASE();
