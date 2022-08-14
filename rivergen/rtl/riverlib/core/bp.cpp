@@ -87,8 +87,9 @@ void BranchPredictor::CombProcess::proc_comb() {
 
     TEXT("Transform address into 2-dimesional array for convinience");
     GenObject *i = &FOR ("i", CONST("0"), cfg->CFG_BP_DEPTH, "++");
-        SETARRITEM(vb_addr, *i, vb_addr, BITS(p->wb_npc, DEC(MUL2(INC(*i), cfg->CFG_CPU_ADDR_BITS)),
-                                                         MUL2(*i, cfg->CFG_CPU_ADDR_BITS)));
+        SETARRITEM(vb_addr, *i, vb_addr, BITSW(p->wb_npc, 
+                                               MUL2(*i, cfg->CFG_CPU_ADDR_BITS),
+                                               cfg->CFG_CPU_ADDR_BITS));
     ENDFOR();
 
 TEXT();
@@ -97,6 +98,7 @@ TEXT();
     SETARRITEM(vb_piped, CONST("2"), vb_piped, BITS(p->i_f_fetching_pc, DEC(cfg->CFG_CPU_ADDR_BITS), CONST("2")));
     SETARRITEM(vb_piped, CONST("3"), vb_piped, BITS(p->i_f_requested_pc, DEC(cfg->CFG_CPU_ADDR_BITS), CONST("2")));
 
+    TEXT("Check availablity of pc in pipeline");
     SETVAL(vb_hit, ALLZEROS());
     GenObject &n = FOR ("n", CONST("0"), CONST("4"), "++");
         i = &FOR ("i", n,  CONST("4"), "++");
@@ -119,14 +121,14 @@ TEXT();
     TEXT("Pre-decoder input signals (not used for now)");
     i = &FOR ("i", CONST("0"), CONST("2"), "++");
         SETARRITEM(p->wb_pd, *i, p->wb_pd->c_valid,
-                   INV(AND_REDUCE(BITS(p->i_resp_mem_data,
-                                       INC(MUL2(CONST("16"),*i)),
-                                       MUL2(CONST("16"),*i)))));
+                   INV(AND_REDUCE(BITSW(p->i_resp_mem_data,
+                                       MUL2(CONST("16"),*i),
+                                       CONST("2")))));
         SETARRITEM(p->wb_pd, *i, p->wb_pd->addr,
                     ADD2(p->i_resp_mem_addr, MUL2(CONST("2"), *i)));
         SETARRITEM(p->wb_pd, *i, p->wb_pd->data,
-                    BITS(p->i_resp_mem_data, ADD2(MUL2(CONST("16"),*i), CONST("31")),
-                                             MUL2(CONST("16"),*i)));
+                    BITSW(p->i_resp_mem_data, MUL2(CONST("16"),*i),
+                                              CONST("32")));
     ENDFOR();
     SETVAL(vb_ignore_pd, ALLZEROS());
     i = &FOR ("i", CONST("0"), CONST("4"), "++");

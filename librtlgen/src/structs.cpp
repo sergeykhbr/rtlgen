@@ -80,8 +80,13 @@ std::string StructObject::generate() {
         ln = Operation::addspaces();
         ln += p->getType() + " " + p->getName();
         if (p->getDepth()) {
-            ln += "[" + p->getStrDepth() + "]";
-
+            ln += "[";
+            if (SCV_is_sysc()) {
+                ln += p->getStrDepth();
+            } else {
+                ln += "0: " + p->getStrDepth() + " - 1";
+            }
+            ln += "]";
         }
         ln += ";";
         if (p->getComment().size()) {

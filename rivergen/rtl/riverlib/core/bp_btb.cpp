@@ -47,17 +47,17 @@ void BpBTB::proc_comb() {
 
 TEXT();
     GenObject *i = &FOR("i", CONST("1"), cfg->CFG_BP_DEPTH, "++");
-        SETVAL(comb.t_addr, BITS(comb.vb_addr, MUL2(*i, DEC(cfg->CFG_CPU_ADDR_BITS)),
-                                               MUL2(DEC(*i), cfg->CFG_CPU_ADDR_BITS)));
+        SETVAL(comb.t_addr, BITSW(comb.vb_addr, MUL2(DEC(*i), cfg->CFG_CPU_ADDR_BITS),
+                                                cfg->CFG_CPU_ADDR_BITS));
         GenObject &n = FOR("n", DEC(cfg->CFG_BTB_SIZE), CONST("0"), "--");
             IF (EQ(comb.t_addr, ARRITEM(btb, n, btb->pc)));
-                SETBITS(comb.vb_addr, DEC(MUL2(INC(*i), cfg->CFG_CPU_ADDR_BITS)),
-                                      MUL2(*i, cfg->CFG_CPU_ADDR_BITS), ARRITEM(btb, n, btb->npc));
+                SETBITSW(comb.vb_addr, MUL2(*i, cfg->CFG_CPU_ADDR_BITS),
+                                       cfg->CFG_CPU_ADDR_BITS, ARRITEM(btb, n, btb->npc));
                 SETBIT(comb.vb_hit, *i, CONST("1", 1));
                 SETBIT(comb.vb_bp_exec, *i, btb->exec,  "Used for: Do not override by pre-decoded jumps");
             ELSIF(EZ(BIT(comb.vb_hit, *i)));
-                SETBITS(comb.vb_addr, DEC(MUL2(INC(*i), cfg->CFG_CPU_ADDR_BITS)),
-                                      MUL2(*i, cfg->CFG_CPU_ADDR_BITS), ADD2(comb.t_addr, CONST("4")));
+                SETBITSW(comb.vb_addr, MUL2(*i, cfg->CFG_CPU_ADDR_BITS),
+                                       cfg->CFG_CPU_ADDR_BITS, ADD2(comb.t_addr, CONST("4")));
             ENDIF();
         ENDFOR();
     ENDFOR();
@@ -96,8 +96,9 @@ TEXT();
 
 TEXT();
     i = &FOR("i", CONST("0"), cfg->CFG_BP_DEPTH, "++");
-        SETARRITEM(dbg_npc, *i, dbg_npc, BIG_TO_U64(BITS(comb.vb_addr, DEC(MUL2(INC(*i), cfg->CFG_CPU_ADDR_BITS)),
-                                                                       MUL2(*i, cfg->CFG_CPU_ADDR_BITS))));
+        SETARRITEM(dbg_npc, *i, dbg_npc, BIG_TO_U64(BITSW(comb.vb_addr,
+                                                          MUL2(*i, cfg->CFG_CPU_ADDR_BITS),
+                                                          cfg->CFG_CPU_ADDR_BITS)));
     ENDFOR();
     SETVAL(o_bp_npc, comb.vb_addr);
     SETVAL(o_bp_exec, comb.vb_bp_exec);

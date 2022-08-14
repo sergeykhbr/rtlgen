@@ -56,15 +56,15 @@ TEXT();
     SETVAL(comb.vb_jal_addr, ADD2(comb.vb_pc, comb.vb_jal_off));
 
 TEXT();
-    SETVAL(v_jal, ALLZEROS());
+    SETZERO(v_jal);
     IF (EQ(BITS(comb.vb_tmp, 6, 0), CONST("0x6F", 7)));
-        SETVAL(v_jal, ALLONES());
+        SETONE(v_jal);
     ENDIF();
 
 TEXT();
     TEXT("Conditional branches \"BEQ\", \"BNE\", \"BLT\", \"BGE\", \"BLTU\", \"BGEU\"");
     TEXT("Only negative offset leads to predicted jumps");
-    IF (BIT(comb.vb_tmp, 31));
+    IF (NZ(BIT(comb.vb_tmp, 31)));
         SETBITS(comb.vb_branch_off, DEC(cfg->CFG_CPU_ADDR_BITS), CONST("12"), ALLONES());
     ELSE();
         SETBITS(comb.vb_branch_off, DEC(cfg->CFG_CPU_ADDR_BITS), CONST("12"), ALLZEROS());
@@ -76,15 +76,15 @@ TEXT();
     SETVAL(comb.vb_branch_addr, ADD2(comb.vb_pc, comb.vb_branch_off));
 
 TEXT();
-    SETVAL(v_branch, ALLZEROS());
+    SETZERO(v_branch);
     IF (NZ(AND2(EQ(BITS(comb.vb_tmp, 6, 0), CONST("0x63", 7)),
                 BIT(comb.vb_tmp, 31))));
-        SETVAL(v_branch, ALLONES());
+        SETONE(v_branch);
     ENDIF();
 
 TEXT();
     TEXT("Check Compressed \"C_J\" unconditional jump");
-    IF (BIT(comb.vb_tmp, 12));
+    IF (NZ(BIT(comb.vb_tmp, 12)));
         SETBITS(comb.vb_c_j_off, DEC(cfg->CFG_CPU_ADDR_BITS), CONST("11"), ALLONES());
     ELSE();
         SETBITS(comb.vb_c_j_off, DEC(cfg->CFG_CPU_ADDR_BITS), CONST("11"), ALLZEROS());
@@ -100,7 +100,7 @@ TEXT();
     SETVAL(comb.vb_c_j_addr, ADD2(comb.vb_pc, comb.vb_c_j_off));
 
 TEXT();
-    SETVAL(v_c_j, ALLZEROS());
+    SETZERO(v_c_j);
     IF (AND2(EQ(BITS(comb.vb_tmp, 15, 13), CONST("0x5", 3)),
              EQ(BITS(comb.vb_tmp, 1, 0), CONST("0x1", 2))));
         SETVAL(v_c_j, i_c_valid);
@@ -108,7 +108,7 @@ TEXT();
 
 TEXT();
     TEXT("Compressed RET pseudo-instruction");
-    SETVAL(v_c_ret, ALLZEROS());
+    SETZERO(v_c_ret);
     IF (EQ(BITS(comb.vb_tmp, 15, 0), CONST("0x8082", 16)));
         SETVAL(v_c_ret, i_c_valid);
     ENDIF();
@@ -121,7 +121,7 @@ TEXT();
     ELSIF (NZ(v_c_j));
         SETVAL(vb_npc, comb.vb_c_j_addr);
     ELSIF (NZ(v_c_ret));
-        SETVAL(vb_npc, i_ra);
+        SETVAL(vb_npc, BITS(i_ra, DEC(cfg->CFG_CPU_ADDR_BITS), CONST("0")));
     ELSE();
         SETVAL(vb_npc, ADD2(comb.vb_pc, CONST("4")));
     ENDIF();

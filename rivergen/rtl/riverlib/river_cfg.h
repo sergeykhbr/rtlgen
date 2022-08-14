@@ -156,6 +156,7 @@ class river_cfg : public FileObject {
     ParamLogic CFG_IMPLEMENTATION_ID;
     ParamBOOL CFG_HW_FPU_ENABLE;
     TextLine _1_;
+    TextLine _arch0_;
     ParamI32D RISCV_ARCH;
     TextLine _2_;
     ParamI32D CFG_CPU_ADDR_BITS;
@@ -167,6 +168,8 @@ class river_cfg : public FileObject {
     TextLine _6_;
     ParamI32D CFG_LOG2_CPU_MAX;
     ParamI32D CFG_CPU_MAX;
+    TextLine _acp0_;
+    ParamI32D CFG_SLOT_L1_TOTAL;
     TextLine _7_;
     TextLine _8_;
     ParamLogic CFG_RESET_VECTOR;

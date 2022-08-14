@@ -97,6 +97,7 @@ Operation &BIT(GenObject &a, const char *b, const char *comment="");
 Operation &BIT(GenObject &a, int b, const char *comment="");
 Operation &BITS(GenObject &a, GenObject &h, GenObject &l, const char *comment="");
 Operation &BITS(GenObject &a, int h, int l, const char *comment="");
+Operation &BITSW(GenObject &a, GenObject &start, GenObject &width, const char *comment="");
 GenObject &CONST(const char *val);
 GenObject &CONST(const char *val, const char *width);
 GenObject &CONST(const char *val, int width);
@@ -110,6 +111,7 @@ Operation &SETBITZERO(GenObject &a, const char *b, const char *comment="");
 Operation &SETBITZERO(GenObject &a, int b, const char *comment="");
 Operation &SETBITS(GenObject &a, GenObject &h, GenObject &l, GenObject &val, const char *comment="");
 Operation &SETBITS(GenObject &a, int h, int l, GenObject &val, const char *comment="");
+Operation &SETBITSW(GenObject &a, GenObject &start, GenObject &width, GenObject &val, const char *comment="");
 Operation &SETVAL(GenObject &a, GenObject &b, const char *comment="");
 Operation &SETSTR(GenObject &a, const char *str, const char *comment="");
 Operation &SETSTRF(GenObject &a, const char *fmt, size_t cnt, ...);
@@ -172,6 +174,10 @@ void IF(GenObject &a, const char *comment="");
 void ELSIF(GenObject &a, const char *comment="");
 void ELSE(const char *comment="");
 void ENDIF(const char *comment="");
+// RTL specific if condition with names
+void IFGEN(GenObject &a, STRING *name, const char *comment="");
+void ELSEGEN(STRING *name, const char *comment="");
+void ENDIFGEN(STRING *name, const char *comment="");
 
 void SWITCH(GenObject &a, const char *comment="");
 void CASE(GenObject &a, const char *comment="");
@@ -199,5 +205,10 @@ void FWRITE(GenObject &f, GenObject &str);
 void NEW(GenObject &m, const char *name, GenObject *idx=0, const char *comment="");
 void CONNECT(GenObject &inst, GenObject *idx, GenObject &port, GenObject &s, const char *comment="");
 void ENDNEW(const char *comment="");
+
+// RTL specific not used in SystemC
+void GENERATE(const char *name, const char *comment="");
+void ENDGENERATE(const char *name, const char *comment="");
+Operation &ASSIGNZERO(GenObject &a, const char *comment="");
 
 }  // namespace sysvc

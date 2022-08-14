@@ -92,7 +92,7 @@ std::string ModuleObject::generate_sv_pkg_struct() {
             ln = "    " + p->getType() + " " + p->getName();
             if (p->getDepth()) {
                 twodim = true;
-                ln += "[" + p->getStrDepth() + "]";
+                ln += "[0: " + p->getStrDepth() + " - 1]";
             }
             ln += ";";
             if (p->getComment().size()) {
@@ -154,7 +154,7 @@ std::string ModuleObject::generate_sv_pkg() {
     return ret;
 }
 
-std::string ModuleObject::generate_sv_genparam() {
+std::string ModuleObject::generate_sv_mod_genparam() {
     std::string ret = "";
     int icnt = 0;
     std::list<GenObject *> tmpllist;
@@ -186,7 +186,70 @@ std::string ModuleObject::generate_sv_genparam() {
     return ret;
 }
 
-std::string ModuleObject::generate_sv_proc(GenObject *proc) {
+std::string ModuleObject::generate_sv_mod_signals() {
+    std::string ret = "";
+    std::string ln;
+    std::string text;
+    int tcnt = 0;
+    tcnt = 0;
+    text = "";
+    for (auto &p: getEntries()) {
+        if (p->isReg() || (p->getId() != ID_SIGNAL
+                        && p->getId() != ID_VALUE
+                        && p->getId() != ID_STRUCT_INST
+                        && p->getId() != ID_ARRAY_DEF)) {
+            if (p->getId() == ID_COMMENT) {
+                text += p->generate();
+            } else {
+                text = "";
+            }
+            continue;
+        }
+        if (p->getId() == ID_ARRAY_DEF) {
+            ArrayObject *a = static_cast<ArrayObject *>(p);
+            if (a->getItem()->getId() == ID_MODULE_INST) {
+                text = "";
+                continue;
+            }
+        }
+        if (text.size()) {
+            ret += text;
+            text = "";
+        }
+        ln = p->getType() + " " + p->getName();
+        if (p->getDepth()) {
+            ln += "[0: " + p->getStrDepth() + " - 1]";
+        }
+        ln += ";";
+        if (p->getComment().size()) {
+            while (ln.size() < 60) {
+                ln += " ";
+            }
+            ln += "// " + p->getComment();
+        }
+        ret += ln + "\n";
+        tcnt++;
+    }
+    for (auto &p: getEntries()) {
+        if (p->getId() != ID_FILEVALUE) {
+            continue;
+        }
+        ret += "int " + p->getName() + ";\n";
+        tcnt++;
+    }
+
+    if (isRegProcess()) {
+        ret += getType() + "_registers r, rin;\n";
+        tcnt++;
+    }
+    if (tcnt) {
+        ret += "\n";
+        tcnt = 0;
+    }
+    return ret;
+}
+
+std::string ModuleObject::generate_sv_mod_proc(GenObject *proc) {
     std::string ret = "";
     std::string ln;
     int tcnt = 0;
@@ -207,9 +270,9 @@ std::string ModuleObject::generate_sv_proc(GenObject *proc) {
             tcnt++;
         } else if (e->getId() == ID_ARRAY_DEF) {
             ln += "    " + e->getType() + " " + e->getName();
-            ln += "[";
+            ln += "[0: ";
             ln += e->getStrDepth();
-            ln += "]";
+            ln += "-1]";
         } else if (e->getId() == ID_STRUCT_INST) {
             ln += "    " + e->getType() + " " + e->getName();
         } else {
@@ -263,13 +326,17 @@ std::string ModuleObject::generate_sv_proc(GenObject *proc) {
         ret += e->generate();
     }
 
+    if (isRegProcess()) {
+        ret += "\n";
+        ret += Operation::copyreg("rin", "v", this);
+    }
     ret += "end: " + proc->getName() + "_proc\n";
     ret += "\n";
     return ret;
 }
 
 
-std::string ModuleObject::generate_sv_proc_registers() {
+std::string ModuleObject::generate_sv_mod_proc_registers() {
     std::string out = "";
     std::string xrst = "";
 
@@ -335,7 +402,7 @@ std::string ModuleObject::generate_sv_mod() {
     ret += "module " + getType();
 
     // Generic parameters
-    ln = generate_sv_genparam();
+    ln = generate_sv_mod_genparam();
     if (ln.size()) {
         ret += " #(\n";
         ret += ln + "\n";
@@ -382,67 +449,23 @@ std::string ModuleObject::generate_sv_mod() {
     ret += "\n";
 
     // import statement:
-    ret += "import " + getFile() + "_pkg::*;\n";
+    std::list<std::string> pkglst;
+    FileObject *pf = static_cast<FileObject *>(getParent());
+    pf->getPkgList(pkglst);
+    for (auto &e: pkglst) {
+        ret += "import " + e + "::*;\n";
+    }
     ret += "\n";
 
+    // insert pkg data for template modules: ram, queue, ..
+    std::list<GenObject *> tmplparlist;
+    getTmplParamList(tmplparlist);
+    if (tmplparlist.size()) {
+        ret += generate_sv_pkg();
+    }
 
     // Signal list:
-    tcnt = 0;
-    text = "";
-    for (auto &p: getEntries()) {
-        if (p->isReg() || (p->getId() != ID_SIGNAL
-                        && p->getId() != ID_VALUE
-                        && p->getId() != ID_STRUCT_INST
-                        && p->getId() != ID_ARRAY_DEF)) {
-            if (p->getId() == ID_COMMENT) {
-                text += p->generate();
-            } else {
-                text = "";
-            }
-            continue;
-        }
-        if (p->getId() == ID_ARRAY_DEF) {
-            ArrayObject *a = static_cast<ArrayObject *>(p);
-            if (a->getItem()->getId() == ID_MODULE_INST) {
-                text = "";
-                continue;
-            }
-        }
-        if (text.size()) {
-            ret += text;
-            text = "";
-        }
-        ln = p->getType() + " " + p->getName();
-        if (p->getDepth()) {
-            ln += "[" + p->getStrDepth() + "]";
-        }
-        ln += ";";
-        if (p->getComment().size()) {
-            while (ln.size() < 60) {
-                ln += " ";
-            }
-            ln += "// " + p->getComment();
-        }
-        ret += ln + "\n";
-        tcnt++;
-    }
-    for (auto &p: getEntries()) {
-        if (p->getId() != ID_FILEVALUE) {
-            continue;
-        }
-        ret += "int " + p->getName() + ";\n";
-        tcnt++;
-    }
-
-    if (isRegProcess()) {
-        ret += getType() + "_registers r, rin;\n";
-        tcnt++;
-    }
-    if (tcnt) {
-        ret += "\n";
-        tcnt = 0;
-    }
-
+    ret += generate_sv_mod_signals();
 
     // Sub-module instantiation
     Operation::set_space(0);
@@ -450,7 +473,8 @@ std::string ModuleObject::generate_sv_mod() {
         if (p->getId() != ID_OPERATION) {
             continue;
         }
-        ret += p->generate();
+        ln = p->generate();
+        ret += ln;
         ret += "\n";
     }
 
@@ -464,12 +488,12 @@ std::string ModuleObject::generate_sv_mod() {
             continue;
         }
         Operation::set_space(0);
-        ret += generate_sv_proc(p);
+        ret += generate_sv_mod_proc(p);
     }
 
     if (isRegProcess()) {
         Operation::set_space(0);
-        ret += generate_sv_proc_registers();
+        ret += generate_sv_mod_proc_registers();
     }
 
 

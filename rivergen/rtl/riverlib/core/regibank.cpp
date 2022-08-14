@@ -42,7 +42,7 @@ RegIntBank::RegIntBank(GenObject *parent, const char *name) :
     // struct declaration
     RegValueTypeDef_(this, -1),
     // registers
-    reg(this, "reg", "REGS_TOTAL", true),
+    arr(this, "arr", "REGS_TOTAL", true),
     // process
     comb(this)
 {
@@ -57,7 +57,7 @@ void RegIntBank::proc_comb() {
     SETVAL(comb.int_radr2, TO_INT(i_radr2));
 
 TEXT();
-    SETVAL(comb.next_tag, INC(ARRITEM_B(reg, comb.int_waddr, reg->tag)));
+    SETVAL(comb.next_tag, INC(ARRITEM_B(arr, comb.int_waddr, arr->tag)));
     IF (EQ(comb.next_tag, i_wtag));
         SETONE(comb.v_inordered);
     ENDIF();
@@ -65,11 +65,11 @@ TEXT();
 TEXT();
     TEXT("Debug port has lower priority to avoid system hangup due the tags error");
     IF (AND3(NZ(i_wena), NZ(i_waddr), NZ(OR2(INV(i_inorder), comb.v_inordered))));
-        SETARRITEM(reg, comb.int_waddr, reg->val, i_wdata);
-        SETARRITEM(reg, comb.int_waddr, reg->tag, i_wtag);
+        SETARRITEM(arr, comb.int_waddr, arr->val, i_wdata);
+        SETARRITEM(arr, comb.int_waddr, arr->tag, i_wtag);
     ELSIF (NZ(AND2(i_dport_ena, i_dport_write)));
         IF (NZ(i_dport_addr));
-            SETARRITEM(reg, comb.int_daddr, reg->val, i_dport_wdata);
+            SETARRITEM(arr, comb.int_daddr, arr->val, i_dport_wdata);
         ENDIF();
     ENDIF();
 
@@ -78,13 +78,13 @@ TEXT();
 
 TEXT();
     SETVAL(o_ignored, AND4(i_wena, OR_REDUCE(i_waddr), i_inorder, INV(comb.v_inordered)));
-    SETVAL(o_rdata1, ARRITEM(reg, comb.int_radr1, reg->val));
-    SETVAL(o_rtag1, ARRITEM(reg, comb.int_radr1, reg->tag));
-    SETVAL(o_rdata2, ARRITEM(reg, comb.int_radr2, reg->val));
-    SETVAL(o_rtag2, ARRITEM(reg, comb.int_radr2, reg->tag));
-    SETVAL(o_dport_rdata, ARRITEM(reg, comb.int_daddr, reg->val));
-    SETVAL(o_ra, ARRITEM(reg, cfg->REG_RA, reg->val));
-    SETVAL(o_sp, ARRITEM(reg, cfg->REG_SP, reg->val));
+    SETVAL(o_rdata1, ARRITEM(arr, comb.int_radr1, arr->val));
+    SETVAL(o_rtag1, ARRITEM(arr, comb.int_radr1, arr->tag));
+    SETVAL(o_rdata2, ARRITEM(arr, comb.int_radr2, arr->val));
+    SETVAL(o_rtag2, ARRITEM(arr, comb.int_radr2, arr->tag));
+    SETVAL(o_dport_rdata, ARRITEM(arr, comb.int_daddr, arr->val));
+    SETVAL(o_ra, ARRITEM(arr, cfg->REG_RA, arr->val));
+    SETVAL(o_sp, ARRITEM(arr, cfg->REG_SP, arr->val));
 
 }
 

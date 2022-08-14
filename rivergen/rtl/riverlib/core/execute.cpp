@@ -85,7 +85,7 @@ InstrExecute::InstrExecute(GenObject *parent, const char *name) :
     o_memop_size(this, "o_memop_size", "2", "0=1bytes; 1=2bytes; 2=4bytes; 3=8bytes"),
     o_memop_memaddr(this, "o_memop_memaddr", "CFG_CPU_ADDR_BITS", "Memory access address"),
     o_memop_wdata(this, "o_memop_wdata", "RISCV_ARCH"),
-    i_memop_ready(this, "i_memop_ready", "1"),
+    i_memop_ready(this, "i_memop_ready", "1", "memaccess is ready to accept memop on next clock"),
     i_dbg_mem_req_valid(this, "i_dbg_mem_req_valid", "1", "Debug Request to memory is valid"),
     i_dbg_mem_req_write(this, "i_dbg_mem_req_write", "1", "0=read; 1=write"),
     i_dbg_mem_req_size(this, "i_dbg_mem_req_size", "2", "0=1bytes; 1=2bytes; 2=4bytes; 3=8bytes"),
@@ -283,31 +283,33 @@ InstrExecute::InstrExecute(GenObject *parent, const char *name) :
         CONNECT(sh0, 0, sh0.o_res, ARRITEM(wb_select, Res_Shifter, wb_select->res));
     ENDNEW();
 
-    IF (fpu_ena);
-        NEW(fpu0, fpu0.getName().c_str());
-            CONNECT(fpu0, 0, fpu0.i_clk, i_clk);
-            CONNECT(fpu0, 0, fpu0.i_nrst, i_nrst);
-            CONNECT(fpu0, 0, fpu0.i_ena, ARRITEM(wb_select, Res_FPU, wb_select->ena));
-            CONNECT(fpu0, 0, fpu0.i_ivec, wb_fpu_vec);
-            CONNECT(fpu0, 0, fpu0.i_a, wb_rdata1);
-            CONNECT(fpu0, 0, fpu0.i_b, wb_rdata2);
-            CONNECT(fpu0, 0, fpu0.o_res, ARRITEM(wb_select, Res_FPU, wb_select->res));
-            CONNECT(fpu0, 0, fpu0.o_ex_invalidop, w_ex_fpu_invalidop);
-            CONNECT(fpu0, 0, fpu0.o_ex_divbyzero, w_ex_fpu_divbyzero);
-            CONNECT(fpu0, 0, fpu0.o_ex_overflow, w_ex_fpu_overflow);
-            CONNECT(fpu0, 0, fpu0.o_ex_underflow, w_ex_fpu_underflow);
-            CONNECT(fpu0, 0, fpu0.o_ex_inexact, w_ex_fpu_inexact);
-            CONNECT(fpu0, 0, fpu0.o_valid, ARRITEM(wb_select, Res_FPU, wb_select->valid));
-        ENDNEW();
-    ELSE();
-        SETZERO(ARRITEM(wb_select, Res_FPU, wb_select->res));
-        SETZERO(ARRITEM(wb_select, Res_FPU, wb_select->valid));
-        SETZERO(w_ex_fpu_invalidop);
-        SETZERO(w_ex_fpu_divbyzero);
-        SETZERO(w_ex_fpu_overflow);
-        SETZERO(w_ex_fpu_underflow);
-        SETZERO(w_ex_fpu_inexact);
-    ENDIF();
+    GENERATE("fpu");
+        IFGEN (fpu_ena, new STRING("fpu_en"));
+            NEW(fpu0, fpu0.getName().c_str());
+                CONNECT(fpu0, 0, fpu0.i_clk, i_clk);
+                CONNECT(fpu0, 0, fpu0.i_nrst, i_nrst);
+                CONNECT(fpu0, 0, fpu0.i_ena, ARRITEM(wb_select, Res_FPU, wb_select->ena));
+                CONNECT(fpu0, 0, fpu0.i_ivec, wb_fpu_vec);
+                CONNECT(fpu0, 0, fpu0.i_a, wb_rdata1);
+                CONNECT(fpu0, 0, fpu0.i_b, wb_rdata2);
+                CONNECT(fpu0, 0, fpu0.o_res, ARRITEM(wb_select, Res_FPU, wb_select->res));
+                CONNECT(fpu0, 0, fpu0.o_ex_invalidop, w_ex_fpu_invalidop);
+                CONNECT(fpu0, 0, fpu0.o_ex_divbyzero, w_ex_fpu_divbyzero);
+                CONNECT(fpu0, 0, fpu0.o_ex_overflow, w_ex_fpu_overflow);
+                CONNECT(fpu0, 0, fpu0.o_ex_underflow, w_ex_fpu_underflow);
+                CONNECT(fpu0, 0, fpu0.o_ex_inexact, w_ex_fpu_inexact);
+                CONNECT(fpu0, 0, fpu0.o_valid, ARRITEM(wb_select, Res_FPU, wb_select->valid));
+            ENDNEW();
+        ELSEGEN(new STRING("fpu"));
+            ASSIGNZERO(ARRITEM(wb_select, Res_FPU, wb_select->res));
+            ASSIGNZERO(ARRITEM(wb_select, Res_FPU, wb_select->valid));
+            ASSIGNZERO(w_ex_fpu_invalidop);
+            ASSIGNZERO(w_ex_fpu_divbyzero);
+            ASSIGNZERO(w_ex_fpu_overflow);
+            ASSIGNZERO(w_ex_fpu_underflow);
+            ASSIGNZERO(w_ex_fpu_inexact);
+        ENDIFGEN(new STRING("fpu_dis"));
+    ENDGENERATE("fpu");
 }
 
 void InstrExecute::proc_comb() {
@@ -414,13 +416,11 @@ TEXT();
     SETVAL(comb.t_radr2, TO_INT(comb.mux.radr2));
 
     SETZERO(w_hazard1);
-    IF (NE(BITS(tagcnt, ADD2(MUL2(cfg->CFG_REG_TAG_WIDTH, comb.t_radr1), DEC(cfg->CFG_REG_TAG_WIDTH)),
-                        MUL2(cfg->CFG_REG_TAG_WIDTH, comb.t_radr1)), i_rtag1));
+    IF (NE(BITSW(tagcnt, MUL2(cfg->CFG_REG_TAG_WIDTH, comb.t_radr1), cfg->CFG_REG_TAG_WIDTH), i_rtag1));
         SETVAL(w_hazard1, comb.v_check_tag1);
     ENDIF();
     SETZERO(w_hazard2);
-    IF (NE(BITS(tagcnt, ADD2(MUL2(cfg->CFG_REG_TAG_WIDTH, comb.t_radr2), DEC(cfg->CFG_REG_TAG_WIDTH)),
-                        MUL2(cfg->CFG_REG_TAG_WIDTH, comb.t_radr2)), i_rtag2));
+    IF (NE(BITSW(tagcnt, MUL2(cfg->CFG_REG_TAG_WIDTH, comb.t_radr2), cfg->CFG_REG_TAG_WIDTH), i_rtag2));
         SETVAL(w_hazard2, comb.v_check_tag2);
     ENDIF();
 
@@ -620,10 +620,10 @@ TEXT();
              EQ(comb.mux.waddr, cfg->REG_RA)));
         SETONE(comb.v_call);
     ENDIF();
-    IF (AND4(NZ(BIT(comb.wv, "Instr_JALR")),
-             EZ(comb.vb_rdata2),
-             NE(comb.mux.waddr, cfg->REG_RA),
-             EQ(comb.mux.radr1, cfg->REG_RA)));
+    IF (ANDx(4, &NZ(BIT(comb.wv, "Instr_JALR")),
+                &EZ(comb.vb_rdata2),
+                &NE(comb.mux.waddr, cfg->REG_RA),
+                &EQ(comb.mux.radr1, cfg->REG_RA)));
         SETONE(comb.v_ret);
     ENDIF();
 
@@ -1093,14 +1093,14 @@ TEXT();
     TEXT("Next tags:");
     SETVAL(comb.t_waddr, TO_INT(comb.vb_reg_waddr));
 TEXT();
-    SETVAL(comb.t_tagcnt_wr, INC(BITS(tagcnt, ADD2(MUL2(cfg->CFG_REG_TAG_WIDTH, comb.t_waddr), DEC(cfg->CFG_REG_TAG_WIDTH)),
-                                         MUL2(cfg->CFG_REG_TAG_WIDTH, comb.t_waddr))));
+    SETVAL(comb.t_tagcnt_wr, INC(BITSW(tagcnt, MUL2(cfg->CFG_REG_TAG_WIDTH, comb.t_waddr), 
+                                               cfg->CFG_REG_TAG_WIDTH)));
 
 TEXT();
     SETVAL(comb.vb_tagcnt_next, tagcnt);
-    SETBITS(comb.vb_tagcnt_next, ADD2(MUL2(cfg->CFG_REG_TAG_WIDTH, comb.t_waddr), DEC(cfg->CFG_REG_TAG_WIDTH)),
-                                 MUL2(cfg->CFG_REG_TAG_WIDTH, comb.t_waddr),
-                                 comb.t_tagcnt_wr);
+    SETBITSW(comb.vb_tagcnt_next, MUL2(cfg->CFG_REG_TAG_WIDTH, comb.t_waddr),
+                                  cfg->CFG_REG_TAG_WIDTH,
+                                  comb.t_tagcnt_wr);
     SETBITS(comb.vb_tagcnt_next, DEC(cfg->CFG_REG_TAG_WIDTH), CONST("0"), ALLZEROS(), "r0 always 0");
 
     IF (EZ(i_dbg_progbuf_ena));
@@ -1303,8 +1303,8 @@ TEXT();
 TEXT();
     TEXT("Debug rtl only:!!");
     GenObject &i = FOR ("i", CONST("0"), cfg->INTREGS_TOTAL, "++");
-        SETARRITEM(tag_expected, i, tag_expected, BIG_TO_U64(BITS(tagcnt, ADD2(MUL2(cfg->CFG_REG_TAG_WIDTH, i), DEC(cfg->CFG_REG_TAG_WIDTH)),
-                                                                               MUL2(cfg->CFG_REG_TAG_WIDTH, i))));
+        SETARRITEM(tag_expected, i, tag_expected, BIG_TO_U64(BITSW(tagcnt, MUL2(cfg->CFG_REG_TAG_WIDTH, i),
+                                                                           cfg->CFG_REG_TAG_WIDTH)));
     ENDFOR();
 }
 

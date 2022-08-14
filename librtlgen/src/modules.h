@@ -49,9 +49,10 @@ class ModuleObject : public GenObject {
  protected:
     std::string generate_sv_pkg_localparam();
     std::string generate_sv_pkg_struct();
-    std::string generate_sv_genparam();     // generic parameters
-    std::string generate_sv_proc(GenObject *proc);
-    std::string generate_sv_proc_registers();
+    std::string generate_sv_mod_genparam();     // generic parameters
+    std::string generate_sv_mod_signals();
+    std::string generate_sv_mod_proc(GenObject *proc);
+    std::string generate_sv_mod_proc_registers();
 
     std::string generate_sysc_proc_registers();
     std::string generate_sysc_param_strings();

@@ -32,7 +32,7 @@ class BranchPredictor : public ModuleObject {
         CombProcess(GenObject *parent) :
             ProcObject(parent, "comb"),
             vb_addr(this, "vb_addr", "CFG_CPU_ADDR_BITS", "CFG_BP_DEPTH"),
-            vb_piped(this, "vb_piped", "CFG_CPU_ADDR_BITS", "4"),
+            vb_piped(this, "vb_piped", "SUB(CFG_CPU_ADDR_BITS,2)", "4"),
             vb_fetch_npc(this, "vb_fetch_npc", "CFG_CPU_ADDR_BITS"),
             v_btb_we(this, "v_btb_we", "1"),
             vb_btb_we_pc(this, "vb_btb_we_pc", "CFG_CPU_ADDR_BITS"),

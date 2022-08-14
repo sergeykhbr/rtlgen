@@ -241,6 +241,27 @@ void FileObject::generate_sysc() {
     }
 }
 
+void FileObject::getPkgList(std::list<std::string> &lst) {
+    std::string tstr;
+    std::vector<std::string> subs;
+    std::string thisfile = getFullPath();
+    list_of_modules(this, depfiles_);
+    for (auto &f : depfiles_) {
+        if (f == thisfile) {
+            continue;
+        }
+        if (strstr(f.c_str(), "_cfg") == 0) {
+            // only configuration files in system verilog
+            continue;
+        }
+        fullPath2vector(f.c_str(), subs);
+        tstr = subs.back() + "_pkg";
+        lst.push_back(tstr);
+    }
+    tstr = getName() + "_pkg";
+    lst.push_back(tstr);
+}
+
 void FileObject::generate_sysv() {
     bool is_module = false;
     std::string out = "";
@@ -259,16 +280,30 @@ void FileObject::generate_sysv() {
         if (f == thisfile) {
             continue;
         }
+        if (strstr(f.c_str(), "_cfg") == 0) {
+            // only configuration files in system verilog
+            continue;
+        }
         fullPath2vector(f.c_str(), subs);
         out += "import " + subs.back() + "_pkg::*;\n";
     }
     out += "\n";
 
     // header
+    bool skip_pkg = false;
+    ModuleObject *mod;
+    std::list <GenObject *> tmplparlist;
     for (auto &p: entries_) {
         if (p->getId() == ID_MODULE) {
             is_module = true;
-            out += static_cast<ModuleObject *>(p)->generate_sv_pkg();
+            mod = static_cast<ModuleObject *>(p);
+            mod->getTmplParamList(tmplparlist);
+            if (tmplparlist.size()) {
+                // do not create package for template modules: queue, ram,  etc.
+                skip_pkg = true;
+            } else {
+                out += mod->generate_sv_pkg();
+            }
         } else {
             out += p->generate();
         }
@@ -276,8 +311,9 @@ void FileObject::generate_sysv() {
 
     out += "endpackage: " + getName() + "_pkg\n";
 
-    SCV_write_file(filename.c_str(), out.c_str(), out.size());
-
+    if (!skip_pkg) {
+        SCV_write_file(filename.c_str(), out.c_str(), out.size());
+    }
 
     // source file if any module defined in this file
     if (is_module) {

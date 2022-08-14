@@ -37,6 +37,8 @@ class FileObject : public GenObject,
     virtual std::string getType() { return std::string(""); }
     virtual std::string generate() override;
 
+    virtual void getPkgList(std::list<std::string> &lst);
+
  protected:
     void generate_sysc();
     void generate_sysv();
