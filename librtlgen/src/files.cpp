@@ -241,7 +241,7 @@ void FileObject::generate_sysc() {
     }
 }
 
-void FileObject::getPkgList(std::list<std::string> &lst) {
+void FileObject::getPkgList(std::list<std::string> &lst, size_t tmplsz) {
     std::string tstr;
     std::vector<std::string> subs;
     std::string thisfile = getFullPath();
@@ -258,8 +258,11 @@ void FileObject::getPkgList(std::list<std::string> &lst) {
         tstr = subs.back() + "_pkg";
         lst.push_back(tstr);
     }
-    tstr = getName() + "_pkg";
-    lst.push_back(tstr);
+    if (tmplsz == 0) {
+        // There's no _pkg file for the template modules
+        tstr = getName() + "_pkg";
+        lst.push_back(tstr);
+    }
 }
 
 void FileObject::generate_sysv() {

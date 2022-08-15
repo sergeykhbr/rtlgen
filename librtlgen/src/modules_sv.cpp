@@ -538,8 +538,8 @@ std::string ModuleObject::generate_sv_mod() {
     std::string ret = "";
     std::string text;
     std::string ln;
-    std::list<GenObject *> genparam;
-    getParamList(genparam);
+    std::list<GenObject *> tmplparam;
+    getTmplParamList(tmplparam);
 
     ret += "module " + getType();
 
@@ -593,7 +593,7 @@ std::string ModuleObject::generate_sv_mod() {
     // import statement:
     std::list<std::string> pkglst;
     FileObject *pf = static_cast<FileObject *>(getParent());
-    pf->getPkgList(pkglst);
+    pf->getPkgList(pkglst, tmplparam.size());
     for (auto &e: pkglst) {
         ret += "import " + e + "::*;\n";
     }
