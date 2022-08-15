@@ -158,31 +158,34 @@ std::string ModuleObject::generate_sv_pkg() {
 
 std::string ModuleObject::generate_sv_mod_genparam() {
     std::string ret = "";
+    std::string ln;
     int icnt = 0;
-    std::list<GenObject *> tmpllist;
     std::list<GenObject *> genparam;
-    getTmplParamList(tmpllist);
+    getTmplParamList(genparam);
     getParamList(genparam);
 
     if (isAsyncReset()) {
         ret += "    parameter bit async_reset = 1'b0";           // Mandatory generic parameter
+        if (genparam.size()) {
+            ret += ",";
+        }
         icnt++;
     }
 
-    for (auto &p : tmpllist) {
-        if (icnt++) {
-            ret += ",\n";
-        }
-        ret += "    parameter " + p->getType();
-        ret += " " + p->getName() + " = " + p->getStrValue();
-    }
-
     for (auto &p : genparam) {
-        if (icnt++) {
-            ret += ",\n";
+        ln = "    parameter " + p->getType();
+        ln += " " + p->getName() + " = " + p->getStrValue();
+
+        if (p != genparam.back()) {
+            ln += ",";
         }
-        ret += "    parameter " + p->getType();
-        ret += " " + p->getName() + " = " + p->getStrValue();
+        if (p->getComment().size()) {
+            while (ln.size() < 60) {
+                ln += " ";
+            }
+            ln += "// " + p->getComment();
+        }
+        ret += ln + "\n";
     }
 
     return ret;
@@ -549,7 +552,7 @@ std::string ModuleObject::generate_sv_mod() {
     ln = generate_sv_mod_genparam();
     if (ln.size()) {
         ret += " #(\n";
-        ret += ln + "\n";
+        ret += ln;
         ret += ")\n";
     }
 
