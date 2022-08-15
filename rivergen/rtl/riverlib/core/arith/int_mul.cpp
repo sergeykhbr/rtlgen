@@ -137,7 +137,7 @@ TEXT();
     IF (NZ(BIT(ena, 0)));
         
         i = &FOR("i", CONST("0"), CONST("32"), "++");
-            SETVAL(comb.wb_mux_lvl0, BITS(a2, INC(MUL2(CONST("2"), *i)), MUL2(CONST("2"), *i)));
+            SETVAL(comb.wb_mux_lvl0, BITSW(a2, MUL2(CONST("2"), *i), CONST("2")));
             IF (EQ(comb.wb_mux_lvl0, CONST("0", 2)));
                 SETARRITEM(comb.wb_lvl0, *i, comb.wb_lvl0, ALLZEROS());
             ELSIF (EQ(comb.wb_mux_lvl0, CONST("1", 2)));
@@ -147,13 +147,13 @@ TEXT();
             ELSE();
                 SETARRITEM(comb.wb_lvl0, *i, comb.wb_lvl0, 
                             ADDx(2, &CC2(CONST("0", 2), TO_BIG(66, a1)),
-                                    &CC2(TO_BIG(66, a1), CONST("0", 1))));
+                                    &CC3(CONST("0", 1), TO_BIG(66, a1), CONST("0", 1))));
             ENDIF();
         ENDFOR();
 
         i = &FOR ("i", CONST("0"),CONST("16"), "++");
-            SETARRITEM(lvl1, *i, lvl1, ADDx(2, &CC2(TO_BIG(69, ARRITEM(comb.wb_lvl0, INC(MUL2(CONST("2"), *i)), comb.wb_lvl0)), CONST("0", 2)),
-                                               &TO_BIG(69, ARRITEM(comb.wb_lvl0, MUL2(CONST("2"), *i), comb.wb_lvl0))));
+            SETARRITEM(lvl1, *i, lvl1, ADDx(2, &CC3(CONST("0", 1), TO_BIG(69, ARRITEM(comb.wb_lvl0, INC(MUL2(CONST("2"), *i)), comb.wb_lvl0)), CONST("0", 2)),
+                                               &CC2(CONST("0", 3), TO_BIG(69, ARRITEM(comb.wb_lvl0, MUL2(CONST("2"), *i), comb.wb_lvl0)))));
         ENDFOR();
     ENDIF();
 

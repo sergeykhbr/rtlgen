@@ -208,6 +208,8 @@ void CONNECT(GenObject &inst, GenObject *idx, GenObject &port, GenObject &s, con
 void ENDNEW(const char *comment="");
 
 // RTL specific not used in SystemC
+void INITIAL();
+void ENDINITIAL();
 void GENERATE(const char *name, const char *comment="");
 void ENDGENERATE(const char *name, const char *comment="");
 Operation &ASSIGNZERO(GenObject &a, const char *comment="");

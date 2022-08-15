@@ -21,7 +21,7 @@ Processor::Processor(GenObject *parent, const char *name) :
     hartid(this, "hartid", "0"),
     fpu_ena(this, "fpu_ena", "true"),
     tracer_ena(this, "tracer_ena", "true"),
-    trace_file(this, "trace_file", "trace_river_sysc.log"),
+    trace_file(this, "trace_file", "trace_river_sysc"),
     i_clk(this, "i_clk", "1", "CPU clock"),
     i_nrst(this, "i_nrst", "1", "Reset: active LOW"),
     _ControlPath0_(this, "Control path:"),
@@ -557,7 +557,8 @@ Processor::Processor(GenObject *parent, const char *name) :
         CONNECT(dbg0, 0, dbg0.i_m_valid, w.m.valid);
     ENDNEW();
 
-    IF (tracer_ena);
+    GENERATE("trgen");
+    IFGEN (tracer_ena, new STRING("tr_en"));
         NEW(trace0, trace0.getName().c_str());
             CONNECT(trace0, 0, trace0.i_clk, i_clk);
             CONNECT(trace0, 0, trace0.i_nrst, i_nrst);
@@ -582,7 +583,8 @@ Processor::Processor(GenObject *parent, const char *name) :
             CONNECT(trace0, 0, trace0.i_m_wdata, w.w.wdata);
             CONNECT(trace0, 0, trace0.i_reg_ignored, w_reg_ignored);
         ENDNEW();
-    ENDIF();
+    ENDIFGEN(new STRING("tr_en"));
+    ENDGENERATE("trgen");
 }
 
 void Processor::proc_comb() {

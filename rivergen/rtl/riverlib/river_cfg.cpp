@@ -23,6 +23,7 @@ river_cfg::river_cfg(GenObject *parent) :
     CFG_VENDOR_ID(this, "32", "CFG_VENDOR_ID", "0x000000F1"),
     CFG_IMPLEMENTATION_ID(this, "32", "CFG_IMPLEMENTATION_ID", "0x20220813"),
     CFG_HW_FPU_ENABLE(this, "CFG_HW_FPU_ENABLE", "true"),
+    CFG_TRACER_ENABLE(this, "CFG_TRACER_ENABLE", "false"),
     _1_(this),
     _arch0_(this, "Architectural size definition"),
     RISCV_ARCH(this, "RISCV_ARCH", "64"),

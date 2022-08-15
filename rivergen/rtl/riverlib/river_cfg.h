@@ -155,6 +155,7 @@ class river_cfg : public FileObject {
     ParamLogic CFG_VENDOR_ID;
     ParamLogic CFG_IMPLEMENTATION_ID;
     ParamBOOL CFG_HW_FPU_ENABLE;
+    ParamBOOL CFG_TRACER_ENABLE;
     TextLine _1_;
     TextLine _arch0_;
     ParamI32D RISCV_ARCH;

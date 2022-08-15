@@ -871,8 +871,27 @@ Operation &SETSTR(GenObject &a, const char *str, const char *comment) {
 // SETSTRF
 std::string SETSTRF_gen(GenObject **args) {
     std::string ret = Operation::addspaces();
-    ret += "RISCV_sprintf(tstr, sizeof(tstr), ";
-    ret += args[2]->getStrValue();  // fmt
+    std::string fmt;
+    if (SCV_is_sysc()) {
+        ret += "RISCV_sprintf(tstr, sizeof(tstr), ";
+    } else {
+        ret += Operation::obj2varname(args[1]);
+        if (args[4]) {
+            ret += " += ";
+        } else {
+            ret += " = ";
+        }
+        ret += "$sformatf(";
+    }
+    fmt = args[2]->getStrValue();
+    if (SCV_is_sv()) {
+        // Remove RV_PRI64 occurences:
+        const char *pos;
+        while (pos = strstr(fmt.c_str(), "\" RV_PRI64 \"")) {
+            fmt.erase(pos - fmt.c_str(), 12);
+        }
+    }
+    ret += fmt;
     size_t cnt = reinterpret_cast<size_t>(args[3]);
     Operation::set_space(Operation::get_space() + 2);
     if (cnt > 1) {
@@ -888,11 +907,13 @@ std::string SETSTRF_gen(GenObject **args) {
     }
     Operation::set_space(Operation::get_space() - 2);
     ret += ");\n";
-    ret += Operation::addspaces() + Operation::obj2varname(args[1]) + " ";
-    if (args[4]) {
-        ret += "+";
+    if (SCV_is_sysc()) {
+        ret += Operation::addspaces() + Operation::obj2varname(args[1]) + " ";
+        if (args[4]) {
+            ret += "+";
+        }
+        ret += "= std::string(tstr);\n";
     }
-    ret += "= std::string(tstr);\n";
     return ret;
 }
 
@@ -964,6 +985,8 @@ std::string TO_BIG_gen(GenObject **args) {
         RISCV_sprintf(tstr, sizeof(tstr), "%d", sz);
         A = "sc_biguint<" + std::string(tstr) + ">(";
         A += Operation::obj2varname(args[2], "r", true) + ")";
+    } else {
+        A += Operation::obj2varname(args[2], "r", true);
     }
     return A;
 }
@@ -1001,7 +1024,9 @@ Operation &TO_INT(GenObject &a, const char *comment) {
 // TO_U64
 std::string TO_U64_gen(GenObject **args) {
     std::string A = Operation::obj2varname(args[1], "r", true);
-    A = A + ".to_uint64()";
+    if (SCV_is_sysc()) {
+        A = A + ".to_uint64()";
+    }
     return A;
 }
 
@@ -1017,7 +1042,9 @@ Operation &TO_U64(GenObject &a, const char *comment) {
 // TO_CSTR
 std::string TO_CSTR_gen(GenObject **args) {
     std::string A = Operation::obj2varname(args[1], "r", true);
-    A = A + ".c_str()";
+    if (SCV_is_sysc()) {
+        A = A + ".c_str()";
+    }
     return A;
 }
 
@@ -1871,7 +1898,7 @@ std::string LSH_gen(GenObject **args) {
     if (SCV_is_sysc()) {
         A = "(" + A + " << " + B + ")";
     } else if (SCV_is_sv()) {
-        A = "{" + A + "," + B + "'d0}";
+        A = "(" + A + " << " + B + ")";
     } else {
     }
     return A;
@@ -1906,7 +1933,7 @@ std::string RSH_gen(GenObject **args) {
     if (SCV_is_sysc()) {
         A = "(" + A + " >> " + B + ")";
     } else if (SCV_is_sv()) {
-        A = "{" + B + "'d0, "+ A + "}";
+        A = "{'0, (" + A + " >> " + B + ")}";
     } else {
     }
     return A;
@@ -2429,7 +2456,12 @@ std::string WHILE_gen(GenObject **args) {
     } else {
         A = "(" + A + ")";
     }
-    ret += "while " + A + " {\n";
+    ret += "while " + A;
+    if (SCV_is_sysc()) {
+        ret += " {\n";
+    } else {
+        ret += " begin\n";
+    }
     return ret;
 }
 
@@ -2445,7 +2477,12 @@ void WHILE(GenObject &a, const char *comment) {
 // ENDWHILE
 std::string ENDWHILE_gen(GenObject **args) {
     spaces_--;
-    std::string ret = Operation::addspaces() + "}\n";
+    std::string ret = Operation::addspaces();
+    if (SCV_is_sysc()) {
+        ret += "}\n";
+    } else {
+        ret += "end\n";
+    }
     return ret;
 }
 
@@ -2517,12 +2554,20 @@ void CALLF(GenObject *ret, GenObject &a, size_t argcnt, ...) {
 std::string FOPEN_gen(GenObject **args) {
     std::string ret = Operation::addspaces();
     ret += Operation::obj2varname(args[1]);
-    ret += " = fopen(";
-    ret += Operation::obj2varname(args[2]);
-    if (args[2]->getType() == "std::string") {
-        ret += ".c_str()";
+    if (SCV_is_sysc()) {
+        ret += " = fopen(";
+        ret += Operation::obj2varname(args[2]);
+        if (args[2]->getType() == "std::string") {
+            ret += ".c_str()";
+        }
+        ret += ", \"wb\");\n";
+    } else {
+        ret += " = $fopen(" + Operation::obj2varname(args[2]) + ", \"w\");\n";
+        ret += Operation::addspaces() + "assert (" + Operation::obj2varname(args[1]) + ")\n";
+        ret += Operation::addspaces() + "else begin\n";
+        ret += Operation::addspaces() + "    $warning(\"Cannot open log-file\");\n";
+        ret += Operation::addspaces() + "end";
     }
-    ret += ", \"wb\");\n";
     return ret;
 }
 
@@ -2538,10 +2583,17 @@ void FOPEN(GenObject &f, GenObject &str) {
 // FWRITE
 std::string FWRITE_gen(GenObject **args) {
     std::string ret = Operation::addspaces();
-    ret += "fwrite(";
-    ret += Operation::obj2varname(args[2]) + ".c_str(), 1, ";
-    ret += Operation::obj2varname(args[2]) + ".size(), ";
-    ret += Operation::obj2varname(args[1]);
+    if (SCV_is_sysc()) {
+        ret += "fwrite(";
+        ret += Operation::obj2varname(args[2]) + ".c_str(), 1, ";
+        ret += Operation::obj2varname(args[2]) + ".size(), ";
+        ret += Operation::obj2varname(args[1]);
+    } else {
+        ret += "$fwrite(";
+        ret += Operation::obj2varname(args[1]);
+        ret += ", \"%s\", ";
+        ret += Operation::obj2varname(args[2]);
+    }
     ret += ");\n";
     return ret;
 }
@@ -2747,6 +2799,45 @@ void ENDNEW(const char *comment) {
     p->igen_ = ENDNEW_gen;
     p->add_arg(p);
 }
+
+// INITIAL
+std::string INITIAL_gen(GenObject **args) {
+    std::string ret = "";
+    if (SCV_is_sysc()) {
+        ret += Operation::addspaces() + "// initial\n";
+    } else {
+        ret += Operation::addspaces() + "initial begin\n";
+        Operation::set_space(Operation::get_space() + 1);
+    }
+    return ret;
+}
+
+void INITIAL() {
+    Operation *p = new Operation("");
+    Operation::push_obj(p);
+    p->igen_ = INITIAL_gen;
+    p->add_arg(p);
+}
+
+// ENDINITIAL
+std::string ENDINITIAL_gen(GenObject **args) {
+    std::string ret = "";
+    if (SCV_is_sysc()) {
+        ret += Operation::addspaces() + "// end initial\n";
+    } else {
+        Operation::set_space(Operation::get_space() - 1);
+        ret += Operation::addspaces() + "end\n";
+    }
+    return ret;
+}
+
+void ENDINITIAL() {
+    Operation::pop_obj();
+    Operation *p = new Operation("");
+    p->igen_ = ENDINITIAL_gen;
+    p->add_arg(p);
+}
+
 
 // GENERATE
 std::string GENERATE_gen(GenObject **args) {

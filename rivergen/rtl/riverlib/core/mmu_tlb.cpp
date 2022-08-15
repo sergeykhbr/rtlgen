@@ -38,7 +38,7 @@ MmuTlb::MmuTlb(GenObject *parent, const char *name) :
     // Create and connet Sub-modules:
     mem.changeTmplParameter("abits", "CFG_MMU_TLB_AWIDTH");
     mem.changeTmplParameter("dbits", "8");
-    GenObject &i = FOR ("i", CONST("0"), CONST("CFG_MMU_PTE_DBYTES"), "++");
+    GenObject &i = FORGEN ("i", CONST("0"), CONST("CFG_MMU_PTE_DBYTES"), "++", new STRING("memx"));
         NEW(*mem.arr_[0], mem.getName().c_str(), &i);
             CONNECT(mem, &i, mem->i_clk, i_clk);
             CONNECT(mem, &i, mem->i_adr, i_adr);
@@ -46,16 +46,16 @@ MmuTlb::MmuTlb(GenObject *parent, const char *name) :
             CONNECT(mem, &i, mem->i_wdata, ARRITEM(wb_mem_data, i, wb_mem_data->wdata));
             CONNECT(mem, &i, mem->o_rdata, ARRITEM(wb_mem_data, i, wb_mem_data->rdata));
         ENDNEW();
-    ENDFOR();
+    ENDFORGEN(new STRING("memx"));
 }
 
 void MmuTlb::proc_comb() {
     GenObject &i = FOR ("i", CONST("0"), CONST("CFG_MMU_PTE_DBYTES"), "++");
-        SETVAL(ARRITEM(wb_mem_data, i, wb_mem_data->wdata), BIG_TO_U64(BITS(i_wdata, DEC(MUL2(CONST("8"), INC(i))),
-                                                                                     MUL2(CONST("8"), i))));
-        SETBITS(comb.vb_rdata, DEC(MUL2(CONST("8"), INC(i))),
-                                   MUL2(CONST("8"), i),
-                               ARRITEM(wb_mem_data, i, wb_mem_data->rdata));
+        SETARRITEM(wb_mem_data, i, wb_mem_data->wdata,
+                  BIG_TO_U64(BITSW(i_wdata, MUL2(CONST("8"), i), CONST("8"))));
+        SETBITSW(comb.vb_rdata, MUL2(CONST("8"), i),
+                                CONST("8"),
+                                ARRITEM(wb_mem_data, i, wb_mem_data->rdata));
     ENDFOR();
     SETVAL(o_rdata, comb.vb_rdata);
 }

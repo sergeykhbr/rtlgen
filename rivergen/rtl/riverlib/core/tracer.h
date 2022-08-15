@@ -94,6 +94,7 @@ class Tracer : public ModuleObject {
     void proc_reg();
 
  public:
+    DefParamUI32D hartid;
     DefParamString trace_file;
     InPort i_clk;
     InPort i_nrst;
@@ -207,6 +208,7 @@ class Tracer : public ModuleObject {
     RegSignal tr_rcnt;
     RegSignal tr_total;
     RegSignal tr_opened;
+    STRING trfilename;  // formatted with hartid
     STRING outstr;
     STRING tracestr;
     FileValue fl;

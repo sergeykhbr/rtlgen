@@ -186,6 +186,136 @@ std::string ModuleObject::generate_sv_mod_genparam() {
     return ret;
 }
 
+std::string ModuleObject::generate_sv_mod_param_strings() {
+    std::string ret = "";
+    int tcnt = 0;
+    for (auto &p: getEntries()) {
+        if (p->getId() != ID_PARAM) {
+            continue;
+        }
+        if (!static_cast<GenValue *>(p)->isLocal()) {
+            continue;
+        }
+        if (p->getType() != "std::string") {
+            continue;
+        }
+        ret += "localparam string " + p->getName();
+        ret += " = " + p->getStrValue() + ";\n";
+
+        tcnt++;
+    }
+    for (auto &p: getEntries()) {
+        if (p->getId() != ID_ARRAY_STRING) {
+            continue;
+        }
+        ret += "localparam string " + p->getName() + "[0: " + p->getStrDepth() +"-1]";
+        ret += " = '{\n";
+        for (auto &e: p->getEntries()) {
+            ret += "    \"" + e->getName() + "\"";
+            if (e != p->getEntries().back()) {
+                ret += ",";
+            }
+            ret += "\n";
+        }
+        ret += "};\n";
+        tcnt++;
+    }
+    if (tcnt) {
+        ret += "\n";
+    }
+    return ret;
+}
+
+std::string ModuleObject::generate_sv_mod_func(GenObject *func) {
+    std::string ret = "";
+    std::list<GenObject *> argslist;
+    FunctionObject *pf = static_cast<FunctionObject *>(func);
+    int tcnt = 0;
+    
+    pf->getArgsList(argslist);
+
+    ret += "function " + func->getType() + " " + func->getName() + "(";
+    if (argslist.size() == 1) {
+        for (auto &e: argslist) {
+            ret += "input " + e->getType() + " " + e->getName();
+        }
+    } else if (argslist.size() > 1) {
+        Operation::set_space(Operation::get_space() + 2);
+        ret += "\n" + Operation::addspaces();
+        for (auto &e: argslist) {
+            ret += "input " + e->getType() + " " + e->getName();
+            if (e != argslist.back()) {
+                ret += ",\n" + Operation::addspaces();
+            }
+        }
+        Operation::set_space(Operation::get_space() - 2);
+    }
+    ret += ");\n";
+    
+    // process variables declaration
+    if (pf->getpReturn()) {
+        ret += pf->getpReturn()->getType() + " "
+             + pf->getpReturn()->getName() + ";\n";
+    }
+    ret += "begin\n";
+    tcnt = 0;
+    bool skiparg;
+    for (auto &e: func->getEntries()) {
+        skiparg = false;
+        for (auto &arg: argslist) {
+            if (e->getName() == arg->getName()) {
+                skiparg = true;
+                break;
+            }
+        }
+        if (e->getName() == pf->getpReturn()->getName()) {
+            skiparg = true;
+        }
+        if (skiparg) {
+            continue;
+        }
+
+        if (e->getId() == ID_VALUE) {
+            ret += "    " + e->getType() + " " + e->getName();
+            tcnt++;
+        } else if (e->getId() == ID_ARRAY_DEF) {
+            ret += "    " + e->getType() + " " + e->getName();
+            ret += "[";
+            ret += e->getStrDepth();
+            ret += "]";
+        } else if (e->getId() == ID_STRUCT_INST) {
+            ret += "    " + e->getType() + " " + e->getName();
+        } else {
+            continue;
+        }
+        tcnt++;
+        ret += ";\n";
+    }
+    if (tcnt) {
+        ret += "\n";
+        tcnt = 0;
+    }
+
+    // Generate operations:
+    Operation::set_space(1);
+    for (auto &e: func->getEntries()) {
+        if (e->getId() != ID_OPERATION) {
+            continue;
+        }
+        ret += e->generate();
+    }
+
+    // return value
+    if (static_cast<FunctionObject *>(func)->getpReturn()) {
+        ret += "    return " + static_cast<FunctionObject *>(func)->getpReturn()->getName() + ";\n";
+    }
+
+    ret += "end\n";
+    ret += "endfunction: " + pf->getName() + "\n";
+    ret += "\n";
+    return ret;
+}
+
 std::string ModuleObject::generate_sv_mod_signals() {
     std::string ret = "";
     std::string ln;
@@ -356,6 +486,7 @@ std::string ModuleObject::generate_sv_mod_proc_registers() {
         out += Operation::addspaces();
         out += "end\n";
 
+        // additional operation on posedge clock events
         for (auto &e: getEntries()) {
             if (e->getId() != ID_PROCESS || e->getName() != "registers") {
                 continue;
@@ -380,6 +511,16 @@ std::string ModuleObject::generate_sv_mod_proc_registers() {
     out += Operation::addspaces() + "always_ff @(posedge i_clk) begin: rg_proc\n";
     Operation::set_space(Operation::get_space() + 1);
     out += Operation::copyreg("r", "rin", this);
+    // additional operation on posedge clock events
+    for (auto &e: getEntries()) {
+        if (e->getId() != ID_PROCESS || e->getName() != "registers") {
+            continue;
+        }
+        out += "\n";
+        for (auto &r: e->getEntries()) {
+            out += r->generate();
+        }
+    }
     Operation::set_space(Operation::get_space() - 1);
     out += Operation::addspaces() + "end: rg_proc\n";
     out += "\n";
@@ -465,8 +606,21 @@ std::string ModuleObject::generate_sv_mod() {
         ret += generate_sv_pkg();
     }
 
+    // static strings
+    Operation::set_space(0);
+    ret += generate_sv_mod_param_strings();
+
     // Signal list:
     ret += generate_sv_mod_signals();
+
+    // Functions
+    for (auto &p: entries_) {
+        if (p->getId() != ID_FUNCTION) {
+            continue;
+        }
+        Operation::set_space(0);
+        ret += generate_sv_mod_func(p);
+    }
 
     // Sub-module instantiation
     Operation::set_space(0);

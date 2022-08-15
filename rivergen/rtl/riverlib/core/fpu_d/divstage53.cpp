@@ -45,11 +45,11 @@ void divstage53::proc_comb() {
 TEXT();
     TEXT("stage 1 of 4");
     SETARRITEM(wb_thresh, 15, SUB2(CC2(CONST("0", 1), i_divident),
-                                   CC2(TO_U64(comb.wb_divx3), CONST("0", 6))));
+                                   CC3(CONST("0", 1), TO_U64(comb.wb_divx3), CONST("0", 6))));
     SETARRITEM(wb_thresh, 14, SUB2(CC2(CONST("0", 1), i_divident),
-                                   CC2(TO_U64(comb.wb_divx2), CONST("0", 6))));
+                                   CC3(CONST("0", 1), TO_U64(comb.wb_divx2), CONST("0", 6))));
     SETARRITEM(wb_thresh, 13, SUB2(CC2(CONST("0", 1), i_divident),
-                                   CC2(TO_U64(i_divisor), CONST("0", 6))));
+                                   CC3(CONST("0", 3), TO_U64(i_divisor), CONST("0", 6))));
     SETARRITEM(wb_thresh, 12, CC2(CONST("0", 1), i_divident));
 
 TEXT();
@@ -73,11 +73,11 @@ TEXT();
     // wb_divx3, wb_divx2 55 bits
     TEXT("stage 2 of 4");
     SETARRITEM(wb_thresh, 11, SUB2(CC2(CONST("0", 1), ARRITEM(wb_dif, 0)),
-                                   CC2(TO_U64(comb.wb_divx3), CONST("0", 4))));
+                                   CC3(CONST("0", 3), TO_U64(comb.wb_divx3), CONST("0", 4))));
     SETARRITEM(wb_thresh, 10, SUB2(CC2(CONST("0", 1), ARRITEM(wb_dif, 0)),
-                                   CC2(TO_U64(comb.wb_divx2), CONST("0", 4))));
+                                   CC3(CONST("0", 3), TO_U64(comb.wb_divx2), CONST("0", 4))));
     SETARRITEM(wb_thresh, 9, SUB2(CC2(CONST("0", 1), ARRITEM(wb_dif, 0)),
-                                  CC2(TO_U64(i_divisor), CONST("0", 4))));
+                                  CC3(CONST("0", 5), TO_U64(i_divisor), CONST("0", 4))));
     SETARRITEM(wb_thresh, 8, CC2(CONST("0", 1), ARRITEM(wb_dif, 0)));
 
 TEXT();
@@ -99,11 +99,11 @@ TEXT();
 TEXT();
     TEXT("stage 3 of 4");
     SETARRITEM(wb_thresh, 7, SUB2(CC2(CONST("0", 1), ARRITEM(wb_dif, 1)),
-                                   CC2(TO_U64(comb.wb_divx3), CONST("0", 2))));
+                                  CC3(CONST("0", 5), TO_U64(comb.wb_divx3), CONST("0", 2))));
     SETARRITEM(wb_thresh, 6, SUB2(CC2(CONST("0", 1), ARRITEM(wb_dif, 1)),
-                                   CC2(TO_U64(comb.wb_divx2), CONST("0", 2))));
+                                  CC3(CONST("0", 5), TO_U64(comb.wb_divx2), CONST("0", 2))));
     SETARRITEM(wb_thresh, 5, SUB2(CC2(CONST("0", 1), ARRITEM(wb_dif, 1)),
-                                  CC2(TO_U64(i_divisor), CONST("0", 2))));
+                                  CC3(CONST("0", 7), TO_U64(i_divisor), CONST("0", 2))));
     SETARRITEM(wb_thresh, 4, CC2(CONST("0", 1), ARRITEM(wb_dif, 1)));
 
     IF (EZ(BIT(ARRITEM(wb_thresh, 7), 61)));
@@ -123,11 +123,11 @@ TEXT();
 TEXT();
     TEXT("stage 4 of 4");
     SETARRITEM(wb_thresh, 3, SUB2(CC2(CONST("0", 1), ARRITEM(wb_dif, 2)),
-                                  TO_U64(comb.wb_divx3)));
+                                  CC2(CONST("0", 7), TO_U64(comb.wb_divx3))));
     SETARRITEM(wb_thresh, 2, SUB2(CC2(CONST("0", 1), ARRITEM(wb_dif, 2)),
-                                  TO_U64(comb.wb_divx2)));
+                                  CC2(CONST("0", 7), TO_U64(comb.wb_divx2))));
     SETARRITEM(wb_thresh, 1, SUB2(CC2(CONST("0", 1), ARRITEM(wb_dif, 2)),
-                                  TO_U64(i_divisor)));
+                                  CC2(CONST("0", 9), TO_U64(i_divisor))));
     SETARRITEM(wb_thresh, 0, CC2(CONST("0", 1), ARRITEM(wb_dif, 2)));
 
     IF (EZ(BIT(ARRITEM(wb_thresh, 3), 61)));

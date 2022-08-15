@@ -18,6 +18,7 @@
 
 Tracer::Tracer(GenObject *parent, const char *name) :
     ModuleObject(parent, "Tracer", name),
+    hartid(this, "hartid", "0"),
     trace_file(this, "trace_file", "trace_river_sysc"),
     i_clk(this, "i_clk", "1", "CPU clock"),
     i_nrst(this, "i_nrst", "1", "Reset: active LOW"),
@@ -56,6 +57,7 @@ Tracer::Tracer(GenObject *parent, const char *name) :
     tr_total(this, "tr_total", "TRACE_TBL_ABITS"),
     tr_opened(this, "tr_opened", "TRACE_TBL_ABITS"),
     outstr("", "outstr", this),
+    trfilename("", "trfilename", this, "formatted string name with hartid"),
     tracestr("", "tracestr", this),
     fl("", "fl", this),
     // functions
@@ -67,7 +69,10 @@ Tracer::Tracer(GenObject *parent, const char *name) :
 {
     trace_tbl.disableVcd();
     Operation::start(this);
-    FOPEN(fl, trace_file);
+    INITIAL();
+        SETSTRF(trfilename, "%s%d.log", 2, &trace_file, &hartid);
+        FOPEN(fl, trfilename);
+    ENDINITIAL();
 
     Operation::start(&comb);
     proc_comb();
@@ -832,19 +837,19 @@ Tracer::FunctionTaskDisassembler::FunctionTaskDisassembler(GenObject *parent)
         CASE (CONST("0x73", 7));
             SWITCH (BITS(instr, 14, 12));
             CASE (CONST("0", 3));
-                IF (EQ(instr, CONST("00000073", 32)));
+                IF (EQ(instr, CONST("0x00000073", 32)));
                     SETSTRF(ostr, "%10s", 1, new STRING("ecall"));
-                ELSIF (EQ(instr, CONST("00100073", 32)));
+                ELSIF (EQ(instr, CONST("0x00100073", 32)));
                     SETSTRF(ostr, "%10s", 1, new STRING("ebreak"));
-                ELSIF (EQ(instr, CONST("00200073", 32)));
+                ELSIF (EQ(instr, CONST("0x00200073", 32)));
                     SETSTRF(ostr, "%10s", 1, new STRING("uret"));
-                ELSIF (EQ(instr, CONST("10200073", 32)));
+                ELSIF (EQ(instr, CONST("0x10200073", 32)));
                     SETSTRF(ostr, "%10s", 1, new STRING("sret"));
-                ELSIF (EQ(instr, CONST("10500073", 32)));
+                ELSIF (EQ(instr, CONST("0x10500073", 32)));
                     SETSTRF(ostr, "%10s", 1, new STRING("wfi"));
-                ELSIF (EQ(instr, CONST("20200073", 32)));
+                ELSIF (EQ(instr, CONST("0x20200073", 32)));
                     SETSTRF(ostr, "%10s", 1, new STRING("hret"));
-                ELSIF (EQ(instr, CONST("30200073", 32)));
+                ELSIF (EQ(instr, CONST("0x30200073", 32)));
                     SETSTRF(ostr, "%10s", 1, new STRING("mret"));
                 ELSE();
                     SETSTRF(ostr, "%10s", 1, new STRING("ERROR"));

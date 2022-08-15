@@ -107,7 +107,7 @@ TEXT();
         SETONE(comb.mant05);
     ENDIF();
     SETVAL(comb.rndBit, AND2(BIT(mantAlign, 10), INV(AND2(comb.mant05, comb.mantEven))));
-    IF (EQ(BITS(mantAlign, 63, 11), CONST("0x001fffffffffffff", 52)));
+    IF (EQ(BITS(mantAlign, 63, 11), CONST("0x000fffffffffffff", 52)));
         SETONE(comb.mantOnes);
     ENDIF();
 
