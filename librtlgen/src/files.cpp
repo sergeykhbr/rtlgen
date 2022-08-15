@@ -18,6 +18,7 @@
 #include "comments.h"
 #include "modules.h"
 #include "utils.h"
+#include <cstring>
 
 namespace sysvc {
 
@@ -113,12 +114,14 @@ void FileObject::list_of_modules(GenObject *p, std::list<std::string> &fpath) {
     }
 
     // search file owner of the module
+    std::string tstr;
     while (f) {
         if (f->getId() != ID_FILE) {
             f = f->getParent();
             continue;
         }
-        notifyAccess(f->getFullPath());
+        tstr = f->getFullPath();
+        notifyAccess(tstr);
         break;
     }
 

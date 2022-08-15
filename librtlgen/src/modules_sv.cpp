@@ -67,6 +67,7 @@ std::string ModuleObject::generate_sv_pkg_localparam() {
 std::string ModuleObject::generate_sv_pkg_struct() {
     std::string ret = "";
     std::string ln = "";
+    std::string tstr;
     int tcnt = 0;
 
     // struct definitions
@@ -120,7 +121,8 @@ std::string ModuleObject::generate_sv_pkg_struct() {
                     continue;
                 }
                 ln = "    ";
-                if (p->isNumber(p->getStrValue()) && p->getValue() == 0) {
+                tstr = p->getStrValue();    // to provide compatibility with gcc
+                if (p->isNumber(tstr) && p->getValue() == 0) {
                     if (p->getWidth() == 1) {
                         ln += "1'b0";
                     } else {

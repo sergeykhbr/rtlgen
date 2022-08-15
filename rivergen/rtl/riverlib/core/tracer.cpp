@@ -70,6 +70,7 @@ Tracer::Tracer(GenObject *parent, const char *name) :
     trace_tbl.disableVcd();
     Operation::start(this);
     INITIAL();
+        DECLARE_TSTR();
         SETSTRF(trfilename, "%s%d.log", 2, &trace_file, &hartid);
         FOPEN(fl, trfilename);
     ENDINITIAL();

@@ -118,6 +118,7 @@ Operation &SETSTR(GenObject &a, const char *str, const char *comment="");
 Operation &SETSTRF(GenObject &a, const char *fmt, size_t cnt, ...);
 Operation &ADDSTRF(GenObject &a, const char *fmt, size_t cnt, ...);
 Operation &TO_INT(GenObject &a, const char *comment="");
+Operation &TO_U32(GenObject &a, const char *comment="");
 Operation &TO_U64(GenObject &a, const char *comment="");
 Operation &TO_CSTR(GenObject &a, const char *comment="");
 Operation &BIG_TO_U64(GenObject &a, const char *comment="");        // explicit conersion of biguint to uint64 (sysc only)
@@ -208,6 +209,7 @@ void CONNECT(GenObject &inst, GenObject *idx, GenObject &port, GenObject &s, con
 void ENDNEW(const char *comment="");
 
 // RTL specific not used in SystemC
+void DECLARE_TSTR();    // declare temporary string buffer
 void INITIAL();
 void ENDINITIAL();
 void GENERATE(const char *name, const char *comment="");

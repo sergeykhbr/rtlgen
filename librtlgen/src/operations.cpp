@@ -19,6 +19,7 @@
 #include "utils.h"
 #include "modules.h"
 #include "comments.h"
+#include <cstring>
 
 namespace sysvc {
 
@@ -221,7 +222,7 @@ std::string Operation::copyreg_entry(char *idx, std::string dst, std::string src
         }
         if (src.size() == 0) {
             // reset
-            if (p->getWidth() > 64 && p->getValue() == 0) {
+            if (SCV_is_sv() && p->getWidth() > 64 && p->getValue() == 0) {
                 ret += "'0";
             } else {
                 ret += p->getStrValue();
@@ -1021,6 +1022,24 @@ Operation &TO_INT(GenObject &a, const char *comment) {
     return *p;
 }
 
+// TO_U32
+std::string TO_U32_gen(GenObject **args) {
+    std::string A = Operation::obj2varname(args[1], "r", true);
+    if (SCV_is_sysc()) {
+        A = A + ".to_uint()";
+    }
+    return A;
+}
+
+Operation &TO_U32(GenObject &a, const char *comment) {
+    Operation *p = new Operation(0, comment);
+    p->setWidth(32);
+    p->igen_ = TO_U32_gen;
+    p->add_arg(p);
+    p->add_arg(&a);
+    return *p;
+}
+
 // TO_U64
 std::string TO_U64_gen(GenObject **args) {
     std::string A = Operation::obj2varname(args[1], "r", true);
@@ -1032,7 +1051,7 @@ std::string TO_U64_gen(GenObject **args) {
 
 Operation &TO_U64(GenObject &a, const char *comment) {
     Operation *p = new Operation(0, comment);
-    p->setWidth(32);
+    p->setWidth(64);
     p->igen_ = TO_U64_gen;
     p->add_arg(p);
     p->add_arg(&a);
@@ -1524,7 +1543,7 @@ Operation &AND_REDUCE(GenObject &a, const char *comment) {
 
 // OR_REDUCE
 std::string OR_REDUCE_gen(GenObject **args) {
-    std::string A = Operation::obj2varname(args[1]);
+    std::string A = Operation::obj2varname(args[1], "r", true);
     if (SCV_is_sysc()) {
         A += ".or_reduce()";
     } else {
@@ -1847,7 +1866,16 @@ std::string CC3_gen(GenObject **args) {
     std::string B = Operation::obj2const(args[2]);
     std::string C = Operation::obj2const(args[3]);
     if (SCV_is_sysc()) {
-        A = "(" + A + ", " + B + ", " + C + ")";
+        if (args[1]->getId() == ID_CONST && args[1]->getValue() == 0
+            && args[3]->getId() == ID_CONST) {
+            int w = args[2]->getWidth();
+            A = "(" + B + " << " + args[3]->getStrWidth() + ")";
+            if (args[3]->getValue() != 0) {
+                A = "(" + A + " | " + args[3]->getStrValue() + ")";
+            }
+        } else {
+            A = "(" + A + ", " + B + ", " + C + ")";
+        }
     } else {
         A = "{" + A + ", " + B + ", " + C + "}";
     }
@@ -2797,6 +2825,21 @@ void ENDNEW(const char *comment) {
     Operation::pop_obj();
     Operation *p = new Operation(comment);
     p->igen_ = ENDNEW_gen;
+    p->add_arg(p);
+}
+
+// DECLARE_TSTR
+std::string DECLARE_TSTR_gen(GenObject **args) {
+    std::string ret = "";
+    if (SCV_is_sysc()) {
+        ret += Operation::addspaces() + "char tstr[256];\n";
+    }
+    return ret;
+}
+
+void DECLARE_TSTR() {
+    Operation *p = new Operation("");
+    p->igen_ = DECLARE_TSTR_gen;
     p->add_arg(p);
 }
 

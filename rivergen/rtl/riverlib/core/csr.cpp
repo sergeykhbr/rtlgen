@@ -433,9 +433,9 @@ TEXT();
         TEXT("    MODE = 9 Sv48. Page based 48-bit virtual addressing");
         SETBITS(comb.vb_rdata, 43, 0, satp_ppn);
         SETBITS(comb.vb_rdata, 63, 60, satp_mode);
-        IF (AND2(NZ(comb.v_csr_wena),
-                 OR2(EZ(BITS(cmd_data, 63, 60)),
-                     EQ(BITS(cmd_data, 63, 60), SATP_MODE_SV48))));
+        IF (ANDx(2, &NZ(comb.v_csr_wena),
+                    &ORx(2, &EZ(BITS(cmd_data, 63, 60)),
+                            &EQ(TO_U32(BITS(cmd_data, 63, 60)), SATP_MODE_SV48))));
             SETVAL(satp_ppn, BITS(cmd_data, 43, 0));
             SETVAL(satp_mode, BITS(cmd_data, 63, 60));
         ENDIF();

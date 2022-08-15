@@ -21,6 +21,7 @@
 #include "signals.h"
 #include "utils.h"
 #include "params.h"
+#include "modules.h"
 #include <iostream>
 #include <list>
 
