@@ -51,5 +51,72 @@ void lrunway::proc_comb() {
     river_cfg *cfg = glob_river_cfg_;
     GenObject *i;
 
+    SETVAL(radr, i_raddr);
+    SETVAL(comb.vb_tbl_rdata, ARRITEM(tbl, TO_INT(radr), tbl));
+
+TEXT();
+    SETVAL(comb.v_we, OR3(i_up, i_down, i_init));
+
+TEXT();
+    TEXT("init table value");
+    i = &FOR ("i", CONST("0"), WAYS_TOTAL, "++");
+        SETBITSW(comb.vb_tbl_wdata_init, MUL2(*i, waybits), waybits, *i);
+    ENDFOR();
+
+TEXT();
+    TEXT("LRU next value, last used goes on top");
+    SETVAL(comb.vb_tbl_wdata_up, comb.vb_tbl_rdata);
+    IF (NE(BITSW(comb.vb_tbl_rdata, SUB2(LINE_WIDTH, waybits), waybits), i_lru));
+        SETBITSW(comb.vb_tbl_wdata_up, SUB2(LINE_WIDTH, waybits), waybits, i_lru);
+        SETONE(comb.shift_ena_up);
+
+TEXT();
+        i= &FOR ("i", SUB2(WAYS_TOTAL, CONST("2")), CONST("0"), "--");
+            IF (NZ(comb.shift_ena_up));
+                SETBITSW(comb.vb_tbl_wdata_up, MUL2(*i, waybits), waybits,
+                        BITSW(comb.vb_tbl_rdata, MUL2(INC(*i), waybits), waybits));
+                IF (EQ(BITSW(comb.vb_tbl_rdata, MUL2(*i, waybits), waybits), i_lru));
+                    SETZERO(comb.shift_ena_up);
+                ENDIF();
+            ENDIF();
+        ENDFOR();
+    ENDIF();
+
+TEXT();
+    TEXT("LRU next value when invalidate, marked as 'invalid' goes down");
+    SETVAL(comb.vb_tbl_wdata_down, comb.vb_tbl_rdata);
+    IF (NE(BITS(comb.vb_tbl_rdata, DEC(waybits), CONST("0")), i_lru));
+        SETBITS(comb.vb_tbl_wdata_down, DEC(waybits), CONST("0"), i_lru);
+        SETONE(comb.shift_ena_down);
+
+        TEXT();
+        i = &FOR ("i", CONST("1"), WAYS_TOTAL, "++");
+            IF (NZ(comb.shift_ena_down));
+                SETBITSW(comb.vb_tbl_wdata_down, MUL2(*i, waybits), waybits,
+                        BITSW(comb.vb_tbl_rdata, MUL2(DEC(*i), waybits), waybits));
+                IF (EQ(BITSW(comb.vb_tbl_rdata, MUL2(*i, waybits), waybits), i_lru));
+                    SETZERO(comb.shift_ena_down);
+                ENDIF();
+            ENDIF();
+        ENDFOR();
+    ENDIF();
+
+TEXT();
+    IF (NZ(i_init));
+        SETVAL(comb.vb_tbl_wdata, comb.vb_tbl_wdata_init);
+    ELSIF (NZ(i_up));
+        SETVAL(comb.vb_tbl_wdata, comb.vb_tbl_wdata_up);
+    ELSIF (NZ(i_down));
+        SETVAL(comb.vb_tbl_wdata, comb.vb_tbl_wdata_down);
+    ELSE();
+        SETZERO(comb.vb_tbl_wdata);
+    ENDIF();
+
+TEXT();
+    IF (NZ(comb.v_we));
+        SETARRITEM(tbl, TO_INT(i_waddr), tbl, comb.vb_tbl_wdata);
+    ENDIF();
+
+    SETVAL(o_lru, BITS(comb.vb_tbl_rdata, DEC(waybits), CONST("0")));
 }
 

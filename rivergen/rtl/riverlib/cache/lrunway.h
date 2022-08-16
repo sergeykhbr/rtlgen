@@ -32,18 +32,27 @@ class lrunway : public ModuleObject {
      public:
         CombProcess(GenObject *parent) :
             ProcObject(parent, "comb"),
-            nempty(this, "nempty", "1"),
-            vb_data_o(this, "vb_data_o", "dbits"),
-            full(this, "full", "1"),
-            show_full(this, "show_full", "1")
-        {
+            vb_tbl_rdata(this, "wb_tbl_rdata", "LINE_WIDTH"),
+            vb_tbl_wadr(this, "vb_tbl_wadr", "abits"),
+            vb_tbl_wdata_init(this, "vb_tbl_wdata_init", "LINE_WIDTH"),
+            vb_tbl_wdata_up(this, "vb_tbl_wdata_up", "LINE_WIDTH"),
+            vb_tbl_wdata_down(this, "vb_tbl_wdata_down", "LINE_WIDTH"),
+            vb_tbl_wdata(this, "vb_tbl_wdata", "LINE_WIDTH"),
+            v_we(this, "v_we", "1"),
+            shift_ena_up(this, "shift_ena_up", "1"),
+            shift_ena_down(this, "shift_ena_down", "1") {
         }
 
      public:
-        Logic nempty;
-        Logic vb_data_o;
-        Logic full;
-        Logic show_full;
+        Logic vb_tbl_rdata;
+        Logic vb_tbl_wadr;
+        Logic vb_tbl_wdata_init;
+        Logic vb_tbl_wdata_up;
+        Logic vb_tbl_wdata_down;
+        Logic vb_tbl_wdata;
+        Logic v_we;
+        Logic shift_ena_up;
+        Logic shift_ena_down;
     };
 
     void proc_comb();
@@ -64,7 +73,6 @@ class lrunway : public ModuleObject {
     ParamI32D LINES_TOTAL;
     ParamI32D WAYS_TOTAL;
     ParamI32D LINE_WIDTH;
-
 
     RegSignal radr;
     WireArray<Signal> tbl;
