@@ -38,14 +38,26 @@ std::string ModuleObject::generate_sysc_h() {
 
     getTmplParamList(tmpllist);
     if (tmpllist.size()) {
-        out += "template<";
+        ln = "template<";
         for (auto &e: tmpllist) {
-            if (tcnt++) {
-                out += ", ";
+            if (e != tmpllist.front()) {
+                ln += "         ";
             }
-            out += e->getType() + " " + e->getName() + " = " + e->getStrValue();
+            ln += e->getType() + " " + e->getName() + " = " + e->getStrValue();
+            if (e != tmpllist.back()) {
+                ln += ",";
+            } else {
+                ln += ">";
+            }
+            if (e->getComment().size()) {
+                while (ln.size() < 60) {
+                    ln += " ";
+                }
+                ln += "// " + e->getComment();
+            }
+            out += ln + "\n";
+            ln = "";
         }
-        out += ">\n";
     }
 
     tcnt = 0;

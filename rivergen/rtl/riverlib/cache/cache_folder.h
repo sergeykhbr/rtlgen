@@ -19,6 +19,7 @@
 #include <api.h>
 #include "mem/mem_folder.h"
 #include "lrunway.h"
+#include "tagmem.h"
 #include "cache_top.h"
 
 class cache_folder : public FolderObject {
@@ -27,6 +28,7 @@ class cache_folder : public FolderObject {
         FolderObject(parent, "cache"),
         mem_folder_(this),
         lrunway_(this),
+        tagmem_(this),
         cache_top_(this) {}
 
  protected:
@@ -34,5 +36,6 @@ class cache_folder : public FolderObject {
     mem_folder mem_folder_;
     // files
     lrunway_file lrunway_;
+    tagmem_file tagmem_;
     cache_top_file cache_top_;
 };
