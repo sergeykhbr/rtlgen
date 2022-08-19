@@ -22,6 +22,7 @@
 #include "tagmem.h"
 #include "tagmemnway.h"
 #include "tagmemcoupled.h"
+#include "mpu.h"
 #include "cache_top.h"
 
 class cache_folder : public FolderObject {
@@ -33,6 +34,7 @@ class cache_folder : public FolderObject {
         tagmem_(this),
         tagmemnway_(this),
         tagmemcoupled_(this),
+        mpu_(this),
         cache_top_(this) {}
 
  protected:
@@ -43,5 +45,6 @@ class cache_folder : public FolderObject {
     tagmem_file tagmem_;
     tagmemnway_file tagmemnway_;
     tagmemcoupled_file tagmemcoupled_;
+    mpu_file mpu_;
     cache_top_file cache_top_;
 };
