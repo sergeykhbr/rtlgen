@@ -19,21 +19,27 @@
 TagMemNWay::TagMemNWay(GenObject *parent,
                const char *name,
                const char *gen_abus, 
+               const char *gen_waybits, 
                const char *gen_ibits, 
                const char *gen_lnbits, 
                const char *gen_flbits,
                const char *gen_snoop) :
     ModuleObject(parent, "TagMemNWay", name),
     abus(this, "abus", gen_abus, "system bus address width (64 or 32 bits)"),
+    waybits(this, "waybits", gen_waybits, "log2 of number of ways bits (2 for 4 ways cache; 3 for 8 ways)"),
     ibits(this, "ibits", gen_ibits, "lines memory address width (usually 6..8)"),
     lnbits(this, "lnbits", gen_lnbits, "One line bits: log2(bytes_per_line)"),
     flbits(this, "flbits", gen_flbits, "total flags number saved with address tag"),
     snoop(this, "snoop", gen_snoop, "0 Snoop port disabled; 1 Enabled (L2 caching)"),
     i_clk(this, "i_clk", "1", "CPU clock"),
     i_nrst(this, "i_nrst", "1", "Reset: active LOW"),
+    i_direct_access(this, "i_direct_access", "1", "lsb bits of address forms way index to access"),
+    i_invalidate(this, "i_invalidate", "1"),
+    i_re(this, "i_re", "1"),
+    i_we(this, "i_we", "1"),
     i_addr(this, "i_addr", "abus"),
-    i_wstrb(this, "i_wstrb", "POW2(1,lnbits)"),
     i_wdata(this, "i_wdata", "MUL(8,POW2(1,lnbits))"),
+    i_wstrb(this, "i_wstrb", "POW2(1,lnbits)"),
     i_wflags(this, "i_wflags", "flbits"),
     o_raddr(this, "o_raddr", "abus"),
     o_rdata(this, "o_rdata", "MUL(8,POW2(1,lnbits))"),
@@ -41,64 +47,67 @@ TagMemNWay::TagMemNWay(GenObject *parent,
     o_hit(this, "o_hit", "1"),
     _snoop0_(this, "L2 snoop port, active when snoop = 1"),
     i_snoop_addr(this, "i_snoop_addr", "abus"),
+    o_snoop_ready(this, "o_snoop_ready", "1", "single port memory not used for writing"),
     o_snoop_flags(this, "o_snoop_flags", "flbits"),
-    TAG_BITS(this, "TAG_BITS", "SUB(SUB(abus,ibits),lnbits))"),
-    TAG_WITH_FLAGS(this, "TAG_WITH_FLAGS", "ADD(TAG_BITS,flbits)"),
-    wb_index(this, "wb_index", "ibits"),
-    wb_datao_rdata(this, "wb_datao_rdata", "8", "POW2(1,lnbits)"),
-    wb_datai_wdata(this, "wb_datai_wdata", "8", "POW2(1,lnbits)"),
-    w_datai_we(this, "w_datai_we", "8", "POW2(1,lnbits)"),
-    wb_tago_rdata(this, "wb_tago_rdata", "TAG_WITH_FLAGS"),
-    wb_tagi_wdata(this, "wb_tagi_wdata", "TAG_WITH_FLAGS"),
-    w_tagi_we(this, "w_tagi_we", "1"),
-    wb_snoop_index(this, "wb_snoop_index", "ibits"),
-    wb_snoop_tagaddr(this, "wb_snoop_tagaddr", "TAG_BITS"),
-    wb_tago_snoop_rdata(this, "wb_tago_snoop_rdata", "TAG_WITH_FLAGS"),
-    tagaddr(this, "tagaddr", "TAG_BITS", "0"),
-    index(this, "index", "ibits", "0"),
-    snoop_tagaddr(this, "snoop_tagaddr", "TAG_BITS", "0"),
+    NWAYS(this, "NWAYS", "POW2(1,waybits)"),
+    FL_VALID(this, "FL_VALID", "0"),
+    WayInTypeDef_(this, -1),
+    WayOutTypeDef_(this, -1),
+    w_lrui_init(this, "w_lrui_init", "1"),
+    wb_lrui_raddr(this, "wb_lrui_raddr", "ibits"),
+    wb_lrui_waddr(this, "wb_lrui_waddr", "ibits"),
+    w_lrui_up(this, "w_lrui_up", "1"),
+    w_lrui_down(this, "w_lrui_down", "1"),
+    wb_lrui_lru(this, "wb_lrui_lru", "waybits"),
+    wb_lruo_lru(this, "wb_lruo_lru", "waybits"),
+    way_i(this, "way_i", "NWAYS"),
+    way_o(this, "way_o", "NWAYS"),
+    req_addr(this, "req_addr", "abus"),
+    direct_access(this, "direct_access", "1"),
+    invalidate(this, "invalidate", "1"),
+    re(this, "re", "1"),
     // process
     comb(this),
-    datax(this, "datax", "POW2(1,lnbits)"),
-    tag0(this, "tag0", "ibits", "TAG_WITH_FLAGS"),
-    tagsnoop0(this, "tagsnoop0", "ibits", "TAG_WITH_FLAGS")
+    wayx(this, "wayx", "NWAYS"),
+    lru0(this, "lru0", "ibits", "waybits")
 {
     Operation::start(this);
     disableVcd();
 
     // Create and connet Sub-modules:
-    datax.changeTmplParameter("abits", "ibits");
-    GenObject &i = FORGEN ("i", CONST("0"), CONST("POW2(1,lnbits)"), "++", new STRING("datagen"));
-        NEW(*datax.arr_[0], datax.getName().c_str(), &i);
-            CONNECT(datax, &i, datax->i_clk, i_clk);
-            CONNECT(datax, &i, datax->i_adr, wb_index);
-            CONNECT(datax, &i, datax->i_wena, ARRITEM(w_datai_we, i, w_datai_we));
-            CONNECT(datax, &i, datax->i_wdata, ARRITEM(wb_datai_wdata, i, wb_datai_wdata));
-            CONNECT(datax, &i, datax->o_rdata, ARRITEM(wb_datao_rdata, i, wb_datao_rdata));
+    wayx.changeTmplParameter("abus", "abus");
+    wayx.changeTmplParameter("ibits", "ibits");
+    wayx.changeTmplParameter("lnbits", "lnbits");
+    wayx.changeTmplParameter("flbits", "flbits");
+    wayx.changeTmplParameter("snoop", "snoop");
+    GenObject &i = FORGEN ("i", CONST("0"), CONST("NWAYS"), "++", new STRING("waygen"));
+        NEW(*wayx.arr_[0], wayx.getName().c_str(), &i);
+            CONNECT(wayx, &i, wayx->i_clk, i_clk);
+            CONNECT(wayx, &i, wayx->i_nrst, i_nrst);
+            CONNECT(wayx, &i, wayx->i_addr, ARRITEM(way_i, i, way_i->addr));
+            CONNECT(wayx, &i, wayx->i_wstrb, ARRITEM(way_i, i, way_i->wstrb));
+            CONNECT(wayx, &i, wayx->i_wdata, ARRITEM(way_i, i, way_i->wdata));
+            CONNECT(wayx, &i, wayx->i_wflags, ARRITEM(way_i, i, way_i->wflags));
+            CONNECT(wayx, &i, wayx->o_raddr, ARRITEM(way_o, i, way_o->raddr));
+            CONNECT(wayx, &i, wayx->o_rdata, ARRITEM(way_o, i, way_o->rdata));
+            CONNECT(wayx, &i, wayx->o_rflags, ARRITEM(way_o, i, way_o->rflags));
+            CONNECT(wayx, &i, wayx->o_hit, ARRITEM(way_o, i, way_o->hit));
+            CONNECT(wayx, &i, wayx->i_snoop_addr, ARRITEM(way_i, i, way_i->snoop_addr));
+            CONNECT(wayx, &i, wayx->o_snoop_flags, ARRITEM(way_o, i, way_o->snoop_flags));
+
         ENDNEW();
-    ENDFORGEN(new STRING("datagen"));
+    ENDFORGEN(new STRING("waygen"));
 
-    NEW(tag0, tag0.getName().c_str());
-        CONNECT(tag0, 0, tag0.i_clk, i_clk);
-        CONNECT(tag0, 0, tag0.i_adr, wb_index);
-        CONNECT(tag0, 0, tag0.i_wena, w_tagi_we);
-        CONNECT(tag0, 0, tag0.i_wdata, wb_tagi_wdata);
-        CONNECT(tag0, 0, tag0.o_rdata, wb_tago_rdata);
+    NEW(lru0, lru0.getName().c_str());
+        CONNECT(lru0, 0, lru0.i_clk, i_clk);
+        CONNECT(lru0, 0, lru0.i_init, w_lrui_init);
+        CONNECT(lru0, 0, lru0.i_raddr, wb_lrui_raddr);
+        CONNECT(lru0, 0, lru0.i_waddr, wb_lrui_waddr);
+        CONNECT(lru0, 0, lru0.i_up, w_lrui_up);
+        CONNECT(lru0, 0, lru0.i_down, w_lrui_down);
+        CONNECT(lru0, 0, lru0.i_lru, wb_lrui_lru);
+        CONNECT(lru0, 0, lru0.o_lru, wb_lruo_lru);
     ENDNEW();
-
-    GENERATE("snoop_gen");
-        IFGEN (snoop, new STRING("snoop_en"));
-            NEW(tagsnoop0 , tagsnoop0.getName().c_str());
-                CONNECT(tagsnoop0, 0, tagsnoop0.i_clk, i_clk);
-                CONNECT(tagsnoop0, 0, tagsnoop0.i_adr, wb_snoop_index);
-                CONNECT(tagsnoop0, 0, tagsnoop0.i_wena, w_tagi_we);
-                CONNECT(tagsnoop0, 0, tagsnoop0.i_wdata, wb_tagi_wdata);
-                CONNECT(tagsnoop0, 0, tagsnoop0.o_rdata, wb_tago_snoop_rdata);
-            ENDNEW();
-        ELSEGEN(new STRING("snoop"));
-            SETZERO(wb_tago_snoop_rdata);
-        ENDIFGEN(new STRING("snoop_dis"));
-    ENDGENERATE("snoop_gen");
 
     Operation::start(&comb);
     proc_comb();

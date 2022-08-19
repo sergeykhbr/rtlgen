@@ -18,7 +18,8 @@
 
 #include <api.h>
 #include "../river_cfg.h"
-#include "mem/ram.h"
+#include "tagmem.h"
+#include "lrunway.h"
 
 using namespace sysvc;
 
@@ -27,6 +28,7 @@ class TagMemNWay : public ModuleObject {
     TagMemNWay(GenObject *parent, 
             const char *name,
             const char *gen_abus = "64", 
+            const char *gen_waybits = "2", 
             const char *gen_ibits = "6", 
             const char *gen_lnbits = "5", 
             const char *gen_flbits = "4",
@@ -36,24 +38,28 @@ class TagMemNWay : public ModuleObject {
      public:
         CombProcess(GenObject *parent) :
             ProcObject(parent, "comb"),
-            vb_index(this, "vb_index", "ibits"),
-            vb_raddr(this, "vb_raddr", "abus"),
-            vb_rdata(this, "vb_rdata", "MUL(8,POW2(1,lnbits))"),
-            vb_tagi_wdata(this, "vb_tagi_wdata", "TAG_WITH_FLAGS"),
-            v_hit(this, "v_hit", "1"),
-            vb_snoop_index(this, "vb_snoop_index", "ibits"),
-            vb_snoop_tagaddr(this, "vb_snoop_tagaddr", "TAG_BITS"),
-            vb_snoop_flags(this, "vb_snoop_flags", "flbits") {
+            vb_raddr(this, "", "abus"),
+            vb_rdata(this, "", "MUL(8,POW2(1,lnbits))"),
+            vb_rflags(this, "", "flbits"),
+            v_hit(this, "", "1"),
+            vb_hit_idx(this, "", "waybits"),
+            v_way_we(this, "", "1"),
+            vb_wstrb(this, "", "POW2(1,lnbits)"),
+            vb_wflags(this, "", "flbits"),
+            v_snoop_ready(this, "", "1"),
+            vb_snoop_flags(this, "", "flbits") {
         }
 
      public:
-        Logic vb_index;
         Logic vb_raddr;
         Logic vb_rdata;
-        Logic vb_tagi_wdata;
+        Logic vb_rflags;
         Logic v_hit;
-        Logic vb_snoop_index;
-        Logic vb_snoop_tagaddr;
+        Logic vb_hit_idx;
+        Logic v_way_we;
+        Logic vb_wstrb;
+        Logic vb_wflags;
+        Logic v_snoop_ready;
         Logic vb_snoop_flags;
     };
 
@@ -61,6 +67,7 @@ class TagMemNWay : public ModuleObject {
 
  public:
     TmplParamI32D abus;
+    TmplParamI32D waybits;
     TmplParamI32D ibits;
     TmplParamI32D lnbits;
     TmplParamI32D flbits;
@@ -68,41 +75,82 @@ class TagMemNWay : public ModuleObject {
 
     InPort i_clk;
     InPort i_nrst;
+    InPort i_direct_access;
+    InPort i_invalidate;
+    InPort i_re;
+    InPort i_we;
     InPort i_addr;
-    InPort i_wstrb;
     InPort i_wdata;
+    InPort i_wstrb;
     InPort i_wflags;
     OutPort o_raddr;
-    InPort o_rdata;
-    InPort o_rflags;
-    InPort o_hit;
+    OutPort o_rdata;
+    OutPort o_rflags;
+    OutPort o_hit;
     TextLine _snoop0_;
     InPort i_snoop_addr;
-    InPort o_snoop_flags;
+    OutPort o_snoop_ready;
+    OutPort o_snoop_flags;
 
-    ParamI32D TAG_BITS;
-    ParamI32D TAG_WITH_FLAGS;
+    ParamI32D NWAYS;
+    ParamI32D FL_VALID;
 
-    Signal wb_index;
-    WireArray<Signal> wb_datao_rdata;
-    WireArray<Signal> wb_datai_wdata;
-    WireArray<Signal> w_datai_we;
-    Signal wb_tago_rdata;
-    Signal wb_tagi_wdata;
-    Signal w_tagi_we;
-    Signal wb_snoop_index;
-    Signal wb_snoop_tagaddr;
-    Signal wb_tago_snoop_rdata;
+    class WayInType : public StructObject {
+     public:
+        WayInType(GenObject *parent, int idx, const char *comment="")
+            : StructObject(parent, "WayInType", "", idx, comment),
+            addr(this, "addr", "abus"),
+            wstrb(this, "wstrb", "POW2(1,lnbits)"),
+            wdata(this, "wdata", "MUL(8,POW2(1,lnbits))"),
+            wflags(this, "wflags", "flbits"),
+            snoop_addr(this, "snoop_addr", "abus") {
+        }
+     public:
+        Signal addr;
+        Signal wstrb;
+        Signal wdata;
+        Signal wflags;
+        Signal snoop_addr;
+    } WayInTypeDef_;
 
-    RegSignal tagaddr;
-    RegSignal index;
-    RegSignal snoop_tagaddr;
+    class WayOutType : public StructObject {
+     public:
+        WayOutType(GenObject *parent, int idx, const char *comment="")
+            : StructObject(parent, "WayOutType", "", idx, comment),
+            raddr(this, "raddr", "abus"),
+            rdata(this, "rdata", "MUL(8,POW2(1,lnbits))"),
+            rflags(this, "rflags", "flbits"),
+            hit(this, "hit", "1"),
+            snoop_flags(this, "snoop_flags", "flbits") {
+        }
+     public:
+        Signal raddr;
+        Signal rdata;
+        Signal rflags;
+        Signal hit;
+        Signal snoop_flags;
+    } WayOutTypeDef_;
+
+    Signal w_lrui_init;
+    Signal wb_lrui_raddr;
+    Signal wb_lrui_waddr;
+    Signal w_lrui_up;
+    Signal w_lrui_down;
+    Signal wb_lrui_lru;
+    Signal wb_lruo_lru;
+    TStructArray<WayInType> way_i;
+    TStructArray<WayOutType> way_o;
+
+    RegSignal req_addr;
+    RegSignal direct_access;
+    RegSignal invalidate;
+    RegSignal re;
+
     // process should be intialized last to make all signals available
     CombProcess comb;
     // sub-modules
-    ModuleArray<ram> datax;
-    ram tag0;
-    ram tagsnoop0;
+    ModuleArray<TagMem> wayx;
+    lrunway lru0;
 };
 
 class tagmemnway_file : public FileObject {

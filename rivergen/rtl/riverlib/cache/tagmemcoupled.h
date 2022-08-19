@@ -18,7 +18,7 @@
 
 #include <api.h>
 #include "../river_cfg.h"
-#include "mem/ram.h"
+#include "tagmemnway.h"
 
 using namespace sysvc;
 
@@ -27,6 +27,7 @@ class TagMemCoupled : public ModuleObject {
     TagMemCoupled(GenObject *parent, 
             const char *name,
             const char *gen_abus = "64", 
+            const char *gen_waybits = "2",
             const char *gen_ibits = "6", 
             const char *gen_lnbits = "5", 
             const char *gen_flbits = "4");
@@ -35,73 +36,125 @@ class TagMemCoupled : public ModuleObject {
      public:
         CombProcess(GenObject *parent) :
             ProcObject(parent, "comb"),
+            v_addr_sel(this, "v_addr_sel", "1"),
+            v_addr_sel_r(this, "v_addr_sel_r", "1"),
+            v_use_overlay(this, "v_use_overlay", "1"),
+            v_use_overlay_r(this, "v_use_overlay_r", "1"),
             vb_index(this, "vb_index", "ibits"),
-            vb_raddr(this, "vb_raddr", "abus"),
-            vb_rdata(this, "vb_rdata", "MUL(8,POW2(1,lnbits))"),
-            vb_tagi_wdata(this, "vb_tagi_wdata", "TAG_WITH_FLAGS"),
-            v_hit(this, "v_hit", "1"),
-            vb_snoop_index(this, "vb_snoop_index", "ibits"),
-            vb_snoop_tagaddr(this, "vb_snoop_tagaddr", "TAG_BITS"),
-            vb_snoop_flags(this, "vb_snoop_flags", "flbits") {
+            vb_index_next(this, "vb_index_next", "ibits"),
+            vb_addr_next(this, "vb_addr_next", "abus"),
+            vb_addr_tag_direct(this, "vb_addr_tag_direct", "abus"),
+            vb_addr_tag_next(this, "vb_addr_tag_next", "abus"),
+            vb_raddr_tag(this, "vb_raddr_tag", "abus"),
+            vb_o_raddr(this, "vb_o_raddr", "abus"),
+            vb_o_rdata(this, "vb_o_rdata", "ADD(MUL(8,POW2(1,lnbits)),32)"),
+            v_o_hit(this, "v_o_hit", "1"),
+            v_o_hit_next(this, "v_o_hit_next", "1"),
+            vb_o_rflags(this, "vb_o_rflags", "flbits") {
         }
 
      public:
+        Logic v_addr_sel;
+        Logic v_addr_sel_r;
+        Logic v_use_overlay;
+        Logic v_use_overlay_r;
         Logic vb_index;
-        Logic vb_raddr;
-        Logic vb_rdata;
-        Logic vb_tagi_wdata;
-        Logic v_hit;
-        Logic vb_snoop_index;
-        Logic vb_snoop_tagaddr;
-        Logic vb_snoop_flags;
+        Logic vb_index_next;
+        Logic vb_addr_next;
+        Logic vb_addr_tag_direct;
+        Logic vb_addr_tag_next;
+        Logic vb_raddr_tag;
+        Logic vb_o_raddr;
+        Logic vb_o_rdata;
+        Logic v_o_hit;
+        Logic v_o_hit_next;
+        Logic vb_o_rflags;
     };
 
     void proc_comb();
 
  public:
     TmplParamI32D abus;
+    TmplParamI32D waybits;
     TmplParamI32D ibits;
     TmplParamI32D lnbits;
     TmplParamI32D flbits;
-    ParamI32D snoop;
-
+    
     InPort i_clk;
     InPort i_nrst;
+    InPort i_direct_access;
+    InPort i_invalidate;
+    InPort i_re;
+    InPort i_we;
     InPort i_addr;
-    InPort i_wstrb;
     InPort i_wdata;
+    InPort i_wstrb;
     InPort i_wflags;
     OutPort o_raddr;
-    InPort o_rdata;
-    InPort o_rflags;
-    InPort o_hit;
-    TextLine _snoop0_;
-    InPort i_snoop_addr;
-    InPort o_snoop_flags;
+    OutPort o_rdata;
+    OutPort o_rflags;
+    OutPort o_hit;
+    OutPort o_hit_next;
 
-    ParamI32D TAG_BITS;
-    ParamI32D TAG_WITH_FLAGS;
+    ParamI32D TAG_START;
+    ParamI32D EVEN;
+    ParamI32D ODD;
+    ParamI32D MemTotal;
 
-    Signal wb_index;
-    WireArray<Signal> wb_datao_rdata;
-    WireArray<Signal> wb_datai_wdata;
-    WireArray<Signal> w_datai_we;
-    Signal wb_tago_rdata;
-    Signal wb_tagi_wdata;
-    Signal w_tagi_we;
-    Signal wb_snoop_index;
-    Signal wb_snoop_tagaddr;
-    Signal wb_tago_snoop_rdata;
+    class tagmem_in_type : public StructObject {
+     public:
+        tagmem_in_type(GenObject *parent, int idx, const char *comment="")
+            : StructObject(parent, "tagmem_in_type", "", idx, comment),
+            direct_access(this, "direct_access", "1"),
+            invalidate(this, "invalidate", "1"),
+            re(this, "re", "1"),
+            we(this, "we", "1"),
+            addr(this, "addr", "abus"),
+            wdata(this, "wdata", "MUL(8,POW2(1,lnbits))"),
+            wstrb(this, "wstrb", "POW2(1,lnbits)"),
+            wflags(this, "wflags", "flbits"),
+            snoop_addr(this, "snoop_addr", "abus") {
+        }
+     public:
+        Signal direct_access;
+        Signal invalidate;
+        Signal re;
+        Signal we;
+        Signal addr;
+        Signal wdata;
+        Signal wstrb;
+        Signal wflags;
+        Signal snoop_addr;
+    } tagmem_in_type_def_;
 
-    RegSignal tagaddr;
-    RegSignal index;
-    RegSignal snoop_tagaddr;
+    class tagmem_out_type : public StructObject {
+     public:
+        tagmem_out_type(GenObject *parent, int idx, const char *comment="")
+            : StructObject(parent, "tagmem_out_type", "", idx, comment),
+            raddr(this, "raddr", "abus"),
+            rdata(this, "rdata", "MUL(8,POW2(1,lnbits))"),
+            rflags(this, "rflags", "flbits"),
+            hit(this, "hit", "1"),
+            snoop_ready(this, "snoop_ready", "1"),
+            snoop_flags(this, "snoop_flags", "flbits") {
+        }
+     public:
+        Signal raddr;
+        Signal rdata;
+        Signal rflags;
+        Signal hit;
+        Signal snoop_ready;
+        Signal snoop_flags;
+    } tagmem_out_type_def_;
+
+    TStructArray<tagmem_in_type> linei;
+    TStructArray<tagmem_out_type> lineo;
+    RegSignal req_addr;
+
     // process should be intialized last to make all signals available
     CombProcess comb;
     // sub-modules
-    ModuleArray<ram> datax;
-    ram tag0;
-    ram tagsnoop0;
+    ModuleArray<TagMemNWay> memx;
 };
 
 class tagmemcoupled_file : public FileObject {
