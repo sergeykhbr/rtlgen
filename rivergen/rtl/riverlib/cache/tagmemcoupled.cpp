@@ -44,6 +44,7 @@ TagMemCoupled::TagMemCoupled(GenObject *parent,
     o_rflags(this, "o_rflags", "flbits"),
     o_hit(this, "o_hit", "1"),
     o_hit_next(this, "o_hit_next", "1"),
+    LINE_SZ(this, "LINE_SZ", "POW2(1,lnbits)"),
     TAG_START(this, "TAG_START", "SUB(abus,ADD(ibits,lnbits))"),
     EVEN(this, "EVEN", "0"),
     ODD(this, "ODD", "1"),
@@ -95,7 +96,120 @@ TagMemCoupled::TagMemCoupled(GenObject *parent,
 
 void TagMemCoupled::proc_comb() {
     river_cfg *cfg = glob_river_cfg_;
-    //GenObject *i;
 
+TEXT();
+    SETVAL(req_addr, i_addr);
+    SETVAL(comb.v_addr_sel, BIT(i_addr, lnbits));
+    SETVAL(comb.v_addr_sel_r, BIT(req_addr, lnbits));
+
+TEXT();
+    SETVAL(comb.vb_addr_next, ADD2(i_addr, LINE_SZ));
+
+TEXT();
+    SETVAL(comb.vb_index, BITS(i_addr, DEC(ADD2(ibits, lnbits)), lnbits));
+    SETVAL(comb.vb_index_next, BITS(comb.vb_addr_next, DEC(ADD2(ibits, lnbits)), lnbits));
+
+TEXT();
+    IF (NZ(AND_REDUCE(BITS(i_addr, DEC(lnbits), CONST("2")))));
+        SETONE(comb.v_use_overlay);
+    ENDIF();
+    IF (NZ(AND_REDUCE(BITS(req_addr, DEC(lnbits), CONST("2")))));
+        SETONE(comb.v_use_overlay_r);
+    ENDIF();
+
+
+TEXT();
+    TEXT("Change the bit order in the requested address:");
+    TEXT("   [tag][line_idx][odd/evenbit][line_bytes] on");
+    TEXT("   [tag][1'b0]    [line_idx]   [line_bytes]");
+    TEXT(" ");
+    TEXT("Example (abus=32; ibits=7; lnbits=5;):");
+    TEXT("  [4:0]   byte in line           [4:0]");
+    TEXT("  [11:5]  line index             {[1'b0],[11:6]}");
+    TEXT("  [31:12] tag                    [31:12]");
+    SETVAL(comb.vb_addr_tag_direct, i_addr);
+    SETBITS(comb.vb_addr_tag_direct, DEC(ADD2(ibits, lnbits)), lnbits, RSH(comb.vb_index, CONST("1")));
+
+TEXT();
+    SETVAL(comb.vb_addr_tag_next, comb.vb_addr_next);
+    SETBITS(comb.vb_addr_tag_next, DEC(ADD2(ibits, lnbits)), lnbits, RSH(comb.vb_index_next, CONST("1")));
+
+TEXT();
+    IF (EZ(comb.v_addr_sel));
+        SETARRITEM(linei, EVEN, linei->addr, comb.vb_addr_tag_direct);
+        SETARRITEM(linei, EVEN, linei->wstrb, i_wstrb);
+        SETARRITEM(linei, ODD, linei->addr, comb.vb_addr_tag_next);
+        SETARRITEM(linei, ODD, linei->wstrb, ALLZEROS());
+    ELSE();
+        SETARRITEM(linei, EVEN, linei->addr, comb.vb_addr_tag_next);
+        SETARRITEM(linei, EVEN, linei->wstrb, ALLZEROS());
+        SETARRITEM(linei, ODD, linei->addr,  comb.vb_addr_tag_direct);
+        SETARRITEM(linei, ODD, linei->wstrb, i_wstrb);
+    ENDIF();
+
+TEXT();
+    SETARRITEM(linei, EVEN, linei->direct_access, AND2(i_direct_access, OR2(INV(comb.v_addr_sel), comb.v_use_overlay)));
+    SETARRITEM(linei, ODD, linei->direct_access, AND2(i_direct_access, OR2(comb.v_addr_sel, comb.v_use_overlay)));
+
+TEXT();
+    SETARRITEM(linei, EVEN, linei->invalidate, AND2(i_invalidate, OR2(INV(comb.v_addr_sel), comb.v_use_overlay)));
+    SETARRITEM(linei, ODD, linei->invalidate, AND2(i_invalidate, OR2(comb.v_addr_sel, comb.v_use_overlay)));
+
+TEXT();
+    SETARRITEM(linei, EVEN, linei->re, AND2(i_re, OR2(INV(comb.v_addr_sel), comb.v_use_overlay)));
+    SETARRITEM(linei, ODD, linei->re, AND2(i_re, OR2(comb.v_addr_sel, comb.v_use_overlay)));
+
+TEXT();
+    SETARRITEM(linei, EVEN, linei->we, AND2(i_we, OR2(INV(comb.v_addr_sel), comb.v_use_overlay)));
+    SETARRITEM(linei, ODD, linei->we, AND2(i_we, OR2(comb.v_addr_sel, comb.v_use_overlay)));
+
+TEXT();
+    SETARRITEM(linei, EVEN, linei->wdata, i_wdata);
+    SETARRITEM(linei, ODD, linei->wdata, i_wdata);
+
+TEXT();
+    SETARRITEM(linei, EVEN, linei->wflags, i_wflags);
+    SETARRITEM(linei, ODD, linei->wflags, i_wflags);
+
+TEXT();
+    TEXT("Form output:");
+    IF (EZ(comb.v_addr_sel_r));
+        SETVAL(comb.vb_o_rdata, CC2(BITS(ARRITEM_B(lineo, ODD, lineo->rdata), 31, 0), ARRITEM(lineo, EVEN, lineo->rdata)));
+        SETVAL(comb.vb_raddr_tag, ARRITEM(lineo, EVEN, lineo->raddr));
+        SETVAL(comb.vb_o_rflags, ARRITEM(lineo, EVEN, lineo->rflags));
+
+        TEXT();
+        SETVAL(comb.v_o_hit, ARRITEM(lineo, EVEN, lineo->hit));
+        IF (EZ(comb.v_use_overlay_r));
+            SETVAL(comb.v_o_hit_next, ARRITEM(lineo, EVEN, lineo->hit));
+        ELSE();
+            SETVAL(comb.v_o_hit_next, ARRITEM(lineo, ODD, lineo->hit));
+        ENDIF();
+    ELSE();
+        SETVAL(comb.vb_o_rdata, CC2(BITS(ARRITEM_B(lineo, EVEN, lineo->rdata), 31, 0), ARRITEM(lineo, ODD, lineo->rdata)));
+        SETVAL(comb.vb_raddr_tag, ARRITEM(lineo, ODD, lineo->raddr));
+        SETVAL(comb.vb_o_rflags, ARRITEM(lineo, ODD, lineo->rflags));
+
+        TEXT();
+        SETVAL(comb.v_o_hit, ARRITEM(lineo, ODD, lineo->hit));
+        IF (EZ(comb.v_use_overlay_r));
+            SETVAL(comb.v_o_hit_next, ARRITEM(lineo, ODD, lineo->hit));
+        ELSE();
+            SETVAL(comb.v_o_hit_next, ARRITEM(lineo, EVEN, lineo->hit));
+        ENDIF();
+    ENDIF();
+
+TEXT();
+    SETVAL(comb.vb_o_raddr, comb.vb_raddr_tag);
+    SETBIT(comb.vb_o_raddr, lnbits, comb.v_addr_sel_r);
+    SETBITS(comb.vb_o_raddr, DEC(ADD2(ibits, lnbits)), INC(lnbits),
+                    BITS(comb.vb_raddr_tag, SUB2(ADD2(ibits, lnbits), CONST("2")), lnbits));
+
+TEXT();
+    SETVAL(o_raddr, comb.vb_o_raddr);
+    SETVAL(o_rdata, comb.vb_o_rdata);
+    SETVAL(o_rflags, comb.vb_o_rflags);
+    SETVAL(o_hit, comb.v_o_hit);
+    SETVAL(o_hit_next, comb.v_o_hit_next);
 }
 

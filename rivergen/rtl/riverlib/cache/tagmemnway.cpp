@@ -117,5 +117,87 @@ void TagMemNWay::proc_comb() {
     river_cfg *cfg = glob_river_cfg_;
     GenObject *i;
 
+TEXT();
+    SETVAL(direct_access, i_direct_access);
+    SETVAL(invalidate, i_invalidate);
+    SETVAL(re, i_re);
+    SETVAL(req_addr, i_addr);
+
+TEXT();
+    SETVAL(comb.vb_hit_idx, wb_lruo_lru);
+    IF (NZ(direct_access));
+        SETVAL(comb.vb_hit_idx, BITS(req_addr, DEC(waybits), CONST("0")));
+    ELSE();
+        i = &FOR ("i", CONST("0"), NWAYS, "++");
+            IF (NZ(ARRITEM(way_o, *i, way_o->hit)));
+                SETVAL(comb.vb_hit_idx, *i);
+            ENDIF();
+        ENDFOR();
+    ENDIF();
+    SETVAL(comb.vb_raddr, ARRITEM(way_o, TO_INT(comb.vb_hit_idx), way_o->raddr));
+    SETVAL(comb.vb_rdata, ARRITEM(way_o, TO_INT(comb.vb_hit_idx), way_o->rdata));
+    SETVAL(comb.vb_rflags, ARRITEM(way_o, TO_INT(comb.vb_hit_idx), way_o->rflags));
+    SETVAL(comb.v_hit, ARRITEM(way_o, TO_INT(comb.vb_hit_idx), way_o->hit));
+
+TEXT();
+    IF (NZ(invalidate));
+        SETZERO(comb.vb_wflags);
+        SETVAL(comb.vb_wstrb, ALLONES());
+    ELSE();
+        SETVAL(comb.vb_wflags, i_wflags);
+        SETVAL(comb.vb_wstrb, i_wstrb);
+    ENDIF();
+    TEXT("");
+    TEXT("    Warning: we can write only into previously read line,");
+    TEXT("                if the previuosly read line is hit and contains valid flags");
+    TEXT("                HIGH we modify it. Otherwise, we write into displacing line.");
+    TEXT("");
+    i = &FOR ("i", CONST("0"), NWAYS, "++");
+        SETARRITEM(way_i, *i, way_i->addr, i_addr);
+        SETARRITEM(way_i, *i, way_i->wdata, i_wdata);
+        SETARRITEM(way_i, *i, way_i->wstrb, ALLZEROS());
+        SETARRITEM(way_i, *i, way_i->wflags, comb.vb_wflags);
+        SETARRITEM(way_i, *i, way_i->snoop_addr, i_snoop_addr);
+    ENDFOR();
+
+TEXT();
+    SETVAL(comb.v_way_we, OR2(i_we, AND2(invalidate, comb.v_hit)));
+    IF (NZ(comb.v_way_we));
+        SETARRITEM(way_i, TO_INT(comb.vb_hit_idx), way_i->wstrb, comb.vb_wstrb);
+    ENDIF();
+
+TEXT();
+    SETONE(comb.v_snoop_ready);
+    IF (EQ(snoop, CONST("1")));
+        i = &FOR("i", CONST("0"), NWAYS, "++");
+            TEXT("tagmem already cleared snoop flags if there's no snoop hit");
+            IF (NZ(BIT(ARRITEM(way_o, *i, way_o->snoop_flags), FL_VALID)));
+                SETVAL(comb.vb_snoop_flags, ARRITEM(way_o, *i, way_o->snoop_flags));
+            ENDIF();
+        ENDFOR();
+        TEXT("Writing into snoop tag memory, output value won't be valid on next clock");
+        IF (NZ(comb.v_way_we));
+            SETZERO(comb.v_snoop_ready);
+        ENDIF();
+    ENDIF();
+
+TEXT();
+    SYNC_RESET(*this);
+
+TEXT();
+    SETVAL(w_lrui_init, direct_access);
+    SETVAL(wb_lrui_raddr, BITS(i_addr, DEC(ADD2(ibits,lnbits)), lnbits));
+    SETVAL(wb_lrui_waddr, BITS(req_addr, DEC(ADD2(ibits, lnbits)), lnbits));
+    SETVAL(w_lrui_up, OR2(i_we, AND2(comb.v_hit, re)));
+    SETVAL(w_lrui_down, AND2(comb.v_hit, invalidate));
+    SETVAL(wb_lrui_lru, comb.vb_hit_idx);
+
+TEXT();
+    SETVAL(o_raddr, comb.vb_raddr);
+    SETVAL(o_rdata, comb.vb_rdata);
+    SETVAL(o_rflags, comb.vb_rflags);
+    SETVAL(o_hit, comb.v_hit);
+    SETVAL(o_snoop_ready, comb.v_snoop_ready);
+    SETVAL(o_snoop_flags, comb.vb_snoop_flags);
 }
 

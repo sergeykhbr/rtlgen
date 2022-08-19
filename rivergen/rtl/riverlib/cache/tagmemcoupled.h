@@ -96,6 +96,7 @@ class TagMemCoupled : public ModuleObject {
     OutPort o_hit;
     OutPort o_hit_next;
 
+    ParamI32D LINE_SZ;
     ParamI32D TAG_START;
     ParamI32D EVEN;
     ParamI32D ODD;
