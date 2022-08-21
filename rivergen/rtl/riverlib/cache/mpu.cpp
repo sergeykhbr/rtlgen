@@ -58,15 +58,15 @@ TEXT();
 
 TEXT();
     i = &FOR ("i", CONST("0"), cfg->CFG_MPU_TBL_SIZE, "++");
-        IF (EQ(ARRITEM(tbl, *i, tbl->addr), AND2_L(i_iaddr, ARRITEM(tbl, *i, tbl->mask))));
-            IF (NZ(BIT(ARRITEM(tbl, *i, tbl->flags), cfg->CFG_MPU_FL_ENA)));
+        IF (EQ(ARRITEM_B(tbl, *i, tbl->addr), AND2_L(i_iaddr, ARRITEM_B(tbl, *i, tbl->mask))));
+            IF (NZ(BIT(ARRITEM_B(tbl, *i, tbl->flags), cfg->CFG_MPU_FL_ENA)));
                 SETVAL(comb.v_iflags, ARRITEM(tbl, *i, tbl->flags));
             ENDIF();
         ENDIF();
 
         TEXT();
-        IF (EQ(ARRITEM(tbl, *i, tbl->addr), AND2_L(i_daddr, ARRITEM(tbl, *i, tbl->mask))));
-            IF (NZ(BIT(ARRITEM(tbl, *i, tbl->flags), cfg->CFG_MPU_FL_ENA)));
+        IF (EQ(ARRITEM_B(tbl, *i, tbl->addr), AND2_L(i_daddr, ARRITEM_B(tbl, *i, tbl->mask))));
+            IF (NZ(BIT(ARRITEM_B(tbl, *i, tbl->flags), cfg->CFG_MPU_FL_ENA)));
                 SETVAL(comb.v_dflags, ARRITEM(tbl, *i, tbl->flags));
             ENDIF();
         ENDIF();

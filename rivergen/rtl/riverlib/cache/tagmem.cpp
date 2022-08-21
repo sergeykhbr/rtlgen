@@ -47,7 +47,7 @@ TagMem::TagMem(GenObject *parent,
     wb_index(this, "wb_index", "ibits"),
     wb_datao_rdata(this, "wb_datao_rdata", "8", "POW2(1,lnbits)"),
     wb_datai_wdata(this, "wb_datai_wdata", "8", "POW2(1,lnbits)"),
-    w_datai_we(this, "w_datai_we", "8", "POW2(1,lnbits)"),
+    w_datai_we(this, "w_datai_we", "1", "POW2(1,lnbits)"),
     wb_tago_rdata(this, "wb_tago_rdata", "TAG_WITH_FLAGS"),
     wb_tagi_wdata(this, "wb_tagi_wdata", "TAG_WITH_FLAGS"),
     w_tagi_we(this, "w_tagi_we", "1"),
@@ -115,7 +115,7 @@ void TagMem::proc_comb() {
 TEXT();
     i = &FOR ("i", CONST("0"), CONST("POW2(1,lnbits)"), "++");
         SETARRITEM(w_datai_we, *i, w_datai_we, BIT(i_wstrb, *i));
-        SETARRITEM(wb_datai_wdata, *i, wb_datai_wdata, BITSW(i_wdata, MUL2(CONST("8"), *i), CONST("8")));
+        SETARRITEM(wb_datai_wdata, *i, wb_datai_wdata, TO_U32(BITSW(i_wdata, MUL2(CONST("8"), *i), CONST("8"))));
         SETBITSW(comb.vb_rdata, MUL2(CONST("8"), *i), CONST("8"), ARRITEM(wb_datao_rdata, *i, wb_datao_rdata));
     ENDFOR();
 

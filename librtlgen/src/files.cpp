@@ -187,6 +187,17 @@ void FileObject::generate_sysc() {
         }
         out += "#include \"" + fullPath2fileRelative(f.c_str()) + ".h\"\n";
     }
+    // Check template class to include <api_core.h> file
+    std::list<GenObject *> tmpllist;
+    for (auto &p: entries_) {
+        if (p->getId() == ID_MODULE) {
+            static_cast<ModuleObject *>(p)->getTmplParamList(tmpllist);
+        }
+    }
+    if (tmpllist.size()) {
+        out += "#include \"api_core.h\"\n";
+    }
+
     out += "\n";
     out += 
         "namespace debugger {\n"

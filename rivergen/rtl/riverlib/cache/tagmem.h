@@ -73,12 +73,12 @@ class TagMem : public ModuleObject {
     InPort i_wdata;
     InPort i_wflags;
     OutPort o_raddr;
-    InPort o_rdata;
-    InPort o_rflags;
-    InPort o_hit;
+    OutPort o_rdata;
+    OutPort o_rflags;
+    OutPort o_hit;
     TextLine _snoop0_;
     InPort i_snoop_addr;
-    InPort o_snoop_flags;
+    OutPort o_snoop_flags;
 
     ParamI32D TAG_BITS;
     ParamI32D TAG_WITH_FLAGS;

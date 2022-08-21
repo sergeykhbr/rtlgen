@@ -18,12 +18,49 @@
 
 #include <api.h>
 #include "../river_cfg.h"
+#include "icache_lru.h"
+#include "dcache_lru.h"
+#include "mpu.h"
+#include "../core/queue.h"
 
 using namespace sysvc;
 
 class CacheTop : public ModuleObject {
  public:
     CacheTop(GenObject *parent, const char *name);
+
+    class CombProcess : public ProcObject {
+     public:
+        CombProcess(GenObject *parent) :
+            ProcObject(parent, "comb"),
+            vb_ctrl_bus(this, "vb_ctrl_bus", "QUEUE_WIDTH"),
+            vb_data_bus(this, "vb_data_bus", "QUEUE_WIDTH"),
+            vb_queue_bus(this, "vb_queue_bus", "QUEUE_WIDTH"),
+            ctrl_path_id(this, "ctrl_path_id"),
+            data_path_id(this, "data_path_id"),
+            v_queue_we(this, "v_queue_we", "1"),
+            v_queue_re(this, "v_queue_re", "1"),
+            v_req_mem_path_o(this, "v_req_mem_path_o", "1"),
+            vb_req_mem_type_o(this, "vb_req_mem_type_o", "REQ_MEM_TYPE_BITS"),
+            vb_req_mem_size_o(this, "vb_req_mem_size_o", "3"),
+            vb_req_mem_addr_o(this, "vb_req_mem_addr_o", "CFG_CPU_ADDR_BITS") {
+        }
+
+     public:
+        Logic vb_ctrl_bus;
+        Logic vb_data_bus;
+        Logic vb_queue_bus;
+        Logic1 ctrl_path_id;
+        Logic1 data_path_id;
+        Logic v_queue_we;
+        Logic v_queue_re;
+        Logic v_req_mem_path_o;
+        Logic vb_req_mem_type_o;
+        Logic vb_req_mem_size_o;
+        Logic vb_req_mem_addr_o;
+    };
+
+    void proc_comb();
 
  public:
     DefParamBOOL coherence_ena;
@@ -93,8 +130,63 @@ class CacheTop : public ModuleObject {
     InPort i_data_flush_valid;
     OutPort o_data_flush_end;
 
+    ParamI32D DATA_PATH;
+    ParamI32D CTRL_PATH;
+    ParamI32D QUEUE_WIDTH;
 
-    RegSignal test;
+    class CacheOutputType : public StructObject {
+     public:
+        CacheOutputType(GenObject *parent, const char *name="", const char *comment="")
+            : StructObject(parent, "CacheOutputType", name, -1, comment),
+            req_mem_valid(this, "req_mem_valid", "1"),
+            req_mem_type(this, "req_mem_type", "REQ_MEM_TYPE_BITS"),
+            req_mem_size(this, "req_mem_size", "3"),
+            req_mem_addr(this, "req_mem_addr", "CFG_CPU_ADDR_BITS"),
+            req_mem_strob(this, "req_mem_strob", "DCACHE_BYTES_PER_LINE"),
+            req_mem_wdata(this, "req_mem_wdata", "DCACHE_LINE_BITS"),
+            mpu_addr(this, "mpu_addr", "CFG_CPU_ADDR_BITS") {
+        }
+     public:
+        Signal req_mem_valid;
+        Signal req_mem_type;
+        Signal req_mem_size;
+        Signal req_mem_addr;
+        Signal req_mem_strob;
+        Signal req_mem_wdata;
+        Signal mpu_addr;
+    } CacheOutputTypeDef_;
+
+    CacheOutputType i;
+    CacheOutputType d;
+    TextLine _iface0_;
+    Signal w_ctrl_resp_mem_data_valid;
+    Signal wb_ctrl_resp_mem_data;
+    Signal w_ctrl_resp_mem_load_fault;
+    Signal w_resp_ctrl_writable_unused;
+    Signal w_resp_ctrl_readable_unused;
+    Signal w_ctrl_req_ready;
+    TextLine _iface1_;
+    Signal w_data_resp_mem_data_valid;
+    Signal wb_data_resp_mem_data;
+    Signal w_data_resp_mem_load_fault;
+    Signal w_data_req_ready;
+    Signal wb_mpu_iflags;
+    Signal wb_mpu_dflags;
+    TextLine _iface2_;
+    Signal queue_re_i;
+    Signal queue_we_i;
+    Signal queue_wdata_i;
+    Signal queue_rdata_o;
+    Signal queue_full_o;
+    Signal queue_nempty_o;
+
+    CombProcess comb;
+
+    ICacheLru i1;
+    DCacheLru d0;
+    MPU mpu0;
+    Queue queue0;
+
 };
 
 class cache_top_file : public FileObject {

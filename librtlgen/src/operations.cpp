@@ -1386,6 +1386,41 @@ Operation &ORx(size_t cnt, ...) {
     return *p;
 }
 
+// ORx_L
+std::string ORx_L_gen(GenObject **args) {
+    std::string ret = "(";
+    size_t cnt = reinterpret_cast<size_t>(args[1]);
+    Operation::set_space(Operation::get_space() + 2);
+    for (size_t i = 0; i < cnt; i++) {
+        if (i > 0) {
+            ret += "\n";
+            ret += Operation::addspaces();
+            ret += "| ";
+        }
+        ret += Operation::obj2varname(args[2 + i]);
+    }
+    Operation::set_space(Operation::get_space() - 2);
+    ret += ")";
+    return ret;
+}
+
+Operation &ORx_L(size_t cnt, ...) {
+    Operation *p = new Operation(0, "");
+    p->setWidth(1);
+    GenObject *obj;
+    p->igen_ = ORx_L_gen;
+    p->add_arg(p);
+    p->add_arg(reinterpret_cast<GenObject *>(cnt));
+    va_list arg;
+    va_start(arg, cnt);
+    for (int i = 0; i < cnt; i++) {
+        obj = va_arg(arg, GenObject *);
+        p->add_arg(obj);
+    }
+    va_end(arg);
+    return *p;
+}
+
 // XOR2
 std::string XOR2_gen(GenObject **args) {
     std::string A = Operation::obj2varname(args[1], "r", true);
@@ -1673,6 +1708,41 @@ Operation &ANDx(size_t cnt, ...) {
     return *p;
 }
 
+// ANDx_L
+std::string ANDx_L_gen(GenObject **args) {
+    std::string ret = "(";
+    size_t cnt = reinterpret_cast<size_t>(args[1]);
+    Operation::set_space(Operation::get_space() + 2);
+    for (size_t i = 0; i < cnt; i++) {
+        if (i > 0) {
+            ret += "\n";
+            ret += Operation::addspaces();
+            ret += "& ";
+        }
+        ret += Operation::obj2varname(args[2 + i]);
+    }
+    Operation::set_space(Operation::get_space() - 2);
+    ret += ")";
+    return ret;
+}
+
+Operation &ANDx_L(size_t cnt, ...) {
+    Operation *p = new Operation(0, "");
+    p->setWidth(1);
+    GenObject *obj;
+    p->igen_ = ANDx_L_gen;
+    p->add_arg(p);
+    p->add_arg(reinterpret_cast<GenObject *>(cnt));
+    va_list arg;
+    va_start(arg, cnt);
+    for (int i = 0; i < cnt; i++) {
+        obj = va_arg(arg, GenObject *);
+        p->add_arg(obj);
+    }
+    va_end(arg);
+    return *p;
+}
+
 
 // DEC
 std::string DEC_gen(GenObject **args) {
@@ -1833,7 +1903,7 @@ Operation &SPLx(GenObject &a, size_t cnt, ...) {
 // CC2
 std::string CC2_gen(GenObject **args) {
     std::string A = Operation::obj2const(args[1], "r", true);
-    std::string B = Operation::obj2const(args[2]);
+    std::string B = Operation::obj2const(args[2], "r", true);
     if (SCV_is_sysc()) {
         if (args[2]->getId() == ID_CONST) {
             int w = args[2]->getWidth();
@@ -2543,7 +2613,7 @@ void SYNC_RESET(GenObject &a, GenObject *xrst, const char *comment) {
 std::string CALLF_gen(GenObject **args) {
     std::string ret = Operation::addspaces();
     if (args[1]) {
-        ret += Operation::obj2varname(args[1]) + " = ";
+        ret += Operation::obj2varname(args[1], "v") + " = ";
     }
     ret += args[2]->getName();
     ret += "(";

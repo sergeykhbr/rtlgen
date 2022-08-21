@@ -27,7 +27,7 @@ class RiverTop : public ModuleObject {
  public:
     RiverTop(GenObject *parent, const char *name);
 
- protected:
+ public:
     DefParamUI32D hartid;
     DefParamBOOL fpu_ena;
     DefParamBOOL coherence_ena;

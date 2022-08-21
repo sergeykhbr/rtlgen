@@ -19,23 +19,6 @@
 types_amba::types_amba(GenObject *parent) :
     FileObject(parent, "types_amba"),
     CFG_BUS_ADDR_WIDTH(this, "CFG_BUS_ADDR_WIDTH", "64"),
-    _Memtype0_(this),
-    REQ_MEM_TYPE_WRITE(this, "REQ_MEM_TYPE_WRITE", "0"),
-    REQ_MEM_TYPE_CACHED(this, "REQ_MEM_TYPE_CACHED", "1"),
-    REQ_MEM_TYPE_UNIQUE(this, "REQ_MEM_TYPE_UNIQUE", "2"),
-    REQ_MEM_TYPE_BITS(this, "REQ_MEM_TYPE_BITS", "3"),
-    _Snoop0_(this),
-    ReadNoSnoop(this),
-    _Snoop1_(this),
-    ReadShared(this),
-    _Snoop2_(this),
-    ReadMakeUnique(this),
-    _Snoop3_(this),
-    WriteNoSnoop(this),
-    _Snoop4_(this),
-    WriteLineUnique(this),
-    _Snoop5_(this),
-    WriteBack(this),
     _1_(this)
 {
 }
