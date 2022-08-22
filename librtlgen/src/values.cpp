@@ -122,7 +122,11 @@ size_t GenValue::parse(const char *val, size_t pos,
         out = SCV_get_cfg_parameter(m);
         sysc = m;
         sv = m;
-        sv_pkg = SCV_get_cfg_file(m) + "_pkg::" + m;
+        if (SCV_get_cfg_file(m).size()) {
+            sv_pkg = SCV_get_cfg_file(m) + "_pkg::" + m;
+        } else {
+            sv_pkg = m;
+        }
         vhdl = m;
         return pos;
     }

@@ -69,7 +69,7 @@ std::string Logic::getType() {
         } else {
             ret = std::string("logic");
         }
-        if (getWidth() > 1) {
+        if (!isNumber(getStrWidth()) || getWidth() > 1) {
             ret += " [";
             std::string w = getStrWidth();
             if (isNumber(w)) {

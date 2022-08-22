@@ -96,7 +96,7 @@ TagMem::TagMem(GenObject *parent,
                 CONNECT(tagsnoop0, 0, tagsnoop0.o_rdata, wb_tago_snoop_rdata);
             ENDNEW();
         ELSEGEN(new STRING("snoop"));
-            SETZERO(wb_tago_snoop_rdata);
+            ASSIGNZERO(wb_tago_snoop_rdata);
         ENDIFGEN(new STRING("snoop_dis"));
     ENDGENERATE("snoop_gen");
 
