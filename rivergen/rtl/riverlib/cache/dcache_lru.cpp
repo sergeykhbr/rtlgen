@@ -72,7 +72,6 @@ DCacheLru::DCacheLru(GenObject *parent, const char *name) :
     ibits(this, "ibits", "CFG_DLOG2_LINES_PER_WAY"),
     lnbits(this, "lnbits", "CFG_DLOG2_BYTES_PER_LINE"),
     flbits(this, "flbits", "DTAG_FL_TOTAL"),
-    snoop(this, "snoop", "1"),
     State_Idle(this, "4", "State_Idle", "0"),
     State_CheckHit(this, "4", "State_CheckHit", "1"),
     State_TranslateAddress(this, "4", "State_TranslateAddress", "2"),
@@ -137,7 +136,7 @@ DCacheLru::DCacheLru(GenObject *parent, const char *name) :
     req_addr_restore(this, "req_addr_restore", "CFG_CPU_ADDR_BITS"),
     // process
     comb(this),
-    mem0(this, "mem0", "abus", "waybits", "ibits", "lnbits", "flbits", "1")
+    mem0(this, "mem0", "abus", "waybits", "ibits", "lnbits", "flbits", "coherence_ena")
 {
     Operation::start(this);
 
@@ -536,7 +535,7 @@ TEXT();
         IF (EZ(BIT(req_snoop_type, cfg->SNOOP_REQ_TYPE_READCLEAN)));
             SETONE(comb.v_line_cs_write);
             SETVAL(comb.vb_line_wdata, line_rdata_o);
-            SETONE(comb.vb_line_wstrb);
+            SETVAL(comb.vb_line_wstrb, ALLONES());
             SETVAL(comb.v_line_wflags, line_rflags_o);
             SETBITZERO(comb.v_line_wflags, cfg->DTAG_FL_DIRTY);
             SETBITONE(comb.v_line_wflags, cfg->DTAG_FL_SHARED);
@@ -592,7 +591,7 @@ TEXT();
             IF (NZ(i_req_valid));
                 SETVAL(req_addr, i_req_addr);
                 SETVAL(req_wstrb, i_req_wstrb);
-                SETVAL(req_size, CC2(CONST("0"), i_req_size));
+                SETVAL(req_size, CC2(CONST("0", 1), i_req_size));
                 SETVAL(req_wdata, i_req_wdata);
                 SETVAL(req_type, i_req_type);
                 SETVAL(state, State_CheckHit);
