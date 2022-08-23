@@ -38,6 +38,7 @@ class ModuleObject : public GenObject {
     // Check registers in current module and all sub-modules to create
     // async_reset logic and always (ff) process
     virtual bool isAsyncReset();
+    virtual bool isCombProcess();
     virtual bool isRegProcess();
     virtual bool is2DimReg();
     virtual bool isSubModules();

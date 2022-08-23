@@ -18,6 +18,7 @@
 
 #include <api.h>
 #include "ambalib/ambalib_folder.h"
+#include "techmap/techmap_folder.h"
 #include "riverlib/riverlib_folder.h"
 
 
@@ -26,11 +27,13 @@ class rtl_folder : public FolderObject {
     rtl_folder(GenObject *parent) :
         FolderObject(parent, "rtl"),
         ambalib(this),
+        techmap(this),
         riverlib(this) {}
 
  protected:
     // subfolders:
     ambalib_folder ambalib;
+    techmap_folder techmap;
     riverlib_folder riverlib;
     // files
 };

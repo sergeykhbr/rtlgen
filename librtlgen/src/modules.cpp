@@ -56,9 +56,18 @@ bool ModuleObject::isAsyncReset() {
     return false;
 }
 
+bool ModuleObject::isCombProcess() {
+    for (auto &e: entries_) {
+        if (e->getId() == ID_PROCESS && e->getName() != "registers") {
+            return true;
+        }
+    }
+    return false;
+}
+
 bool ModuleObject::isRegProcess() {
     for (auto &e: entries_) {
-        if (e->isReg()) {
+        if (e->isReg() || (e->getId() == ID_PROCESS && e->getName() == "registers")) {
             return true;
         }
     }

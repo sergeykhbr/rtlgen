@@ -17,16 +17,14 @@
 #pragma once
 
 #include <api.h>
-#include "ram.h"
+#include "mem/mem_folder.h"
 
-class mem2_folder : public FolderObject {
+class techmap_folder : public FolderObject {
  public:
-    mem2_folder(GenObject *parent) :
-        FolderObject(parent, "mem2"),
-        ram_file_(this) {}
+    techmap_folder(GenObject *parent) :
+        FolderObject(parent, "techmap"),
+        mem_(this) {}
 
  protected:
-    // subfolders:
-    // files
-    ram_file ram_file_;
+    mem_folder mem_;
 };

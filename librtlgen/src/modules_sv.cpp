@@ -84,7 +84,7 @@ std::string ModuleObject::generate_sv_pkg_struct() {
     }
     // Register structure definition
     bool twodim = false;        // if 2-dimensional register array, then do not use reset function
-    if (isRegProcess()) {
+    if (isRegProcess() && isCombProcess()) {
         ret += "typedef struct {\n";
         for (auto &p: entries_) {
             if (!p->isReg()) {
@@ -373,7 +373,7 @@ std::string ModuleObject::generate_sv_mod_signals() {
         tcnt++;
     }
 
-    if (isRegProcess()) {
+    if (isRegProcess() && isCombProcess()) {
         ret += getType() + "_registers r, rin;\n";
         tcnt++;
     }
@@ -486,7 +486,9 @@ std::string ModuleObject::generate_sv_mod_proc_registers() {
         out += Operation::reset("r", 0, this, xrst);
         out += " else begin\n";
         Operation::set_space(Operation::get_space() + 1);
-        out += Operation::copyreg("r", "rin", this);
+        if (isCombProcess()) {
+            out += Operation::copyreg("r", "rin", this);
+        }
         Operation::set_space(Operation::get_space() - 1);
         out += Operation::addspaces();
         out += "end\n";
@@ -515,7 +517,9 @@ std::string ModuleObject::generate_sv_mod_proc_registers() {
     out += "\n";
     out += Operation::addspaces() + "always_ff @(posedge i_clk) begin: rg_proc\n";
     Operation::set_space(Operation::get_space() + 1);
-    out += Operation::copyreg("r", "rin", this);
+    if (isCombProcess()) {
+        out += Operation::copyreg("r", "rin", this);
+    }
     // additional operation on posedge clock events
     for (auto &e: getEntries()) {
         if (e->getId() != ID_PROCESS || e->getName() != "registers") {

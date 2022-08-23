@@ -233,7 +233,7 @@ std::string ModuleObject::generate_sysc_h() {
     }
     // Register structure definition
     bool twodim = false;        // if 2-dimensional register array, then do not use reset function
-    if (isRegProcess()) {
+    if (isRegProcess() && isCombProcess()) {
         out += "    struct " + getType() + "_registers {\n";
         for (auto &p: entries_) {
             if (!p->isReg()) {
@@ -366,11 +366,15 @@ std::string ModuleObject::generate_sysc_proc_registers() {
     out += "::registers() {\n";
     Operation::set_space(Operation::get_space() + 1);
     if (isAsyncReset()) {
-        out += Operation::reset("r", 0, this, xrst);
+        if (isCombProcess()) {
+            out += Operation::reset("r", 0, this, xrst);
+        }
         out += " else {\n";
         Operation::set_space(Operation::get_space() + 1);
     }
-    out += Operation::copyreg("r", "v", this);
+    if (isCombProcess()) {
+        out += Operation::copyreg("r", "v", this);
+    }
     if (isAsyncReset()) {
         Operation::set_space(Operation::get_space() - 1);
         out += Operation::addspaces();
@@ -834,7 +838,7 @@ std::string ModuleObject::generate_sysc_vcd() {
     ret += generate_sysc_template_f_name();
     ret += "::generateVCD(sc_trace_file *i_vcd, sc_trace_file *o_vcd) {\n";
     Operation::set_space(Operation::get_space() + 1);
-    if (isRegProcess()) {
+    if (isRegProcess() && isCombProcess()) {
         ret += Operation::addspaces() + "std::string pn(name());\n";
     }
     ret += Operation::addspaces() + "if (o_vcd) {\n";

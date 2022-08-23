@@ -17,16 +17,17 @@
 #pragma once
 
 #include <api.h>
-#include "ram.h"
+#include "ram_tech.h"
+#include "ram_cache_bwe_tech.h"
 
-class mem2_folder : public FolderObject {
+class mem_folder : public FolderObject {
  public:
-    mem2_folder(GenObject *parent) :
-        FolderObject(parent, "mem2"),
-        ram_file_(this) {}
+    mem_folder(GenObject *parent) :
+        FolderObject(parent, "mem"),
+        ram_tech_(this),
+        ram_cache_bwe_tech_(this) {}
 
  protected:
-    // subfolders:
-    // files
-    ram_file ram_file_;
+    ram_tech_file ram_tech_;
+    ram_cache_bwe_tech_file ram_cache_bwe_tech_;
 };
