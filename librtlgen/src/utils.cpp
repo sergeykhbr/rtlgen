@@ -54,7 +54,7 @@ void SCV_set_cfg_local_parameter(std::string &path,
                                std::string &file,
                                const char *name,
                                uint64_t v) {
-        CfgParameterInfo cfg;
+    CfgParameterInfo cfg;
     cfg.path = path;
     cfg.file = file;
     cfg.value = v;

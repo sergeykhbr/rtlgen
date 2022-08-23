@@ -169,6 +169,7 @@ std::string ModuleObject::generate_sv_mod_genparam() {
         if (genparam.size()) {
             ret += ",";
         }
+        ret += "\n";
         icnt++;
     }
 

@@ -151,7 +151,6 @@ class DCacheLru : public ModuleObject {
     ParamI32D ibits;
     ParamI32D lnbits;
     ParamI32D flbits;
-    ParamI32D snoop;
     ParamLogic State_Idle;
     ParamLogic State_CheckHit;
     ParamLogic State_TranslateAddress;

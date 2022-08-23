@@ -50,7 +50,7 @@ CacheTop::CacheTop(GenObject *parent, const char *name) :
     i_resp_data_ready(this, "i_resp_data_ready", "1", "CPU Core is ready to accept DCache repsonse"),
     _MemInterface0_(this, "Memory interface:"),
     i_req_mem_ready(this, "i_req_mem_ready", "1", "System Bus is ready to accept memory operation request"),
-    o_req_mem_path(this, "o_req_mem_path", "1", "0=ctrl; 1=data path"),
+    o_req_mem_path(this, "o_req_mem_path", "1", "1=ctrl; 0=data path"),
     o_req_mem_valid(this, "o_req_mem_valid", "1", "AXI memory request is valid"),
     o_req_mem_type(this, "o_req_mem_type", "REQ_MEM_TYPE_BITS", "AXI memory request type"),
     o_req_mem_size(this, "o_req_mem_size", "3", "request size: 0=1 B;...; 7=128 B"),

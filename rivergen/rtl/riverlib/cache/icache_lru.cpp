@@ -145,7 +145,7 @@ TEXT();
         IF (NZ(BIT(i_flush_address, 0)));
             SETVAL(req_flush_cnt, ALLONES());
             SETZERO(req_flush_addr);
-        ELSIF (NZ(BITS(i_flush_address, DEC(cfg->CFG_ILOG2_BYTES_PER_LINE), CONST("1"))));
+        ELSIF (NZ(BIT(i_flush_address, 0)));
             SETONE(req_flush_cnt);
             SETVAL(req_flush_addr, i_flush_address);
         ELSE();

@@ -1754,6 +1754,8 @@ std::string DEC_gen(GenObject **args) {
 Operation &DEC(GenObject &a, const char *comment) {
     Operation *p = new Operation(0, comment);
     p->igen_ = DEC_gen;
+    p->setWidth(a.getWidth());
+    p->setValue(a.getValue() - 1);
     p->add_arg(p);
     p->add_arg(&a);
     return *p;
@@ -1996,7 +1998,11 @@ std::string LSH_gen(GenObject **args) {
     if (SCV_is_sysc()) {
         A = "(" + A + " << " + B + ")";
     } else if (SCV_is_sv()) {
-        A = "(" + A + " << " + B + ")";
+        if (args[2]->getId() == ID_PARAM || args[2]->getId() == ID_CONST) {
+            A = "{" + A + " , {" + B + "{1'b0}}}";
+        } else {
+            A = "(" + A + " << " + B + ")";
+        }
     } else {
     }
     return A;
