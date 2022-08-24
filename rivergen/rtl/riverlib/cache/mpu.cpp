@@ -43,9 +43,6 @@ void MPU::proc_comb() {
     river_cfg *cfg = glob_river_cfg_;
     GenObject *i;
 
-    SETVAL(comb.v_iflags, ALLONES());
-    SETVAL(comb.v_dflags, ALLONES());
-
 TEXT();
     SETVAL(comb.vb_flags, i_region_flags);
     IF (NZ(BIT(i_region_flags, cfg->CFG_MPU_FL_ENA)));
