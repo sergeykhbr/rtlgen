@@ -45,9 +45,6 @@ TagMem::TagMem(GenObject *parent,
     TAG_BITS(this, "TAG_BITS", "SUB(SUB(abus,ibits),lnbits))"),
     TAG_WITH_FLAGS(this, "TAG_WITH_FLAGS", "ADD(TAG_BITS,flbits)"),
     wb_index(this, "wb_index", "ibits"),
-    wb_datao_rdata(this, "wb_datao_rdata", "8", "POW2(1,lnbits)"),
-    wb_datai_wdata(this, "wb_datai_wdata", "8", "POW2(1,lnbits)"),
-    w_datai_we(this, "w_datai_we", "1", "POW2(1,lnbits)"),
     wb_tago_rdata(this, "wb_tago_rdata", "TAG_WITH_FLAGS"),
     wb_tagi_wdata(this, "wb_tagi_wdata", "TAG_WITH_FLAGS"),
     w_tagi_we(this, "w_tagi_we", "1"),
@@ -59,7 +56,7 @@ TagMem::TagMem(GenObject *parent,
     snoop_tagaddr(this, "snoop_tagaddr", "TAG_BITS", "0"),
     // process
     comb(this),
-    datax(this, "datax", "POW2(1,lnbits)"),
+    data0(this, "data0", "ibits", "MUL(8,POW2(1,lnbits))"),
     tag0(this, "tag0", "ibits", "TAG_WITH_FLAGS"),
     tagsnoop0(this, "tagsnoop0", "ibits", "TAG_WITH_FLAGS")
 {
@@ -67,16 +64,14 @@ TagMem::TagMem(GenObject *parent,
     disableVcd();
 
     // Create and connet Sub-modules:
-    datax.changeTmplParameter("abits", "ibits");
-    GenObject &i = FORGEN ("i", CONST("0"), CONST("POW2(1,lnbits)"), "++", new STRING("datagen"));
-        NEW(*datax.arr_[0], datax.getName().c_str(), &i);
-            CONNECT(datax, &i, datax->i_clk, i_clk);
-            CONNECT(datax, &i, datax->i_adr, wb_index);
-            CONNECT(datax, &i, datax->i_wena, ARRITEM(w_datai_we, i, w_datai_we));
-            CONNECT(datax, &i, datax->i_wdata, ARRITEM(wb_datai_wdata, i, wb_datai_wdata));
-            CONNECT(datax, &i, datax->o_rdata, ARRITEM(wb_datao_rdata, i, wb_datao_rdata));
-        ENDNEW();
-    ENDFORGEN(new STRING("datagen"));
+    TEXT("bwe = byte write enable");
+    NEW(data0, data0.getName().c_str());
+        CONNECT(data0, 0, data0.i_clk, i_clk);
+        CONNECT(data0, 0, data0.i_addr, wb_index);
+        CONNECT(data0, 0, data0.i_wena, i_wstrb);
+        CONNECT(data0, 0, data0.i_wdata, i_wdata);
+        CONNECT(data0, 0, data0.o_rdata, o_rdata);
+    ENDNEW();
 
     NEW(tag0, tag0.getName().c_str());
         CONNECT(tag0, 0, tag0.i_clk, i_clk);
@@ -106,18 +101,6 @@ TagMem::TagMem(GenObject *parent,
 
 void TagMem::proc_comb() {
     river_cfg *cfg = glob_river_cfg_;
-    GenObject *i;
-
-    SETVAL(tagaddr, BITS(wb_tagi_wdata, DEC(TAG_BITS), CONST("0")));
-    SETVAL(index, wb_index);
-    SETVAL(snoop_tagaddr, wb_snoop_tagaddr);
-
-TEXT();
-    i = &FOR ("i", CONST("0"), CONST("POW2(1,lnbits)"), "++");
-        SETARRITEM(w_datai_we, *i, w_datai_we, BIT(i_wstrb, *i));
-        SETARRITEM(wb_datai_wdata, *i, wb_datai_wdata, TO_U32(BITSW(i_wdata, MUL2(CONST("8"), *i), CONST("8"))));
-        SETBITSW(comb.vb_rdata, MUL2(CONST("8"), *i), CONST("8"), ARRITEM(wb_datao_rdata, *i, wb_datao_rdata));
-    ENDFOR();
 
 TEXT();
     IF (EQ(tagaddr, BITS(wb_tago_rdata, DEC(TAG_BITS), CONST("0"))));
@@ -149,6 +132,10 @@ TEXT();
         ENDIF();
     ENDIF();
 
+TEXT();
+    SETVAL(tagaddr, BITS(comb.vb_tagi_wdata, DEC(TAG_BITS), CONST("0")));
+    SETVAL(index, comb.vb_index);
+    SETVAL(snoop_tagaddr, comb.vb_snoop_tagaddr);
 
 TEXT();
     SYNC_RESET(*this);
@@ -160,7 +147,6 @@ TEXT();
 
 TEXT();
     SETVAL(o_raddr, comb.vb_raddr);
-    SETVAL(o_rdata, comb.vb_rdata);
     SETVAL(o_rflags, BITS(wb_tago_rdata, DEC(TAG_WITH_FLAGS), TAG_BITS));
     SETVAL(o_hit, comb.v_hit);
 

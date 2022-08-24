@@ -17,12 +17,13 @@
 #pragma once
 
 #include <api.h>
+#include "ram_tech.h"
 
 using namespace sysvc;
 
 class ram_cache_bwe_tech : public ModuleObject {
  public:
-    ram_cache_bwe_tech(GenObject *parent, const char *name, const char *gen_abits="6", const char *gen_dbits="8");
+    ram_cache_bwe_tech(GenObject *parent, const char *name, const char *gen_abits="6", const char *gen_dbits="128");
 
     class CombProcess : public ProcObject {
      public:
@@ -38,18 +39,18 @@ class ram_cache_bwe_tech : public ModuleObject {
     TmplParamI32D dbits;
 
     InPort i_clk;
-    InPort i_adr;
+    InPort i_addr;
     InPort i_wena;
     InPort i_wdata;
     OutPort o_rdata;
 
-    ParamI32D DEPTH;
-
-    RegSignal adr;
-    WireArray<Signal> mem;
+    WireArray<Signal> wb_we;
+    WireArray<Signal> wb_wdata;
+    WireArray<Signal> wb_rdata;
 
     // process should be intialized last to make all signals available
     CombProcess comb;
+    ModuleArray<ram_tech> rx;
 };
 
 class ram_cache_bwe_tech_file : public FileObject {

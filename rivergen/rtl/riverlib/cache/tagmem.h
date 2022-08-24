@@ -18,6 +18,7 @@
 
 #include <api.h>
 #include "../river_cfg.h"
+#include "../../techmap/mem/ram_cache_bwe_tech.h"
 #include "mem/ram.h"
 
 using namespace sysvc;
@@ -38,7 +39,6 @@ class TagMem : public ModuleObject {
             ProcObject(parent, "comb"),
             vb_index(this, "vb_index", "ibits"),
             vb_raddr(this, "vb_raddr", "abus"),
-            vb_rdata(this, "vb_rdata", "MUL(8,POW2(1,lnbits))"),
             vb_tagi_wdata(this, "vb_tagi_wdata", "TAG_WITH_FLAGS"),
             v_hit(this, "v_hit", "1"),
             vb_snoop_index(this, "vb_snoop_index", "ibits"),
@@ -49,7 +49,6 @@ class TagMem : public ModuleObject {
      public:
         Logic vb_index;
         Logic vb_raddr;
-        Logic vb_rdata;
         Logic vb_tagi_wdata;
         Logic v_hit;
         Logic vb_snoop_index;
@@ -84,9 +83,6 @@ class TagMem : public ModuleObject {
     ParamI32D TAG_WITH_FLAGS;
 
     Signal wb_index;
-    WireArray<Signal> wb_datao_rdata;
-    WireArray<Signal> wb_datai_wdata;
-    WireArray<Signal> w_datai_we;
     Signal wb_tago_rdata;
     Signal wb_tagi_wdata;
     Signal w_tagi_we;
@@ -100,7 +96,7 @@ class TagMem : public ModuleObject {
     // process should be intialized last to make all signals available
     CombProcess comb;
     // sub-modules
-    ModuleArray<ram> datax;
+    ram_cache_bwe_tech data0;
     ram tag0;
     ram tagsnoop0;
 };
