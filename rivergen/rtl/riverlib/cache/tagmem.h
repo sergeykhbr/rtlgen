@@ -19,7 +19,7 @@
 #include <api.h>
 #include "../river_cfg.h"
 #include "../../techmap/mem/ram_cache_bwe_tech.h"
-#include "mem/ram.h"
+#include "../../techmap/mem/ram_tech.h"
 
 using namespace sysvc;
 
@@ -97,8 +97,8 @@ class TagMem : public ModuleObject {
     CombProcess comb;
     // sub-modules
     ram_cache_bwe_tech data0;
-    ram tag0;
-    ram tagsnoop0;
+    ram_tech tag0;
+    ram_tech tagsnoop0;
 };
 
 class tagmem_file : public FileObject {

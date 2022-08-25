@@ -27,7 +27,16 @@ class RiverTop : public ModuleObject {
  public:
     RiverTop(GenObject *parent, const char *name);
 
- public:
+    class CombProcess : public ProcObject {
+    public:
+        CombProcess(GenObject* parent)
+            : ProcObject(parent, "comb") {
+        }
+    };
+
+    void proc_comb();
+
+public:
     DefParamUI32D hartid;
     DefParamBOOL fpu_ena;
     DefParamBOOL coherence_ena;
@@ -58,6 +67,7 @@ class RiverTop : public ModuleObject {
     OutPort o_resp_snoop_valid;
     OutPort o_resp_snoop_data;
     OutPort o_resp_snoop_flags;
+    OutPort o_flush_l2;
     TextLine _Interrupts0_;
     InPort i_msip;
     InPort i_mtip;
@@ -121,6 +131,8 @@ class RiverTop : public ModuleObject {
     // Sub-module instances:
     Processor proc0;
     CacheTop cache0;
+    // process
+    CombProcess comb;
 };
 
 class river_top : public FileObject {

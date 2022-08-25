@@ -49,6 +49,7 @@ RiverTop::RiverTop(GenObject *parent, const char *name) :
     o_resp_snoop_valid(this, "o_resp_snoop_valid"),
     o_resp_snoop_data(this, "o_resp_snoop_data", "L1CACHE_LINE_BITS"),
     o_resp_snoop_flags(this, "o_resp_snoop_flags", "DTAG_FL_TOTAL"),
+    o_flush_l2(this, "o_flush_l2", "1", "Flush L2 after D$ has been finished"),
     _Interrupts0_(this, "Interrupt line from external interrupts controller (PLIC):"),
     i_msip(this, "i_msip", "1", "machine software pending interrupt"),
     i_mtip(this, "i_mtip", "1", "machine timer pending interrupt"),
@@ -108,7 +109,8 @@ RiverTop::RiverTop(GenObject *parent, const char *name) :
     w_data_flush_valid(this, "w_data_flush_valid"),
     w_data_flush_end(this, "w_data_flush_end"),
     proc0(this, "proc0"),
-    cache0(this, "cache0")
+    cache0(this, "cache0"),
+    comb(this)
 {
     Operation::start(this);
 
@@ -234,4 +236,11 @@ TEXT();
     CONNECT(cache0, 0, cache0.i_data_flush_address, wb_data_flush_address);
     CONNECT(cache0, 0, cache0.i_data_flush_valid, w_data_flush_valid);
     CONNECT(cache0, 0, cache0.o_data_flush_end, w_data_flush_end);
+
+    Operation::start(&comb);
+    proc_comb();
+}
+
+void RiverTop::proc_comb() {
+    SETVAL(o_flush_l2, w_data_flush_end);
 }

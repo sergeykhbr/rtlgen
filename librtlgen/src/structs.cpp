@@ -32,6 +32,7 @@ StructObject::StructObject(GenObject *parent,
                           : name[0] ? ID_STRUCT_INST : ID_STRUCT_DEF, name, comment) {
     type_ = std::string(type);
     idx_ = idx;
+    isface_ = false;
     if (idx != -1) {
         char tstr[256];
         RISCV_sprintf(tstr, sizeof(tstr), "%d", idx);

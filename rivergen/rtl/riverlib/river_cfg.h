@@ -237,6 +237,57 @@ class river_cfg : public FileObject {
         Logic ret_;
     };
 
+    class dport_in_type : public StructObject {
+    public:
+        dport_in_type(GenObject* parent, const char* name = "", int idx=-1, const char* comment = "")
+            : StructObject(parent, "dport_in_type", name, idx, comment),
+            haltreq("1", "haltreq", "0", this),
+            resumereq("1", "resumereq", "0", this),
+            resethaltreq("1", "resethaltreq", "0", this),
+            hartreset("1", "hartreset", "0", this),
+            req_valid("1", "req_valid", "0", this),
+            dtype("DPortReq_Total", "dtype", "0", this),
+            addr("CFG_CPU_ADDR_BITS", "addr", "0", this),
+            wdata("RISCV_ARCH", "wdata", "0", this),
+            size("3", "size", "0", this),
+            resp_ready("1", "resp_ready", "0", this) {
+            setIface();
+        }
+        dport_in_type(GenObject* parent, int idx) : dport_in_type(parent, "", idx, "") {}
+        
+    public:
+        Logic haltreq;
+        Logic resumereq;
+        Logic resethaltreq;
+        Logic hartreset;
+        Logic req_valid;
+        Logic dtype;
+        Logic addr;
+        Logic wdata;
+        Logic size;
+        Logic resp_ready;
+    };
+
+    class dport_out_type : public StructObject {
+    public:
+        dport_out_type(GenObject* parent, const char* name = "", int idx = -1, const char* comment = "")
+            : StructObject(parent, "dport_out_type", name, idx, comment),
+            req_ready("1", "req_ready", "1", this, "ready to accept request"),
+            resp_valid("1", "resp_valid", "1", this, "rdata is valid"),
+            resp_error("1", "resp_error", "0", this, "response error"),
+            rdata("RISCV_ARCH", "", "0", this) {
+            setIface();
+        }
+        dport_out_type(GenObject* parent, int idx) : dport_out_type(parent, "", idx, "") {}
+
+    public:
+        Logic req_ready;
+        Logic resp_valid;
+        Logic resp_error;
+        Logic rdata;
+    };
+
+
  public:
     ParamLogic CFG_VENDOR_ID;
     ParamLogic CFG_IMPLEMENTATION_ID;
@@ -695,6 +746,17 @@ class river_cfg : public FileObject {
     FunctionWriteLineUnique WriteLineUnique;
     TextLine _Snoop5_;
     FunctionWriteBack WriteBack;
+    TextLine _dbgiface0_;
+    TextLine _dbgiface1_;
+    TextLine _dbgiface2_;
+    dport_in_type dport_in_type_def_;
+    TextLine _dbgiface3_;
+    TStructArray<dport_in_type> dport_in_vector;
+    TextLine _dbgiface4_;
+    dport_out_type dport_out_type_def_;
+    TextLine _dbgiface5_;
+    TStructArray<dport_out_type> dport_out_vector;
+    TextLine _dbgiface6_;
     TextLine _n_;
 };
 

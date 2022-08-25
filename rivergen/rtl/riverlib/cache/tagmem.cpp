@@ -75,7 +75,7 @@ TagMem::TagMem(GenObject *parent,
 
     NEW(tag0, tag0.getName().c_str());
         CONNECT(tag0, 0, tag0.i_clk, i_clk);
-        CONNECT(tag0, 0, tag0.i_adr, wb_index);
+        CONNECT(tag0, 0, tag0.i_addr, wb_index);
         CONNECT(tag0, 0, tag0.i_wena, w_tagi_we);
         CONNECT(tag0, 0, tag0.i_wdata, wb_tagi_wdata);
         CONNECT(tag0, 0, tag0.o_rdata, wb_tago_rdata);
@@ -85,7 +85,7 @@ TagMem::TagMem(GenObject *parent,
         IFGEN (snoop, new STRING("snoop_en"));
             NEW(tagsnoop0 , tagsnoop0.getName().c_str());
                 CONNECT(tagsnoop0, 0, tagsnoop0.i_clk, i_clk);
-                CONNECT(tagsnoop0, 0, tagsnoop0.i_adr, wb_snoop_index);
+                CONNECT(tagsnoop0, 0, tagsnoop0.i_addr, wb_snoop_index);
                 CONNECT(tagsnoop0, 0, tagsnoop0.i_wena, w_tagi_we);
                 CONNECT(tagsnoop0, 0, tagsnoop0.i_wdata, wb_tagi_wdata);
                 CONNECT(tagsnoop0, 0, tagsnoop0.o_rdata, wb_tago_snoop_rdata);

@@ -18,7 +18,7 @@
 
 #include <api.h>
 #include "../river_cfg.h"
-#include "mmu_tlb.h"
+#include "../../techmap/mem/ram_mmu_tech.h"
 
 using namespace sysvc;
 
@@ -194,7 +194,7 @@ class Mmu : public ModuleObject {
     CombProcess comb;
 
     // Sub-modules:
-    MmuTlb tlb;
+    ram_mmu_tech tlb;
 };
 
 class mmu_file : public FileObject {

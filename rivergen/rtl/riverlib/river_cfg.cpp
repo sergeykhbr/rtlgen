@@ -477,6 +477,17 @@ river_cfg::river_cfg(GenObject *parent) :
     WriteLineUnique(this),
     _Snoop5_(this),
     WriteBack(this),
+    _dbgiface0_(this),
+    _dbgiface1_(this),
+    _dbgiface2_(this, "Debug interface"),
+    dport_in_type_def_(this, "dport_in_type"),
+    _dbgiface3_(this),
+    dport_in_vector(this, "dport_in_vector", "CFG_CPU_MAX"),
+    _dbgiface4_(this),
+    dport_out_type_def_(this, "dport_out_type_def_"),
+    _dbgiface5_(this),
+    dport_out_vector(this, "dport_out_vector", "CFG_CPU_MAX"),
+    _dbgiface6_(this),
     _n_(this)
 {
     glob_river_cfg_ = this;

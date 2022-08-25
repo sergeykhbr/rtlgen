@@ -30,7 +30,6 @@
 #include "fpu_d/fpu_d_folder.h"
 #include "execute.h"
 #include "memaccess.h"
-#include "mmu_tlb.h"
 #include "mmu.h"
 #include "ic_csr_m2_s1.h"
 #include "queue.h"
@@ -56,7 +55,6 @@ class core_folder : public FolderObject {
         fpu_d_folder_(this),
         execute_(this),
         memaccess_(this),
-        mmu_tlb_(this),
         mmu_(this),
         ic_(this),
         queue_(this),
@@ -81,7 +79,6 @@ class core_folder : public FolderObject {
     fpu_d_folder fpu_d_folder_;
     execute_file execute_;
     memaccess_file memaccess_;
-    mmu_tlb_file mmu_tlb_;
     mmu_file mmu_;
     ic_csr_m2_s1_file ic_;
     queue_file queue_;

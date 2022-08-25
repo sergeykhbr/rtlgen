@@ -17,52 +17,48 @@
 #pragma once
 
 #include <api.h>
-#include "../../river_cfg.h"
 
 using namespace sysvc;
 
-class ram : public ModuleObject {
+class ram_mmu_tech : public ModuleObject {
  public:
-    ram(GenObject *parent, const char *name, const char *gen_abits="6", const char *gen_dbits="8");
+    ram_mmu_tech(GenObject *parent, const char *name, const char *gen_abits="6", const char *gen_dbits="104");
 
-    class CombProcess : public ProcObject {
+    class RegistersProcess : public ProcObject {
      public:
-        CombProcess(GenObject *parent) :
-            ProcObject(parent, "comb") {
-            Operation::start(this);
-            ram *p = static_cast<ram *>(getParent());
-            p->proc_comb();
+        RegistersProcess(GenObject *parent) :
+            ProcObject(parent, "registers") {
         }
     };
 
-    void proc_comb();
+    void registers();
 
  public:
     TmplParamI32D abits;
     TmplParamI32D dbits;
 
     InPort i_clk;
-    InPort i_adr;
+    InPort i_addr;
     InPort i_wena;
     InPort i_wdata;
     OutPort o_rdata;
 
     ParamI32D DEPTH;
 
-    RegSignal adr;
-    WireArray<Signal> mem;
+    Logic rdata;
+    WireArray<Logic> mem;
 
     // process should be intialized last to make all signals available
-    CombProcess comb;
+    RegistersProcess rproc;
 };
 
-class ram_file : public FileObject {
+class ram_mmu_tech_file : public FileObject {
  public:
-    ram_file(GenObject *parent) :
-        FileObject(parent, "ram"),
-        ram_(this, "") {}
+    ram_mmu_tech_file(GenObject *parent) :
+        FileObject(parent, "ram_mmu_tech"),
+        ram_mmu_tech_(this, "") {}
 
  private:
-    ram ram_;
+    ram_mmu_tech ram_mmu_tech_;
 };
 

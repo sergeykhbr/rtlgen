@@ -110,12 +110,12 @@ Mmu::Mmu(GenObject *parent, const char *name) :
     // process
     comb(this),
     // sub-modules
-    tlb(this, "tlb")
+    tlb(this, "tlb", "CFG_MMU_TLB_AWIDTH", "CFG_MMU_PTE_DWIDTH")
 {
     Operation::start(this);
     NEW(tlb, tlb.getName().c_str());
         CONNECT(tlb, 0, tlb.i_clk, i_clk);
-        CONNECT(tlb, 0, tlb.i_adr, wb_tlb_adr);
+        CONNECT(tlb, 0, tlb.i_addr, wb_tlb_adr);
         CONNECT(tlb, 0, tlb.i_wena, w_tlb_wena);
         CONNECT(tlb, 0, tlb.i_wdata, wb_tlb_wdata);
         CONNECT(tlb, 0, tlb.o_rdata, wb_tlb_rdata);

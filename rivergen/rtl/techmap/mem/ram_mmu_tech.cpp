@@ -14,37 +14,39 @@
 //  limitations under the License.
 // 
 
-#include "ram.h"
+#include "ram_mmu_tech.h"
 
-ram::ram(GenObject *parent, const char *name, const char *gen_abits, const char *gen_dbits) :
-    ModuleObject(parent, "ram", name),
+ram_mmu_tech::ram_mmu_tech(GenObject *parent, const char *name, const char *gen_abits, const char *gen_dbits) :
+    ModuleObject(parent, "ram_mmu_tech", name),
     abits(this, "abits", gen_abits),
     dbits(this, "dbits", gen_dbits),
     i_clk(this, "i_clk", "1", "CPU clock"),
-    i_adr(this, "i_adr", &abits),
+    i_addr(this, "i_addr", &abits),
     i_wena(this, "i_wena", "1"),
     i_wdata(this, "i_wdata", &dbits),
     o_rdata(this, "o_rdata", &dbits),
     DEPTH(this, "DEPTH", "POW2(1,abits)"),
-    adr(this, "adr", "abits", "0"),
-    mem(this, "mem", "dbits", "DEPTH", true),
+    rdata(this, "rdata", "dbits"),
+    mem(this, "mem", "dbits", "DEPTH"),
     // process
-    comb(this)
+    rproc(this)
 {
+    Operation::start(this);
     mem.disableReset();
     disableVcd();
+
+    Operation::start(&rproc);
+    registers();
 }
 
-void ram::proc_comb() {
-    river_cfg *cfg = glob_river_cfg_;
-
-    SETVAL(adr, i_adr);
-
+void ram_mmu_tech::registers() {
     IF (NZ(i_wena));
-        SETARRITEM(mem, TO_INT(i_adr), mem, i_wdata);
+        SETARRITEM(mem, TO_INT(i_addr), mem, i_wdata);
+    ELSE();
+        SETVAL(rdata, ARRITEM(mem, TO_INT(i_addr), mem));
     ENDIF();
 
 TEXT();
-    SETVAL(o_rdata, ARRITEM(mem, TO_INT(adr), mem));
+    SETVAL(o_rdata, rdata);
 }
 

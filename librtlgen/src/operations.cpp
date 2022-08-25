@@ -2037,7 +2037,11 @@ std::string RSH_gen(GenObject **args) {
     if (SCV_is_sysc()) {
         A = "(" + A + " >> " + B + ")";
     } else if (SCV_is_sv()) {
-        A = "{'0, " + A + "[" + args[1]->getStrWidth() + " - 1: " + B + "]}";
+        if (args[2]->isNumber(B)) {
+            A = "{'0, " + A + "[" + args[1]->getStrWidth() + " - 1: " + B + "]}";
+        } else {
+            A = "(" + A + " >> " + B + ")";
+        }
     } else {
     }
     return A;
