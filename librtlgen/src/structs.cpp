@@ -59,11 +59,66 @@ std::string StructObject::getName() {
     return ret;
 }
 
+std::string StructObject::generate_interface() {
+    std::string ret = "";
+    std::string ln;
+
+    if (getComment().size()) {
+        ret += "// " + getComment() + "\n";
+    }
+    if (SCV_is_sysc()) {
+        ret += "class " + getType() + " {\n";
+        ret += " public:\n";
+        ret += "    " + getType() + "() {\n";
+    }
+    else {
+        ret += "typedef struct {\n";
+    }
+    Operation::set_space(Operation::get_space() + 1);
+    for (auto& p : entries_) {
+        ln = Operation::addspaces();
+        ln += p->getType() + " " + p->getName();
+        if (p->getDepth()) {
+            ln += "[";
+            if (SCV_is_sysc()) {
+                ln += p->getStrDepth();
+            }
+            else {
+                ln += "0: " + p->getStrDepth() + " - 1";
+            }
+            ln += "]";
+        }
+        ln += ";";
+        if (p->getComment().size()) {
+            while (ln.size() < 60) {
+                ln += " ";
+            }
+            ln += "// " + p->getComment();
+        }
+        ret += ln + "\n";
+    }
+    Operation::set_space(Operation::get_space() - 1);
+    ret += Operation::addspaces();
+    if (SCV_is_sysc()) {
+        ret += "};\n";
+    }
+    else {
+        ret += "} " + getType() + ";\n";
+    }
+    ret += "\n";
+    return ret;
+}
 
 std::string StructObject::generate() {
     std::string ret = "";
     std::string ln;
+
     if (getId() == ID_STRUCT_INST) {
+        return ret;
+    }
+
+    if (getParent()->getId() == ID_FILE) {
+        ret = generate_interface();
         return ret;
     }
 

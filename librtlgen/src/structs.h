@@ -36,14 +36,13 @@ class StructObject : public GenObject {
     virtual std::string getType() { return type_; }
     std::string getName() override;
     virtual std::string generate();
-    virtual void setIface() { isface_ = true; }
-    virtual bool isIface() { return isface_; }
 
  protected:
+    virtual std::string generate_interface();
+
     std::string type_;
     std::list<std::string> instances_;   // instance list
     int idx_;                            // array item index (-1) if not in an array
-    bool isface_;
 };
 
 }  // namespace sysvc
