@@ -40,6 +40,7 @@ class ArrayObject : public GenObject {
     virtual void setSelector(GenObject *sel) { sel_ = sel; }
     virtual GenObject *getSelector() { return sel_; }
     virtual GenObject *getItem() = 0;
+    virtual std::string generate() override;
  protected:
     I32D depth_;
     GenObject *sel_;

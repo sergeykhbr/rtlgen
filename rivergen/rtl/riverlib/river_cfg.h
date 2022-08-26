@@ -17,6 +17,7 @@
 #pragma once
 
 #include <api.h>
+#include "../ambalib/types_amba.h"
 
 using namespace sysvc;
 
@@ -251,7 +252,6 @@ class river_cfg : public FileObject {
             wdata("RISCV_ARCH", "wdata", "0", this),
             size("3", "size", "0", this),
             resp_ready("1", "resp_ready", "0", this) {
-            setIface();
         }
         dport_in_type(GenObject* parent, int idx) : dport_in_type(parent, "", idx, "") {}
         
@@ -275,8 +275,7 @@ class river_cfg : public FileObject {
             req_ready("1", "req_ready", "1", this, "ready to accept request"),
             resp_valid("1", "resp_valid", "1", this, "rdata is valid"),
             resp_error("1", "resp_error", "0", this, "response error"),
-            rdata("RISCV_ARCH", "", "0", this) {
-            setIface();
+            rdata("RISCV_ARCH", "rdata", "0", this) {
         }
         dport_out_type(GenObject* parent, int idx) : dport_out_type(parent, "", idx, "") {}
 
@@ -285,6 +284,79 @@ class river_cfg : public FileObject {
         Logic resp_valid;
         Logic resp_error;
         Logic rdata;
+    };
+
+    class axi4_l1_out_type : public StructObject {
+    public:
+        axi4_l1_out_type(GenObject* parent, const char* name = "", int idx = -1, const char* comment = "")
+            : StructObject(parent, "axi4_l1_out_type", name, idx, comment),
+            aw_valid("1", "aw_valid", "0", this),
+            aw_bits(this, "aw_bits"),
+            aw_id("CFG_CPU_ID_BITS", "aw_id", "0", this),
+            aw_user("1", "aw_user", "0", this),
+            w_valid("1", "w_valid", "0", this),
+            w_data("L1CACHE_LINE_BITS", "w_data", "0", this),
+            w_last("1", "w_last", "0", this),
+            w_strb("L1CACHE_BYTES_PER_LINE", "w_strb", "0", this),
+            w_user("1", "w_user", "0", this),
+            b_ready("1", "b_ready", "0", this),
+            ar_valid("1", "ar_valid", "0", this),
+            ar_bits(this, "ar_bits"),
+            ar_id("CFG_CPU_ID_BITS", "ar_id", "0", this),
+            ar_user("1", "ar_user", "0", this),
+            r_ready("1", "r_ready", "0", this),
+            _ac0_(this, "ACE signals"),
+            ar_domain("2", "ar_domain", "0", this, "00=Non-shareable (single master in domain)"),
+            ar_snoop("4", "ar_snoop", "0", this, "Table C3-7:"),
+            ar_bar("2", "ar_bar", "0", this, "read barrier transaction"),
+            aw_domain("2", "aw_domain", "0", this),
+            aw_snoop("3", "aw_snoop", "0", this, "Table C3-8"),
+            aw_bar("2", "aw_bar", "0", this, "write barrier transaction"),
+            ac_ready("1", "ac_ready", "1", this),
+            cr_valid("1", "cr_valid", "1", this),
+            cr_resp("5", "cr_resp", "0", this),
+            cd_valid("1", "cd_valid", "0", this),
+            cd_data("L1CACHE_LINE_BITS", "cd_data", "0", this),
+            cd_last("1", "cd_last", "0", this),
+            rack("1", "rack", "0", this),
+            wack("1", "wack", "0", this) {
+                extern types_amba* glob_types_amba_;
+                aw_bits.setStrValue(glob_types_amba_->META_NONE);
+                ar_bits.setStrValue(glob_types_amba_->META_NONE);
+            }
+        axi4_l1_out_type(GenObject* parent, int idx) : axi4_l1_out_type(parent, "", idx, "") {}
+
+    public:
+        Logic aw_valid;
+        types_amba::axi4_metadata_type aw_bits;
+        Logic  aw_id;
+        Logic aw_user;
+        Logic w_valid;
+        Logic w_data;
+        Logic w_last;
+        Logic w_strb;
+        Logic w_user;
+        Logic b_ready;
+        Logic ar_valid;
+        types_amba::axi4_metadata_type ar_bits;
+        Logic ar_id;
+        Logic ar_user;
+        Logic r_ready;
+        TextLine _ac0_;
+        Logic ar_domain;
+        Logic ar_snoop;
+        Logic ar_bar;
+        Logic aw_domain;
+        Logic aw_snoop;
+        Logic aw_bar;
+        Logic ac_ready;
+        Logic cr_valid;
+        Logic cr_resp;
+        Logic cd_valid;
+        Logic cd_data;
+        Logic cd_last;
+        Logic rack;
+        Logic wack;
     };
 
 
@@ -751,12 +823,21 @@ class river_cfg : public FileObject {
     TextLine _dbgiface2_;
     dport_in_type dport_in_type_def_;
     TextLine _dbgiface3_;
-    TStructArray<dport_in_type> dport_in_vector;
+    dport_in_type dport_in_none;
     TextLine _dbgiface4_;
-    dport_out_type dport_out_type_def_;
+    TStructArray<dport_in_type> dport_in_vector;
     TextLine _dbgiface5_;
-    TStructArray<dport_out_type> dport_out_vector;
+    dport_out_type dport_out_type_def_;
     TextLine _dbgiface6_;
+    TStructArray<dport_out_type> dport_out_vector;
+    TextLine _dbgiface7_;
+    TextLine _axi0_;
+    TextLine _axi1_;
+    axi4_l1_out_type axi4_l1_out_type_def;
+    TextLine _axi2_;
+    axi4_l1_out_type axi4_l1_out_none;
+    TextLine _axi3_;
+    TStructArray<axi4_l1_out_type> axi4_l1_out_vector;
     TextLine _n_;
 };
 

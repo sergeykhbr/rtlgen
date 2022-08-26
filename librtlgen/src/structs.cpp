@@ -32,7 +32,7 @@ StructObject::StructObject(GenObject *parent,
                           : name[0] ? ID_STRUCT_INST : ID_STRUCT_DEF, name, comment) {
     type_ = std::string(type);
     idx_ = idx;
-    isface_ = false;
+    strval_ = "";
     if (idx != -1) {
         char tstr[256];
         RISCV_sprintf(tstr, sizeof(tstr), "%d", idx);
@@ -62,6 +62,8 @@ std::string StructObject::getName() {
 std::string StructObject::generate_interface() {
     std::string ret = "";
     std::string ln;
+    int space = Operation::get_space();
+    Operation::set_space(0);
 
     if (getComment().size()) {
         ret += "// " + getComment() + "\n";
@@ -69,14 +71,32 @@ std::string StructObject::generate_interface() {
     if (SCV_is_sysc()) {
         ret += "class " + getType() + " {\n";
         ret += " public:\n";
-        ret += "    " + getType() + "() {\n";
-    }
-    else {
+
+        Operation::set_space(Operation::get_space() + 1);
+        // constructor member initialization
+        ret += Operation::addspaces() + getType() + "() {\n";
+        Operation::set_space(Operation::get_space() + 1);
+        for (auto& p : entries_) {
+            if (p->getId() == ID_COMMENT) {
+                ret += Operation::addspaces() + "// " + p->getName() + "\n";
+            } else {
+                ret += Operation::addspaces() + p->getName() + " = " + p->getStrValue() + ";\n";
+            }
+        }
+        Operation::set_space(Operation::get_space() - 1);
+        ret += Operation::addspaces() + "}\n";
+        Operation::set_space(Operation::get_space() - 1);
+        ret += "\n";
+        ret += " public:\n";
+    } else {
         ret += "typedef struct {\n";
     }
     Operation::set_space(Operation::get_space() + 1);
     for (auto& p : entries_) {
         ln = Operation::addspaces();
+        if (p->getId() == ID_COMMENT) {
+            ln += "//";
+        }
         ln += p->getType() + " " + p->getName();
         if (p->getDepth()) {
             ln += "[";
@@ -105,7 +125,34 @@ std::string StructObject::generate_interface() {
     else {
         ret += "} " + getType() + ";\n";
     }
-    ret += "\n";
+    Operation::set_space(space);
+    return ret;
+}
+
+std::string StructObject::generate_const_none() {
+    std::string ret = "";
+    int space = Operation::get_space();
+    Operation::set_space(0);
+
+    if (SCV_is_sysc()) {
+        ret += "static const " + getType() + " " + getName() + ";\n";
+    } else {
+        ret += "const " + getType() + " " + getName() + " = '{\n";
+        Operation::set_space(Operation::get_space() + 1);
+        for (auto& p : entries_) {
+            if (p->getId() == ID_COMMENT) {
+                continue;
+            }
+            ret += Operation::addspaces() + p->getStrValue();
+            if (p != entries_.back()) {
+                ret += ",";
+            }
+            ret += "  // " + p->getName() + "\n";
+        }
+        Operation::set_space(Operation::get_space() - 1);
+        ret += "};\n";
+    }
+    Operation::set_space(space);
     return ret;
 }
 
@@ -114,6 +161,9 @@ std::string StructObject::generate() {
     std::string ln;
 
     if (getId() == ID_STRUCT_INST) {
+        if (getParent()->getId() == ID_FILE) {
+            ret = generate_const_none();
+        }
         return ret;
     }
 
@@ -134,6 +184,9 @@ std::string StructObject::generate() {
     Operation::set_space(Operation::get_space() + 1);
     for (auto &p: entries_) {
         ln = Operation::addspaces();
+        if (p->getId() == ID_COMMENT) {
+            ln += "//";
+        }
         ln += p->getType() + " " + p->getName();
         if (p->getDepth()) {
             ln += "[";

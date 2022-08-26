@@ -17,6 +17,7 @@
 #include "files.h"
 #include "comments.h"
 #include "modules.h"
+#include "operations.h"
 #include "utils.h"
 #include <cstring>
 
@@ -204,6 +205,7 @@ void FileObject::generate_sysc() {
         "\n";
 
     // header
+    Operation::set_space(0);
     for (auto &p: entries_) {
         if (p->getId() != ID_MODULE) {
             out += p->generate();

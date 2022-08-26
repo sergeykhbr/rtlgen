@@ -34,15 +34,19 @@ class StructObject : public GenObject {
 
     /** GenObject generic methods */
     virtual std::string getType() { return type_; }
-    std::string getName() override;
+    virtual std::string getName() override;
+    virtual void setStrValue(GenObject &v) { strval_ = v.getName(); }
+    virtual std::string getStrValue() override { return strval_; }
     virtual std::string generate();
 
  protected:
     virtual std::string generate_interface();
+    virtual std::string generate_const_none();
 
     std::string type_;
     std::list<std::string> instances_;   // instance list
     int idx_;                            // array item index (-1) if not in an array
+    std::string strval_;
 };
 
 }  // namespace sysvc
