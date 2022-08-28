@@ -71,10 +71,7 @@ class Processor : public ModuleObject {
     InPort i_resp_data_er_mpu_store;
     OutPort o_resp_data_ready;
     TextLine _Interrupts0_;
-    InPort i_msip;
-    InPort i_mtip;
-    InPort i_meip;
-    InPort i_seip;
+    InPort i_irq_pending;
     TextLine _MpuInterface0_;
     OutPort o_mpu_region_we;
     OutPort o_mpu_region_idx;

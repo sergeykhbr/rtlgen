@@ -754,6 +754,13 @@ class river_cfg : public FileObject {
     ParamI32D EXCEPTION_StackOverflow;
     ParamI32D EXCEPTION_StackUnderflow;
     ParamI32D EXCEPTIONS_Total;
+    TextLine _irqcore0_;
+    TextLine _irqcore1_;
+    ParamI32D IRQ_HART_MSIP;
+    ParamI32D IRQ_HART_MTIP;
+    ParamI32D IRQ_HART_MEIP;
+    ParamI32D IRQ_HART_SEIP;
+    ParamI32D IRQ_PER_HART_TOTAL;
     TextLine _expt1_;
     ParamI32D INTERRUPT_XSoftware;
     ParamI32D INTERRUPT_XTimer;

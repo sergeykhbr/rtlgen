@@ -90,10 +90,7 @@ class CsrRegs : public ModuleObject {
     InPort i_e_halted;
     InPort i_e_pc;
     InPort i_e_instr;
-    InPort i_msip;
-    InPort i_mtip;
-    InPort i_meip;
-    InPort i_seip;
+    InPort i_irq_pending;
     OutPort o_irq_software;
     OutPort o_irq_timer;
     OutPort o_irq_external;

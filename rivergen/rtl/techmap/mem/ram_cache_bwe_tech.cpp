@@ -57,7 +57,8 @@ void ram_cache_bwe_tech::proc_comb() {
     GenObject &i = FOR ("i", CONST("0"), CONST("DIV(dbits,8)"), "++");
         SETARRITEM(wb_we, i, wb_we, BIT(i_wena, i));
         SETARRITEM(wb_wdata, i, wb_wdata, BIG_TO_U64(BITSW(i_wdata, MUL2(CONST("8"), i), CONST("8"))));
-        SETBITSW(o_rdata, MUL2(CONST("8"), i), CONST("8"), ARRITEM(wb_rdata, i, wb_rdata));
+        SETBITSW(comb.vb_rdata, MUL2(CONST("8"), i), CONST("8"), ARRITEM(wb_rdata, i, wb_rdata));
     ENDFOR();
+    SETVAL(o_rdata, comb.vb_rdata);
 }
 

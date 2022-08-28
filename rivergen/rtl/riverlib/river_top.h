@@ -69,10 +69,7 @@ public:
     OutPort o_resp_snoop_flags;
     OutPort o_flush_l2;
     TextLine _Interrupts0_;
-    InPort i_msip;
-    InPort i_mtip;
-    InPort i_meip;
-    InPort i_seip;
+    InPort i_irq_pending;
     TextLine _Debug0;
     InPort i_haltreq;
     InPort i_resumereq;

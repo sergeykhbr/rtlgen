@@ -52,10 +52,7 @@ Processor::Processor(GenObject *parent, const char *name) :
     i_resp_data_er_mpu_store(this, "i_resp_data_er_mpu_store"),
     o_resp_data_ready(this, "o_resp_data_ready", "1", "Core is ready to accept response from DCache"),
     _Interrupts0_(this, "Interrupt line from external interrupts controller (PLIC):"),
-    i_msip(this, "i_msip", "1", "machine software pending interrupt"),
-    i_mtip(this, "i_mtip", "1", "machine timer pending interrupt"),
-    i_meip(this, "i_meip", "1", "machine external pending interrupt"),
-    i_seip(this, "i_seip", "1", "supervisor external pending interrupt"),
+    i_irq_pending(this, "i_irq_pending", "IRQ_PER_HART_TOTAL", "Per Hart pending interrupts pins"),
     _MpuInterface0_(this, "MPU interface"),
     o_mpu_region_we(this, "o_mpu_region_we"),
     o_mpu_region_idx(this, "o_mpu_region_idx", "CFG_MPU_TBL_WIDTH"),
@@ -480,10 +477,7 @@ Processor::Processor(GenObject *parent, const char *name) :
         CONNECT(csr0, 0, csr0.i_e_halted, w.e.halted);
         CONNECT(csr0, 0, csr0.i_e_pc, w.e.pc);
         CONNECT(csr0, 0, csr0.i_e_instr, w.e.instr);
-        CONNECT(csr0, 0, csr0.i_msip, i_msip);
-        CONNECT(csr0, 0, csr0.i_mtip, i_mtip);
-        CONNECT(csr0, 0, csr0.i_meip, i_meip);
-        CONNECT(csr0, 0, csr0.i_seip, i_seip);
+        CONNECT(csr0, 0, csr0.i_irq_pending, i_irq_pending);
         CONNECT(csr0, 0, csr0.o_irq_software, csr.irq_software);
         CONNECT(csr0, 0, csr0.o_irq_timer, csr.irq_timer);
         CONNECT(csr0, 0, csr0.o_irq_external, csr.irq_external);

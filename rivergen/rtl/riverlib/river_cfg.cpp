@@ -19,7 +19,7 @@
 river_cfg *glob_river_cfg_ = 0;
 
 river_cfg::river_cfg(GenObject *parent) :
-    FileObject(parent, "wasserfall_cfg"),
+    FileObject(parent, "river_cfg"),
     CFG_VENDOR_ID(this, "32", "CFG_VENDOR_ID", "0x000000F1"),
     CFG_IMPLEMENTATION_ID(this, "32", "CFG_IMPLEMENTATION_ID", "0x20220813"),
     CFG_HW_FPU_ENABLE(this, "CFG_HW_FPU_ENABLE", "true"),
@@ -413,6 +413,13 @@ river_cfg::river_cfg(GenObject *parent) :
     EXCEPTION_StackOverflow(this, "EXCEPTION_StackOverflow", "16", "Stack overflow"),
     EXCEPTION_StackUnderflow(this, "EXCEPTION_StackUnderflow", "17", "Stack underflow"),
     EXCEPTIONS_Total(this, "EXCEPTIONS_Total", "18"),
+    _irqcore0_(this),
+    _irqcore1_(this, "Per Hart Interrupt bus"),
+    IRQ_HART_MSIP(this, "IRQ_HART_MSIP", "0", "machine software pening interrupt"),
+    IRQ_HART_MTIP(this, "IRQ_HART_MTIP", "1", "machine timer pening interrupt"),
+    IRQ_HART_MEIP(this, "IRQ_HART_MEIP", "2", "machine external pening interrupt"),
+    IRQ_HART_SEIP(this, "IRQ_HART_SEIP", "3", "supervisor external pening interrupt"),
+    IRQ_PER_HART_TOTAL(this, "IRQ_PER_HART_TOTAL", "4", "Total number of direct core interrupt requests"),
     _expt1_(this),
     INTERRUPT_XSoftware(this, "INTERRUPT_XSoftware", "0"),
     INTERRUPT_XTimer(this, "INTERRUPT_XTimer", "1"),

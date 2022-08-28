@@ -28,8 +28,11 @@ class ram_cache_bwe_tech : public ModuleObject {
     class CombProcess : public ProcObject {
      public:
         CombProcess(GenObject *parent) :
-            ProcObject(parent, "comb") {
+            ProcObject(parent, "comb"),
+            vb_rdata(this, "vb_rdata", "dbits") {
         }
+
+        Logic vb_rdata;
     };
 
     void proc_comb();

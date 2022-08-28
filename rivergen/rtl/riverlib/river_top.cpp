@@ -50,11 +50,8 @@ RiverTop::RiverTop(GenObject *parent, const char *name) :
     o_resp_snoop_data(this, "o_resp_snoop_data", "L1CACHE_LINE_BITS"),
     o_resp_snoop_flags(this, "o_resp_snoop_flags", "DTAG_FL_TOTAL"),
     o_flush_l2(this, "o_flush_l2", "1", "Flush L2 after D$ has been finished"),
-    _Interrupts0_(this, "Interrupt line from external interrupts controller (PLIC):"),
-    i_msip(this, "i_msip", "1", "machine software pending interrupt"),
-    i_mtip(this, "i_mtip", "1", "machine timer pending interrupt"),
-    i_meip(this, "i_meip", "1", "machine external pending interrupt"),
-    i_seip(this, "i_seip", "1", "supervisor external pending interrupt"),
+    _Interrupts0_(this, "Interrupt lines:"),
+    i_irq_pending(this, "i_irq_pending", "IRQ_PER_HART_TOTAL", "Per Hart pending interrupts pins"),
     _Debug0(this, "Debug interface:"),
     i_haltreq(this, "i_haltreq", "1", "DMI: halt request from debug unit"),
     i_resumereq(this, "i_resumereq", "1", "DMI: resume request from debug unit"),
@@ -116,9 +113,6 @@ RiverTop::RiverTop(GenObject *parent, const char *name) :
 
     // Create and connet Sub-modules:
     NEW(proc0, proc0.getName().c_str());
-    //CONNECT(proc0, 0, proc0.hartid, hartid);
-    //CONNECT(proc0, 0, proc0.fpu_ena, fpu_ena);
-    //CONNECT(proc0, 0, proc0.tracer_ena, tracer_ena);
     CONNECT(proc0, 0, proc0.i_clk, i_clk);
     CONNECT(proc0, 0, proc0.i_nrst, i_nrst);
     CONNECT(proc0, 0, proc0.i_req_ctrl_ready, w_req_ctrl_ready);
@@ -146,10 +140,7 @@ RiverTop::RiverTop(GenObject *parent, const char *name) :
     CONNECT(proc0, 0, proc0.i_resp_data_er_mpu_load, w_resp_data_er_mpu_load);
     CONNECT(proc0, 0, proc0.i_resp_data_er_mpu_store, w_resp_data_er_mpu_store);
     CONNECT(proc0, 0, proc0.o_resp_data_ready, w_resp_data_ready);
-    CONNECT(proc0, 0, proc0.i_msip, i_msip);
-    CONNECT(proc0, 0, proc0.i_mtip, i_mtip);
-    CONNECT(proc0, 0, proc0.i_meip, i_meip);
-    CONNECT(proc0, 0, proc0.i_seip, i_seip);
+    CONNECT(proc0, 0, proc0.i_irq_pending, i_irq_pending);
     CONNECT(proc0, 0, proc0.o_mpu_region_we, w_mpu_region_we);
     CONNECT(proc0, 0, proc0.o_mpu_region_idx, wb_mpu_region_idx);
     CONNECT(proc0, 0, proc0.o_mpu_region_addr, wb_mpu_region_addr);

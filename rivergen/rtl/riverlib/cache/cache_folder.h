@@ -30,7 +30,6 @@ class cache_folder : public FolderObject {
  public:
     cache_folder(GenObject *parent) :
         FolderObject(parent, "cache"),
-        mem_folder_(this),
         lrunway_(this),
         tagmem_(this),
         tagmemnway_(this),
@@ -41,8 +40,6 @@ class cache_folder : public FolderObject {
         cache_top_(this) {}
 
  protected:
-    // subfolders:
-    mem_folder mem_folder_;
     // files
     lrunway_file lrunway_;
     tagmem_file tagmem_;

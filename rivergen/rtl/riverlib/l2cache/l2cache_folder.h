@@ -17,26 +17,15 @@
 #pragma once
 
 #include <api.h>
-#include "cache/cache_folder.h"
-#include "l2cache/l2cache_folder.h"
-#include "core/core_folder.h"
-#include "river_cfg.h"
-#include "river_top.h"
+#include "l2cache_lru.h"
 
-class riverlib_folder : public FolderObject {
+class l2cache_folder : public FolderObject {
  public:
-    riverlib_folder(GenObject *parent) :
-        FolderObject(parent, "riverlib"),
-        river_cfg_(this),
-        cache_(this),
-        core_(this),
-        l2cache_(this),
-        river_top_(this) {}
+    l2cache_folder(GenObject *parent) :
+        FolderObject(parent, "l2cache"),
+        l2cache_lru_(this) {}
 
  protected:
-    river_cfg river_cfg_;
-    cache_folder cache_;
-    core_folder core_;
-    l2cache_folder l2cache_;
-    river_top river_top_;
+    // files
+    l2cache_lru_file l2cache_lru_;
 };

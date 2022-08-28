@@ -34,10 +34,7 @@ CsrRegs::CsrRegs(GenObject *parent, const char *name) :
     i_e_halted(this, "i_e_halted", "1", "core is halted confirmation flag"),
     i_e_pc(this, "i_e_pc", "CFG_CPU_ADDR_BITS", "current latched instruction pointer in executor"),
     i_e_instr(this, "i_e_instr", "32", "current latched opcode in executor"),
-    i_msip(this, "i_msip", "1", "machine software pening interrupt"),
-    i_mtip(this, "i_mtip", "1", "machine timer pening interrupt"),
-    i_meip(this, "i_meip", "1", "machine external pening interrupt"),
-    i_seip(this, "i_seip", "1", "supervisor external pening interrupt"),
+    i_irq_pending(this, "i_irq_pending", "IRQ_PER_HART_TOTAL", "Per Hart pending interrupts pins"),
     o_irq_software(this, "o_irq_software", "1", "software interrupt pending bit"),
     o_irq_timer(this, "o_irq_timer", "1", "timer interrupt pending bit"),
     o_irq_external(this, "o_irq_external", "1", "external interrupt pending bit"),
@@ -620,16 +617,16 @@ TEXT();
     ENDIF();
 
 TEXT();
-    SETVAL(msip, i_msip);
+    SETVAL(msip, BIT(i_irq_pending, cfg->IRQ_HART_MSIP));
     SETVAL(comb.v_sw_irq, AND4(msip, msie, mie, OR2(INV(dcsr_step), dcsr_stepie)));
 
 TEXT();
-    SETVAL(mtip, i_mtip);
+    SETVAL(mtip, BIT(i_irq_pending, cfg->IRQ_HART_MTIP));
     SETVAL(comb.v_tmr_irq, AND4(mtip, mtie, mie, OR2(INV(dcsr_step), dcsr_stepie)));
 
 TEXT();
-    SETVAL(meip, i_meip);
-    SETVAL(seip, i_seip);
+    SETVAL(meip, BIT(i_irq_pending, cfg->IRQ_HART_MEIP));
+    SETVAL(seip, BIT(i_irq_pending, cfg->IRQ_HART_SEIP));
     SETVAL(comb.v_ext_irq, AND4(meip, meie, mie, OR2(INV(dcsr_step), dcsr_stepie)));
 
 
