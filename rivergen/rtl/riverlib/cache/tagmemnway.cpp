@@ -72,7 +72,6 @@ TagMemNWay::TagMemNWay(GenObject *parent,
     lru0(this, "lru0", "ibits", "waybits")
 {
     Operation::start(this);
-    disableVcd();
 
     // Create and connet Sub-modules:
     wayx.changeTmplParameter("abus", "abus");

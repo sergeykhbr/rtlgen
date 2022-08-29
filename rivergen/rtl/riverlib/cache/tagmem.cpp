@@ -61,7 +61,6 @@ TagMem::TagMem(GenObject *parent,
     tagsnoop0(this, "tagsnoop0", "ibits", "TAG_WITH_FLAGS")
 {
     Operation::start(this);
-    disableVcd();
 
     // Create and connet Sub-modules:
     TEXT("bwe = byte write enable");

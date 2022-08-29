@@ -42,9 +42,8 @@ ram_tech::ram_tech(GenObject *parent, const char *name, const char *gen_abits, c
 void ram_tech::registers() {
     IF (NZ(i_wena));
         SETARRITEM(mem, TO_INT(i_addr), mem, i_wdata);
-    ELSE();
-        SETVAL(rdata, ARRITEM(mem, TO_INT(i_addr), mem));
     ENDIF();
+    SETVAL(rdata, ARRITEM(mem, TO_INT(i_addr), mem));
 
 TEXT();
     SETVAL(o_rdata, rdata);
