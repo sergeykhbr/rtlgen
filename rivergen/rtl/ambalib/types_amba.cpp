@@ -21,6 +21,12 @@ types_amba* glob_types_amba_ = 0;
 types_amba::types_amba(GenObject *parent) :
     FileObject(parent, "types_amba"),
     CFG_SYSBUS_ADDR_WIDTH(this, "CFG_SYSBUS_ADDR_WIDTH", "64"),
+    CFG_LOG2_SYSBUS_DATA_BYTES(this, "CFG_LOG2_SYSBUS_DATA_BYTES", "3"),
+    CFG_SYSBUS_ID_BITS(this, "CFG_SYSBUS_ID_BITS", "5"),
+    CFG_SYSBUS_USER_BITS(this, "CFG_SYSBUS_USER_BITS", "1"),
+    _cfgbus0_(this),
+    CFG_SYSBUS_DATA_BYTES(this, "CFG_SYSBUS_DATA_BYTES", "POW2(1,CFG_LOG2_SYSBUS_DATA_BYTES)"),
+    CFG_SYSBUS_DATA_BITS(this, "CFG_SYSBUS_DATA_BITS", "MUL(8,CFG_LOG2_SYSBUS_DATA_BYTES)"),
     _1_(this),
     _burst0_(this, "@brief Fixed address burst operation."),
     _burst1_(this, "@details The address is the same for every transfer in the burst"),
@@ -41,6 +47,19 @@ types_amba::types_amba(GenObject *parent) :
     axi4_metadata_type_def(this),
     _meta1_(this),
     META_NONE(this, "META_NONE"),
+    _xmst0_(this),
+    _xmst1_(this),
+    axi4_master_out_type_def(this, ""),
+    _xmst2_(this),
+    _xmst3_(this, "@brief   Master device empty value."),
+    _xmst4_(this, "@warning If the master is not connected to the vector begin vector value"),
+    _xmst5_(this, "         MUST BE initialized by this value."),
+    axi4_master_out_none(this, "axi4_master_out_none"),
+    _xmst6_(this),
+    _xmst7_(this, "@brief Master device input signals."),
+    axi4_master_in_type_def(this, ""),
+    _xmst8_(this),
+    axi4_master_in_none(this, "axi4_master_in_none"),
     _n_(this)
 {
     glob_types_amba_ = this;

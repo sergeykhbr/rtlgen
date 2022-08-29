@@ -287,7 +287,7 @@ class river_cfg : public FileObject {
     };
 
     class axi4_l1_out_type : public StructObject {
-    public:
+     public:
         axi4_l1_out_type(GenObject* parent, const char* name = "", int idx = -1, const char* comment = "")
             : StructObject(parent, "axi4_l1_out_type", name, idx, comment),
             aw_valid("1", "aw_valid", "0", this),
@@ -326,7 +326,7 @@ class river_cfg : public FileObject {
             }
         axi4_l1_out_type(GenObject* parent, int idx) : axi4_l1_out_type(parent, "", idx, "") {}
 
-    public:
+     public:
         Logic aw_valid;
         types_amba::axi4_metadata_type aw_bits;
         Logic  aw_id;
@@ -357,6 +357,133 @@ class river_cfg : public FileObject {
         Logic cd_last;
         Logic rack;
         Logic wack;
+    };
+
+    class axi4_l1_in_type : public StructObject {
+     public:
+        axi4_l1_in_type(GenObject* parent, const char* name = "", int idx = -1, const char* comment = "")
+            : StructObject(parent, "axi4_l1_in_type", name, idx, comment),
+            aw_ready("1", "aw_ready", "0", this),
+            w_ready("1", "w_ready", "0", this),
+            b_valid("1", "b_valid", "0", this),
+            b_resp("2", "b_resp", "0", this),
+            b_id("CFG_CPU_ID_BITS", "b_id", "0", this),
+            b_user("1", "b_user", "0", this),
+            ar_ready("1", "ar_ready", "0", this),
+            r_valid("1", "r_valid", "0", this),
+            r_resp("4", "r_resp", "0", this),
+            r_data("L1CACHE_LINE_BITS", "r_data", "0", this),
+            r_last("1", "r_last", "0", this),
+            r_id("CFG_CPU_ID_BITS", "r_id", "0", this),
+            r_user("1", "r_user", "0", this),
+            ac_valid("1", "ac_valid", "0", this),
+            ac_addr("CFG_CPU_ADDR_BITS", "ac_addr", "0", this),
+            ac_snoop("4", "ac_snoop", "0", this, "Table C3-19"),
+            ac_prot("3", "ac_prot", "0", this),
+            cr_ready("1", "cr_ready", "1", this),
+            cd_ready("1", "cd_ready", "1", this) {
+        }
+        axi4_l1_in_type(GenObject* parent, int idx) : axi4_l1_in_type(parent, "", idx, "") {}
+
+     public:
+        Logic aw_ready;
+        Logic w_ready;
+        Logic b_valid;
+        Logic b_resp;
+        Logic b_id;
+        Logic b_user;
+        Logic ar_ready;
+        Logic r_valid;
+        Logic r_resp;
+        Logic r_data;
+        Logic r_last;
+        Logic r_id;
+        Logic r_user;
+        Logic ac_valid;
+        Logic ac_addr;
+        Logic ac_snoop;
+        Logic ac_prot;
+        Logic cr_ready;
+        Logic cd_ready;
+    };
+
+    class axi4_l2_out_type : public StructObject {
+     public:
+        axi4_l2_out_type(GenObject* parent, const char* name = "", int idx = -1, const char* comment = "")
+            : StructObject(parent, "axi4_l2_out_type", name, idx, comment),
+            aw_valid("1", "aw_valid", "0", this),
+            aw_bits(this, "aw_bits"),
+            aw_id("CFG_CPU_ID_BITS", "aw_id", "0", this),
+            aw_user("1", "aw_user", "0", this),
+            w_valid("1", "w_valid", "0", this),
+            w_data("L2CACHE_LINE_BITS", "w_data", "0", this),
+            w_last("1", "w_last", "0", this),
+            w_strb("L2CACHE_BYTES_PER_LINE", "w_strb", "0", this),
+            w_user("1", "w_user", "0", this),
+            b_ready("1", "b_ready", "0", this),
+            ar_valid("1", "ar_valid", "0", this),
+            ar_bits(this, "ar_bits"),
+            ar_id("CFG_CPU_ID_BITS", "ar_id", "0", this),
+            ar_user("1", "ar_user", "0", this),
+            r_ready("1", "r_ready", "0", this) {
+            extern types_amba* glob_types_amba_;
+            aw_bits.setStrValue(glob_types_amba_->META_NONE);
+            ar_bits.setStrValue(glob_types_amba_->META_NONE);
+        }
+        axi4_l2_out_type(GenObject* parent, int idx) : axi4_l2_out_type(parent, "", idx, "") {}
+
+     public:
+        Logic aw_valid;
+        types_amba::axi4_metadata_type aw_bits;
+        Logic  aw_id;
+        Logic aw_user;
+        Logic w_valid;
+        Logic w_data;
+        Logic w_last;
+        Logic w_strb;
+        Logic w_user;
+        Logic b_ready;
+        Logic ar_valid;
+        types_amba::axi4_metadata_type ar_bits;
+        Logic ar_id;
+        Logic ar_user;
+        Logic r_ready;
+    };
+
+    class axi4_l2_in_type : public StructObject {
+     public:
+        axi4_l2_in_type(GenObject* parent, const char* name = "", int idx = -1, const char* comment = "")
+            : StructObject(parent, "axi4_l2_in_type", name, idx, comment),
+            aw_ready("1", "aw_ready", "0", this),
+            w_ready("1", "w_ready", "0", this),
+            b_valid("1", "b_valid", "0", this),
+            b_resp("2", "b_resp", "0", this),
+            b_id("CFG_CPU_ID_BITS", "b_id", "0", this, "create ID for L2?"),
+            b_user("1", "b_user", "0", this),
+            ar_ready("1", "ar_ready", "0", this),
+            r_valid("1", "r_valid", "0", this),
+            r_resp("2", "r_resp", "0", this),
+            r_data("L2CACHE_LINE_BITS", "r_data", "0", this),
+            r_last("1", "r_last", "0", this),
+            r_id("CFG_CPU_ID_BITS", "r_id", "0", this),
+            r_user("1", "r_user", "0", this) {
+        }
+        axi4_l2_in_type(GenObject* parent, int idx) : axi4_l2_in_type(parent, "", idx, "") {}
+
+     public:
+        Logic aw_ready;
+        Logic w_ready;
+        Logic b_valid;
+        Logic b_resp;
+        Logic b_id;
+        Logic b_user;
+        Logic ar_ready;
+        Logic r_valid;
+        Logic r_resp;
+        Logic r_data;
+        Logic r_last;
+        Logic r_id;
+        Logic r_user;
     };
 
 
@@ -844,7 +971,21 @@ class river_cfg : public FileObject {
     TextLine _axi2_;
     axi4_l1_out_type axi4_l1_out_none;
     TextLine _axi3_;
+    axi4_l1_in_type axi4_l1_in_type_def;
+    TextLine _axi4_;
+    axi4_l1_in_type axi4_l1_in_none;
+    TextLine _axi5_;
+    TStructArray<axi4_l1_in_type> axi4_l1_in_vector;
     TStructArray<axi4_l1_out_type> axi4_l1_out_vector;
+    TextLine _axi6_;
+    axi4_l2_out_type axi4_l2_out_type_def;
+    TextLine _axi7_;
+    axi4_l2_out_type axi4_l2_out_none;
+    TextLine _axi8_;
+    axi4_l2_in_type axi4_l2_in_type_def;
+    TextLine _axi9_;
+    axi4_l2_in_type axi4_l2_in_none;
+    TextLine _axi10_;
     TextLine _n_;
 };
 

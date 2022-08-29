@@ -503,7 +503,21 @@ river_cfg::river_cfg(GenObject *parent) :
     _axi2_(this),
     axi4_l1_out_none(this, "axi4_l1_out_none"),
     _axi3_(this),
+    axi4_l1_in_type_def(this),
+    _axi4_(this),
+    axi4_l1_in_none(this, "axi4_l1_in_none"),
+    _axi5_(this),
+    axi4_l1_in_vector(this, "axi4_l1_in_vector", "CFG_SLOT_L1_TOTAL"),
     axi4_l1_out_vector(this, "axi4_l1_out_vector", "CFG_SLOT_L1_TOTAL"),
+    _axi6_(this),
+    axi4_l2_out_type_def(this, ""),
+    _axi7_(this),
+    axi4_l2_out_none(this, "axi4_l2_out_none"),
+    _axi8_(this),
+    axi4_l2_in_type_def(this, ""),
+    _axi9_(this),
+    axi4_l2_in_none(this, "axi4_l2_in_none"),
+    _axi10_(this),
     _n_(this)
 {
     glob_river_cfg_ = this;

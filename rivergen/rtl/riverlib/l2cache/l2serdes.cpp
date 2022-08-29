@@ -14,21 +14,31 @@
 //  limitations under the License.
 // 
 
-#pragma once
-
-#include <api.h>
-#include "l2cache_lru.h"
 #include "l2serdes.h"
 
-class l2cache_folder : public FolderObject {
- public:
-    l2cache_folder(GenObject *parent) :
-        FolderObject(parent, "l2cache"),
-        l2cache_lru_(this),
-        l2serdes_(this) {}
+L2SerDes::L2SerDes(GenObject *parent, const char *name) :
+    ModuleObject(parent, "L2CacheLru", name),
+    i_clk(this, "i_clk", "1", "CPU clock"),
+    i_nrst(this, "i_nrst", "1", "Reset: active LOW"),
+    o_l2i(this, "o_l2i"),
+    i_l2o(this, "i_l2o"),
+    i_msti(this, "i_msti"),
+    o_msto(this, "o_msto"),
+    // params
+    // signals
+    // registers
+    // process
+    comb(this)
+{
+    Operation::start(this);
 
- protected:
-    // files
-    l2cache_lru_file l2cache_lru_;
-    l2serdes_file l2serdes_;
-};
+    Operation::start(&comb);
+    proc_comb();
+}
+
+void L2SerDes::proc_comb() {
+    river_cfg *cfg = glob_river_cfg_;
+    GenObject *i;
+
+
+}

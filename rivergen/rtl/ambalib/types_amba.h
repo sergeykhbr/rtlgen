@@ -25,7 +25,7 @@ class types_amba : public FileObject {
     types_amba(GenObject *parent);
 
     class axi4_metadata_type : public StructObject {
-    public:
+     public:
         axi4_metadata_type(GenObject* parent, const char* name = "", const char* comment = "")
             : StructObject(parent, "axi4_metadata_type", name, -1, comment),
             addr("CFG_SYSBUS_ADDR_WIDTH", "addr", "0", this),
@@ -78,9 +78,8 @@ class types_amba : public FileObject {
             _region3_(this, "         similar to the banks implementation in Leon3 without address"),
             _region4_(this, "         decoding."),
             region("4", "region", "0", this) {
-    }
-
-    public:
+        }
+     public:
         Logic addr;
         TextLine _len0_;
         TextLine _len1_;
@@ -133,8 +132,99 @@ class types_amba : public FileObject {
         Logic region;
     };
 
+    class axi4_master_out_type : public StructObject {
+     public:
+        axi4_master_out_type(GenObject* parent, const char* name = "", int idx = -1, const char* comment = "")
+            : StructObject(parent, "axi4_master_out_type", name, idx, comment),
+            aw_valid("1", "aw_valid", "0", this),
+            aw_bits(this, "aw_bits"),
+            aw_id("CFG_SYSBUS_ID_BITS", "aw_id", "0", this),
+            aw_user("CFG_SYSBUS_USER_BITS", "aw_user", "0", this),
+            w_valid("1", "w_valid", "0", this),
+            w_data("CFG_SYSBUS_DATA_BITS", "w_data", "0", this),
+            w_last("1", "w_last", "0", this),
+            w_strb("CFG_SYSBUS_DATA_BYTES", "w_strb", "0", this),
+            w_user("CFG_SYSBUS_USER_BITS", "w_user", "0", this),
+            b_ready("1", "b_ready", "0", this),
+            ar_valid("1", "ar_valid", "0", this),
+            ar_bits(this, "ar_bits"),
+            ar_id("CFG_SYSBUS_ID_BITS", "ar_id", "0", this),
+            ar_user("CFG_SYSBUS_USER_BITS", "ar_user", "0", this),
+            r_ready("1", "r_ready", "0", this) {
+            extern types_amba* glob_types_amba_;
+            if (glob_types_amba_) {
+                aw_bits.setStrValue(glob_types_amba_->META_NONE);
+                ar_bits.setStrValue(glob_types_amba_->META_NONE);
+            } else {
+                types_amba *p = static_cast<types_amba *>(parent);
+                aw_bits.setStrValue(p->META_NONE);
+                ar_bits.setStrValue(p->META_NONE);
+            }
+        }
+        axi4_master_out_type(GenObject* parent, int idx) : axi4_master_out_type(parent, "", idx, "") {}
+
+    public:
+        Logic aw_valid;
+        axi4_metadata_type aw_bits;
+        Logic  aw_id;
+        Logic aw_user;
+        Logic w_valid;
+        Logic w_data;
+        Logic w_last;
+        Logic w_strb;
+        Logic w_user;
+        Logic b_ready;
+        Logic ar_valid;
+        axi4_metadata_type ar_bits;
+        Logic ar_id;
+        Logic ar_user;
+        Logic r_ready;
+    };
+
+    class axi4_master_in_type : public StructObject {
+     public:
+        axi4_master_in_type(GenObject* parent, const char* name = "", int idx = -1, const char* comment = "")
+            : StructObject(parent, "axi4_master_in_type", name, idx, comment),
+            aw_ready("1", "aw_ready", "0", this),
+            w_ready("1", "w_ready", "0", this),
+            b_valid("1", "b_valid", "0", this),
+            b_resp("2", "b_resp", "0", this),
+            b_id("CFG_SYSBUS_ID_BITS", "b_id", "0", this),
+            b_user("CFG_SYSBUS_USER_BITS", "b_user", "0", this),
+            ar_ready("1", "ar_ready", "0", this),
+            r_valid("1", "r_valid", "0", this),
+            r_resp("2", "r_resp", "0", this),
+            r_data("CFG_SYSBUS_DATA_BITS", "r_data", "0", this),
+            r_last("1", "r_last", "0", this),
+            r_id("CFG_SYSBUS_ID_BITS", "r_id", "0", this),
+            r_user("CFG_SYSBUS_USER_BITS", "r_user", "0", this) {
+        }
+        axi4_master_in_type(GenObject* parent, int idx) : axi4_master_in_type(parent, "", idx, "") {}
+
+     public:
+        Logic aw_ready;
+        Logic w_ready;
+        Logic b_valid;
+        Logic b_resp;
+        Logic b_id;
+        Logic b_user;
+        Logic ar_ready;
+        Logic r_valid;
+        Logic r_resp;
+        Logic r_data;
+        Logic r_last;
+        Logic r_id;
+        Logic r_user;
+    };
+
  public:
     ParamI32D CFG_SYSBUS_ADDR_WIDTH;
+    ParamI32D CFG_LOG2_SYSBUS_DATA_BYTES;
+    ParamI32D CFG_SYSBUS_ID_BITS;
+    ParamI32D CFG_SYSBUS_USER_BITS;
+    TextLine _cfgbus0_;
+    ParamI32D CFG_SYSBUS_DATA_BYTES;
+    ParamI32D CFG_SYSBUS_DATA_BITS;
     TextLine _1_;
     TextLine _burst0_;
     TextLine _burst1_;
@@ -155,6 +245,19 @@ class types_amba : public FileObject {
     axi4_metadata_type axi4_metadata_type_def;
     TextLine _meta1_;
     axi4_metadata_type META_NONE;
+    TextLine _xmst0_;
+    TextLine _xmst1_;
+    axi4_master_out_type axi4_master_out_type_def;
+    TextLine _xmst2_;
+    TextLine _xmst3_;
+    TextLine _xmst4_;
+    TextLine _xmst5_;
+    axi4_master_out_type axi4_master_out_none;
+    TextLine _xmst6_;
+    TextLine _xmst7_;
+    axi4_master_in_type axi4_master_in_type_def;
+    TextLine _xmst8_;
+    axi4_master_in_type axi4_master_in_none;
     TextLine _n_;
 };
 

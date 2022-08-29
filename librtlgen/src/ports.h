@@ -20,6 +20,8 @@
 #include "params.h"
 #include "logic.h"
 #include "values.h"
+#include "structs.h"
+#include "utils.h"
 #include <iostream>
 
 namespace sysvc {
@@ -57,5 +59,55 @@ class OutPort : public Logic {
 
     virtual std::string getType() override;
 };
+
+
+template<class T>
+class InStruct : public GenObject {
+public:
+    InStruct(GenObject* parent, const char* name, const char* comment = "")
+        : GenObject(parent, ID_INPUT, name, comment), s_(0, name) {
+    }
+    virtual std::string getType() override {
+        std::string out = "";
+        if (SCV_is_sysc()) {
+            out += "sc_in<" + s_.getType() + ">";
+        } else if (SCV_is_sv()) {
+            SCV_set_generator(SV_PKG);  // to generate with package name
+            out += "input " + s_.getType();
+            SCV_set_generator(SV_ALL);
+        } else {
+        }
+        return out;
+    }
+    T* operator->() const { return &s_; }
+
+ protected:
+    T s_;
+};
+
+template<class T>
+class OutStruct : public GenObject {
+public:
+    OutStruct(GenObject* parent, const char* name, const char* comment = "")
+        : GenObject(parent, ID_OUTPUT, name, comment), s_(0, name) {
+    }
+    virtual std::string getType() override {
+        std::string out = "";
+        if (SCV_is_sysc()) {
+            out += "sc_out<" + s_.getType() + ">";
+        } else if (SCV_is_sv()) {
+            SCV_set_generator(SV_PKG);  // to generate with package name
+            out += "output " + s_.getType();
+            SCV_set_generator(SV_ALL);
+        } else {
+        }
+        return out;
+    }
+    T* operator->() const { return &s_; }
+
+ protected:
+    T s_;
+};
+
 
 }  // namespace sysvc
