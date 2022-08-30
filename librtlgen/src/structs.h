@@ -40,6 +40,7 @@ class StructObject : public GenObject {
     virtual std::string generate();
 
  protected:
+    virtual void registerCfgType(const char *name);
     virtual std::string generate_interface();
     virtual std::string generate_const_none();
 

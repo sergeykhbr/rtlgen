@@ -160,6 +160,7 @@ class types_amba : public FileObject {
                 aw_bits.setStrValue(p->META_NONE);
                 ar_bits.setStrValue(p->META_NONE);
             }
+            registerCfgType(name);
         }
         axi4_master_out_type(GenObject* parent, int idx) : axi4_master_out_type(parent, "", idx, "") {}
 
@@ -198,6 +199,7 @@ class types_amba : public FileObject {
             r_last("1", "r_last", "0", this),
             r_id("CFG_SYSBUS_ID_BITS", "r_id", "0", this),
             r_user("CFG_SYSBUS_USER_BITS", "r_user", "0", this) {
+            registerCfgType(name);
         }
         axi4_master_in_type(GenObject* parent, int idx) : axi4_master_in_type(parent, "", idx, "") {}
 

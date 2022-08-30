@@ -72,14 +72,17 @@ public:
         if (SCV_is_sysc()) {
             out += "sc_in<" + s_.getType() + ">";
         } else if (SCV_is_sv()) {
-            SCV_set_generator(SV_PKG);  // to generate with package name
-            out += "input " + s_.getType();
-            SCV_set_generator(SV_ALL);
+            out += "input ";
+            if (SCV_get_cfg_file(s_.getType()).size()) {
+                out += SCV_get_cfg_file(s_.getType()) + "_pkg::";
+            }
+            out += s_.getType();
         } else {
         }
         return out;
     }
     T* operator->() const { return &s_; }
+    T* operator->() { return &s_; }
 
  protected:
     T s_;
@@ -96,9 +99,11 @@ public:
         if (SCV_is_sysc()) {
             out += "sc_out<" + s_.getType() + ">";
         } else if (SCV_is_sv()) {
-            SCV_set_generator(SV_PKG);  // to generate with package name
-            out += "output " + s_.getType();
-            SCV_set_generator(SV_ALL);
+            out += "output ";
+            if (SCV_get_cfg_file(s_.getType()).size()) {
+                out += SCV_get_cfg_file(s_.getType()) + "_pkg::";
+            }
+            out += s_.getType();
         } else {
         }
         return out;

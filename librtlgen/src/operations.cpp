@@ -839,7 +839,8 @@ std::string SETVAL_gen(GenObject **args) {
     } else if (args[2]->getId() == ID_VALUE
             || args[2]->getId() == ID_INPUT
             || args[2]->getId() == ID_SIGNAL
-            || args[2]->getId() == ID_PARAM) {
+            || args[2]->getId() == ID_PARAM
+            || args[2]->getId() == ID_STRUCT_INST) {
         ret += Operation::obj2varname(args[2]);
     } else {
         ret += args[2]->generate();

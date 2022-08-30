@@ -29,10 +29,43 @@ class L2SerDes : public ModuleObject {
     class CombProcess : public ProcObject {
      public:
         CombProcess(GenObject *parent) :
-            ProcObject(parent, "comb") {
+            ProcObject(parent, "comb"),
+            v_req_mem_ready(this, "v_req_mem_ready", "1"),
+            vb_r_data(this, "vb_r_data", "busw"),
+            vb_line_o(this, "vb_line_o", "linew"),
+            v_r_valid(this, "v_r_valid", "1"),
+            v_w_valid(this, "v_w_valid", "1"),
+            v_w_last(this, "v_w_last", "1"),
+            v_w_ready(this, "v_w_ready", "1"),
+            vb_len(this, "vb_len", "8"),
+            vl2i(this, "vl2i"),
+            vmsto(this, "vmsto") {
         }
 
      public:
+        Logic v_req_mem_ready;
+        Logic vb_r_data;
+        Logic vb_line_o;
+        Logic v_r_valid;
+        Logic v_w_valid;
+        Logic v_w_last;
+        Logic v_w_ready;
+        Logic vb_len;
+        river_cfg::axi4_l2_in_type vl2i;
+        types_amba::axi4_master_out_type vmsto;
+    };
+
+    class Size2LenFunction : public FunctionObject {
+     public:
+        Size2LenFunction(GenObject *parent);
+        virtual std::string getType() override { return ret.getType(); }
+        virtual void getArgsList(std::list<GenObject *> &args) {
+            args.push_back(&size);
+        }
+        virtual GenObject *getpReturn() { return &ret; }
+     protected:
+        Logic ret;
+        Logic size;
     };
 
     void proc_comb();
@@ -46,6 +79,23 @@ class L2SerDes : public ModuleObject {
     InStruct<types_amba::axi4_master_in_type> i_msti;
     OutStruct<types_amba::axi4_master_out_type> o_msto;
 
+    ParamI32D linew;
+    ParamI32D busw;
+    ParamI32D lineb;
+    ParamI32D busb;
+    ParamI32D SERDES_BURST_LEN;
+    ParamLogic State_Idle;
+    ParamLogic State_Read;
+    ParamLogic State_Write;
+
+    RegSignal state;
+    RegSignal req_len;
+    RegSignal b_wait;
+    RegSignal line;
+    RegSignal wstrb;
+    RegSignal rmux;
+
+    Size2LenFunction size2len;
     CombProcess comb;
 };
 

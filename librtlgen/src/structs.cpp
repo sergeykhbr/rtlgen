@@ -59,6 +59,17 @@ std::string StructObject::getName() {
     return ret;
 }
 
+void StructObject::registerCfgType(const char *name) {
+    if (name[0] == '\0') {
+        std::string path = getFullPath();
+        std::string file = getFile();
+        SCV_set_cfg_parameter(path,
+                              file,
+                              StructObject::getType().c_str(),
+                              0);
+    }
+}
+
 std::string StructObject::generate_interface() {
     std::string ret = "";
     std::string ln;

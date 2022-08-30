@@ -266,8 +266,9 @@ void FileObject::getPkgList(std::list<std::string> &lst, size_t tmplsz) {
         if (f == thisfile) {
             continue;
         }
-        if (strstr(f.c_str(), "_cfg") == 0) {
-            // only configuration files in system verilog
+        if (strstr(f.c_str(), "_cfg") == 0 && strstr(f.c_str(), "types_") == 0) {
+            // only configuration files and datatypes in system verilog ignoring
+            // sub-modules packages
             continue;
         }
         fullPath2vector(f.c_str(), subs);
