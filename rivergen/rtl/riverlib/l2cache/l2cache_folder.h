@@ -19,6 +19,7 @@
 #include <api.h>
 #include "l2cache_lru.h"
 #include "l2_amba.h"
+#include "l2_dst.h"
 #include "l2serdes.h"
 
 class l2cache_folder : public FolderObject {
@@ -27,11 +28,13 @@ class l2cache_folder : public FolderObject {
         FolderObject(parent, "l2cache"),
         l2cache_lru_(this),
         l2_amba_(this),
+        l2_dst_(this),
         l2serdes_(this) {}
 
  protected:
     // files
     l2cache_lru_file l2cache_lru_;
     l2_amba_file l2_amba_;
+    l2_dst_file l2_dst_;
     l2serdes_file l2serdes_;
 };
