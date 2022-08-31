@@ -2156,7 +2156,14 @@ std::string SETARRITEM_gen(GenObject **args) {
     ret += Operation::obj2varname(args[3], "v");
     ret += " = ";
     ret += Operation::obj2varname(args[4]);
-    ret += ";\n";
+    ret += ";";
+    if (args[0]->getComment().size()) {
+        while (ret.size() < 60) {
+            ret += " ";
+        }
+        ret += "// " + args[0]->getComment();
+    }
+    ret += "\n";
     return ret;
 }
 
@@ -2197,14 +2204,20 @@ std::string IF_gen(GenObject **args) {
     }
     ret += "if " + A;
     if (SCV_is_sysc()) {
-        ret += " {\n";
+        ret += " {";
     } else {
         ret += " begin";
         if (args[2]) {
             ret += ": " + args[2]->getStrValue().substr(1, args[2]->getStrValue().size()-2);
         }
-        ret += "\n";
     }
+    if (args[0]->getComment().size()) {
+        while (ret.size() < 60) {
+            ret += " ";
+        }
+        ret += "// " + args[0]->getComment();
+    }
+    ret += "\n";
     return ret;
 }
 

@@ -33,6 +33,7 @@ class L2Destination : public ModuleObject {
             vlxi(this, "vlxi", "CFG_SLOT_L1_TOTAL"),
             vb_src_aw(this, "vb_src_aw", "CFG_SLOT_L1_TOTAL"),
             vb_src_ar(this, "vb_src_ar", "CFG_SLOT_L1_TOTAL"),
+            vb_broadband_mask_full(this, "vb_broadband_mask_full", "ADD(CFG_SLOT_L1_TOTAL,1)"),
             vb_broadband_mask(this, "vb_broadband_mask", "ADD(CFG_SLOT_L1_TOTAL,1)"),
             vb_ac_valid(this, "vb_ac_valid", "ADD(CFG_SLOT_L1_TOTAL,1)"),
             vb_cr_ready(this, "vb_cr_ready", "ADD(CFG_SLOT_L1_TOTAL,1)"),
@@ -47,6 +48,7 @@ class L2Destination : public ModuleObject {
         TStructArray<river_cfg::axi4_l1_in_type> vlxi;
         Logic vb_src_aw;
         Logic vb_src_ar;
+        Logic vb_broadband_mask_full;
         Logic vb_broadband_mask;
         Logic vb_ac_valid;
         Logic vb_cr_ready;

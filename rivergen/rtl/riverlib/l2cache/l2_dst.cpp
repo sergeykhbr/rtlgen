@@ -50,7 +50,7 @@ L2Destination::L2Destination(GenObject *parent, const char *name) :
     WriteMem(this, "3", "WriteMem", "4"),
     snoop_ac(this, "3", "snoop_ac", "5"),
     snoop_cr(this, "3", "snoop_cr", "6"),
-    snoop_cd(this, "3", "snoop_c", "7"),
+    snoop_cd(this, "3", "snoop_cd", "7"),
     // signals
     // registers
     state(this, "state", "3", "Idle"),
@@ -78,6 +78,7 @@ L2Destination::L2Destination(GenObject *parent, const char *name) :
 
 void L2Destination::proc_comb() {
     river_cfg *cfg = glob_river_cfg_;
+    types_amba *amba = glob_types_amba_;
     GenObject *i;
 
     SETVAL(comb.vb_req_type, req_type);
@@ -88,7 +89,6 @@ TEXT();
     SETARRITEM(comb.vcoreo, 2, i_l1o1);
     SETARRITEM(comb.vcoreo, 3, i_l1o2);
     SETARRITEM(comb.vcoreo, 4, i_l1o3);
-    SETARRITEM(comb.vcoreo, 5, cfg->axi4_l1_out_none);
 
 TEXT();
     SETVAL(comb.vb_srcid, cfg->CFG_SLOT_L1_TOTAL);
@@ -99,6 +99,7 @@ TEXT();
         SETBIT(comb.vb_src_aw, *i, ARRITEM(comb.vcoreo, *i, comb.vcoreo->aw_valid));
         SETBIT(comb.vb_src_ar, *i, ARRITEM(comb.vcoreo, *i, comb.vcoreo->ar_valid));
     ENDFOR();
+    SETARRITEM(comb.vcoreo, cfg->CFG_SLOT_L1_TOTAL, comb.vcoreo, cfg->axi4_l1_out_none);
 
 TEXT();
     TEXT("select source (aw has higher priority):");
@@ -122,7 +123,9 @@ TEXT();
     SETVAL(comb.vb_cd_ready, cd_ready);
 
 TEXT();
-    SETVAL(comb.vb_broadband_mask, CONST("0x1E", 5), "exclude acp");
+    SETVAL(comb.vb_broadband_mask_full, ALLONES());
+    SETBITZERO(comb.vb_broadband_mask_full, cfg->CFG_SLOT_L1_TOTAL, "exclude empty slot");
+    SETVAL(comb.vb_broadband_mask, comb.vb_broadband_mask_full);
     SETBITZERO(comb.vb_broadband_mask, TO_INT(comb.vb_srcid), "exclude source");
 
 TEXT();
@@ -142,7 +145,7 @@ TEXT();
             SETBITONE(comb.vb_req_type, cfg->L2_REQ_TYPE_WRITE);
             IF (NZ(BIT(ARRITEM(comb.vcoreo, TO_INT(comb.vb_srcid), comb.vcoreo->aw_bits.cache), 0)));
                 SETBITONE(comb.vb_req_type, cfg->L2_REQ_TYPE_CACHED);
-                IF (EQ(ARRITEM(comb.vcoreo, TO_INT(comb.vb_srcid), comb.vcoreo->aw_snoop), cfg->AWSNOOP_WRITE_LINE_UNIQUE));
+                IF (EQ(ARRITEM(comb.vcoreo, TO_INT(comb.vb_srcid), comb.vcoreo->aw_snoop), amba->AWSNOOP_WRITE_LINE_UNIQUE));
                     SETBITONE(comb.vb_req_type, cfg->L2_REQ_TYPE_UNIQUE);
                     SETVAL(ac_valid, comb.vb_broadband_mask);
                     SETZERO(cr_ready);
@@ -152,19 +155,25 @@ TEXT();
             ENDIF();
         ELSIF (NZ(comb.vb_src_ar));
             SETVAL(state, CacheReadReq);
-            vlxi[vb_srcid.to_int()].ar_ready = 1;
+            SETARRITEM(comb.vlxi, TO_INT(comb.vb_srcid), comb.vlxi->ar_ready, CONST("1", 1));
 
             TEXT();
-            SETVAL(srcid, vb_srcid;
+            SETVAL(srcid, comb.vb_srcid);
             SETVAL(req_addr, ARRITEM(comb.vcoreo, TO_INT(comb.vb_srcid), comb.vcoreo->ar_bits.addr));
             SETVAL(req_size, ARRITEM(comb.vcoreo, TO_INT(comb.vb_srcid), comb.vcoreo->ar_bits.size));
             SETVAL(req_prot, ARRITEM(comb.vcoreo, TO_INT(comb.vb_srcid), comb.vcoreo->ar_bits.prot));
             IF (NZ(BIT(ARRITEM(comb.vcoreo, TO_INT(comb.vb_srcid), comb.vcoreo->ar_bits.cache), 0)));
                 SETBITONE(comb.vb_req_type, cfg->L2_REQ_TYPE_CACHED);
-                IF (EQ(ARRITEM(comb.vcoreo, TO_INT(comb.vb_srcid), comb.vcoreo->ar_snoop), cfg->ARSNOOP_READ_MAKE_UNIQUE));
+                IF (EQ(ARRITEM(comb.vcoreo, TO_INT(comb.vb_srcid), comb.vcoreo->ar_snoop), amba->ARSNOOP_READ_MAKE_UNIQUE));
                     SETBITONE(comb.vb_req_type, cfg->L2_REQ_TYPE_UNIQUE);
                 ENDIF();
-                SETVAL(ac_valid, comb.vb_broadband_mask);
+                TEXT("prot[2]: 0=Data, 1=Instr.");
+                TEXT("If source is I$ then request D$ of the same CPU");
+                IF (NZ(BIT(ARRITEM(comb.vcoreo, TO_INT(comb.vb_srcid), comb.vcoreo->ar_bits.prot), 2)));
+                    SETVAL(ac_valid, comb.vb_broadband_mask_full);
+                ELSE();
+                    SETVAL(ac_valid, comb.vb_broadband_mask);
+                ENDIF();
                 SETZERO(cr_ready);
                 SETZERO(cd_ready);
                 SETVAL(state, snoop_ac);
@@ -188,41 +197,41 @@ TEXT();
         ENDIF();
         ENDCASE();
     CASE(ReadMem);
-        vlxi[r.srcid.read().to_int()].r_valid = i_resp_valid;
-        vlxi[r.srcid.read().to_int()].r_last = i_resp_valid;    // Lite interface
-        IF (r.req_type.read()[L2_REQ_TYPE_SNOOP] == 1);
-            vlxi[r.srcid.read().to_int()].r_data = r.req_wdata;
+        SETARRITEM(comb.vlxi, TO_INT(srcid), comb.vlxi->r_valid, i_resp_valid);
+        SETARRITEM(comb.vlxi, TO_INT(srcid), comb.vlxi->r_last, i_resp_valid, "Lite interface");
+        IF (NZ(BIT(req_type, cfg->L2_REQ_TYPE_SNOOP)));
+            SETARRITEM(comb.vlxi, TO_INT(srcid), comb.vlxi->r_data, req_wdata);
         ELSE();
-            vlxi[r.srcid.read().to_int()].r_data = i_resp_rdata;
+            SETARRITEM(comb.vlxi, TO_INT(srcid), comb.vlxi->r_data, i_resp_rdata);
         ENDIF();
-        IF (i_resp_status.read() == 0);
-            vlxi[r.srcid.read().to_int()].r_resp = 0;
+        IF (EZ(i_resp_status));
+            SETARRITEM(comb.vlxi, TO_INT(srcid), comb.vlxi->r_resp, amba->AXI_RESP_OKAY);
         ELSE();
-            vlxi[r.srcid.read().to_int()].r_resp = 0x2;    // SLVERR
+            SETARRITEM(comb.vlxi, TO_INT(srcid), comb.vlxi->r_resp, amba->AXI_RESP_SLVERR);
         ENDIF();
-        if (i_resp_valid.read() == 1) {
+        IF (NZ(i_resp_valid));
             SETVAL(state, Idle, "Wouldn't implement wait to accept because L1 is always ready");
         ENDIF();
         ENDCASE();
     CASE(WriteMem);
-        vlxi[r.srcid.read().to_int()].b_valid = i_resp_valid;
-        IF (i_resp_status.read() == 0);
-            vlxi[r.srcid.read().to_int()].b_resp = 0;
+        SETARRITEM(comb.vlxi, TO_INT(srcid), comb.vlxi->b_valid, i_resp_valid);
+        IF (EZ(i_resp_status));
+            SETARRITEM(comb.vlxi, TO_INT(srcid), comb.vlxi->b_resp, amba->AXI_RESP_OKAY);
         ELSE();
-            vlxi[r.srcid.read().to_int()].b_resp = 0x2;    // SLVERR
+            SETARRITEM(comb.vlxi, TO_INT(srcid), comb.vlxi->b_resp, amba->AXI_RESP_SLVERR);
         ENDIF();
-        IF (i_resp_valid.read() == 1);
+        IF (NZ(i_resp_valid));
             SETVAL(state, Idle, "Wouldn't implement wait to accept because L1 is always ready");
         ENDIF();
         ENDCASE();
     CASE(snoop_ac);
-        i = &FOR ("i", CONST("1"), cfg->CFG_SLOT_L1_TOTAL, "++");
-            vlxi[i].ac_valid = r.ac_valid.read()[i];
-            vlxi[i].ac_addr = r.req_addr;
-            IF (r.req_type.read()[L2_REQ_TYPE_UNIQUE] == 1);
-                vlxi[i].ac_snoop = AC_SNOOP_READ_UNIQUE;
+        i = &FOR ("i", CONST("0"), cfg->CFG_SLOT_L1_TOTAL, "++");
+            SETARRITEM(comb.vlxi, *i, comb.vlxi->ac_valid, BIT(ac_valid, *i));
+            SETARRITEM(comb.vlxi, *i, comb.vlxi->ac_addr, req_addr);
+            IF (NZ(BIT(req_type, cfg->L2_REQ_TYPE_UNIQUE)));
+                SETARRITEM(comb.vlxi, *i, comb.vlxi->ac_snoop, amba->AC_SNOOP_READ_UNIQUE);
             ELSE();
-                vlxi[i].ac_snoop = 0;
+                SETARRITEM(comb.vlxi, *i, comb.vlxi->ac_snoop, CONST("0", 4));
             ENDIF();
             IF (AND2(NZ(BIT(ac_valid, *i)), NZ(ARRITEM(comb.vcoreo, *i, comb.vcoreo->ac_ready))));
                 SETBITZERO(comb.vb_ac_valid, *i);
@@ -236,49 +245,49 @@ TEXT();
         ENDIF();
         ENDCASE();
     CASE(snoop_cr);
-        for (int i = 1; i < cfg->CFG_SLOT_L1_TOTAL; i++) {
-            vlxi[i].cr_ready = r.cr_ready.read()[i];
-            if (r.cr_ready.read()[i] == 1 && vcoreo[i].cr_valid == 1) {
-                vb_cr_ready[i] = 0;
-                if (vcoreo[i].cr_resp[0] == 1) {  // data transaction flag ACE spec
-                    vb_cd_ready[i] = 1;
-                }
-            }
-        }
-        v.cr_ready = vb_cr_ready;
-        v.cd_ready = vb_cd_ready;
-        if (vb_cr_ready.or_reduce() == 0) {
-            if (vb_cd_ready.or_reduce() == 1) {
+        i = &FOR ("i", CONST("0"), cfg->CFG_SLOT_L1_TOTAL, "++");
+            SETARRITEM(comb.vlxi, *i, comb.vlxi->cr_ready, BIT(cr_ready, *i));
+            IF (AND2(NZ(BIT(cr_ready, *i)), NZ(ARRITEM(comb.vcoreo, *i, comb.vcoreo->cr_valid))));
+                SETBITZERO(comb.vb_cr_ready, *i);
+                IF (NZ(BIT(ARRITEM(comb.vcoreo, *i, comb.vcoreo->cr_resp), 0)), "data transaction flag ACE spec");
+                    SETBITONE(comb.vb_cd_ready, *i);
+                ENDIF();
+            ENDIF();
+        ENDFOR();
+        SETVAL(cr_ready, comb.vb_cr_ready);
+        SETVAL(cd_ready, comb.vb_cd_ready);
+        IF (EZ(comb.vb_cr_ready));
+            IF (NZ(comb.vb_cd_ready));
                 SETVAL(state, snoop_cd);
-            } else if (r.req_type.read()[L2_REQ_TYPE_WRITE] == 1) {
+            ELSIF (NZ(BIT(req_type, cfg->L2_REQ_TYPE_WRITE)));
                 SETVAL(state, CacheWriteReq);
-            } else {
+            ELSE();
                 SETVAL(state, CacheReadReq);
-            }
-        }
+            ENDIF();
+        ENDIF();
         ENDCASE();
     CASE(snoop_cd);
-        // Here only to read Unique data from L1
-        for (int i = 1; i < cfg->CFG_SLOT_L1_TOTAL; i++) {
-            vlxi[i].cd_ready = r.cd_ready.read()[i];
-            if (r.cd_ready.read()[i] == 1 && vcoreo[i].cd_valid == 1) {
-                vb_cd_ready[i] = 0;
-                v.req_wdata = vcoreo[i].cd_data;
-            }
-        }
-        v.cd_ready = vb_cd_ready;
-        if (vb_cd_ready.or_reduce() == 0) {
-            if (r.req_type.read()[L2_REQ_TYPE_WRITE] == 1) {
+        TEXT("Here only to read Unique data from L1 and write to L2");
+        i = &FOR ("i", CONST("0"), cfg->CFG_SLOT_L1_TOTAL, "++");
+            SETARRITEM(comb.vlxi, *i, comb.vlxi->cd_ready, BIT(cd_ready, *i));
+            IF (AND2(NZ(BIT(cd_ready, *i)), NZ(ARRITEM(comb.vcoreo, *i, comb.vcoreo->cd_valid))));
+                SETBITZERO(comb.vb_cd_ready, *i);
+                SETVAL(req_wdata, ARRITEM(comb.vcoreo, *i, comb.vcoreo->cd_data));
+            ENDIF();
+        ENDFOR();
+        SETVAL(cd_ready, comb.vb_cd_ready);
+        IF (EZ(comb.vb_cd_ready));
+            IF (NZ(BIT(req_type, cfg->L2_REQ_TYPE_WRITE)));
                 SETVAL(state, CacheWriteReq);
-            } else {
+            ELSE();
                 SETVAL(state, CacheReadReq);
-                v.req_wstrb = ~0ul;
-            }
+                SETVAL(req_wstrb, ALLONES());
+            ENDIF();
             TEXT("write to L2 for Read and Write requests");
-            vb_req_type[L2_REQ_TYPE_WRITE] = 1;
-            vb_req_type[L2_REQ_TYPE_SNOOP] = 1;
-            v.req_type = vb_req_type;
-        }
+            SETBITONE(comb.vb_req_type, cfg->L2_REQ_TYPE_WRITE);
+            SETBITONE(comb.vb_req_type, cfg->L2_REQ_TYPE_SNOOP);
+            SETVAL(req_type, comb.vb_req_type);
+        ENDIF();
         ENDCASE();
     CASEDEF();
         ENDCASE();
