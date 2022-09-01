@@ -32,7 +32,7 @@ StructObject::StructObject(GenObject *parent,
                           : name[0] ? ID_STRUCT_INST : ID_STRUCT_DEF, name, comment) {
     type_ = std::string(type);
     idx_ = idx;
-    strval_ = "";
+    zeroval_ = "";
     if (idx != -1) {
         char tstr[256];
         RISCV_sprintf(tstr, sizeof(tstr), "%d", idx);
@@ -58,6 +58,15 @@ std::string StructObject::getName() {
     }
     return ret;
 }
+
+std::string StructObject::getStrValue() {
+    std::string ret = zeroval_;
+    if (ret.size() == 0) {
+        SHOW_ERROR("todo: struct initialization", getName());
+    }
+    return ret;
+}
+
 
 void StructObject::registerCfgType(const char *name) {
     if (name[0] == '\0') {

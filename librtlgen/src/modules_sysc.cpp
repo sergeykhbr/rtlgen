@@ -1058,13 +1058,20 @@ std::string ModuleObject::generate_sysc_proc(GenObject *proc) {
     }
 
     // nullify all local variables to avoid latches:
+    GenObject *arritem;
     for (auto &e: proc->getEntries()) {
         if (e->getId() == ID_VALUE) {
             ret += "    " + e->getName() + " = 0;";
             tcnt++;
         } else if (e->getId() == ID_ARRAY_DEF) {
             ret += "    for (int i = 0; i < " + e->getStrDepth() + "; i++) {\n";
-            ret += "        " + e->getName() + "[i] = 0;\n";
+            ret += "        " + e->getName() + "[i] = ";
+            arritem = static_cast<ArrayObject *>(e)->getItem();
+            if (arritem->getId() == ID_STRUCT_INST && arritem->getStrValue().size() == 0) {
+                SHOW_ERROR("todo: %s", "crawl through sub-structure element");
+            }
+            ret += arritem->getStrValue();
+            ret += ";\n";
             ret += "    }";
         } else {
             continue;

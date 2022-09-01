@@ -78,6 +78,7 @@ class types_amba : public FileObject {
             _region3_(this, "         similar to the banks implementation in Leon3 without address"),
             _region4_(this, "         decoding."),
             region("4", "region", "0", this) {
+            setZeroValue("META_NONE");
         }
      public:
         Logic addr;
@@ -151,15 +152,7 @@ class types_amba : public FileObject {
             ar_id("CFG_SYSBUS_ID_BITS", "ar_id", "0", this),
             ar_user("CFG_SYSBUS_USER_BITS", "ar_user", "0", this),
             r_ready("1", "r_ready", "0", this) {
-            extern types_amba* glob_types_amba_;
-            if (glob_types_amba_) {
-                aw_bits.setStrValue(glob_types_amba_->META_NONE);
-                ar_bits.setStrValue(glob_types_amba_->META_NONE);
-            } else {
-                types_amba *p = static_cast<types_amba *>(parent);
-                aw_bits.setStrValue(p->META_NONE);
-                ar_bits.setStrValue(p->META_NONE);
-            }
+            setZeroValue("axi4_master_out_none");
             registerCfgType(name);
         }
         axi4_master_out_type(GenObject* parent, int idx) : axi4_master_out_type(parent, "", idx, "") {}

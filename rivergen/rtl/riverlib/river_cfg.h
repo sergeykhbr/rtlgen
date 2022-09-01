@@ -322,9 +322,7 @@ class river_cfg : public FileObject {
             cd_last("1", "cd_last", "0", this),
             rack("1", "rack", "0", this),
             wack("1", "wack", "0", this) {
-                extern types_amba* glob_types_amba_;
-                aw_bits.setStrValue(glob_types_amba_->META_NONE);
-                ar_bits.setStrValue(glob_types_amba_->META_NONE);
+                setZeroValue("axi4_l1_out_none");
                 registerCfgType(name);
             }
         axi4_l1_out_type(GenObject* parent, int idx) : axi4_l1_out_type(parent, "", idx, "") {}
@@ -385,6 +383,7 @@ class river_cfg : public FileObject {
             ac_prot("3", "ac_prot", "0", this),
             cr_ready("1", "cr_ready", "1", this),
             cd_ready("1", "cd_ready", "1", this) {
+            setZeroValue("axi4_l1_in_none");
             registerCfgType(name);
         }
         axi4_l1_in_type(GenObject* parent, int idx) : axi4_l1_in_type(parent, "", idx, "") {}
@@ -430,9 +429,7 @@ class river_cfg : public FileObject {
             ar_id("CFG_CPU_ID_BITS", "ar_id", "0", this),
             ar_user("1", "ar_user", "0", this),
             r_ready("1", "r_ready", "0", this) {
-            extern types_amba* glob_types_amba_;
-            aw_bits.setStrValue(glob_types_amba_->META_NONE);
-            ar_bits.setStrValue(glob_types_amba_->META_NONE);
+            setZeroValue("axi4_l2_out_none");
             registerCfgType(name);
         }
         axi4_l2_out_type(GenObject* parent, int idx) : axi4_l2_out_type(parent, "", idx, "") {}
@@ -472,6 +469,7 @@ class river_cfg : public FileObject {
             r_last("1", "r_last", "0", this),
             r_id("CFG_CPU_ID_BITS", "r_id", "0", this),
             r_user("1", "r_user", "0", this) {
+            setZeroValue("axi4_l2_in_none");
             registerCfgType(name);
         }
         axi4_l2_in_type(GenObject* parent, int idx) : axi4_l2_in_type(parent, "", idx, "") {}
