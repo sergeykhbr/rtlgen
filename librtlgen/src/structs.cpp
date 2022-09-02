@@ -163,7 +163,13 @@ std::string StructObject::generate_const_none() {
             if (p->getId() == ID_COMMENT) {
                 continue;
             }
-            ret += Operation::addspaces() + p->getStrValue();
+            ret += Operation::addspaces();
+            if (p->isNumber(p->getStrValue())
+                && p->getWidth() > 1 && p->getValue() == 0) {
+                ret += "'0";
+            } else {
+                ret += p->getStrValue();
+            }
             if (p != entries_.back()) {
                 ret += ",";
             }

@@ -21,22 +21,28 @@
 #include "l2cache/l2cache_folder.h"
 #include "core/core_folder.h"
 #include "river_cfg.h"
+#include "types_river.h"
 #include "river_top.h"
+#include "river_amba.h"
 
 class riverlib_folder : public FolderObject {
  public:
     riverlib_folder(GenObject *parent) :
         FolderObject(parent, "riverlib"),
         river_cfg_(this),
+        types_river_(this),
         cache_(this),
         core_(this),
         l2cache_(this),
-        river_top_(this) {}
+        river_top_(this),
+        river_amba_(this) {}
 
  protected:
     river_cfg river_cfg_;
+    types_river types_river_;
     cache_folder cache_;
     core_folder core_;
     l2cache_folder l2cache_;
     river_top river_top_;
+    river_amba_file river_amba_;
 };

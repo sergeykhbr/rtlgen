@@ -93,13 +93,13 @@ TEXT();
 TEXT();
     SETVAL(comb.vb_srcid, cfg->CFG_SLOT_L1_TOTAL);
     i = &FOR ("i", CONST("0"), cfg->CFG_SLOT_L1_TOTAL, "++");
-        SETARRITEM(comb.vlxi, *i, comb.vlxi, cfg->axi4_l1_in_none);
+        SETARRITEM(comb.vlxi, *i, comb.vlxi, glob_types_river_->axi4_l1_in_none);
 
         TEXT();
         SETBIT(comb.vb_src_aw, *i, ARRITEM(comb.vcoreo, *i, comb.vcoreo->aw_valid));
         SETBIT(comb.vb_src_ar, *i, ARRITEM(comb.vcoreo, *i, comb.vcoreo->ar_valid));
     ENDFOR();
-    SETARRITEM(comb.vcoreo, cfg->CFG_SLOT_L1_TOTAL, comb.vcoreo, cfg->axi4_l1_out_none);
+    SETARRITEM(comb.vcoreo, cfg->CFG_SLOT_L1_TOTAL, comb.vcoreo, glob_types_river_->axi4_l1_out_none);
 
 TEXT();
     TEXT("select source (aw has higher priority):");

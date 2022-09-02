@@ -18,6 +18,7 @@
 
 #include <api.h>
 #include "../river_cfg.h"
+#include "../types_river.h"
 #include "../../ambalib/types_amba.h"
 
 using namespace sysvc;
@@ -51,7 +52,7 @@ class L2SerDes : public ModuleObject {
         Logic v_w_last;
         Logic v_w_ready;
         Logic vb_len;
-        river_cfg::axi4_l2_in_type vl2i;
+        types_river::axi4_l2_in_type vl2i;
         types_amba::axi4_master_out_type vmsto;
     };
 
@@ -74,8 +75,8 @@ class L2SerDes : public ModuleObject {
     // io:
     InPort i_clk;
     InPort i_nrst;
-    OutStruct<river_cfg::axi4_l2_in_type> o_l2i;
-    InStruct<river_cfg::axi4_l2_out_type> i_l2o;
+    OutStruct<types_river::axi4_l2_in_type> o_l2i;
+    InStruct<types_river::axi4_l2_out_type> i_l2o;
     InStruct<types_amba::axi4_master_in_type> i_msti;
     OutStruct<types_amba::axi4_master_out_type> o_msto;
 

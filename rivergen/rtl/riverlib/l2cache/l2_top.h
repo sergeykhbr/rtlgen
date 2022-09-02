@@ -18,6 +18,7 @@
 
 #include <api.h>
 #include "../river_cfg.h"
+#include "../types_river.h"
 #include "l2serdes.h"
 #include "l2cache_lru.h"
 #include "l2_amba.h"
@@ -34,16 +35,16 @@ class L2Top : public ModuleObject {
     // io:
     InPort i_clk;
     InPort i_nrst;
-    InStruct<river_cfg::axi4_l1_out_type> i_l1o0;
-    OutStruct<river_cfg::axi4_l1_in_type> o_l1i0;
-    InStruct<river_cfg::axi4_l1_out_type> i_l1o1;
-    OutStruct<river_cfg::axi4_l1_in_type> o_l1i1;
-    InStruct<river_cfg::axi4_l1_out_type> i_l1o2;
-    OutStruct<river_cfg::axi4_l1_in_type> o_l1i2;
-    InStruct<river_cfg::axi4_l1_out_type> i_l1o3;
-    OutStruct<river_cfg::axi4_l1_in_type> o_l1i3;
-    InStruct<river_cfg::axi4_l1_out_type> i_acpo;
-    OutStruct<river_cfg::axi4_l1_in_type> o_acpi;
+    InStruct<types_river::axi4_l1_out_type> i_l1o0;
+    OutStruct<types_river::axi4_l1_in_type> o_l1i0;
+    InStruct<types_river::axi4_l1_out_type> i_l1o1;
+    OutStruct<types_river::axi4_l1_in_type> o_l1i1;
+    InStruct<types_river::axi4_l1_out_type> i_l1o2;
+    OutStruct<types_river::axi4_l1_in_type> o_l1i2;
+    InStruct<types_river::axi4_l1_out_type> i_l1o3;
+    OutStruct<types_river::axi4_l1_in_type> o_l1i3;
+    InStruct<types_river::axi4_l1_out_type> i_acpo;
+    OutStruct<types_river::axi4_l1_in_type> o_acpi;
     InStruct<types_amba::axi4_master_in_type> i_msti;
     OutStruct<types_amba::axi4_master_out_type> o_msto;
     InPort i_flush_valid;
@@ -77,8 +78,8 @@ class L2Top : public ModuleObject {
     TextLine _flush0_;
     Signal wb_flush_address;
     Signal w_flush_end;
-    river_cfg::axi4_l2_in_type l2i;
-    river_cfg::axi4_l2_out_type l2o;
+    types_river::axi4_l2_in_type l2i;
+    types_river::axi4_l2_out_type l2o;
 
     L2CacheLru cache0;
     L2Amba amba0;

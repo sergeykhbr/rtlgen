@@ -97,8 +97,8 @@ class TagMemNWay : public ModuleObject {
 
     class WayInType : public StructObject {
      public:
-        WayInType(GenObject *parent, int idx, const char *comment="")
-            : StructObject(parent, "WayInType", "", idx, comment),
+        WayInType(GenObject *parent, const char *name="", int idx=-1, const char *comment="")
+            : StructObject(parent, "WayInType", name, idx, comment),
             addr(this, "addr", "abus"),
             wstrb(this, "wstrb", "POW2(1,lnbits)"),
             wdata(this, "wdata", "MUL(8,POW2(1,lnbits))"),
@@ -115,8 +115,8 @@ class TagMemNWay : public ModuleObject {
 
     class WayOutType : public StructObject {
      public:
-        WayOutType(GenObject *parent, int idx, const char *comment="")
-            : StructObject(parent, "WayOutType", "", idx, comment),
+        WayOutType(GenObject *parent, const char *name="", int idx=-1, const char *comment="")
+            : StructObject(parent, "WayOutType", name, idx, comment),
             raddr(this, "raddr", "abus"),
             rdata(this, "rdata", "MUL(8,POW2(1,lnbits))"),
             rflags(this, "rflags", "flbits"),

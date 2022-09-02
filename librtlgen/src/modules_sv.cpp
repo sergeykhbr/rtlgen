@@ -430,13 +430,20 @@ std::string ModuleObject::generate_sv_mod_proc(GenObject *proc) {
     }
 
     // nullify all local variables to avoid latches:
+    GenObject *arritem;
     for (auto &e: proc->getEntries()) {
         if (e->getId() == ID_VALUE) {
             ret += "    " + e->getName() + " = 0;";
             tcnt++;
         } else if (e->getId() == ID_ARRAY_DEF) {
             ret += "    for (int i = 0; i < " + e->getStrDepth() + "; i++) begin\n";
-            ret += "        " + e->getName() + "[i] = 0;\n";
+            ret += "        " + e->getName() + "[i] = ";
+            arritem = static_cast<ArrayObject *>(e)->getItem();
+            if (arritem->getId() == ID_STRUCT_INST && arritem->getStrValue().size() == 0) {
+                SHOW_ERROR("todo: %s", "crawl through sub-structure element");
+            }
+            ret += arritem->getStrValue();
+            ret += ";\n";
             ret += "    end";
         } else {
             continue;
@@ -603,10 +610,11 @@ std::string ModuleObject::generate_sv_mod() {
     // import statement:
     std::list<std::string> pkglst;
     FileObject *pf = static_cast<FileObject *>(getParent());
-    pf->getPkgList(pkglst, tmplparam.size());
+    pf->getDepList(pkglst, tmplparam.size());
     for (auto &e: pkglst) {
         ret += "import " + e + "::*;\n";
     }
+    ret += "import " + pf->getName() + "_pkg::*;\n";
     ret += "\n";
 
     // insert pkg data for template modules: ram, queue, ..

@@ -18,6 +18,7 @@
 
 #include <api.h>
 #include "../river_cfg.h"
+#include "../types_river.h"
 
 using namespace sysvc;
 
@@ -45,7 +46,7 @@ class L2Amba : public ModuleObject {
         Logic v_mem_er_load_fault;
         Logic v_mem_er_store_fault;
         Logic v_next_ready;
-        river_cfg::axi4_l2_out_type vmsto;
+        types_river::axi4_l2_out_type vmsto;
     };
 
     void proc_comb();
@@ -67,8 +68,8 @@ class L2Amba : public ModuleObject {
     OutPort o_resp_ack;
     OutPort o_resp_load_fault;
     OutPort o_resp_store_fault;
-    InStruct<river_cfg::axi4_l2_in_type> i_msti;
-    OutStruct<river_cfg::axi4_l2_out_type> o_msto;
+    InStruct<types_river::axi4_l2_in_type> i_msti;
+    OutStruct<types_river::axi4_l2_out_type> o_msto;
 
     ParamLogic idle;
     ParamLogic reading;

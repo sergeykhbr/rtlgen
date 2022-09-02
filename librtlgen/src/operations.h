@@ -217,5 +217,6 @@ void ENDINITIAL();
 void GENERATE(const char *name, const char *comment="");
 void ENDGENERATE(const char *name, const char *comment="");
 Operation &ASSIGNZERO(GenObject &a, const char *comment="");
+Operation &ASSIGN(GenObject &a, const char *comment="");
 
 }  // namespace sysvc

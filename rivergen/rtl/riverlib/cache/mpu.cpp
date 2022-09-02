@@ -29,7 +29,7 @@ MPU::MPU(GenObject *parent, const char *name) :
     i_region_flags(this, "i_region_flags", "CFG_MPU_FL_TOTAL", "{ena, cachable, r, w, x}"),
     o_iflags(this, "o_iflags", "CFG_MPU_FL_TOTAL"),
     o_dflags(this, "o_dflags", "CFG_MPU_FL_TOTAL"),
-    MpuTableItemTypeDef_(this, -1),
+    MpuTableItemTypeDef_(this, "", -1),
     // registers
     tbl(this, "tbl", "CFG_MPU_TBL_SIZE", true),
     // process

@@ -31,6 +31,11 @@ FileObject::FileObject(GenObject *parent,
 
 void FileObject::notifyAccess(std::string &file) {
     bool found = false;
+#if 1
+    if (file == "_generated/rtl/riverlib/core/proc") {
+        bool st = true;
+    }
+#endif
     for (auto &f: depfiles_) {
         if (f == file) {
             found = true;
@@ -95,11 +100,17 @@ std::string FileObject::fullPath2fileRelative(const char *fullpath) {
     return ret;
 }
 
+// call notifyAccess() for all modules
 void FileObject::list_of_modules(GenObject *p, std::list<std::string> &fpath) {
     GenObject *f = 0;
     if (!p) {
         return;
     }
+    if (SCV_is_sv()) {
+        // no need to include submodules in system verilog
+        return;
+    }
+
     if (p->getId() == ID_MODULE
         || p->getId() == ID_PARAM) {
         f = p->getParent();
@@ -122,7 +133,8 @@ void FileObject::list_of_modules(GenObject *p, std::list<std::string> &fpath) {
             continue;
         }
         tstr = f->getFullPath();
-        notifyAccess(tstr);
+        //notifyAccess(tstr);
+        fpath.push_back(tstr);
         break;
     }
 
@@ -180,13 +192,10 @@ void FileObject::generate_sysc() {
 
 
     // Automatic Dependency detection
-    std::string thisfile = getFullPath();
-    list_of_modules(this, depfiles_);
-    for (auto &f: depfiles_) {
-        if (f == thisfile) {
-            continue;
-        }
-        out += "#include \"" + fullPath2fileRelative(f.c_str()) + ".h\"\n";
+    std::list<std::string> deplist;
+    getDepList(deplist, 0);
+    for (auto &f: deplist) {
+        out += "#include \"" + f + "\"\n";
     }
     // Check template class to include <api_core.h> file
     std::list<GenObject *> tmpllist;
@@ -257,28 +266,33 @@ void FileObject::generate_sysc() {
     }
 }
 
-void FileObject::getPkgList(std::list<std::string> &lst, size_t tmplsz) {
+void FileObject::getDepList(std::list<std::string> &lst, size_t tmplsz) {
     std::string tstr;
     std::vector<std::string> subs;
+    std::list<std::string> submodlist;
     std::string thisfile = getFullPath();
-    list_of_modules(this, depfiles_);
     for (auto &f : depfiles_) {
         if (f == thisfile) {
             continue;
         }
-        if (strstr(f.c_str(), "_cfg") == 0 && strstr(f.c_str(), "types_") == 0) {
-            // only configuration files and datatypes in system verilog ignoring
-            // sub-modules packages
-            continue;
+        if (SCV_is_sysc()) {
+            tstr = fullPath2fileRelative(f.c_str()) + ".h";
+        } else {
+            fullPath2vector(f.c_str(), subs);
+            tstr = subs.back() + "_pkg";
         }
-        fullPath2vector(f.c_str(), subs);
-        tstr = subs.back() + "_pkg";
         lst.push_back(tstr);
     }
-    if (tmplsz == 0) {
-        // There's no _pkg file for the template modules
-        tstr = getName() + "_pkg";
-        lst.push_back(tstr);
+    if (SCV_is_sysc()) {
+        // Add submodules include files:
+        list_of_modules(this, submodlist);
+        for (auto &f : submodlist) {
+            if (f == thisfile) {
+                continue;
+            }
+            tstr = fullPath2fileRelative(f.c_str()) + ".h";
+            lst.push_back(tstr);
+        }
     }
 }
 
@@ -293,19 +307,10 @@ void FileObject::generate_sysv() {
     out += "\n";
 
     // Automatic Dependency detection
-    std::vector<std::string> subs;
-    std::string thisfile = getFullPath();
-    list_of_modules(this, depfiles_);
-    for (auto &f : depfiles_) {
-        if (f == thisfile) {
-            continue;
-        }
-        if (strstr(f.c_str(), "_cfg") == 0) {
-            // only configuration files in system verilog
-            continue;
-        }
-        fullPath2vector(f.c_str(), subs);
-        out += "import " + subs.back() + "_pkg::*;\n";
+    std::list<std::string> pkglist;
+    getDepList(pkglist, 0);
+    for (auto &f : pkglist) {
+        out += "import " + f + "::*;\n";
     }
     out += "\n";
 

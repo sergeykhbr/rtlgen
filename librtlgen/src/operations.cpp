@@ -3048,4 +3048,40 @@ Operation &ASSIGNZERO(GenObject &a, const char *comment) {
     return *p;
 }
 
+// ASSIGNONE
+std::string ASSIGN_gen(GenObject **args) {
+    std::string ret = Operation::addspaces();
+    if (SCV_is_sv()) {
+        ret += "assign ";
+    }
+    ret += Operation::obj2varname(args[1], "v");
+    ret += " = ";
+
+    if (SCV_is_sysc()) {
+        ret += args[1]->getStrValue();
+    } else if (SCV_is_sv()) {
+        if (args[1]->getValue() == 0
+            && args[1]->getWidth() > 1
+            && args[1]->isNumber(args[1]->getStrValue())) {
+            ret += "'0";
+        } else {
+            ret += args[1]->getStrValue();
+        }
+    } else  {
+        ret += " = (others => '0')";
+    }
+    ret +=  + ";";
+    ret += Operation::addtext(args[0], ret.size());
+    ret += "\n";
+    return ret;
+}
+
+Operation &ASSIGN(GenObject &a, const char *comment) {
+    Operation *p = new Operation(comment);
+    p->igen_ = ASSIGN_gen;
+    p->add_arg(p);
+    p->add_arg(&a);
+    return *p;
+}
+
 }

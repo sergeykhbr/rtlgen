@@ -68,8 +68,8 @@ class BpBTB : public ModuleObject {
     class BtbEntryType : public StructObject {
      public:
         // Structure definition
-        BtbEntryType(GenObject *parent, int idx, const char *comment="")
-            : StructObject(parent, "BtbEntryType", "", idx, comment),
+        BtbEntryType(GenObject *parent, const char *name="", int idx=-1, const char *comment="")
+            : StructObject(parent, "BtbEntryType", name, idx, comment),
             pc(this, "pc", "CFG_CPU_ADDR_BITS", "-1"),
             npc(this, "npc", "CFG_CPU_ADDR_BITS"),
             exec(this, "exec", "1", "0", "0=predec; 1=exec (high priority)") {}

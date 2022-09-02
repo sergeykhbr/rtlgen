@@ -29,14 +29,17 @@ InPort::InPort(GenObject *parent, const char *name, GenValue *width,
     id_ = ID_INPUT;
 }
 
-
-OutPort::OutPort(GenObject *parent, const char *name, const char *width,
-    const char *comment) : Logic(width, name, "", parent, comment) {
+OutPort::OutPort(const char *width, const char *name, const char *val,
+        GenObject *parent, const char *comment)
+        : Logic(width, name, val, parent, comment) {
     id_ = ID_OUTPUT;
 }
 
+OutPort::OutPort(GenObject *parent, const char *name, const char *width,
+    const char *comment) : OutPort(width, name, "0", parent, comment) {}
+
 OutPort::OutPort(GenObject *parent, const char *name, GenValue *width, 
-    const char *comment) : Logic(width, name, "", parent, comment) {
+    const char *comment) : Logic(width, name, "0", parent, comment) {
     id_ = ID_OUTPUT;
 }
 

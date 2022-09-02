@@ -77,8 +77,8 @@ class BranchPredictor : public ModuleObject {
     
     class PreDecType : public StructObject {
      public:
-        PreDecType(GenObject *parent, int idx, const char *comment="")
-            : StructObject(parent, "PreDecType", "", idx, comment),
+        PreDecType(GenObject *parent, const char *name="", int idx=-1, const char *comment="")
+            : StructObject(parent, "PreDecType", name, idx, comment),
             c_valid(this, "c_valid", "1"),
             addr(this, "addr", "CFG_CPU_ADDR_BITS"),
             data(this, "data", "32"),

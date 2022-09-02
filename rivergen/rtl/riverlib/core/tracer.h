@@ -145,8 +145,8 @@ class Tracer : public ModuleObject {
  protected:
     class MemopActionType : public StructObject {
      public:
-        MemopActionType(GenObject *parent, int idx, const char *comment="")
-            : StructObject(parent, "MemopActionType", "", idx, comment),
+        MemopActionType(GenObject *parent, const char *name ="", int idx=-1, const char *comment="")
+            : StructObject(parent, "MemopActionType", name, idx, comment),
             store(this, "store", "1", "0=load;1=store"),
             size(this, "size", "2"),
             mask(this, "mask", "64"),
@@ -170,8 +170,8 @@ class Tracer : public ModuleObject {
 
     class RegActionType : public StructObject {
      public:
-        RegActionType(GenObject *parent, int idx, const char *comment="")
-            : StructObject(parent, "RegActionType", "", idx, comment),
+        RegActionType(GenObject *parent, const char *name="", int idx=-1, const char *comment="")
+            : StructObject(parent, "RegActionType", name, idx, comment),
         waddr(this, "waddr", "6"),
         wres(this, "wres", "64") {}
      public:
@@ -182,8 +182,8 @@ class Tracer : public ModuleObject {
 
     class TraceStepType : public StructObject {
      public:
-        TraceStepType(GenObject *parent, int idx, const char *comment="")
-            : StructObject(parent, "TraceStepType", "", idx, comment),
+        TraceStepType(GenObject *parent, const char *name="", int idx=-1, const char *comment="")
+            : StructObject(parent, "TraceStepType", name, idx, comment),
             exec_cnt(this, "exec_cnt", "64"),
             pc(this, "pc", "64"),
             instr(this, "instr", "32"),

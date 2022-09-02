@@ -40,7 +40,7 @@ RegIntBank::RegIntBank(GenObject *parent, const char *name) :
     o_ra(this, "o_ra", "RISCV_ARCH", "Return address for branch predictor"),
     o_sp(this, "o_sp", "RISCV_ARCH", "Stack Pointer for border control"),
     // struct declaration
-    RegValueTypeDef_(this, -1),
+    RegValueTypeDef_(this, "", -1),
     // registers
     arr(this, "arr", "REGS_TOTAL", true),
     // process

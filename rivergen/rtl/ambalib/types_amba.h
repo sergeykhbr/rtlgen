@@ -154,8 +154,8 @@ class types_amba : public FileObject {
             r_ready("1", "r_ready", "0", this) {
             setZeroValue("axi4_master_out_none");
             registerCfgType(name);
+            SCV_get_cfg_parameter(getType());    // to trigger dependecy array
         }
-        axi4_master_out_type(GenObject* parent, int idx) : axi4_master_out_type(parent, "", idx, "") {}
 
     public:
         Logic aw_valid;
@@ -192,9 +192,10 @@ class types_amba : public FileObject {
             r_last("1", "r_last", "0", this),
             r_id("CFG_SYSBUS_ID_BITS", "r_id", "0", this),
             r_user("CFG_SYSBUS_USER_BITS", "r_user", "0", this) {
+            setZeroValue("axi4_master_in_none");
             registerCfgType(name);
+            SCV_get_cfg_parameter(getType());    // to trigger dependecy array
         }
-        axi4_master_in_type(GenObject* parent, int idx) : axi4_master_in_type(parent, "", idx, "") {}
 
      public:
         Logic aw_ready;

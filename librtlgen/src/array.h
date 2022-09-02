@@ -73,8 +73,10 @@ class TStructArray : public ArrayObject {
         : ArrayObject(parent, name, depth, comment) {
         reg_ = reg;
         arr_ = new T *[depth_.getValue()];
+        char tstr[64];
         for (int i = 0; i < static_cast<int>(depth_.getValue()); i++) {
-            arr_[i] = new T(this, i);
+            RISCV_sprintf(tstr, sizeof(tstr), "%d", i);
+            arr_[i] = new T(this, tstr, i);
         }
     }
     T *operator->() const { return arr_[0]; }

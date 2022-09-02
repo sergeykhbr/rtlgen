@@ -47,6 +47,12 @@ class InPort : public Logic {
 
 class OutPort : public Logic {
  public:
+    OutPort(const char *width,
+          const char *name,
+          const char *val,
+          GenObject *parent,
+          const char *comment="");
+
     OutPort(GenObject *parent,
            const char *name,
            const char *width="1",
@@ -109,6 +115,7 @@ public:
         return out;
     }
     T* operator->() const { return &s_; }
+    T* operator->() { return &s_; }
 
  protected:
     T s_;

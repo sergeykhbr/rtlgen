@@ -88,8 +88,8 @@ class InstrDecoder : public ModuleObject {
 
     class DecoderDataType : public StructObject {
      public:
-        DecoderDataType(GenObject *parent, int idx, const char *comment="")
-            : StructObject(parent, "DecoderDataType", "", idx, comment),
+        DecoderDataType(GenObject *parent, const char *name="", int idx=-1, const char *comment="")
+            : StructObject(parent, "DecoderDataType", name, idx, comment),
         pc(this, "pc", "CFG_CPU_ADDR_BITS", "-1", false),
         isa_type(this, "isa_type", "ISA_Total"),
         instr_vec(this, "instr_vec", "Instr_Total"),

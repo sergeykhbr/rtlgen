@@ -327,8 +327,8 @@ class InstrExecute : public ModuleObject {
 
     class select_type : public StructObject {
      public:
-        select_type(GenObject *parent, int idx, const char *comment="")
-            : StructObject(parent, "select_type", "", idx, comment),
+        select_type(GenObject *parent, const char *name="", int idx=-1, const char *comment="")
+            : StructObject(parent, "select_type", name, idx, comment),
         ena(this, "ena", "1"),
         valid(this, "valid", "1"),
         res(this, "res", "RISCV_ARCH") {}

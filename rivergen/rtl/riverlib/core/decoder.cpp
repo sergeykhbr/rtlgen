@@ -51,7 +51,7 @@ InstrDecoder::InstrDecoder(GenObject *parent, const char *name) :
     o_instr_executable(this, "o_instr_executable", "1", "MPU flag"),
     o_progbuf_ena(this, "o_progbuf_ena", "1"),
     // struct declaration
-    DecoderDataTypeDef_(this, -1),
+    DecoderDataTypeDef_(this, "", -1),
     // parameters
     DEC_NUM(this, "DEC_NUM", "2"),
     DEC_BLOCK(this, "DEC_BLOCK", "MUL(2,DEC_NUM)", "2 rv + 2 rvc"),
