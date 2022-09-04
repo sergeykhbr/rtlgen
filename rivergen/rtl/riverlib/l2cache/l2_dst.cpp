@@ -23,6 +23,8 @@ L2Destination::L2Destination(GenObject *parent, const char *name) :
     i_resp_valid(this, "i_resp_valid", "1"),
     i_resp_rdata(this, "i_resp_rdata", "L1CACHE_LINE_BITS"),
     i_resp_status(this, "i_resp_status", "2"),
+    i_l1o(this, "i_l1o"),
+    o_l1i(this, "o_l1i"),
     i_l1o0(this, "i_l1o0"),
     o_l1i0(this, "o_l1i0"),
     i_l1o1(this, "i_l1o1"),
@@ -93,6 +95,7 @@ TEXT();
 TEXT();
     SETVAL(comb.vb_srcid, cfg->CFG_SLOT_L1_TOTAL);
     i = &FOR ("i", CONST("0"), cfg->CFG_SLOT_L1_TOTAL, "++");
+//        SETARRITEM(comb.vcoreo, *i, comb.vcoreo, ARRITEM(i_l1o, *i, i_l1o));
         SETARRITEM(comb.vlxi, *i, comb.vlxi, glob_types_river_->axi4_l1_in_none);
 
         TEXT();

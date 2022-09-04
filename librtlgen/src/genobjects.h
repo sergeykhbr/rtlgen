@@ -36,11 +36,13 @@ enum EIdType {
     ID_MODULE_INST,
     ID_INPUT,
     ID_OUTPUT,
+    ID_IOPORT,
     ID_SIGNAL,
     ID_STRUCT_DEF,
     ID_STRUCT_INST,
     ID_ARRAY_DEF,
     ID_ARRAY_STRING,
+    ID_VECTOR,      // array of the fixed depth
     ID_PROCESS,
     ID_COMMENT,
     ID_EMPTYLINE,
@@ -68,6 +70,7 @@ class GenObject {
 
     virtual std::string getFullPath();
     virtual std::string getFile();
+    virtual void registerCfgType(const char *name);
     virtual void add_entry(GenObject *p);
     virtual std::list<GenObject *> &getEntries() { return entries_; }
 

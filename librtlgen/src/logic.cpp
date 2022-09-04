@@ -106,12 +106,16 @@ std::string Logic::getStrValue() {
     if (SCV_is_sysc() && isNumber(t) && (getWidth() > 32)) {
         ret = t + "ull";
     } else if (SCV_is_sv() && isNumber(t)) {
-        char fmt[64] = "%d'h%";
-        char tstr[256];
-        int w = getWidth();
-        RISCV_sprintf(fmt, sizeof(fmt), "%%d'h%%0%d" RV_PRI64 "x", (w+3)/4);
-        RISCV_sprintf(tstr, sizeof(tstr), fmt, w, GenValue::getValue());
-        ret += tstr;
+        if (getValue() == 0 && getWidth() > 64) {
+            ret += "'0";
+        } else {
+            char fmt[64] = "%d'h%";
+            char tstr[256];
+            int w = getWidth();
+            RISCV_sprintf(fmt, sizeof(fmt), "%%d'h%%0%d" RV_PRI64 "x", (w+3)/4);
+            RISCV_sprintf(tstr, sizeof(tstr), fmt, w, GenValue::getValue());
+            ret += tstr;
+        }
     } else {
         ret += t;
     }

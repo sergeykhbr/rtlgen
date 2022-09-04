@@ -189,8 +189,8 @@ class Tracer : public ModuleObject {
             instr(this, "instr", "32"),
             regactioncnt(this, "regactioncnt", "32"),
             memactioncnt(this, "memactioncnt", "32"),
-            regaction(this, "regaction", "TRACE_TBL_SZ", true),
-            memaction(this, "memaction", "TRACE_TBL_SZ", true),
+            regaction(this, "", "regaction", "TRACE_TBL_SZ", true),
+            memaction(this, "", "memaction", "TRACE_TBL_SZ", true),
             completed(this, "completed", "1") {}
      public:
         Signal exec_cnt;

@@ -167,7 +167,6 @@ RiverTop::RiverTop(GenObject *parent, const char *name) :
         CONNECT(proc0, 0, proc0.i_data_flush_end, w_data_flush_end);
     ENDNEW();
 
-TEXT();
     NEW(cache0, cache0.getName().c_str());
         //CONNECT(cache0, 0, cache0.coherence_ena, coherence_ena);
         CONNECT(cache0, 0, cache0.i_clk, i_clk);

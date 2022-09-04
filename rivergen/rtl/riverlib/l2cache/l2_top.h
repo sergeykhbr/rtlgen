@@ -35,6 +35,8 @@ class L2Top : public ModuleObject {
     // io:
     InPort i_clk;
     InPort i_nrst;
+    InStruct<types_river::axi4_l1_out_vector> i_l1o;
+    OutStruct<types_river::axi4_l1_in_vector> o_l1i;
     InStruct<types_river::axi4_l1_out_type> i_l1o0;
     OutStruct<types_river::axi4_l1_in_type> o_l1i0;
     InStruct<types_river::axi4_l1_out_type> i_l1o1;
@@ -45,8 +47,8 @@ class L2Top : public ModuleObject {
     OutStruct<types_river::axi4_l1_in_type> o_l1i3;
     InStruct<types_river::axi4_l1_out_type> i_acpo;
     OutStruct<types_river::axi4_l1_in_type> o_acpi;
-    InStruct<types_amba::axi4_master_in_type> i_msti;
-    OutStruct<types_amba::axi4_master_out_type> o_msto;
+    InStruct<types_river::axi4_l2_in_type> i_l2i;
+    OutStruct<types_river::axi4_l2_out_type> o_l2o;
     InPort i_flush_valid;
 
     Signal w_req_ready;
@@ -78,12 +80,9 @@ class L2Top : public ModuleObject {
     TextLine _flush0_;
     Signal wb_flush_address;
     Signal w_flush_end;
-    types_river::axi4_l2_in_type l2i;
-    types_river::axi4_l2_out_type l2o;
 
     L2CacheLru cache0;
     L2Amba amba0;
-    L2SerDes serdes0;
     L2Destination dst0;
 };
 

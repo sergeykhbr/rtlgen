@@ -103,6 +103,7 @@ public:
     InPort i_nrst;
     InStruct<types_river::axi4_l1_in_type> i_msti;
     OutStruct<types_river::axi4_l1_out_type> o_msto;
+    OutStruct<types_amba::axi4_master_config_type> o_xcfg;
     InStruct<types_river::dport_in_type> i_dport;
     OutStruct<types_river::dport_out_type> o_dport;
     InPort i_msip;
@@ -150,15 +151,6 @@ public:
     Signal resp_snoop_valid_o;
     Signal resp_snoop_data_o;
     Signal resp_snoop_flags_o;
-    TextLine _dsnoop1_;
-    Signal w_ac_ready;
-    Signal w_cr_valid;
-    Signal wb_cr_resp;
-    Signal w_cd_valid;
-    Signal wb_cd_data;
-    Signal w_cd_last;
-    Signal w_rack;
-    Signal w_wack;
     Signal wb_ip;
 
     RegSignal state;
@@ -179,7 +171,7 @@ public:
     RegSignal resp_snoop_data;
     RegSignal cache_access;
 
-    // funcitons
+    // functions
     reqtype2arsnoop_func reqtype2arsnoop;
     reqtype2awsnoop_func reqtype2awsnoop;
     // Sub-module instances:

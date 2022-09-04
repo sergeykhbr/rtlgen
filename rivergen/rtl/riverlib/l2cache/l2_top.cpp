@@ -20,6 +20,8 @@ L2Top::L2Top(GenObject *parent, const char *name) :
     ModuleObject(parent, "L2Top", name),
     i_clk(this, "i_clk", "1", "CPU clock"),
     i_nrst(this, "i_nrst", "1", "Reset: active LOW"),
+    i_l1o(this, "i_l1o"),
+    o_l1i(this, "o_l1i"),
     i_l1o0(this, "i_l1o0"),
     o_l1i0(this, "o_l1i0"),
     i_l1o1(this, "i_l1o1"),
@@ -30,8 +32,8 @@ L2Top::L2Top(GenObject *parent, const char *name) :
     o_l1i3(this, "o_l1i3"),
     i_acpo(this, "i_acpo"),
     o_acpi(this, "o_acpi"),
-    i_msti(this, "i_msti"),
-    o_msto(this, "o_msto"),
+    i_l2i(this, "i_l2i"),
+    o_l2o(this, "o_l2o"),
     i_flush_valid(this, "i_flush_valid", "1"),
     // signals
     w_req_ready(this, "w_req_ready", "1"),
@@ -63,19 +65,16 @@ L2Top::L2Top(GenObject *parent, const char *name) :
     _flush0_(this, "Flush interface"),
     wb_flush_address(this, "wb_flush_address", "CFG_CPU_ADDR_BITS"),
     w_flush_end(this, "w_flush_end", "1"),
-    l2i(this, "l2i"),
-    l2o(this, "l2o"),
     // instances
     cache0(this, "cache0"),
     amba0(this, "amba0"),
-    serdes0(this, "serdes0"),
     dst0(this, "dst0")
 
 {
     Operation::start(this);
 
-    ASSIGNZERO(wb_flush_address);
-
+    ASSIGN(wb_flush_address, ALLONES());
+    
     NEW(dst0, dst0.getName().c_str());
         CONNECT(dst0, 0, dst0.i_clk, i_clk);
         CONNECT(dst0, 0, dst0.i_nrst, i_nrst);
@@ -151,17 +150,7 @@ L2Top::L2Top(GenObject *parent, const char *name) :
         CONNECT(amba0, 0, amba0.o_resp_ack, w_mem_data_ack);
         CONNECT(amba0, 0, amba0.o_resp_load_fault, w_mem_load_fault);
         CONNECT(amba0, 0, amba0.o_resp_store_fault, w_mem_store_fault);
-        CONNECT(amba0, 0, amba0.i_msti, l2i);
-        CONNECT(amba0, 0, amba0.o_msto, l2o);
-    ENDNEW();
-
-    NEW(serdes0, serdes0.getName().c_str());
-        CONNECT(serdes0, 0, serdes0.i_clk, i_clk);
-        CONNECT(serdes0, 0, serdes0.i_nrst, i_nrst);
-        CONNECT(serdes0, 0, serdes0.i_nrst, i_nrst);
-        CONNECT(serdes0, 0, serdes0.o_l2i, l2i);
-        CONNECT(serdes0, 0, serdes0.i_l2o, l2o);
-        CONNECT(serdes0, 0, serdes0.i_msti, i_msti);
-        CONNECT(serdes0, 0, serdes0.o_msto, o_msto);
+        CONNECT(amba0, 0, amba0.i_msti, i_l2i);
+        CONNECT(amba0, 0, amba0.o_msto, o_l2o);
     ENDNEW();
 }

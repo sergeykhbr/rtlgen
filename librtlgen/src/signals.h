@@ -26,6 +26,13 @@ namespace sysvc {
 
 class Signal : public Logic {
  public:
+    Signal(const char *width,
+           const char *name,
+           const char *val,
+           GenObject *parent,
+           bool usereg=false,
+           const char *comment="");
+
     Signal(GenObject *parent,
            const char *name,
            const char *width="1",

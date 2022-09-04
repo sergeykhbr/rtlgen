@@ -68,17 +68,17 @@ class OutPort : public Logic {
 
 
 template<class T>
-class InStruct : public GenObject {
+class IoStruct : public GenObject {
 public:
-    InStruct(GenObject* parent, const char* name, const char* comment = "")
-        : GenObject(parent, ID_INPUT, name, comment), s_(0, name) {
+    IoStruct(GenObject* parent, const char* name, const char* comment = "")
+        : GenObject(parent, ID_IOPORT, name, comment), s_(0, name) {
     }
     virtual std::string getType() override {
         std::string out = "";
         if (SCV_is_sysc()) {
-            out += "sc_in<" + s_.getType() + ">";
+            out += getDirection() + "<" + s_.getType() + ">";
         } else if (SCV_is_sv()) {
-            out += "input ";
+            out += getDirection() + " ";
             if (SCV_get_cfg_file(s_.getType()).size()) {
                 out += SCV_get_cfg_file(s_.getType()) + "_pkg::";
             }
@@ -91,34 +91,42 @@ public:
     T* operator->() { return &s_; }
 
  protected:
+    virtual std::string getDirection() = 0;
     T s_;
 };
 
 template<class T>
-class OutStruct : public GenObject {
-public:
-    OutStruct(GenObject* parent, const char* name, const char* comment = "")
-        : GenObject(parent, ID_OUTPUT, name, comment), s_(0, name) {
-    }
-    virtual std::string getType() override {
-        std::string out = "";
-        if (SCV_is_sysc()) {
-            out += "sc_out<" + s_.getType() + ">";
-        } else if (SCV_is_sv()) {
-            out += "output ";
-            if (SCV_get_cfg_file(s_.getType()).size()) {
-                out += SCV_get_cfg_file(s_.getType()) + "_pkg::";
-            }
-            out += s_.getType();
-        } else {
-        }
-        return out;
-    }
-    T* operator->() const { return &s_; }
-    T* operator->() { return &s_; }
-
+class InStruct : public IoStruct<T> {
+ public:
+    InStruct(GenObject* parent, const char* name, const char* comment = "")
+        : IoStruct<T>(parent, name, comment) { }
  protected:
-    T s_;
+    virtual std::string getDirection() override {
+        std::string ret = "";
+        if (SCV_is_sysc()) {
+            ret = "sc_in";
+        } else {
+            ret = "input";
+        }
+        return ret;
+    }
+};
+
+template<class T>
+class OutStruct : public IoStruct<T> {
+ public:
+    OutStruct(GenObject* parent, const char* name, const char* comment = "")
+        : IoStruct<T>(parent, name, comment) { }
+ protected:
+    virtual std::string getDirection() override {
+        std::string ret = "";
+        if (SCV_is_sysc()) {
+            ret = "sc_out";
+        } else {
+            ret = "output";
+        }
+        return ret;
+    }
 };
 
 

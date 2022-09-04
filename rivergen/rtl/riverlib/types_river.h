@@ -78,6 +78,27 @@ class types_river : public FileObject {
         Logic rdata;
     };
 
+    class dport_in_vector_type : public TStructArray<dport_in_type> {
+        public:
+        dport_in_vector_type(GenObject *parent, const char *name, bool reg=false, const char *comment="")
+            : TStructArray(parent, "dport_in_vector", name, "CFG_CPU_MAX", reg, comment) {
+            id_ = ID_VECTOR;
+            registerCfgType(name);
+            SCV_get_cfg_parameter(getType());    // to trigger dependecy array
+        }
+    };
+
+    class dport_out_vector_type : public TStructArray<dport_out_type> {
+        public:
+        dport_out_vector_type(GenObject *parent, const char *name, bool reg=false, const char *comment="")
+            : TStructArray(parent, "dport_out_vector", name, "CFG_CPU_MAX", reg, comment) {
+            id_ = ID_VECTOR;
+            registerCfgType(name);
+            SCV_get_cfg_parameter(getType());    // to trigger dependecy array
+        }
+    };
+
+
     class axi4_l1_out_type : public StructObject {
      public:
         axi4_l1_out_type(GenObject* parent, const char* name = "", int idx = -1, const char* comment = "")
@@ -200,6 +221,26 @@ class types_river : public FileObject {
         Logic cd_ready;
     };
 
+    class axi4_l1_in_vector : public TStructArray<axi4_l1_in_type> {
+        public:
+        axi4_l1_in_vector(GenObject *parent, const char *name, bool reg=false, const char *comment="")
+            : TStructArray(parent, "axi4_l1_in_vector", name, "CFG_SLOT_L1_TOTAL", reg, comment) {
+            id_ = ID_VECTOR;
+            registerCfgType(name);
+            SCV_get_cfg_parameter(getType());    // to trigger dependecy array
+        }
+    };
+
+    class axi4_l1_out_vector : public TStructArray<axi4_l1_out_type> {
+        public:
+        axi4_l1_out_vector(GenObject *parent, const char *name, bool reg=false, const char *comment="")
+            : TStructArray(parent, "axi4_l1_out_vector", name, "CFG_SLOT_L1_TOTAL", reg, comment) {
+            id_ = ID_VECTOR;
+            registerCfgType(name);
+            SCV_get_cfg_parameter(getType());    // to trigger dependecy array
+        }
+    };
+
     class axi4_l2_out_type : public StructObject {
      public:
         axi4_l2_out_type(GenObject* parent, const char* name = "", int idx = -1, const char* comment = "")
@@ -294,8 +335,8 @@ class types_river : public FileObject {
     TextLine _dbgiface5_;
     dport_out_type dport_out_none;
     TextLine _dbgiface6_;
-    TStructArray<dport_in_type> dport_in_vector;
-    TStructArray<dport_out_type> dport_out_vector;
+    dport_in_vector_type dport_in_vector_def_;
+    dport_out_vector_type dport_out_vector_def_;
     TextLine _dbgiface7_;
     TextLine _axi0_;
     TextLine _axi1_;
@@ -307,8 +348,8 @@ class types_river : public FileObject {
     TextLine _axi4_;
     axi4_l1_in_type axi4_l1_in_none;
     TextLine _axi5_;
-    TStructArray<axi4_l1_in_type> axi4_l1_in_vector;
-    TStructArray<axi4_l1_out_type> axi4_l1_out_vector;
+    axi4_l1_in_vector axi4_l1_in_vector_def_;
+    axi4_l1_out_vector axi4_l1_out_vector_def_;
     TextLine _axi6_;
     axi4_l2_out_type axi4_l2_out_type_def;
     TextLine _axi7_;

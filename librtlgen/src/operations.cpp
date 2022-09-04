@@ -89,7 +89,8 @@ std::string Operation::fullname(const char *prefix, std::string name, GenObject 
         curname = obj->generate();
         curname += name;
     } else if (obj->getId() == ID_ARRAY_DEF
-            || obj->getId() == ID_ARRAY_STRING) {
+            || obj->getId() == ID_ARRAY_STRING
+            || obj->getId() == ID_VECTOR) {
         curname = "";
         curname = fullname("r", curname, static_cast<ArrayObject *>(obj)->getSelector());
         curname = "[" + curname + "]";
@@ -2000,7 +2001,7 @@ std::string LSH_gen(GenObject **args) {
         A = "(" + A + " << " + B + ")";
     } else if (SCV_is_sv()) {
         if (args[2]->getId() == ID_PARAM || args[2]->getId() == ID_CONST) {
-            A = "{" + A + " , {" + B + "{1'b0}}}";
+            A = "{" + A + ", {" + B + "{1'b0}}}";
         } else {
             A = "(" + A + " << " + B + ")";
         }
@@ -2072,7 +2073,14 @@ Operation &RSH(GenObject &a, int sz, const char *comment) {
 
 // ARRITEM
 std::string ARRITEM_gen(GenObject **args) {
-    ArrayObject *arr = static_cast<ArrayObject *>(args[1]);
+    ArrayObject *arr;
+    if (args[1]->getName() == "i_l1o") {
+        GenObject *t1 = args[1];
+        EIdType x = t1->getId();
+        arr = static_cast<ArrayObject *>(args[1]);
+    } else {
+        arr = static_cast<ArrayObject *>(args[1]);
+    }
     std::string ret = "";
     arr->setSelector(args[2]);
     if (args[4]) {
@@ -3051,13 +3059,14 @@ Operation &ASSIGNZERO(GenObject &a, const char *comment) {
 // ASSIGNONE
 std::string ASSIGN_gen(GenObject **args) {
     std::string ret = Operation::addspaces();
+    std::string b = Operation::obj2varname(args[2], "r");
     if (SCV_is_sv()) {
         ret += "assign ";
     }
     ret += Operation::obj2varname(args[1], "v");
     ret += " = ";
 
-    if (SCV_is_sysc()) {
+    /*if (SCV_is_sysc()) {
         ret += args[1]->getStrValue();
     } else if (SCV_is_sv()) {
         if (args[1]->getValue() == 0
@@ -3069,18 +3078,19 @@ std::string ASSIGN_gen(GenObject **args) {
         }
     } else  {
         ret += " = (others => '0')";
-    }
-    ret +=  + ";";
+    }*/
+    ret += b;
+    ret +=  ";";
     ret += Operation::addtext(args[0], ret.size());
-    ret += "\n";
     return ret;
 }
 
-Operation &ASSIGN(GenObject &a, const char *comment) {
+Operation &ASSIGN(GenObject &a, GenObject &b, const char *comment) {
     Operation *p = new Operation(comment);
     p->igen_ = ASSIGN_gen;
     p->add_arg(p);
     p->add_arg(&a);
+    p->add_arg(&b);
     return *p;
 }
 

@@ -139,7 +139,7 @@ void ModuleObject::getParamList(std::list<GenObject *> &genlist) {
 
 void ModuleObject::getIoList(std::list<GenObject *> &iolist) {
     for (auto &e : entries_) {
-        if (e->getId() != ID_INPUT && e->getId() != ID_OUTPUT) {
+        if (e->getId() != ID_INPUT && e->getId() != ID_OUTPUT && e->getId() != ID_IOPORT) {
             continue;
         }
         iolist.push_back(e);

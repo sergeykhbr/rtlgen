@@ -37,7 +37,7 @@ BranchPredictor::BranchPredictor(GenObject *parent, const char *name) :
     // struct declaration
     PreDecTypeDef_(this, "", -1),
     // Signals
-    wb_pd(this, "wb_pd", "2"),
+    wb_pd(this, "", "wb_pd", "2"),
     w_btb_e(this, "w_btb_e", "1"),
     w_btb_we(this, "w_btb_we", "1"),
     wb_btb_we_pc(this, "wb_btb_we_pc", "CFG_CPU_ADDR_BITS"),

@@ -15,6 +15,7 @@
 // 
 
 #include "genobjects.h"
+#include "utils.h"
 
 namespace sysvc {
 
@@ -50,6 +51,17 @@ std::string GenObject::getFile() {
         return parent_->getFile();
     }
     return ret;
+}
+
+void GenObject::registerCfgType(const char *name) {
+    if (name[0] == '\0') {
+        std::string path = getFullPath();
+        std::string file = getFile();
+        SCV_set_cfg_parameter(path,
+                              file,
+                              getType().c_str(),
+                              0);
+    }
 }
 
 void GenObject::add_entry(GenObject *p) {

@@ -24,11 +24,52 @@ class types_amba : public FileObject {
  public:
     types_amba(GenObject *parent);
 
+    class XSizeToBytes_func : public FunctionObject {
+     public:
+        XSizeToBytes_func(GenObject *parent);
+        virtual std::string getType() override { return ret.getType(); }
+        virtual void getArgsList(std::list<GenObject *> &args) {
+            args.push_back(&xsize);
+        }
+        virtual GenObject *getpReturn() { return &ret; }
+     protected:
+        Logic ret;
+        Logic xsize;
+    };
+
+    class axi4_master_config_type : public StructObject {
+     public:
+        axi4_master_config_type(GenObject* parent, const char* name = "", int idx = -1, const char* comment = "")
+            : StructObject(parent, "axi4_master_config_type", name, idx, comment),
+            _0_(this, "Descriptor size in bytes."),
+            descrsize("8", "descrsize", "PNP_CFG_MASTER_DESCR_BYTES", this),
+            _1_(this, "Descriptor type."),
+            descrtype("2", "descrtype", "PNP_CFG_TYPE_MASTER", this),
+            _2_(this, "Vendor ID."),
+            vid("16", "vid", "VENDOR_GNSSSENSOR", this),
+            _3_(this, "Device ID."),
+            did("16", "did", "MST_DID_EMPTY", this) {
+            setZeroValue("axi4_master_out_none");
+            registerCfgType(name);
+            SCV_get_cfg_parameter(getType());    // to trigger dependecy array
+        }
+
+    public:
+        TextLine _0_;
+        Logic descrsize;
+        TextLine _1_;
+        Logic descrtype;
+        TextLine _2_;
+        Logic vid;
+        TextLine _3_;
+        Logic did;
+    };
+
     class axi4_metadata_type : public StructObject {
      public:
         axi4_metadata_type(GenObject* parent, const char* name = "", const char* comment = "")
             : StructObject(parent, "axi4_metadata_type", name, -1, comment),
-            addr("CFG_SYSBUS_ADDR_WIDTH", "addr", "0", this),
+            addr("CFG_SYSBUS_ADDR_BITS", "addr", "0", this),
             _len0_(this, "@brief   Burst length."),
             _len1_(this, "@details This signal indicates the exact number of transfers in"),
             _len2_(this, "         a burst. This changes between AXI3 and AXI4. nastiXLenBits=8 so"),
@@ -214,13 +255,62 @@ class types_amba : public FileObject {
     };
 
  public:
-    ParamI32D CFG_SYSBUS_ADDR_WIDTH;
+    ParamI32D CFG_SYSBUS_ADDR_BITS;
     ParamI32D CFG_LOG2_SYSBUS_DATA_BYTES;
     ParamI32D CFG_SYSBUS_ID_BITS;
     ParamI32D CFG_SYSBUS_USER_BITS;
     TextLine _cfgbus0_;
     ParamI32D CFG_SYSBUS_DATA_BYTES;
     ParamI32D CFG_SYSBUS_DATA_BITS;
+    TextLine _vid0_;
+    TextLine _vid1_;
+    ParamLogic VENDOR_GNSSSENSOR;
+    ParamLogic VENDOR_OPTIMITECH;
+    TextLine _didmst0_;
+    TextLine _didmst1_;
+    TextLine _didmst2_;
+    ParamLogic MST_DID_EMPTY;
+    TextLine _didmst3_;
+    ParamLogic GAISLER_ETH_MAC_MASTER;
+    TextLine _didmst4_;
+    ParamLogic GAISLER_ETH_EDCL_MASTER;
+    TextLine _didmst5_;
+    ParamLogic RISCV_RIVER_CPU;
+    TextLine _didmst6_;
+    ParamLogic RISCV_WASSERFALL_WORKGROUP;
+    TextLine _didmst7_;
+    ParamLogic RISCV_WASSERFALL_DMI;
+    TextLine _didmst8_;
+    ParamLogic GNSSSENSOR_UART_TAP;
+    TextLine _didmst9_;
+    ParamLogic GNSSSENSOR_JTAG_TAP;
+    TextLine _xsize0_;
+    TextLine _xsize1_;
+    ParamI32D XSIZE_TOTAL;
+    TextLine _xsize2_;
+    XSizeToBytes_func XSizeToBytes;
+    TextLine _pnpcfg0_;
+    TextLine _pnpcfg1_;
+    TextLine _pnpcfg2_;
+    ParamLogic PNP_CFG_TYPE_INVALID;
+    TextLine _pnpcfg3_;
+    ParamLogic PNP_CFG_TYPE_MASTER;
+    TextLine _pnpcfg4_;
+    ParamLogic PNP_CFG_TYPE_SLAVE;
+    TextLine _pnpcfg5_;
+    TextLine _pnpcfg6_;
+    ParamLogic PNP_CFG_SLAVE_DESCR_BYTES;
+    TextLine _pnpcfg7_;
+    TextLine _pnpcfg8_;
+    ParamLogic PNP_CFG_MASTER_DESCR_BYTES;
+    TextLine _xmstcfg0_;
+    TextLine _xmstcfg1_;
+    TextLine _xmstcfg2_;
+    TextLine _xmstcfg3_;
+    axi4_master_config_type axi4_master_config_type_def;
+    TextLine _xmstcfg4_;
+    TextLine _xmstcfg5_;
+    axi4_master_config_type axi4_master_config_none;
     TextLine _axiresp0_;
     TextLine _axiresp1_;
     TextLine _axiresp2_;

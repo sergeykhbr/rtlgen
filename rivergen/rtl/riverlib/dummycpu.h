@@ -14,22 +14,33 @@
 //  limitations under the License.
 // 
 
-#include "regs.h"
-#include "utils.h"
+#pragma once
 
-namespace sysvc {
+#include <api.h>
+#include "types_river.h"
 
-RegSignal::RegSignal(const char *width, const char *name, const char *val,
-    GenObject *parent, const char *comment)
-    : Signal(width, name, val, parent, true, comment) {
-}
+using namespace sysvc;
 
-RegSignal::RegSignal(GenObject *parent,
-                     const char *name,
-                     const char *width,
-                     const char *val, // reset value
-                     const char *comment)
-    : Signal(parent, name, width, val, true, comment) {
-}
+class DummyCpu : public ModuleObject {
+ public:
+    DummyCpu(GenObject *parent, const char *name);
 
-}
+public:
+    // Ports:
+    OutStruct<types_river::axi4_l1_out_type> o_msto;
+    OutStruct<types_river::dport_out_type> o_dport;
+    OutPort o_flush_l2;
+    OutPort o_halted;
+    OutPort o_available;
+};
+
+class dummycpu_file : public FileObject {
+ public:
+    dummycpu_file(GenObject *parent) :
+        FileObject(parent, "dummycpu"),
+        DummyCpu_(this, "") { }
+
+ private:
+    DummyCpu DummyCpu_;
+};
+

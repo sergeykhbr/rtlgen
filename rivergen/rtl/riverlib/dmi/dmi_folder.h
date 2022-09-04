@@ -14,22 +14,16 @@
 //  limitations under the License.
 // 
 
-#include "regs.h"
-#include "utils.h"
+#pragma once
 
-namespace sysvc {
+#include <api.h>
 
-RegSignal::RegSignal(const char *width, const char *name, const char *val,
-    GenObject *parent, const char *comment)
-    : Signal(width, name, val, parent, true, comment) {
-}
+class dmi_folder : public FolderObject {
+ public:
+    dmi_folder(GenObject *parent) :
+        FolderObject(parent, "dmi")
+        {}
 
-RegSignal::RegSignal(GenObject *parent,
-                     const char *name,
-                     const char *width,
-                     const char *val, // reset value
-                     const char *comment)
-    : Signal(parent, name, width, val, true, comment) {
-}
-
-}
+ protected:
+    // files
+};

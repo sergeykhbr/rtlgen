@@ -30,8 +30,8 @@ class L2Destination : public ModuleObject {
      public:
         CombProcess(GenObject *parent) :
             ProcObject(parent, "comb"),
-            vcoreo(this, "vcoreo", "ADD(CFG_SLOT_L1_TOTAL,1)"),
-            vlxi(this, "vlxi", "CFG_SLOT_L1_TOTAL"),
+            vcoreo(this, "", "vcoreo", "ADD(CFG_SLOT_L1_TOTAL,1)"),
+            vlxi(this, "vlxi"),
             vb_src_aw(this, "vb_src_aw", "CFG_SLOT_L1_TOTAL"),
             vb_src_ar(this, "vb_src_ar", "CFG_SLOT_L1_TOTAL"),
             vb_broadband_mask_full(this, "vb_broadband_mask_full", "ADD(CFG_SLOT_L1_TOTAL,1)"),
@@ -46,7 +46,7 @@ class L2Destination : public ModuleObject {
 
      public:
         TStructArray<types_river::axi4_l1_out_type> vcoreo;
-        TStructArray<types_river::axi4_l1_in_type> vlxi;
+        types_river::axi4_l1_in_vector vlxi;
         Logic vb_src_aw;
         Logic vb_src_ar;
         Logic vb_broadband_mask_full;
@@ -68,6 +68,8 @@ class L2Destination : public ModuleObject {
     InPort i_resp_valid;
     InPort i_resp_rdata;
     InPort i_resp_status;
+    InStruct<types_river::axi4_l1_out_vector> i_l1o;
+    OutStruct<types_river::axi4_l1_in_vector> o_l1i;
     InStruct<types_river::axi4_l1_out_type> i_l1o0;
     OutStruct<types_river::axi4_l1_in_type> o_l1i0;
     InStruct<types_river::axi4_l1_out_type> i_l1o1;

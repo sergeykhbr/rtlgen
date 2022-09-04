@@ -291,7 +291,16 @@ void FileObject::getDepList(std::list<std::string> &lst, size_t tmplsz) {
                 continue;
             }
             tstr = fullPath2fileRelative(f.c_str()) + ".h";
-            lst.push_back(tstr);
+            bool exist = false;
+            for (auto &e: lst) {
+                if (e == tstr) {
+                    exist = true;
+                    break;
+                }
+            }
+            if (!exist) {
+                lst.push_back(tstr);
+            }
         }
     }
 }

@@ -401,7 +401,9 @@ std::string ModuleObject::generate_sv_mod_proc(GenObject *proc) {
 
     for (auto &e: proc->getEntries()) {
         ln = "";
-        if (e->getId() == ID_VALUE) {
+        if (e->getId() == ID_VALUE
+            || e->getId() == ID_STRUCT_INST
+            || e->getId() == ID_VECTOR) {
             ln += "    " + e->getType() + " " + e->getName();
             tcnt++;
         } else if (e->getId() == ID_ARRAY_DEF) {
@@ -409,8 +411,6 @@ std::string ModuleObject::generate_sv_mod_proc(GenObject *proc) {
             ln += "[0: ";
             ln += e->getStrDepth();
             ln += "-1]";
-        } else if (e->getId() == ID_STRUCT_INST) {
-            ln += "    " + e->getType() + " " + e->getName();
         } else {
             continue;
         }
@@ -572,13 +572,13 @@ std::string ModuleObject::generate_sv_mod() {
     ret += "(\n";
     int port_cnt = 0;
     for (auto &p: entries_) {
-        if (p->getId() == ID_INPUT || p->getId() == ID_OUTPUT) {
+        if (p->getId() == ID_INPUT || p->getId() == ID_OUTPUT || p->getId() == ID_IOPORT) {
             port_cnt++;
         }
     }
     text = "";
     for (auto &p: entries_) {
-        if (p->getId() != ID_INPUT && p->getId() != ID_OUTPUT) {
+        if (p->getId() != ID_INPUT && p->getId() != ID_OUTPUT  && p->getId() != ID_IOPORT) {
             if (p->getId() == ID_COMMENT) {
                 text += "    " + p->generate();
             } else {
@@ -614,13 +614,11 @@ std::string ModuleObject::generate_sv_mod() {
     for (auto &e: pkglst) {
         ret += "import " + e + "::*;\n";
     }
-    ret += "import " + pf->getName() + "_pkg::*;\n";
-    ret += "\n";
-
-    // insert pkg data for template modules: ram, queue, ..
-    std::list<GenObject *> tmplparlist;
-    getTmplParamList(tmplparlist);
-    if (tmplparlist.size()) {
+    if (tmplparam.size() == 0) {
+        ret += "import " + pf->getName() + "_pkg::*;\n";
+        ret += "\n";
+    } else {
+        // insert pkg data for template modules: ram, queue, ..
         ret += generate_sv_pkg();
     }
 

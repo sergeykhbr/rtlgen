@@ -31,7 +31,7 @@ MPU::MPU(GenObject *parent, const char *name) :
     o_dflags(this, "o_dflags", "CFG_MPU_FL_TOTAL"),
     MpuTableItemTypeDef_(this, "", -1),
     // registers
-    tbl(this, "tbl", "CFG_MPU_TBL_SIZE", true),
+    tbl(this, "", "tbl", "CFG_MPU_TBL_SIZE", true),
     // process
     comb(this)
 {

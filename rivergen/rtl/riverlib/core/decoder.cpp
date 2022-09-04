@@ -58,8 +58,8 @@ InstrDecoder::InstrDecoder(GenObject *parent, const char *name) :
     _1_(this, "shift registers depth to store previous decoded data"),
     FULL_DEC_DEPTH(this, "FULL_DEC_DEPTH", "MUL(DEC_BLOCK,ADD(SUB(CFG_DEC_DEPTH,1),CFG_BP_DEPTH))"),
     // Signals
-    wd(this, "wd", "ADD(FULL_DEC_DEPTH,DEC_BLOCK)"),
-    d(this, "d", "FULL_DEC_DEPTH", true),
+    wd(this, "", "wd", "ADD(FULL_DEC_DEPTH,DEC_BLOCK)"),
+    d(this, "", "d", "FULL_DEC_DEPTH", true),
     wb_f_pc(this, "wb_f_pc", "CFG_CPU_ADDR_BITS", "DEC_NUM"),
     wb_f_instr(this, "wb_f_instr", "32", "DEC_NUM"),
     // registers

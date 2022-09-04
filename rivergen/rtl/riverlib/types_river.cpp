@@ -19,7 +19,7 @@
 types_river *glob_types_river_ = 0;
 
 types_river::types_river(GenObject *parent) :
-    FileObject(parent, "types_river"),
+    FileObject(parent, "wasserfall_types"),
     _dbgiface0_(this),
     _dbgiface1_(this),
     _dbgiface2_(this, "Debug interface"),
@@ -31,8 +31,8 @@ types_river::types_river(GenObject *parent) :
     _dbgiface5_(this),
     dport_out_none(this, "dport_out_none"),
     _dbgiface6_(this),
-    dport_in_vector(this, "dport_in_vector", "CFG_CPU_MAX"),
-    dport_out_vector(this, "dport_out_vector", "CFG_CPU_MAX"),
+    dport_in_vector_def_(this, ""),
+    dport_out_vector_def_(this, ""),
     _dbgiface7_(this),
     _axi0_(this),
     _axi1_(this, "L1 AXI interface"),
@@ -44,8 +44,8 @@ types_river::types_river(GenObject *parent) :
     _axi4_(this),
     axi4_l1_in_none(this, "axi4_l1_in_none"),
     _axi5_(this),
-    axi4_l1_in_vector(this, "axi4_l1_in_vector", "CFG_SLOT_L1_TOTAL"),
-    axi4_l1_out_vector(this, "axi4_l1_out_vector", "CFG_SLOT_L1_TOTAL"),
+    axi4_l1_in_vector_def_(this, ""),
+    axi4_l1_out_vector_def_(this, ""),
     _axi6_(this),
     axi4_l2_out_type_def(this, ""),
     _axi7_(this),

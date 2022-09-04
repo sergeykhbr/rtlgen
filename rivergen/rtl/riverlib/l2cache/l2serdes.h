@@ -39,6 +39,7 @@ class L2SerDes : public ModuleObject {
             v_w_last(this, "v_w_last", "1"),
             v_w_ready(this, "v_w_ready", "1"),
             vb_len(this, "vb_len", "8"),
+            vb_size(this, "vb_size", "3"),
             vl2i(this, "vl2i"),
             vmsto(this, "vmsto") {
         }
@@ -52,6 +53,7 @@ class L2SerDes : public ModuleObject {
         Logic v_w_last;
         Logic v_w_ready;
         Logic vb_len;
+        Logic vb_size;
         types_river::axi4_l2_in_type vl2i;
         types_amba::axi4_master_out_type vmsto;
     };
@@ -59,6 +61,19 @@ class L2SerDes : public ModuleObject {
     class Size2LenFunction : public FunctionObject {
      public:
         Size2LenFunction(GenObject *parent);
+        virtual std::string getType() override { return ret.getType(); }
+        virtual void getArgsList(std::list<GenObject *> &args) {
+            args.push_back(&size);
+        }
+        virtual GenObject *getpReturn() { return &ret; }
+     protected:
+        Logic ret;
+        Logic size;
+    };
+
+    class Size2SizeFunction : public FunctionObject {
+     public:
+        Size2SizeFunction(GenObject *parent);
         virtual std::string getType() override { return ret.getType(); }
         virtual void getArgsList(std::list<GenObject *> &args) {
             args.push_back(&size);
@@ -97,6 +112,7 @@ class L2SerDes : public ModuleObject {
     RegSignal rmux;
 
     Size2LenFunction size2len;
+    Size2SizeFunction size2size;
     CombProcess comb;
 };
 

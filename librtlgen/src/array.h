@@ -30,11 +30,12 @@ namespace sysvc {
 class ArrayObject : public GenObject {
  public:
     ArrayObject(GenObject *parent,
+                const char *type,
                 const char *name,
                 const char *depth,
                 const char *comment="");
 
-    virtual std::string getType();
+    virtual std::string getType() override;
     virtual int getDepth() override { return static_cast<int>(depth_.getValue()); }    // two-dimensional object
     virtual std::string getStrDepth() override { return depth_.getStrValue(); }
     virtual void setSelector(GenObject *sel) { sel_ = sel; }
@@ -44,20 +45,22 @@ class ArrayObject : public GenObject {
  protected:
     I32D depth_;
     GenObject *sel_;
+    std::string type_;
 };
 
 // T = signal or logic
 template<class T>
 class WireArray : public ArrayObject {
  public:
-    WireArray(GenObject *parent, const char *name, const char *width, const char *depth, bool reg=false, const char *comment="")
-        : ArrayObject(parent, name, depth, comment) {
+    WireArray(GenObject *parent, const char *name, const char *width,
+        const char *depth, bool reg=false, const char *comment="")
+        : ArrayObject(parent, "", name, depth, comment) {
         char tstr[64];
         reg_ = reg;
         arr_ = new T *[depth_.getValue()];
         for (int i = 0; i < static_cast<int>(depth_.getValue()); i++) {
             RISCV_sprintf(tstr, sizeof(tstr), "%d", i);
-            arr_[i] = new T(this, tstr, width);
+            arr_[i] = new T(width, tstr, "0", this);
         }
     }
     // No need to redfine operator '->' because we use this object directly
@@ -69,8 +72,9 @@ class WireArray : public ArrayObject {
 template<class T>
 class TStructArray : public ArrayObject {
     public:
-    TStructArray(GenObject *parent, const char *name, const char *depth, bool reg=false, const char *comment="")
-        : ArrayObject(parent, name, depth, comment) {
+    TStructArray(GenObject *parent, const char *type, const char *name,
+        const char *depth, bool reg=false, const char *comment="")
+        : ArrayObject(parent, type, name, depth, comment) {
         reg_ = reg;
         arr_ = new T *[depth_.getValue()];
         char tstr[64];
@@ -89,7 +93,7 @@ template<class T>
 class ModuleArray : public ArrayObject {
  public:
     ModuleArray(GenObject *parent, const char *name, const char *depth, const char *comment="")
-        : ArrayObject(parent, name, depth, comment) {
+        : ArrayObject(parent, "", name, depth, comment) {
         arr_ = new T *[depth_.getValue()];
         char tstr[64];
         for (int i = 0; i < static_cast<int>(depth_.getValue()); i++) {
@@ -109,7 +113,7 @@ class ModuleArray : public ArrayObject {
 class StringArray : public ArrayObject {
  public:
     StringArray(GenObject *parent, const char *name, const char *depth, const char *comment="")
-        : ArrayObject(parent, name, depth, comment) {
+        : ArrayObject(parent, "", name, depth, comment) {
         id_ = ID_ARRAY_STRING;
         arr_ = new ParamString *[depth_.getValue()];
         char tstr[64];

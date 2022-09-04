@@ -66,7 +66,7 @@ std::string ModuleObject::generate_sysc_h() {
 
     // Input/Output signal declaration
     for (auto &p: entries_) {
-        if (p->getId() != ID_INPUT && p->getId() != ID_OUTPUT) {
+        if (p->getId() != ID_INPUT && p->getId() != ID_OUTPUT && p->getId() != ID_IOPORT) {
             if (p->getId() == ID_COMMENT) {
                 text = "    " + p->generate();
             } else {
@@ -511,7 +511,7 @@ std::string ModuleObject::generate_sysc_vcd_entries(std::string name1, std::stri
 
     if (!obj->isVcd()) {
         // skip it
-    } else if (obj->getId() == ID_INPUT || obj->getId() == ID_OUTPUT) {
+    } else if (obj->getId() == ID_INPUT || obj->getId() == ID_OUTPUT || obj->getId() == ID_IOPORT) {
         ret += Operation::addspaces();
         ret += "sc_trace(o_vcd, " + obj->getName() + ", " + obj->getName() + ".name());\n";
     } else if (obj->getId() == ID_ARRAY_DEF && obj->isReg()) {
@@ -704,7 +704,7 @@ std::string ModuleObject::generate_sysc_constructor() {
     // Input/Output signal declaration
     tcnt = 0;
     for (auto &p: entries_) {
-        if (p->getId() != ID_INPUT && p->getId() != ID_OUTPUT) {
+        if (p->getId() != ID_INPUT && p->getId() != ID_OUTPUT && p->getId() != ID_IOPORT) {
             continue;
         }
         ret += ",\n    " + p->getName() + "(\"" + p->getName() + "\")";
@@ -1029,16 +1029,15 @@ std::string ModuleObject::generate_sysc_proc(GenObject *proc) {
     tcnt = 0;
     for (auto &e: proc->getEntries()) {
         ln = "";
-        if (e->getId() == ID_VALUE) {
+        if (e->getId() == ID_VALUE
+            || e->getId() == ID_STRUCT_INST
+            || e->getId() == ID_VECTOR) {
             ln += "    " + e->getType() + " " + e->getName();
-            tcnt++;
         } else if (e->getId() == ID_ARRAY_DEF) {
             ln += "    " + e->getType() + " " + e->getName();
             ln += "[";
             ln += e->getStrDepth();
             ln += "]";
-        } else if (e->getId() == ID_STRUCT_INST) {
-            ln += "    " + e->getType() + " " + e->getName();
         } else {
             continue;
         }
