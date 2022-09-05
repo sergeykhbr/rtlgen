@@ -37,10 +37,10 @@ std::string ArrayObject::getType() {
 std::string ArrayObject::generate() {
     std::string ret = "";
     if (SCV_is_sv()) {
-        ret += "typedef " + getType() + " " + getName();
+        ret += "typedef " + getItem()->getType() + " " + getType();
         ret += "[0: " + getStrDepth() + "-1];\n";
     } else if (SCV_is_sysc()) {
-        ret += "typedef " + getType() + " " + getName();
+        ret += "typedef " + getItem()->getType() + " " + getType();
         ret += "[" + getStrDepth() + "];\n";
     }
     return ret;

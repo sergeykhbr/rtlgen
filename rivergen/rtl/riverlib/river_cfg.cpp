@@ -19,7 +19,7 @@
 river_cfg *glob_river_cfg_ = 0;
 
 river_cfg::river_cfg(GenObject *parent) :
-    FileObject(parent, "wasserfall_cfg"),
+    FileObject(parent, "river_cfg"),
     CFG_VENDOR_ID(this, "32", "CFG_VENDOR_ID", "0x000000F1"),
     CFG_IMPLEMENTATION_ID(this, "32", "CFG_IMPLEMENTATION_ID", "0x20220813"),
     CFG_HW_FPU_ENABLE(this, "CFG_HW_FPU_ENABLE", "true"),

@@ -2078,7 +2078,6 @@ Operation &RSH(GenObject &a, int sz, const char *comment) {
 
 // ARRITEM
 std::string ARRITEM_gen(GenObject **args) {
-    ArrayObject *arr;
     std::string ret = "";
     args[1]->setSelector(args[2]);
     if (args[4]) {

@@ -19,7 +19,7 @@
 types_river *glob_types_river_ = 0;
 
 types_river::types_river(GenObject *parent) :
-    FileObject(parent, "wasserfall_types"),
+    FileObject(parent, "types_river"),
     _dbgiface0_(this),
     _dbgiface1_(this),
     _dbgiface2_(this, "Debug interface"),

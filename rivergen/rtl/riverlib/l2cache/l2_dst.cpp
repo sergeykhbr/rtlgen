@@ -78,7 +78,7 @@ void L2Destination::proc_comb() {
 TEXT();
     SETVAL(comb.vb_srcid, cfg->CFG_SLOT_L1_TOTAL);
     i = &FOR ("i", CONST("0"), cfg->CFG_SLOT_L1_TOTAL, "++");
-        SETARRITEM(comb.vcoreo, *i, comb.vcoreo, ARRITEM(i_l1o, *i, i_l1o));
+        SETARRITEM(comb.vcoreo, *i, comb.vcoreo, ARRITEM(i_l1o, *i, i_l1o), "Cannot read vector item from port in systemc");
         SETARRITEM(comb.vlxi, *i, comb.vlxi, glob_types_river_->axi4_l1_in_none);
 
         TEXT();
