@@ -22,6 +22,7 @@
 #include "l2_dst.h"
 #include "l2serdes.h"
 #include "l2_top.h"
+#include "l2dummy.h"
 
 class l2cache_folder : public FolderObject {
  public:
@@ -31,7 +32,8 @@ class l2cache_folder : public FolderObject {
         l2_amba_(this),
         l2_dst_(this),
         l2serdes_(this),
-        l2_top_(this) {}
+        l2_top_(this),
+        l2dummy_(this) {}
 
  protected:
     // files
@@ -40,4 +42,5 @@ class l2cache_folder : public FolderObject {
     l2_dst_file l2_dst_;
     l2serdes_file l2serdes_;
     l2_top_file l2_top_;
+    l2dummy_file l2dummy_;
 };

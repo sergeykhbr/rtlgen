@@ -41,8 +41,10 @@ class types_river : public FileObject {
             size("3", "size", "0", this),
             resp_ready("1", "resp_ready", "0", this) {
             setZeroValue("dport_in_none");
-            registerCfgType(name);
-            SCV_get_cfg_parameter(getType());    // to trigger dependecy array
+            registerCfgType(name);                  // will be registered if name == ""
+            if (name[0]) {
+                SCV_get_cfg_parameter(getType());   // to trigger dependecy array
+            }
         }
         
     public:
@@ -67,8 +69,10 @@ class types_river : public FileObject {
             resp_error("1", "resp_error", "0", this, "response error"),
             rdata("RISCV_ARCH", "rdata", "0", this) {
             setZeroValue("dport_out_none");
-            registerCfgType(name);
-            SCV_get_cfg_parameter(getType());    // to trigger dependecy array
+            registerCfgType(name);                  // will be registered if name == ""
+            if (name[0]) {
+                SCV_get_cfg_parameter(getType());   // to trigger dependecy array
+            }
         }
 
     public:
@@ -83,8 +87,10 @@ class types_river : public FileObject {
         dport_in_vector_type(GenObject *parent, const char *name, bool reg=false, const char *comment="")
             : TStructArray(parent, "dport_in_vector", name, "CFG_CPU_MAX", reg, comment) {
             id_ = ID_VECTOR;
-            registerCfgType(name);
-            SCV_get_cfg_parameter(getType());    // to trigger dependecy array
+            registerCfgType(name);                  // will be registered if name == ""
+            if (name[0]) {
+                SCV_get_cfg_parameter(getType());   // to trigger dependecy array
+            }
         }
     };
 
@@ -93,8 +99,10 @@ class types_river : public FileObject {
         dport_out_vector_type(GenObject *parent, const char *name, bool reg=false, const char *comment="")
             : TStructArray(parent, "dport_out_vector", name, "CFG_CPU_MAX", reg, comment) {
             id_ = ID_VECTOR;
-            registerCfgType(name);
-            SCV_get_cfg_parameter(getType());    // to trigger dependecy array
+            registerCfgType(name);                  // will be registered if name == ""
+            if (name[0]) {
+                SCV_get_cfg_parameter(getType());   // to trigger dependecy array
+            }
         }
     };
 
@@ -134,8 +142,10 @@ class types_river : public FileObject {
             rack("1", "rack", "0", this),
             wack("1", "wack", "0", this) {
                 setZeroValue("axi4_l1_out_none");
-                registerCfgType(name);
-                SCV_get_cfg_parameter(getType());    // to trigger dependecy array
+                registerCfgType(name);                  // will be registered if name == ""
+                if (name[0]) {
+                    SCV_get_cfg_parameter(getType());   // to trigger dependecy array
+                }
             }
 
      public:
@@ -195,8 +205,10 @@ class types_river : public FileObject {
             cr_ready("1", "cr_ready", "1", this),
             cd_ready("1", "cd_ready", "1", this) {
             setZeroValue("axi4_l1_in_none");
-            registerCfgType(name);
-            SCV_get_cfg_parameter(getType());    // to trigger dependecy array
+            registerCfgType(name);                  // will be registered if name == ""
+            if (name[0]) {
+                SCV_get_cfg_parameter(getType());   // to trigger dependecy array
+            }
         }
 
      public:
@@ -226,8 +238,10 @@ class types_river : public FileObject {
         axi4_l1_in_vector(GenObject *parent, const char *name, bool reg=false, const char *comment="")
             : TStructArray(parent, "axi4_l1_in_vector", name, "CFG_SLOT_L1_TOTAL", reg, comment) {
             id_ = ID_VECTOR;
-            registerCfgType(name);
-            SCV_get_cfg_parameter(getType());    // to trigger dependecy array
+            registerCfgType(name);                  // will be registered if name == ""
+            if (name[0]) {
+                SCV_get_cfg_parameter(getType());   // to trigger dependecy array
+            }
         }
     };
 
@@ -236,8 +250,10 @@ class types_river : public FileObject {
         axi4_l1_out_vector(GenObject *parent, const char *name, bool reg=false, const char *comment="")
             : TStructArray(parent, "axi4_l1_out_vector", name, "CFG_SLOT_L1_TOTAL", reg, comment) {
             id_ = ID_VECTOR;
-            registerCfgType(name);
-            SCV_get_cfg_parameter(getType());    // to trigger dependecy array
+            registerCfgType(name);                  // will be registered if name == ""
+            if (name[0]) {
+                SCV_get_cfg_parameter(getType());   // to trigger dependecy array
+            }
         }
     };
 
@@ -261,8 +277,10 @@ class types_river : public FileObject {
             ar_user("1", "ar_user", "0", this),
             r_ready("1", "r_ready", "0", this) {
             setZeroValue("axi4_l2_out_none");
-            registerCfgType(name);
-            SCV_get_cfg_parameter(getType());    // to trigger dependecy array
+            registerCfgType(name);                  // will be registered if name == ""
+            if (name[0]) {
+                SCV_get_cfg_parameter(getType());   // to trigger dependecy array
+            }
         }
 
      public:
@@ -301,8 +319,10 @@ class types_river : public FileObject {
             r_id("CFG_CPU_ID_BITS", "r_id", "0", this),
             r_user("1", "r_user", "0", this) {
             setZeroValue("axi4_l2_in_none");
-            registerCfgType(name);
-            SCV_get_cfg_parameter(getType());    // to trigger dependecy array
+            registerCfgType(name);                  // will be registered if name == ""
+            if (name[0]) {
+                SCV_get_cfg_parameter(getType());   // to trigger dependecy array
+            }
         }
         axi4_l2_in_type(GenObject* parent, int idx) : axi4_l2_in_type(parent, "", idx, "") {}
 
