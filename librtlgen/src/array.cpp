@@ -24,9 +24,7 @@ ArrayObject::ArrayObject(GenObject *parent,
                          const char *name,
                          const char *depth,
                          const char *comment)
-    : GenObject(parent, ID_ARRAY_DEF, name, comment), depth_(depth) {
-    sel_ = 0;
-    type_ = std::string(type);
+    : GenObject(parent, type, ID_ARRAY_DEF, name, comment), depth_(depth) {
 }
 
 std::string ArrayObject::getType() {

@@ -28,11 +28,11 @@ int stackcnt_ = 0;
 GenObject *stackobj_[256] = {0};
 
 Operation::Operation(const char *comment)
-    : GenObject(stackobj_[stackcnt_], ID_OPERATION, "", comment), igen_(0), argcnt_(0) {
+    : GenObject(stackobj_[stackcnt_], "", ID_OPERATION, "", comment), igen_(0), argcnt_(0) {
 }
 
 Operation::Operation(GenObject *parent, const char *comment)
-    : GenObject(parent, ID_OPERATION, "", comment), igen_(0), argcnt_(0) {
+    : GenObject(parent, "", ID_OPERATION, "", comment), igen_(0), argcnt_(0) {
 }
 
 void Operation::start(GenObject *owner) {
@@ -88,22 +88,25 @@ std::string Operation::fullname(const char *prefix, std::string name, GenObject 
     } else if (obj->getId() == ID_OPERATION) {
         curname = obj->generate();
         curname += name;
-    } else if (obj->getId() == ID_ARRAY_DEF
-            || obj->getId() == ID_ARRAY_STRING
-            || obj->getId() == ID_VECTOR) {
+    } else if (obj->getSelector()) {
         curname = "";
-        curname = fullname("r", curname, static_cast<ArrayObject *>(obj)->getSelector());
+        curname = fullname("r", curname, obj->getSelector());
         curname = "[" + curname + "]";
         curname = obj->getName() + curname;
         if (name.size()) {
             curname += ".";
         }
         curname += name;
+        obj->setSelector(0);
     } else if (obj->getId() == ID_STRUCT_INST
-            || obj->getId() == ID_STRUCT_DEF) {
-        curname = obj->getName();
-        if (name.size()) {
-            curname += ".";
+                || obj->getId() == ID_STRUCT_DEF) {
+        if (p && p->getId() == ID_VECTOR) {
+            // do not generate index for vector of structs
+        } else {
+            curname = obj->getName();
+            if (name.size()) {
+                curname += ".";
+            }
         }
         curname += name;
     } else if (obj->getId() == ID_DEF_PARAM && SCV_is_sysc()) {
@@ -113,7 +116,8 @@ std::string Operation::fullname(const char *prefix, std::string name, GenObject 
     }
 
     if (p && (p->getId() == ID_STRUCT_INST
-            || p->getId() == ID_STRUCT_DEF)) {
+            || p->getId() == ID_STRUCT_DEF
+            || p->getId() == ID_VECTOR)) {
         curname = fullname(prefix, curname, obj->getParent());
     } else if (obj->isReg()) {
         curname = std::string(prefix) + "." + curname;
@@ -841,7 +845,8 @@ std::string SETVAL_gen(GenObject **args) {
             || args[2]->getId() == ID_INPUT
             || args[2]->getId() == ID_SIGNAL
             || args[2]->getId() == ID_PARAM
-            || args[2]->getId() == ID_STRUCT_INST) {
+            || args[2]->getId() == ID_STRUCT_INST
+            || args[2]->getId() == ID_VECTOR) {
         ret += Operation::obj2varname(args[2]);
     } else {
         ret += args[2]->generate();
@@ -2074,15 +2079,8 @@ Operation &RSH(GenObject &a, int sz, const char *comment) {
 // ARRITEM
 std::string ARRITEM_gen(GenObject **args) {
     ArrayObject *arr;
-    if (args[1]->getName() == "i_l1o") {
-        GenObject *t1 = args[1];
-        EIdType x = t1->getId();
-        arr = static_cast<ArrayObject *>(args[1]);
-    } else {
-        arr = static_cast<ArrayObject *>(args[1]);
-    }
     std::string ret = "";
-    arr->setSelector(args[2]);
+    args[1]->setSelector(args[2]);
     if (args[4]) {
         ret = Operation::obj2varname(args[3], "r", true);
     } else {
@@ -2158,8 +2156,12 @@ Operation &SETARRIDX(GenObject &arr, GenObject &idx) {
 
 // SETARRITEM
 std::string SETARRITEM_gen(GenObject **args) {
-    ArrayObject *arr = static_cast<ArrayObject *>(args[1]);
-    arr->setSelector(args[2]);
+    args[1]->setSelector(args[2]);
+#if 1
+    if (args[1]->getName() == "vlxi") {
+        bool st = true;
+    }
+#endif
     std::string ret = Operation::addspaces();
     ret += Operation::obj2varname(args[3], "v");
     ret += " = ";

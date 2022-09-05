@@ -54,7 +54,7 @@ TEXT();
                 SETBITSW(comb.vb_addr, MUL2(*i, cfg->CFG_CPU_ADDR_BITS),
                                        cfg->CFG_CPU_ADDR_BITS, ARRITEM(btb, n, btb->npc));
                 SETBIT(comb.vb_hit, *i, CONST("1", 1));
-                SETBIT(comb.vb_bp_exec, *i, btb->exec,  "Used for: Do not override by pre-decoded jumps");
+                SETBIT(comb.vb_bp_exec, *i, ARRITEM(btb, n, btb->exec),  "Used for: Do not override by pre-decoded jumps");
             ELSIF(EZ(BIT(comb.vb_hit, *i)));
                 SETBITSW(comb.vb_addr, MUL2(*i, cfg->CFG_CPU_ADDR_BITS),
                                        cfg->CFG_CPU_ADDR_BITS, ADD2(comb.t_addr, CONST("4")));

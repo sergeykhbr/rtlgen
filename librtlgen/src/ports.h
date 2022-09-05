@@ -71,7 +71,7 @@ template<class T>
 class IoStruct : public GenObject {
 public:
     IoStruct(GenObject* parent, const char* name, const char* comment = "")
-        : GenObject(parent, ID_IOPORT, name, comment), s_(0, name) {
+        : GenObject(parent, "", ID_IOPORT, name, comment), s_(0, name) {
     }
     virtual std::string getType() override {
         std::string out = "";

@@ -25,16 +25,6 @@ L2Destination::L2Destination(GenObject *parent, const char *name) :
     i_resp_status(this, "i_resp_status", "2"),
     i_l1o(this, "i_l1o"),
     o_l1i(this, "o_l1i"),
-    i_l1o0(this, "i_l1o0"),
-    o_l1i0(this, "o_l1i0"),
-    i_l1o1(this, "i_l1o1"),
-    o_l1i1(this, "o_l1i1"),
-    i_l1o2(this, "i_l1o2"),
-    o_l1i2(this, "o_l1i2"),
-    i_l1o3(this, "i_l1o3"),
-    o_l1i3(this, "o_l1i3"),
-    i_acpo(this, "i_acpo"),
-    o_acpi(this, "o_acpi"),
     _0_(this, "cache interface"),
     i_req_ready(this, "i_req_ready", "1"),
     o_req_valid(this, "o_req_valid", "1"),
@@ -86,16 +76,9 @@ void L2Destination::proc_comb() {
     SETVAL(comb.vb_req_type, req_type);
 
 TEXT();
-    SETARRITEM(comb.vcoreo, 0, i_acpo);
-    SETARRITEM(comb.vcoreo, 1, i_l1o0);
-    SETARRITEM(comb.vcoreo, 2, i_l1o1);
-    SETARRITEM(comb.vcoreo, 3, i_l1o2);
-    SETARRITEM(comb.vcoreo, 4, i_l1o3);
-
-TEXT();
     SETVAL(comb.vb_srcid, cfg->CFG_SLOT_L1_TOTAL);
     i = &FOR ("i", CONST("0"), cfg->CFG_SLOT_L1_TOTAL, "++");
-//        SETARRITEM(comb.vcoreo, *i, comb.vcoreo, ARRITEM(i_l1o, *i, i_l1o));
+        SETARRITEM(comb.vcoreo, *i, comb.vcoreo, ARRITEM(i_l1o, *i, i_l1o));
         SETARRITEM(comb.vlxi, *i, comb.vlxi, glob_types_river_->axi4_l1_in_none);
 
         TEXT();
@@ -300,11 +283,7 @@ TEXT();
     SYNC_RESET(*this);
 
 TEXT();
-    SETVAL(o_acpi, ARRITEM(comb.vlxi, 0));
-    SETVAL(o_l1i0, ARRITEM(comb.vlxi, 1));
-    SETVAL(o_l1i1, ARRITEM(comb.vlxi, 2));
-    SETVAL(o_l1i2, ARRITEM(comb.vlxi, 3));
-    SETVAL(o_l1i3, ARRITEM(comb.vlxi, 4));
+    SETVAL(o_l1i, comb.vlxi);
 
 TEXT();
     SETVAL(o_req_valid, comb.v_req_valid);

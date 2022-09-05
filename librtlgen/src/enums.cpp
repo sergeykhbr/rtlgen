@@ -21,7 +21,7 @@ namespace sysvc {
 
 EnumObject::EnumObject(GenObject *parent,
                        const char *name)
-    : GenObject(parent, ID_ENUM, name) {
+    : GenObject(parent, "", ID_ENUM, name) {
 }
 
 void EnumObject::add_value(const char *name, const char *comment) {

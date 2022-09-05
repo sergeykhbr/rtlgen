@@ -65,7 +65,7 @@ enum EGenerateType {
 
 class GenObject {
  public:
-    GenObject(GenObject *parent, EIdType id,
+    GenObject(GenObject *parent, const char *type, EIdType id,
               const char *name, const char *comment="");
 
     virtual std::string getFullPath();
@@ -79,7 +79,7 @@ class GenObject {
     virtual std::string getName() { return name_; }
     virtual void setName(const char *n) { name_ = std::string(n); }
     virtual std::string getComment() { return comment_; }
-    virtual std::string getType() = 0;
+    virtual std::string getType() { return type_; }
     virtual void setValue(uint64_t v) { value_ = v; }
     virtual uint64_t getValue() { return value_; }
     virtual std::string getStrValue() { return std::string(""); }
@@ -88,6 +88,9 @@ class GenObject {
     virtual std::string getStrWidth() { return std::string(""); }
     virtual int getDepth() { return 0; }    // two-dimensional object
     virtual std::string getStrDepth() { return std::string(""); }
+    virtual void setSelector(GenObject *sel) { sel_ = sel; }
+    virtual GenObject *getSelector() { return sel_; }
+    virtual GenObject *getItem() { return this; }
     virtual bool isReg() { return reg_; }
     virtual void disableReset() { reset_disabled_ = true; }
     virtual bool isResetDisabled() { return reset_disabled_; }
@@ -103,11 +106,13 @@ class GenObject {
  protected:
     EIdType id_;
     GenObject *parent_;
+    GenObject *sel_;        // selector when is array
     uint64_t value_;
     int width_;
     bool reg_;              // Mark object (signal, value, port, structure) as a Flip-flop
     bool reset_disabled_;   // register without reset (memory)
     bool vcd_enabled_;      // show instance in VCD trace file
+    std::string type_;
     std::string name_;
     std::string mnemonic_;  // name in VCD trace file
     std::string comment_;

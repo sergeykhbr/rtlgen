@@ -913,10 +913,12 @@ TEXT();
 
 TEXT();
     IF (AND2(NZ(i_e_memop_valid), NZ(i_m_memop_ready)));
+        SETARRITEM(trace_tbl, comb.wcnt, trace_tbl->memactioncnt, INC(ARRITEM_B(trace_tbl, comb.wcnt, trace_tbl->memactioncnt)));
         SETARRIDX(trace_tbl->memaction, comb.memcnt);
-        SETARRITEM(trace_tbl, comb.wcnt, trace_tbl->memactioncnt, INC(trace_tbl->memactioncnt));
         SETARRITEM(trace_tbl, comb.wcnt, trace_tbl->memaction->store, BIT(i_e_memop_type, cfg->MemopType_Store));
+        SETARRIDX(trace_tbl->memaction, comb.memcnt);
         SETARRITEM(trace_tbl, comb.wcnt, trace_tbl->memaction->memaddr, i_e_memop_addr);
+        SETARRIDX(trace_tbl->memaction, comb.memcnt);
         SETARRITEM(trace_tbl, comb.wcnt, trace_tbl->memaction->size, i_e_memop_size);
         TEXT("Compute and save mask bit");
         SETZERO(comb.mskoff);
@@ -928,25 +930,33 @@ TEXT();
             SETBIT(comb.mask, TO_INT(comb.mskoff), CONST("1", 1));
             SETVAL(comb.mask, DEC(comb.mask));
         ENDIF();
+        SETARRIDX(trace_tbl->memaction, comb.memcnt);
         SETARRITEM(trace_tbl, comb.wcnt, trace_tbl->memaction->mask, comb.mask);
+        SETARRIDX(trace_tbl->memaction, comb.memcnt);
         SETARRITEM(trace_tbl, comb.wcnt, trace_tbl->memaction->data, AND2_L(i_e_memop_wdata, comb.mask));
+        SETARRIDX(trace_tbl->memaction, comb.memcnt);
         SETARRITEM(trace_tbl, comb.wcnt, trace_tbl->memaction->regaddr, i_e_waddr);
+        SETARRIDX(trace_tbl->memaction, comb.memcnt);
         SETARRITEM(trace_tbl, comb.wcnt, trace_tbl->memaction->ignored, ALLZEROS());
+        SETARRIDX(trace_tbl->memaction, comb.memcnt);
         SETARRITEM(trace_tbl, comb.wcnt, trace_tbl->memaction->complete, ALLZEROS());
         IF (ORx(2, &EZ(i_e_waddr),
                    &ANDx(2, &NZ(BIT(i_e_memop_type, cfg->MemopType_Store)),
                             &EZ(BIT(i_e_memop_type, cfg->MemopType_Release)))));
+            SETARRIDX(trace_tbl->memaction, comb.memcnt);
             SETARRITEM(trace_tbl, comb.wcnt, trace_tbl->memaction->complete, CONST("1", 1));
         ENDIF();
+        SETARRIDX(trace_tbl->memaction, comb.memcnt);
         SETARRITEM(trace_tbl, comb.wcnt, trace_tbl->memaction->sc_release, BIT(i_e_memop_type, cfg->MemopType_Release));
     ENDIF();
 
 TEXT();
     IF (NZ(i_e_wena));
         TEXT("Direct register writting if it is not a Load operation");
+        SETARRITEM(trace_tbl, comb.wcnt, trace_tbl->regactioncnt, INC(ARRITEM_B(trace_tbl, comb.wcnt, trace_tbl->regactioncnt)));
         SETARRIDX(trace_tbl->regaction, comb.regcnt);
-        SETARRITEM(trace_tbl, comb.wcnt, trace_tbl->regactioncnt, INC(trace_tbl->regactioncnt));
         SETARRITEM(trace_tbl, comb.wcnt, trace_tbl->regaction->waddr, i_e_waddr);
+        SETARRIDX(trace_tbl->regaction, comb.regcnt);
         SETARRITEM(trace_tbl, comb.wcnt, trace_tbl->regaction->wres, i_e_wdata);
     ELSIF (NZ(i_m_wena));
         TEXT("Update current rd memory action (memory operations are strictly ordered)");
@@ -960,14 +970,19 @@ TEXT();
                 SETARRIDX(trace_tbl->memaction, *i);
                 IF (AND2(EZ(comb.checked), EZ(ARRITEM(trace_tbl, comb.xcnt, trace_tbl->memaction->complete))));
                     SETONE(comb.checked);
+                    SETARRIDX(trace_tbl->memaction, *i);
                     SETARRITEM(trace_tbl, comb.xcnt, trace_tbl->memaction->complete, CONST("1", 1));
+                    SETARRIDX(trace_tbl->memaction, *i);
                     SETARRITEM(trace_tbl, comb.xcnt, trace_tbl->memaction->ignored, i_reg_ignored);
+                    SETARRIDX(trace_tbl->memaction, *i);
                     IF (NZ(ARRITEM(trace_tbl, comb.xcnt, trace_tbl->memaction->sc_release)));
                         IF (EQ(i_m_wdata, CONST("1", 64)));
+                            SETARRIDX(trace_tbl->memaction, *i);
                             SETARRITEM(trace_tbl, comb.xcnt, trace_tbl->memaction->ignored, CONST("1", 1));
                         ENDIF();
                         TEXT("do not re-write stored value by returning error status");
                     ELSE();
+                        SETARRIDX(trace_tbl->memaction, *i);
                         SETARRITEM(trace_tbl, comb.xcnt, trace_tbl->memaction->data, i_m_wdata);
                     ENDIF();
 
@@ -975,6 +990,7 @@ TEXT();
                     IF (EZ(i_reg_ignored));
                         SETARRIDX(trace_tbl->regaction, comb.regcnt);
                         SETARRITEM(trace_tbl, comb.xcnt, trace_tbl->regaction->waddr, i_m_waddr);
+                        SETARRIDX(trace_tbl->regaction, comb.regcnt);
                         SETARRITEM(trace_tbl, comb.xcnt, trace_tbl->regaction->wres, i_m_wdata);
                         SETARRITEM(trace_tbl, comb.xcnt, trace_tbl->regactioncnt, INC(comb.regcnt));
                     ENDIF();
@@ -1037,33 +1053,31 @@ TEXT();
     SETVAL(ostr, ADD2(ostr, *new STRING(" \\n", "")));
 
 TEXT();
-    i = &FOR ("i",CONST("0"), TO_INT(p->trace_tbl->memactioncnt), "++");
+    i = &FOR ("i",CONST("0"), TO_INT(ARRITEM_B(p->trace_tbl, ircnt, p->trace_tbl->memactioncnt)), "++");
         //msk = (2**(8*(2**tr.memaction[i].size))) - 1;
-        SETARRIDX(p->trace_tbl->memaction, *i);
-        IF (EZ(p->trace_tbl->memaction->ignored));
-            IF (EZ(p->trace_tbl->memaction->store));
+        IF (EZ(ARRITEM(p->trace_tbl, ircnt, ARRITEM_B(p->trace_tbl->memaction, *i, p->trace_tbl->memaction->ignored))));
+            IF (EZ(ARRITEM(p->trace_tbl, ircnt, ARRITEM_B(p->trace_tbl->memaction, *i, p->trace_tbl->memaction->store))));
                 ADDSTRF(ostr, "%20s [%08\" RV_PRI64 \"x] => %016\" RV_PRI64 \"x\\n", 3,
                             new STRING("", ""),
-                            &TO_U64(ARRITEM_B(p->trace_tbl, ircnt, p->trace_tbl->memaction->memaddr)),
-                            &TO_U64(ARRITEM_B(p->trace_tbl, ircnt, p->trace_tbl->memaction->data)));// & msk);
+                            &TO_U64(ARRITEM(p->trace_tbl, ircnt, ARRITEM_B(p->trace_tbl->memaction, *i, p->trace_tbl->memaction->memaddr))),
+                            &TO_U64(ARRITEM(p->trace_tbl, ircnt, ARRITEM_B(p->trace_tbl->memaction, *i, p->trace_tbl->memaction->data))));// & msk);
                 //$fwrite(fd, "%s", msg);
             ELSE();
                 ADDSTRF(ostr, "%20s [%08\" RV_PRI64 \"x] <= %016\" RV_PRI64 \"x\\n", 3,
                             new STRING("", ""),
-                            &TO_U64(ARRITEM_B(p->trace_tbl, ircnt, p->trace_tbl->memaction->memaddr)),
-                            &TO_U64(ARRITEM_B(p->trace_tbl, ircnt, p->trace_tbl->memaction->data)));// & msk);
+                            &TO_U64(ARRITEM(p->trace_tbl, ircnt, ARRITEM_B(p->trace_tbl->memaction, *i, p->trace_tbl->memaction->memaddr))),
+                            &TO_U64(ARRITEM(p->trace_tbl, ircnt, ARRITEM_B(p->trace_tbl->memaction, *i, p->trace_tbl->memaction->data))));// & msk);
             ENDIF();
         ENDIF();
     ENDFOR();
 
 TEXT();
-    i = &FOR ("i", CONST("0"), TO_INT(p->trace_tbl->regactioncnt), "++");
-        SETARRIDX(p->trace_tbl->regaction, *i);
-        SETVAL(iwaddr, TO_INT(ARRITEM_B(p->trace_tbl, ircnt, p->trace_tbl->regaction->waddr)));
+    i = &FOR ("i", CONST("0"), TO_INT(ARRITEM_B(p->trace_tbl, ircnt, p->trace_tbl->regactioncnt)), "++");
+        SETVAL(iwaddr, TO_INT(ARRITEM(p->trace_tbl, ircnt, ARRITEM_B(p->trace_tbl->regaction, *i, p->trace_tbl->regaction->waddr))));
         ADDSTRF(ostr, "%20s %10s <= %016\" RV_PRI64 \"x\\n", 3,
                     new STRING("", ""),
                     &TO_CSTR(ARRITEM(p->rname, iwaddr, p->rname)),
-                    &TO_U64(ARRITEM_B(p->trace_tbl, ircnt, p->trace_tbl->regaction->wres)));
+                    &TO_U64(ARRITEM(p->trace_tbl, ircnt, ARRITEM_B(p->trace_tbl->regaction, *i, p->trace_tbl->regaction->wres))));
     ENDFOR();
 
 }

@@ -27,10 +27,9 @@ StructObject::StructObject(GenObject *parent,
                            const char *name,
                            int idx,
                            const char *comment)
-    : GenObject(parent,
+    : GenObject(parent, type,
                 idx != -1 ? ID_STRUCT_INST 
                           : name[0] ? ID_STRUCT_INST : ID_STRUCT_DEF, name, comment) {
-    type_ = std::string(type);
     idx_ = idx;
     zeroval_ = "";
     if (idx != -1) {

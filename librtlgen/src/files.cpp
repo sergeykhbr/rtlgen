@@ -25,7 +25,7 @@ namespace sysvc {
 
 FileObject::FileObject(GenObject *parent,
                            const char *name)
-    : GenObject(parent, ID_FILE, name) {
+    : GenObject(parent, "", ID_FILE, name) {
     SCV_set_access_listener(static_cast<AccessListener *>(this));
 }
 

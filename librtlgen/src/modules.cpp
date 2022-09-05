@@ -25,11 +25,10 @@
 namespace sysvc {
 
 ModuleObject::ModuleObject(GenObject *parent, const char *type, const char *name) :
-    GenObject(parent, name[0] ? ID_MODULE_INST : ID_MODULE, name) {
+    GenObject(parent, type, name[0] ? ID_MODULE_INST : ID_MODULE, name) {
     if (getId() == ID_MODULE) {
         SCV_register_module(this);
     }
-    type_ = std::string(type);
 }
 
 

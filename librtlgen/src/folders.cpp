@@ -21,7 +21,7 @@ namespace sysvc {
 
 FolderObject::FolderObject(GenObject *parent,
                            const char *name)
-    : GenObject(parent, ID_FOLDER, name) {
+    : GenObject(parent, "", ID_FOLDER, name) {
 }
 
 

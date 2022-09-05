@@ -22,7 +22,7 @@ namespace sysvc {
 FunctionObject::FunctionObject(GenObject *parent,
                                  const char *name,
                                  const char *comment)
-    : GenObject(parent, ID_FUNCTION, name, comment) {
+    : GenObject(parent, "", ID_FUNCTION, name, comment) {
     Operation::start(this);
 }
 

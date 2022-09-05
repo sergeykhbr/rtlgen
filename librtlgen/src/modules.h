@@ -71,7 +71,6 @@ class ModuleObject : public GenObject {
     std::string generate_sysc_vcd_entries(std::string name1, std::string name2, GenObject *obj);
 
  protected:
-    std::string type_;
 };
 
 }  // namespace sysvc

@@ -22,16 +22,6 @@ L2Top::L2Top(GenObject *parent, const char *name) :
     i_nrst(this, "i_nrst", "1", "Reset: active LOW"),
     i_l1o(this, "i_l1o"),
     o_l1i(this, "o_l1i"),
-    i_l1o0(this, "i_l1o0"),
-    o_l1i0(this, "o_l1i0"),
-    i_l1o1(this, "i_l1o1"),
-    o_l1i1(this, "o_l1i1"),
-    i_l1o2(this, "i_l1o2"),
-    o_l1i2(this, "o_l1i2"),
-    i_l1o3(this, "i_l1o3"),
-    o_l1i3(this, "o_l1i3"),
-    i_acpo(this, "i_acpo"),
-    o_acpi(this, "o_acpi"),
     i_l2i(this, "i_l2i"),
     o_l2o(this, "o_l2o"),
     i_flush_valid(this, "i_flush_valid", "1"),
@@ -75,22 +65,15 @@ L2Top::L2Top(GenObject *parent, const char *name) :
 
     ASSIGN(wb_flush_address, ALLONES());
     
+TEXT();
     NEW(dst0, dst0.getName().c_str());
         CONNECT(dst0, 0, dst0.i_clk, i_clk);
         CONNECT(dst0, 0, dst0.i_nrst, i_nrst);
         CONNECT(dst0, 0, dst0.i_resp_valid, w_cache_valid);
         CONNECT(dst0, 0, dst0.i_resp_rdata, wb_cache_rdata);
         CONNECT(dst0, 0, dst0.i_resp_status, wb_cache_status);
-        CONNECT(dst0, 0, dst0.i_l1o0, i_l1o0);
-        CONNECT(dst0, 0, dst0.o_l1i0, o_l1i0);
-        CONNECT(dst0, 0, dst0.i_l1o1, i_l1o1);
-        CONNECT(dst0, 0, dst0.o_l1i1, o_l1i1);
-        CONNECT(dst0, 0, dst0.i_l1o2, i_l1o2);
-        CONNECT(dst0, 0, dst0.o_l1i2, o_l1i2);
-        CONNECT(dst0, 0, dst0.i_l1o3, i_l1o3);
-        CONNECT(dst0, 0, dst0.o_l1i3, o_l1i3);
-        CONNECT(dst0, 0, dst0.i_acpo, i_acpo);
-        CONNECT(dst0, 0, dst0.o_acpi, o_acpi);
+        CONNECT(dst0, 0, dst0.i_l1o, i_l1o);
+        CONNECT(dst0, 0, dst0.o_l1i, o_l1i);
         CONNECT(dst0, 0, dst0.i_req_ready, w_req_ready);
         CONNECT(dst0, 0, dst0.o_req_valid, w_req_valid);
         CONNECT(dst0, 0, dst0.o_req_type, wb_req_type);

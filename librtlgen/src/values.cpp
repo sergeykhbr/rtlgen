@@ -23,7 +23,7 @@ namespace sysvc {
 
 GenValue::GenValue(const char *width, const char *val, const char *name,
                     GenObject *parent, const char *comment)
-    : GenObject(parent, (name[0] ? ID_VALUE : ID_CONST), name, comment) {
+    : GenObject(parent, "", (name[0] ? ID_VALUE : ID_CONST), name, comment) {
     uint64_t twidth;
     parse(width, 0, twidth, width_sysc_, width_sv_, width_sv_pkg_, width_vhdl_);
     width_ = static_cast<int>(twidth);
@@ -33,7 +33,7 @@ GenValue::GenValue(const char *width, const char *val, const char *name,
 
 GenValue::GenValue(GenValue *width, const char *val, const char *name,
                    GenObject *parent, const char *comment)
-    : GenObject(parent, (name[0] ? ID_VALUE : ID_CONST), name, comment) {
+    : GenObject(parent, "", (name[0] ? ID_VALUE : ID_CONST), name, comment) {
     width_ = static_cast<int>(width->getValue());
     if (width->getId() == ID_CONST) {
         width_sysc_ = width->getStrValue();
@@ -51,7 +51,7 @@ GenValue::GenValue(GenValue *width, const char *val, const char *name,
 
 GenValue::GenValue(const char *width, GenObject *val, const char *name,
                    GenObject *parent, const char *comment)
-    : GenObject(parent, (name[0] ? ID_VALUE : ID_CONST), name, comment) {
+    : GenObject(parent, "", (name[0] ? ID_VALUE : ID_CONST), name, comment) {
     uint64_t twidth;
     parse(width, 0, twidth, width_sysc_, width_sv_, width_sv_pkg_, width_vhdl_);
     width_ = static_cast<int>(twidth);

@@ -43,7 +43,6 @@ class StructObject : public GenObject {
     virtual std::string generate_interface();
     virtual std::string generate_const_none();
 
-    std::string type_;
     std::list<std::string> instances_;   // instance list
     int idx_;                            // array item index (-1) if not in an array
     std::string zeroval_;

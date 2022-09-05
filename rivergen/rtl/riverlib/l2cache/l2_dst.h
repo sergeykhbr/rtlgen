@@ -70,16 +70,6 @@ class L2Destination : public ModuleObject {
     InPort i_resp_status;
     InStruct<types_river::axi4_l1_out_vector> i_l1o;
     OutStruct<types_river::axi4_l1_in_vector> o_l1i;
-    InStruct<types_river::axi4_l1_out_type> i_l1o0;
-    OutStruct<types_river::axi4_l1_in_type> o_l1i0;
-    InStruct<types_river::axi4_l1_out_type> i_l1o1;
-    OutStruct<types_river::axi4_l1_in_type> o_l1i1;
-    InStruct<types_river::axi4_l1_out_type> i_l1o2;
-    OutStruct<types_river::axi4_l1_in_type> o_l1i2;
-    InStruct<types_river::axi4_l1_out_type> i_l1o3;
-    OutStruct<types_river::axi4_l1_in_type> o_l1i3;
-    InStruct<types_river::axi4_l1_out_type> i_acpo;
-    OutStruct<types_river::axi4_l1_in_type> o_acpi;
     TextLine _0_;
     InPort i_req_ready;
     OutPort o_req_valid;

@@ -38,14 +38,9 @@ class ArrayObject : public GenObject {
     virtual std::string getType() override;
     virtual int getDepth() override { return static_cast<int>(depth_.getValue()); }    // two-dimensional object
     virtual std::string getStrDepth() override { return depth_.getStrValue(); }
-    virtual void setSelector(GenObject *sel) { sel_ = sel; }
-    virtual GenObject *getSelector() { return sel_; }
-    virtual GenObject *getItem() = 0;
     virtual std::string generate() override;
  protected:
     I32D depth_;
-    GenObject *sel_;
-    std::string type_;
 };
 
 // T = signal or logic
