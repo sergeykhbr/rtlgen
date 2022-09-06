@@ -75,6 +75,7 @@ RiverAmba::RiverAmba(GenObject *parent, const char *name) :
     resp_snoop_data_o(this, "resp_snoop_data_o", "L1CACHE_LINE_BITS"),
     resp_snoop_flags_o(this, "resp_snoop_flags_o", "DTAG_FL_TOTAL"),
     wb_ip(this, "wb_ip", "IRQ_PER_HART_TOTAL", "Interrupt pending bits"),
+    wb_xcfg(this, "wb_xcfg"),
     // registers
     state(this, "state", "3"),
     req_addr(this, "req_addr", "CFG_CPU_ADDR_BITS", "state_idle"),
@@ -145,13 +146,6 @@ RiverAmba::RiverAmba(GenObject *parent, const char *name) :
         CONNECT(river0, 0, river0.o_halted, o_halted);
     ENDNEW();
 
-    ASSIGN(o_xcfg->descrsize, glob_types_amba_->PNP_CFG_MASTER_DESCR_BYTES);
-    ASSIGN(o_xcfg->descrtype, glob_types_amba_->PNP_CFG_TYPE_MASTER);
-    ASSIGN(o_xcfg->vid, glob_types_amba_->VENDOR_OPTIMITECH);
-    ASSIGN(o_xcfg->did, glob_types_amba_->RISCV_RIVER_CPU);
-    ASSIGN(o_available, CONST("1", 1));
-    TEXT();
-
     Operation::start(&comb);
     proc_comb();
 }
@@ -191,6 +185,12 @@ RiverAmba::reqtype2awsnoop_func::reqtype2awsnoop_func(GenObject *parent)
 void RiverAmba::proc_comb() {
     river_cfg *cfg = glob_river_cfg_;
 
+    SETVAL(wb_xcfg.descrsize, glob_types_amba_->PNP_CFG_MASTER_DESCR_BYTES);
+    SETVAL(wb_xcfg.descrtype, glob_types_amba_->PNP_CFG_TYPE_MASTER);
+    SETVAL(wb_xcfg.vid, glob_types_amba_->VENDOR_OPTIMITECH);
+    SETVAL(wb_xcfg.did, glob_types_amba_->RISCV_RIVER_CPU);
+
+TEXT();
     SETBIT(comb.vb_ip, cfg->IRQ_HART_MSIP, i_msip);
     SETBIT(comb.vb_ip, cfg->IRQ_HART_MTIP, i_mtip);
     SETBIT(comb.vb_ip, cfg->IRQ_HART_MEIP, i_meip);
@@ -434,4 +434,6 @@ TEXT();
 
 TEXT();
     SETVAL(o_msto, comb.vmsto);
+    SETVAL(o_xcfg, wb_xcfg);
+    SETVAL(o_available, CONST("1", 1));
 }

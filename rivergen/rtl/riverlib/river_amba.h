@@ -152,6 +152,7 @@ public:
     Signal resp_snoop_data_o;
     Signal resp_snoop_flags_o;
     Signal wb_ip;
+    types_amba::axi4_master_config_type wb_xcfg;
 
     RegSignal state;
     RegSignal req_addr;
