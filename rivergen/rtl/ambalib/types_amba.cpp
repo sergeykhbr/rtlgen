@@ -19,7 +19,7 @@
 types_amba* glob_types_amba_ = 0;
 
 types_amba::types_amba(GenObject *parent) :
-    FileObject(parent, "amba"),
+    FileObject(parent, "types_amba"),
     CFG_SYSBUS_ADDR_BITS(this, "CFG_SYSBUS_ADDR_BITS", "64"),
     CFG_LOG2_SYSBUS_DATA_BYTES(this, "CFG_LOG2_SYSBUS_DATA_BYTES", "3"),
     CFG_SYSBUS_ID_BITS(this, "CFG_SYSBUS_ID_BITS", "5"),

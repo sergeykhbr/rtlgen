@@ -40,8 +40,8 @@ std::string ArrayObject::generate() {
         ret += "typedef " + getItem()->getType() + " " + getType();
         ret += "[0: " + getStrDepth() + "-1];\n";
     } else if (SCV_is_sysc()) {
-        ret += "typedef " + getItem()->getType() + " " + getType();
-        ret += "[" + getStrDepth() + "];\n";
+        ret += "typedef sc_vector<sc_signal<" + getItem()->getType() + ">> ";
+        ret += getType() + ";\n";
     }
     return ret;
 }

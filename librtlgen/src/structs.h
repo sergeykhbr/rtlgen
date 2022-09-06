@@ -40,7 +40,14 @@ class StructObject : public GenObject {
     virtual std::string generate();
 
  protected:
+    virtual bool isVector();
     virtual std::string generate_interface();
+    virtual std::string generate_interface_constructor();
+    virtual std::string generate_interface_op_equal();      // operator ==
+    virtual std::string generate_interface_op_assign();     // operator =
+    virtual std::string generate_interface_op_stream();     // operator <<
+    virtual std::string generate_interface_op_bracket();    // operator [] for vector only
+    virtual std::string generate_interface_sc_trace();      // sc_trace
     virtual std::string generate_const_none();
 
     std::list<std::string> instances_;   // instance list
