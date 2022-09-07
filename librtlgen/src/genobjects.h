@@ -36,7 +36,6 @@ enum EIdType {
     ID_MODULE_INST,
     ID_INPUT,
     ID_OUTPUT,
-    ID_IOPORT,
     ID_SIGNAL,
     ID_STRUCT_DEF,
     ID_STRUCT_INST,

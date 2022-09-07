@@ -57,13 +57,13 @@ std::string FunctionObject::generate_sysc() {
     int argtotal = 0;
     int argcnt = 0;
     for (auto &a : entries_) {
-        if (a->getId() == ID_INPUT || a->getId() == ID_OUTPUT || a->getId() == ID_IOPORT) {
+        if (a->getId() == ID_INPUT || a->getId() == ID_OUTPUT) {
             argtotal++;
         }
     }
     // Generate list of arguments
     for (auto &a : entries_) {
-        if (a->getId() == ID_INPUT || a->getId() == ID_OUTPUT || a->getId() == ID_IOPORT) {
+        if (a->getId() == ID_INPUT || a->getId() == ID_OUTPUT) {
             ret += "\n    " + a->generate();
             if (++argcnt < argtotal) {
                 ret += ",";
@@ -110,7 +110,7 @@ std::string FunctionObject::generate_sysv() {
     int argtotal = 0;
     int argcnt = 0;
     for (auto &a : entries_) {
-        if (a->getId() == ID_INPUT || a->getId() == ID_OUTPUT || a->getId() == ID_IOPORT) {
+        if (a->getId() == ID_INPUT || a->getId() == ID_OUTPUT) {
             argtotal++;
         }
     }
@@ -119,7 +119,7 @@ std::string FunctionObject::generate_sysv() {
     }
     // Generate list of arguments
     for (auto &a : entries_) {
-        if (a->getId() == ID_INPUT || a->getId() == ID_OUTPUT || a->getId() == ID_IOPORT) {
+        if (a->getId() == ID_INPUT || a->getId() == ID_OUTPUT) {
             ret += "\n    " + a->generate();
             if (++argcnt < argtotal) {
                 ret += ",";

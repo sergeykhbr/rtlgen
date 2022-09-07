@@ -66,7 +66,7 @@ std::string ModuleObject::generate_sysc_h() {
 
     // Input/Output signal declaration
     for (auto &p: entries_) {
-        if (p->getId() != ID_INPUT && p->getId() != ID_OUTPUT && p->getId() != ID_IOPORT) {
+        if (p->getId() != ID_INPUT && p->getId() != ID_OUTPUT) {
             if (p->getId() == ID_COMMENT) {
                 text = "    " + p->generate();
             } else {
@@ -412,11 +412,6 @@ std::string ModuleObject::generate_sysc_sensitivity(std::string prefix,
             return ret;
         }
     }
-#if 1
-    if (obj->getName() == "i_dport") {
-        bool st = true;
-    }
-#endif
 
     for (int i = 0; i < prefix.size(); i++) {
         if (i >= name.size()
@@ -440,17 +435,27 @@ std::string ModuleObject::generate_sysc_sensitivity(std::string prefix,
 
     if (obj->getId() == ID_INPUT && obj->getName() != "i_clk") {
         ret += Operation::addspaces();
-        ret += "sensitive << " + obj->getName() + ";\n";
+        if (obj->getItem()->getId() == ID_VECTOR) {
+            ret += "for (int i = 0; i < " + obj->getItem()->getStrDepth() + "; i++) {\n";
+            Operation::set_space(Operation::get_space() + 1);
+            ret += Operation::addspaces();
+            ret += "sensitive << " + obj->getName() + "[i];\n";
+            Operation::set_space(Operation::get_space() - 1);
+            ret += Operation::addspaces();
+            ret += "}\n";
+        } else {
+            ret += "sensitive << " + obj->getName() + ";\n";
+        }
     } else if  (obj->getId() == ID_SIGNAL) {
         ret += Operation::addspaces();
         ret += "sensitive << " + name + ";\n";
     } else if (obj->getId() == ID_ARRAY_DEF
-        && static_cast<ArrayObject *>(obj)->getItem()->getId() != ID_VALUE) {
+        && obj->getItem()->getId() != ID_VALUE) {
         // ignore value (not signals) declared in module scope
         name += "[i]";
         ret += Operation::addspaces();
         ret += "for (int i = 0; i < " + obj->getStrDepth() + "; i++) {\n";
-        GenObject *item = static_cast<ArrayObject *>(obj)->getItem();
+        GenObject *item = obj->getItem();
         Operation::set_space(Operation::get_space() + 1);
         if (item->getEntries().size() == 0) {
             ret += generate_sysc_sensitivity(prefix, name, item);
@@ -479,7 +484,8 @@ std::string ModuleObject::generate_sysc_vcd_entries(std::string name1, std::stri
     bool prefix_applied = true;
     if (obj->getId() == ID_STRUCT_DEF
         || obj->getId() == ID_MODULE_INST
-        || obj->getId() == ID_PROCESS) {
+        || obj->getId() == ID_PROCESS
+        || obj->getItem()->getId() == ID_VECTOR) {
         return ret;
     }
 
@@ -516,7 +522,7 @@ std::string ModuleObject::generate_sysc_vcd_entries(std::string name1, std::stri
 
     if (!obj->isVcd()) {
         // skip it
-    } else if (obj->getId() == ID_INPUT || obj->getId() == ID_OUTPUT || obj->getId() == ID_IOPORT) {
+    } else if (obj->getId() == ID_INPUT || obj->getId() == ID_OUTPUT) {
         ret += Operation::addspaces();
         ret += "sc_trace(o_vcd, " + obj->getName() + ", " + obj->getName() + ".name());\n";
     } else if (obj->getId() == ID_ARRAY_DEF && obj->isReg()) {
@@ -709,7 +715,7 @@ std::string ModuleObject::generate_sysc_constructor() {
     // Input/Output signal declaration
     tcnt = 0;
     for (auto &p: entries_) {
-        if (p->getId() != ID_INPUT && p->getId() != ID_OUTPUT && p->getId() != ID_IOPORT) {
+        if (p->getId() != ID_INPUT && p->getId() != ID_OUTPUT) {
             continue;
         }
         ret += ",\n    " + p->getName() + "(\"" + p->getName() + "\")";

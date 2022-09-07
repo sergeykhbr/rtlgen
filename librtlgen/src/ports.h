@@ -70,8 +70,8 @@ class OutPort : public Logic {
 template<class T>
 class IoStruct : public GenObject {
 public:
-    IoStruct(GenObject* parent, const char* name, const char* comment = "")
-        : GenObject(parent, "", ID_IOPORT, name, comment), s_(this, name) {
+    IoStruct(GenObject* parent, EIdType id, const char* name, const char* comment = "")
+        : GenObject(parent, "", id, name, comment), s_(this, name) {
     }
     virtual std::string getType() override {
         std::string out = "";
@@ -95,6 +95,7 @@ public:
     }
     T* operator->() const { return &s_; }
     T* operator->() { return &s_; }
+    virtual GenObject *getItem() override { return &s_; }
     virtual T* read() { return &s_; }
     virtual void setSelector(GenObject *sel) override { s_.setSelector(sel); }
 
@@ -107,7 +108,7 @@ template<class T>
 class InStruct : public IoStruct<T> {
  public:
     InStruct(GenObject* parent, const char* name, const char* comment = "")
-        : IoStruct<T>(parent, name, comment) { }
+        : IoStruct<T>(parent, ID_INPUT, name, comment) { }
  protected:
     virtual std::string getDirection() override {
         std::string ret = "";
@@ -124,7 +125,7 @@ template<class T>
 class OutStruct : public IoStruct<T> {
  public:
     OutStruct(GenObject* parent, const char* name, const char* comment = "")
-        : IoStruct<T>(parent, name, comment) { }
+        : IoStruct<T>(parent, ID_OUTPUT, name, comment) { }
  protected:
     virtual std::string getDirection() override {
         std::string ret = "";

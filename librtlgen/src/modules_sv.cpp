@@ -572,13 +572,13 @@ std::string ModuleObject::generate_sv_mod() {
     ret += "(\n";
     int port_cnt = 0;
     for (auto &p: entries_) {
-        if (p->getId() == ID_INPUT || p->getId() == ID_OUTPUT || p->getId() == ID_IOPORT) {
+        if (p->getId() == ID_INPUT || p->getId() == ID_OUTPUT) {
             port_cnt++;
         }
     }
     text = "";
     for (auto &p: entries_) {
-        if (p->getId() != ID_INPUT && p->getId() != ID_OUTPUT  && p->getId() != ID_IOPORT) {
+        if (p->getId() != ID_INPUT && p->getId() != ID_OUTPUT) {
             if (p->getId() == ID_COMMENT) {
                 text += "    " + p->generate();
             } else {
