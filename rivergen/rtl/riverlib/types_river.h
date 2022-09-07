@@ -82,9 +82,9 @@ class types_river : public FileObject {
         Logic rdata;
     };
 
-    class dport_in_vector_type : public TStructArray<dport_in_type> {
-        public:
-        dport_in_vector_type(GenObject *parent, const char *name, bool reg=false, const char *comment="")
+    class dport_in_vector : public TStructArray<dport_in_type> {
+     public:
+        dport_in_vector(GenObject *parent, const char *name, bool reg=false, const char *comment="")
             : TStructArray(parent, "dport_in_vector", name, "CFG_CPU_MAX", reg, comment) {
             id_ = ID_VECTOR;
             registerCfgType(name);                  // will be registered if name == ""
@@ -92,11 +92,12 @@ class types_river : public FileObject {
                 SCV_get_cfg_parameter(getType());   // to trigger dependecy array
             }
         }
+        virtual bool isVector() override { return true; }
     };
 
-    class dport_out_vector_type : public TStructArray<dport_out_type> {
+    class dport_out_vector : public TStructArray<dport_out_type> {
         public:
-        dport_out_vector_type(GenObject *parent, const char *name, bool reg=false, const char *comment="")
+        dport_out_vector(GenObject *parent, const char *name, bool reg=false, const char *comment="")
             : TStructArray(parent, "dport_out_vector", name, "CFG_CPU_MAX", reg, comment) {
             id_ = ID_VECTOR;
             registerCfgType(name);                  // will be registered if name == ""
@@ -104,6 +105,7 @@ class types_river : public FileObject {
                 SCV_get_cfg_parameter(getType());   // to trigger dependecy array
             }
         }
+        virtual bool isVector() override { return true; }
     };
 
 
@@ -355,8 +357,8 @@ class types_river : public FileObject {
     TextLine _dbgiface5_;
     dport_out_type dport_out_none;
     TextLine _dbgiface6_;
-    dport_in_vector_type dport_in_vector_def_;
-    dport_out_vector_type dport_out_vector_def_;
+    dport_in_vector dport_in_vector_def_;
+    dport_out_vector dport_out_vector_def_;
     TextLine _dbgiface7_;
     TextLine _axi0_;
     TextLine _axi1_;

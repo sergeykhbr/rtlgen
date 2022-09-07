@@ -79,6 +79,8 @@ class TStructArray : public ArrayObject {
         }
     }
     T *operator->() const { return arr_[0]; }
+    T *operator->() { return arr_[0]; }
+    T *Item() { return arr_[0]; }
     virtual GenObject *getItem() { return arr_[0]; }
 
     T **arr_;

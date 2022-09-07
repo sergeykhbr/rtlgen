@@ -412,6 +412,11 @@ std::string ModuleObject::generate_sysc_sensitivity(std::string prefix,
             return ret;
         }
     }
+#if 1
+    if (obj->getName() == "i_dport") {
+        bool st = true;
+    }
+#endif
 
     for (int i = 0; i < prefix.size(); i++) {
         if (i >= name.size()

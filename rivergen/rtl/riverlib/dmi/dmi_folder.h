@@ -17,13 +17,16 @@
 #pragma once
 
 #include <api.h>
+#include "ic_dport.h"
 
 class dmi_folder : public FolderObject {
  public:
     dmi_folder(GenObject *parent) :
-        FolderObject(parent, "dmi")
+        FolderObject(parent, "dmi"),
+        ic_dport_file_(this)
         {}
 
  protected:
     // files
+    ic_dport_file ic_dport_file_;
 };

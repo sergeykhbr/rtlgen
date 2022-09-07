@@ -86,6 +86,7 @@ class GenObject {
     virtual void setWidth(int w) { width_ = w; }
     virtual int getWidth() { return width_; }
     virtual std::string getStrWidth() { return std::string(""); }
+    virtual bool isVector() { return false; }
     virtual int getDepth() { return 0; }    // two-dimensional object
     virtual std::string getStrDepth() { return std::string(""); }
     virtual void setSelector(GenObject *sel) { sel_ = sel; }

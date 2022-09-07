@@ -40,7 +40,7 @@ class StructObject : public GenObject {
     virtual std::string generate();
 
  protected:
-    virtual bool isVector();
+    virtual bool isVector() override;
     virtual std::string generate_interface();
     virtual std::string generate_interface_constructor();
     virtual std::string generate_interface_op_equal();      // operator ==

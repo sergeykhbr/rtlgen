@@ -92,7 +92,11 @@ std::string Operation::fullname(const char *prefix, std::string name, GenObject 
         curname = "";
         curname = fullname("r", curname, obj->getSelector());
         curname = "[" + curname + "]";
-        curname = obj->getName() + curname;
+        if (SCV_is_sysc() && p && p->getId() == ID_IOPORT) {
+            curname = obj->getName() + ".read()" + curname;
+        } else {
+            curname = obj->getName() + curname;
+        }
         if (name.size()) {
             curname += ".";
         }

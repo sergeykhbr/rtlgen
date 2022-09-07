@@ -71,12 +71,18 @@ template<class T>
 class IoStruct : public GenObject {
 public:
     IoStruct(GenObject* parent, const char* name, const char* comment = "")
-        : GenObject(parent, "", ID_IOPORT, name, comment), s_(0, name) {
+        : GenObject(parent, "", ID_IOPORT, name, comment), s_(this, name) {
     }
     virtual std::string getType() override {
         std::string out = "";
         if (SCV_is_sysc()) {
-            out += getDirection() + "<" + s_.getType() + ">";
+            if (s_.getId() == ID_VECTOR) {
+                out += "sc_vector<";
+                out += getDirection() + "<" + s_.getItem()->getType() + ">";
+                out += ">";
+            } else {
+                out += getDirection() + "<" + s_.getType() + ">";
+            }
         } else if (SCV_is_sv()) {
             out += getDirection() + " ";
             if (SCV_get_cfg_file(s_.getType()).size()) {
@@ -89,6 +95,8 @@ public:
     }
     T* operator->() const { return &s_; }
     T* operator->() { return &s_; }
+    virtual T* read() { return &s_; }
+    virtual void setSelector(GenObject *sel) override { s_.setSelector(sel); }
 
  protected:
     virtual std::string getDirection() = 0;
