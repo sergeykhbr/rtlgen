@@ -79,4 +79,42 @@ void ic_dport::proc_comb() {
         SETBIT(comb.vb_req_ready, *i, ARRITEM(i_dporto, *i, i_dporto.read()->Item()->req_ready));
     ENDFOR();
 
+TEXT();
+    SETVAL(comb.vb_req_ready_mask, AND2_L(comb.vb_req_ready, comb.vb_cpu_mask));
+    SETVAL(comb.vb_req_valid_mask, AND3_L(comb.vb_req_valid, comb.vb_req_ready, comb.vb_cpu_mask));
+    SETVAL(comb.v_req_accepted, OR_REDUCE(comb.vb_req_valid_mask));
+
+TEXT();
+    i = &FOR ("i", CONST("0"), cfg->CFG_CPU_MAX, "++");
+        SETARRITEM(comb.vb_dporti, *i, comb.vb_dporti->haltreq, AND2(BIT(comb.vb_haltreq, *i), BIT(comb.vb_cpu_mask, *i)));
+        SETARRITEM(comb.vb_dporti, *i, comb.vb_dporti->resumereq, AND2(BIT(comb.vb_resumereq, *i), BIT(comb.vb_cpu_mask, *i)));
+        SETARRITEM(comb.vb_dporti, *i, comb.vb_dporti->resethaltreq, AND2(BIT(comb.vb_resethaltreq, *i), BIT(comb.vb_cpu_mask, *i)));
+        SETARRITEM(comb.vb_dporti, *i, comb.vb_dporti->hartreset, AND2(BIT(comb.vb_hartreset, *i), BIT(comb.vb_cpu_mask, *i)));
+        SETARRITEM(comb.vb_dporti, *i, comb.vb_dporti->req_valid, AND2(BIT(comb.vb_req_valid, *i), BIT(comb.vb_cpu_mask, *i)));
+        SETARRITEM(comb.vb_dporti, *i, comb.vb_dporti->dtype, i_dport_req_type);
+        SETARRITEM(comb.vb_dporti, *i, comb.vb_dporti->addr, i_dport_addr);
+        SETARRITEM(comb.vb_dporti, *i, comb.vb_dporti->wdata, i_dport_wdata);
+        SETARRITEM(comb.vb_dporti, *i, comb.vb_dporti->size, i_dport_size);
+        SETARRITEM(comb.vb_dporti, *i, comb.vb_dporti->resp_ready, i_dport_resp_ready);
+    ENDFOR();
+
+TEXT();
+    IF (NZ(comb.v_req_accepted));
+       SETVAL(comb.vb_hartsel, i_hartsel);
+    ENDIF();
+
+TEXT();
+    SYNC_RESET(*this);
+
+TEXT();
+    i = &FOR ("i", CONST("0"), cfg->CFG_CPU_MAX, "++");
+        SETARRITEM(o_dporti, *i, o_dporti, ARRITEM(comb.vb_dporti, *i, comb.vb_dporti));
+    ENDFOR();
+
+TEXT();
+    SETVAL(o_dport_req_ready, OR_REDUCE(comb.vb_req_ready_mask));
+    SETVAL(o_dport_resp_valid, ARRITEM(i_dporto, TO_INT(hartsel), i_dporto.read()->Item()->resp_valid));
+    SETVAL(o_dport_resp_error, ARRITEM(i_dporto, TO_INT(hartsel), i_dporto.read()->Item()->resp_error));
+    SETVAL(o_dport_rdata, ARRITEM(i_dporto, TO_INT(hartsel), i_dporto.read()->Item()->rdata));
+
 }

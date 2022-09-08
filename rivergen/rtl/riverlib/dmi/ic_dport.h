@@ -32,27 +32,31 @@ class ic_dport : public ModuleObject {
             : ProcObject(parent, "comb"),
             vb_hartsel(this, "vb_hartsel", "CFG_LOG2_CPU_MAX"),
             vb_cpu_mask(this, "vb_cpu_mask", "CFG_CPU_MAX"),
+            vb_req_ready_mask(this, "vb_req_ready_mask", "CFG_CPU_MAX"),
+            vb_req_valid_mask(this, "vb_req_valid_mask", "CFG_CPU_MAX"),
             vb_haltreq(this, "vb_haltreq", "CFG_CPU_MAX"),
             vb_resumereq(this, "vb_resumereq", "CFG_CPU_MAX"),
             vb_resethaltreq(this, "vb_resethaltreq", "CFG_CPU_MAX"),
             vb_hartreset(this, "vb_hartreset", "CFG_CPU_MAX"),
             vb_req_valid(this, "vb_req_valid", "CFG_CPU_MAX"),
             vb_req_ready(this, "vb_req_ready", "CFG_CPU_MAX"),
-            vb_dporti(this, "vb_dporti"),
-            vb_dporto(this, "vb_dporto"),
+            vb_dporti(this, "", "vb_dporti", "CFG_CPU_MAX"),
+            vb_dporto(this, "", "vb_dporto", "CFG_CPU_MAX"),
             v_req_accepted(this, "v_req_accepted", "1") {
         }
      public:
         Logic vb_hartsel;
         Logic vb_cpu_mask;
+        Logic vb_req_ready_mask;
+        Logic vb_req_valid_mask;
         Logic vb_haltreq;
         Logic vb_resumereq;
         Logic vb_resethaltreq;
         Logic vb_hartreset;
         Logic vb_req_valid;
         Logic vb_req_ready;
-        types_river::dport_in_vector vb_dporti;
-        types_river::dport_out_vector vb_dporto;
+        TStructArray<types_river::dport_in_type> vb_dporti;
+        TStructArray<types_river::dport_out_type> vb_dporto;
         Logic v_req_accepted;
     };
 

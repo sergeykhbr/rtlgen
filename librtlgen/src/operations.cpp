@@ -93,7 +93,7 @@ std::string Operation::fullname(const char *prefix, std::string name, GenObject 
         curname = fullname("r", curname, obj->getSelector());
         curname = "[" + curname + "]";
         if (SCV_is_sysc() && p && p->getId() == ID_INPUT) {
-            curname = obj->getName() + ".read()" + curname;
+            curname = obj->getName() + curname + ".read()";
         } else {
             curname = obj->getName() + curname;
         }
@@ -115,6 +115,11 @@ std::string Operation::fullname(const char *prefix, std::string name, GenObject 
         curname += name;
     } else if (obj->getId() == ID_DEF_PARAM && SCV_is_sysc()) {
         curname = obj->getName() + name + "_";
+    } else if (obj->getId() == ID_OUTPUT && obj->getItem()->getId() == ID_VECTOR) {
+        curname = "";
+        curname = fullname("r", curname, obj->getItem()->getSelector());
+        curname = "[" + curname + "]";
+        curname = obj->getName() + name + curname;
     } else {
         curname = obj->getName() + name;
     }
@@ -1625,6 +1630,26 @@ Operation &AND2_L(GenObject &a, GenObject &b, const char *comment) {
     return *p;
 }
 
+// AND3_L
+std::string AND3_L_gen(GenObject **args) {
+    std::string A = Operation::obj2varname(args[1], "r", true);
+    std::string B = Operation::obj2varname(args[2], "r", true);
+    std::string C = Operation::obj2varname(args[3], "r", true);
+    A = "(" + A + " & " + B + " & " + C + ")";
+    return A;
+}
+
+Operation &AND3_L(GenObject &a, GenObject &b, GenObject &c, const char *comment) {
+    Operation *p = new Operation(0, comment);
+    p->setWidth(a.getWidth() > b.getWidth() ? a.getWidth() : b.getWidth());
+    p->igen_ = AND3_L_gen;
+    p->add_arg(p);
+    p->add_arg(&a);
+    p->add_arg(&b);
+    p->add_arg(&c);
+    return *p;
+}
+
 
 // AND2
 std::string AND2_gen(GenObject **args) {
@@ -2160,11 +2185,6 @@ Operation &SETARRIDX(GenObject &arr, GenObject &idx) {
 // SETARRITEM
 std::string SETARRITEM_gen(GenObject **args) {
     args[1]->setSelector(args[2]);
-#if 1
-    if (args[1]->getName() == "vlxi") {
-        bool st = true;
-    }
-#endif
     std::string ret = Operation::addspaces();
     ret += Operation::obj2varname(args[3], "v");
     ret += " = ";
