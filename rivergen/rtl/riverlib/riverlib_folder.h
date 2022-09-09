@@ -27,6 +27,7 @@
 #include "river_amba.h"
 #include "dummycpu.h"
 #include "ic_axi4_to_l1.h"
+#include "workgroup.h"
 
 class riverlib_folder : public FolderObject {
  public:
@@ -41,7 +42,8 @@ class riverlib_folder : public FolderObject {
         river_top_(this),
         river_amba_(this),
         dummycpu_(this),
-        ic_axi4_to_l1_(this) {}
+        ic_axi4_to_l1_(this),
+        workgroup_(this) {}
 
  protected:
     river_cfg river_cfg_;
@@ -54,4 +56,5 @@ class riverlib_folder : public FolderObject {
     river_amba_file river_amba_;
     dummycpu_file dummycpu_;
     ic_axi4_to_l1_file ic_axi4_to_l1_;
+    workgroup_file workgroup_;
 };

@@ -33,18 +33,28 @@ std::string ModuleObject::generate_sv_pkg_localparam() {
     std::string ret = "";
     std::string ln = "";
     int tcnt = 0;
+    GenObject *prev = 0;
     // Local paramaters visible inside of module
     for (auto &p: entries_) {
         if (p->getId() != ID_PARAM) {
+            prev = 0;
+            if (p->getId() == ID_COMMENT) {
+                prev = p;
+            }
             continue;
         }
         if (!static_cast<GenValue *>(p)->isLocal()) {
+            prev = 0;
             continue;
         }
         if (p->getType() == "std::string") {
             // exclude strings (tracer case)
+            prev = 0;
             continue;
         } else {
+            if (prev) {
+                ret += prev->generate();
+            }
             ln = "localparam " + p->getType() + " " + p->getName();
             ln += " = " + p->getStrValue() + ";";
         }
@@ -56,6 +66,7 @@ std::string ModuleObject::generate_sv_pkg_localparam() {
         }
         ret += ln + "\n";
         tcnt++;
+        prev = 0;
     }
     if (tcnt) {
         ret += "\n";

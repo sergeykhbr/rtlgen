@@ -96,8 +96,12 @@ class GenObject {
     virtual bool isResetDisabled() { return reset_disabled_; }
     virtual void disableVcd() { vcd_enabled_ = false; }
     virtual bool isVcd() { return vcd_enabled_; }
+    virtual bool isGenericDep() { return gendep_; }      // depend on generic parameters
 
     virtual std::string generate() { return std::string(""); }
+    virtual std::string convert(std::string &v);
+    virtual uint64_t parse_to_u64(const char *val, size_t &pos);
+    virtual std::string parse_to_str(const char *val, size_t &pos);
 
     virtual bool isNumber(std::string &s) {
         return s.c_str()[0] >= '0' && s.c_str()[0] <= '9';
@@ -112,11 +116,14 @@ class GenObject {
     bool reg_;              // Mark object (signal, value, port, structure) as a Flip-flop
     bool reset_disabled_;   // register without reset (memory)
     bool vcd_enabled_;      // show instance in VCD trace file
+    bool gendep_;           // generic dependible
     std::string type_;
     std::string name_;
     std::string mnemonic_;  // name in VCD trace file
     std::string comment_;
     std::list<GenObject *> entries_;
+
+    std::string strValue_;
 };
 
 }  // namespace sysvc

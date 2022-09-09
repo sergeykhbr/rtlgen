@@ -137,7 +137,7 @@ size_t GenValue::parse(const char *val, size_t pos,
     }
     pos++;
 
-    if (m == "POW2" || m == "ADD" || m == "SUB" || m == "MUL" || m == "DIV") {
+    if (m == "POW2" || m == "ADD" || m == "SUB" || m == "MUL" || m == "DIV" || m == "GT") {
         std::string op = m;
         uint64_t arg1, arg2;
         std::string sysc1, sysc2;
@@ -182,6 +182,11 @@ size_t GenValue::parse(const char *val, size_t pos,
             sysc = "(" + sysc1 + " / " + sysc2 + ")";
             sv = "(" + sv1 + " / " + sv2 + ")";
             sv_pkg = "(" + sv_pkg1 + " / " + sv_pkg2 + ")";
+        } else if (op == "GT") {
+            out = arg1 > arg2 ? 1: 0;
+            sysc = "(" + sysc1 + " > " + sysc2 + " ? 1: 0)";
+            sv = "(" + sv1 + " > " + sv2 + " ? 1: 0)";
+            sv_pkg = "(" + sv_pkg1 + " > " + sv_pkg2 + " ? 1: 0)";
         }
     } else {
         SHOW_ERROR("%s", "wrong parse format");

@@ -172,20 +172,31 @@ std::string ModuleObject::generate_sysc_h() {
     }
 
     // Local paramaters visible inside of module
+    GenObject *prev = 0;
     for (auto &p: entries_) {
         if (p->getId() != ID_PARAM) {
+            prev = 0;
+            if (p->getId() == ID_COMMENT) {
+                prev = p;
+            }
             continue;
         }
         if (!static_cast<GenValue *>(p)->isLocal()) {
+            prev = 0;
             continue;
         }
         if (p->getType() == "std::string") {
+            prev = 0;
             continue;
         } else {
+            if (prev) {
+                out += "    " + prev->generate();
+            }
             out += "    static const " + p->getType() + " " + p->getName();
             out += " = " + p->getStrValue() + ";\n";
         }
         tcnt++;
+        prev = 0;
     }
     if (tcnt) {
         out += "\n";

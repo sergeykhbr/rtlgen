@@ -2791,6 +2791,9 @@ std::string NEW_gen_sv(Operation *op, ModuleObject *mod, std::string name) {
             ret += Operation::addspaces();
             if (e->getId() == ID_TMPL_PARAM) {
                 ret += "." + e->getName() + "(" + e->getStrValue() + ")";
+            //} else if (e->getStrValue().size()) {
+            //    // generic parameter but with the defined string value
+            //    ret += "." + e->getName() + "(" + e->getStrValue() + ")";
             } else {
                 ret += "." + e->getName() + "(" + e->getName() + ")";
             }
