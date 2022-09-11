@@ -79,19 +79,24 @@ class GenObject {
     virtual void setName(const char *n) { name_ = std::string(n); }
     virtual std::string getComment() { return comment_; }
     virtual std::string getType() { return type_; }
-    virtual void setValue(uint64_t v) { value_ = v; }
-    virtual uint64_t getValue() { return value_; }
-    virtual std::string getStrValue() { return std::string(""); }
-    virtual void setWidth(int w) { width_ = w; }
-    virtual int getWidth() { return width_; }
-    virtual std::string getStrWidth() { return std::string(""); }
     virtual bool isVector() { return false; }
-    virtual int getDepth() { return 0; }    // two-dimensional object
-    virtual std::string getStrDepth() { return std::string(""); }
+    virtual bool isLocal();     // parent = file is global; module is local
+
+    virtual uint64_t getValue();
+    virtual std::string getStrValue();
+    virtual void changeStrValue(const char *val);
+    virtual int getWidth();
+    virtual std::string getStrWidth();
+    virtual void setWidth(int w);
+    virtual int getDepth();    // two-dimensional object
+    virtual std::string getStrDepth();
+
     virtual void setSelector(GenObject *sel) { sel_ = sel; }
     virtual GenObject *getSelector() { return sel_; }
     virtual GenObject *getItem() { return this; }
+    virtual GenObject *getItem(int idx)  { return this; }
     virtual bool isReg() { return reg_; }
+    virtual void setReg() { reg_ = true; }
     virtual void disableReset() { reset_disabled_ = true; }
     virtual bool isResetDisabled() { return reset_disabled_; }
     virtual void disableVcd() { vcd_enabled_ = false; }
@@ -99,7 +104,6 @@ class GenObject {
     virtual bool isGenericDep() { return gendep_; }      // depend on generic parameters
 
     virtual std::string generate() { return std::string(""); }
-    virtual std::string convert(std::string &v);
     virtual uint64_t parse_to_u64(const char *val, size_t &pos);
     virtual std::string parse_to_str(const char *val, size_t &pos);
 
@@ -111,8 +115,6 @@ class GenObject {
     EIdType id_;
     GenObject *parent_;
     GenObject *sel_;        // selector when is array
-    uint64_t value_;
-    int width_;
     bool reg_;              // Mark object (signal, value, port, structure) as a Flip-flop
     bool reset_disabled_;   // register without reset (memory)
     bool vcd_enabled_;      // show instance in VCD trace file
@@ -124,6 +126,11 @@ class GenObject {
     std::list<GenObject *> entries_;
 
     std::string strValue_;
+    std::string strWidth_;
+    std::string strDepth_;
+    GenObject *objValue_;
+    GenObject *objWidth_;
+    GenObject *objDepth_;
 };
 
 }  // namespace sysvc

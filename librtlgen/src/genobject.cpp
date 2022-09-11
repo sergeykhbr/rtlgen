@@ -24,8 +24,12 @@ GenObject::GenObject(GenObject *parent, const char *type, EIdType id,
     id_ = id;
     parent_ = parent;
     sel_ = 0;
-    value_ = 0;
-    width_ = 0;
+    strValue_ = "";
+    strWidth_ = "";
+    strDepth_ = "";
+    objValue_ = 0;
+    objWidth_ = 0;
+    objDepth_ = 0;
     reg_ = false;
     reset_disabled_ = false;
     vcd_enabled_ = true;
@@ -71,11 +75,102 @@ void GenObject::add_entry(GenObject *p) {
     entries_.push_back(p);
 }
 
-std::string GenObject::convert(std::string &v) {
-    std::string ret = "";
-
-    return ret;
+bool GenObject::isLocal() {
+    bool local = false;
+    GenObject *p = getParent();
+    while (p) {
+        if (p->getId() == ID_MODULE) {
+            local = true;
+            break;
+        } else if (p->getId() == ID_FILE) {
+            break;
+        }
+        p = p->getParent();
+    }
+    return local;
 }
+
+
+uint64_t GenObject::getValue() {
+    if (objValue_) {
+        return objValue_->getValue();
+    } else {
+        size_t tpos = 0;
+        return parse_to_u64(strValue_.c_str(), tpos);
+    }
+}
+
+int GenObject::getWidth() {
+    if (objWidth_) {
+        return static_cast<int>(objWidth_->getValue());
+    } else {
+        size_t tpos = 0;
+        return static_cast<int>(parse_to_u64(strWidth_.c_str(), tpos));
+    }
+}
+
+int GenObject::getDepth() {
+    if (objDepth_) {
+        return static_cast<int>(objDepth_->getValue());
+    } else {
+        size_t tpos = 0;
+        return static_cast<int>(parse_to_u64(strDepth_.c_str(), tpos));
+    }
+}
+
+std::string GenObject::getStrValue() {
+    size_t tpos = 0;
+    if (objValue_) {
+        if (objValue_->getId() == ID_OPERATION) {
+            return objValue_->generate();
+        } else {
+            SHOW_ERROR("Unsupported value ID=%d", objValue_->getId());
+            return strValue_;
+        }
+
+    } else {
+        return parse_to_str(strValue_.c_str(), tpos);
+    }
+}
+
+std::string GenObject::getStrWidth() {
+    size_t tpos = 0;
+    if (objWidth_) {
+        if (objWidth_->getId() == ID_CONST) {
+            return objWidth_->getStrValue();
+        } else {
+            return objWidth_->getName();
+        }
+    } else {
+        return parse_to_str(strWidth_.c_str(), tpos);
+    }
+}
+
+std::string GenObject::getStrDepth() {
+    size_t tpos = 0;
+    if (objDepth_) {
+        if (objDepth_->getId() == ID_CONST) {
+            return objDepth_->getStrValue();
+        } else {
+            return objDepth_->getName();
+        }
+    } else {
+        return parse_to_str(strDepth_.c_str(), tpos);
+    }
+}
+
+void GenObject::changeStrValue(const char *val) {
+    strValue_ = std::string(val);
+}
+
+
+void GenObject::setWidth(int w) {
+    char tstr[256];
+    objWidth_ = 0;
+    RISCV_sprintf(tstr, sizeof(tstr), "%d", w);
+    strWidth_ = std::string(tstr);
+}
+
 
 uint64_t GenObject::parse_to_u64(const char *val, size_t &pos) {
     uint64_t ret = 0;
@@ -89,7 +184,7 @@ uint64_t GenObject::parse_to_u64(const char *val, size_t &pos) {
         pos++;
     }
 
-    if (buf[0] == '\0') {
+    if (buf[0] == '\0' || buf[0] == '"') {
         ret = 0;
         return ret;
     }
@@ -170,6 +265,10 @@ std::string GenObject::parse_to_str(const char *val, size_t &pos) {
     }
 
     if (buf[0] == '\0') {
+        return ret;
+    }
+    if (buf[0] == '"') {
+        ret = std::string(buf);
         return ret;
     }
     if (buf[0] >= '0' && buf[0] <= '9') {

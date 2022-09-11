@@ -69,9 +69,6 @@ class TmplParamI32D : public I32D,
         ParamGeneric(static_cast<GenValue *>(this)) {
         id_ = ID_TMPL_PARAM;
     }
-    virtual void changeValue(const char *val) {
-        parse(val, 0, value_, sysc_, sv_, sv_pkg_, vhdl_);
-    }
     virtual std::string generate() override {
         return genparam(static_cast<GenValue *>(this));
     }

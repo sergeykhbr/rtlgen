@@ -54,7 +54,7 @@ std::string StructObject::getName() {
     if (idx_ == -1) {
         return ret;
     }
-    GenObject *sel = static_cast<ArrayObject *>(getParent())->getSelector();
+    GenObject *sel = getParent()->getSelector();
     if (!sel) {
         return ret;
     }

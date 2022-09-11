@@ -27,103 +27,109 @@
 
 namespace sysvc {
 
+template<class T>
 class ArrayObject : public GenObject {
  public:
     ArrayObject(GenObject *parent,
                 const char *type,
                 const char *name,
                 const char *depth,
-                const char *comment="");
+                const char *comment="")
+    : GenObject(parent, type, ID_ARRAY_DEF, name, comment) {
+        strDepth_ = std::string(depth);
+    }
 
-    virtual std::string getType() override;
-    virtual int getDepth() override { return static_cast<int>(depth_.getValue()); }    // two-dimensional object
-    virtual std::string getStrDepth() override { return depth_.getStrValue(); }
-    virtual std::string generate() override;
+    virtual std::string getType() override {
+        if (type_.size()) {
+            return type_;
+        }
+        return getItem(0)->getType();
+    }
+
+    virtual std::string generate() override {
+        std::string ret = "";
+        if (SCV_is_sv()) {
+            ret += "typedef " + getItem()->getType() + " " + getType();
+            ret += "[0: " + getStrDepth() + "-1];\n";
+        } else if (SCV_is_sysc()) {
+            ret += "typedef sc_vector<sc_signal<" + getItem()->getType() + ">> ";
+            ret += getType() + ";\n";
+        }
+        return ret;
+    }
+
+    // No need to redfine operator '->' because we use this object directly
+    virtual GenObject *getItem() override { return arr_[0]; }
+    virtual GenObject *getItem(int idx) override { return arr_[idx]; }
+    T *operator->() const { return arr_[0]; }
+    T *operator->() { return arr_[0]; }
+    T *Item() { return arr_[0]; }
  protected:
-    I32D depth_;
+    T **arr_;
 };
 
 // T = signal or logic
 template<class T>
-class WireArray : public ArrayObject {
+class WireArray : public ArrayObject<T> {
  public:
     WireArray(GenObject *parent, const char *name, const char *width,
         const char *depth, bool reg=false, const char *comment="")
         : ArrayObject(parent, "", name, depth, comment) {
         char tstr[64];
         reg_ = reg;
-        arr_ = new T *[depth_.getValue()];
-        for (int i = 0; i < static_cast<int>(depth_.getValue()); i++) {
+        arr_ = new T *[getDepth()];
+        for (int i = 0; i < getDepth(); i++) {
             RISCV_sprintf(tstr, sizeof(tstr), "%d", i);
             arr_[i] = new T(width, tstr, "0", this);
         }
     }
-    // No need to redfine operator '->' because we use this object directly
-    virtual GenObject *getItem() { return arr_[0]; }
-
-    T **arr_;
 };
 
 template<class T>
-class TStructArray : public ArrayObject {
+class TStructArray : public ArrayObject<T> {
     public:
     TStructArray(GenObject *parent, const char *type, const char *name,
-        const char *depth, bool reg=false, const char *comment="")
+        const char *depth, const char *comment="")
         : ArrayObject(parent, type, name, depth, comment) {
-        reg_ = reg;
-        arr_ = new T *[depth_.getValue()];
+        //reg_ = reg;
+        arr_ = new T *[getDepth()];
         char tstr[64];
-        for (int i = 0; i < static_cast<int>(depth_.getValue()); i++) {
+        for (int i = 0; i < getDepth(); i++) {
             RISCV_sprintf(tstr, sizeof(tstr), "%d", i);
             arr_[i] = new T(this, tstr, i);
         }
     }
-    T *operator->() const { return arr_[0]; }
-    T *operator->() { return arr_[0]; }
-    T *Item() { return arr_[0]; }
-    virtual GenObject *getItem() { return arr_[0]; }
-
-    T **arr_;
 };
 
 template<class T>
-class ModuleArray : public ArrayObject {
+class ModuleArray : public ArrayObject<T> {
  public:
     ModuleArray(GenObject *parent, const char *name, const char *depth, const char *comment="")
         : ArrayObject(parent, "", name, depth, comment) {
-        arr_ = new T *[depth_.getValue()];
+        arr_ = new T *[getDepth()];
         char tstr[64];
-        for (int i = 0; i < static_cast<int>(depth_.getValue()); i++) {
+        for (int i = 0; i < getDepth(); i++) {
             RISCV_sprintf(tstr, sizeof(tstr), "%s%d", name, i);
             arr_[i] = new T(this, tstr);
         }
     }
-    T *operator->() const { return arr_[0]; }
-    virtual GenObject *getItem() { return arr_[0]; }
     virtual void changeTmplParameter(const char *name, const char *val) {
         static_cast<ModuleObject *>(getItem())->changeTmplParameter(name, val);
     }
-        
-    T **arr_;
 };
 
-class StringArray : public ArrayObject {
+class StringArray : public ArrayObject<ParamString> {
  public:
     StringArray(GenObject *parent, const char *name, const char *depth, const char *comment="")
         : ArrayObject(parent, "", name, depth, comment) {
         id_ = ID_ARRAY_STRING;
-        arr_ = new ParamString *[depth_.getValue()];
+        arr_ = new ParamString *[getDepth()];
         char tstr[64];
-        for (int i = 0; i < static_cast<int>(depth_.getValue()); i++) {
+        for (int i = 0; i < getDepth(); i++) {
             RISCV_sprintf(tstr, sizeof(tstr), "%s%d", name, i);
             arr_[i] = new ParamString(this, tstr, "");
         }
     }
-    ParamString *operator->() const { return arr_[0]; }
-    virtual GenObject *getItem() { return arr_[0]; }
-    virtual void setValue(int idx, const char *v) { arr_[idx]->setName(v); }
-        
-    ParamString **arr_;
 };
 
 }  // namespace sysvc

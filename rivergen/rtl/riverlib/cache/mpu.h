@@ -73,7 +73,14 @@ class MPU : public ModuleObject {
         Signal flags;
     } MpuTableItemTypeDef_;
 
-    TStructArray<MpuTableItemType> tbl;
+    class MpuTableType : public TStructArray<MpuTableItemType> {
+     public:
+        MpuTableType(GenObject *parent, const char *name) :
+            TStructArray<MpuTableItemType>(parent, "", name, "CFG_MPU_TBL_SIZE") {
+            setReg();
+        }
+    };
+    MpuTableType tbl;
     CombProcess comb;
 };
 

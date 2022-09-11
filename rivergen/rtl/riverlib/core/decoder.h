@@ -137,8 +137,16 @@ class InstrDecoder : public ModuleObject {
         Signal progbuf_ena;
     } DecoderDataTypeDef_;
 
+    class DecTableType : public TStructArray<DecoderDataType> {
+     public:
+        DecTableType(GenObject *parent, const char *name)
+            : TStructArray<DecoderDataType>(parent, "", name, "FULL_DEC_DEPTH") {
+            setReg();
+        }
+    };
+
     TStructArray<DecoderDataType> wd;
-    TStructArray<DecoderDataType> d;
+    DecTableType d;
     WireArray<Signal> wb_f_pc;
     WireArray<Signal> wb_f_instr;
 

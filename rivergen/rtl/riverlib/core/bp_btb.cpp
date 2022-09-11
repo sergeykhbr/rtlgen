@@ -31,7 +31,7 @@ BpBTB::BpBTB(GenObject *parent, const char *name) :
     // struct declaration
     BtbEntryTypeDef_(this, "", -1),
     // Signals
-    btb(this, "", "btb", "CFG_BTB_SIZE", true),
+    btb(this, "btb"),
     dbg_npc(this, "dbg_npc", "CFG_CPU_ADDR_BITS", "CFG_BP_DEPTH"),
     // registers
     // process

@@ -80,7 +80,7 @@ TagMemNWay::TagMemNWay(GenObject *parent,
     wayx.changeTmplParameter("flbits", "flbits");
     wayx.changeTmplParameter("snoop", "snoop");
     GenObject &i = FORGEN ("i", CONST("0"), CONST("NWAYS"), "++", new STRING("waygen"));
-        NEW(*wayx.arr_[0], wayx.getName().c_str(), &i);
+        NEW(*wayx.getItem(0), wayx.getName().c_str(), &i);
             CONNECT(wayx, &i, wayx->i_clk, i_clk);
             CONNECT(wayx, &i, wayx->i_nrst, i_nrst);
             CONNECT(wayx, &i, wayx->i_addr, ARRITEM(way_i, i, way_i->addr));

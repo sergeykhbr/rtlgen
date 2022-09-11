@@ -196,7 +196,7 @@ std::string Operation::copyreg_entry(char *idx, std::string dst, std::string src
             }
             if (src.size() == 0) {
                 // reset
-                ret += static_cast<ArrayObject *>(p)->getItem()->getStrValue();
+                ret += p->getItem()->getStrValue();
             } else {
                 // copy data
                 ret += src + "." + p->getName() + "["+i+"]";
@@ -1456,18 +1456,37 @@ Operation &XOR2(GenObject &a, GenObject &b, const char *comment) {
 }
 
 // ADD2
-std::string ADD2_gen(GenObject **args) {
+class OpADD2 : public Operation {
+ public:
+    OpADD2(const char *comment="") : Operation(0, comment) {}
+    virtual std::string generate() override {
+        std::string A = Operation::obj2varname(args[1], "r", true);
+        std::string B = Operation::obj2varname(args[2], "r", true);
+        A = "(" + A + " + " + B + ")";
+        return A;
+    }
+    virtual uint64_t getValue() override {
+        return args[1]->getValue() + args[2]->getValue();
+    }
+    virtual int getWidth() override {
+        GenObject &a = *args[1];
+        GenObject &b = *args[2];
+        return a.getWidth() > b.getWidth() ? a.getWidth() : b.getWidth();
+    }
+};
+
+/*std::string ADD2_gen(GenObject **args) {
     std::string A = Operation::obj2varname(args[1], "r", true);
     std::string B = Operation::obj2varname(args[2], "r", true);
     A = "(" + A + " + " + B + ")";
     return A;
-}
+}*/
 
 Operation &ADD2(GenObject &a, GenObject &b, const char *comment) {
-    Operation *p = new Operation(0, comment);
-    p->setWidth(a.getWidth() > b.getWidth() ? a.getWidth() : b.getWidth());
-    p->setValue(a.getValue() + b.getValue());
-    p->igen_ = ADD2_gen;
+    OpADD2 *p = new OpADD2(comment);
+    //p->setWidth(a.getWidth() > b.getWidth() ? a.getWidth() : b.getWidth());
+    //p->setValue(a.getValue() + b.getValue());
+    //p->igen_ = ADD2_gen;
     p->add_arg(p);
     p->add_arg(&a);
     p->add_arg(&b);
@@ -1511,7 +1530,41 @@ Operation &ADDx(size_t cnt, ...) {
 
 
 // CALCWIDTHx
-std::string CALCWIDTHx_gen(GenObject **args) {
+class OpCALCWIDTHx : public Operation {
+ public:
+    OpCALCWIDTHx(const char *comment="") : Operation(0, comment) {}
+    virtual std::string generate() override {
+        int w;
+        char tstr[64];
+        std::string ret = "(";
+        size_t cnt = reinterpret_cast<size_t>(args[1]);
+        Operation::set_space(Operation::get_space() + 2);
+        for (size_t i = 0; i < cnt; i++) {
+            if (i > 0) {
+                ret += "\n";
+                ret += Operation::addspaces();
+                ret += "+ ";
+            }
+            w = args[2 + i]->getWidth();
+            RISCV_sprintf(tstr, sizeof(tstr), "%d", w);
+            ret += args[2 + i]->getStrWidth() + "  // " + args[2 + i]->getName();
+        }
+        Operation::set_space(Operation::get_space() - 2);
+        ret += "\n" + Operation::addspaces() + ")";
+        return ret;
+    }
+    virtual uint64_t getValue() override {
+        uint64_t w = 0;
+        size_t cnt = reinterpret_cast<size_t>(args[1]);
+        for (size_t i = 0; i < cnt; i++) {
+            w += args[2 + i]->getWidth();
+        }
+        return w;
+    }
+    virtual int getWidth() override { return 32; }
+};
+
+/*std::string CALCWIDTHx_gen(GenObject **args) {
     int w;
     char tstr[64];
     std::string ret = "(";
@@ -1530,13 +1583,13 @@ std::string CALCWIDTHx_gen(GenObject **args) {
     Operation::set_space(Operation::get_space() - 2);
     ret += "\n" + Operation::addspaces() + ")";
     return ret;
-}
+}*/
 
 Operation &CALCWIDTHx(size_t cnt, ...) {
-    Operation *p = new Operation(0, "");
-    uint64_t w = 0;
+    OpCALCWIDTHx *p = new OpCALCWIDTHx("");
+//    uint64_t w = 0;
     GenObject *obj;
-    p->igen_ = CALCWIDTHx_gen;
+//    p->igen_ = CALCWIDTHx_gen;
     p->add_arg(p);
     p->add_arg(reinterpret_cast<GenObject *>(cnt));
     va_list arg;
@@ -1544,28 +1597,47 @@ Operation &CALCWIDTHx(size_t cnt, ...) {
     for (int i = 0; i < cnt; i++) {
         obj = va_arg(arg, GenObject *);
         p->add_arg(obj);
-        w += obj->getWidth();
+//        w += obj->getWidth();
     }
     va_end(arg);
-    p->setWidth(32);
-    p->setValue(w);
+//    p->setWidth(32);
+//    p->setValue(w);
     return *p;
 }
 
 
 // SUB2
-std::string SUB2_gen(GenObject **args) {
+class OpSUB2 : public Operation {
+ public:
+    OpSUB2(const char *comment="") : Operation(0, comment) {}
+    virtual std::string generate() override {
+        std::string A = Operation::obj2varname(args[1], "r", true);
+        std::string B = Operation::obj2varname(args[2], "r", true);
+        A = "(" + A + " - " + B + ")";
+        return A;
+    }
+    virtual uint64_t getValue() override {
+        return args[1]->getValue() - args[2]->getValue();
+    }
+    virtual int getWidth() override {
+        GenObject &a = *args[1];
+        GenObject &b = *args[2];
+        return a.getWidth() > b.getWidth() ? a.getWidth() : b.getWidth();
+    }
+};
+
+/*std::string SUB2_gen(GenObject **args) {
     std::string A = Operation::obj2varname(args[1], "r", true);
     std::string B = Operation::obj2varname(args[2], "r", true);
     A = "(" + A + " - " + B + ")";
     return A;
-}
+}*/
 
 Operation &SUB2(GenObject &a, GenObject &b, const char *comment) {
-    Operation *p = new Operation(0, comment);
-    p->setWidth(a.getWidth() > b.getWidth() ? a.getWidth() : b.getWidth());
-    p->setValue(a.getValue() - b.getValue());
-    p->igen_ = SUB2_gen;
+    OpSUB2 *p = new OpSUB2(comment);
+//    p->setWidth(a.getWidth() > b.getWidth() ? a.getWidth() : b.getWidth());
+//    p->setValue(a.getValue() - b.getValue());
+//    p->igen_ = SUB2_gen;
     p->add_arg(p);
     p->add_arg(&a);
     p->add_arg(&b);
@@ -1781,17 +1853,29 @@ Operation &ANDx_L(size_t cnt, ...) {
 
 
 // DEC
-std::string DEC_gen(GenObject **args) {
+class OpDEC : public Operation {
+ public:
+    OpDEC(const char *comment="") : Operation(0, comment) {}
+    virtual std::string generate() override {
+        std::string A = Operation::obj2varname(args[1], "r", true);
+        A = "(" + A + " - 1)";
+        return A;
+    }
+    virtual uint64_t getValue() override { return args[1]->getValue() - 1; }
+    virtual int getWidth() override { return args[1]->getWidth(); }
+};
+
+/*std::string DEC_gen(GenObject **args) {
     std::string A = Operation::obj2varname(args[1], "r", true);
     A = "(" + A + " - 1)";
     return A;
-}
+}*/
 
 Operation &DEC(GenObject &a, const char *comment) {
-    Operation *p = new Operation(0, comment);
-    p->igen_ = DEC_gen;
+    OpDEC *p = new OpDEC(comment);
+    /*p->igen_ = DEC_gen;
     p->setWidth(a.getWidth());
-    p->setValue(a.getValue() - 1);
+    p->setValue(a.getValue() - 1);*/
     p->add_arg(p);
     p->add_arg(&a);
     return *p;
@@ -2167,7 +2251,7 @@ Operation &ARRITEM_B(GenObject &arr, GenObject &idx, GenObject &item, const char
 
 // SETARRIDX
 std::string SETARRIDX_gen(GenObject **args) {
-    ArrayObject *arr = static_cast<ArrayObject *>(args[1]);
+    GenObject *arr = args[1];
     std::string ret = "";
     arr->setSelector(args[2]);
     return ret;

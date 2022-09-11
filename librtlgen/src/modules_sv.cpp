@@ -353,8 +353,7 @@ std::string ModuleObject::generate_sv_mod_signals() {
             continue;
         }
         if (p->getId() == ID_ARRAY_DEF) {
-            ArrayObject *a = static_cast<ArrayObject *>(p);
-            if (a->getItem()->getId() == ID_MODULE_INST) {
+            if (p->getItem()->getId() == ID_MODULE_INST) {
                 text = "";
                 continue;
             }
@@ -449,7 +448,7 @@ std::string ModuleObject::generate_sv_mod_proc(GenObject *proc) {
         } else if (e->getId() == ID_ARRAY_DEF) {
             ret += "    for (int i = 0; i < " + e->getStrDepth() + "; i++) begin\n";
             ret += "        " + e->getName() + "[i] = ";
-            arritem = static_cast<ArrayObject *>(e)->getItem();
+            arritem = e->getItem();
             if (arritem->getId() == ID_STRUCT_INST && arritem->getStrValue().size() == 0) {
                 SHOW_ERROR("todo: %s", "crawl through sub-structure element");
             }

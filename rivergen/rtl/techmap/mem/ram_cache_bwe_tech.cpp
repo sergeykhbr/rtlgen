@@ -40,7 +40,7 @@ ram_cache_bwe_tech::ram_cache_bwe_tech(GenObject *parent, const char *name, cons
     // Create and connet Sub-modules:
     rx.changeTmplParameter("abits", "abits");
     GenObject &i = FORGEN ("i", CONST("0"), CONST("DIV(dbits,8)"), "++", new STRING("rxgen"));
-        NEW(*rx.arr_[0], rx.getName().c_str(), &i);
+        NEW(*rx.getItem(0), rx.getName().c_str(), &i);
             CONNECT(rx, &i, rx->i_clk, i_clk);
             CONNECT(rx, &i, rx->i_addr, i_addr);
             CONNECT(rx, &i, rx->i_wena, ARRITEM(wb_we, i, wb_we));

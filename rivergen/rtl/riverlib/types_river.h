@@ -84,9 +84,10 @@ class types_river : public FileObject {
 
     class dport_in_vector : public TStructArray<dport_in_type> {
      public:
-        dport_in_vector(GenObject *parent, const char *name, bool reg=false, const char *comment="")
-            : TStructArray(parent, "dport_in_vector", name, "CFG_CPU_MAX", reg, comment) {
+        dport_in_vector(GenObject *parent, const char *name)
+            : TStructArray(parent, "dport_in_vector", name, "CFG_CPU_MAX") {
             id_ = ID_VECTOR;
+            
             registerCfgType(name);                  // will be registered if name == ""
             if (name[0]) {
                 SCV_get_cfg_parameter(getType());   // to trigger dependecy array
@@ -97,8 +98,8 @@ class types_river : public FileObject {
 
     class dport_out_vector : public TStructArray<dport_out_type> {
         public:
-        dport_out_vector(GenObject *parent, const char *name, bool reg=false, const char *comment="")
-            : TStructArray(parent, "dport_out_vector", name, "CFG_CPU_MAX", reg, comment) {
+        dport_out_vector(GenObject *parent, const char *name)
+            : TStructArray(parent, "dport_out_vector", name, "CFG_CPU_MAX") {
             id_ = ID_VECTOR;
             registerCfgType(name);                  // will be registered if name == ""
             if (name[0]) {
@@ -237,8 +238,8 @@ class types_river : public FileObject {
 
     class axi4_l1_in_vector : public TStructArray<axi4_l1_in_type> {
         public:
-        axi4_l1_in_vector(GenObject *parent, const char *name, bool reg=false, const char *comment="")
-            : TStructArray(parent, "axi4_l1_in_vector", name, "CFG_SLOT_L1_TOTAL", reg, comment) {
+        axi4_l1_in_vector(GenObject *parent, const char *name)
+            : TStructArray(parent, "axi4_l1_in_vector", name, "CFG_SLOT_L1_TOTAL") {
             id_ = ID_VECTOR;
             registerCfgType(name);                  // will be registered if name == ""
             if (name[0]) {
@@ -249,8 +250,8 @@ class types_river : public FileObject {
 
     class axi4_l1_out_vector : public TStructArray<axi4_l1_out_type> {
         public:
-        axi4_l1_out_vector(GenObject *parent, const char *name, bool reg=false, const char *comment="")
-            : TStructArray(parent, "axi4_l1_out_vector", name, "CFG_SLOT_L1_TOTAL", reg, comment) {
+        axi4_l1_out_vector(GenObject *parent, const char *name)
+            : TStructArray(parent, "axi4_l1_out_vector", name, "CFG_SLOT_L1_TOTAL") {
             id_ = ID_VECTOR;
             registerCfgType(name);                  // will be registered if name == ""
             if (name[0]) {

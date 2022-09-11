@@ -137,7 +137,7 @@ class Tracer : public ModuleObject {
                 "fs8", "fs9", "fs10", "fs11", "ft8", "ft9", "ft10", "ft11"
             };
             for (int i = 0; i < 64; i++) {
-                setValue(i, RNAMES[i]);
+                getItem(i)->setName(RNAMES[i]);
             }
         }
     } rname;
@@ -189,9 +189,12 @@ class Tracer : public ModuleObject {
             instr(this, "instr", "32"),
             regactioncnt(this, "regactioncnt", "32"),
             memactioncnt(this, "memactioncnt", "32"),
-            regaction(this, "", "regaction", "TRACE_TBL_SZ", true),
-            memaction(this, "", "memaction", "TRACE_TBL_SZ", true),
-            completed(this, "completed", "1") {}
+            regaction(this, "", "regaction", "TRACE_TBL_SZ"),
+            memaction(this, "", "memaction", "TRACE_TBL_SZ"),
+            completed(this, "completed", "1") {
+                regaction.setReg();
+                memaction.setReg();
+            }
      public:
         Signal exec_cnt;
         Signal pc;
@@ -203,7 +206,15 @@ class Tracer : public ModuleObject {
         Signal completed;
     } TraceStepTypeDef_;
 
-    TStructArray<TraceStepType> trace_tbl;
+    class TraceTableType : public TStructArray<TraceStepType> {
+     public:
+        TraceTableType(GenObject *parent, const char *name)
+        : TStructArray<TraceStepType>(parent, "", name, "TRACE_TBL_SZ") {
+            setReg();
+        }
+    };
+
+    TraceTableType trace_tbl;
     RegSignal tr_wcnt;
     RegSignal tr_rcnt;
     RegSignal tr_total;

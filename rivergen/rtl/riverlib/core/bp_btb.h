@@ -79,7 +79,14 @@ class BpBTB : public ModuleObject {
         RegSignal exec;
     } BtbEntryTypeDef_;
 
-    TStructArray<BtbEntryType> btb;
+    class BtbTableType : public TStructArray<BtbEntryType> {
+     public:
+        BtbTableType(GenObject *parent, const char *name)
+            : TStructArray<BtbEntryType>(parent, "", name, "CFG_BTB_SIZE") {
+            setReg();
+        }
+    };
+    BtbTableType btb;
     WireArray<Signal> dbg_npc;
 
 

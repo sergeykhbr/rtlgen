@@ -51,7 +51,7 @@ Tracer::Tracer(GenObject *parent, const char *name) :
     RegActionTypeDef_(this, "", -1),
     TraceStepTypeDef_(this, "", -1),
     // registers
-    trace_tbl(this, "", "trace_tbl", "TRACE_TBL_SZ", true),
+    trace_tbl(this, "trace_tbl"),
     tr_wcnt(this, "tr_wcnt", "TRACE_TBL_ABITS"),
     tr_rcnt(this, "tr_rcnt", "TRACE_TBL_ABITS"),
     tr_total(this, "tr_total", "TRACE_TBL_ABITS"),

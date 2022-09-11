@@ -84,7 +84,15 @@ class RegIntBank : public ModuleObject {
         RegSignal tag;
     } RegValueTypeDef_;
 
-    TStructArray<RegValueType> arr;
+    class RegTableType : public TStructArray<RegValueType> {
+     public:
+        RegTableType(GenObject *parent, const char *name)
+            : TStructArray<RegValueType>(parent, "", name, "REGS_TOTAL") {
+            setReg();
+        }
+    };
+
+    RegTableType arr;
 
     // process should be intialized last to make all signals available
     CombProcess comb;

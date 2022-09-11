@@ -42,7 +42,7 @@ RegIntBank::RegIntBank(GenObject *parent, const char *name) :
     // struct declaration
     RegValueTypeDef_(this, "", -1),
     // registers
-    arr(this, "", "arr", "REGS_TOTAL", true),
+    arr(this, "arr"),
     // process
     comb(this)
 {

@@ -153,7 +153,7 @@ Workgroup::Workgroup(GenObject *parent, const char *name) :
     GENERATE("hartgen");
     GenObject *i;
     i = &FORGEN("i", CONST("0"), cpu_num, "++", new STRING("xslotcpu"));
-        NEW(*cpux.arr_[0], cpux.getName().c_str(), i);
+        NEW(*cpux.getItem(0), cpux.getName().c_str(), i);
             CONNECT(cpux, i, cpux->i_nrst, i_cores_nrst);
             CONNECT(cpux, i, cpux->i_clk, i_clk);
             CONNECT(cpux, i, cpux->i_msti, ARRITEM(corei, *i, corei));
@@ -173,7 +173,7 @@ Workgroup::Workgroup(GenObject *parent, const char *name) :
 
     ENDFORGEN(new STRING("xslotcpu"));
     i = &FORGEN("i", cpu_num,  glob_river_cfg_->CFG_CPU_MAX, "++", new STRING("xdummycpu"));
-        NEW(*dumx.arr_[0], dumx.getName().c_str(), i);
+        NEW(*dumx.getItem(0), dumx.getName().c_str(), i);
             CONNECT(dumx, i, dumx->o_msto, ARRITEM(coreo, *i, coreo));
             CONNECT(dumx, i, dumx->o_dport, ARRITEM(wb_dport_o, *i, wb_dport_o));
             CONNECT(dumx, i, dumx->o_flush_l2, ARRITEM(wb_flush_l2, *i, wb_flush_l2));

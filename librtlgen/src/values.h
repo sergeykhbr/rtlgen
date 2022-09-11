@@ -31,29 +31,6 @@ class GenValue : public GenObject {
              GenObject *parent, const char *comment="");
     GenValue(const char *width, GenObject *val, const char *name,
              GenObject *parent, const char *comment="");
-
-    virtual std::string getStrValue() override;
-    virtual std::string getStrWidth() override ;
-    virtual bool isLocal();
-
- protected:
-    virtual size_t parse(const char *ops, size_t pos,
-                        uint64_t &num,
-                        std::string &sysc,
-                        std::string &sv,
-                        std::string &sv_pkg,    // package name include
-                        std::string &vhdl);
-
- protected:
-    std::string sysc_;  // systemc representation
-    std::string sv_;    // system verilog
-    std::string sv_pkg_;// system verilog with the package name
-    std::string vhdl_;  // vhdl
-
-    std::string width_sysc_;  // systemc representation
-    std::string width_sv_;    // system verilog
-    std::string width_sv_pkg_;// system verilog with the package name
-    std::string width_vhdl_;  // vhdl
 };
 
 class BOOL : public GenValue {
@@ -69,11 +46,8 @@ class STRING : public GenValue {
  public:
     STRING(const char *val, const char *name="",
         GenObject *parent=0, const char *comment=""):
-        GenValue("0", "0", name, parent, comment) {
-        sysc_ = "\"" + std::string(val) + "\"";
-        sv_ = "\"" + std::string(val) + "\"";
-        sv_pkg_ = "\"" + std::string(val) + "\"";
-        vhdl_ = "\"" + std::string(val) + "\"";
+        GenValue("0", val, name, parent, comment) {
+        strValue_ = "\"" + strValue_ + "\"";
     }
 
     virtual std::string getType();
