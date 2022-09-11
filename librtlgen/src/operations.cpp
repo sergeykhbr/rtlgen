@@ -2796,7 +2796,7 @@ std::string FOPEN_gen(GenObject **args) {
     if (SCV_is_sysc()) {
         ret += " = fopen(";
         ret += Operation::obj2varname(args[2]);
-        if (args[2]->getType() == "std::string") {
+        if (args[2]->isString()) {
             ret += ".c_str()";
         }
         ret += ", \"wb\");\n";

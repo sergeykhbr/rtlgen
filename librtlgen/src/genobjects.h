@@ -22,31 +22,31 @@
 namespace sysvc {
 
 enum EIdType {
-    ID_PROJECT,
-    ID_FOLDER,
-    ID_FILE,
-    ID_CONST,
-    ID_VALUE,
-    ID_ENUM,
-    ID_PARAM,
-    ID_DEF_PARAM,   // Generic parameter used in ifdef/endif statements
-    ID_TMPL_PARAM,  // The same as DEF_PARAM in sv but need to generate templates in systemc
-    ID_FUNCTION,
-    ID_MODULE,
-    ID_MODULE_INST,
-    ID_INPUT,
-    ID_OUTPUT,
-    ID_SIGNAL,
-    ID_STRUCT_DEF,
-    ID_STRUCT_INST,
-    ID_ARRAY_DEF,
-    ID_ARRAY_STRING,
-    ID_VECTOR,      // array of the fixed depth
-    ID_PROCESS,
-    ID_COMMENT,
-    ID_EMPTYLINE,
-    ID_OPERATION,
-    ID_FILEVALUE
+    ID_PROJECT = (1<<0),
+    ID_FOLDER = (1<<1),
+    ID_FILE = (1<<2),
+    ID_CONST = (1<<3),
+    ID_VALUE = (1<<4),
+    ID_ENUM = (1<<5),
+    ID_PARAM = (1<<6),
+    ID_DEF_PARAM = (1<<7),   // Generic parameter used in ifdef/endif statements
+    ID_TMPL_PARAM = (1<<8),  // The same as DEF_PARAM in sv but need to generate templates in systemc
+    ID_FUNCTION = (1<<9),
+    ID_MODULE = (1<<10),
+    ID_MODULE_INST = (1<<11),
+    ID_INPUT = (1<<12),
+    ID_OUTPUT = (1<<13),
+    ID_SIGNAL = (1<<14),
+    ID_STRUCT_DEF = (1<<15),
+    ID_STRUCT_INST = (1<<16),
+    ID_ARRAY_DEF = (1<<17),
+    ID_ARRAY_STRING = (1<<18),
+    ID_VECTOR = (1<<19),      // array of the fixed depth
+    ID_PROCESS = (1<<20),
+    ID_COMMENT = (1<<21),
+    ID_EMPTYLINE = (1<<22),
+    ID_OPERATION = (1<<23),
+    ID_FILEVALUE = (1<<24)
 };
 
 enum EGenerateType {
@@ -79,12 +79,13 @@ class GenObject {
     virtual void setName(const char *n) { name_ = std::string(n); }
     virtual std::string getComment() { return comment_; }
     virtual std::string getType() { return type_; }
+    virtual bool isString() { return getType() == "std::string" || getType() == "string"; }
     virtual bool isVector() { return false; }
-    virtual bool isLocal();     // parent = file is global; module is local
+    virtual bool isLocal();     // if parent is file then obj is global; if module obj is local
 
     virtual uint64_t getValue();
     virtual std::string getStrValue();
-    virtual void changeStrValue(const char *val);
+    virtual void setStrValue(const char *val);
     virtual int getWidth();
     virtual std::string getStrWidth();
     virtual void setWidth(int w);
@@ -95,13 +96,14 @@ class GenObject {
     virtual GenObject *getSelector() { return sel_; }
     virtual GenObject *getItem() { return this; }
     virtual GenObject *getItem(int idx)  { return this; }
+    virtual GenObject *getItem(const char *name);
     virtual bool isReg() { return reg_; }
     virtual void setReg() { reg_ = true; }
     virtual void disableReset() { reset_disabled_ = true; }
     virtual bool isResetDisabled() { return reset_disabled_; }
     virtual void disableVcd() { vcd_enabled_ = false; }
     virtual bool isVcd() { return vcd_enabled_; }
-    virtual bool isGenericDep() { return gendep_; }      // depend on generic parameters
+    virtual bool isGenericDep();      // depend on generic parameters
 
     virtual std::string generate() { return std::string(""); }
     virtual uint64_t parse_to_u64(const char *val, size_t &pos);
@@ -118,7 +120,6 @@ class GenObject {
     bool reg_;              // Mark object (signal, value, port, structure) as a Flip-flop
     bool reset_disabled_;   // register without reset (memory)
     bool vcd_enabled_;      // show instance in VCD trace file
-    bool gendep_;           // generic dependible
     std::string type_;
     std::string name_;
     std::string mnemonic_;  // name in VCD trace file

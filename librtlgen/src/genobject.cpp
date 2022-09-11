@@ -33,7 +33,6 @@ GenObject::GenObject(GenObject *parent, const char *type, EIdType id,
     reg_ = false;
     reset_disabled_ = false;
     vcd_enabled_ = true;
-    gendep_ = false;
     type_ = std::string(type);
     name_ = std::string(name);
     comment_ = std::string(comment);
@@ -88,6 +87,10 @@ bool GenObject::isLocal() {
         p = p->getParent();
     }
     return local;
+}
+
+bool GenObject::isGenericDep() {
+    return false;
 }
 
 
@@ -159,7 +162,7 @@ std::string GenObject::getStrDepth() {
     }
 }
 
-void GenObject::changeStrValue(const char *val) {
+void GenObject::setStrValue(const char *val) {
     strValue_ = std::string(val);
 }
 
@@ -169,6 +172,17 @@ void GenObject::setWidth(int w) {
     objWidth_ = 0;
     RISCV_sprintf(tstr, sizeof(tstr), "%d", w);
     strWidth_ = std::string(tstr);
+}
+
+GenObject *GenObject::getItem(const char *name) {
+    GenObject *ret = 0;
+    for (auto &e : getEntries()) {
+        if (e->getName() == name) {
+            return e;
+        }
+    }
+    SHOW_ERROR("Cannot find child with name %s", name);
+    return ret;
 }
 
 

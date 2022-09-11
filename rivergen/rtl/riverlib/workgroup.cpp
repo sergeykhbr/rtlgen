@@ -153,6 +153,7 @@ Workgroup::Workgroup(GenObject *parent, const char *name) :
     GENERATE("hartgen");
     GenObject *i;
     i = &FORGEN("i", CONST("0"), cpu_num, "++", new STRING("xslotcpu"));
+        //cpux.getItem(cpux->hartid.getName().c_str())->setStrValue(i->getName().c_str());
         NEW(*cpux.getItem(0), cpux.getName().c_str(), i);
             CONNECT(cpux, i, cpux->i_nrst, i_cores_nrst);
             CONNECT(cpux, i, cpux->i_clk, i_clk);

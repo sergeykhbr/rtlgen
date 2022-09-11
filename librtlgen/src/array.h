@@ -61,6 +61,7 @@ class ArrayObject : public GenObject {
     // No need to redfine operator '->' because we use this object directly
     virtual GenObject *getItem() override { return arr_[0]; }
     virtual GenObject *getItem(int idx) override { return arr_[idx]; }
+    virtual GenObject *getItem(const char *name) override { return getItem()->getItem(name); }
     T *operator->() const { return arr_[0]; }
     T *operator->() { return arr_[0]; }
     T *Item() { return arr_[0]; }
@@ -114,7 +115,8 @@ class ModuleArray : public ArrayObject<T> {
         }
     }
     virtual void changeTmplParameter(const char *name, const char *val) {
-        static_cast<ModuleObject *>(getItem())->changeTmplParameter(name, val);
+        getItem(name)->setStrValue(val);
+        //static_cast<ModuleObject *>(getItem())->changeTmplParameter(name, val);
     }
 };
 

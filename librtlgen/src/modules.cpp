@@ -122,7 +122,7 @@ void ModuleObject::changeTmplParameter(const char *name, const char *val) {
         if (e->getName() != tname) {
             continue;
         }
-        static_cast<TmplParamI32D *>(e)->changeStrValue(val);
+        static_cast<TmplParamI32D *>(e)->setStrValue(val);
     }
 }
 

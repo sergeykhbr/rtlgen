@@ -35,6 +35,11 @@ std::string ModuleObject::generate_sv_pkg_localparam() {
     int tcnt = 0;
     GenObject *prev = 0;
     // Local paramaters visible inside of module
+#if 1
+    if (getType() == "Workgroup") {
+        bool st = true;
+    }
+#endif
     for (auto &p: entries_) {
         if (p->getId() != ID_PARAM) {
             prev = 0;
@@ -43,11 +48,11 @@ std::string ModuleObject::generate_sv_pkg_localparam() {
             }
             continue;
         }
-        if (!static_cast<GenValue *>(p)->isLocal()) {
+        if (!p->isLocal() || p->isGenericDep()) {
             prev = 0;
             continue;
         }
-        if (p->getType() == "std::string") {
+        if (p->isString()) {
             // exclude strings (tracer case)
             prev = 0;
             continue;
@@ -210,14 +215,13 @@ std::string ModuleObject::generate_sv_mod_param_strings() {
         if (p->getId() != ID_PARAM) {
             continue;
         }
-        if (!static_cast<GenValue *>(p)->isLocal()) {
+        if (!p->isLocal() && !p->isGenericDep()) {
             continue;
         }
-        if (p->getType() != "std::string") {
-            continue;
+        if (p->isString()) {
+            ret += "localparam string " + p->getName();
+            ret += " = " + p->getStrValue() + ";\n";
         }
-        ret += "localparam string " + p->getName();
-        ret += " = " + p->getStrValue() + ";\n";
 
         tcnt++;
     }

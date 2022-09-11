@@ -186,7 +186,7 @@ std::string ModuleObject::generate_sysc_h() {
             prev = 0;
             continue;
         }
-        if (p->getType() == "std::string") {
+        if (p->isString()) {
             prev = 0;
             continue;
         } else {
@@ -978,7 +978,7 @@ std::string ModuleObject::generate_sysc_func(GenObject *func) {
     ret += ") {\n";
     
     // process variables declaration
-    if (func->getType() == "std::string") {
+    if (func->isString()) {
         ret += "    char tstr[256];\n";
     }
     tcnt = 0;
