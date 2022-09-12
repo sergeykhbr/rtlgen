@@ -2373,10 +2373,17 @@ std::string ELSIF_gen(GenObject **args) {
     }
     spaces_--;
     if (SCV_is_sysc()) {
-        ret += Operation::addspaces() + "} else if " + A + " {\n";
+        ret += Operation::addspaces() + "} else if " + A + " {";
     } else {
-        ret += Operation::addspaces() + "end else if " + A + " begin\n";
+        ret += Operation::addspaces() + "end else if " + A + " begin";
     }
+    if (args[0]->getComment().size()) {
+        while (ret.size() < 60) {
+            ret += " ";
+        }
+        ret += "// " + args[0]->getComment();
+    }
+    ret += "\n";
     spaces_++;
     return ret;
 }

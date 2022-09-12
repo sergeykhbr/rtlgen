@@ -102,6 +102,24 @@ public:
     ParamLogic CMD_STATE_RESPONSE;
     ParamLogic CMD_STATE_WAIT_HALTED;
 
+    // signals
+    Signal w_tap_dmi_req_valid;
+    Signal w_tap_dmi_req_write;
+    Signal wb_tap_dmi_req_addr;
+    Signal wb_tap_dmi_req_data;
+    Signal w_tap_dmi_reset;
+    Signal w_tap_dmi_hardreset;
+    Signal w_cdc_dmi_req_valid;
+    Signal w_cdc_dmi_req_ready;
+    Signal w_cdc_dmi_req_write;
+    Signal wb_cdc_dmi_req_addr;
+    Signal wb_cdc_dmi_req_data;
+    Signal w_cdc_dmi_reset;
+    Signal w_cdc_dmi_hardreset;
+    Signal wb_jtag_dmi_resp_data;
+    Signal w_jtag_dmi_busy;
+    Signal w_jtag_dmi_error;
+
     // regs
     RegSignal jtag_resp_data;
     RegSignal regidx;
