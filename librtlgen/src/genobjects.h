@@ -81,16 +81,22 @@ class GenObject {
     virtual std::string getType() { return type_; }
     virtual bool isString() { return getType() == "std::string" || getType() == "string"; }
     virtual bool isVector() { return false; }
+    virtual bool isGenVar() { return false; }   // I32D analog for rtl
     virtual bool isLocal();     // if parent is file then obj is global; if module obj is local
 
     virtual uint64_t getValue();
     virtual std::string getStrValue();
     virtual void setStrValue(const char *val);
+    virtual void setValue(uint64_t val);        // used for operation
+    virtual void setObjValue(GenObject *obj) { objValue_ = obj; }
+    virtual GenObject *getObjValue() { return objValue_; }
     virtual int getWidth();
     virtual std::string getStrWidth();
+    virtual void setStrWidth(const char *val);
     virtual void setWidth(int w);
     virtual int getDepth();    // two-dimensional object
     virtual std::string getStrDepth();
+    virtual void setStrDepth(const char *val);
 
     virtual void setSelector(GenObject *sel) { sel_ = sel; }
     virtual GenObject *getSelector() { return sel_; }
@@ -108,6 +114,7 @@ class GenObject {
     virtual std::string generate() { return std::string(""); }
     virtual uint64_t parse_to_u64(const char *val, size_t &pos);
     virtual std::string parse_to_str(const char *val, size_t &pos);
+    size_t parse_to_objlist(const char *val, size_t pos, std::list<GenObject *> &objlist);
 
     virtual bool isNumber(std::string &s) {
         return s.c_str()[0] >= '0' && s.c_str()[0] <= '9';
@@ -116,22 +123,25 @@ class GenObject {
  protected:
     EIdType id_;
     GenObject *parent_;
-    GenObject *sel_;        // selector when is array
-    bool reg_;              // Mark object (signal, value, port, structure) as a Flip-flop
-    bool reset_disabled_;   // register without reset (memory)
-    bool vcd_enabled_;      // show instance in VCD trace file
     std::string type_;
     std::string name_;
-    std::string mnemonic_;  // name in VCD trace file
-    std::string comment_;
-    std::list<GenObject *> entries_;
 
+    int width_;             // we should calc these integer, because local parameter becomes unavailable after module is created
+    int depth_;
     std::string strValue_;
     std::string strWidth_;
     std::string strDepth_;
     GenObject *objValue_;
     GenObject *objWidth_;
     GenObject *objDepth_;
+
+    GenObject *sel_;        // selector when is array
+    bool reg_;              // Mark object (signal, value, port, structure) as a Flip-flop
+    bool reset_disabled_;   // register without reset (memory)
+    bool vcd_enabled_;      // show instance in VCD trace file
+    std::string comment_;
+    std::list<GenObject *> entries_;
+
 };
 
 }  // namespace sysvc

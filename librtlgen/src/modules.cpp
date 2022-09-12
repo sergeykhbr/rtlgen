@@ -35,7 +35,7 @@ ModuleObject::ModuleObject(GenObject *parent, const char *type, const char *name
 bool ModuleObject::isAsyncReset() {
     bool nrst_exist = false;
     for (auto &e: entries_) {
-        if (e->getName() == "i_nrst") {
+        if (strstr(e->getName().c_str(), "nrst")) {
             nrst_exist = true;
             break;
         }

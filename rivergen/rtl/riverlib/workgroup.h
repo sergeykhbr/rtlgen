@@ -73,9 +73,7 @@ class Workgroup : public ModuleObject {
 
 public:
     DefParamUI32D cpu_num;
-    DefParamBOOL fpu_ena;
-    DefParamBOOL l2cache_ena;
-    DefParamBOOL tracer_ena;
+    DefParamUI32D l2cache_ena;
     // Ports:
     InPort i_cores_nrst;
     InPort i_dmi_nrst;

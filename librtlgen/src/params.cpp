@@ -20,19 +20,9 @@
 namespace sysvc {
 
 ParamGeneric::ParamGeneric(GenValue *parent) {
-    std::string path = parent->getFullPath();
-    std::string file = parent->getFile();
-    if (parent->isLocal()) {
-        SCV_set_cfg_local_parameter(path,
-                                    file,
-                                    parent->getName().c_str(),
-                                    parent->getValue());
-    } else {
-        SCV_set_cfg_parameter(path,
-                              file,
-                              parent->getName().c_str(),
-                              parent->getValue());
-    }
+    SCV_set_cfg_parameter(parent,
+                          parent,
+                          parent->getValue());
 }
 
 std::string ParamGeneric::genparam(GenValue *p) {

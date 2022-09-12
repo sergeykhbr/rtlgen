@@ -50,14 +50,13 @@ int SCV_is_sv();
 int SCV_is_sv_pkg();
 int SCV_is_vhdl();
 
-void SCV_set_cfg_parameter(std::string &path, std::string &file,
-                           const char *name, uint64_t v);
-void SCV_set_cfg_local_parameter(std::string &path, std::string &file,
-                                 const char *name, uint64_t v);
+void SCV_set_cfg_parameter(GenObject *parent, GenObject *obj, uint64_t v);
+void SCV_set_cfg_type(GenObject *obj);
 int SCV_is_cfg_parameter(std::string &name);
 std::string SCV_get_cfg_file(std::string &name);
 std::string SCV_get_cfg_fullname(std::string &name);
 uint64_t SCV_get_cfg_parameter(std::string &name);
+GenObject *SCV_get_cfg_obj(std::string &name);
 
 void SCV_register_module(GenObject *m);
 GenObject *SCV_get_module(const char *name);

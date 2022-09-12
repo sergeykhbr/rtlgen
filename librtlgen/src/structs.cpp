@@ -43,7 +43,7 @@ bool StructObject::isVector() {
     if (getEntries().size() != 1) {
         return false;
     }
-    if (getEntries().front()->getId()== ID_ARRAY_DEF) {
+    if (getEntries().front()->getId() == ID_ARRAY_DEF) {
         return true;
     }
     return false;

@@ -46,8 +46,8 @@ class STRING : public GenValue {
  public:
     STRING(const char *val, const char *name="",
         GenObject *parent=0, const char *comment=""):
-        GenValue("0", val, name, parent, comment) {
-        strValue_ = "\"" + strValue_ + "\"";
+        GenValue("0", "", name, parent, comment) {
+        strValue_ = "\"" + std::string(val) + "\"";
     }
 
     virtual std::string getType();
@@ -102,6 +102,15 @@ class UI64H : public GenValue {
         GenValue("64", val, name, parent, comment) {}
 
     virtual std::string getType();
+};
+
+class GenVar : public I32D {
+ public:
+    GenVar(const char *val, const char *name,
+        GenObject *parent, const char *comment="") :
+        I32D(val, name, parent, comment) {}
+
+    virtual bool isGenVar() override { return true; }
 };
 
 }  // namespace sysvc

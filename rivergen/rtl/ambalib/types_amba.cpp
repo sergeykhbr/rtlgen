@@ -42,7 +42,7 @@ types_amba::types_amba(GenObject *parent) :
     _didmst5_(this, "\"River\" CPU Device ID."),
     RISCV_RIVER_CPU(this, "16", "RISCV_RIVER_CPU", "0x0505"),
     _didmst6_(this, "\"Wasserfall\" CPU Device ID."),
-    RISCV_WASSERFALL_WORKGROUP(this, "16", "RISCV_WASSERFALL_WORKGROUP", "0x0506"),
+    RISCV_RIVER_WORKGROUP(this, "16", "RISCV_RIVER_WORKGROUP", "0x0506"),
     _didmst7_(this, "\"Wasserfall\" debug registers"),
     RISCV_WASSERFALL_DMI(this, "16", "RISCV_WASSERFALL_DMI", "0x0507"),
     _didmst8_(this, "UART with DMA: Test Access Point (TAP)"),

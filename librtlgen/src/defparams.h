@@ -28,14 +28,7 @@ class DefParamBOOL : public BOOL {
     DefParamBOOL(GenObject *parent, const char *name, const char *val,
                 const char *comment="") : BOOL(val, name, parent, comment) {
         id_ = ID_DEF_PARAM;
-
-        std::string path = parent->getFullPath();
-        std::string file = parent->getFile();
-        SCV_set_cfg_local_parameter(path,
-                                    file,
-                                    name,
-                                    getValue());
-
+        SCV_set_cfg_parameter(parent, this, getValue());
     }
 };
 
@@ -45,13 +38,7 @@ class DefParamUI32D : public UI32D {
     DefParamUI32D(GenObject *parent, const char *name, const char *val,
                 const char *comment="") : UI32D(val, name, parent, comment) {
         id_ = ID_DEF_PARAM;
-
-        std::string path = parent->getFullPath();
-        std::string file = parent->getFile();
-        SCV_set_cfg_local_parameter(path,
-                                    file,
-                                    name,
-                                    getValue());
+        SCV_set_cfg_parameter(parent, this, getValue());
     }
 };
 

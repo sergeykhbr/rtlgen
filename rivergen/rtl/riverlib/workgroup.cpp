@@ -20,9 +20,7 @@ Workgroup::Workgroup(GenObject *parent, const char *name) :
     ModuleObject(parent, "Workgroup", name),
     // Generic parameters
     cpu_num(this, "cpu_num", "1"),
-    fpu_ena(this, "fpu_ena", "true"),
-    l2cache_ena(this, "l2cache_ena", "false"),
-    tracer_ena(this, "tracer_ena", "true"),
+    l2cache_ena(this, "l2cache_ena", "1"),
     // Ports
     i_cores_nrst(this, "i_cores_nrst", "1", "System reset without DMI inteface"),
     i_dmi_nrst(this, "i_dmi_nrst", "1", "Debug interface reset"),
@@ -153,7 +151,9 @@ Workgroup::Workgroup(GenObject *parent, const char *name) :
     GENERATE("hartgen");
     GenObject *i;
     i = &FORGEN("i", CONST("0"), cpu_num, "++", new STRING("xslotcpu"));
-        //cpux.getItem(cpux->hartid.getName().c_str())->setStrValue(i->getName().c_str());
+        cpux->hartid.setObjValue(i);
+        cpux->fpu_ena.setObjValue(&glob_river_cfg_->CFG_HW_FPU_ENABLE);
+        cpux->tracer_ena.setObjValue(&glob_river_cfg_->CFG_TRACER_ENABLE);
         NEW(*cpux.getItem(0), cpux.getName().c_str(), i);
             CONNECT(cpux, i, cpux->i_nrst, i_cores_nrst);
             CONNECT(cpux, i, cpux->i_clk, i_clk);
@@ -223,7 +223,7 @@ void Workgroup::proc_comb() {
     SETVAL(wb_xcfg.descrsize, glob_types_amba_->PNP_CFG_MASTER_DESCR_BYTES);
     SETVAL(wb_xcfg.descrtype, glob_types_amba_->PNP_CFG_TYPE_MASTER);
     SETVAL(wb_xcfg.vid, glob_types_amba_->VENDOR_OPTIMITECH);
-    SETVAL(wb_xcfg.did, glob_types_amba_->RISCV_WASSERFALL_WORKGROUP);
+    SETVAL(wb_xcfg.did, glob_types_amba_->RISCV_RIVER_WORKGROUP);
 
 TEXT();
     SETBITZERO(wb_flush_l2, ACP_SLOT_IDX, "ACP port");

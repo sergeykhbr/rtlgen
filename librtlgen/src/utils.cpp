@@ -28,6 +28,7 @@
 namespace sysvc {
 
 struct CfgParameterInfo {
+    GenObject *obj;
     std::string path;
     std::string file;
     uint64_t value;
@@ -39,26 +40,38 @@ static std::list<GenObject *> modules_;
 AccessListener *accessListener_ = 0;
 static EGenerateType gentype_ = GEN_UNDEFINED;
 
-void SCV_set_cfg_parameter(std::string &path,
-                           std::string &file,
-                           const char *name,
+void SCV_set_cfg_parameter(GenObject *parent,
+                           GenObject *obj,
                            uint64_t v) {
+    std::string path = parent->getFullPath();
+    std::string file = parent->getFile();
+
     CfgParameterInfo cfg;
+    cfg.obj = obj;
     cfg.path = path;
     cfg.file = file;
     cfg.value = v;
-    cfgParamters_[std::string(name)] = cfg;
+    if (parent->isLocal()) {
+        cfgLocalParamters_[obj->getName()] = cfg;
+    } else {
+        cfgParamters_[obj->getName()] = cfg;
+    }
 }
 
-void SCV_set_cfg_local_parameter(std::string &path,
-                               std::string &file,
-                               const char *name,
-                               uint64_t v) {
+void SCV_set_cfg_type(GenObject *obj) {
+    std::string path = obj->getFullPath();
+    std::string file = obj->getFile();
+
     CfgParameterInfo cfg;
+    cfg.obj = obj;
     cfg.path = path;
     cfg.file = file;
-    cfg.value = v;
-    cfgLocalParamters_[std::string(name)] = cfg;
+    cfg.value = 0;
+    if (obj->isLocal()) {
+        cfgLocalParamters_[obj->getType()] = cfg;
+    } else {
+        cfgParamters_[obj->getType()] = cfg;
+    }
 }
 
 int SCV_is_cfg_parameter(std::string &name) {
@@ -74,14 +87,43 @@ int SCV_is_cfg_parameter(std::string &name) {
 }
 
 std::string SCV_get_cfg_file(std::string &name) {
-    CfgParameterInfo &info = cfgParamters_[name];
-    return info.file;
+    // search first local parameters
+    if (cfgLocalParamters_.find(name) != cfgLocalParamters_.end()) {
+        return cfgLocalParamters_[name].file;
+    }
+    if (cfgParamters_.find(name) == cfgParamters_.end()) {
+        // not found
+        SHOW_ERROR("cfg file %s not found", name.c_str());
+        return 0;
+    }
+    return cfgParamters_[name].file;
 }
 
 std::string SCV_get_cfg_fullname(std::string &name) {
-    CfgParameterInfo &info = cfgParamters_[name];
-    std::string ret = info.path;
-    return ret;
+    if (cfgLocalParamters_.find(name) != cfgLocalParamters_.end()) {
+        return cfgLocalParamters_[name].path;
+    }
+    if (cfgParamters_.find(name) == cfgParamters_.end()) {
+        // not found
+        SHOW_ERROR("cfg file %s not found", name.c_str());
+        return 0;
+    }
+    return cfgParamters_[name].path;
+}
+
+GenObject *SCV_get_cfg_obj(std::string &name) {
+    if (cfgLocalParamters_.find(name) != cfgLocalParamters_.end()) {
+        return cfgLocalParamters_[name].obj;
+    }
+    if (cfgParamters_.find(name) == cfgParamters_.end()) {
+        // not found
+        SHOW_ERROR("cfg file %s not found", name.c_str());
+        return 0;
+    }
+    if (accessListener_) {
+        accessListener_->notifyAccess(cfgParamters_[name].path);
+    }
+    return cfgParamters_[name].obj;
 }
 
 uint64_t SCV_get_cfg_parameter(std::string &name) {

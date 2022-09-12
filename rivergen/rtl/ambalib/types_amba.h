@@ -277,7 +277,7 @@ class types_amba : public FileObject {
     TextLine _didmst5_;
     ParamLogic RISCV_RIVER_CPU;
     TextLine _didmst6_;
-    ParamLogic RISCV_WASSERFALL_WORKGROUP;
+    ParamLogic RISCV_RIVER_WORKGROUP;
     TextLine _didmst7_;
     ParamLogic RISCV_WASSERFALL_DMI;
     TextLine _didmst8_;

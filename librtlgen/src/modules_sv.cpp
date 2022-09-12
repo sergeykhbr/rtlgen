@@ -35,11 +35,6 @@ std::string ModuleObject::generate_sv_pkg_localparam() {
     int tcnt = 0;
     GenObject *prev = 0;
     // Local paramaters visible inside of module
-#if 1
-    if (getType() == "Workgroup") {
-        bool st = true;
-    }
-#endif
     for (auto &p: entries_) {
         if (p->getId() != ID_PARAM) {
             prev = 0;
@@ -52,17 +47,11 @@ std::string ModuleObject::generate_sv_pkg_localparam() {
             prev = 0;
             continue;
         }
-        if (p->isString()) {
-            // exclude strings (tracer case)
-            prev = 0;
-            continue;
-        } else {
-            if (prev) {
-                ret += prev->generate();
-            }
-            ln = "localparam " + p->getType() + " " + p->getName();
-            ln += " = " + p->getStrValue() + ";";
+        if (prev) {
+            ret += prev->generate();
         }
+        ln = "localparam " + p->getType() + " " + p->getName();
+        ln += " = " + p->getStrValue() + ";";
         if (p->getComment().size()) {
             while (ln.size() < 60) {
                 ln += " ";
@@ -215,13 +204,11 @@ std::string ModuleObject::generate_sv_mod_param_strings() {
         if (p->getId() != ID_PARAM) {
             continue;
         }
-        if (!p->isLocal() && !p->isGenericDep()) {
+        if (!p->isLocal() || !p->isGenericDep()) {
             continue;
         }
-        if (p->isString()) {
-            ret += "localparam string " + p->getName();
-            ret += " = " + p->getStrValue() + ";\n";
-        }
+        ret += "localparam " + p->getType() + " " + p->getName();
+        ret += " = " + p->getStrValue() + ";\n";
 
         tcnt++;
     }
@@ -348,7 +335,8 @@ std::string ModuleObject::generate_sv_mod_signals() {
         if (p->isReg() || (p->getId() != ID_SIGNAL
                         && p->getId() != ID_VALUE
                         && p->getId() != ID_STRUCT_INST
-                        && p->getId() != ID_ARRAY_DEF)) {
+                        && p->getId() != ID_ARRAY_DEF
+                        && p->getId() != ID_VECTOR)) {
             if (p->getId() == ID_COMMENT) {
                 text += p->generate();
             } else {
@@ -367,7 +355,7 @@ std::string ModuleObject::generate_sv_mod_signals() {
             text = "";
         }
         ln = p->getType() + " " + p->getName();
-        if (p->getDepth()) {
+        if (p->getDepth() && !p->isVector()) {
             ln += "[0: " + p->getStrDepth() + " - 1]";
         }
         ln += ";";
@@ -572,6 +560,7 @@ std::string ModuleObject::generate_sv_mod() {
     std::list<GenObject *> tmplparam;
     getTmplParamList(tmplparam);
 
+    Operation::set_space(0);
     ret += "module " + getType();
 
     // Generic parameters
@@ -633,12 +622,18 @@ std::string ModuleObject::generate_sv_mod() {
         ret += "\n";
     } else {
         // insert pkg data for template modules: ram, queue, ..
-        ret += generate_sv_pkg();
+        ret += generate_sv_pkg_localparam();
     }
 
     // static strings
     Operation::set_space(0);
     ret += generate_sv_mod_param_strings();
+
+    // struct definitions:
+    if (tmplparam.size()) {
+        ret += generate_sv_pkg_struct();
+    }
+
 
     // Signal list:
     ret += generate_sv_mod_signals();

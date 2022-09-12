@@ -28,14 +28,8 @@ void EnumObject::add_value(const char *name, const char *comment) {
     char tstr[64];
     int total = static_cast<int>(entries_.size());
     RISCV_sprintf(tstr, sizeof(tstr), "%d", total);
-    new I32D(tstr, name, this, comment);
-
-    std::string path = getFullPath();
-    std::string file = getFile();
-    SCV_set_cfg_parameter(path,
-                          file,
-                          name,
-                          total);
+    GenObject *pval = new I32D(tstr, name, this, comment);
+    SCV_set_cfg_parameter(this, pval, total);
 }
 
 std::string EnumObject::generate() {

@@ -283,7 +283,9 @@ TEXT();
     SYNC_RESET(*this);
 
 TEXT();
-    SETVAL(o_l1i, comb.vlxi);
+    i = &FOR ("i", CONST("0"), cfg->CFG_SLOT_L1_TOTAL, "++");
+        SETARRITEM(o_l1i, *i, o_l1i, ARRITEM(comb.vlxi, *i, comb.vlxi), "vector should be assigned in cycle in systemc");
+    ENDFOR();
 
 TEXT();
     SETVAL(o_req_valid, comb.v_req_valid);

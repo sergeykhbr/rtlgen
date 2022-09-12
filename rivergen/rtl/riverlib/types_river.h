@@ -246,6 +246,7 @@ class types_river : public FileObject {
                 SCV_get_cfg_parameter(getType());   // to trigger dependecy array
             }
         }
+        virtual bool isVector() override { return true; }
     };
 
     class axi4_l1_out_vector : public TStructArray<axi4_l1_out_type> {
@@ -258,6 +259,7 @@ class types_river : public FileObject {
                 SCV_get_cfg_parameter(getType());   // to trigger dependecy array
             }
         }
+        virtual bool isVector() override { return true; }
     };
 
     class axi4_l2_out_type : public StructObject {

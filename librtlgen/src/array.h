@@ -36,7 +36,7 @@ class ArrayObject : public GenObject {
                 const char *depth,
                 const char *comment="")
     : GenObject(parent, type, ID_ARRAY_DEF, name, comment) {
-        strDepth_ = std::string(depth);
+        setStrDepth(depth);
     }
 
     virtual std::string getType() override {

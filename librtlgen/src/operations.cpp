@@ -79,6 +79,11 @@ std::string Operation::fullname(const char *prefix, std::string name, GenObject 
     }
     GenObject *p = obj->getParent();
     std::string curname = "";
+#if 1
+    if (obj->getName() == "o_l1i") {
+        bool st = true;
+    }
+#endif
     if (p && p->getId() == ID_ARRAY_DEF) {
         curname = fullname(prefix, name, p);
         // Do not add 'name' to avoid double adding
@@ -118,7 +123,16 @@ std::string Operation::fullname(const char *prefix, std::string name, GenObject 
     } else if (obj->getId() == ID_OUTPUT && obj->getItem()->getId() == ID_VECTOR) {
         curname = "";
         curname = fullname("r", curname, obj->getItem()->getSelector());
-        curname = "[" + curname + "]";
+        if (curname.size()) {
+            curname = "[" + curname + "]";
+        }
+        curname = obj->getName() + name + curname;
+    } else if (obj->getId() == ID_INPUT && obj->getItem()->getId() == ID_VECTOR) {
+        curname = "";
+        curname = fullname("v", curname, obj->getItem()->getSelector());
+        if (curname.size()) {
+            curname = "[" + curname + "]";
+        }
         curname = obj->getName() + name + curname;
     } else {
         curname = obj->getName() + name;
@@ -1553,15 +1567,6 @@ class OpCALCWIDTHx : public Operation {
         ret += "\n" + Operation::addspaces() + ")";
         return ret;
     }
-    virtual uint64_t getValue() override {
-        uint64_t w = 0;
-        size_t cnt = reinterpret_cast<size_t>(args[1]);
-        for (size_t i = 0; i < cnt; i++) {
-            w += args[2 + i]->getWidth();
-        }
-        return w;
-    }
-    virtual int getWidth() override { return 32; }
 };
 
 /*std::string CALCWIDTHx_gen(GenObject **args) {
@@ -1587,7 +1592,7 @@ class OpCALCWIDTHx : public Operation {
 
 Operation &CALCWIDTHx(size_t cnt, ...) {
     OpCALCWIDTHx *p = new OpCALCWIDTHx("");
-//    uint64_t w = 0;
+    uint64_t w = 0;
     GenObject *obj;
 //    p->igen_ = CALCWIDTHx_gen;
     p->add_arg(p);
@@ -1597,11 +1602,11 @@ Operation &CALCWIDTHx(size_t cnt, ...) {
     for (int i = 0; i < cnt; i++) {
         obj = va_arg(arg, GenObject *);
         p->add_arg(obj);
-//        w += obj->getWidth();
+        w += obj->getWidth();
     }
     va_end(arg);
-//    p->setWidth(32);
-//    p->setValue(w);
+    p->setWidth(32);
+    p->setValue(w);
     return *p;
 }
 
@@ -1910,6 +1915,7 @@ Operation &MUL2(GenObject &a, GenObject &b, const char *comment) {
     p->add_arg(p);
     p->add_arg(&a);
     p->add_arg(&b);
+    p->setValue(a.getValue() * b.getValue());
     return *p;
 }
 
@@ -2577,6 +2583,7 @@ void ENDSWITCH(const char *comment) {
     p->add_arg(p);
 }
 
+// GENVAR
 
 // FOR
 std::string FOR_gen(GenObject **args) {
@@ -2593,7 +2600,7 @@ std::string FOR_gen(GenObject **args) {
     if (SCV_is_sysc()) {
         ret += "for (int " + i + " = ";
     } else {
-        if (op->getParent()->getId() == ID_MODULE) {
+        if (args[1]->isGenVar()) {
             ret += "for (genvar " + i + " = ";
         } else {
             ret += "for (int " + i + " = ";
@@ -2638,7 +2645,7 @@ GenObject &FOR(const char *i, GenObject &start, GenObject &end, const char *dir,
 // 'generate' for cycle used in rtl, it is the same for in systemc
 GenObject &FORGEN(const char *i, GenObject &start, GenObject &end, const char *dir, STRING *name, const char *comment) {
     Operation *p = new Operation(comment);
-    I32D *ret = new I32D("0", i);
+    I32D *ret = new GenVar("0", i, 0);
     Operation::push_obj(p);
     p->igen_ = FOR_gen;
     p->add_arg(p);
@@ -2875,9 +2882,9 @@ std::string NEW_gen_sv(Operation *op, ModuleObject *mod, std::string name) {
             ret += Operation::addspaces();
             if (e->getId() == ID_TMPL_PARAM) {
                 ret += "." + e->getName() + "(" + e->getStrValue() + ")";
-            //} else if (e->getStrValue().size()) {
-            //    // generic parameter but with the defined string value
-            //    ret += "." + e->getName() + "(" + e->getStrValue() + ")";
+            } else if (e->getObjValue()) {
+                // generic parameter but with the defined string value
+                ret += "." + e->getName() + "(" + e->getObjValue()->getName() + ")";
             } else {
                 ret += "." + e->getName() + "(" + e->getName() + ")";
             }

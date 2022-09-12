@@ -24,14 +24,14 @@ namespace sysvc {
 GenValue::GenValue(const char *width, const char *val, const char *name,
                     GenObject *parent, const char *comment)
     : GenObject(parent, "", (name[0] ? ID_VALUE : ID_CONST), name, comment) {
-    strValue_ = std::string(val);
-    strWidth_ = std::string(width);
+    setStrValue(val);
+    setStrWidth(width);
 }
 
 GenValue::GenValue(GenValue *width, const char *val, const char *name,
                    GenObject *parent, const char *comment)
     : GenObject(parent, "", (name[0] ? ID_VALUE : ID_CONST), name, comment) {
-    strValue_ = std::string(val);
+    setStrValue(val);
     objWidth_ = width;
 }
 
@@ -39,7 +39,7 @@ GenValue::GenValue(const char *width, GenObject *val, const char *name,
                    GenObject *parent, const char *comment)
     : GenObject(parent, "", (name[0] ? ID_VALUE : ID_CONST), name, comment) {
     objValue_ = val;
-    strWidth_ = std::string(width);
+    setStrWidth(width);
 }
 
 
