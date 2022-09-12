@@ -38,7 +38,8 @@ class ic_axi4_to_l1 : public ModuleObject {
             vb_req_mask(this, "vb_req_mask", "64"),
             vb_r_data_modified(this, "vb_r_data_modified", "L1CACHE_LINE_BITS"),
             vb_line_wstrb(this, "vb_line_wstrb", "L1CACHE_BYTES_PER_LINE"),
-            vb_resp_data(this, "vb_resp_data", "64") {
+            vb_resp_data(this, "vb_resp_data", "64"),
+            t_req_addr(this, "t_req_addr", "CFG_SYSBUS_ADDR_BITS") {
         }
      public:
         types_amba::axi4_master_in_type vb_xmsti;
@@ -49,6 +50,7 @@ class ic_axi4_to_l1 : public ModuleObject {
         Logic vb_r_data_modified;
         Logic vb_line_wstrb;
         Logic vb_resp_data;
+        Logic t_req_addr;
     };
 
     void proc_comb();

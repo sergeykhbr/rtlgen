@@ -76,6 +76,20 @@ RiverAmba::RiverAmba(GenObject *parent, const char *name) :
     resp_snoop_flags_o(this, "resp_snoop_flags_o", "DTAG_FL_TOTAL"),
     wb_ip(this, "wb_ip", "IRQ_PER_HART_TOTAL", "Interrupt pending bits"),
     wb_xcfg(this, "wb_xcfg"),
+    w_dporti_haltreq(this, "w_dporti_haltreq", "1"),
+    w_dporti_resumereq(this, "w_dporti_resumereq", "1"),
+    w_dporti_resethaltreq(this, "w_dporti_resethaltreq", "1"),
+    w_dporti_hartreset(this, "w_dporti_hartreset", "1"),
+    w_dporti_req_valid(this, "w_dporti_req_valid", "1"),
+    wb_dporti_dtype(this, "wb_dporti_dtype", "DPortReq_Total"),
+    wb_dporti_addr(this, "wb_dporti_addr", "CFG_CPU_ADDR_BITS"),
+    wb_dporti_wdata(this, "wb_dporti_wdata", "RISCV_ARCH"),
+    wb_dporti_size(this, "wb_dporti_size", "3"),
+    w_dporti_resp_ready(this, "w_dporti_resp_ready", "1"),
+    w_dporto_req_ready(this, "w_dporto_req_ready", "1"),
+    w_dporto_resp_valid(this, "w_dporto_resp_valid", "1"),
+    w_dporto_resp_error(this, "w_dporto_resp_error", "1"),
+    wb_dporto_rdata(this, "wb_dporto_rdata", "RISCV_ARCH"),
     // registers
     state(this, "state", "3"),
     req_addr(this, "req_addr", "CFG_CPU_ADDR_BITS", "state_idle"),
@@ -130,18 +144,18 @@ RiverAmba::RiverAmba(GenObject *parent, const char *name) :
         CONNECT(river0, 0, river0.o_resp_snoop_flags, resp_snoop_flags_o);
         CONNECT(river0, 0, river0.o_flush_l2, o_flush_l2);
         CONNECT(river0, 0, river0.i_irq_pending, wb_ip);
-        CONNECT(river0, 0, river0.i_haltreq, i_dport->haltreq);
-        CONNECT(river0, 0, river0.i_resumereq, i_dport->resumereq);
-        CONNECT(river0, 0, river0.i_dport_req_valid, i_dport->req_valid);
-        CONNECT(river0, 0, river0.i_dport_type, i_dport->dtype);
-        CONNECT(river0, 0, river0.i_dport_addr, i_dport->addr);
-        CONNECT(river0, 0, river0.i_dport_wdata, i_dport->wdata);
-        CONNECT(river0, 0, river0.i_dport_size, i_dport->size);
-        CONNECT(river0, 0, river0.o_dport_req_ready, o_dport->req_ready);
-        CONNECT(river0, 0, river0.i_dport_resp_ready, i_dport->resp_ready);
-        CONNECT(river0, 0, river0.o_dport_resp_valid, o_dport->resp_valid);
-        CONNECT(river0, 0, river0.o_dport_resp_error, o_dport->resp_error);
-        CONNECT(river0, 0, river0.o_dport_rdata, o_dport->rdata);
+        CONNECT(river0, 0, river0.i_haltreq, w_dporti_haltreq);
+        CONNECT(river0, 0, river0.i_resumereq, w_dporti_resumereq);
+        CONNECT(river0, 0, river0.i_dport_req_valid, w_dporti_req_valid);
+        CONNECT(river0, 0, river0.i_dport_type, wb_dporti_dtype);
+        CONNECT(river0, 0, river0.i_dport_addr, wb_dporti_addr);
+        CONNECT(river0, 0, river0.i_dport_wdata, wb_dporti_wdata);
+        CONNECT(river0, 0, river0.i_dport_size, wb_dporti_size);
+        CONNECT(river0, 0, river0.o_dport_req_ready, w_dporto_req_ready);
+        CONNECT(river0, 0, river0.i_dport_resp_ready, w_dporti_resp_ready);
+        CONNECT(river0, 0, river0.o_dport_resp_valid, w_dporto_resp_valid);
+        CONNECT(river0, 0, river0.o_dport_resp_error, w_dporto_resp_error);
+        CONNECT(river0, 0, river0.o_dport_rdata, wb_dporto_rdata);
         CONNECT(river0, 0, river0.i_progbuf, i_progbuf);
         CONNECT(river0, 0, river0.o_halted, o_halted);
     ENDNEW();
@@ -189,6 +203,24 @@ void RiverAmba::proc_comb() {
     SETVAL(wb_xcfg.descrtype, glob_types_amba_->PNP_CFG_TYPE_MASTER);
     SETVAL(wb_xcfg.vid, glob_types_amba_->VENDOR_OPTIMITECH);
     SETVAL(wb_xcfg.did, glob_types_amba_->RISCV_RIVER_CPU);
+
+TEXT();
+    SETVAL(w_dporti_haltreq, i_dport->haltreq, "systemc compatibility");
+    SETVAL(w_dporti_resumereq, i_dport->resumereq, "systemc compatibility");
+    SETVAL(w_dporti_resethaltreq, i_dport->resethaltreq, "systemc compatibility");
+    SETVAL(w_dporti_hartreset, i_dport->hartreset, "systemc compatibility");
+    SETVAL(w_dporti_req_valid, i_dport->req_valid, "systemc compatibility");
+    SETVAL(wb_dporti_dtype, i_dport->dtype, "systemc compatibility");
+    SETVAL(wb_dporti_addr, i_dport->addr, "systemc compatibility");
+    SETVAL(wb_dporti_wdata, i_dport->wdata, "systemc compatibility");
+    SETVAL(wb_dporti_size, i_dport->size, "systemc compatibility");
+    SETVAL(w_dporti_resp_ready, i_dport->resp_ready, "systemc compatibility");
+
+TEXT();
+    SETVAL(comb.vdporto.req_ready, w_dporto_req_ready, "systemc compatibility");
+    SETVAL(comb.vdporto.resp_valid, w_dporto_resp_valid, "systemc compatibility");
+    SETVAL(comb.vdporto.resp_error, w_dporto_resp_error, "systemc compatibility");
+    SETVAL(comb.vdporto.rdata, wb_dporto_rdata, "systemc compatibility");
 
 TEXT();
     SETBIT(comb.vb_ip, cfg->IRQ_HART_MSIP, i_msip);
@@ -435,5 +467,6 @@ TEXT();
 TEXT();
     SETVAL(o_msto, comb.vmsto);
     SETVAL(o_xcfg, wb_xcfg);
+    SETVAL(o_dport, comb.vdporto, "systemc compatibility");
     SETVAL(o_available, CONST("1", 1));
 }

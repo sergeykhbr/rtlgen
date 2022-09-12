@@ -36,6 +36,7 @@ class RiverAmba : public ModuleObject {
             v_mem_er_store_fault(this, "v_mem_er_store_fault", "1"),
             v_next_ready(this, "v_next_ready", "1"),
             vmsto(this, "vmsto"),
+            vdporto(this, "vdporto"),
             _snoop0_(this, "snoop processing"),
             v_snoop_next_ready(this, "v_snoop_next_ready", "1"),
             req_snoop_valid(this, "req_snoop_valid", "1"),
@@ -53,6 +54,7 @@ class RiverAmba : public ModuleObject {
         Logic v_mem_er_store_fault;
         Logic v_next_ready;
         types_river::axi4_l1_out_type vmsto;
+        types_river::dport_out_type vdporto;
         TextLine _snoop0_;
         Logic v_snoop_next_ready;
         Logic req_snoop_valid;
@@ -153,6 +155,20 @@ public:
     Signal resp_snoop_flags_o;
     Signal wb_ip;
     types_amba::axi4_master_config_type wb_xcfg;
+    Signal w_dporti_haltreq;
+    Signal w_dporti_resumereq;
+    Signal w_dporti_resethaltreq;
+    Signal w_dporti_hartreset;
+    Signal w_dporti_req_valid;
+    Signal wb_dporti_dtype;
+    Signal wb_dporti_addr;
+    Signal wb_dporti_wdata;
+    Signal wb_dporti_size;
+    Signal w_dporti_resp_ready;
+    Signal w_dporto_req_ready;
+    Signal w_dporto_resp_valid;
+    Signal w_dporto_resp_error;
+    Signal wb_dporto_rdata;
 
     RegSignal state;
     RegSignal req_addr;

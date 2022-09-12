@@ -69,6 +69,7 @@ void ic_axi4_to_l1::proc_comb() {
 
     SETVAL(comb.vb_xmsti, amba->axi4_master_in_none);
     SETVAL(comb.vb_l1o, river->axi4_l1_out_none);
+    SETVAL(comb.t_req_addr, req_addr);
 
 TEXT();
     SETVAL(comb.idx, BITS(req_addr, DEC(cfg->CFG_DLOG2_BYTES_PER_LINE), CONST("3")));
@@ -216,7 +217,8 @@ TEXT();
         ELSE();
             TEXT("Burst transaction to support external DMA engine");
             SETVAL(req_len, DEC(req_len));
-            SETBITS(req_addr, 11, 0, ADD2(BITS(req_addr, 11, 0), comb.vb_req_xbytes));
+            SETBITS(comb.t_req_addr, 11, 0, ADD2(BITS(req_addr, 11, 0), comb.vb_req_xbytes));
+            SETVAL(req_addr, comb.t_req_addr);
             SETZERO(read_modify_write);
             IF (NZ(writing));
                 SETVAL(state, WriteDataAccept);

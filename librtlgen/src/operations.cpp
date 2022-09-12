@@ -80,7 +80,7 @@ std::string Operation::fullname(const char *prefix, std::string name, GenObject 
     GenObject *p = obj->getParent();
     std::string curname = "";
 #if 1
-    if (obj->getName() == "o_l1i") {
+    if (obj->getName() == "i_l1i") {
         bool st = true;
     }
 #endif
@@ -115,6 +115,10 @@ std::string Operation::fullname(const char *prefix, std::string name, GenObject 
             curname = obj->getName();
             if (name.size()) {
                 curname += ".";
+            }
+            if (SCV_is_sysc() && p && p->getId() == ID_INPUT) {
+                // input port with structure always read
+                curname += "read().";
             }
         }
         curname += name;

@@ -117,7 +117,7 @@ class types_river : public FileObject {
             aw_valid("1", "aw_valid", "0", this),
             aw_bits(this, "aw_bits"),
             aw_id("CFG_CPU_ID_BITS", "aw_id", "0", this),
-            aw_user("1", "aw_user", "0", this),
+            aw_user("CFG_SYSBUS_USER_BITS", "aw_user", "0", this),
             w_valid("1", "w_valid", "0", this),
             w_data("L1CACHE_LINE_BITS", "w_data", "0", this),
             w_last("1", "w_last", "0", this),
@@ -127,7 +127,7 @@ class types_river : public FileObject {
             ar_valid("1", "ar_valid", "0", this),
             ar_bits(this, "ar_bits"),
             ar_id("CFG_CPU_ID_BITS", "ar_id", "0", this),
-            ar_user("1", "ar_user", "0", this),
+            ar_user("CFG_SYSBUS_USER_BITS", "ar_user", "0", this),
             r_ready("1", "r_ready", "0", this),
             _ac0_(this, "ACE signals"),
             ar_domain("2", "ar_domain", "0", this, "00=Non-shareable (single master in domain)"),
@@ -269,7 +269,7 @@ class types_river : public FileObject {
             aw_valid("1", "aw_valid", "0", this),
             aw_bits(this, "aw_bits"),
             aw_id("CFG_CPU_ID_BITS", "aw_id", "0", this),
-            aw_user("1", "aw_user", "0", this),
+            aw_user("CFG_SYSBUS_USER_BITS", "aw_user", "0", this),
             w_valid("1", "w_valid", "0", this),
             w_data("L2CACHE_LINE_BITS", "w_data", "0", this),
             w_last("1", "w_last", "0", this),
@@ -279,7 +279,7 @@ class types_river : public FileObject {
             ar_valid("1", "ar_valid", "0", this),
             ar_bits(this, "ar_bits"),
             ar_id("CFG_CPU_ID_BITS", "ar_id", "0", this),
-            ar_user("1", "ar_user", "0", this),
+            ar_user("CFG_SYSBUS_USER_BITS", "ar_user", "0", this),
             r_ready("1", "r_ready", "0", this) {
             setZeroValue("axi4_l2_out_none");
             registerCfgType(name);                  // will be registered if name == ""
