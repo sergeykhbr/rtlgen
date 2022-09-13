@@ -30,8 +30,8 @@ class L2Dummy : public ModuleObject {
      public:
         CombProcess(GenObject *parent) :
             ProcObject(parent, "comb"),
-            vl1o(this, "vl1o"),
-            vlxi(this, "vlxi"),
+            vl1o(this, "", "vl1o", "CFG_SLOT_L1_TOTAL"),
+            vlxi(this, "", "vlxi", "CFG_SLOT_L1_TOTAL"),
             vl2o(this, "vl2o"),
             vb_src_aw(this, "vb_src_aw", "CFG_SLOT_L1_TOTAL"),
             vb_src_ar(this, "vb_src_ar", "CFG_SLOT_L1_TOTAL"),
@@ -40,8 +40,8 @@ class L2Dummy : public ModuleObject {
         }
 
      public:
-        types_river::axi4_l1_out_vector vl1o;
-        types_river::axi4_l1_in_vector vlxi;
+        TStructArray<types_river::axi4_l1_out_type> vl1o;
+        TStructArray<types_river::axi4_l1_in_type> vlxi;
         types_river::axi4_l2_out_type vl2o;
         Logic vb_src_aw;
         Logic vb_src_ar;

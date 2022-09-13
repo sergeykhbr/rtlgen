@@ -92,6 +92,8 @@ void L2SerDes::proc_comb() {
     river_cfg *cfg = glob_river_cfg_;
     GenObject *i;
 
+    SETVAL(comb.t_line, line);
+    SETVAL(comb.t_wstrb, wstrb);
     SETVAL(comb.vb_r_data, i_msti->r_data);
     SETVAL(comb.vb_line_o, line);
     i = &FOR ("i", CONST("0"), SERDES_BURST_LEN, "++");
@@ -128,10 +130,12 @@ TEXT();
             SETONE(comb.v_w_last);
         ENDIF();
         IF (NZ(i_msti->w_ready));
-            SETBITS(line, DEC(linew), SUB2(linew, busw), ALLZEROS());
-            SETBITS(line, DEC(SUB2(linew, busw)), CONST("0"), BITS(line, DEC(linew), busw));
-            SETBITS(wstrb, DEC(lineb), SUB2(lineb, busb), ALLZEROS());
-            SETBITS(wstrb, DEC(SUB2(lineb, busb)), CONST("0"), BITS(wstrb, DEC(lineb), busb));
+            SETBITS(comb.t_line, DEC(linew), SUB2(linew, busw), ALLZEROS());
+            SETBITS(comb.t_line, DEC(SUB2(linew, busw)), CONST("0"), BITS(line, DEC(linew), busw));
+            SETVAL(line, comb.t_line);
+            SETBITS(comb.t_wstrb, DEC(lineb), SUB2(lineb, busb), ALLZEROS());
+            SETBITS(comb.t_wstrb, DEC(SUB2(lineb, busb)), CONST("0"), BITS(wstrb, DEC(lineb), busb));
+            SETVAL(wstrb, comb.t_wstrb);
             IF (EZ(req_len));
                 SETONE(comb.v_w_ready);
                 SETONE(b_wait);

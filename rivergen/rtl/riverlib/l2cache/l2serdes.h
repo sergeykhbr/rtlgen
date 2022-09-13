@@ -40,6 +40,8 @@ class L2SerDes : public ModuleObject {
             v_w_ready(this, "v_w_ready", "1"),
             vb_len(this, "vb_len", "8"),
             vb_size(this, "vb_size", "3"),
+            t_line(this, "t_line", "linew"),
+            t_wstrb(this, "t_wstrb", "lineb"),
             vl2i(this, "vl2i"),
             vmsto(this, "vmsto") {
         }
@@ -54,6 +56,8 @@ class L2SerDes : public ModuleObject {
         Logic v_w_ready;
         Logic vb_len;
         Logic vb_size;
+        Logic t_line;
+        Logic t_wstrb;
         types_river::axi4_l2_in_type vl2i;
         types_amba::axi4_master_out_type vmsto;
     };
