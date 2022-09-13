@@ -297,13 +297,29 @@ class Processor : public ModuleObject {
             flushd(this, "flushd"),
             pc(this, "pc", "CFG_CPU_ADDR_BITS"),
             valid(this, "valid"),
-            debug_valid(this, "debug_valid") {}
+            debug_valid(this, "debug_valid"),
+            mmu_ena(this, "mmu_ena"),
+            req_data_valid(this, "req_data_valid", "1"),
+            req_data_type(this, "req_data_type", "MemopType_Total"),
+            req_data_addr(this, "req_data_addr", "CFG_CPU_ADDR_BITS"),
+            req_data_wdata(this, "req_data_wdata", "64"),
+            req_data_wstrb(this, "req_data_wstrb", "8"),
+            req_data_size(this, "req_data_size", "2"),
+            resp_data_ready(this, "resp_data_ready", "1") {}
      public:
         Signal memop_ready;
         Signal flushd;
         Signal pc;
         Signal valid;
         Signal debug_valid;
+        Signal mmu_ena;
+        Signal req_data_valid;
+        Signal req_data_type;
+        Signal req_data_addr;
+        Signal req_data_wdata;
+        Signal req_data_wstrb;
+        Signal req_data_size;
+        Signal resp_data_ready;
     } MemoryTypeDef_;
 
     class WriteBackType : public StructObject {
@@ -454,6 +470,7 @@ class Processor : public ModuleObject {
  protected:
     PipelineType w;
     MmuType immu;
+    MmuType dmmu;
     IntRegsType ireg;
     CsrType csr;
     DebugType dbg;
@@ -493,13 +510,15 @@ class Processor : public ModuleObject {
     Signal unused_immu_mem_req_wdata;
     Signal unused_immu_mem_req_wstrb;
     Signal unused_immu_mem_req_size;
-    Signal unused_immu_core_req_fetch;
+    Signal w_immu_core_req_fetch;   // assign to 0: fetcher
+    Signal w_dmmu_core_req_fetch;   // assign to 1: data
     Signal unused_immu_core_req_type;
     Signal unused_immu_core_req_wdata;
     Signal unused_immu_core_req_wstrb;
     Signal unused_immu_core_req_size;
     Signal unused_immu_mem_resp_store_fault;
     Signal unused_immu_fence_addr;
+    Signal unused_dmmu_mem_resp_executable;
 
     CombProcess comb;
 
@@ -509,6 +528,7 @@ class Processor : public ModuleObject {
     InstrExecute exec0;
     MemAccess mem0;
     Mmu immu0;
+    Mmu dmmu0;
     BranchPredictor predic0;
     RegIntBank iregs0;
     ic_csr_m2_s1 iccsr0;

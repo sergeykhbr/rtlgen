@@ -95,6 +95,7 @@ Processor::Processor(GenObject *parent, const char *name) :
     // Internal signals
     w(this, "w", "5-stages CPU pipeline"),
     immu(this, "immu"),
+    dmmu(this, "dmmu"),
     ireg(this, "ireg"),
     csr(this, "csr"),
     dbg(this, "dbg"),
@@ -133,13 +134,15 @@ Processor::Processor(GenObject *parent, const char *name) :
     unused_immu_mem_req_wdata(this, "unused_immu_mem_req_wdata", "64"),
     unused_immu_mem_req_wstrb(this, "unused_immu_mem_req_wstrb", "8"),
     unused_immu_mem_req_size(this, "unused_immu_mem_req_size", "2"),
-    unused_immu_core_req_fetch(this, "unused_immu_core_req_fetch", "1"),
+    w_immu_core_req_fetch(this, "w_immu_core_req_fetch", "1", "assign to 1: fetch instruction"),
+    w_dmmu_core_req_fetch(this, "w_dmmu_core_req_fetch", "1", "assign to 1: data"),
     unused_immu_core_req_type(this, "unused_immu_core_req_type", "MemopType_Total"),
     unused_immu_core_req_wdata(this, "unused_immu_core_req_wdata", "64"),
     unused_immu_core_req_wstrb(this, "unused_immu_core_req_wstrb", "8"),
     unused_immu_core_req_size(this, "unused_immu_core_req_size", "2"),
     unused_immu_mem_resp_store_fault(this, "unused_immu_mem_resp_store_fault", "1"),
     unused_immu_fence_addr(this, "unused_immu_fence_addr", "CFG_MMU_TLB_AWIDTH"),
+    unused_dmmu_mem_resp_executable(this, "unused_dmmu_mem_resp_executable", "1"),
     // process
     comb(this),
     // sub-modules
@@ -148,6 +151,7 @@ Processor::Processor(GenObject *parent, const char *name) :
     exec0(this, "exec0"),
     mem0(this, "mem0"),
     immu0(this, "immu0"),
+    dmmu0(this, "dmmu0"),
     predic0(this, "predic0"),
     iregs0(this, "iregs0"),
     iccsr0(this, "iccsr0"),
@@ -190,7 +194,7 @@ Processor::Processor(GenObject *parent, const char *name) :
         CONNECT(immu0, 0, immu0.o_core_req_ready, immu.fetch_req_ready);
         CONNECT(immu0, 0, immu0.i_core_req_valid, w.f.imem_req_valid);
         CONNECT(immu0, 0, immu0.i_core_req_addr, w.f.imem_req_addr);
-        CONNECT(immu0, 0, immu0.i_core_req_fetch, unused_immu_core_req_fetch);
+        CONNECT(immu0, 0, immu0.i_core_req_fetch, w_immu_core_req_fetch);
         CONNECT(immu0, 0, immu0.i_core_req_type, unused_immu_core_req_type);
         CONNECT(immu0, 0, immu0.i_core_req_wdata, unused_immu_core_req_wdata);
         CONNECT(immu0, 0, immu0.i_core_req_wstrb, unused_immu_core_req_wstrb);
@@ -288,8 +292,8 @@ Processor::Processor(GenObject *parent, const char *name) :
         CONNECT(exec0, 0, exec0.i_instr_load_fault, w.d.instr_load_fault);
         CONNECT(exec0, 0, exec0.i_instr_executable, w.d.instr_executable);
         CONNECT(exec0, 0, exec0.i_mem_ex_debug, w.m.debug_valid);
-        CONNECT(exec0, 0, exec0.i_mem_ex_load_fault, i_resp_data_load_fault);
-        CONNECT(exec0, 0, exec0.i_mem_ex_store_fault, i_resp_data_store_fault);
+        CONNECT(exec0, 0, exec0.i_mem_ex_load_fault, dmmu.load_fault);
+        CONNECT(exec0, 0, exec0.i_mem_ex_store_fault, dmmu.store_fault);
         CONNECT(exec0, 0, exec0.i_mem_ex_mpu_store, i_resp_data_er_mpu_store);
         CONNECT(exec0, 0, exec0.i_mem_ex_mpu_load, i_resp_data_er_mpu_load);
         CONNECT(exec0, 0, exec0.i_mem_ex_addr, i_resp_data_fault_addr);
@@ -355,6 +359,8 @@ Processor::Processor(GenObject *parent, const char *name) :
         CONNECT(mem0, 0, mem0.i_e_instr, w.e.instr);
         CONNECT(mem0, 0, mem0.i_e_flushd, w.e.flushd);
         CONNECT(mem0, 0, mem0.o_flushd, w.m.flushd);
+        CONNECT(mem0, 0, mem0.i_mmu_ena, w_mmu_ena);
+        CONNECT(mem0, 0, mem0.o_mmu_ena, w.m.mmu_ena);
         CONNECT(mem0, 0, mem0.i_reg_waddr, w.e.reg_waddr);
         CONNECT(mem0, 0, mem0.i_reg_wtag, w.e.reg_wtag);
         CONNECT(mem0, 0, mem0.i_memop_valid, w.e.memop_valid);
@@ -370,21 +376,64 @@ Processor::Processor(GenObject *parent, const char *name) :
         CONNECT(mem0, 0, mem0.o_wb_wdata, w.w.wdata);
         CONNECT(mem0, 0, mem0.o_wb_wtag, w.w.wtag);
         CONNECT(mem0, 0, mem0.i_wb_ready, w_writeback_ready);
-        CONNECT(mem0, 0, mem0.i_mem_req_ready, i_req_data_ready);
-        CONNECT(mem0, 0, mem0.o_mem_valid, o_req_data_valid);
-        CONNECT(mem0, 0, mem0.o_mem_type, o_req_data_type);
-        CONNECT(mem0, 0, mem0.o_mem_addr, o_req_data_addr);
-        CONNECT(mem0, 0, mem0.o_mem_wdata, o_req_data_wdata);
-        CONNECT(mem0, 0, mem0.o_mem_wstrb, o_req_data_wstrb);
-        CONNECT(mem0, 0, mem0.o_mem_size, o_req_data_size);
-        CONNECT(mem0, 0, mem0.i_mem_data_valid, i_resp_data_valid);
-        CONNECT(mem0, 0, mem0.i_mem_data_addr, i_resp_data_addr);
-        CONNECT(mem0, 0, mem0.i_mem_data, i_resp_data_data);
-        CONNECT(mem0, 0, mem0.o_mem_resp_ready, o_resp_data_ready);
+        CONNECT(mem0, 0, mem0.i_mem_req_ready, dmmu.fetch_req_ready);
+        CONNECT(mem0, 0, mem0.o_mem_valid, w.m.req_data_valid);
+        CONNECT(mem0, 0, mem0.o_mem_type, w.m.req_data_type);
+        CONNECT(mem0, 0, mem0.o_mem_addr, w.m.req_data_addr);
+        CONNECT(mem0, 0, mem0.o_mem_wdata, w.m.req_data_wdata);
+        CONNECT(mem0, 0, mem0.o_mem_wstrb, w.m.req_data_wstrb);
+        CONNECT(mem0, 0, mem0.o_mem_size, w.m.req_data_size);
+        CONNECT(mem0, 0, mem0.i_mem_data_valid, dmmu.fetch_data_valid);
+        CONNECT(mem0, 0, mem0.i_mem_data_addr, dmmu.fetch_data_addr);
+        CONNECT(mem0, 0, mem0.i_mem_data, dmmu.fetch_data);
+        CONNECT(mem0, 0, mem0.o_mem_resp_ready, w.m.resp_data_ready);
         CONNECT(mem0, 0, mem0.o_pc, w.m.pc);
         CONNECT(mem0, 0, mem0.o_valid, w.m.valid);
         CONNECT(mem0, 0, mem0.o_debug_valid, w.m.debug_valid);
     ENDNEW();
+
+
+    NEW(dmmu0, dmmu0.getName().c_str());
+        CONNECT(dmmu0, 0, dmmu0.i_clk, i_clk);
+        CONNECT(dmmu0, 0, dmmu0.i_nrst, i_nrst);
+        CONNECT(dmmu0, 0, dmmu0.o_core_req_ready, dmmu.fetch_req_ready);
+        CONNECT(dmmu0, 0, dmmu0.i_core_req_valid, w.m.req_data_valid);
+        CONNECT(dmmu0, 0, dmmu0.i_core_req_addr, w.m.req_data_addr);
+        CONNECT(dmmu0, 0, dmmu0.i_core_req_fetch, w_dmmu_core_req_fetch);
+        CONNECT(dmmu0, 0, dmmu0.i_core_req_type, w.m.req_data_type);
+        CONNECT(dmmu0, 0, dmmu0.i_core_req_wdata, w.m.req_data_wdata);
+        CONNECT(dmmu0, 0, dmmu0.i_core_req_wstrb, w.m.req_data_wstrb);
+        CONNECT(dmmu0, 0, dmmu0.i_core_req_size, w.m.req_data_size);
+        CONNECT(dmmu0, 0, dmmu0.o_core_resp_valid, dmmu.fetch_data_valid);
+        CONNECT(dmmu0, 0, dmmu0.o_core_resp_addr, dmmu.fetch_data_addr);
+        CONNECT(dmmu0, 0, dmmu0.o_core_resp_data, dmmu.fetch_data);
+        CONNECT(dmmu0, 0, dmmu0.o_core_resp_executable, dmmu.fetch_executable);
+        CONNECT(dmmu0, 0, dmmu0.o_core_resp_load_fault, dmmu.load_fault);
+        CONNECT(dmmu0, 0, dmmu0.o_core_resp_store_fault, dmmu.store_fault);
+        CONNECT(dmmu0, 0, dmmu0.o_core_resp_page_x_fault, dmmu.page_fault_x);
+        CONNECT(dmmu0, 0, dmmu0.o_core_resp_page_r_fault, dmmu.page_fault_r);
+        CONNECT(dmmu0, 0, dmmu0.o_core_resp_page_w_fault, dmmu.page_fault_w);
+        CONNECT(dmmu0, 0, dmmu0.i_core_resp_ready, w.m.resp_data_ready);
+        CONNECT(dmmu0, 0, dmmu0.i_mem_req_ready, i_req_data_ready);
+        CONNECT(dmmu0, 0, dmmu0.o_mem_req_valid, o_req_data_valid);
+        CONNECT(dmmu0, 0, dmmu0.o_mem_req_addr, o_req_data_addr);
+        CONNECT(dmmu0, 0, dmmu0.o_mem_req_type, o_req_data_type);
+        CONNECT(dmmu0, 0, dmmu0.o_mem_req_wdata, o_req_data_wdata);
+        CONNECT(dmmu0, 0, dmmu0.o_mem_req_wstrb, o_req_data_wstrb);
+        CONNECT(dmmu0, 0, dmmu0.o_mem_req_size, o_req_data_size);
+        CONNECT(dmmu0, 0, dmmu0.i_mem_resp_valid, i_resp_data_valid);
+        CONNECT(dmmu0, 0, dmmu0.i_mem_resp_addr, i_resp_data_addr);
+        CONNECT(dmmu0, 0, dmmu0.i_mem_resp_data, i_resp_data_data);
+        CONNECT(dmmu0, 0, dmmu0.i_mem_resp_executable, unused_dmmu_mem_resp_executable);
+        CONNECT(dmmu0, 0, dmmu0.i_mem_resp_load_fault, i_resp_data_load_fault);
+        CONNECT(dmmu0, 0, dmmu0.i_mem_resp_store_fault, i_resp_data_store_fault);
+        CONNECT(dmmu0, 0, dmmu0.o_mem_resp_ready, o_resp_data_ready);
+        CONNECT(dmmu0, 0, dmmu0.i_mmu_ena, w.m.mmu_ena);
+        CONNECT(dmmu0, 0, dmmu0.i_mmu_ppn, wb_mmu_ppn);
+        CONNECT(dmmu0, 0, dmmu0.i_fence, w_flush_pipeline);
+        CONNECT(dmmu0, 0, dmmu0.i_fence_addr, unused_immu_fence_addr);
+    ENDNEW();
+
 
     NEW(predic0, predic0.getName().c_str());
         CONNECT(predic0, 0, predic0.i_clk, i_clk);
@@ -608,7 +657,8 @@ void Processor::proc_comb() {
         SETVAL(comb.vb_flush_address, csr.flushi_addr);
     ENDIF();
 
-    SETZERO(unused_immu_core_req_fetch);
+    SETZERO(w_immu_core_req_fetch);
+    SETONE(w_dmmu_core_req_fetch);
     SETZERO(unused_immu_core_req_type);
     SETZERO(unused_immu_core_req_wdata);
     SETZERO(unused_immu_core_req_wstrb);
