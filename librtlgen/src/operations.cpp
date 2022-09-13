@@ -2487,10 +2487,17 @@ std::string SWITCH_gen(GenObject **args) {
         A = "(" + A + ")";
     }
     if (SCV_is_sysc()) {
-        ret += "switch " + A + " {\n";
+        ret += "switch " + A + " {";
     } else {
-        ret += "case " + A + "\n";
+        ret += "case " + A;
     }
+    if (args[0]->getComment().size()) {
+        while (ret.size() < 60) {
+            ret += " ";
+        }
+        ret += "// " + args[0]->getComment();
+    }
+    ret += "\n";
     return ret;
 }
 

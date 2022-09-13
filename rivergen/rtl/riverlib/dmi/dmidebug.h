@@ -36,7 +36,10 @@ class dmidebug : public ModuleObject {
             v_resp_valid(this, "v_resp_valid", "1"),
             hsel("0", "hsel", this),
             v_cmd_busy(this, "v_cmd_busy", "1"),
-            v_cdc_dmi_req_ready(this, "v_cdc_dmi_req_ready", "1") {
+            v_cdc_dmi_req_ready(this, "v_cdc_dmi_req_ready", "1"),
+            vb_datainc(this, "vb_datainc", "64"),
+            t_command(this, "t_command", "32"),
+            t_progbuf(this, "t_progbuf", "MUL(32,CFG_PROGBUF_REG_TOTAL)") {
         }
      public:
         Logic vb_req_type;
@@ -46,6 +49,9 @@ class dmidebug : public ModuleObject {
         I32D hsel;
         Logic v_cmd_busy;
         Logic v_cdc_dmi_req_ready;
+        Logic vb_datainc;
+        Logic t_command;
+        Logic t_progbuf;
     };
 
     void proc_comb();
