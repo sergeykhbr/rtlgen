@@ -48,7 +48,7 @@ bool ModuleObject::isAsyncReset() {
             if (static_cast<ModuleObject *>(e)->isAsyncReset()) {
                 return true;
             }
-        } else if (e->isReg()) {
+        } else if (e->isReg() || e->isNReg()) {
             return true;
         }
     }
@@ -57,7 +57,9 @@ bool ModuleObject::isAsyncReset() {
 
 bool ModuleObject::isCombProcess() {
     for (auto &e: entries_) {
-        if (e->getId() == ID_PROCESS && e->getName() != "registers") {
+        if (e->getId() == ID_PROCESS
+            && e->getName() != "registers"
+            && e->getName() != "nregisters") {
             return true;
         }
     }
@@ -66,7 +68,18 @@ bool ModuleObject::isCombProcess() {
 
 bool ModuleObject::isRegProcess() {
     for (auto &e: entries_) {
-        if (e->isReg() || (e->getId() == ID_PROCESS && e->getName() == "registers")) {
+        if (e->isReg()
+            || (e->getId() == ID_PROCESS && e->getName() == "registers")) {
+            return true;
+        }
+    }
+    return false;
+}
+
+bool ModuleObject::isNRegProcess() {
+    for (auto &e: entries_) {
+        if (e->isNReg()
+            || (e->getId() == ID_PROCESS && e->getName() == "nregisters")) {
             return true;
         }
     }

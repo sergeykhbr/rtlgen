@@ -21,7 +21,7 @@ namespace sysvc {
 
 RegSignal::RegSignal(const char *width, const char *name, const char *val,
     GenObject *parent, const char *comment)
-    : Signal(width, name, val, parent, true, comment) {
+    : Signal(width, name, val, parent, comment) {
     setReg();
 }
 
@@ -30,8 +30,17 @@ RegSignal::RegSignal(GenObject *parent,
                      const char *width,
                      const char *val, // reset value
                      const char *comment)
-    : Signal(parent, name, width, val, true, comment) {
+    : Signal(parent, name, width, val, comment) {
     setReg();
+}
+
+NRegSignal::NRegSignal(GenObject *parent,
+                       const char *name,
+                       const char *width,
+                       const char *val, // reset value
+                       const char *comment)
+    : Signal(parent, name, width, val, comment) {
+    setNReg();
 }
 
 }

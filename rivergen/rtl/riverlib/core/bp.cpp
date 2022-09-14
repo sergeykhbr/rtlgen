@@ -44,7 +44,7 @@ BranchPredictor::BranchPredictor(GenObject *parent, const char *name) :
     wb_btb_we_npc(this, "wb_btb_we_npc", "CFG_CPU_ADDR_BITS"),
     wb_start_pc(this, "wb_start_pc", "CFG_CPU_ADDR_BITS"),
     wb_npc(this, "wb_npc", "MUL(CFG_BP_DEPTH,CFG_CPU_ADDR_BITS)"),
-    wb_bp_exec(this, "wb_bp_exec", "CFG_BP_DEPTH", "Predicted value was jump-executed before"),
+    wb_bp_exec(this, "wb_bp_exec", "CFG_BP_DEPTH", "0", "Predicted value was jump-executed before"),
     predec(this, "predec", "2"),
     btb(this, "btb"),
     // registers

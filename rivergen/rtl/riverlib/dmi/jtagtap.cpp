@@ -18,41 +18,69 @@
 
 jtagtap::jtagtap(GenObject *parent, const char *name) :
     ModuleObject(parent, "jtagtap", name),
+    idcode(this, "32", "idcode", "0x10e31913"),
+    abits(this, "abits", "7"),
+    drlen(this, "drlen", "ADD(ADD(abits,32),2)"),
+    irlen(this, "irlen", "5"),
     // Ports
-    i_clk(this, "i_clk", "1"),
-    i_nrst(this, "i_nrst", "1", "full reset including dmi (usually via reset button)"),
-    _clk0_(this, "tck clock"),
-    i_dmi_req_valid(this, "i_dmi_req_valid", "1"),
-    i_dmi_req_write(this, "i_dmi_req_write", "1"),
-    i_dmi_req_addr(this, "i_dmi_req_addr", "7"),
-    i_dmi_req_data(this, "i_dmi_req_data", "32"),
-    i_dmi_reset(this, "i_dmi_reset", "1"),
-    i_dmi_hardreset(this, "i_dmi_hardreset", "1"),
-    _clk1_(this, "system clock"),
-    i_dmi_req_ready(this, "i_dmi_req_ready", "1"),
+    i_trst(this, "i_trst", "1", "Must be open-train, pullup"),
+    i_tck(this, "i_tck", "1"),
+    i_tms(this, "i_tms", "1"),
+    i_tdi(this, "i_tdi", "1"),
+    o_tdo(this, "o_tdo", "1"),
     o_dmi_req_valid(this, "o_dmi_req_valid", "1"),
     o_dmi_req_write(this, "o_dmi_req_write", "1"),
     o_dmi_req_addr(this, "o_dmi_req_addr", "7"),
     o_dmi_req_data(this, "o_dmi_req_data", "32"),
+    i_dmi_resp_data(this, "i_dmi_resp_data", "32"),
+    i_dmi_busy(this, "i_dmi_busy", "1"),
+    i_dmi_error(this, "i_dmi_error", "1"),
     o_dmi_reset(this, "o_dmi_reset", "1"),
     o_dmi_hardreset(this, "o_dmi_hardreset", "1"),
     // param
-    CDC_REG_WIDTH(this, "CDC_REG_WIDTH", &CALCWIDTHx(6, &i_dmi_hardreset,
-                                                    &i_dmi_reset,
-                                                    &i_dmi_req_addr,
-                                                    &i_dmi_req_data,
-                                                    &i_dmi_req_write,
-                                                    &i_dmi_req_valid)),
+    _ir0_(this),
+    IR_IDCODE(this, "5", "IR_IDCODE", "0x01"),
+    IR_DTMCONTROL(this, "5", "IR_DTMCONTROL", "0x10"),
+    IR_DBUS(this, "5", "IR_DBUS", "0x11"),
+    IR_BYPASS(this, "5", "IR_BYPASS", "0x1f"),
+    _dmi0_(this),
+    DMISTAT_SUCCESS(this, "2", "DMISTAT_SUCCESS", "0x0"),
+    DMISTAT_RESERVED(this, "2", "DMISTAT_RESERVED", "0x1"),
+    DMISTAT_FAILED(this, "2", "DMISTAT_FAILED", "0x2"),
+    DMISTAT_BUSY(this, "2", "DMISTAT_BUSY", "0x3"),
+    _dtm0_(this),
+    _dtm1_(this, "DTMCONTROL register bits"),
+    DTMCONTROL_DMIRESET(this, "DTMCONTROL_DMIRESET", "16"),
+    DTMCONTROL_DMIHARDRESET(this, "DTMCONTROL_DMIHARDRESET", "17"),
+    _scan0_(this),
+    _scan1_(this, "JTAG states:"),
+    RESET_TAP(this, "4", "RESET_TAP", "0"),
+    IDLE(this, "4", "IDLE", "1"),
+    SELECT_DR_SCAN(this, "4", "SELECT_DR_SCAN", "2"),
+    CAPTURE_DR(this, "4", "CAPTURE_DR", "3"),
+    SHIFT_DR(this, "4", "SHIFT_DR", "4"),
+    EXIT1_DR(this, "4", "EXIT1_DR", "5"),
+    PAUSE_DR(this, "4", "PAUSE_DR", "6"),
+    EXIT2_DR(this, "4", "EXIT2_DR", "7"),
+    UPDATE_DR(this, "4", "UPDATE_DR", "8"),
+    SELECT_IR_SCAN(this, "4", "SELECT_IR_SCAN", "9"),
+    CAPTURE_IR(this, "4", "CAPTURE_IR", "10"),
+    SHIFT_IR(this, "4", "SHIFT_IR", "11"),
+    EXIT1_IR(this, "4", "EXIT1_IR", "12"),
+    PAUSE_IR(this, "4", "PAUSE_IR", "13"),
+    EXIT2_IR(this, "4", "EXIT2_IR", "14"),
+    UPDATE_IR(this, "4", "UPDATE_IR", "15"),
     // registers
-    l1(this, "l1", "CDC_REG_WIDTH", "-1"),
-    l2(this, "l2", "CDC_REG_WIDTH"),
-    req_valid(this, "req_valid", "1"),
-    req_accepted(this, "req_accepted", "1"),
-    req_write(this, "req_write", "1"),
-    req_addr(this, "req_addr", "7"),
-    req_data(this, "req_data", "32"),
-    req_reset(this, "req_reset", "1"),
-    req_hardreset(this, "req_hardreset", "1"),
+    state(this, "state", "4", "RESET_TAP"),
+    tck(this, "tck", "1"),
+    tms(this, "tms", "1"),
+    tdi(this, "tdi", "1"),
+    dr_length(this, "dr_length", "7"),
+    dr(this, "dr", "drlen"),
+    bypass(this, "bypass", "1"),
+    datacnt(this, "datacnt", "32"),
+    ir(this, "ir", "irlen"),
+    dmi_addr(this, "dmi_addr", "abits"),
     comb(this)
 {
     Operation::start(this);
@@ -63,4 +91,15 @@ jtagtap::jtagtap(GenObject *parent, const char *name) :
 }
 
 void jtagtap::proc_comb() {
+    SETVAL(comb.vb_dr, dr);
+
+TEXT();
+    IF (NZ(i_dmi_busy));
+        SETVAL(comb.vb_stat, DMISTAT_BUSY);
+    ELSIF (NZ(i_dmi_error));
+        SETVAL(comb.vb_stat, DMISTAT_FAILED);
+    ELSE();
+        SETVAL(comb.vb_stat, DMISTAT_SUCCESS);
+    ENDIF();
+
 }

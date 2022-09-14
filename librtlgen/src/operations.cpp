@@ -79,11 +79,6 @@ std::string Operation::fullname(const char *prefix, std::string name, GenObject 
     }
     GenObject *p = obj->getParent();
     std::string curname = "";
-#if 1
-    if (obj->getName() == "i_l1i") {
-        bool st = true;
-    }
-#endif
     if (p && p->getId() == ID_ARRAY_DEF) {
         curname = fullname(prefix, name, p);
         // Do not add 'name' to avoid double adding
@@ -146,7 +141,7 @@ std::string Operation::fullname(const char *prefix, std::string name, GenObject 
             || p->getId() == ID_STRUCT_DEF
             || p->getId() == ID_VECTOR)) {
         curname = fullname(prefix, curname, obj->getParent());
-    } else if (obj->isReg()) {
+    } else if (obj->isReg() || obj->isNReg()) {
         curname = std::string(prefix) + "." + curname;
     }
     return curname;
@@ -274,7 +269,8 @@ std::string Operation::copyreg(const char *dst, const char *src, ModuleObject *m
     if (src) {
         t_src = std::string(src);
     }
-    if (!m->is2DimReg() && (t_src == "r" || t_src == "v" || t_src == "rin")) {
+    if (!m->is2DimReg() && (t_src == "r" || t_src == "v" || t_src == "rin"
+                        || t_src == "nr" || t_src == "nv" || t_src == "nrin")) {
         ret += Operation::addspaces();
         if (SCV_is_sysc()) {
             ret += std::string(dst) + " = " + t_src + ";\n";
@@ -286,7 +282,7 @@ std::string Operation::copyreg(const char *dst, const char *src, ModuleObject *m
             }
         }
     } else {
-        // reset each register separatly
+        // reset each register separatly (warning: not implemented for negedge clock!!)
         for (auto &p: m->getEntries()) {
             if (!p->isReg()) {
                 continue;

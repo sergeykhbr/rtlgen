@@ -68,6 +68,85 @@ std::string ModuleObject::generate_sv_pkg_localparam() {
     return ret;
 }
 
+std::string ModuleObject::generate_sv_pkg_reg_struct(bool negedge) {
+    std::string ret = "";
+    std::string ln = "";
+    std::string tstr;
+    int tcnt = 0;
+    bool twodim = false;
+
+    ret += "typedef struct {\n";
+    for (auto &p: entries_) {
+        if ((!p->isReg() && negedge == false)
+            || (!p->isNReg() && negedge == true)) {
+            continue;
+        }
+        ln = "    " + p->getType() + " " + p->getName();
+        if (p->getDepth()) {
+            twodim = true;
+            ln += "[0: " + p->getStrDepth() + " - 1]";
+        }
+        ln += ";";
+        if (p->getComment().size()) {
+            while (ln.size() < 60) {
+                ln += " ";
+            }
+            ln += "// " + p->getComment();
+        }
+        ret += ln + "\n";
+    }
+    ret += "} " + getType();
+    if (negedge == false) {
+        ret += "_registers;\n";
+    } else {
+        ret += "_nregisters;\n";
+    }
+    ret += "\n";
+
+    // Reset function only if no two-dimensial signals
+    tcnt = 0;
+    for (auto &p: entries_) {
+        if ((p->isReg() && negedge == false)
+            || (p->isNReg() && negedge == true)) {
+            tcnt++;
+        }
+    }
+    if (!twodim) {
+        if (negedge == false) {
+            ret += "const " + getType() + "_registers " + getType() + "_r_reset = '{\n";
+        } else {
+            ret += "const " + getType() + "_nregisters " + getType() + "_nr_reset = '{\n";
+        }
+        for (auto &p: entries_) {
+            if ((!p->isReg() && negedge == false)
+                || (!p->isNReg() && negedge == true)) {
+                continue;
+            }
+            ln = "    ";
+            tstr = p->getStrValue();    // to provide compatibility with gcc
+            if (p->isNumber(tstr) && p->getValue() == 0) {
+                if (p->getWidth() == 1) {
+                    ln += "1'b0";
+                } else {
+                    ln += "'0";
+                }
+            } else {
+                ln += p->getStrValue();
+            }
+            if (--tcnt) {
+                ln += ",";
+            }
+            while (ln.size() < 40) {
+                ln += " ";
+            }
+            ln += "// " + p->getName();
+            ret += ln + "\n";
+        }
+        ret += "};\n";
+        ret += "\n";
+    }
+    return ret;
+}
 
 std::string ModuleObject::generate_sv_pkg_struct() {
     std::string ret = "";
@@ -90,64 +169,10 @@ std::string ModuleObject::generate_sv_pkg_struct() {
     // Register structure definition
     bool twodim = false;        // if 2-dimensional register array, then do not use reset function
     if (isRegProcess() && isCombProcess()) {
-        ret += "typedef struct {\n";
-        for (auto &p: entries_) {
-            if (!p->isReg()) {
-                continue;
-            }
-            ln = "    " + p->getType() + " " + p->getName();
-            if (p->getDepth()) {
-                twodim = true;
-                ln += "[0: " + p->getStrDepth() + " - 1]";
-            }
-            ln += ";";
-            if (p->getComment().size()) {
-                while (ln.size() < 60) {
-                    ln += " ";
-                }
-                ln += "// " + p->getComment();
-            }
-            ret += ln + "\n";
-        }
-        ret += "} " + getType() + "_registers;\n";
-        ret += "\n";
-
-        // Reset function only if no two-dimensial signals
-        tcnt = 0;
-        for (auto &p: entries_) {
-            if (p->isReg()) {
-                tcnt++;
-            }
-        }
-        if (!twodim) {
-            ret += "const " + getType() + "_registers " + getType() + "_r_reset = '{\n";
-            for (auto &p: entries_) {
-                if (!p->isReg()) {
-                    continue;
-                }
-                ln = "    ";
-                tstr = p->getStrValue();    // to provide compatibility with gcc
-                if (p->isNumber(tstr) && p->getValue() == 0) {
-                    if (p->getWidth() == 1) {
-                        ln += "1'b0";
-                    } else {
-                        ln += "'0";
-                    }
-                } else {
-                    ln += p->getStrValue();
-                }
-                if (--tcnt) {
-                    ln += ",";
-                }
-                while (ln.size() < 40) {
-                    ln += " ";
-                }
-                ln += "// " + p->getName();
-                ret += ln + "\n";
-            }
-            ret += "};\n";
-            ret += "\n";
-        }
+        ret += generate_sv_pkg_reg_struct(false);
+    }
+    if (isNRegProcess() && isCombProcess()) {
+        ret += generate_sv_pkg_reg_struct(true);
     }
     return ret;
 }
@@ -248,11 +273,12 @@ std::string ModuleObject::generate_sv_mod_signals() {
     tcnt = 0;
     text = "";
     for (auto &p: getEntries()) {
-        if (p->isReg() || (p->getId() != ID_SIGNAL
-                        && p->getId() != ID_VALUE
-                        && p->getId() != ID_STRUCT_INST
-                        && p->getId() != ID_ARRAY_DEF
-                        && p->getId() != ID_VECTOR)) {
+        if (p->isReg() || p->isNReg()
+            || (p->getId() != ID_SIGNAL
+                && p->getId() != ID_VALUE
+                && p->getId() != ID_STRUCT_INST
+                && p->getId() != ID_ARRAY_DEF
+                && p->getId() != ID_VECTOR)) {
             if (p->getId() == ID_COMMENT) {
                 text += p->generate();
             } else {
@@ -296,6 +322,10 @@ std::string ModuleObject::generate_sv_mod_signals() {
         ret += getType() + "_registers r, rin;\n";
         tcnt++;
     }
+    if (isNRegProcess() && isCombProcess()) {
+        ret += getType() + "_nregisters nr, nrin;\n";
+        tcnt++;
+    }
     if (tcnt) {
         ret += "\n";
         tcnt = 0;
@@ -315,6 +345,9 @@ std::string ModuleObject::generate_sv_mod_proc(GenObject *proc) {
     tcnt = 0;
     if (isRegProcess()) {
         ret += "    " + getType() + "_registers v;\n";
+    }
+    if (isNRegProcess()) {
+        ret += "    " + getType() + "_nregisters nv;\n";
     }
 
     for (auto &e: proc->getEntries()) {
@@ -371,11 +404,21 @@ std::string ModuleObject::generate_sv_mod_proc(GenObject *proc) {
 
     if (tcnt) {
         ret += "\n";
+        tcnt = 0;
     }
     if (isRegProcess()) {
         Operation::set_space(1);
         ret += Operation::copyreg("v", "r", this);
+        tcnt++;
+    }
+    if (isNRegProcess()) {
+        Operation::set_space(1);
+        ret += Operation::copyreg("nv", "nr", this);
+        tcnt++;
+    }
+    if (tcnt) {
         ret += "\n";
+        tcnt = 0;
     }
 
     // Generate operations:
@@ -390,6 +433,9 @@ std::string ModuleObject::generate_sv_mod_proc(GenObject *proc) {
     if (isRegProcess()) {
         ret += "\n";
         ret += Operation::copyreg("rin", "v", this);
+    }
+    if (isNRegProcess()) {
+        ret += Operation::copyreg("nrin", "nv", this);
     }
     ret += "end: " + proc->getName() + "_proc\n";
     ret += "\n";

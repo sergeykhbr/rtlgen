@@ -147,12 +147,12 @@ class Tracer : public ModuleObject {
      public:
         MemopActionType(GenObject *parent, const char *name ="", int idx=-1, const char *comment="")
             : StructObject(parent, "MemopActionType", name, idx, comment),
-            store(this, "store", "1", "0=load;1=store"),
+            store(this, "store", "1", "0", "0=load;1=store"),
             size(this, "size", "2"),
             mask(this, "mask", "64"),
             memaddr(this, "memaddr", "64"),
             data(this, "data", "64"),
-            regaddr(this, "regaddr", "6", "writeback address"),
+            regaddr(this, "regaddr", "6", "0", "writeback address"),
             complete(this, "complete", "1"),
             sc_release(this, "sc_release", "1"),
             ignored(this, "ignored", "1") {}

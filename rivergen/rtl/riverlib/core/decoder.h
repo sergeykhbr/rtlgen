@@ -90,14 +90,14 @@ class InstrDecoder : public ModuleObject {
      public:
         DecoderDataType(GenObject *parent, const char *name="", int idx=-1, const char *comment="")
             : StructObject(parent, "DecoderDataType", name, idx, comment),
-        pc(this, "pc", "CFG_CPU_ADDR_BITS", "-1", false),
+        pc(this, "pc", "CFG_CPU_ADDR_BITS", "-1"),
         isa_type(this, "isa_type", "ISA_Total"),
         instr_vec(this, "instr_vec", "Instr_Total"),
-        instr(this, "instr", "32", "-1", false),
+        instr(this, "instr", "32", "-1"),
         memop_store(this, "memop_store", "1"),
         memop_load(this, "memop_load", "1"),
         memop_sign_ext(this, "memop_sign_ext", "1"),
-        memop_size(this, "memop_size", "2", "MEMOP_1B", false),
+        memop_size(this, "memop_size", "2", "MEMOP_1B"),
         unsigned_op(this, "unsigned_op", "1"),
         rv32(this, "rv32", "1"),
         f64(this, "f64", "1"),

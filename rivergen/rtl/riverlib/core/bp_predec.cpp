@@ -27,10 +27,10 @@ BpPreDecoder::BpPreDecoder(GenObject *parent, const char *name) :
     o_npc(this, "o_npc", "CFG_CPU_ADDR_BITS", "Fetching instruction pointer"),
     // Signals
     vb_npc(this, "vb_npc", "CFG_CPU_ADDR_BITS"),
-    v_jal(this, "v_jal", "1", "JAL instruction"),
-    v_branch(this, "v_branch", "1", "One of branch instructions (only negative offset)"),
-    v_c_j(this, "v_c_j", "1", "compressed J instruction"),
-    v_c_ret(this, "v_c_ret", "1", "compressed RET pseudo-instruction"),
+    v_jal(this, "v_jal", "1", "0", "JAL instruction"),
+    v_branch(this, "v_branch", "1", "0", "One of branch instructions (only negative offset)"),
+    v_c_j(this, "v_c_j", "1", "0", "compressed J instruction"),
+    v_c_ret(this, "v_c_ret", "1", "0", "compressed RET pseudo-instruction"),
     // process
     comb(this)
 {

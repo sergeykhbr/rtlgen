@@ -28,49 +28,98 @@ class jtagtap : public ModuleObject {
      public:
         CombProcess(GenObject* parent)
             : ProcObject(parent, "comb"),
-            vb_bus(this, "vb_bus", "CDC_REG_WIDTH") {
+            vb_dr(this, "vb_dr", "drlen"),
+            vb_stat(this, "vb_stat", "2"),
+            v_dmi_req_valid(this, "v_dmi_req_valid", "1"),
+            v_dmi_req_write(this, "v_dmi_req_write", "1"),
+            vb_dmi_req_data(this, "vb_dmi_req_data", "32"),
+            vb_dmi_req_addr(this, "vb_dmi_req_addr", "abits"),
+            v_dmi_reset(this, "v_dmi_reset", "1"),
+            v_dmi_hardreset(this, "v_dmi_hardreset", "1") {
         }
      public:
-        Logic vb_bus;
+        Logic vb_dr;
+        Logic vb_stat;
+        Logic v_dmi_req_valid;
+        Logic v_dmi_req_write;
+        Logic vb_dmi_req_data;
+        Logic vb_dmi_req_addr;
+        Logic v_dmi_reset;
+        Logic v_dmi_hardreset;
     };
 
     void proc_comb();
 
 public:
+    TmplParamLogic idcode;
+    TmplParamI32D abits;
+    TmplParamI32D drlen;
+    TmplParamI32D irlen;
     // Ports:
-    InPort i_clk;
-    InPort i_nrst;
-    TextLine _clk0_;
-    InPort i_dmi_req_valid;
-    InPort i_dmi_req_write;
-    InPort i_dmi_req_addr;
-    InPort i_dmi_req_data;
-    InPort i_dmi_reset;
-    InPort i_dmi_hardreset;
-    TextLine _clk1_;
-    InPort i_dmi_req_ready;
+    InPort i_trst;
+    InPort i_tck;
+    InPort i_tms;
+    InPort i_tdi;
+    OutPort o_tdo;
     OutPort o_dmi_req_valid;
     OutPort o_dmi_req_write;
     OutPort o_dmi_req_addr;
     OutPort o_dmi_req_data;
+    InPort i_dmi_resp_data;
+    InPort i_dmi_busy;
+    InPort i_dmi_error;
     OutPort o_dmi_reset;
     OutPort o_dmi_hardreset;
 
     // param
-    ParamI32D CDC_REG_WIDTH;
+    TextLine _ir0_;
+    ParamLogic IR_IDCODE;
+    ParamLogic IR_DTMCONTROL;
+    ParamLogic IR_DBUS;
+    ParamLogic IR_BYPASS;
+    TextLine _dmi0_;
+    ParamLogic DMISTAT_SUCCESS;
+    ParamLogic DMISTAT_RESERVED;
+    ParamLogic DMISTAT_FAILED;
+    ParamLogic DMISTAT_BUSY;
+    TextLine _dtm0_;
+    TextLine _dtm1_;
+    ParamI32D DTMCONTROL_DMIRESET;
+    ParamI32D DTMCONTROL_DMIHARDRESET;
+    TextLine _scan0_;
+    TextLine _scan1_;
+    ParamLogic RESET_TAP;
+    ParamLogic IDLE;
+    ParamLogic SELECT_DR_SCAN;
+    ParamLogic CAPTURE_DR;
+    ParamLogic SHIFT_DR;
+    ParamLogic EXIT1_DR;
+    ParamLogic PAUSE_DR;
+    ParamLogic EXIT2_DR;
+    ParamLogic UPDATE_DR;
+    ParamLogic SELECT_IR_SCAN;
+    ParamLogic CAPTURE_IR;
+    ParamLogic SHIFT_IR;
+    ParamLogic EXIT1_IR;
+    ParamLogic PAUSE_IR;
+    ParamLogic EXIT2_IR;
+    ParamLogic UPDATE_IR;
+
 
     // signals
 
     // regs
-    RegSignal l1;
-    RegSignal l2;
-    RegSignal req_valid;
-    RegSignal req_accepted;
-    RegSignal req_write;
-    RegSignal req_addr;
-    RegSignal req_data;
-    RegSignal req_reset;
-    RegSignal req_hardreset;
+    RegSignal state;
+    RegSignal tck;
+    RegSignal tms;
+    RegSignal tdi;
+    RegSignal dr_length;
+    RegSignal dr;
+    RegSignal bypass;
+    RegSignal datacnt;
+
+    NRegSignal ir;
+    NRegSignal dmi_addr;
 
     // process
     CombProcess comb;

@@ -119,13 +119,13 @@ class Processor : public ModuleObject {
      public:
         FetchType(GenObject *parent, const char *name="", const char *comment="")
             : StructObject(parent, "FetchType", name, -1, comment),
-            instr_load_fault(this, "instr_load_fault"),
-            instr_executable(this, "instr_executable"),
-            requested_pc(this, "requested_pc", "CFG_CPU_ADDR_BITS", "requested but responded address"),
-            fetching_pc(this, "fetching_pc", "CFG_CPU_ADDR_BITS", "receiving from cache before latch"),
+            instr_load_fault(this, "instr_load_fault", "1"),
+            instr_executable(this, "instr_executable", "1"),
+            requested_pc(this, "requested_pc", "CFG_CPU_ADDR_BITS", "0", "requested but responded address"),
+            fetching_pc(this, "fetching_pc", "CFG_CPU_ADDR_BITS", "0", "receiving from cache before latch"),
             pc(this, "pc", "CFG_CPU_ADDR_BITS"),
             instr(this, "instr", "64"),
-            imem_req_valid(this, "imem_req_valid"),
+            imem_req_valid(this, "imem_req_valid", "1"),
             imem_req_addr(this, "imem_req_addr", "CFG_CPU_ADDR_BITS"),
             imem_resp_ready(this, "imem_resp_ready", "1") {
         }
@@ -175,26 +175,26 @@ class Processor : public ModuleObject {
             : StructObject(parent, "InstructionDecodeType", name, -1, comment),
             pc(this, "pc", "CFG_CPU_ADDR_BITS"),
             instr(this, "instr", "32"),
-            memop_store(this, "memop_store"),
-            memop_load(this, "memop_load"),
-            memop_sign_ext(this, "memop_sign_ext"),
+            memop_store(this, "memop_store", "1"),
+            memop_load(this, "memop_load", "1"),
+            memop_sign_ext(this, "memop_sign_ext", "1"),
             memop_size(this, "memop_size", "2"),
-            rv32(this, "rv32", "1", "32-bits instruction"),
-            compressed(this, "compressed", "1", "C-extension"),
-            amo(this, "amo", "1", "A-extension"),
-            f64(this, "f64", "1", "D-extension (FPU)"),
-            unsigned_op(this, "unsigned_op", "1", "Unsigned operands"),
+            rv32(this, "rv32", "1", "0", "32-bits instruction"),
+            compressed(this, "compressed", "1", "0", "C-extension"),
+            amo(this, "amo", "1", "0", "A-extension"),
+            f64(this, "f64", "1", "0", "D-extension (FPU)"),
+            unsigned_op(this, "unsigned_op", "1", "0", "Unsigned operands"),
             isa_type(this, "isa_type", "ISA_Total"),
             instr_vec(this, "instr_vec", "Instr_Total"),
-            exception(this, "exception"),
-            instr_load_fault(this, "instr_load_fault"),
-            instr_executable(this, "instr_executable"),
+            exception(this, "exception", "1"),
+            instr_load_fault(this, "instr_load_fault", "1"),
+            instr_executable(this, "instr_executable", "1"),
             radr1(this, "radr1", "6"),
             radr2(this, "radr2", "6"),
             waddr(this, "waddr", "6"),
             csr_addr(this, "csr_addr", "12"),
             imm(this, "imm", "RISCV_ARCH"),
-            progbuf_ena(this, "progbuf_ena") {}
+            progbuf_ena(this, "progbuf_ena", "1") {}
      public:
         Signal pc;
         Signal instr;
@@ -224,37 +224,37 @@ class Processor : public ModuleObject {
      public:
         ExecuteType(GenObject *parent, const char *name="", const char *comment="")
             : StructObject(parent, "ExecuteType", name, -1, comment),
-        valid(this, "valid"),
+        valid(this, "valid", "1"),
         instr(this, "instr", "32"),
         pc(this, "pc", "CFG_CPU_ADDR_BITS"),
         npc(this, "npc", "CFG_CPU_ADDR_BITS"),
         radr1(this, "radr1", "6"),
         radr2(this, "radr2", "6"),
-        reg_wena(this, "reg_wena"),
+        reg_wena(this, "reg_wena", "1"),
         reg_waddr(this, "reg_waddr", "6"),
         reg_wtag(this, "reg_wtag", "CFG_REG_TAG_WIDTH"),
         reg_wdata(this, "reg_wdata", "RISCV_ARCH"),
-        csr_req_valid(this, "csr_req_valid", "1", "Access to CSR request"),
-        csr_req_type(this, "csr_req_type", "CsrReq_TotalBits", "Request type: [0]-read csr; [1]-write csr; [2]-change mode"),
-        csr_req_addr(this, "csr_req_addr", "12", "Requested CSR address"),
-        csr_req_data(this, "csr_req_data", "RISCV_ARCH", "CSR new value"),
-        csr_resp_ready(this, "csr_resp_ready", "1", "Executor is ready to accept response"),
-        memop_valid(this, "memop_valid"),
-        memop_debug(this, "memop_debug"),
-        memop_sign_ext(this, "memop_sign_ext"),
+        csr_req_valid(this, "csr_req_valid", "1", "0", "Access to CSR request"),
+        csr_req_type(this, "csr_req_type", "CsrReq_TotalBits", "0", "Request type: [0]-read csr; [1]-write csr; [2]-change mode"),
+        csr_req_addr(this, "csr_req_addr", "12", "0", "Requested CSR address"),
+        csr_req_data(this, "csr_req_data", "RISCV_ARCH", "0", "CSR new value"),
+        csr_resp_ready(this, "csr_resp_ready", "1", "0", "Executor is ready to accept response"),
+        memop_valid(this, "memop_valid", "1"),
+        memop_debug(this, "memop_debug", "1"),
+        memop_sign_ext(this, "memop_sign_ext", "1"),
         memop_type(this, "memop_type", "MemopType_Total"),
         memop_size(this, "memop_size", "2"),
         memop_addr(this, "memop_addr", "CFG_CPU_ADDR_BITS"),
         memop_wdata(this, "memop_wdata", "RISCV_ARCH"),
-        flushd(this, "flushd"),
-        flushi(this, "flushi"),
+        flushd(this, "flushd", "1"),
+        flushi(this, "flushi", "1"),
         flushi_addr(this, "flushi_addr", "CFG_CPU_ADDR_BITS"),
-        call(this, "call", "1", "pseudo-instruction CALL"),
-        ret(this, "ret", "1", "pseudo-instruction RET"),
-        jmp(this, "jmp", "1", "jump was executed"),
-        halted(this, "halted"),
-        dbg_mem_req_ready(this, "dbg_mem_req_ready"),
-        dbg_mem_req_error(this, "dbg_mem_req_error") {}
+        call(this, "call", "1", "0", "pseudo-instruction CALL"),
+        ret(this, "ret", "1", "0", "pseudo-instruction RET"),
+        jmp(this, "jmp", "1", "0", "jump was executed"),
+        halted(this, "halted", "1"),
+        dbg_mem_req_ready(this, "dbg_mem_req_ready", "1"),
+        dbg_mem_req_error(this, "dbg_mem_req_error", "1") {}
      public:
         Signal valid;
         Signal instr;
@@ -293,12 +293,12 @@ class Processor : public ModuleObject {
      public:
         MemoryType(GenObject *parent, const char *name="", const char *comment="")
             : StructObject(parent, "MemoryType", name, -1, comment),
-            memop_ready(this, "memop_ready"),
-            flushd(this, "flushd"),
+            memop_ready(this, "memop_ready", "1"),
+            flushd(this, "flushd", "1"),
             pc(this, "pc", "CFG_CPU_ADDR_BITS"),
-            valid(this, "valid"),
-            debug_valid(this, "debug_valid"),
-            mmu_ena(this, "mmu_ena"),
+            valid(this, "valid", "1"),
+            debug_valid(this, "debug_valid", "1"),
+            mmu_ena(this, "mmu_ena", "1"),
             req_data_valid(this, "req_data_valid", "1"),
             req_data_type(this, "req_data_type", "MemopType_Total"),
             req_data_addr(this, "req_data_addr", "CFG_CPU_ADDR_BITS"),
@@ -326,7 +326,7 @@ class Processor : public ModuleObject {
      public:
         WriteBackType(GenObject *parent, const char *name="", const char *comment="")
             : StructObject(parent, "WriteBackType", name, -1, comment),
-            wena(this, "wena"),
+            wena(this, "wena", "1"),
             waddr(this, "waddr", "6"),
             wdata(this, "wdata", "RISCV_ARCH"),
             wtag(this, "wtag", "CFG_REG_TAG_WIDTH") {}
@@ -346,8 +346,8 @@ class Processor : public ModuleObject {
         rdata2(this, "rdata2", "RISCV_ARCH"),
         rtag2(this, "rtag2", "CFG_REG_TAG_WIDTH"),
         dport_rdata(this, "dport_rdata", "RISCV_ARCH"),
-        ra(this, "ra", "RISCV_ARCH", "Return address"),
-        sp(this, "sp", "RISCV_ARCH", "Stack pointer") {}
+        ra(this, "ra", "RISCV_ARCH", "0", "Return address"),
+        sp(this, "sp", "RISCV_ARCH", "0", "Stack pointer") {}
      public:
         Signal rdata1;
         Signal rtag1;
@@ -362,21 +362,21 @@ class Processor : public ModuleObject {
      public:
         CsrType(GenObject *parent, const char *name="", const char *comment="")
             : StructObject(parent, "CsrType", name, -1, comment),
-        req_ready(this, "req_ready", "1", "CSR module is ready to accept request"),
-        resp_valid(this, "resp_valid", "1", "CSR module Response is valid"),
-        resp_data(this, "resp_data", "RISCV_ARCH", "Responded CSR data"),
-        resp_exception(this, "resp_exception", "1", "Exception of CSR access"),
-        flushi_ena(this, "flushi_ena", "1", "clear specified addr in ICache without execution of fence.i"),
+        req_ready(this, "req_ready", "1", "0", "CSR module is ready to accept request"),
+        resp_valid(this, "resp_valid", "1", "0", "CSR module Response is valid"),
+        resp_data(this, "resp_data", "RISCV_ARCH", "0", "Responded CSR data"),
+        resp_exception(this, "resp_exception", "1", "0", "Exception of CSR access"),
+        flushi_ena(this, "flushi_ena", "1", "0", "clear specified addr in ICache without execution of fence.i"),
         flushi_addr(this, "flushi_addr", "CFG_CPU_ADDR_BITS"),
-        executed_cnt(this, "executed_cnt", "64", "Number of executed instruction"),
-        irq_software(this, "irq_software"),
-        irq_timer(this, "irq_timer"),
-        irq_external(this, "irq_external"),
-        stack_overflow(this, "stack_overflow"),
-        stack_underflow(this, "stack_underflow"),
-        step(this, "step"),
-        progbuf_end(this, "progbuf_end"),
-        progbuf_error(this, "progbuf_error") {}
+        executed_cnt(this, "executed_cnt", "64", "0", "Number of executed instruction"),
+        irq_software(this, "irq_software", "1"),
+        irq_timer(this, "irq_timer", "1"),
+        irq_external(this, "irq_external", "1"),
+        stack_overflow(this, "stack_overflow", "1"),
+        stack_underflow(this, "stack_underflow", "1"),
+        step(this, "step", "1"),
+        progbuf_end(this, "progbuf_end", "1"),
+        progbuf_error(this, "progbuf_error", "1") {}
      public:
         Signal req_ready;
         Signal resp_valid;
@@ -399,23 +399,23 @@ class Processor : public ModuleObject {
      public:
         DebugType(GenObject *parent, const char *name="", const char *comment="")
             : StructObject(parent, "DebugType", name, -1, comment),
-        csr_req_valid(this, "csr_req_valid"),
+        csr_req_valid(this, "csr_req_valid", "1"),
         csr_req_type(this, "csr_req_type", "CsrReq_TotalBits"),
-        csr_req_addr(this, "csr_req_addr", "12", "Address of the sub-region register"),
+        csr_req_addr(this, "csr_req_addr", "12", "0", "Address of the sub-region register"),
         csr_req_data(this, "csr_req_data", "RISCV_ARCH"),
-        csr_resp_ready(this, "csr_resp_ready"),
+        csr_resp_ready(this, "csr_resp_ready", "1"),
         ireg_addr(this, "ireg_addr", "6"),
-        ireg_wdata(this, "ireg_wdata", "RISCV_ARCH", "Write data"),
-        ireg_ena(this, "ireg_ena", "1", "Region 1: Access to integer register bank is enabled"),
-        ireg_write(this, "ireg_write", "1", "Region 1: Integer registers bank write pulse"),
-        mem_req_valid(this, "mem_req_valid", "1", "Type 2: request is valid"),
-        mem_req_write(this, "mem_req_write", "1", "Type 2: is write"),
-        mem_req_addr(this, "mem_req_addr", "CFG_CPU_ADDR_BITS", "Type 2: Debug memory request"),
-        mem_req_size(this, "mem_req_size", "2", "Type 2: memory operation size: 0=1B; 1=2B; 2=4B; 3=8B"),
-        mem_req_wdata(this, "mem_req_wdata", "RISCV_ARCH", "Type 2: memory write data"),
-        progbuf_ena(this, "progbuf_ena", "1", "execute instruction from progbuf"),
-        progbuf_pc(this, "progbuf_pc", "CFG_CPU_ADDR_BITS", "progbuf instruction counter"),
-        progbuf_instr(this, "progbuf_instr", "64", "progbuf instruction to execute") {}
+        ireg_wdata(this, "ireg_wdata", "RISCV_ARCH", "0", "Write data"),
+        ireg_ena(this, "ireg_ena", "1", "0", "Region 1: Access to integer register bank is enabled"),
+        ireg_write(this, "ireg_write", "1", "0", "Region 1: Integer registers bank write pulse"),
+        mem_req_valid(this, "mem_req_valid", "1", "0", "Type 2: request is valid"),
+        mem_req_write(this, "mem_req_write", "1", "0", "Type 2: is write"),
+        mem_req_addr(this, "mem_req_addr", "CFG_CPU_ADDR_BITS", "0", "Type 2: Debug memory request"),
+        mem_req_size(this, "mem_req_size", "2", "0", "Type 2: memory operation size: 0=1B; 1=2B; 2=4B; 3=8B"),
+        mem_req_wdata(this, "mem_req_wdata", "RISCV_ARCH", "0", "Type 2: memory write data"),
+        progbuf_ena(this, "progbuf_ena", "1", "0", "execute instruction from progbuf"),
+        progbuf_pc(this, "progbuf_pc", "CFG_CPU_ADDR_BITS", "0", "progbuf instruction counter"),
+        progbuf_instr(this, "progbuf_instr", "64", "0", "progbuf instruction to execute") {}
      public:
         Signal csr_req_valid;
         Signal csr_req_type;
@@ -440,7 +440,7 @@ class Processor : public ModuleObject {
      public:
         BranchPredictorType(GenObject *parent, const char *name="", const char *comment="")
             : StructObject(parent, "BranchPredictorType", name, -1, comment),
-            f_valid(this, "f_valid"),
+            f_valid(this, "f_valid", "1"),
             f_pc(this, "f_pc", "CFG_CPU_ADDR_BITS") {}
      public:
         Signal f_valid;

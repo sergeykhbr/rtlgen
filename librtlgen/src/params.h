@@ -143,5 +143,17 @@ class ParamLogic : public Logic,
     }
 };
 
+class TmplParamLogic : public ParamLogic {
+ public:
+    TmplParamLogic(GenObject *parent, const char *width, const char *name,
+                   const char *val, const char *comment="")
+        : ParamLogic(parent, width, name, val, comment) {
+        id_ = ID_TMPL_PARAM;
+    }
+    virtual std::string generate() override {
+        return genparam(static_cast<GenValue *>(this));
+    }
+};
+
 
 }  // namespace sysvc

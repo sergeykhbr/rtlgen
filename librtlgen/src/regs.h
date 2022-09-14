@@ -37,7 +37,16 @@ class RegSignal : public Signal {
            const char *val="0", // reset value
            const char *comment="");
  protected:
-    
+};
+
+class NRegSignal : public Signal {
+ public:
+    NRegSignal(GenObject *parent,
+           const char *name,
+           const char *width,
+           const char *val="0", // reset value
+           const char *comment="");
+ protected:
 };
 
 }  // namespace sysvc

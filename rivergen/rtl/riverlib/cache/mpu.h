@@ -65,7 +65,7 @@ class MPU : public ModuleObject {
             : StructObject(parent, "MpuTableItemType", name, idx, comment),
             addr(this, "addr", "CFG_CPU_ADDR_BITS"),
             mask(this, "mask", "CFG_CPU_ADDR_BITS"),
-            flags(this, "flags", "CFG_MPU_FL_TOTAL", "-1", true, "Enable all regions by default") {
+            flags(this, "flags", "CFG_MPU_FL_TOTAL", "-1", "Enable all regions by default") {
         }
      public:
         Signal addr;

@@ -118,7 +118,6 @@ std::string FunctionObject::generate_sysc() {
     }
 
     ret += "}\n";
-    ret += "\n";
     return ret;
 }
 

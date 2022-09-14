@@ -287,10 +287,11 @@ std::string ModuleObject::generate_sysc_h() {
     // Signals list
     text = "";
     for (auto &p: getEntries()) {
-        if (p->isReg() || (p->getId() != ID_SIGNAL
-                        && p->getId() != ID_VALUE
-                        && p->getId() != ID_STRUCT_INST
-                        && p->getId() != ID_ARRAY_DEF)) {
+        if (p->isReg() || p->isNReg()
+            || (p->getId() != ID_SIGNAL
+                && p->getId() != ID_VALUE
+                && p->getId() != ID_STRUCT_INST
+                && p->getId() != ID_ARRAY_DEF)) {
             if (p->getId() == ID_COMMENT) {
                 text += "    " + p->generate();
             } else {
@@ -535,7 +536,7 @@ std::string ModuleObject::generate_sysc_vcd_entries(std::string name1, std::stri
     } else if (obj->getId() == ID_INPUT || obj->getId() == ID_OUTPUT) {
         ret += Operation::addspaces();
         ret += "sc_trace(o_vcd, " + obj->getName() + ", " + obj->getName() + ".name());\n";
-    } else if (obj->getId() == ID_ARRAY_DEF && obj->isReg()) {
+    } else if (obj->getId() == ID_ARRAY_DEF && (obj->isReg() || obj->isNReg())) {
         obj->setSelector(new I32D("0", "i"));
         name2 += "%d";
         ret += Operation::addspaces();
@@ -550,7 +551,7 @@ std::string ModuleObject::generate_sysc_vcd_entries(std::string name1, std::stri
         Operation::set_space(Operation::get_space() - 1);
         ret += Operation::addspaces();
         ret += "}\n";
-    } else if (obj->getId() == ID_SIGNAL && obj->isReg()) {
+    } else if (obj->getId() == ID_SIGNAL && (obj->isReg() || obj->isNReg())) {
         ret += Operation::addspaces();
         if (obj->getParent()->getId() == ID_ARRAY_DEF
             || obj->getParent()->getParent()->getId() == ID_ARRAY_DEF) {
@@ -929,6 +930,7 @@ std::string ModuleObject::generate_sysc_cpp() {
         }
         Operation::set_space(0);
         out += generate_sysc_func(p);
+        out += "\n";
     }
 
     // Process

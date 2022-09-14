@@ -74,7 +74,7 @@ RiverAmba::RiverAmba(GenObject *parent, const char *name) :
     resp_snoop_valid_o(this, "resp_snoop_valid_o", "1"),
     resp_snoop_data_o(this, "resp_snoop_data_o", "L1CACHE_LINE_BITS"),
     resp_snoop_flags_o(this, "resp_snoop_flags_o", "DTAG_FL_TOTAL"),
-    wb_ip(this, "wb_ip", "IRQ_PER_HART_TOTAL", "Interrupt pending bits"),
+    wb_ip(this, "wb_ip", "IRQ_PER_HART_TOTAL", "0", "Interrupt pending bits"),
     wb_xcfg(this, "wb_xcfg"),
     w_dporti_haltreq(this, "w_dporti_haltreq", "1"),
     w_dporti_resumereq(this, "w_dporti_resumereq", "1"),

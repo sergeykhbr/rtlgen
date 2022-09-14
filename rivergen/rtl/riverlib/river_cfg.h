@@ -159,6 +159,7 @@ class river_cfg : public FileObject {
             ret_("REQ_MEM_TYPE_BITS", "ret", "", this) {
             SETZERO(ret_);
         }
+        virtual std::string getType() override { return ret_.getType(); }
         virtual GenObject *getpReturn() override { return &ret_; }
      protected:
         Logic ret_;
@@ -173,6 +174,7 @@ class river_cfg : public FileObject {
             SETZERO(ret_);
             SETBIT(ret_, p->REQ_MEM_TYPE_CACHED, CONST("1"));
         }
+        virtual std::string getType() override { return ret_.getType(); }
         virtual GenObject *getpReturn() override { return &ret_; }
      protected:
         Logic ret_;
@@ -188,6 +190,7 @@ class river_cfg : public FileObject {
             SETBIT(ret_, p->REQ_MEM_TYPE_CACHED, CONST("1"));
             SETBIT(ret_, p->REQ_MEM_TYPE_UNIQUE, CONST("1"));
         }
+        virtual std::string getType() override { return ret_.getType(); }
         virtual GenObject *getpReturn() override { return &ret_; }
      protected:
         Logic ret_;
@@ -202,6 +205,7 @@ class river_cfg : public FileObject {
             SETZERO(ret_);
             SETBIT(ret_, p->REQ_MEM_TYPE_WRITE, CONST("1"));
         }
+        virtual std::string getType() override { return ret_.getType(); }
         virtual GenObject *getpReturn() override { return &ret_; }
      protected:
         Logic ret_;
@@ -218,6 +222,7 @@ class river_cfg : public FileObject {
             SETBIT(ret_, p->REQ_MEM_TYPE_CACHED, CONST("1"));
             SETBIT(ret_, p->REQ_MEM_TYPE_UNIQUE, CONST("1"));
         }
+        virtual std::string getType() override { return ret_.getType(); }
         virtual GenObject *getpReturn() override { return &ret_; }
      protected:
         Logic ret_;
@@ -233,6 +238,7 @@ class river_cfg : public FileObject {
             SETBIT(ret_, p->REQ_MEM_TYPE_WRITE, CONST("1"));
             SETBIT(ret_, p->REQ_MEM_TYPE_CACHED, CONST("1"));
         }
+        virtual std::string getType() override { return ret_.getType(); }
         virtual GenObject *getpReturn() override { return &ret_; }
      protected:
         Logic ret_;

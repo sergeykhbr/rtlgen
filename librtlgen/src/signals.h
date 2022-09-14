@@ -30,12 +30,6 @@ class Signal : public Logic {
            const char *name,
            const char *val,
            GenObject *parent,
-           bool usereg=false,
-           const char *comment="");
-
-    Signal(GenObject *parent,
-           const char *name,
-           const char *width="1",
            const char *comment="");
 
     Signal(GenObject *parent,
@@ -46,8 +40,7 @@ class Signal : public Logic {
     Signal(GenObject *parent,
            const char *name,
            const char *width,
-           const char *val,
-           bool usereg,
+           const char *val="0",
            const char *comment="");
 
     virtual std::string getType() override;

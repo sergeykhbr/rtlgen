@@ -40,6 +40,7 @@ class ModuleObject : public GenObject {
     virtual bool isAsyncReset();
     virtual bool isCombProcess();
     virtual bool isRegProcess();
+    virtual bool isNRegProcess();
     virtual bool is2DimReg();
     virtual bool isSubModules();
     virtual bool isFileValue();
@@ -49,6 +50,7 @@ class ModuleObject : public GenObject {
     virtual void getIoList(std::list<GenObject *> &genlist);
  protected:
     std::string generate_sv_pkg_localparam();
+    std::string generate_sv_pkg_reg_struct(bool negedge);
     std::string generate_sv_pkg_struct();
     std::string generate_sv_mod_genparam();     // generic parameters
     std::string generate_sv_mod_param_strings();
