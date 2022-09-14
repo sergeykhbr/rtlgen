@@ -62,5 +62,5 @@ jtagtap::jtagtap(GenObject *parent, const char *name) :
     proc_comb();
 }
 
-void jtagcdc::proc_comb() {
+void jtagtap::proc_comb() {
 }
