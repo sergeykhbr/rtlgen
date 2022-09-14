@@ -41,113 +41,174 @@ std::string FunctionObject::generate() {
 
 std::string FunctionObject::generate_sysc() {
     std::string ret = "";
-    if (isStatic()) {
-        ret += "static ";
-    }
-    if (getpReturn()) {
-        ret += getpReturn()->getType();
-    } else {
-        ret += "void";
-    }
-    ret += " ";
-    ret += getName();
-    ret += "(";
+    std::list<GenObject *> argslist;
+    int tcnt = 0;
+    
+    getArgsList(argslist);
 
-    // Compute total number of arguments
-    int argtotal = 0;
-    int argcnt = 0;
-    for (auto &a : entries_) {
-        if (a->getId() == ID_INPUT || a->getId() == ID_OUTPUT) {
-            argtotal++;
+    ret += getName() + "(";
+    if (argslist.size() == 1) {
+        for (auto &e: argslist) {
+            ret += e->getType() + " " + e->getName();
         }
-    }
-    // Generate list of arguments
-    for (auto &a : entries_) {
-        if (a->getId() == ID_INPUT || a->getId() == ID_OUTPUT) {
-            ret += "\n    " + a->generate();
-            if (++argcnt < argtotal) {
-                ret += ",";
+    } else if (argslist.size() > 1) {
+        Operation::set_space(Operation::get_space() + 2);
+        ret += "\n" + Operation::addspaces();
+        for (auto &e: argslist) {
+            ret += e->getType() + " " + e->getName();
+            if (e != argslist.back()) {
+                ret += ",\n" + Operation::addspaces();
             }
         }
+        Operation::set_space(Operation::get_space() - 2);
     }
-    ret += ")";
+    ret += ") {\n";
+    
+    // process variables declaration
+    if (isString()) {
+        ret += "    char tstr[256];\n";
+    }
+    tcnt = 0;
+    bool skiparg;
+    for (auto &e: getEntries()) {
+        skiparg = false;
+        for (auto &arg: argslist) {
+            if (e->getName() == arg->getName()) {
+                skiparg = true;
+                break;
+            }
+        }
+        if (skiparg) {
+            continue;
+        }
 
-    if (isStatic()) {
-        ret += " {\n";
-        for (auto &e: entries_) {
-            if (e->getId() != ID_VALUE) {
-                continue;
-            }
-            ret += "    " + e->getType() + " " + e->getName() + ";\n";
+        if (e->getId() == ID_VALUE) {
+            ret += "    " + e->getType() + " " + e->getName();
+            tcnt++;
+        } else if (e->getId() == ID_ARRAY_DEF) {
+            ret += "    " + e->getType() + " " + e->getName();
+            ret += "[";
+            ret += e->getStrDepth();
+            ret += "]";
+        } else if (e->getId() == ID_STRUCT_INST) {
+            ret += "    " + e->getType() + " " + e->getName();
+        } else {
+            continue;
         }
-        ret += "\n";
-        for (auto &e: entries_) {
-            if (e->getId() != ID_OPERATION) {
-                continue;
-            }
-            ret += e->generate();
-        }
-        if (getpReturn()) {
-            ret += "    return " + getpReturn()->getName() + ";\n";
-        }
-        ret += "}\n";
-    } else {
+        tcnt++;
         ret += ";\n";
     }
+    if (tcnt) {
+        ret += "\n";
+        tcnt = 0;
+    }
+
+    // Generate operations:
+    Operation::set_space(1);
+    for (auto &e: getEntries()) {
+        if (e->getId() != ID_OPERATION) {
+            continue;
+        }
+        ret += e->generate();
+    }
+
+    // return value
+    if (getpReturn()) {
+        ret += "    return " + getpReturn()->getName() + ";\n";
+    }
+
+    ret += "}\n";
+    ret += "\n";
     return ret;
 }
 
 
 std::string FunctionObject::generate_sysv() {
     std::string ret = "";
-    ret += "function automatic ";
-    if (getpReturn()) {
-        ret += getpReturn()->getType();
-    }
-    ret += " ";
-    ret += getName();
-    // Compute total number of arguments
-    int argtotal = 0;
-    int argcnt = 0;
-    for (auto &a : entries_) {
-        if (a->getId() == ID_INPUT || a->getId() == ID_OUTPUT) {
-            argtotal++;
+    std::list<GenObject *> argslist;
+    int tcnt = 0;
+    
+    getArgsList(argslist);
+
+    ret += getType() + " " + getName() + "(";
+    if (argslist.size() == 1) {
+        for (auto &e: argslist) {
+            ret += "input " + e->getType() + " " + e->getName();
         }
-    }
-    if (argtotal) {
-        ret += "(";
-    }
-    // Generate list of arguments
-    for (auto &a : entries_) {
-        if (a->getId() == ID_INPUT || a->getId() == ID_OUTPUT) {
-            ret += "\n    " + a->generate();
-            if (++argcnt < argtotal) {
-                ret += ",";
+    } else if (argslist.size() > 1) {
+        Operation::set_space(Operation::get_space() + 2);
+        ret += "\n" + Operation::addspaces();
+        for (auto &e: argslist) {
+            ret += "input " + e->getType() + " " + e->getName();
+            if (e != argslist.back()) {
+                ret += ",\n" + Operation::addspaces();
             }
         }
+        Operation::set_space(Operation::get_space() - 2);
     }
-    if (argtotal) {
-        ret += ")";
+    ret += ");\n";
+    
+    // process variables declaration
+    if (getpReturn()) {
+        ret += getpReturn()->getType() + " "
+            + getpReturn()->getName() + ";\n";
     }
-    ret += ";\n";
-    for (auto &e: entries_) {
-        if (e->getId() != ID_VALUE) {
+    ret += "begin\n";
+    tcnt = 0;
+    bool skiparg;
+    for (auto &e: getEntries()) {
+        skiparg = false;
+        for (auto &arg: argslist) {
+            if (e->getName() == arg->getName()) {
+                skiparg = true;
+                break;
+            }
+        }
+        if (e->getName() == getpReturn()->getName()) {
+            skiparg = true;
+        }
+        if (skiparg) {
             continue;
         }
-        ret += "    " + e->getType() + " " + e->getName() +";\n";
+
+        if (e->getId() == ID_VALUE) {
+            ret += "    " + e->getType() + " " + e->getName();
+            tcnt++;
+        } else if (e->getId() == ID_ARRAY_DEF) {
+            ret += "    " + e->getType() + " " + e->getName();
+            ret += "[";
+            ret += e->getStrDepth();
+            ret += "]";
+        } else if (e->getId() == ID_STRUCT_INST) {
+            ret += "    " + e->getType() + " " + e->getName();
+        } else {
+            continue;
+        }
+        tcnt++;
+        ret += ";\n";
+    }
+    if (tcnt) {
+        ret += "\n";
+        tcnt = 0;
     }
 
-    ret += "\n";
-    for (auto &e: entries_) {
+    // Generate operations:
+    Operation::set_space(1);
+    for (auto &e: getEntries()) {
         if (e->getId() != ID_OPERATION) {
             continue;
         }
         ret += e->generate();
     }
+
+    // return value
     if (getpReturn()) {
         ret += "    return " + getpReturn()->getName() + ";\n";
     }
-    ret += "endfunction\n";
+
+    ret += "end\n";
+    ret += "endfunction: " + getName() + "\n";
+    ret += "\n";
     return ret;
 }
 

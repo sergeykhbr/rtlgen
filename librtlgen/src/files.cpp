@@ -31,11 +31,6 @@ FileObject::FileObject(GenObject *parent,
 
 void FileObject::notifyAccess(std::string &file) {
     bool found = false;
-#if 1
-    if (file == "_generated/rtl/riverlib/core/proc") {
-        bool st = true;
-    }
-#endif
     for (auto &f: depfiles_) {
         if (f == file) {
             found = true;
@@ -217,6 +212,10 @@ void FileObject::generate_sysc() {
     Operation::set_space(0);
     for (auto &p: entries_) {
         if (p->getId() != ID_MODULE) {
+            if (p->getId() == ID_FUNCTION) {
+                // for global functions only
+                out += "static " + p->getType() + " ";
+            }
             out += p->generate();
             continue;
         }
@@ -226,6 +225,7 @@ void FileObject::generate_sysc() {
         if (genlist.size() == 0) {
             module_cpp = true;
         }
+        SCV_select_local(p->getType());
         out += static_cast<ModuleObject *>(p)->generate_sysc_h();
     }
     out += 
@@ -253,6 +253,7 @@ void FileObject::generate_sysc() {
         // module definition
         for (auto &p: entries_) {
             if (p->getId() == ID_MODULE) {
+                SCV_select_local(p->getType());
                 out += static_cast<ModuleObject *>(p)->generate_sysc_cpp();
             } else {
                 out += p->generate();
@@ -336,9 +337,13 @@ void FileObject::generate_sysv() {
                 // do not create package for template modules: queue, ram,  etc.
                 skip_pkg = true;
             } else {
+                SCV_select_local(mod->getType());
                 out += mod->generate_sv_pkg();
             }
         } else {
+            if (p->getId() == ID_FUNCTION) {
+                out += "function automatic ";
+            }
             out += p->generate();
         }
     }
@@ -365,6 +370,7 @@ void FileObject::generate_sysv() {
         for (auto &p: entries_) {
             if (p->getId() == ID_MODULE) {
                 is_module = true;
+                SCV_select_local(p->getType());
                 out += static_cast<ModuleObject *>(p)->generate_sv_mod();
             } else {
                 out += p->generate();

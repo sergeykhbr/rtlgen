@@ -33,6 +33,7 @@ GenObject::GenObject(GenObject *parent, const char *type, EIdType id,
     objDepth_ = 0;
     sel_ = 0;
     reg_ = false;
+    nreg_ = false;
     reset_disabled_ = false;
     vcd_enabled_ = true;
     type_ = std::string(type);

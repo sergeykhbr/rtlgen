@@ -953,85 +953,8 @@ std::string ModuleObject::generate_sysc_cpp() {
 
 std::string ModuleObject::generate_sysc_func(GenObject *func) {
     std::string ret = "";
-    std::list<GenObject *> argslist;
-    int tcnt = 0;
-    
-    static_cast<FunctionObject *>(func)->getArgsList(argslist);
-
-    ret += generate_sysc_template_f_name(func->getType().c_str());
-    ret += "::" + func->getName() + "(";
-    if (argslist.size() == 1) {
-        for (auto &e: argslist) {
-            ret += e->getType() + " " + e->getName();
-        }
-    } else if (argslist.size() > 1) {
-        Operation::set_space(Operation::get_space() + 2);
-        ret += "\n" + Operation::addspaces();
-        for (auto &e: argslist) {
-            ret += e->getType() + " " + e->getName();
-            if (e != argslist.back()) {
-                ret += ",\n" + Operation::addspaces();
-            }
-        }
-        Operation::set_space(Operation::get_space() - 2);
-    }
-    ret += ") {\n";
-    
-    // process variables declaration
-    if (func->isString()) {
-        ret += "    char tstr[256];\n";
-    }
-    tcnt = 0;
-    bool skiparg;
-    for (auto &e: func->getEntries()) {
-        skiparg = false;
-        for (auto &arg: argslist) {
-            if (e->getName() == arg->getName()) {
-                skiparg = true;
-                break;
-            }
-        }
-        if (skiparg) {
-            continue;
-        }
-
-        if (e->getId() == ID_VALUE) {
-            ret += "    " + e->getType() + " " + e->getName();
-            tcnt++;
-        } else if (e->getId() == ID_ARRAY_DEF) {
-            ret += "    " + e->getType() + " " + e->getName();
-            ret += "[";
-            ret += e->getStrDepth();
-            ret += "]";
-        } else if (e->getId() == ID_STRUCT_INST) {
-            ret += "    " + e->getType() + " " + e->getName();
-        } else {
-            continue;
-        }
-        tcnt++;
-        ret += ";\n";
-    }
-    if (tcnt) {
-        ret += "\n";
-        tcnt = 0;
-    }
-
-    // Generate operations:
-    Operation::set_space(1);
-    for (auto &e: func->getEntries()) {
-        if (e->getId() != ID_OPERATION) {
-            continue;
-        }
-        ret += e->generate();
-    }
-
-    // return value
-    if (static_cast<FunctionObject *>(func)->getpReturn()) {
-        ret += "    return " + static_cast<FunctionObject *>(func)->getpReturn()->getName() + ";\n";
-    }
-
-    ret += "}\n";
-    ret += "\n";
+    ret += generate_sysc_template_f_name(func->getType().c_str()) + "::";
+    ret += static_cast<FunctionObject *>(func)->generate();
     return ret;
 }
 

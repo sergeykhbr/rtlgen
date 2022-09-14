@@ -20,6 +20,7 @@
 #include "ic_dport.h"
 #include "dmidebug.h"
 #include "jtagcdc.h"
+#include "jtagtap.h"
 
 class dmi_folder : public FolderObject {
  public:
@@ -27,7 +28,8 @@ class dmi_folder : public FolderObject {
         FolderObject(parent, "dmi"),
         ic_dport_file_(this),
         dmidebug_file_(this),
-        jtagcdc_file_(this)
+        jtagcdc_file_(this),
+        jtagtap_file_(this)
         {}
 
  protected:
@@ -35,4 +37,5 @@ class dmi_folder : public FolderObject {
     ic_dport_file ic_dport_file_;
     dmidebug_file dmidebug_file_;
     jtagcdc_file jtagcdc_file_;
+    jtagtap_file jtagtap_file_;
 };

@@ -103,8 +103,10 @@ class GenObject {
     virtual GenObject *getItem() { return this; }
     virtual GenObject *getItem(int idx)  { return this; }
     virtual GenObject *getItem(const char *name);
-    virtual bool isReg() { return reg_; }
+    virtual bool isReg() { return reg_; }       // posedge clock
     virtual void setReg() { reg_ = true; }
+    virtual bool isNReg() { return nreg_; }     // negedge clock
+    virtual void setNReg() { nreg_ = true; }
     virtual void disableReset() { reset_disabled_ = true; }
     virtual bool isResetDisabled() { return reset_disabled_; }
     virtual void disableVcd() { vcd_enabled_ = false; }
@@ -136,7 +138,8 @@ class GenObject {
     GenObject *objDepth_;
 
     GenObject *sel_;        // selector when is array
-    bool reg_;              // Mark object (signal, value, port, structure) as a Flip-flop
+    bool reg_;              // Mark object (signal, value, port, structure) as a Flip-flop posedge clock
+    bool nreg_;             // Mark object (signal, value, port, structure) as a Flip-flop negedge clock
     bool reset_disabled_;   // register without reset (memory)
     bool vcd_enabled_;      // show instance in VCD trace file
     std::string comment_;
