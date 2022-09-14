@@ -627,6 +627,8 @@ TEXT();
         SETONE(comb.v_ret);
     ENDIF();
 
+TEXT();
+    SETVAL(comb.v_instr_executable, OR2(i_instr_executable, i_dbg_progbuf_ena));
     SETVAL(comb.v_mem_ex, ORx(4, &mem_ex_load_fault,
                                  &mem_ex_store_fault,
                                  &mem_ex_mpu_store,
@@ -636,7 +638,7 @@ TEXT();
                                     &i_unsup_exception,
                                     &i_instr_load_fault,
                                     &comb.v_mem_ex,
-                                    &INV(i_instr_executable),
+                                    &INV(comb.v_instr_executable),
                                     &stack_overflow,
                                     &stack_underflow,
                                     &comb.v_instr_misaligned,
@@ -666,7 +668,7 @@ TEXT();
         SETVAL(comb.vb_csr_cmd_type, cfg->CsrReq_ExceptionCmd);
         SETVAL(comb.vb_csr_cmd_addr, cfg->EXCEPTION_InstrMisalign, "Instruction address misaligned");
         SETVAL(comb.vb_csr_cmd_wdata, comb.mux.pc);
-    ELSIF (OR2(NZ(i_instr_load_fault), EZ(i_instr_executable)));
+    ELSIF (OR2(NZ(i_instr_load_fault), EZ(comb.v_instr_executable)));
         SETVAL(comb.vb_csr_cmd_type, cfg->CsrReq_ExceptionCmd);
         SETVAL(comb.vb_csr_cmd_addr, cfg->EXCEPTION_InstrFault, "Instruction access fault");
         SETVAL(comb.vb_csr_cmd_wdata, comb.mux.pc);

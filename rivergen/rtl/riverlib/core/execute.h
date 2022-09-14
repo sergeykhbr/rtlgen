@@ -108,6 +108,7 @@ class InstrExecute : public ModuleObject {
             v_memop_debug(this, "v_memop_debug", "1"),
             v_reg_ena(this, "v_reg_ena", "1"),
             vb_reg_waddr(this, "vb_reg_waddr", "6"),
+            v_instr_executable(this, "v_instr_executable", "1"),
             v_instr_misaligned(this, "v_instr_misaligned", "1"),
             v_store_misaligned(this, "v_store_misaligned", "1"),
             v_load_misaligned(this, "v_load_misaligned", "1"),
@@ -172,6 +173,7 @@ class InstrExecute : public ModuleObject {
         Logic v_memop_debug;
         Logic v_reg_ena;
         Logic vb_reg_waddr;
+        Logic v_instr_executable;
         Logic v_instr_misaligned;
         Logic v_store_misaligned;
         Logic v_load_misaligned;
