@@ -53,8 +53,8 @@ class jtagtap : public ModuleObject {
 public:
     TmplParamLogic idcode;
     TmplParamI32D abits;
-    TmplParamI32D drlen;
     TmplParamI32D irlen;
+    ParamI32D drlen;
     // Ports:
     InPort i_trst;
     InPort i_tck;

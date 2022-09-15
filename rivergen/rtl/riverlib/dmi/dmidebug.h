@@ -19,6 +19,8 @@
 #include <api.h>
 #include "../river_cfg.h"
 #include "../types_river.h"
+#include "jtagcdc.h"
+#include "jtagtap.h"
 
 using namespace sysvc;
 
@@ -30,6 +32,7 @@ class dmidebug : public ModuleObject {
      public:
         CombProcess(GenObject* parent)
             : ProcObject(parent, "comb"),
+            v_bus_req_ready(this, "v_bus_req_ready", "1"),
             vb_req_type(this, "vb_req_type", "DPortReq_Total"),
             vb_resp_data(this, "vb_resp_data", "32"),
             vb_hartselnext(this, "vb_hartselnext", "CFG_LOG2_CPU_MAX"),
@@ -37,11 +40,13 @@ class dmidebug : public ModuleObject {
             hsel("0", "hsel", this),
             v_cmd_busy(this, "v_cmd_busy", "1"),
             v_cdc_dmi_req_ready(this, "v_cdc_dmi_req_ready", "1"),
-            vb_datainc(this, "vb_datainc", "64"),
+            vb_arg1(this, "vb_arg1", "64"),
             t_command(this, "t_command", "32"),
-            t_progbuf(this, "t_progbuf", "MUL(32,CFG_PROGBUF_REG_TOTAL)") {
+            t_progbuf(this, "t_progbuf", "MUL(32,CFG_PROGBUF_REG_TOTAL)"),
+            t_idx("0", "t_idx", this) {
         }
      public:
+        Logic v_bus_req_ready;
         Logic vb_req_type;
         Logic vb_resp_data;
         Logic vb_hartselnext;
@@ -49,22 +54,34 @@ class dmidebug : public ModuleObject {
         I32D hsel;
         Logic v_cmd_busy;
         Logic v_cdc_dmi_req_ready;
-        Logic vb_datainc;
+        Logic vb_arg1;
         Logic t_command;
         Logic t_progbuf;
+        I32D t_idx;
     };
 
     void proc_comb();
 
 public:
     // Ports:
+    InPort i_clk;
+    InPort i_nrst;
+    TextLine _jtag0_;
     InPort i_trst;
     InPort i_tck;
     InPort i_tms;
     InPort i_tdi;
     OutPort o_tdo;
-    InPort i_clk;
-    InPort i_nrst;
+    TextLine _bus0_;
+    InPort i_bus_req_valid;
+    OutPort o_bus_req_ready;
+    InPort i_bus_req_addr;
+    InPort i_bus_req_write;
+    InPort i_bus_req_wdata;
+    OutPort o_bus_resp_valid;
+    InPort i_bus_resp_ready;
+    OutPort o_bus_resp_rdata;
+    TextLine _dmi0_;
     OutPort o_ndmreset;
     InPort i_halted;
     InPort i_available;
@@ -127,7 +144,9 @@ public:
     Signal w_jtag_dmi_error;
 
     // regs
+    RegSignal bus_jtag;
     RegSignal jtag_resp_data;
+    RegSignal bus_resp_data;
     RegSignal regidx;
     RegSignal wdata;
     RegSignal regwr;
@@ -164,9 +183,13 @@ public:
     RegSignal dport_wdata;
     RegSignal dport_size;
     RegSignal dport_resp_ready;
+    RegSignal bus_resp_valid;
 
     // process
     CombProcess comb;
+    // sub-modules:
+    jtagcdc cdc;
+    jtagtap tap;
 };
 
 class dmidebug_file : public FileObject {

@@ -19,13 +19,24 @@
 dmidebug::dmidebug(GenObject *parent, const char *name) :
     ModuleObject(parent, "dmidebug", name),
     // Ports
+    i_clk(this, "i_clk", "1"),
+    i_nrst(this, "i_nrst", "1", "full reset including dmi (usually via reset button)"),
+    _jtag0_(this, "JTAG interface:"),
     i_trst(this, "i_trst", "1", "Test reset: must be open-drain, pullup"),
     i_tck(this, "i_tck", "1", "Test Clock"),
     i_tms(this, "i_tms", "1", "Test Mode State"),
     i_tdi(this, "i_tdi", "1", "Test Data Input"),
     o_tdo(this, "o_tdo", "1", "Test Data Output"),
-    i_clk(this, "i_clk", "1"),
-    i_nrst(this, "i_nrst", "1", "full reset including dmi (usually via reset button)"),
+    _bus0_(this, "Bus interface (APB):"),
+    i_bus_req_valid(this, "i_bus_req_valid", "1"),
+    o_bus_req_ready(this, "o_bus_req_ready", "1"),
+    i_bus_req_addr(this, "i_bus_req_addr", "7"),
+    i_bus_req_write(this, "i_bus_req_write", "1"),
+    i_bus_req_wdata(this, "i_bus_req_wdata", "32"),
+    o_bus_resp_valid(this, "o_bus_resp_valid", "1"),
+    i_bus_resp_ready(this, "i_bus_resp_ready", "1"),
+    o_bus_resp_rdata(this, "o_bus_resp_rdata", "32"),
+    _dmi0_(this, "DMI interface:"),
     o_ndmreset(this, "o_ndmreset", "1", "system reset: cores + peripheries (except dmi itself)"),
     i_halted(this, "i_halted", "CFG_CPU_MAX", "Halted cores"),
     i_available(this, "i_available", "CFG_CPU_MAX", "Existing and available cores"),
@@ -85,7 +96,9 @@ dmidebug::dmidebug(GenObject *parent, const char *name) :
     w_jtag_dmi_busy(this, "w_jtag_dmi_busy", "1"),
     w_jtag_dmi_error(this, "w_jtag_dmi_error", "1"),
     // registers
+    bus_jtag(this, "bus_jtag", "1"),
     jtag_resp_data(this, "jtag_resp_data", "32"),
+    bus_resp_data(this, "bus_resp_data", "32"),
     regidx(this, "regidx", "7"),
     wdata(this, "wdata", "32"),
     regwr(this, "regwr", "1"),
@@ -122,10 +135,47 @@ dmidebug::dmidebug(GenObject *parent, const char *name) :
     dport_wdata(this, "dport_wdata", "RISCV_ARCH"),
     dport_size(this, "dport_size", "3"),
     dport_resp_ready(this, "dport_resp_ready", "1"),
-    comb(this)
+    bus_resp_valid(this, "bus_resp_valid", "1"),
+    comb(this),
+    cdc(this, "cdc"),
+    tap(this, "tap")
 {
     Operation::start(this);
 
+    NEW(tap, tap.getName().c_str());
+        CONNECT(tap, 0, tap.i_trst, i_trst);
+        CONNECT(tap, 0, tap.i_tck, i_tck);
+        CONNECT(tap, 0, tap.i_tms, i_tms);
+        CONNECT(tap, 0, tap.i_tdi, i_tdi);
+        CONNECT(tap, 0, tap.o_tdo, o_tdo);
+        CONNECT(tap, 0, tap.o_dmi_req_valid, w_tap_dmi_req_valid);
+        CONNECT(tap, 0, tap.o_dmi_req_write, w_tap_dmi_req_write);
+        CONNECT(tap, 0, tap.o_dmi_req_addr, wb_tap_dmi_req_addr);
+        CONNECT(tap, 0, tap.o_dmi_req_data, wb_tap_dmi_req_data);
+        CONNECT(tap, 0, tap.i_dmi_resp_data, wb_jtag_dmi_resp_data);
+        CONNECT(tap, 0, tap.i_dmi_busy, w_jtag_dmi_busy);
+        CONNECT(tap, 0, tap.i_dmi_error, w_jtag_dmi_error);
+        CONNECT(tap, 0, tap.o_dmi_reset, w_tap_dmi_reset);
+        CONNECT(tap, 0, tap.o_dmi_hardreset, w_tap_dmi_hardreset);
+    ENDNEW();
+
+    NEW(cdc, cdc.getName().c_str());
+        CONNECT(cdc, 0, cdc.i_nrst, i_nrst);
+        CONNECT(cdc, 0, cdc.i_clk, i_clk);
+        CONNECT(cdc, 0, cdc.i_dmi_req_valid, w_tap_dmi_req_valid);
+        CONNECT(cdc, 0, cdc.i_dmi_req_write, w_tap_dmi_req_write);
+        CONNECT(cdc, 0, cdc.i_dmi_req_addr, wb_tap_dmi_req_addr);
+        CONNECT(cdc, 0, cdc.i_dmi_req_data, wb_tap_dmi_req_data);
+        CONNECT(cdc, 0, cdc.i_dmi_reset, w_tap_dmi_reset);
+        CONNECT(cdc, 0, cdc.i_dmi_hardreset, w_tap_dmi_hardreset);
+        CONNECT(cdc, 0, cdc.o_dmi_req_valid, w_cdc_dmi_req_valid);
+        CONNECT(cdc, 0, cdc.i_dmi_req_ready, w_cdc_dmi_req_ready);
+        CONNECT(cdc, 0, cdc.o_dmi_req_write, w_cdc_dmi_req_write);
+        CONNECT(cdc, 0, cdc.o_dmi_req_addr, wb_cdc_dmi_req_addr);
+        CONNECT(cdc, 0, cdc.o_dmi_req_data, wb_cdc_dmi_req_data);
+        CONNECT(cdc, 0, cdc.o_dmi_reset, w_cdc_dmi_reset);
+        CONNECT(cdc, 0, cdc.o_dmi_hardreset, w_cdc_dmi_hardreset);
+    ENDNEW();
 
     Operation::start(&comb);
     proc_comb();
@@ -137,8 +187,10 @@ void dmidebug::proc_comb() {
     SETVAL(comb.vb_hartselnext, BITS(wdata, DEC(ADD2(CONST("16"), cfg->CFG_LOG2_CPU_MAX)), CONST("16")));
     SETVAL(comb.hsel, TO_INT(hartsel));
     SETVAL(comb.v_cmd_busy, OR_REDUCE(cmdstate));
+    SETVAL(comb.vb_arg1, CC2(data3, data2));
     SETVAL(comb.t_command, command);
     SETVAL(comb.t_progbuf, progbuf_data);
+    SETVAL(comb.t_idx, TO_INT(BITS(regidx, 3, 0)));
 
 TEXT();
     IF (NZ(AND2_L(haltreq, BIT(i_halted, comb.hsel))));
@@ -152,13 +204,23 @@ TEXT();
 TEXT();
     SWITCH (dmstate);
     CASE(DM_STATE_IDLE);
+        SETONE(comb.v_bus_req_ready);
         IF (NZ(w_cdc_dmi_req_valid));
+            SETZERO(comb.v_bus_req_ready);
             SETONE(comb.v_cdc_dmi_req_ready);
+            SETONE(bus_jtag);
             SETVAL(dmstate, DM_STATE_ACCESS);
             SETVAL(regidx, wb_cdc_dmi_req_addr);
             SETVAL(wdata, wb_cdc_dmi_req_data);
             SETVAL(regwr, w_cdc_dmi_req_write);
             SETVAL(regrd, INV_L(w_cdc_dmi_req_write));
+        ELSIF (NZ(i_bus_req_valid));
+            SETZERO(bus_jtag);
+            SETVAL(dmstate, DM_STATE_ACCESS);
+            SETVAL(regidx, i_bus_req_addr);
+            SETVAL(wdata, i_bus_req_wdata);
+            SETVAL(regwr, i_bus_req_write);
+            SETVAL(regrd, INV(i_bus_req_write));
         ENDIF();
     ENDCASE();
     CASE(DM_STATE_ACCESS);
@@ -298,12 +360,12 @@ TEXT();
                 SETVAL(autoexecprogbuf, BITS(wdata, DEC(ADD2(CONST("16"), cfg->CFG_PROGBUF_REG_TOTAL)), CONST("16")));
             ENDIF();
         ELSIF (EQ(BITS(regidx, 6, 4), CONST("0x02", 3)), "progbuf[n]");
-            SETVAL(comb.vb_resp_data, BIG_TO_U64(BITSW(progbuf_data, MUL2(CONST("32"), TO_INT(BITS(regidx, 3, 0))), CONST("32"))));
+            SETVAL(comb.vb_resp_data, BIG_TO_U64(BITSW(progbuf_data, MUL2(CONST("32"), comb.t_idx), CONST("32"))));
             IF (NZ(regwr));
-                SETBITSW(comb.t_progbuf, MUL2(CONST("32"), TO_INT(BITS(regidx, 3, 0))), CONST("32"), wdata);
+                SETBITSW(comb.t_progbuf, MUL2(CONST("32"), comb.t_idx), CONST("32"), wdata);
                 SETVAL(progbuf_data, comb.t_progbuf);
             ENDIF();
-            IF (ANDx(2, &NZ(BIT(autoexecprogbuf, TO_INT(BITS(regidx, 3, 0)))),
+            IF (ANDx(2, &NZ(BIT(autoexecprogbuf, comb.t_idx)),
                         &EQ(cmderr, CMDERR_NONE)));
                 IF (NZ(comb.v_cmd_busy));
                     SETVAL(cmderr, CMDERR_BUSY);
@@ -429,22 +491,22 @@ TEXT();
                     TEXT("Memory access command");
                     SWITCH (BITS(command, 22, 20), "aamsize");
                     CASE(CONST("0", 3));
-                        SETVAL(comb.vb_datainc, ADD2(CC2(data3, data2), CONST("1", 64)));
+                        SETVAL(comb.vb_arg1, ADD2(comb.vb_arg1, CONST("1", 64)));
                         ENDCASE();
                     CASE(CONST("1", 3));
-                        SETVAL(comb.vb_datainc, ADD2(CC2(data3, data2), CONST("2", 64)));
+                        SETVAL(comb.vb_arg1, ADD2(comb.vb_arg1, CONST("2", 64)));
                         ENDCASE();
                     CASE(CONST("2", 3));
-                        SETVAL(comb.vb_datainc, ADD2(CC2(data3, data2), CONST("4", 64)));
+                        SETVAL(comb.vb_arg1, ADD2(comb.vb_arg1, CONST("4", 64)));
                         ENDCASE();
                     CASE(CONST("3", 3));
-                        SETVAL(comb.vb_datainc, ADD2(CC2(data3, data2), CONST("8", 64)));
+                        SETVAL(comb.vb_arg1, ADD2(comb.vb_arg1, CONST("8", 64)));
                         ENDCASE();
                     CASEDEF();
                         ENDCASE();
                     ENDSWITCH();
-                    SETVAL(data3, BITS(comb.vb_datainc, 63, 32));
-                    SETVAL(data2, BITS(comb.vb_datainc, 31, 0));
+                    SETVAL(data3, BITS(comb.vb_arg1, 63, 32));
+                    SETVAL(data2, BITS(comb.vb_arg1, 31, 0));
                 ENDIF();
             ENDIF();
             IF (NZ(i_dport_resp_error));
@@ -487,10 +549,21 @@ TEXT();
         ENDCASE();
     ENDSWITCH();
 
+TEXT();
     IF (NZ(comb.v_resp_valid));
-        SETVAL(jtag_resp_data, comb.vb_resp_data);
+        IF (EZ(bus_jtag));
+            SETVAL(bus_resp_data, comb.vb_resp_data);
+        ELSE();
+            SETVAL(jtag_resp_data, comb.vb_resp_data);
+        ENDIF();
+    ENDIF();
+    IF (AND2(NZ(comb.v_resp_valid), EZ(bus_jtag)));
+        SETONE(bus_resp_valid);
+    ELSIF (NZ(i_bus_resp_ready));
+        SETZERO(bus_resp_valid);
     ENDIF();
 
+TEXT();
     SETBIT(comb.vb_req_type, cfg->DPortReq_Write, cmd_write);
     SETBIT(comb.vb_req_type, cfg->DPortReq_RegAccess, cmd_regaccess);
     SETBIT(comb.vb_req_type, cfg->DPortReq_MemAccess, cmd_memaccess);
@@ -522,4 +595,8 @@ TEXT();
     SETZERO(w_jtag_dmi_busy, "|r.dmstate");
     SETZERO(w_jtag_dmi_error);
 
+TEXT();
+    SETVAL(o_bus_req_ready, comb.v_bus_req_ready);
+    SETVAL(o_bus_resp_valid, bus_resp_valid);
+    SETVAL(o_bus_resp_rdata, bus_resp_data);
 }

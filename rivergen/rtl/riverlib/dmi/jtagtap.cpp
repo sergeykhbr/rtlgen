@@ -20,7 +20,6 @@ jtagtap::jtagtap(GenObject *parent, const char *name) :
     ModuleObject(parent, "jtagtap", name),
     idcode(this, "32", "idcode", "0x10e31913"),
     abits(this, "abits", "7"),
-    drlen(this, "drlen", "ADD(ADD(abits,32),2)"),
     irlen(this, "irlen", "5"),
     // Ports
     i_trst(this, "i_trst", "1", "Must be open-train, pullup"),
@@ -39,10 +38,11 @@ jtagtap::jtagtap(GenObject *parent, const char *name) :
     o_dmi_hardreset(this, "o_dmi_hardreset", "1"),
     // param
     _ir0_(this),
-    IR_IDCODE(this, "5", "IR_IDCODE", "0x01"),
-    IR_DTMCONTROL(this, "5", "IR_DTMCONTROL", "0x10"),
-    IR_DBUS(this, "5", "IR_DBUS", "0x11"),
-    IR_BYPASS(this, "5", "IR_BYPASS", "0x1f"),
+    drlen(this, "drlen", "ADD(ADD(abits,32),2)"),
+    IR_IDCODE(this, "irlen", "IR_IDCODE", "0x01"),
+    IR_DTMCONTROL(this, "irlen", "IR_DTMCONTROL", "0x10"),
+    IR_DBUS(this, "irlen", "IR_DBUS", "0x11"),
+    IR_BYPASS(this, "irlen", "IR_BYPASS", "0x1f"),
     _dmi0_(this),
     DMISTAT_SUCCESS(this, "2", "DMISTAT_SUCCESS", "0x0"),
     DMISTAT_RESERVED(this, "2", "DMISTAT_RESERVED", "0x1"),
