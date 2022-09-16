@@ -531,10 +531,12 @@ TEXT();
     SETBIT(comb.vb_select, Res_Reg2, ORx(2, &BIT(comb.mux.memop_type, cfg->MemopType_Store),
                                             &BIT(comb.wv, "Instr_LUI")));
     SETBITZERO(comb.vb_select, Res_Npc);
-    SETBIT(comb.vb_select, Res_Ra, ORx(5, &comb.v_pc_branch,
+    SETBIT(comb.vb_select, Res_Ra, ORx(7, &comb.v_pc_branch,
                                           &BIT(comb.wv, "Instr_JAL"),
                                           &BIT(comb.wv, "Instr_JALR"),
                                           &BIT(comb.wv, "Instr_MRET"),
+                                          &BIT(comb.wv, "Instr_HRET"),
+                                          &BIT(comb.wv, "Instr_SRET"),
                                           &BIT(comb.wv, "Instr_URET")));
     SETBIT(comb.vb_select, Res_Csr, ORx(6, &BIT(comb.wv, "Instr_CSRRC"),
                                            &BIT(comb.wv, "Instr_CSRRCI"),
@@ -627,7 +629,7 @@ TEXT();
                                  &mem_ex_store_fault,
                                  &mem_ex_mpu_store,
                                  &mem_ex_mpu_load));
-    SETVAL(comb.v_csr_cmd_ena, ORx(25, &i_haltreq,
+    SETVAL(comb.v_csr_cmd_ena, ORx(27, &i_haltreq,
                                     &AND2(i_step, stepdone),
                                     &i_unsup_exception,
                                     &i_instr_load_fault,
@@ -645,6 +647,8 @@ TEXT();
                                     &BIT(comb.wv, "Instr_EBREAK"),
                                     &BIT(comb.wv, "Instr_ECALL"),
                                     &BIT(comb.wv, "Instr_MRET"),
+                                    &BIT(comb.wv, "Instr_HRET"),
+                                    &BIT(comb.wv, "Instr_SRET"),
                                     &BIT(comb.wv, "Instr_URET"),
                                     &BIT(comb.wv, "Instr_CSRRC"),
                                     &BIT(comb.wv, "Instr_CSRRCI"),
@@ -713,6 +717,12 @@ TEXT();
     ELSIF (NZ(BIT(comb.wv, "Instr_MRET")));
         SETVAL(comb.vb_csr_cmd_type, cfg->CsrReq_TrapReturnCmd);
         SETVAL(comb.vb_csr_cmd_addr, cfg->PRV_M);
+    ELSIF (NZ(BIT(comb.wv, "Instr_HRET")));
+        SETVAL(comb.vb_csr_cmd_type, cfg->CsrReq_TrapReturnCmd);
+        SETVAL(comb.vb_csr_cmd_addr, cfg->PRV_H);
+    ELSIF (NZ(BIT(comb.wv, "Instr_SRET")));
+        SETVAL(comb.vb_csr_cmd_type, cfg->CsrReq_TrapReturnCmd);
+        SETVAL(comb.vb_csr_cmd_addr, cfg->PRV_S);
     ELSIF (NZ(BIT(comb.wv, "Instr_URET")));
         SETVAL(comb.vb_csr_cmd_type, cfg->CsrReq_TrapReturnCmd);
         SETVAL(comb.vb_csr_cmd_addr, cfg->PRV_U);
@@ -1129,10 +1139,12 @@ TEXT();
         ENDIF();
         SETVAL(call, comb.v_call);
         SETVAL(ret, comb.v_ret);
-        SETVAL(jmp, ORx(5, &comb.v_pc_branch,
+        SETVAL(jmp, ORx(7, &comb.v_pc_branch,
                            &BIT(comb.wv, "Instr_JAL"),
                            &BIT(comb.wv, "Instr_JALR"),
                            &BIT(comb.wv, "Instr_MRET"),
+                           &BIT(comb.wv, "Instr_HRET"),
+                           &BIT(comb.wv, "Instr_SRET"),
                            &BIT(comb.wv, "Instr_URET")));
         SETVAL(res_npc, comb.vb_prog_npc);
         SETVAL(res_ra, comb.vb_npc_incr);

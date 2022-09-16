@@ -54,6 +54,14 @@ Workgroup::Workgroup(GenObject *parent, const char *name) :
     wb_dport_o(this, "wb_dport_o"),
     wb_halted(this, "wb_halted", "CFG_CPU_MAX"),
     wb_available(this, "wb_available", "CFG_CPU_MAX"),
+    w_pdmi_req_valid(this, "w_pdmi_req_valid", "1"),
+    w_pdmi_req_ready(this, "w_pdmi_req_ready", "1"),
+    wb_pdmi_req_addr(this, "wb_pdmi_req_addr", "7"),
+    w_pdmi_req_write(this, "w_pdmi_req_write", "1"),
+    wb_pdmi_req_wdata(this, "wb_pdmi_req_wdata", "32"),
+    w_pdmi_resp_valid(this, "w_pdmi_resp_valid", "1"),
+    w_pdmi_resp_ready(this, "w_pdmi_resp_ready", "1"),
+    wb_pdmi_resp_rdata(this, "wb_pdmi_resp_rdata", "32"),
     wb_dmi_hartsel(this, "wb_dmi_hartsel", "CFG_LOG2_CPU_MAX"),
     w_dmi_haltreq(this, "w_dmi_haltreq", "1"),
     w_dmi_resumereq(this, "w_dmi_resumereq", "1"),
@@ -89,13 +97,21 @@ Workgroup::Workgroup(GenObject *parent, const char *name) :
 
     // Create and connet Sub-modules:
     NEW(dmi0, dmi0.getName().c_str());
+        CONNECT(dmi0, 0, dmi0.i_clk, i_clk);
+        CONNECT(dmi0, 0, dmi0.i_nrst, i_dmi_nrst);
         CONNECT(dmi0, 0, dmi0.i_trst, i_trst);
         CONNECT(dmi0, 0, dmi0.i_tck, i_tck);
         CONNECT(dmi0, 0, dmi0.i_tms, i_tck);
         CONNECT(dmi0, 0, dmi0.i_tdi, i_tdi);
         CONNECT(dmi0, 0, dmi0.o_tdo, o_tdo);
-        CONNECT(dmi0, 0, dmi0.i_clk, i_clk);
-        CONNECT(dmi0, 0, dmi0.i_nrst, i_dmi_nrst);
+        CONNECT(dmi0, 0, dmi0.i_bus_req_valid, w_pdmi_req_valid);
+        CONNECT(dmi0, 0, dmi0.o_bus_req_ready, w_pdmi_req_ready);
+        CONNECT(dmi0, 0, dmi0.i_bus_req_addr, wb_pdmi_req_addr);
+        CONNECT(dmi0, 0, dmi0.i_bus_req_write, w_pdmi_req_write);
+        CONNECT(dmi0, 0, dmi0.i_bus_req_wdata, wb_pdmi_req_wdata);
+        CONNECT(dmi0, 0, dmi0.o_bus_resp_valid, w_pdmi_resp_valid);
+        CONNECT(dmi0, 0, dmi0.i_bus_resp_ready, w_pdmi_resp_ready);
+        CONNECT(dmi0, 0, dmi0.o_bus_resp_rdata, wb_pdmi_resp_rdata);
         CONNECT(dmi0, 0, dmi0.o_ndmreset, o_dmreset, "reset whole system");
         CONNECT(dmi0, 0, dmi0.i_halted, wb_halted);
         CONNECT(dmi0, 0, dmi0.i_available, wb_available);

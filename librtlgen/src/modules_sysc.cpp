@@ -1003,7 +1003,13 @@ std::string ModuleObject::generate_sysc_proc(GenObject *proc) {
     GenObject *arritem;
     for (auto &e: proc->getEntries()) {
         if (e->getId() == ID_VALUE) {
-            ret += "    " + e->getName() + " = 0;";
+            ret += "    " + e->getName() + " = ";
+            if (e->getStrValue().size()) {
+                ret += e->getStrValue();
+            } else {
+                ret += "0";
+            }
+            ret += ";";
             tcnt++;
         } else if (e->getId() == ID_ARRAY_DEF) {
             ret += "    for (int i = 0; i < " + e->getStrDepth() + "; i++) {\n";

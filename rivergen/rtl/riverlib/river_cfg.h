@@ -90,6 +90,10 @@ class river_cfg : public FileObject {
             add_value("Instr_FENCE");
             add_value("Instr_FENCE_I");
             add_value("Instr_WFI");
+//            add_value("Instr_SFENCE_VMA");
+//            add_value("Instr_SINVAL_VMA");
+//            add_value("Instr_SFENCE_W_INVAL");
+//            add_value("Instr_SFENCE_INVAL_IR");
             add_value("Instr_DIV");
             add_value("Instr_DIVU");
             add_value("Instr_DIVW");
@@ -466,12 +470,6 @@ class river_cfg : public FileObject {
     ParamI32D REGS_BUS_WIDTH;
     ParamI32D REGS_TOTAL;
     TextLine _RegsIsa4_;
-    TextLine _csr0_;
-    TextLine _csr1_;
-    ParamLogic CSR_uepc;
-    ParamLogic CSR_sepc;
-    ParamLogic CSR_hepc;
-    ParamLogic CSR_mepc;
     TextLine _IsaType0_;
     TextLine _IsaType1_;
     ParamI32D ISA_R_type;

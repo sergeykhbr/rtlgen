@@ -65,7 +65,7 @@ std::string Operation::addspaces() {
 std::string Operation::addtext(GenObject *obj, size_t curpos) {
     std::string ret = "";
     if (obj->getComment().size()) {
-        while (++curpos < 60) {
+        while (curpos++ < 60) {
             ret += " ";
         }
         ret += "// " + obj->getComment();
@@ -1036,7 +1036,9 @@ Operation &TO_BIG(size_t sz, GenObject &a) {
 std::string TO_INT_gen(GenObject **args) {
     std::string A = Operation::obj2varname(args[1], "r", true);
     if (SCV_is_sysc()) {
-        A = A + ".to_int()";
+        if (args[1]->getId() != ID_PARAM) { // params aren't use sc_uint<> tempalates
+            A = A + ".to_int()";
+        }
     } else {
         A = "int'(" + A + ")";
     }
@@ -2280,12 +2282,7 @@ std::string SETARRITEM_gen(GenObject **args) {
     ret += " = ";
     ret += Operation::obj2varname(args[4]);
     ret += ";";
-    if (args[0]->getComment().size()) {
-        while (ret.size() < 60) {
-            ret += " ";
-        }
-        ret += "// " + args[0]->getComment();
-    }
+    ret += Operation::addtext(args[0], ret.size());
     ret += "\n";
     return ret;
 }
@@ -2334,12 +2331,7 @@ std::string IF_gen(GenObject **args) {
             ret += ": " + args[2]->getStrValue().substr(1, args[2]->getStrValue().size()-2);
         }
     }
-    if (args[0]->getComment().size()) {
-        while (ret.size() < 60) {
-            ret += " ";
-        }
-        ret += "// " + args[0]->getComment();
-    }
+    ret += Operation::addtext(args[0], ret.size());
     ret += "\n";
     return ret;
 }
@@ -2377,12 +2369,7 @@ std::string ELSIF_gen(GenObject **args) {
     } else {
         ret += Operation::addspaces() + "end else if " + A + " begin";
     }
-    if (args[0]->getComment().size()) {
-        while (ret.size() < 60) {
-            ret += " ";
-        }
-        ret += "// " + args[0]->getComment();
-    }
+    ret += Operation::addtext(args[0], ret.size());
     ret += "\n";
     spaces_++;
     return ret;
@@ -2487,12 +2474,7 @@ std::string SWITCH_gen(GenObject **args) {
     } else {
         ret += "case " + A;
     }
-    if (args[0]->getComment().size()) {
-        while (ret.size() < 60) {
-            ret += " ";
-        }
-        ret += "// " + args[0]->getComment();
-    }
+    ret += Operation::addtext(args[0], ret.size());
     ret += "\n";
     return ret;
 }
@@ -2515,13 +2497,7 @@ std::string CASE_gen(GenObject **args) {
     } else {
         ret += Operation::addspaces() + A + ": begin";
     }
-    Operation *p = static_cast<Operation *>(args[0]);
-    if (p->getComment().size()) {
-        while (ret.size() < 60) {
-            ret += " ";
-        }
-        ret += "// " + p->getComment();
-    }
+    ret += Operation::addtext(args[0], ret.size());
     ret += "\n";
     spaces_++;
     return ret;

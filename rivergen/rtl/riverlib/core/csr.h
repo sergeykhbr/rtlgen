@@ -28,6 +28,12 @@ class CsrRegs : public ModuleObject {
     class CombProcess : public ProcObject {
      public:
         CombProcess(GenObject *parent) : ProcObject(parent, "comb"),
+            iM(&TO_INT(glob_river_cfg_->PRV_M), "iM", this),
+            iH(&TO_INT(glob_river_cfg_->PRV_H), "iH", this),
+            iS(&TO_INT(glob_river_cfg_->PRV_S), "iS", this),
+            iU(&TO_INT(glob_river_cfg_->PRV_U), "iU", this),
+            vb_xpp(this, "vb_xpp", "2"),
+            v_step_irq(this, "v_step_irq", "1"),
             v_sw_irq(this, "v_sw_irq", "1"),
             v_tmr_irq(this, "v_tmr_irq", "1"),
             v_ext_irq(this, "v_ext_irq", "1"),
@@ -51,6 +57,12 @@ class CsrRegs : public ModuleObject {
             CsrRegs *p = static_cast<CsrRegs *>(parent);
             p->proc_comb();
         }
+        I32D iM;
+        I32D iH;
+        I32D iS;
+        I32D iU;
+        Logic vb_xpp;
+        Logic v_step_irq;
         Logic v_sw_irq;
         Logic v_tmr_irq;
         Logic v_ext_irq;
@@ -130,6 +142,32 @@ class CsrRegs : public ModuleObject {
     ParamUI32D State_Response;
     ParamLogic SATP_MODE_SV48;
 
+    class RegModeType : public StructObject {
+     public:
+        RegModeType(GenObject *parent, const char *name="", int idx=-1, const char *comment="")
+            : StructObject(parent, "RegModeType", name, idx, comment),
+            xepc(this, "xepc", "CFG_CPU_ADDR_BITS", "0", ""),
+            xpp(this, "xpp", "2", "0", "Previous Privildge mode. If x is not implemented, then xPP mus be 0"),
+            xpie(this, "xpie", "1", "0", "Previous Privildge mode global interrupt enable"),
+            xie(this, "xie", "1", "0", "Global interrupt enbale bit.")
+            {}
+     public:
+        RegSignal xepc;
+        RegSignal xpp;
+        RegSignal xpie;
+        RegSignal xie;
+    } RegModeTypeDef_;
+
+    class ModeTableType : public TStructArray<RegModeType> {
+     public:
+        ModeTableType(GenObject *parent, const char *name)
+            : TStructArray<RegModeType>(parent, "", name, "4") {
+            setReg();
+        }
+    };
+
+    ModeTableType xmode;
+
     RegSignal state;
     RegSignal cmd_type;
     RegSignal cmd_addr;
@@ -151,13 +189,8 @@ class CsrRegs : public ModuleObject {
     RegSignal mmu_ena;
     RegSignal satp_ppn;
     RegSignal satp_mode;
-    RegSignal mepc;
-    RegSignal uepc;
     RegSignal mode;
-    RegSignal uie;
-    RegSignal mie;
-    RegSignal mpie;
-    RegSignal mpp;
+    RegSignal mprv;
     RegSignal usie;
     RegSignal ssie;
     RegSignal msie;

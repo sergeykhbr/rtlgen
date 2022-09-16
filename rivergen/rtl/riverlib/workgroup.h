@@ -108,6 +108,14 @@ public:
     types_river::dport_out_vector wb_dport_o;
     Signal wb_halted;
     Signal wb_available;
+    Signal w_pdmi_req_valid;
+    Signal w_pdmi_req_ready;
+    Signal wb_pdmi_req_addr;
+    Signal w_pdmi_req_write;
+    Signal wb_pdmi_req_wdata;
+    Signal w_pdmi_resp_valid;
+    Signal w_pdmi_resp_ready;
+    Signal wb_pdmi_resp_rdata;
     Signal wb_dmi_hartsel;
     Signal w_dmi_haltreq;
     Signal w_dmi_resumereq;
