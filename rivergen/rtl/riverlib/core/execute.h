@@ -68,6 +68,19 @@ class InstrExecute : public ModuleObject {
  public:
     InstrExecute(GenObject *parent, const char *name);
 
+    class irq2idx_func : public FunctionObject {
+     public:
+        irq2idx_func(GenObject *parent);
+        virtual std::string getType() override { return ret.getType(); }
+        virtual void getArgsList(std::list<GenObject *> &args) {
+            args.push_back(&irqbus);
+        }
+        virtual GenObject *getpReturn() { return &ret; }
+     protected:
+        Logic ret;
+        Logic irqbus;
+    };
+
     class CombProcess : public ProcObject {
      public:
         CombProcess(GenObject *parent) : ProcObject(parent, "comb"),
@@ -235,9 +248,7 @@ class InstrExecute : public ModuleObject {
     InPort i_mem_ex_mpu_store;
     InPort i_mem_ex_mpu_load;
     InPort i_mem_ex_addr;
-    InPort i_irq_software;
-    InPort i_irq_timer;
-    InPort i_irq_external;
+    InPort i_irq_pending;
     InPort i_haltreq;
     InPort i_resumereq;
     InPort i_step;
@@ -326,6 +337,9 @@ class InstrExecute : public ModuleObject {
     ParamLogic AmoState_Read;
     ParamLogic AmoState_Modify;
     ParamLogic AmoState_Write;
+
+    // function
+    irq2idx_func irq2idx;
 
     class select_type : public StructObject {
      public:

@@ -52,9 +52,7 @@ InstrExecute::InstrExecute(GenObject *parent, const char *name) :
     i_mem_ex_mpu_store(this, "i_mem_ex_mpu_store", "1", "Memoryaccess: MPU access error on storing data"),
     i_mem_ex_mpu_load(this, "i_mem_ex_mpu_load", "1", "Memoryaccess: MPU access error on load data"),
     i_mem_ex_addr(this, "i_mem_ex_addr", "CFG_CPU_ADDR_BITS", "Memoryaccess: exception address"),
-    i_irq_software(this, "i_irq_software", "1", "software interrupt request from CSR register xSIP"),
-    i_irq_timer(this, "i_irq_timer", "1", "interrupt request from wallclock timer"),
-    i_irq_external(this, "i_irq_external", "1", "interrupt request from PLIC"),
+    i_irq_pending(this, "i_irq_pending", "IRQ_PER_HART_TOTAL", "Per Hart pending interrupts pins"),
     i_haltreq(this, "i_haltreq", "1", "halt request from debug unit"),
     i_resumereq(this, "i_resumereq", "1", "resume request from debug unit"),
     i_step(this, "i_step", "1", "resume with step"),
@@ -141,6 +139,7 @@ InstrExecute::InstrExecute(GenObject *parent, const char *name) :
     AmoState_Write(this, "2", "AmoState_Write", "3"),
     // structures
     select_type_def_(this, "", -1),
+    irq2idx(this),
     input_mux_type_def_(this),
     // signals
     wb_select(this, "", "wb_select", "Res_Total"),
@@ -310,6 +309,25 @@ InstrExecute::InstrExecute(GenObject *parent, const char *name) :
             ASSIGNZERO(w_ex_fpu_inexact);
         ENDIFGEN(new STRING("fpu_dis"));
     ENDGENERATE("fpu");
+}
+
+InstrExecute::irq2idx_func::irq2idx_func(GenObject *parent)
+    : FunctionObject(parent, "irq2idx"),
+    ret(this, "ret", "4"),
+    irqbus(this, "irqbus", "IRQ_PER_HART_TOTAL") {
+    IF (NZ(BIT(irqbus, glob_river_cfg_->IRQ_HART_SSIP)));
+        SETVAL(ret, glob_river_cfg_->IRQ_HART_SSIP);
+    ELSIF (NZ(BIT(irqbus, glob_river_cfg_->IRQ_HART_MSIP)));
+        SETVAL(ret, glob_river_cfg_->IRQ_HART_MSIP);
+    ELSIF (NZ(BIT(irqbus, glob_river_cfg_->IRQ_HART_STIP)));
+        SETVAL(ret, glob_river_cfg_->IRQ_HART_STIP);
+    ELSIF (NZ(BIT(irqbus, glob_river_cfg_->IRQ_HART_MTIP)));
+        SETVAL(ret, glob_river_cfg_->IRQ_HART_MTIP);
+    ELSIF (NZ(BIT(irqbus, glob_river_cfg_->IRQ_HART_SEIP)));
+        SETVAL(ret, glob_river_cfg_->IRQ_HART_SEIP);
+    ELSIF (NZ(BIT(irqbus, glob_river_cfg_->IRQ_HART_MEIP)));
+        SETVAL(ret, glob_river_cfg_->IRQ_HART_MEIP);
+    ENDIF();
 }
 
 void InstrExecute::proc_comb() {
@@ -629,7 +647,7 @@ TEXT();
                                  &mem_ex_store_fault,
                                  &mem_ex_mpu_store,
                                  &mem_ex_mpu_load));
-    SETVAL(comb.v_csr_cmd_ena, ORx(27, &i_haltreq,
+    SETVAL(comb.v_csr_cmd_ena, ORx(25, &i_haltreq,
                                     &AND2(i_step, stepdone),
                                     &i_unsup_exception,
                                     &i_instr_load_fault,
@@ -640,9 +658,7 @@ TEXT();
                                     &comb.v_instr_misaligned,
                                     &comb.v_load_misaligned,
                                     &comb.v_store_misaligned,
-                                    &i_irq_software,
-                                    &i_irq_timer,
-                                    &i_irq_external,
+                                    &OR_REDUCE(i_irq_pending),
                                     &BIT(comb.wv, "Instr_WFI"),
                                     &BIT(comb.wv, "Instr_EBREAK"),
                                     &BIT(comb.wv, "Instr_ECALL"),
@@ -702,15 +718,9 @@ TEXT();
     ELSIF (NZ(BIT(comb.wv, "Instr_ECALL")));
         SETVAL(comb.vb_csr_cmd_type, cfg->CsrReq_ExceptionCmd);
         SETVAL(comb.vb_csr_cmd_addr, cfg->EXCEPTION_CallFromXMode, "Environment call");
-    ELSIF (NZ(i_irq_software));
+    ELSIF (NZ(i_irq_pending));
         SETVAL(comb.vb_csr_cmd_type, cfg->CsrReq_InterruptCmd);
-        SETVAL(comb.vb_csr_cmd_addr, cfg->INTERRUPT_XSoftware, "Software interrupt request");
-    ELSIF (NZ(i_irq_timer));
-        SETVAL(comb.vb_csr_cmd_type, cfg->CsrReq_InterruptCmd);
-        SETVAL(comb.vb_csr_cmd_addr, cfg->INTERRUPT_XTimer, "Timer interrupt request");
-    ELSIF (NZ(i_irq_external));
-        SETVAL(comb.vb_csr_cmd_type, cfg->CsrReq_InterruptCmd);
-        SETVAL(comb.vb_csr_cmd_addr, cfg->INTERRUPT_XExternal, "PLIC interrupt request");
+        CALLF(&comb.vb_csr_cmd_addr, irq2idx, 1, &i_irq_pending);
     ELSIF (NZ(BIT(comb.wv, "Instr_WFI")));
         SETVAL(comb.vb_csr_cmd_type, cfg->CsrReq_WfiCmd);
         SETVAL(comb.vb_csr_cmd_addr, BITS(comb.mux.instr, 14, 12), "PRIV field");
@@ -1081,7 +1091,7 @@ TEXT();
         ENDIF();
         ENDCASE();
     CASE (State_Wfi);
-        IF (NZ(OR4(i_haltreq, i_irq_software, i_irq_external, i_irq_timer)));
+        IF (NZ(OR2(i_haltreq, OR_REDUCE(i_irq_pending))));
             SETVAL(state, State_Idle);
         ENDIF();
         ENDCASE();

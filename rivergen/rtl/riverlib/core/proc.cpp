@@ -297,9 +297,7 @@ Processor::Processor(GenObject *parent, const char *name) :
         CONNECT(exec0, 0, exec0.i_mem_ex_mpu_store, i_resp_data_er_mpu_store);
         CONNECT(exec0, 0, exec0.i_mem_ex_mpu_load, i_resp_data_er_mpu_load);
         CONNECT(exec0, 0, exec0.i_mem_ex_addr, i_resp_data_fault_addr);
-        CONNECT(exec0, 0, exec0.i_irq_software, csr.irq_software);
-        CONNECT(exec0, 0, exec0.i_irq_timer, csr.irq_timer);
-        CONNECT(exec0, 0, exec0.i_irq_external, csr.irq_external);
+        CONNECT(exec0, 0, exec0.i_irq_pending, csr.irq_pending);
         CONNECT(exec0, 0, exec0.i_haltreq, i_haltreq);
         CONNECT(exec0, 0, exec0.i_resumereq, i_resumereq);
         CONNECT(exec0, 0, exec0.i_step, csr.step);
@@ -527,9 +525,7 @@ Processor::Processor(GenObject *parent, const char *name) :
         CONNECT(csr0, 0, csr0.i_e_pc, w.e.pc);
         CONNECT(csr0, 0, csr0.i_e_instr, w.e.instr);
         CONNECT(csr0, 0, csr0.i_irq_pending, i_irq_pending);
-        CONNECT(csr0, 0, csr0.o_irq_software, csr.irq_software);
-        CONNECT(csr0, 0, csr0.o_irq_timer, csr.irq_timer);
-        CONNECT(csr0, 0, csr0.o_irq_external, csr.irq_external);
+        CONNECT(csr0, 0, csr0.o_irq_pending, csr.irq_pending);
         CONNECT(csr0, 0, csr0.o_stack_overflow, csr.stack_overflow);
         CONNECT(csr0, 0, csr0.o_stack_underflow, csr.stack_underflow);
         CONNECT(csr0, 0, csr0.i_e_valid, w.e.valid);

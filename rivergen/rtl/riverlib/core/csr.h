@@ -32,13 +32,11 @@ class CsrRegs : public ModuleObject {
             iH(&TO_INT(glob_river_cfg_->PRV_H), "iH", this),
             iS(&TO_INT(glob_river_cfg_->PRV_S), "iS", this),
             iU(&TO_INT(glob_river_cfg_->PRV_U), "iU", this),
+            vb_irq_mask(this, "vb_irq_mask", "IRQ_PER_HART_TOTAL"),
             vb_xpp(this, "vb_xpp", "2"),
             v_step_irq(this, "v_step_irq", "1"),
-            v_sw_irq(this, "v_sw_irq", "1"),
-            v_tmr_irq(this, "v_tmr_irq", "1"),
-            v_ext_irq(this, "v_ext_irq", "1"),
-            w_trap_valid(this, "w_trap_valid", "1"),
-            v_trap_irq(this, "v_trap_irq", "1"),
+            vb_exception(this, "vb_exception", "64"),
+            vb_interrupt(this, "vb_interrupt", "16"),
             wb_trap_cause(this, "wb_trap_cause", "5"),
             vb_mtval(this, "vb_mtval", "RISCV_ARCH", "additional exception information"),
             w_mstackovr(this, "w_mstackovr", "1"),
@@ -61,13 +59,11 @@ class CsrRegs : public ModuleObject {
         I32D iH;
         I32D iS;
         I32D iU;
+        Logic vb_irq_mask;
         Logic vb_xpp;
         Logic v_step_irq;
-        Logic v_sw_irq;
-        Logic v_tmr_irq;
-        Logic v_ext_irq;
-        Logic w_trap_valid;
-        Logic v_trap_irq;
+        Logic vb_exception;
+        Logic vb_interrupt;
         Logic wb_trap_cause;
         Logic vb_mtval;
         Logic w_mstackovr;
@@ -103,9 +99,7 @@ class CsrRegs : public ModuleObject {
     InPort i_e_pc;
     InPort i_e_instr;
     InPort i_irq_pending;
-    OutPort o_irq_software;
-    OutPort o_irq_timer;
-    OutPort o_irq_external;
+    OutPort o_irq_pending;
     OutPort o_stack_overflow;
     OutPort o_stack_underflow;
     InPort i_e_valid;
@@ -167,8 +161,8 @@ class CsrRegs : public ModuleObject {
     };
 
     ModeTableType xmode;
-
     RegSignal state;
+    RegSignal irq_pending;
     RegSignal cmd_type;
     RegSignal cmd_addr;
     RegSignal cmd_data;
@@ -200,15 +194,6 @@ class CsrRegs : public ModuleObject {
     RegSignal ueie;
     RegSignal seie;
     RegSignal meie;
-    RegSignal usip;
-    RegSignal ssip;
-    RegSignal msip;
-    RegSignal utip;
-    RegSignal stip;
-    RegSignal mtip;
-    RegSignal ueip;
-    RegSignal seip;
-    RegSignal meip;
     RegSignal ex_fpu_invalidop;
     RegSignal ex_fpu_divbyzero;
     RegSignal ex_fpu_overflow;

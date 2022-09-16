@@ -35,9 +35,7 @@ CsrRegs::CsrRegs(GenObject *parent, const char *name) :
     i_e_pc(this, "i_e_pc", "CFG_CPU_ADDR_BITS", "current latched instruction pointer in executor"),
     i_e_instr(this, "i_e_instr", "32", "current latched opcode in executor"),
     i_irq_pending(this, "i_irq_pending", "IRQ_PER_HART_TOTAL", "Per Hart pending interrupts pins"),
-    o_irq_software(this, "o_irq_software", "1", "software interrupt pending bit"),
-    o_irq_timer(this, "o_irq_timer", "1", "timer interrupt pending bit"),
-    o_irq_external(this, "o_irq_external", "1", "external interrupt pending bit"),
+    o_irq_pending(this, "o_irq_pending", "IRQ_PER_HART_TOTAL", "Unmasked interrupt pending bits"),
     o_stack_overflow(this, "o_stack_overflow", "1", "stack overflow exception"),
     o_stack_underflow(this, "o_stack_underflow", "1", "stack underflow exception"),
     i_e_valid(this, "i_e_valid", "1", "instructuin executed flag"),
@@ -75,6 +73,7 @@ CsrRegs::CsrRegs(GenObject *parent, const char *name) :
     // registers
     xmode(this, "xmode"),
     state(this, "state", "4", "State_Idle"),
+    irq_pending(this, "irq_pending", "IRQ_PER_HART_TOTAL"),
     cmd_type(this, "cmd_type", "CsrReq_TotalBits"),
     cmd_addr(this, "cmd_addr", "12"),
     cmd_data(this, "cmd_data", "RISCV_ARCH"),
@@ -106,15 +105,6 @@ CsrRegs::CsrRegs(GenObject *parent, const char *name) :
     ueie(this, "ueie", "1", "0", "mie: User external interrupt enable"),
     seie(this, "seie", "1", "0", "mie: Supervisor external interrupt enable"),
     meie(this, "meie", "1", "0", "mie: Machine external interrupt enable"),
-    usip(this, "usip", "1", "0", "mip: user software interrupt pending"),
-    ssip(this, "ssip", "1", "0", "mip: supervisor software interrupt pending"),
-    msip(this, "msip", "1", "0", "mip: machine software interrupt pending"),
-    utip(this, "utip", "1", "0", "mip: user timer interrupt pending"),
-    stip(this, "stip", "1", "0", "mip: supervisor timer interrupt pending"),
-    mtip(this, "mtip", "1", "0", "mip: machine timer interrupt pending"),
-    ueip(this, "ueip", "1", "0", "mip: user external interrupt pending"),
-    seip(this, "seip", "1", "0", "mip: supervisor external interrupt pending"),
-    meip(this, "meip", "1", "0", "mip: machine external interrupt pending"),
     ex_fpu_invalidop(this, "ex_fpu_invalidop", "1", "0", "FPU Exception: invalid operation"),
     ex_fpu_divbyzero(this, "ex_fpu_divbyzero", "1", "0", "FPU Exception: divide by zero"),
     ex_fpu_overflow(this, "ex_fpu_overflow", "1", "0", "FPU Exception: overflow"),
@@ -183,7 +173,7 @@ TEXT();
         ENDCASE();
     CASE (State_Exception);
         SETVAL(state, State_Response);
-        SETONE(comb.w_trap_valid);
+        SETBITONE(comb.vb_exception, TO_INT(BITS(cmd_addr, 4, 0)));
         SETVAL(comb.vb_mtval, cmd_data);
         SETVAL(comb.wb_trap_cause, BITS(cmd_addr, 4, 0));
         SETVAL(cmd_data, comb.vb_mtvec_off);
@@ -207,7 +197,7 @@ TEXT();
             SETVAL(dpc, cmd_data);
             SETVAL(cmd_data, ALLONES(), "signal to executor to switch into Debug Mode and halt");
         ELSE();
-            SETONE(comb.w_trap_valid);
+            SETBITONE(comb.vb_exception, cfg->EXCEPTION_Breakpoint);
             SETVAL(comb.wb_trap_cause, BITS(cmd_addr, 4, 0));
             SETVAL(comb.vb_mtval, i_e_pc);
             SETVAL(cmd_data, comb.vb_mtvec_off, "Jump to exception handler");
@@ -228,9 +218,8 @@ TEXT();
         ENDCASE();
     CASE (State_Interrupt);
         SETVAL(state, State_Response);
-        SETONE(comb.w_trap_valid);
-        SETVAL(comb.wb_trap_cause, ADD2(MUL2(CONST("4"), cmd_addr), cfg->PRV_M));
-        SETONE(comb.v_trap_irq);
+        SETBITONE(comb.vb_interrupt, TO_INT(BITS(cmd_addr, 3, 0)));
+        SETVAL(comb.wb_trap_cause, BITS(cmd_addr, 4, 0));
         IF (EQ(mtvec_mode, CONST("1", 2)));
             TEXT("vectorized");
             SETVAL(cmd_data, ADD2(comb.vb_mtvec_off, MUL2(CONST("4"), comb.wb_trap_cause)));
@@ -536,15 +525,7 @@ TEXT();
         ENDIF();
         ENDCASE();
     CASE (CONST("0x344", 12), "mip: [MRW] Machine interrupt pending");
-        SETBIT(comb.vb_rdata, 0, usip, "user software pending bit");
-        SETBIT(comb.vb_rdata, 1, ssip, "super-user software pending bit");
-        SETBIT(comb.vb_rdata, 3, msip, "machine software pending bit");
-        SETBIT(comb.vb_rdata, 4, utip, "user timer pending bit");
-        SETBIT(comb.vb_rdata, 5, stip, "super-user timer pending bit");
-        SETBIT(comb.vb_rdata, 7, mtip, "RO: machine timer pending bit");
-        SETBIT(comb.vb_rdata, 8, ueip, "user external pending bit");
-        SETBIT(comb.vb_rdata, 9, seip, "super-user external pending bit");
-        SETBIT(comb.vb_rdata, 11, meip, "RO: machine external pending bit (cleared by writing into mtimecmp)");
+        SETBITS(comb.vb_rdata, DEC(cfg->IRQ_PER_HART_TOTAL), CONST("0"), irq_pending);
         ENDCASE();
     CASE (CONST("0x34A", 12), "mtinst: [MRW] Machine trap instruction (transformed)");
         ENDCASE();
@@ -725,7 +706,7 @@ TEXT();
     ENDIF();
 
 TEXT();
-    IF (NZ(comb.w_trap_valid));
+    IF (OR2(NZ(comb.vb_exception), NZ(comb.vb_interrupt)));
         TEXT("By default all excpetions and interrupts handled in M-mode (not delegations)");
         SETARRITEM(xmode, comb.iM, xmode->xpp, mode);
         SETARRITEM(xmode, comb.iM, xmode->xpie, ARRITEM(xmode, TO_INT(mode), xmode->xie));
@@ -733,7 +714,7 @@ TEXT();
         SETARRITEM(xmode, comb.iM, xmode->xepc, i_e_pc, "current latched instruction not executed overwritten by exception/interrupt");
         SETVAL(mtval, comb.vb_mtval, "additional information for hwbreakpoint, memaccess faults and illegal opcodes");
         SETVAL(trap_cause, comb.wb_trap_cause);
-        SETVAL(trap_irq, comb.v_trap_irq);
+        SETVAL(trap_irq, INV(OR_REDUCE(comb.vb_exception)));
         SETVAL(mode, cfg->PRV_M);
         SETZERO(mmu_ena);
     ENDIF();
@@ -741,18 +722,15 @@ TEXT();
 TEXT();
     TEXT("Interrupt enabled during stepping");
     SETVAL(comb.v_step_irq, OR2(INV(dcsr_step), dcsr_stepie));
-    SETVAL(msip, BIT(i_irq_pending, cfg->IRQ_HART_MSIP));
-    SETVAL(comb.v_sw_irq, AND4(msip, msie, ARRITEM(xmode, comb.iM, xmode->xie), comb.v_step_irq));
+TEXT();
+    // TODO: global interrupt and priv not machine mode
+    SETBIT(comb.vb_irq_mask, cfg->IRQ_HART_MSIP, AND2(msie, ARRITEM(xmode, comb.iM, xmode->xie)));
+    SETBIT(comb.vb_irq_mask, cfg->IRQ_HART_MTIP, AND2(mtie, ARRITEM(xmode, comb.iM, xmode->xie)));
+    SETBIT(comb.vb_irq_mask, cfg->IRQ_HART_SEIP, AND2(seie, ARRITEM(xmode, comb.iM, xmode->xie)));
+    SETBIT(comb.vb_irq_mask, cfg->IRQ_HART_MEIP, AND2(meie, ARRITEM(xmode, comb.iM, xmode->xie)));
 
 TEXT();
-    SETVAL(mtip, BIT(i_irq_pending, cfg->IRQ_HART_MTIP));
-    SETVAL(comb.v_tmr_irq, AND4(mtip, mtie, ARRITEM(xmode, comb.iM, xmode->xie), comb.v_step_irq));
-
-TEXT();
-    SETVAL(meip, BIT(i_irq_pending, cfg->IRQ_HART_MEIP));
-    SETVAL(seip, BIT(i_irq_pending, cfg->IRQ_HART_SEIP));
-    SETVAL(comb.v_ext_irq, AND4(meip, meie, ARRITEM(xmode, comb.iM, xmode->xie), comb.v_step_irq));
-
+    SETVAL(irq_pending, AND2_L(i_irq_pending, comb.vb_irq_mask));
 
 TEXT();
     SETZERO(comb.w_mstackovr);
@@ -801,9 +779,7 @@ TEXT();
     SETVAL(o_resp_exception, cmd_exception);
     SETVAL(o_progbuf_end, AND2(progbuf_end, i_resp_ready));
     SETVAL(o_progbuf_error, AND2(progbuf_err, i_resp_ready));
-    SETVAL(o_irq_software, comb.v_sw_irq);
-    SETVAL(o_irq_timer, comb.v_tmr_irq);
-    SETVAL(o_irq_external, comb.v_ext_irq);
+    SETVAL(o_irq_pending, irq_pending);
     SETVAL(o_stack_overflow, comb.w_mstackovr);
     SETVAL(o_stack_underflow, comb.w_mstackund);
     SETVAL(o_executed_cnt, executed_cnt);
