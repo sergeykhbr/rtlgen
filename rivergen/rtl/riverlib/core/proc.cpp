@@ -52,7 +52,7 @@ Processor::Processor(GenObject *parent, const char *name) :
     i_resp_data_er_mpu_store(this, "i_resp_data_er_mpu_store"),
     o_resp_data_ready(this, "o_resp_data_ready", "1", "Core is ready to accept response from DCache"),
     _Interrupts0_(this, "Interrupt line from external interrupts controller (PLIC):"),
-    i_irq_pending(this, "i_irq_pending", "IRQ_PER_HART_TOTAL", "Per Hart pending interrupts pins"),
+    i_irq_pending(this, "i_irq_pending", "IRQ_TOTAL", "Per Hart pending interrupts pins"),
     _MpuInterface0_(this, "MPU interface"),
     o_mpu_region_we(this, "o_mpu_region_we"),
     o_mpu_region_idx(this, "o_mpu_region_idx", "CFG_MPU_TBL_WIDTH"),

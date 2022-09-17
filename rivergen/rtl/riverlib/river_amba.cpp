@@ -74,7 +74,7 @@ RiverAmba::RiverAmba(GenObject *parent, const char *name) :
     resp_snoop_valid_o(this, "resp_snoop_valid_o", "1"),
     resp_snoop_data_o(this, "resp_snoop_data_o", "L1CACHE_LINE_BITS"),
     resp_snoop_flags_o(this, "resp_snoop_flags_o", "DTAG_FL_TOTAL"),
-    wb_ip(this, "wb_ip", "IRQ_PER_HART_TOTAL", "0", "Interrupt pending bits"),
+    wb_ip(this, "wb_ip", "IRQ_TOTAL", "0", "Interrupt pending bits"),
     wb_xcfg(this, "wb_xcfg"),
     w_dporti_haltreq(this, "w_dporti_haltreq", "1"),
     w_dporti_resumereq(this, "w_dporti_resumereq", "1"),
@@ -223,10 +223,10 @@ TEXT();
     SETVAL(comb.vdporto.rdata, wb_dporto_rdata, "systemc compatibility");
 
 TEXT();
-    SETBIT(comb.vb_ip, cfg->IRQ_HART_MSIP, i_msip);
-    SETBIT(comb.vb_ip, cfg->IRQ_HART_MTIP, i_mtip);
-    SETBIT(comb.vb_ip, cfg->IRQ_HART_MEIP, i_meip);
-    SETBIT(comb.vb_ip, cfg->IRQ_HART_SEIP, i_seip);
+    SETBIT(comb.vb_ip, cfg->IRQ_MSIP, i_msip);
+    SETBIT(comb.vb_ip, cfg->IRQ_MTIP, i_mtip);
+    SETBIT(comb.vb_ip, cfg->IRQ_MEIP, i_meip);
+    SETBIT(comb.vb_ip, cfg->IRQ_SEIP, i_seip);
     SETVAL(comb.vmsto, glob_types_river_->axi4_l1_out_none);
     SETVAL(comb.vmsto.ar_bits.burst, glob_types_amba_->AXI_BURST_INCR, "INCR (possible any value actually)");
     SETVAL(comb.vmsto.aw_bits.burst, glob_types_amba_->AXI_BURST_INCR, "INCR (possible any value actually)");

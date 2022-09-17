@@ -46,7 +46,7 @@ class RiverAmba : public ModuleObject {
             vb_cr_resp(this, "vb_cr_resp", "5"),
             v_cd_valid(this, "v_cd_valid", "1"),
             vb_cd_data(this, "vb_cd_data", "L1CACHE_LINE_BITS"),
-            vb_ip(this, "vb_ip", "IRQ_PER_HART_TOTAL", "Interrupt pending bits") {
+            vb_ip(this, "vb_ip", "IRQ_TOTAL", "Interrupt pending bits") {
         }
      public:
         Logic v_resp_mem_valid;

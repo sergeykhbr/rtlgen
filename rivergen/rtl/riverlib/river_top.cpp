@@ -51,7 +51,7 @@ RiverTop::RiverTop(GenObject *parent, const char *name) :
     o_resp_snoop_flags(this, "o_resp_snoop_flags", "DTAG_FL_TOTAL"),
     o_flush_l2(this, "o_flush_l2", "1", "Flush L2 after D$ has been finished"),
     _Interrupts0_(this, "Interrupt lines:"),
-    i_irq_pending(this, "i_irq_pending", "IRQ_PER_HART_TOTAL", "Per Hart pending interrupts pins"),
+    i_irq_pending(this, "i_irq_pending", "IRQ_TOTAL", "Per Hart pending interrupts pins"),
     _Debug0(this, "Debug interface:"),
     i_haltreq(this, "i_haltreq", "1", "DMI: halt request from debug unit"),
     i_resumereq(this, "i_resumereq", "1", "DMI: resume request from debug unit"),

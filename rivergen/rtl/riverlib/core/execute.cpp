@@ -52,7 +52,7 @@ InstrExecute::InstrExecute(GenObject *parent, const char *name) :
     i_mem_ex_mpu_store(this, "i_mem_ex_mpu_store", "1", "Memoryaccess: MPU access error on storing data"),
     i_mem_ex_mpu_load(this, "i_mem_ex_mpu_load", "1", "Memoryaccess: MPU access error on load data"),
     i_mem_ex_addr(this, "i_mem_ex_addr", "CFG_CPU_ADDR_BITS", "Memoryaccess: exception address"),
-    i_irq_pending(this, "i_irq_pending", "IRQ_PER_HART_TOTAL", "Per Hart pending interrupts pins"),
+    i_irq_pending(this, "i_irq_pending", "IRQ_TOTAL", "Per Hart pending interrupts pins"),
     i_haltreq(this, "i_haltreq", "1", "halt request from debug unit"),
     i_resumereq(this, "i_resumereq", "1", "resume request from debug unit"),
     i_step(this, "i_step", "1", "resume with step"),
@@ -314,19 +314,24 @@ InstrExecute::InstrExecute(GenObject *parent, const char *name) :
 InstrExecute::irq2idx_func::irq2idx_func(GenObject *parent)
     : FunctionObject(parent, "irq2idx"),
     ret(this, "ret", "4"),
-    irqbus(this, "irqbus", "IRQ_PER_HART_TOTAL") {
-    IF (NZ(BIT(irqbus, glob_river_cfg_->IRQ_HART_SSIP)));
-        SETVAL(ret, glob_river_cfg_->IRQ_HART_SSIP);
-    ELSIF (NZ(BIT(irqbus, glob_river_cfg_->IRQ_HART_MSIP)));
-        SETVAL(ret, glob_river_cfg_->IRQ_HART_MSIP);
-    ELSIF (NZ(BIT(irqbus, glob_river_cfg_->IRQ_HART_STIP)));
-        SETVAL(ret, glob_river_cfg_->IRQ_HART_STIP);
-    ELSIF (NZ(BIT(irqbus, glob_river_cfg_->IRQ_HART_MTIP)));
-        SETVAL(ret, glob_river_cfg_->IRQ_HART_MTIP);
-    ELSIF (NZ(BIT(irqbus, glob_river_cfg_->IRQ_HART_SEIP)));
-        SETVAL(ret, glob_river_cfg_->IRQ_HART_SEIP);
-    ELSIF (NZ(BIT(irqbus, glob_river_cfg_->IRQ_HART_MEIP)));
-        SETVAL(ret, glob_river_cfg_->IRQ_HART_MEIP);
+    irqbus(this, "irqbus", "IRQ_TOTAL") {
+    TEXT("see page 34, cursive text about prioirty handling:");
+    TEXT("    1. Higher priv mode must be served first");
+    TEXT("    2. External interrupts first");
+    TEXT("    3. SW interrupts seconds");
+    TEXT("    4. Timer interrupts last");
+    IF (NZ(BIT(irqbus, glob_river_cfg_->IRQ_MEIP)));
+        SETVAL(ret, glob_river_cfg_->IRQ_MEIP);
+    ELSIF (NZ(BIT(irqbus, glob_river_cfg_->IRQ_MSIP)));
+        SETVAL(ret, glob_river_cfg_->IRQ_MSIP);
+    ELSIF (NZ(BIT(irqbus, glob_river_cfg_->IRQ_MTIP)));
+        SETVAL(ret, glob_river_cfg_->IRQ_MTIP);
+    ELSIF (NZ(BIT(irqbus, glob_river_cfg_->IRQ_SEIP)));
+        SETVAL(ret, glob_river_cfg_->IRQ_SEIP);
+    ELSIF (NZ(BIT(irqbus, glob_river_cfg_->IRQ_SSIP)));
+        SETVAL(ret, glob_river_cfg_->IRQ_SSIP);
+    ELSIF (NZ(BIT(irqbus, glob_river_cfg_->IRQ_STIP)));
+        SETVAL(ret, glob_river_cfg_->IRQ_STIP);
     ENDIF();
 }
 

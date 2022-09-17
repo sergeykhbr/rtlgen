@@ -32,13 +32,15 @@ class CsrRegs : public ModuleObject {
             iH(&TO_INT(glob_river_cfg_->PRV_H), "iH", this),
             iS(&TO_INT(glob_river_cfg_->PRV_S), "iS", this),
             iU(&TO_INT(glob_river_cfg_->PRV_U), "iU", this),
-            vb_irq_mask(this, "vb_irq_mask", "IRQ_PER_HART_TOTAL"),
             vb_xpp(this, "vb_xpp", "2"),
-            v_step_irq(this, "v_step_irq", "1"),
-            vb_exception(this, "vb_exception", "64"),
-            vb_interrupt(this, "vb_interrupt", "16"),
+            v_mie_glob(this, "v_mie_glob", "1"),
+            vb_mip_pending(this, "vb_mip_pending", "IRQ_TOTAL"),
+            vb_irq_pending(this, "vb_irq_pending", "IRQ_TOTAL"),
+            vb_irq_ena(this, "vb_irq_ena", "IRQ_TOTAL"),
+            vb_e_emux(this, "vb_e_emux", "64", "Exception request from executor to process"),
+            vb_e_imux(this, "vb_e_imux", "16", "Interrupt request from executor to process"),
             wb_trap_cause(this, "wb_trap_cause", "5"),
-            vb_mtval(this, "vb_mtval", "RISCV_ARCH", "additional exception information"),
+            vb_xtval(this, "vb_xtval", "RISCV_ARCH", "trap value"),
             w_mstackovr(this, "w_mstackovr", "1"),
             w_mstackund(this, "w_mstackund", "1"),
             v_csr_rena(this, "v_csr_rena", "1"),
@@ -50,7 +52,7 @@ class CsrRegs : public ModuleObject {
             v_req_progbuf(this, "v_req_progbuf", "1"),
             v_req_ready(this, "v_req_ready", "1"),
             v_resp_valid(this, "v_resp_valid", "1"),
-            vb_mtvec_off(this, "vb_mtvec_off", "RISCV_ARCH", "4-bytes aligned") {
+            vb_xtvec_off(this, "vb_xtvec_off", "RISCV_ARCH", "4-bytes aligned") {
             Operation::start(this);
             CsrRegs *p = static_cast<CsrRegs *>(parent);
             p->proc_comb();
@@ -59,13 +61,15 @@ class CsrRegs : public ModuleObject {
         I32D iH;
         I32D iS;
         I32D iU;
-        Logic vb_irq_mask;
         Logic vb_xpp;
-        Logic v_step_irq;
-        Logic vb_exception;
-        Logic vb_interrupt;
+        Logic v_mie_glob;
+        Logic vb_mip_pending;
+        Logic vb_irq_pending;
+        Logic vb_irq_ena;
+        Logic vb_e_emux;
+        Logic vb_e_imux;
         Logic wb_trap_cause;
-        Logic vb_mtval;
+        Logic vb_xtval;
         Logic w_mstackovr;
         Logic w_mstackund;
         Logic v_csr_rena;
@@ -77,7 +81,7 @@ class CsrRegs : public ModuleObject {
         Logic v_req_progbuf;
         Logic v_req_ready;
         Logic v_resp_valid;
-        Logic vb_mtvec_off;
+        Logic vb_xtvec_off;
     };
 
     void proc_comb();
@@ -143,13 +147,31 @@ class CsrRegs : public ModuleObject {
             xepc(this, "xepc", "CFG_CPU_ADDR_BITS", "0", ""),
             xpp(this, "xpp", "2", "0", "Previous Privildge mode. If x is not implemented, then xPP mus be 0"),
             xpie(this, "xpie", "1", "0", "Previous Privildge mode global interrupt enable"),
-            xie(this, "xie", "1", "0", "Global interrupt enbale bit.")
+            xie(this, "xie", "1", "0", "Global interrupt enbale bit."),
+            xsie(this, "xsie", "1", "0", "Enable Software interrupts."),
+            xtie(this, "xtie", "1", "0", "Enable Timer interrupts."),
+            xeie(this, "xeie", "1", "0", "Enable External interrupts."),
+            xtvec_off(this, "xtvec_off", "RISCV_ARCH", "0", "Trap Vector BAR"),
+            xtvec_mode(this, "xtvec_mode", "2", "0", "Trap Vector mode: 0=direct; 1=vectored"),
+            xtval(this, "xtval", "RISCV_ARCH", "0", "Trap value, bad address"),
+            xcause_irq(this, "xcause_irq", "1", "0", "0=Exception, 1=Interrupt"),
+            xcause_code(this, "xcause_code", "5", "0", "Exception code"),
+            xscratch(this, "xscratch", "RISCV_ARCH", "0", "software dependable register")
             {}
      public:
         RegSignal xepc;
         RegSignal xpp;
         RegSignal xpie;
         RegSignal xie;
+        RegSignal xsie;
+        RegSignal xtie;
+        RegSignal xeie;
+        RegSignal xtvec_off;
+        RegSignal xtvec_mode;
+        RegSignal xtval;
+        RegSignal xcause_irq;
+        RegSignal xcause_code;
+        RegSignal xscratch;
     } RegModeTypeDef_;
 
     class ModeTableType : public TStructArray<RegModeType> {
@@ -169,10 +191,11 @@ class CsrRegs : public ModuleObject {
     RegSignal cmd_exception;
     RegSignal progbuf_end;
     RegSignal progbuf_err;
-    RegSignal mtvec;
-    RegSignal mtvec_mode;
-    RegSignal mtval;
-    RegSignal mscratch;
+    RegSignal mip_ssip;
+    RegSignal mip_stip;
+    RegSignal mip_seip;
+    RegSignal medeleg;
+    RegSignal mideleg;
     RegSignal mstackovr;
     RegSignal mstackund;
     RegSignal mpu_addr;
@@ -185,22 +208,11 @@ class CsrRegs : public ModuleObject {
     RegSignal satp_mode;
     RegSignal mode;
     RegSignal mprv;
-    RegSignal usie;
-    RegSignal ssie;
-    RegSignal msie;
-    RegSignal utie;
-    RegSignal stie;
-    RegSignal mtie;
-    RegSignal ueie;
-    RegSignal seie;
-    RegSignal meie;
     RegSignal ex_fpu_invalidop;
     RegSignal ex_fpu_divbyzero;
     RegSignal ex_fpu_overflow;
     RegSignal ex_fpu_underflow;
     RegSignal ex_fpu_inexact;
-    RegSignal trap_irq;
-    RegSignal trap_cause;
     RegSignal trap_addr;
     RegSignal timer;
     RegSignal cycle_cnt;

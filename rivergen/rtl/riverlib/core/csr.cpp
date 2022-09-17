@@ -34,8 +34,8 @@ CsrRegs::CsrRegs(GenObject *parent, const char *name) :
     i_e_halted(this, "i_e_halted", "1", "core is halted confirmation flag"),
     i_e_pc(this, "i_e_pc", "CFG_CPU_ADDR_BITS", "current latched instruction pointer in executor"),
     i_e_instr(this, "i_e_instr", "32", "current latched opcode in executor"),
-    i_irq_pending(this, "i_irq_pending", "IRQ_PER_HART_TOTAL", "Per Hart pending interrupts pins"),
-    o_irq_pending(this, "o_irq_pending", "IRQ_PER_HART_TOTAL", "Unmasked interrupt pending bits"),
+    i_irq_pending(this, "i_irq_pending", "IRQ_TOTAL", "Per Hart pending interrupts pins"),
+    o_irq_pending(this, "o_irq_pending", "IRQ_TOTAL", "Unmasked interrupt pending bits"),
     o_stack_overflow(this, "o_stack_overflow", "1", "stack overflow exception"),
     o_stack_underflow(this, "o_stack_underflow", "1", "stack underflow exception"),
     i_e_valid(this, "i_e_valid", "1", "instructuin executed flag"),
@@ -73,17 +73,18 @@ CsrRegs::CsrRegs(GenObject *parent, const char *name) :
     // registers
     xmode(this, "xmode"),
     state(this, "state", "4", "State_Idle"),
-    irq_pending(this, "irq_pending", "IRQ_PER_HART_TOTAL"),
+    irq_pending(this, "irq_pending", "IRQ_TOTAL"),
     cmd_type(this, "cmd_type", "CsrReq_TotalBits"),
     cmd_addr(this, "cmd_addr", "12"),
     cmd_data(this, "cmd_data", "RISCV_ARCH"),
     cmd_exception(this, "cmd_exception", "1", "0", "exception on CSR access"),
     progbuf_end(this, "progbuf_end", "1"),
     progbuf_err(this, "progbuf_err", "1"),
-    mtvec(this, "mtvec", "RISCV_ARCH"),
-    mtvec_mode(this, "mtvec_mode", "2"),
-    mtval(this, "mtval", "RISCV_ARCH"),
-    mscratch(this, "mscratch", "RISCV_ARCH"),
+    mip_ssip(this, "mip_ssip", "1", "0", "page 34: SSIP is writable to re-request SW irq from machine to supervisor"),
+    mip_stip(this, "mip_stip", "1", "0", "page 34: SSIP is writable in mip"),
+    mip_seip(this, "mip_seip", "1", "0", "page 34: SSIP is writable in mip"),
+    medeleg(this, "medeleg", "64"),
+    mideleg(this, "mideleg", "IRQ_TOTAL"),
     mstackovr(this, "mstackovr", "CFG_CPU_ADDR_BITS"),
     mstackund(this, "mstackund", "CFG_CPU_ADDR_BITS"),
     mpu_addr(this, "mpu_addr", "CFG_CPU_ADDR_BITS"),
@@ -96,22 +97,11 @@ CsrRegs::CsrRegs(GenObject *parent, const char *name) :
     satp_mode(this, "satp_mode", "4", "0", "Supervisor Address Translation and Protection mode"),
     mode(this, "mode", "2", "PRV_M"),
     mprv(this, "mprv", "1", "0", "Modify PRiVilege. (Table 8.5) If MPRV=0, load and stores as normal, when MPRV=1, use translation of previous mode"),
-    usie(this, "usie", "1", "0", "mie: User software interrupt enable"),
-    ssie(this, "ssie", "1", "0", "mie: Supervisor software interrupt enable"),
-    msie(this, "msie", "1", "0", "mie: machine software interrupt enable"),
-    utie(this, "utie", "1", "0", "mie: User timer interrupt enable"),
-    stie(this, "stie", "1", "0", "mie: Supervisor timer interrupt enable"),
-    mtie(this, "mtie", "1", "0", "mie: Machine timer interrupt enable"),
-    ueie(this, "ueie", "1", "0", "mie: User external interrupt enable"),
-    seie(this, "seie", "1", "0", "mie: Supervisor external interrupt enable"),
-    meie(this, "meie", "1", "0", "mie: Machine external interrupt enable"),
     ex_fpu_invalidop(this, "ex_fpu_invalidop", "1", "0", "FPU Exception: invalid operation"),
     ex_fpu_divbyzero(this, "ex_fpu_divbyzero", "1", "0", "FPU Exception: divide by zero"),
     ex_fpu_overflow(this, "ex_fpu_overflow", "1", "0", "FPU Exception: overflow"),
     ex_fpu_underflow(this, "ex_fpu_underflow", "1", "0", "FPU Exception: underflow"),
     ex_fpu_inexact(this, "ex_fpu_inexact", "1", "0", "FPU Exception: inexact"),
-    trap_irq(this, "trap_irq", "1"),
-    trap_cause(this, "trap_cause", "5"),
     trap_addr(this, "trap_addr", "CFG_CPU_ADDR_BITS"),
     timer(this, "timer", "64", "0", "Timer in clocks."),
     cycle_cnt(this, "cycle_cnt", "64", "0", "Cycle in clocks."),
@@ -138,8 +128,8 @@ void CsrRegs::proc_comb() {
     river_cfg *cfg = glob_river_cfg_;
     SETZERO(mpu_we);
     //SETVAL(dbg_e_valid, i_e_valid, "used in RtlWrapper to count executed instructions");
-    SETVAL(comb.vb_mtvec_off, CC2(BITS(mtvec, DEC(cfg->RISCV_ARCH), CONST("2")), CONST("0",2)));
     SETVAL(comb.vb_xpp, ARRITEM(xmode, TO_INT(mode), xmode->xpp));
+    SETVAL(comb.vb_xtvec_off, ARRITEM(xmode, TO_INT(mode), xmode->xtvec_off));
 
 TEXT();
     SWITCH (state);
@@ -173,16 +163,16 @@ TEXT();
         ENDCASE();
     CASE (State_Exception);
         SETVAL(state, State_Response);
-        SETBITONE(comb.vb_exception, TO_INT(BITS(cmd_addr, 4, 0)));
-        SETVAL(comb.vb_mtval, cmd_data);
+        SETBITONE(comb.vb_e_emux, TO_INT(BITS(cmd_addr, 4, 0)));
+        SETVAL(comb.vb_xtval, cmd_data);
         SETVAL(comb.wb_trap_cause, BITS(cmd_addr, 4, 0));
-        SETVAL(cmd_data, comb.vb_mtvec_off);
+        SETVAL(cmd_data, comb.vb_xtvec_off);
         IF (NZ(i_dbg_progbuf_ena));
             SETONE(progbuf_err);
             SETONE(progbuf_end);
             SETONE(cmd_exception);
         ENDIF();
-        IF (EQ(cmd_addr, CONST("EXCEPTION_CallFromUmode")));
+        IF (EQ(cmd_addr, cfg->EXCEPTION_CallFromXMode));
             SETVAL(comb.wb_trap_cause, ADD2(cmd_addr, mode));
         ENDIF();
         ENDCASE();
@@ -197,10 +187,10 @@ TEXT();
             SETVAL(dpc, cmd_data);
             SETVAL(cmd_data, ALLONES(), "signal to executor to switch into Debug Mode and halt");
         ELSE();
-            SETBITONE(comb.vb_exception, cfg->EXCEPTION_Breakpoint);
+            SETBITONE(comb.vb_e_emux, cfg->EXCEPTION_Breakpoint);
             SETVAL(comb.wb_trap_cause, BITS(cmd_addr, 4, 0));
-            SETVAL(comb.vb_mtval, i_e_pc);
-            SETVAL(cmd_data, comb.vb_mtvec_off, "Jump to exception handler");
+            SETVAL(comb.vb_xtval, i_e_pc);
+            SETVAL(cmd_data, comb.vb_xtvec_off, "Jump to exception handler");
         ENDIF();
         ENDCASE();
     CASE (State_Halt);
@@ -218,13 +208,13 @@ TEXT();
         ENDCASE();
     CASE (State_Interrupt);
         SETVAL(state, State_Response);
-        SETBITONE(comb.vb_interrupt, TO_INT(BITS(cmd_addr, 3, 0)));
+        SETBITONE(comb.vb_e_imux, TO_INT(BITS(cmd_addr, 3, 0)));
         SETVAL(comb.wb_trap_cause, BITS(cmd_addr, 4, 0));
-        IF (EQ(mtvec_mode, CONST("1", 2)));
+        IF (EQ(ARRITEM_B(xmode, TO_INT(mode), xmode->xtvec_mode), CONST("1", 2)));
             TEXT("vectorized");
-            SETVAL(cmd_data, ADD2(comb.vb_mtvec_off, MUL2(CONST("4"), comb.wb_trap_cause)));
+            SETVAL(cmd_data, ADD2(comb.vb_xtvec_off, CC2(comb.wb_trap_cause, CONST("0", 2))));
         ELSE();
-            SETVAL(cmd_data, comb.vb_mtvec_off);
+            SETVAL(cmd_data, comb.vb_xtvec_off);
         ENDIF();
         ENDCASE();
     CASE (State_TrapReturn);
@@ -323,10 +313,51 @@ TEXT();
         ENDCASE();
     // Supervisor Trap Setup
     CASE (CONST("0x100", 12), "sstatus: [SRW] Supervisor status register");
+        TEXT("[0] WPRI");
+        SETBIT(comb.vb_rdata, 1, ARRITEM(xmode, comb.iS, xmode->xie));
+        TEXT("[4:2] WPRI");
+        SETBIT(comb.vb_rdata, 5, ARRITEM(xmode, comb.iS, xmode->xpie));
+        TEXT("[6] UBE: Endianess: 0=little-endian; 1=big-endian. Instruction fetch is always little endian");
+        TEXT("[7] WPRI");
+        SETBIT(comb.vb_rdata, 8, ARRITEM(xmode, comb.iS, BIT(xmode->xpp, 0)), "SPP can have onle 0 or 1 values, so 1 bit only");
+        TEXT("[10:9] VS");
+        TEXT("[12:11] WPRI");
+        IF (cfg->CFG_HW_FPU_ENABLE);
+            SETBITS(comb.vb_rdata, 14, 13, CONST("0x1", 2), "FS field: Initial state");
+        ENDIF();
+        TEXT("[16:15] XS");
+        TEXT("[17] WPRI");
+        TEXT("[18] SUM");
+        TEXT("[19] MXR");
+        TEXT("[31:20] WPRI");
+        SETBITS(comb.vb_rdata, 33, 32, CONST("0x2", 2), "UXL: User is 64-bits");
+        TEXT("[62:34] WPRI");
+        TEXT("[63] SD. Read-only bit that summize FS, VS or XS fields");
+        IF (NZ(comb.v_csr_wena));
+            SETARRITEM(xmode, comb.iS, xmode->xie, BIT(cmd_data, 1));
+            SETARRITEM(xmode, comb.iS, xmode->xpie, BIT(cmd_data, 5));
+            SETARRITEM(xmode, comb.iS, xmode->xpp, CC2(CONST("0", 1), BIT(cmd_data, 8)));
+        ENDIF();
         ENDCASE();
     CASE (CONST("0x104", 12), "sie: [SRW] Supervisor interrupt-enable register");
+        SETBIT(comb.vb_rdata, DEC(cfg->IRQ_SSIP), ARRITEM(xmode, comb.iS, xmode->xsie));
+        SETBIT(comb.vb_rdata, DEC(cfg->IRQ_STIP), ARRITEM(xmode, comb.iS, xmode->xtie));
+        SETBIT(comb.vb_rdata, DEC(cfg->IRQ_SEIP), ARRITEM(xmode, comb.iS, xmode->xeie));
+        IF (comb.v_csr_wena);
+            TEXT("Write only supported interrupts");
+            SETARRITEM(xmode, comb.iS, xmode->xsie, BIT(cmd_data, cfg->IRQ_SSIP));
+            SETARRITEM(xmode, comb.iS, xmode->xtie, BIT(cmd_data, cfg->IRQ_STIP));
+            SETARRITEM(xmode, comb.iS, xmode->xeie, BIT(cmd_data, cfg->IRQ_SEIP));
+        ENDIF();
         ENDCASE();
-    CASE (CONST("0x105", 12), "sstatus: [SRW] Supervisor trap handler base address");
+    CASE (CONST("0x105", 12), "stvec: [SRW] Supervisor trap handler base address");
+        SETVAL(comb.vb_rdata, ARRITEM(xmode, comb.iS, xmode->xtvec_off));
+        SETBITS(comb.vb_rdata, 1, 0, ARRITEM(xmode, comb.iS, xmode->xtvec_mode));
+        IF (NZ(comb.v_csr_wena));
+            SETARRITEM(xmode, comb.iS, xmode->xtvec_off,
+                CC2(BITS(cmd_data, DEC(cfg->RISCV_ARCH), CONST("2")), CONST("0", 2)));
+            SETARRITEM(xmode, comb.iS, xmode->xtvec_mode, BITS(cmd_data, 1, 0));
+        ENDIF();
         ENDCASE();
     CASE (CONST("0x106", 12), "scounteren: [SRW] Supervisor counter enable");
         ENDCASE();
@@ -335,6 +366,10 @@ TEXT();
         ENDCASE();
     // Supervisor trap handling
     CASE (CONST("0x140", 12), "sscratch: [SRW] Supervisor register for supervisor trap handlers");
+        SETVAL(comb.vb_rdata, ARRITEM(xmode, comb.iS, xmode->xscratch));
+        IF (comb.v_csr_wena);
+            SETARRITEM(xmode, comb.iS, xmode->xscratch, cmd_data);
+        ENDIF();
         ENDCASE();
     CASE (CONST("0x141", 12), "sepc: [SRW] Supervisor exception program counter");
         SETVAL(comb.vb_rdata, ARRITEM(xmode, comb.iS, xmode->xepc));
@@ -343,10 +378,22 @@ TEXT();
         ENDIF();
         ENDCASE();
     CASE (CONST("0x142", 12), "scause: [SRW] Supervisor trap cause");
+        SETBIT(comb.vb_rdata, 63, ARRITEM(xmode, comb.iS, xmode->xcause_irq));
+        SETBITS(comb.vb_rdata, 4, 0, ARRITEM(xmode, comb.iS, xmode->xcause_code));
         ENDCASE();
     CASE (CONST("0x143", 12), "stval: [SRW] Supervisor bad address or instruction");
+        SETVAL(comb.vb_rdata, ARRITEM(xmode, comb.iS, xmode->xtval));
+        IF (comb.v_csr_wena);
+            SETARRITEM(xmode, comb.iS, xmode->xtval, cmd_data);
+        ENDIF();
         ENDCASE();
     CASE (CONST("0x144", 12), "sip: [SRW] Supervisor interrupt pending");
+        SETBITS(comb.vb_rdata, DEC(cfg->IRQ_TOTAL), CONST("0"), AND2_L(irq_pending, mideleg));
+        IF (comb.v_csr_wena);
+            SETVAL(mip_ssip, AND2(BIT(cmd_data, cfg->IRQ_SSIP), BIT(mideleg, cfg->IRQ_SSIP)));
+            SETVAL(mip_stip, AND2(BIT(cmd_data, cfg->IRQ_SSIP), BIT(mideleg, cfg->IRQ_STIP)));
+            SETVAL(mip_seip, AND2(BIT(cmd_data, cfg->IRQ_SSIP), BIT(mideleg, cfg->IRQ_SEIP)));
+        ENDIF();
         ENDCASE();
     // Supervisor Proction and Translation
     CASE (CONST("0x180", 12), "satp: [SRW] Supervisor address translation and protection");
@@ -388,7 +435,7 @@ TEXT();
         SETBIT(comb.vb_rdata, 3, ARRITEM(xmode, comb.iM, xmode->xie));
         TEXT("[4] WPRI");
         SETBIT(comb.vb_rdata, 5, ARRITEM(xmode, comb.iS, xmode->xpie));
-        TEXT("[6] UBE");
+        TEXT("[6] UBE: Endianess: 0=little-endian; 1=big-endian. Instruction fetch is always little endian");
         SETBIT(comb.vb_rdata, 7, ARRITEM(xmode, comb.iM, xmode->xpie));
         SETBIT(comb.vb_rdata, 8, ARRITEM(xmode, comb.iS, BIT(xmode->xpp, 0)), "SPP can have onle 0 or 1 values, so 1 bit only");
         TEXT("[10:9] VS");
@@ -465,46 +512,52 @@ TEXT();
         ENDIF();
         ENDCASE();
     CASE (CONST("0x302", 12), "medeleg: [MRW] Machine exception delegation");
+        SETVAL(comb.vb_rdata, medeleg);
+        IF (comb.v_csr_wena);
+            TEXT("page 31. Read-only zero for exceptions that could not be delegated, especially Call from M-mode");
+            SETVAL(medeleg, AND2_L(cmd_data, CONST("0xb3ff", 64)));
+        ENDIF();
         ENDCASE();
     CASE (CONST("0x303", 12), "mideleg: [MRW] Machine interrupt delegation");
+        SETVAL(comb.vb_rdata, mideleg);
+        IF (comb.v_csr_wena);
+            TEXT("No need to delegate machine interrupts to supervisor (but possible)");
+            SETVAL(mideleg, AND2_L(BITS(cmd_data, DEC(cfg->IRQ_TOTAL), CONST("0")), CONST("0x222", 12)));
+        ENDIF();
         ENDCASE();
     CASE (CONST("0x304", 12), "mie: [MRW] Machine interrupt enable bit");
-        SETBIT(comb.vb_rdata, 0, usie, "user software interrupt");
-        SETBIT(comb.vb_rdata, 1, ssie, "super-user software interrupt");
-        SETBIT(comb.vb_rdata, 3, msie, "machine software interrupt");
-        SETBIT(comb.vb_rdata, 4, utie, "user timer interrupt");
-        SETBIT(comb.vb_rdata, 5, stie, "super-user timer interrupt");
-        SETBIT(comb.vb_rdata, 7, mtie, "machine timer interrupt");
-        SETBIT(comb.vb_rdata, 8, ueie, "user external interrupt");
-        SETBIT(comb.vb_rdata, 9, seie, "super-user external interrupt");
-        SETBIT(comb.vb_rdata, 11, meie, "machine external interrupt");
+        SETBIT(comb.vb_rdata, DEC(cfg->IRQ_SSIP), ARRITEM(xmode, comb.iS, xmode->xsie));
+        SETBIT(comb.vb_rdata, DEC(cfg->IRQ_MSIP), ARRITEM(xmode, comb.iM, xmode->xsie));
+        SETBIT(comb.vb_rdata, DEC(cfg->IRQ_STIP), ARRITEM(xmode, comb.iS, xmode->xtie));
+        SETBIT(comb.vb_rdata, DEC(cfg->IRQ_MTIP), ARRITEM(xmode, comb.iM, xmode->xtie));
+        SETBIT(comb.vb_rdata, DEC(cfg->IRQ_SEIP), ARRITEM(xmode, comb.iS, xmode->xeie));
+        SETBIT(comb.vb_rdata, DEC(cfg->IRQ_MEIP), ARRITEM(xmode, comb.iM, xmode->xeie));
         IF (comb.v_csr_wena);
-            SETVAL(usie, BIT(cmd_data, 0));
-            SETVAL(ssie, BIT(cmd_data, 1));
-            SETVAL(msie, BIT(cmd_data, 3));
-            SETVAL(utie, BIT(cmd_data, 4));
-            SETVAL(stie, BIT(cmd_data, 5));
-            SETVAL(mtie, BIT(cmd_data, 7));
-            SETVAL(ueie, BIT(cmd_data, 8));
-            SETVAL(seie, BIT(cmd_data, 9));
-            SETVAL(meie, BIT(cmd_data, 11));
+            TEXT("Write only supported interrupts");
+            SETARRITEM(xmode, comb.iS, xmode->xsie, BIT(cmd_data, cfg->IRQ_SSIP));
+            SETARRITEM(xmode, comb.iM, xmode->xsie, BIT(cmd_data, cfg->IRQ_MSIP));
+            SETARRITEM(xmode, comb.iS, xmode->xtie, BIT(cmd_data, cfg->IRQ_STIP));
+            SETARRITEM(xmode, comb.iM, xmode->xtie, BIT(cmd_data, cfg->IRQ_MTIP));
+            SETARRITEM(xmode, comb.iS, xmode->xeie, BIT(cmd_data, cfg->IRQ_SEIP));
+            SETARRITEM(xmode, comb.iM, xmode->xeie, BIT(cmd_data, cfg->IRQ_MEIP));
         ENDIF();
         ENDCASE();
     CASE (CONST("0x305", 12), "mtvec: [MRW] Machine trap-handler base address");
-        SETVAL(comb.vb_rdata, mtvec);
-        SETBITS(comb.vb_rdata, 1, 0, mtvec_mode);
+        SETVAL(comb.vb_rdata, ARRITEM(xmode, comb.iM, xmode->xtvec_off));
+        SETBITS(comb.vb_rdata, 1, 0, ARRITEM(xmode, comb.iM, xmode->xtvec_mode));
         IF (NZ(comb.v_csr_wena));
-            SETVAL(mtvec, CC2(BITS(cmd_data, DEC(cfg->RISCV_ARCH), CONST("2")), CONST("0", 2)));
-            SETVAL(mtvec_mode, BITS(cmd_data, 1, 0));
+            SETARRITEM(xmode, comb.iM, xmode->xtvec_off,
+                CC2(BITS(cmd_data, DEC(cfg->RISCV_ARCH), CONST("2")), CONST("0", 2)));
+            SETARRITEM(xmode, comb.iM, xmode->xtvec_mode, BITS(cmd_data, 1, 0));
         ENDIF();
         ENDCASE();
     CASE (CONST("0x306", 12), "mcounteren: [MRW] Machine counter enable");
         ENDCASE();
     // Machine Trap Handling
     CASE (CONST("0x340", 12), "mscratch: [MRW] Machine scratch register");
-        SETVAL(comb.vb_rdata, mscratch);
+        SETVAL(comb.vb_rdata, ARRITEM(xmode, comb.iM, xmode->xscratch));
         IF (comb.v_csr_wena);
-            SETVAL(mscratch, cmd_data);
+            SETARRITEM(xmode, comb.iM, xmode->xscratch, cmd_data);
         ENDIF();
         ENDCASE();
     CASE (CONST("0x341", 12), "mepc: [MRW] Machine program counter");
@@ -514,18 +567,22 @@ TEXT();
         ENDIF();
         ENDCASE();
     CASE (CONST("0x342", 12), "mcause: [MRW] Machine trap cause");
-        SETZERO(comb.vb_rdata);
-        SETBIT(comb.vb_rdata, 63, trap_irq);
-        SETBITS(comb.vb_rdata, 4, 0, trap_cause);
+        SETBIT(comb.vb_rdata, 63, ARRITEM(xmode, comb.iM, xmode->xcause_irq));
+        SETBITS(comb.vb_rdata, 4, 0, ARRITEM(xmode, comb.iM, xmode->xcause_code));
         ENDCASE();
     CASE (CONST("0x343", 12), "mtval: [MRW] Machine bad address or instruction");
-        SETVAL(comb.vb_rdata, mtval);
+        SETVAL(comb.vb_rdata, ARRITEM(xmode, comb.iM, xmode->xtval));
         IF (comb.v_csr_wena);
-            SETVAL(mtval, cmd_data);
+            SETARRITEM(xmode, comb.iM, xmode->xtval, cmd_data);
         ENDIF();
         ENDCASE();
     CASE (CONST("0x344", 12), "mip: [MRW] Machine interrupt pending");
-        SETBITS(comb.vb_rdata, DEC(cfg->IRQ_PER_HART_TOTAL), CONST("0"), irq_pending);
+        SETBITS(comb.vb_rdata, DEC(cfg->IRQ_TOTAL), CONST("0"), irq_pending);
+        IF (comb.v_csr_wena);
+            SETVAL(mip_ssip, BIT(cmd_data, cfg->IRQ_SSIP));
+            SETVAL(mip_stip, BIT(cmd_data, cfg->IRQ_STIP));
+            SETVAL(mip_seip, BIT(cmd_data, cfg->IRQ_SEIP));
+        ENDIF();
         ENDCASE();
     CASE (CONST("0x34A", 12), "mtinst: [MRW] Machine trap instruction (transformed)");
         ENDCASE();
@@ -706,31 +763,47 @@ TEXT();
     ENDIF();
 
 TEXT();
-    IF (OR2(NZ(comb.vb_exception), NZ(comb.vb_interrupt)));
-        TEXT("By default all excpetions and interrupts handled in M-mode (not delegations)");
+    IF (ANDx(2, &LE(mode, cfg->PRV_S),
+                &OR2(AND2_L(comb.vb_e_emux, medeleg), AND2_L(comb.vb_e_imux, mideleg))));
+        TEXT("Trap delegated to Supervisor mode");
+        SETARRITEM(xmode, comb.iS, xmode->xpp, mode);
+        SETARRITEM(xmode, comb.iS, xmode->xpie, ARRITEM(xmode, TO_INT(mode), xmode->xie));
+        SETARRITEM(xmode, comb.iS, xmode->xie, CONST("0", 1));
+        SETARRITEM(xmode, comb.iS, xmode->xepc, i_e_pc, "current latched instruction not executed overwritten by exception/interrupt");
+        SETARRITEM(xmode, comb.iS, xmode->xtval, comb.vb_xtval, "trap value/bad address");
+        SETARRITEM(xmode, comb.iS, xmode->xcause_code, comb.wb_trap_cause);
+        SETARRITEM(xmode, comb.iS, xmode->xcause_irq, INV(OR_REDUCE(comb.vb_e_emux)));
+        SETVAL(mode, cfg->PRV_S);
+    ELSIF (OR2(NZ(comb.vb_e_emux), NZ(comb.vb_e_imux)));
+        TEXT("By default all exceptions and interrupts handled in M-mode (not delegations)");
         SETARRITEM(xmode, comb.iM, xmode->xpp, mode);
         SETARRITEM(xmode, comb.iM, xmode->xpie, ARRITEM(xmode, TO_INT(mode), xmode->xie));
         SETARRITEM(xmode, comb.iM, xmode->xie, CONST("0", 1));
         SETARRITEM(xmode, comb.iM, xmode->xepc, i_e_pc, "current latched instruction not executed overwritten by exception/interrupt");
-        SETVAL(mtval, comb.vb_mtval, "additional information for hwbreakpoint, memaccess faults and illegal opcodes");
-        SETVAL(trap_cause, comb.wb_trap_cause);
-        SETVAL(trap_irq, INV(OR_REDUCE(comb.vb_exception)));
+        SETARRITEM(xmode, comb.iM, xmode->xtval, comb.vb_xtval, "trap value/bad address");
+        SETARRITEM(xmode, comb.iM, xmode->xcause_code, comb.wb_trap_cause);
+        SETARRITEM(xmode, comb.iM, xmode->xcause_irq, INV(OR_REDUCE(comb.vb_e_emux)));
         SETVAL(mode, cfg->PRV_M);
         SETZERO(mmu_ena);
     ENDIF();
 
 TEXT();
-    TEXT("Interrupt enabled during stepping");
-    SETVAL(comb.v_step_irq, OR2(INV(dcsr_step), dcsr_stepie));
-TEXT();
-    // TODO: global interrupt and priv not machine mode
-    SETBIT(comb.vb_irq_mask, cfg->IRQ_HART_MSIP, AND2(msie, ARRITEM(xmode, comb.iM, xmode->xie)));
-    SETBIT(comb.vb_irq_mask, cfg->IRQ_HART_MTIP, AND2(mtie, ARRITEM(xmode, comb.iM, xmode->xie)));
-    SETBIT(comb.vb_irq_mask, cfg->IRQ_HART_SEIP, AND2(seie, ARRITEM(xmode, comb.iM, xmode->xie)));
-    SETBIT(comb.vb_irq_mask, cfg->IRQ_HART_MEIP, AND2(meie, ARRITEM(xmode, comb.iM, xmode->xie)));
+    TEXT("Step is not enabled or interrupt enabled during stepping");
+    SETVAL(comb.v_mie_glob, AND2(ARRITEM(xmode, comb.iM, xmode->xie),
+                                 OR2(INV(dcsr_step), dcsr_stepie)));
+    SETBIT(comb.vb_irq_ena, cfg->IRQ_MSIP, AND2(comb.v_mie_glob, ARRITEM(xmode, comb.iM, xmode->xsie)));
+    SETBIT(comb.vb_irq_ena, cfg->IRQ_MTIP, AND2(comb.v_mie_glob, ARRITEM(xmode, comb.iM, xmode->xtie)));
+    SETBIT(comb.vb_irq_ena, cfg->IRQ_MEIP, AND2(comb.v_mie_glob, ARRITEM(xmode, comb.iM, xmode->xeie)));
+    SETBIT(comb.vb_irq_ena, cfg->IRQ_SSIP, AND2(comb.v_mie_glob, ARRITEM(xmode, comb.iS, xmode->xsie)));
+    SETBIT(comb.vb_irq_ena, cfg->IRQ_STIP, AND2(comb.v_mie_glob, ARRITEM(xmode, comb.iS, xmode->xtie)));
+    SETBIT(comb.vb_irq_ena, cfg->IRQ_SEIP, AND2(comb.v_mie_glob, ARRITEM(xmode, comb.iS, xmode->xeie)));
 
 TEXT();
-    SETVAL(irq_pending, AND2_L(i_irq_pending, comb.vb_irq_mask));
+    TEXT("The following pending interrupt could be set in mip:");
+    SETBIT(comb.vb_mip_pending, cfg->IRQ_SSIP, mip_ssip);
+    SETBIT(comb.vb_mip_pending, cfg->IRQ_STIP, mip_stip);
+    SETBIT(comb.vb_mip_pending, cfg->IRQ_SEIP, mip_seip);
+    SETVAL(irq_pending, OR2_L(i_irq_pending, comb.vb_mip_pending));
 
 TEXT();
     SETZERO(comb.w_mstackovr);
@@ -779,7 +852,7 @@ TEXT();
     SETVAL(o_resp_exception, cmd_exception);
     SETVAL(o_progbuf_end, AND2(progbuf_end, i_resp_ready));
     SETVAL(o_progbuf_error, AND2(progbuf_err, i_resp_ready));
-    SETVAL(o_irq_pending, irq_pending);
+    SETVAL(o_irq_pending, AND2_L(irq_pending, comb.vb_irq_ena));
     SETVAL(o_stack_overflow, comb.w_mstackovr);
     SETVAL(o_stack_underflow, comb.w_mstackund);
     SETVAL(o_executed_cnt, executed_cnt);

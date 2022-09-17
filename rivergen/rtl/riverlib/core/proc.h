@@ -369,7 +369,7 @@ class Processor : public ModuleObject {
         flushi_ena(this, "flushi_ena", "1", "0", "clear specified addr in ICache without execution of fence.i"),
         flushi_addr(this, "flushi_addr", "CFG_CPU_ADDR_BITS"),
         executed_cnt(this, "executed_cnt", "64", "0", "Number of executed instruction"),
-        irq_pending(this, "irq_pending", "IRQ_PER_HART_TOTAL"),
+        irq_pending(this, "irq_pending", "IRQ_TOTAL"),
         stack_overflow(this, "stack_overflow", "1"),
         stack_underflow(this, "stack_underflow", "1"),
         step(this, "step", "1"),
