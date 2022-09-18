@@ -35,10 +35,12 @@ CsrRegs::CsrRegs(GenObject *parent, const char *name) :
     i_e_pc(this, "i_e_pc", "CFG_CPU_ADDR_BITS", "current latched instruction pointer in executor"),
     i_e_instr(this, "i_e_instr", "32", "current latched opcode in executor"),
     i_irq_pending(this, "i_irq_pending", "IRQ_TOTAL", "Per Hart pending interrupts pins"),
-    o_irq_pending(this, "o_irq_pending", "IRQ_TOTAL", "Unmasked interrupt pending bits"),
+    o_irq_pending(this, "o_irq_pending", "IRQ_TOTAL", "Enabled and Unmasked interrupt pending bits"),
+    o_wakeup(this, "o_wakeup", "1", "There's pending bit even if interrupts globally disabled"),
     o_stack_overflow(this, "o_stack_overflow", "1", "stack overflow exception"),
     o_stack_underflow(this, "o_stack_underflow", "1", "stack underflow exception"),
     i_e_valid(this, "i_e_valid", "1", "instructuin executed flag"),
+    i_mtimer(this, "i_mtimer", "64", "Read-only shadow value of memory-mapped mtimer register (see CLINT)."),
     o_executed_cnt(this, "o_executed_cnt", "64", "Number of executed instructions"),
     _io0_(this),
     o_step(this, "o_step", "1", "Stepping enabled"),
@@ -85,6 +87,7 @@ CsrRegs::CsrRegs(GenObject *parent, const char *name) :
     mip_seip(this, "mip_seip", "1", "0", "page 34: SSIP is writable in mip"),
     medeleg(this, "medeleg", "64"),
     mideleg(this, "mideleg", "IRQ_TOTAL"),
+    mcountinhibit(this, "mcountinhibit", "32", "0", "When non zero stop specified performance counter"),
     mstackovr(this, "mstackovr", "CFG_CPU_ADDR_BITS"),
     mstackund(this, "mstackund", "CFG_CPU_ADDR_BITS"),
     mpu_addr(this, "mpu_addr", "CFG_CPU_ADDR_BITS"),
@@ -103,9 +106,8 @@ CsrRegs::CsrRegs(GenObject *parent, const char *name) :
     ex_fpu_underflow(this, "ex_fpu_underflow", "1", "0", "FPU Exception: underflow"),
     ex_fpu_inexact(this, "ex_fpu_inexact", "1", "0", "FPU Exception: inexact"),
     trap_addr(this, "trap_addr", "CFG_CPU_ADDR_BITS"),
-    timer(this, "timer", "64", "0", "Timer in clocks."),
-    cycle_cnt(this, "cycle_cnt", "64", "0", "Cycle in clocks."),
-    executed_cnt(this, "executed_cnt", "64", "0", "Number of valid executed instructions"),
+    mcycle_cnt(this, "mcycle_cnt", "64", "0", "Cycle in clocks."),
+    minstret_cnt(this, "minstret_cnt", "64", "0", "Number of the instructions the hart has retired"),
     dscratch0(this, "dscratch0", "RISCV_ARCH"),
     dscratch1(this, "dscratch1", "RISCV_ARCH"),
     dpc(this, "dpc", "CFG_CPU_ADDR_BITS", "CFG_RESET_VECTOR"),
@@ -129,7 +131,22 @@ void CsrRegs::proc_comb() {
     SETZERO(mpu_we);
     //SETVAL(dbg_e_valid, i_e_valid, "used in RtlWrapper to count executed instructions");
     SETVAL(comb.vb_xpp, ARRITEM(xmode, TO_INT(mode), xmode->xpp));
-    SETVAL(comb.vb_xtvec_off, ARRITEM(xmode, TO_INT(mode), xmode->xtvec_off));
+
+TEXT();
+    SETVAL(comb.vb_xtvec_off_edeleg, ARRITEM(xmode, comb.iM, xmode->xtvec_off));
+    IF (AND2(LE(mode, cfg->PRV_S), NZ(BIT(medeleg, TO_INT(BITS(cmd_addr, 4, 0))))));
+        TEXT("Exception delegation to S-mode");
+        SETONE(comb.v_medeleg_ena);
+        SETVAL(comb.vb_xtvec_off_edeleg, ARRITEM(xmode, comb.iS, xmode->xtvec_off));
+    ENDIF();
+
+TEXT();
+    SETVAL(comb.vb_xtvec_off_ideleg, ARRITEM(xmode, comb.iM, xmode->xtvec_off));
+    IF (AND2(LE(mode, cfg->PRV_S), NZ(BIT(mideleg, TO_INT(BITS(cmd_addr, 3, 0))))));
+        TEXT("Interrupt delegation to S-mode");
+        SETONE(comb.v_mideleg_ena);
+        SETVAL(comb.vb_xtvec_off_ideleg, ARRITEM(xmode, comb.iS, xmode->xtvec_off));
+    ENDIF();
 
 TEXT();
     SWITCH (state);
@@ -166,7 +183,7 @@ TEXT();
         SETBITONE(comb.vb_e_emux, TO_INT(BITS(cmd_addr, 4, 0)));
         SETVAL(comb.vb_xtval, cmd_data);
         SETVAL(comb.wb_trap_cause, BITS(cmd_addr, 4, 0));
-        SETVAL(cmd_data, comb.vb_xtvec_off);
+        SETVAL(cmd_data, comb.vb_xtvec_off_edeleg);
         IF (NZ(i_dbg_progbuf_ena));
             SETONE(progbuf_err);
             SETONE(progbuf_end);
@@ -190,7 +207,7 @@ TEXT();
             SETBITONE(comb.vb_e_emux, cfg->EXCEPTION_Breakpoint);
             SETVAL(comb.wb_trap_cause, BITS(cmd_addr, 4, 0));
             SETVAL(comb.vb_xtval, i_e_pc);
-            SETVAL(cmd_data, comb.vb_xtvec_off, "Jump to exception handler");
+            SETVAL(cmd_data, comb.vb_xtvec_off_edeleg, "Jump to exception handler");
         ENDIF();
         ENDCASE();
     CASE (State_Halt);
@@ -210,11 +227,11 @@ TEXT();
         SETVAL(state, State_Response);
         SETBITONE(comb.vb_e_imux, TO_INT(BITS(cmd_addr, 3, 0)));
         SETVAL(comb.wb_trap_cause, BITS(cmd_addr, 4, 0));
+        SETVAL(cmd_data, comb.vb_xtvec_off_ideleg);
         IF (EQ(ARRITEM_B(xmode, TO_INT(mode), xmode->xtvec_mode), CONST("1", 2)));
             TEXT("vectorized");
-            SETVAL(cmd_data, ADD2(comb.vb_xtvec_off, CC2(comb.wb_trap_cause, CONST("0", 2))));
-        ELSE();
-            SETVAL(cmd_data, comb.vb_xtvec_off);
+            SETVAL(cmd_data, ADD2(comb.vb_xtvec_off_ideleg,
+                                  CC2(comb.wb_trap_cause, CONST("0", 2))));
         ENDIF();
         ENDCASE();
     CASE (State_TrapReturn);
@@ -303,13 +320,46 @@ TEXT();
         ENDCASE();
     // User Counter/Timers
     CASE (CONST("0xC00", 12), "cycle: [URO] User Cycle counter for RDCYCLE pseudo-instruction");
-        SETVAL(comb.vb_rdata, cycle_cnt);
+        IF (ANDx(2, &EQ(mode, cfg->PRV_U), 
+                    &ORx(2, &EZ(BIT(ARRITEM_B(xmode, comb.iM, xmode->xcounteren), 0)),
+                            &EZ(BIT(ARRITEM_B(xmode, comb.iS, xmode->xcounteren), 0)))));
+            TEXT("Available only if all more prv. bit CY are set");
+            SETONE(cmd_exception);
+        ELSIF (ANDx(2, &EQ(mode, cfg->PRV_S),
+                       &EZ(BIT(ARRITEM_B(xmode, comb.iM, xmode->xcounteren), 0))));
+            TEXT("Available only if bit CY is set");
+            SETONE(cmd_exception);
+        ELSE();
+            SETVAL(comb.vb_rdata, mcycle_cnt, "Read-only shadows of mcycle");
+        ENDIF();
         ENDCASE();
     CASE (CONST("0xC01", 12), "time: [URO] User Timer for RDTIME pseudo-instruction");
-        SETVAL(comb.vb_rdata, timer);
+        IF (ANDx(2, &EQ(mode, cfg->PRV_U), 
+                    &ORx(2, &EZ(BIT(ARRITEM_B(xmode, comb.iM, xmode->xcounteren), 1)),
+                            &EZ(BIT(ARRITEM_B(xmode, comb.iS, xmode->xcounteren), 1)))));
+            TEXT("Available only if all more prv. bit TM are set");
+            SETONE(cmd_exception);
+        ELSIF (ANDx(2, &EQ(mode, cfg->PRV_S),
+                       &EZ(BIT(ARRITEM_B(xmode, comb.iM, xmode->xcounteren), 1))));
+            TEXT("Available only if bit TM is set");
+            SETONE(cmd_exception);
+        ELSE();
+            SETVAL(comb.vb_rdata, i_mtimer);
+        ENDIF();
         ENDCASE();
     CASE (CONST("0xC03", 12), "insret: [URO] User Instructions-retired counter for RDINSTRET pseudo-instruction");
-        SETVAL(comb.vb_rdata, executed_cnt);
+        IF (ANDx(2, &EQ(mode, cfg->PRV_U),
+                    &ORx(2, &EZ(BIT(ARRITEM_B(xmode, comb.iM, xmode->xcounteren), 2)),
+                            &EZ(BIT(ARRITEM_B(xmode, comb.iS, xmode->xcounteren), 2)))));
+            TEXT("Available only if all more prv. bit IR are set");
+            SETONE(cmd_exception);
+        ELSIF (ANDx(2, &EQ(mode, cfg->PRV_S),
+                       &EZ(BIT(ARRITEM_B(xmode, comb.iM, xmode->xcounteren), 2))));
+            TEXT("Available only if bit IR is set");
+            SETONE(cmd_exception);
+        ELSE();
+            SETVAL(comb.vb_rdata, minstret_cnt, "Read-only shadow of minstret");
+        ENDIF();
         ENDCASE();
     // Supervisor Trap Setup
     CASE (CONST("0x100", 12), "sstatus: [SRW] Supervisor status register");
@@ -360,6 +410,10 @@ TEXT();
         ENDIF();
         ENDCASE();
     CASE (CONST("0x106", 12), "scounteren: [SRW] Supervisor counter enable");
+        SETVAL(comb.vb_rdata, ARRITEM(xmode, comb.iS, xmode->xcounteren));
+        IF (NZ(comb.v_csr_wena));
+            SETARRITEM(xmode, comb.iS, xmode->xcounteren, BITS(cmd_data, 15, 0));
+        ENDIF();
         ENDCASE();
     // Supervisor configuration
     CASE (CONST("0x10A", 12), "senvcfg: [SRW] Supervisor environment configuration register");
@@ -388,11 +442,11 @@ TEXT();
         ENDIF();
         ENDCASE();
     CASE (CONST("0x144", 12), "sip: [SRW] Supervisor interrupt pending");
-        SETBITS(comb.vb_rdata, DEC(cfg->IRQ_TOTAL), CONST("0"), AND2_L(irq_pending, mideleg));
+        SETBITS(comb.vb_rdata, 15, 0, AND2_L(irq_pending, CONST("0x0222", 16)), "see fig 4.7. Only s-bits are visible");
         IF (comb.v_csr_wena);
-            SETVAL(mip_ssip, AND2(BIT(cmd_data, cfg->IRQ_SSIP), BIT(mideleg, cfg->IRQ_SSIP)));
-            SETVAL(mip_stip, AND2(BIT(cmd_data, cfg->IRQ_SSIP), BIT(mideleg, cfg->IRQ_STIP)));
-            SETVAL(mip_seip, AND2(BIT(cmd_data, cfg->IRQ_SSIP), BIT(mideleg, cfg->IRQ_SEIP)));
+            SETVAL(mip_ssip, BIT(cmd_data, cfg->IRQ_SSIP));
+            SETVAL(mip_stip, BIT(cmd_data, cfg->IRQ_STIP));
+            SETVAL(mip_seip, BIT(cmd_data, cfg->IRQ_SEIP));
         ENDIF();
         ENDCASE();
     // Supervisor Proction and Translation
@@ -552,6 +606,10 @@ TEXT();
         ENDIF();
         ENDCASE();
     CASE (CONST("0x306", 12), "mcounteren: [MRW] Machine counter enable");
+        SETVAL(comb.vb_rdata, ARRITEM(xmode, comb.iM, xmode->xcounteren));
+        IF (NZ(comb.v_csr_wena));
+            SETARRITEM(xmode, comb.iM, xmode->xcounteren, BITS(cmd_data, 15, 0));
+        ENDIF();
         ENDCASE();
     // Machine Trap Handling
     CASE (CONST("0x340", 12), "mscratch: [MRW] Machine scratch register");
@@ -610,13 +668,23 @@ TEXT();
         ENDCASE();
     // Machine Counter/Timers
     CASE (CONST("0xB00", 12), "mcycle: [MRW] Machine cycle counter");
-        SETVAL(comb.vb_rdata, cycle_cnt);
+        SETVAL(comb.vb_rdata, mcycle_cnt);
+        IF (comb.v_csr_wena);
+            SETVAL(mcycle_cnt, cmd_data);
+        ENDIF();
         ENDCASE();
     CASE (CONST("0xB02", 12), "minstret: [MRW] Machine instructions-retired counter");
-        SETVAL(comb.vb_rdata, executed_cnt);
+        SETVAL(comb.vb_rdata, minstret_cnt);
+        IF (comb.v_csr_wena);
+            SETVAL(minstret_cnt, cmd_data);
+        ENDIF();
         ENDCASE();
     // Machine counter setup
-    CASE (CONST("0x320", 12), "mcounterinhibit: [MRW] Machine counter-inhibit register");
+    CASE (CONST("0x320", 12), "mcountinhibit: [MRW] Machine counter-inhibit register");
+        SETVAL(comb.vb_rdata, mcountinhibit);
+        IF (NZ(comb.v_csr_wena));
+            SETVAL(mcountinhibit, BITS(cmd_data, 15, 0));
+        ENDIF();
         ENDCASE();
     CASE (CONST("0x323", 12), "mpevent3: [MRW] Machine performance-monitoring event selector");
         ENDCASE();
@@ -789,21 +857,32 @@ TEXT();
 
 TEXT();
     TEXT("Step is not enabled or interrupt enabled during stepping");
-    SETVAL(comb.v_mie_glob, AND2(ARRITEM(xmode, comb.iM, xmode->xie),
-                                 OR2(INV(dcsr_step), dcsr_stepie)));
-    SETBIT(comb.vb_irq_ena, cfg->IRQ_MSIP, AND2(comb.v_mie_glob, ARRITEM(xmode, comb.iM, xmode->xsie)));
-    SETBIT(comb.vb_irq_ena, cfg->IRQ_MTIP, AND2(comb.v_mie_glob, ARRITEM(xmode, comb.iM, xmode->xtie)));
-    SETBIT(comb.vb_irq_ena, cfg->IRQ_MEIP, AND2(comb.v_mie_glob, ARRITEM(xmode, comb.iM, xmode->xeie)));
-    SETBIT(comb.vb_irq_ena, cfg->IRQ_SSIP, AND2(comb.v_mie_glob, ARRITEM(xmode, comb.iS, xmode->xsie)));
-    SETBIT(comb.vb_irq_ena, cfg->IRQ_STIP, AND2(comb.v_mie_glob, ARRITEM(xmode, comb.iS, xmode->xtie)));
-    SETBIT(comb.vb_irq_ena, cfg->IRQ_SEIP, AND2(comb.v_mie_glob, ARRITEM(xmode, comb.iS, xmode->xeie)));
+    IF (NZ(OR2(INV(dcsr_step), dcsr_stepie)));
+        IF (ARRITEM(xmode, comb.iM, xmode->xie));
+            TEXT("ALL not-delegated interrupts");
+            SETVAL(comb.vb_irq_ena, INV_L(mideleg));
+        ENDIF();
+        IF (ARRITEM(xmode, comb.iS, xmode->xie));
+            TEXT("Delegated to S-mode:");
+            SETVAL(comb.vb_irq_ena, OR2_L(comb.vb_irq_ena, mideleg));
+        ENDIF();
+    ENDIF();
 
 TEXT();
     TEXT("The following pending interrupt could be set in mip:");
-    SETBIT(comb.vb_mip_pending, cfg->IRQ_SSIP, mip_ssip);
-    SETBIT(comb.vb_mip_pending, cfg->IRQ_STIP, mip_stip);
-    SETBIT(comb.vb_mip_pending, cfg->IRQ_SEIP, mip_seip);
-    SETVAL(irq_pending, OR2_L(i_irq_pending, comb.vb_mip_pending));
+    SETBIT(comb.vb_pending, cfg->IRQ_MSIP, AND2(BIT(i_irq_pending, cfg->IRQ_MSIP),
+                                                ARRITEM(xmode, comb.iM, xmode->xsie)));
+    SETBIT(comb.vb_pending, cfg->IRQ_MTIP, AND2(BIT(i_irq_pending, cfg->IRQ_MTIP),
+                                                ARRITEM(xmode, comb.iM, xmode->xtie)));
+    SETBIT(comb.vb_pending, cfg->IRQ_MEIP, AND2(BIT(i_irq_pending, cfg->IRQ_MEIP),
+                                                ARRITEM(xmode, comb.iM, xmode->xeie)));
+    SETBIT(comb.vb_pending, cfg->IRQ_SSIP, AND2(OR2(BIT(i_irq_pending, cfg->IRQ_SSIP), mip_ssip),
+                                                ARRITEM(xmode, comb.iS, xmode->xsie)));
+    SETBIT(comb.vb_pending, cfg->IRQ_STIP, AND2(OR2(BIT(i_irq_pending, cfg->IRQ_STIP), mip_stip),
+                                                ARRITEM(xmode, comb.iS, xmode->xtie)));
+    SETBIT(comb.vb_pending, cfg->IRQ_SEIP, AND2(OR2(BIT(i_irq_pending, cfg->IRQ_SEIP), mip_seip),
+                                                ARRITEM(xmode, comb.iS, xmode->xeie)));
+    SETVAL(irq_pending, comb.vb_pending);
 
 TEXT();
     SETZERO(comb.w_mstackovr);
@@ -830,15 +909,15 @@ TEXT();
 
 
 TEXT();
-    IF (OR2(EZ(i_e_halted), EZ(dcsr_stopcount)));
-        SETVAL(cycle_cnt, INC(cycle_cnt));
+    TEXT("stopcount: do not increment any counters including cycle and instret");
+    IF (AND3(EZ(i_e_halted), EZ(dcsr_stopcount), EZ(BIT(mcountinhibit, 0))));
+        SETVAL(mcycle_cnt, INC(mcycle_cnt));
     ENDIF();
-    IF (ORx(2, &NZ(AND2(i_e_valid, INV(dcsr_stopcount))),
-                  &NZ(AND2(i_e_valid, INV(AND2(i_dbg_progbuf_ena, dcsr_stopcount))))));
-        SETVAL(executed_cnt, INC(executed_cnt));
-    ENDIF();
-    IF (EZ(AND2(OR2(i_e_halted, i_dbg_progbuf_ena), dcsr_stoptimer)));
-        SETVAL(timer, INC(timer));
+    IF (ANDx(4, &NZ(i_e_valid),
+                &EZ(dcsr_stopcount),
+                &EZ(i_dbg_progbuf_ena),
+                &EZ(BIT(mcountinhibit, 2))));
+        SETVAL(minstret_cnt, INC(minstret_cnt));
     ENDIF();
 
 
@@ -853,9 +932,10 @@ TEXT();
     SETVAL(o_progbuf_end, AND2(progbuf_end, i_resp_ready));
     SETVAL(o_progbuf_error, AND2(progbuf_err, i_resp_ready));
     SETVAL(o_irq_pending, AND2_L(irq_pending, comb.vb_irq_ena));
+    SETVAL(o_wakeup, OR_REDUCE(irq_pending));
     SETVAL(o_stack_overflow, comb.w_mstackovr);
     SETVAL(o_stack_underflow, comb.w_mstackund);
-    SETVAL(o_executed_cnt, executed_cnt);
+    SETVAL(o_executed_cnt, minstret_cnt);
     SETVAL(o_mpu_region_we, mpu_we);
     SETVAL(o_mpu_region_idx, mpu_idx);
     SETVAL(o_mpu_region_addr, mpu_addr);

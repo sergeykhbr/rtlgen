@@ -53,6 +53,7 @@ InstrExecute::InstrExecute(GenObject *parent, const char *name) :
     i_mem_ex_mpu_load(this, "i_mem_ex_mpu_load", "1", "Memoryaccess: MPU access error on load data"),
     i_mem_ex_addr(this, "i_mem_ex_addr", "CFG_CPU_ADDR_BITS", "Memoryaccess: exception address"),
     i_irq_pending(this, "i_irq_pending", "IRQ_TOTAL", "Per Hart pending interrupts pins"),
+    i_wakeup(this, "i_wakeup", "1", "There's pending bit even if interrupts globally disabled"),
     i_haltreq(this, "i_haltreq", "1", "halt request from debug unit"),
     i_resumereq(this, "i_resumereq", "1", "resume request from debug unit"),
     i_step(this, "i_step", "1", "resume with step"),
@@ -1096,7 +1097,7 @@ TEXT();
         ENDIF();
         ENDCASE();
     CASE (State_Wfi);
-        IF (NZ(OR2(i_haltreq, OR_REDUCE(i_irq_pending))));
+        IF (NZ(OR2(i_haltreq, i_wakeup)));
             SETVAL(state, State_Idle);
         ENDIF();
         ENDCASE();

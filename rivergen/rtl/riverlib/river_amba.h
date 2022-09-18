@@ -103,6 +103,7 @@ public:
     // Ports:
     InPort i_clk;
     InPort i_nrst;
+    InPort i_mtimer;
     InStruct<types_river::axi4_l1_in_type> i_msti;
     OutStruct<types_river::axi4_l1_out_type> o_msto;
     OutStruct<types_amba::axi4_master_config_type> o_xcfg;

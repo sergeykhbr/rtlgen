@@ -43,6 +43,7 @@ class Processor : public ModuleObject {
 
     InPort i_clk;
     InPort i_nrst;
+    InPort i_mtimer;
     TextLine _ControlPath0_;
     InPort i_req_ctrl_ready;
     OutPort o_req_ctrl_valid;
@@ -370,6 +371,7 @@ class Processor : public ModuleObject {
         flushi_addr(this, "flushi_addr", "CFG_CPU_ADDR_BITS"),
         executed_cnt(this, "executed_cnt", "64", "0", "Number of executed instruction"),
         irq_pending(this, "irq_pending", "IRQ_TOTAL"),
+        wakeup(this, "o_wakeup", "1", "0", "There's pending bit even if interrupts globally disabled"),
         stack_overflow(this, "stack_overflow", "1"),
         stack_underflow(this, "stack_underflow", "1"),
         step(this, "step", "1"),
@@ -384,6 +386,7 @@ class Processor : public ModuleObject {
         Signal flushi_addr;
         Signal executed_cnt;
         Signal irq_pending;
+        Signal wakeup;
         Signal stack_overflow;
         Signal stack_underflow;
         Signal step;

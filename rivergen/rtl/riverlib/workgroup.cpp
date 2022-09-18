@@ -34,6 +34,7 @@ Workgroup::Workgroup(GenObject *parent, const char *name) :
     i_mtip(this, "i_mtip", "CFG_CPU_MAX"),
     i_meip(this, "i_meip", "CFG_CPU_MAX"),
     i_seip(this, "i_seip", "CFG_CPU_MAX"),
+    i_mtimer(this, "i_mtimer", "64", "Read-only shadow value of memory-mapped mtimer register (see CLINT)."),
     o_xcfg(this, "o_xcfg"),
     _port0_(this, "coherent port:"),
     i_acpo(this, "i_acpo"),
@@ -173,6 +174,7 @@ Workgroup::Workgroup(GenObject *parent, const char *name) :
         NEW(*cpux.getItem(0), cpux.getName().c_str(), i);
             CONNECT(cpux, i, cpux->i_nrst, i_cores_nrst);
             CONNECT(cpux, i, cpux->i_clk, i_clk);
+            CONNECT(cpux, i, cpux->i_mtimer, i_mtimer);
             CONNECT(cpux, i, cpux->i_msti, ARRITEM(corei, *i, corei));
             CONNECT(cpux, i, cpux->o_msto, ARRITEM(coreo, *i, coreo));
             CONNECT(cpux, i, cpux->o_xcfg, ARRITEM(unused_mst_cfg, *i, unused_mst_cfg));

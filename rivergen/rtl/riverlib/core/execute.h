@@ -249,6 +249,7 @@ class InstrExecute : public ModuleObject {
     InPort i_mem_ex_mpu_load;
     InPort i_mem_ex_addr;
     InPort i_irq_pending;
+    InPort i_wakeup;
     InPort i_haltreq;
     InPort i_resumereq;
     InPort i_step;

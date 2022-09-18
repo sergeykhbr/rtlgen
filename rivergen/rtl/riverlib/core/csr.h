@@ -33,9 +33,7 @@ class CsrRegs : public ModuleObject {
             iS(&TO_INT(glob_river_cfg_->PRV_S), "iS", this),
             iU(&TO_INT(glob_river_cfg_->PRV_U), "iU", this),
             vb_xpp(this, "vb_xpp", "2"),
-            v_mie_glob(this, "v_mie_glob", "1"),
-            vb_mip_pending(this, "vb_mip_pending", "IRQ_TOTAL"),
-            vb_irq_pending(this, "vb_irq_pending", "IRQ_TOTAL"),
+            vb_pending(this, "vb_pending", "IRQ_TOTAL"),
             vb_irq_ena(this, "vb_irq_ena", "IRQ_TOTAL"),
             vb_e_emux(this, "vb_e_emux", "64", "Exception request from executor to process"),
             vb_e_imux(this, "vb_e_imux", "16", "Interrupt request from executor to process"),
@@ -52,7 +50,10 @@ class CsrRegs : public ModuleObject {
             v_req_progbuf(this, "v_req_progbuf", "1"),
             v_req_ready(this, "v_req_ready", "1"),
             v_resp_valid(this, "v_resp_valid", "1"),
-            vb_xtvec_off(this, "vb_xtvec_off", "RISCV_ARCH", "4-bytes aligned") {
+            v_medeleg_ena(this, "v_medeleg_ena", "1"),
+            v_mideleg_ena(this, "v_mideleg_ena", "1"),
+            vb_xtvec_off_ideleg(this, "vb_xtvec_off_ideleg", "RISCV_ARCH", "4-bytes aligned"),
+            vb_xtvec_off_edeleg(this, "vb_xtvec_off_edeleg", "RISCV_ARCH", "4-bytes aligned") {
             Operation::start(this);
             CsrRegs *p = static_cast<CsrRegs *>(parent);
             p->proc_comb();
@@ -62,9 +63,7 @@ class CsrRegs : public ModuleObject {
         I32D iS;
         I32D iU;
         Logic vb_xpp;
-        Logic v_mie_glob;
-        Logic vb_mip_pending;
-        Logic vb_irq_pending;
+        Logic vb_pending;
         Logic vb_irq_ena;
         Logic vb_e_emux;
         Logic vb_e_imux;
@@ -81,7 +80,10 @@ class CsrRegs : public ModuleObject {
         Logic v_req_progbuf;
         Logic v_req_ready;
         Logic v_resp_valid;
-        Logic vb_xtvec_off;
+        Logic v_medeleg_ena;
+        Logic v_mideleg_ena;
+        Logic vb_xtvec_off_ideleg;
+        Logic vb_xtvec_off_edeleg;
     };
 
     void proc_comb();
@@ -104,9 +106,11 @@ class CsrRegs : public ModuleObject {
     InPort i_e_instr;
     InPort i_irq_pending;
     OutPort o_irq_pending;
+    OutPort o_wakeup;
     OutPort o_stack_overflow;
     OutPort o_stack_underflow;
     InPort i_e_valid;
+    InPort i_mtimer;
     OutPort o_executed_cnt;
     TextLine _io0_;
     OutPort o_step;
@@ -156,7 +160,8 @@ class CsrRegs : public ModuleObject {
             xtval(this, "xtval", "RISCV_ARCH", "0", "Trap value, bad address"),
             xcause_irq(this, "xcause_irq", "1", "0", "0=Exception, 1=Interrupt"),
             xcause_code(this, "xcause_code", "5", "0", "Exception code"),
-            xscratch(this, "xscratch", "RISCV_ARCH", "0", "software dependable register")
+            xscratch(this, "xscratch", "RISCV_ARCH", "0", "software dependable register"),
+            xcounteren(this, "xcounteren", "32", "0", "Counter-enable controls access to timers from the next less priv mode")
             {}
      public:
         RegSignal xepc;
@@ -172,6 +177,7 @@ class CsrRegs : public ModuleObject {
         RegSignal xcause_irq;
         RegSignal xcause_code;
         RegSignal xscratch;
+        RegSignal xcounteren;
     } RegModeTypeDef_;
 
     class ModeTableType : public TStructArray<RegModeType> {
@@ -196,6 +202,7 @@ class CsrRegs : public ModuleObject {
     RegSignal mip_seip;
     RegSignal medeleg;
     RegSignal mideleg;
+    RegSignal mcountinhibit;
     RegSignal mstackovr;
     RegSignal mstackund;
     RegSignal mpu_addr;
@@ -214,9 +221,8 @@ class CsrRegs : public ModuleObject {
     RegSignal ex_fpu_underflow;
     RegSignal ex_fpu_inexact;
     RegSignal trap_addr;
-    RegSignal timer;
-    RegSignal cycle_cnt;
-    RegSignal executed_cnt;
+    RegSignal mcycle_cnt;
+    RegSignal minstret_cnt;
     RegSignal dscratch0;
     RegSignal dscratch1;
     RegSignal dpc;

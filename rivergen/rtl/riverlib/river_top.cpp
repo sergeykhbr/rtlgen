@@ -26,6 +26,7 @@ RiverTop::RiverTop(GenObject *parent, const char *name) :
     // Ports
     i_clk(this, "i_clk", "1", "CPU clock"),
     i_nrst(this, "i_nrst", "1", "Reset: active LOW"),
+    i_mtimer(this, "i_mtimer", "64", "Read-only shadow value of memory-mapped mtimer register (see CLINT)."),
     _MemInterface0_(this, "Memory interface:"),
     i_req_mem_ready(this, "i_req_mem_ready", "1", "System Bus is ready to accept memory operation request"),
     o_req_mem_path(this, "o_req_mem_path", "1", "0=ctrl; 1=data path"),
@@ -115,6 +116,7 @@ RiverTop::RiverTop(GenObject *parent, const char *name) :
     NEW(proc0, proc0.getName().c_str());
         CONNECT(proc0, 0, proc0.i_clk, i_clk);
         CONNECT(proc0, 0, proc0.i_nrst, i_nrst);
+        CONNECT(proc0, 0, proc0.i_mtimer, i_mtimer);
         CONNECT(proc0, 0, proc0.i_req_ctrl_ready, w_req_ctrl_ready);
         CONNECT(proc0, 0, proc0.o_req_ctrl_valid, w_req_ctrl_valid);
         CONNECT(proc0, 0, proc0.o_req_ctrl_addr, wb_req_ctrl_addr);

@@ -323,7 +323,7 @@ river_cfg::river_cfg(GenObject *parent) :
     IRQ_MTIP(this, "IRQ_MTIP", "7", "Machine timer pening interrupt"),
     IRQ_SEIP(this, "IRQ_SEIP", "9", "Supervisor external pening interrupt"),
     IRQ_MEIP(this, "IRQ_MEIP", "11", "Machine external pening interrupt"),
-    IRQ_TOTAL(this, "IRQ_TOTAL", "12", "Total number of direct core interrupt requests"),
+    IRQ_TOTAL(this, "IRQ_TOTAL", "16", "Total number of direct core interrupt requests"),
     _MemoryAccess0_(this, "Depth of the fifo between Executor and MemoryAccess modules."),
     CFG_MEMACCESS_QUEUE_DEPTH(this, "CFG_MEMACCESS_QUEUE_DEPTH", "2"),
     _79_(this, "Register's tag used to detect reg hazard and it should be higher than available"),

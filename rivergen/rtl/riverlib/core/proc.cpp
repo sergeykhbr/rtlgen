@@ -24,6 +24,7 @@ Processor::Processor(GenObject *parent, const char *name) :
     trace_file(this, "trace_file", "trace_river_sysc"),
     i_clk(this, "i_clk", "1", "CPU clock"),
     i_nrst(this, "i_nrst", "1", "Reset: active LOW"),
+    i_mtimer(this, "i_mtimer", "64", "Read-only shadow value of memory-mapped mtimer register (see CLINT)."),
     _ControlPath0_(this, "Control path:"),
     i_req_ctrl_ready(this, "i_req_ctrl_ready", "1", "ICache is ready to accept request"),
     o_req_ctrl_valid(this, "o_req_ctrl_valid", "1", "Request to ICache is valid"),
@@ -298,6 +299,7 @@ Processor::Processor(GenObject *parent, const char *name) :
         CONNECT(exec0, 0, exec0.i_mem_ex_mpu_load, i_resp_data_er_mpu_load);
         CONNECT(exec0, 0, exec0.i_mem_ex_addr, i_resp_data_fault_addr);
         CONNECT(exec0, 0, exec0.i_irq_pending, csr.irq_pending);
+        CONNECT(exec0, 0, exec0.i_wakeup, csr.wakeup);
         CONNECT(exec0, 0, exec0.i_haltreq, i_haltreq);
         CONNECT(exec0, 0, exec0.i_resumereq, i_resumereq);
         CONNECT(exec0, 0, exec0.i_step, csr.step);
@@ -526,9 +528,11 @@ Processor::Processor(GenObject *parent, const char *name) :
         CONNECT(csr0, 0, csr0.i_e_instr, w.e.instr);
         CONNECT(csr0, 0, csr0.i_irq_pending, i_irq_pending);
         CONNECT(csr0, 0, csr0.o_irq_pending, csr.irq_pending);
+        CONNECT(csr0, 0, csr0.o_wakeup, csr.wakeup);
         CONNECT(csr0, 0, csr0.o_stack_overflow, csr.stack_overflow);
         CONNECT(csr0, 0, csr0.o_stack_underflow, csr.stack_underflow);
         CONNECT(csr0, 0, csr0.i_e_valid, w.e.valid);
+        CONNECT(csr0, 0, csr0.i_mtimer, i_mtimer);
         CONNECT(csr0, 0, csr0.o_executed_cnt, csr.executed_cnt);
         CONNECT(csr0, 0, csr0.o_step, csr.step);
         CONNECT(csr0, 0, csr0.i_dbg_progbuf_ena, dbg.progbuf_ena);

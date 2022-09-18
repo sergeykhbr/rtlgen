@@ -26,6 +26,7 @@ RiverAmba::RiverAmba(GenObject *parent, const char *name) :
     // Ports
     i_clk(this, "i_clk", "1", "CPU clock"),
     i_nrst(this, "i_nrst", "1", "Reset: active LOW"),
+    i_mtimer(this, "i_mtimer", "64", "Read-only shadow value of memory-mapped mtimer register (see CLINT)."),
     i_msti(this, "i_msti"),
     o_msto(this, "o_msto"),
     o_xcfg(this, "o_xcfg"),
@@ -121,6 +122,7 @@ RiverAmba::RiverAmba(GenObject *parent, const char *name) :
     NEW(river0, river0.getName().c_str());
         CONNECT(river0, 0, river0.i_clk, i_clk);
         CONNECT(river0, 0, river0.i_nrst, i_nrst);
+        CONNECT(river0, 0, river0.i_mtimer, i_mtimer);
         CONNECT(river0, 0, river0.i_req_mem_ready, req_mem_ready_i);
         CONNECT(river0, 0, river0.o_req_mem_path, req_mem_path_o);
         CONNECT(river0, 0, river0.o_req_mem_valid, req_mem_valid_o);

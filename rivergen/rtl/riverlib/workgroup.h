@@ -87,6 +87,7 @@ public:
     InPort i_mtip;
     InPort i_meip;
     InPort i_seip;
+    InPort i_mtimer;
     OutStruct<types_amba::axi4_master_config_type> o_xcfg;
     TextLine _port0_;
     InStruct<types_amba::axi4_master_out_type> i_acpo;

@@ -44,6 +44,7 @@ public:
     // Ports:
     InPort i_clk;
     InPort i_nrst;
+    InPort i_mtimer;
     TextLine _MemInterface0_;
     InPort i_req_mem_ready;
     OutPort o_req_mem_path;
