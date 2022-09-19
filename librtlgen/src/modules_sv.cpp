@@ -194,7 +194,7 @@ std::string ModuleObject::generate_sv_mod_genparam() {
     getTmplParamList(genparam);
     getParamList(genparam);
 
-    if (isAsyncReset()) {
+    if (getAsyncReset()) {
         ret += "    parameter bit async_reset = 1'b0";           // Mandatory generic parameter
         if (genparam.size()) {
             ret += ",";
@@ -448,59 +448,59 @@ std::string ModuleObject::generate_sv_mod_proc(GenObject *proc) {
     return ret;
 }
 
-
-std::string ModuleObject::generate_sv_mod_proc_registers() {
+std::string ModuleObject::generate_sv_mod_always_ff_rst(bool clkpos) {
     std::string out = "";
     std::string xrst = "";
-
-    out += "generate\n";
-    Operation::set_space(Operation::get_space() + 1);
-    if (isAsyncReset()) {
-        out += Operation::addspaces() + "if (async_reset) begin: async_rst_gen\n";
-        Operation::set_space(Operation::get_space() + 1);
-        out += "\n";
-        out += Operation::addspaces() + "always_ff @(posedge i_clk or negedge i_nrst) begin: rg_proc\n";
-        Operation::set_space(Operation::get_space() + 1);
-        out += Operation::reset("r", 0, this, xrst);
-        out += " else begin\n";
-        Operation::set_space(Operation::get_space() + 1);
-        if (isCombProcess()) {
-            out += Operation::copyreg("r", "rin", this);
-        }
-        Operation::set_space(Operation::get_space() - 1);
-        out += Operation::addspaces();
-        out += "end\n";
-
-        // additional operation on posedge clock events
-        for (auto &e: getEntries()) {
-            if (e->getId() != ID_PROCESS || e->getName() != "registers") {
-                continue;
-            }
-            out += "\n";
-            for (auto &r: e->getEntries()) {
-                out += r->generate();
-            }
-        }
-        Operation::set_space(Operation::get_space() - 1);
-        out += Operation::addspaces() + "end: rg_proc\n";
-
-        Operation::set_space(Operation::get_space() - 1);
-        out += "\n";
-        out += Operation::addspaces() + "end: async_rst_gen\n";
-        out += Operation::addspaces() + "else begin: no_rst_gen\n";
+    std::string src = "rin";
+    std::string dst = "r";
+    std::string blkname = ": rg_proc";  // to minimiz differences. Could be removed later
+    out += Operation::addspaces() + "always_ff @(";
+    if (clkpos) {
+        out += "posedge ";
     } else {
-        out += Operation::addspaces() + "begin: no_rst_gen\n";
+        out += "negedge ";
+        src = "nrin";
+        dst = "nr";
+        blkname = "";
     }
-    Operation::set_space(Operation::get_space() + 1);
-    out += "\n";
-    out += Operation::addspaces() + "always_ff @(posedge i_clk) begin: rg_proc\n";
+    out += getClockPort()->getName();
+    if (getResetPort()) {
+        out += ", ";
+        if (!getResetActive()) {
+            out += "negedge ";
+        } else {
+            out += "posedge ";
+        }
+        out += getResetPort()->getName();
+    }
+    out += ") begin" + blkname + "\n";
     Operation::set_space(Operation::get_space() + 1);
     if (isCombProcess()) {
-        out += Operation::copyreg("r", "rin", this);
+        if (getResetPort()) {
+            out += Operation::reset(dst.c_str(), 0, this, xrst);
+            out += " else begin\n";
+            Operation::set_space(Operation::get_space() + 1);
+            out += Operation::copyreg(dst.c_str(), src.c_str(), this);
+            Operation::set_space(Operation::get_space() - 1);
+            out += Operation::addspaces() + "end\n";
+        } else {
+            out += Operation::copyreg(dst.c_str(), src.c_str(), this);
+        }
     }
     // additional operation on posedge clock events
+    out += generate_sv_mod_always_ops();
+    Operation::set_space(Operation::get_space() - 1);
+    out += Operation::addspaces() + "end" + blkname + "\n";
+    return out; 
+}
+
+// additional operations on posedge clock events
+std::string ModuleObject::generate_sv_mod_always_ops() {
+    std::string out = "";
     for (auto &e: getEntries()) {
-        if (e->getId() != ID_PROCESS || e->getName() != "registers") {
+        if (e->getId() != ID_PROCESS
+            || e->getName() != "registers"
+            || e->getName() != "nregisters") {
             continue;
         }
         out += "\n";
@@ -508,14 +508,57 @@ std::string ModuleObject::generate_sv_mod_proc_registers() {
             out += r->generate();
         }
     }
-    Operation::set_space(Operation::get_space() - 1);
-    out += Operation::addspaces() + "end: rg_proc\n";
-    out += "\n";
-    Operation::set_space(Operation::get_space() - 1);
-    out += Operation::addspaces() + "end: no_rst_gen\n";
-    Operation::set_space(Operation::get_space() - 1);
-    out += "endgenerate\n";
-    out += "\n";
+    return out;
+}
+
+std::string ModuleObject::generate_sv_mod_proc_registers() {
+    std::string out = "";
+    std::string xrst = "";
+
+    if (getAsyncReset() && getResetPort()) {
+        // Need to generate both cases: always with and without reset
+        out += "generate\n";
+        Operation::set_space(Operation::get_space() + 1);
+        out += Operation::addspaces() + "if (async_reset) begin: async_rst_gen\n";
+        Operation::set_space(Operation::get_space() + 1);
+        out += "\n";
+    }
+    if (getResetPort()) {
+        out += generate_sv_mod_always_ff_rst(true);
+        out += "\n";
+        if (isNRegProcess()) {
+            out += generate_sv_mod_always_ff_rst(false);
+            out += "\n";
+        }
+    }
+    if (getAsyncReset() && getResetPort()) {
+        Operation::set_space(Operation::get_space() - 1);
+        out += "\n";
+        out += Operation::addspaces() + "end: async_rst_gen\n";
+        out += Operation::addspaces() + "else begin: no_rst_gen\n";
+        Operation::set_space(Operation::get_space() + 1);
+        out += "\n";
+    }
+
+    if (getAsyncReset() || getResetPort() == 0) {
+        out += Operation::addspaces() + "always_ff @(posedge i_clk) begin: rg_proc\n";
+        Operation::set_space(Operation::get_space() + 1);
+        if (isCombProcess()) {
+            out += Operation::copyreg("r", "rin", this);
+        }
+        generate_sv_mod_always_ops();   // additional operation on posedge clock events
+        Operation::set_space(Operation::get_space() - 1);
+        out += Operation::addspaces() + "end: rg_proc\n";
+        out += "\n";
+    }
+
+    if (getAsyncReset() && getResetPort()) {
+        Operation::set_space(Operation::get_space() - 1);
+        out += Operation::addspaces() + "end: no_rst_gen\n";
+        Operation::set_space(Operation::get_space() - 1);
+        out += "endgenerate\n";
+        out += "\n";
+    }
     return out;
 }
 

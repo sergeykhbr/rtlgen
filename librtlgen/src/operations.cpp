@@ -77,6 +77,11 @@ std::string Operation::fullname(const char *prefix, std::string name, GenObject 
     if (!obj) {
         return name;
     }
+#if 1
+    if (obj->getName() == "ir") {
+        bool st = true;
+    }
+#endif
     GenObject *p = obj->getParent();
     std::string curname = "";
     if (p && p->getId() == ID_ARRAY_DEF) {
@@ -141,8 +146,10 @@ std::string Operation::fullname(const char *prefix, std::string name, GenObject 
             || p->getId() == ID_STRUCT_DEF
             || p->getId() == ID_VECTOR)) {
         curname = fullname(prefix, curname, obj->getParent());
-    } else if (obj->isReg() || obj->isNReg()) {
+    } else if (obj->isReg()) {
         curname = std::string(prefix) + "." + curname;
+    } else if (obj->isNReg()) {
+        curname = std::string("n") + std::string(prefix) + "." + curname;
     }
     return curname;
 }
@@ -277,6 +284,8 @@ std::string Operation::copyreg(const char *dst, const char *src, ModuleObject *m
         } else {
             if (dst[0] == 'r' && (dst[1] == '\0' || dst[1] == '.')) {
                 ret += std::string(dst) + " <= " + t_src + ";\n";
+            } else if (dst[0] == 'n' && dst[1] == 'r' && (dst[2] == '\0' || dst[2] == '.')) {
+                ret += std::string(dst) + " <= " + t_src + ";\n";
             } else {
                 ret += std::string(dst) + " = " + t_src + ";\n";
             }
@@ -351,7 +360,13 @@ std::string Operation::reset(const char *dst, const char *src, ModuleObject *m, 
             }
             ret += " begin\n";
         } else {
-            ret += "if (i_nrst == 1'b0) begin\n";
+            ret += "if (" + m->getResetPort()->getName() + " == ";
+            if (!m->getResetActive()) {
+                ret += "1'b0";
+            } else {
+                ret += "1'b1";
+            }
+            ret += ") begin\n";
         }
 
         spaces_++;
@@ -361,6 +376,8 @@ std::string Operation::reset(const char *dst, const char *src, ModuleObject *m, 
                 ret += Operation::addspaces();
                 if (dst[0] == 'r' && (dst[1] == '\0' || dst[1] == '.')) {
                     ret += std::string(dst) + " <= " + m->getType() + "_r_reset";
+                } else if (dst[0] == 'n' && dst[1] == 'r' && (dst[2] == '\0' || dst[2] == '.')) {
+                    ret += std::string(dst) + " <= " + m->getType() + "_nr_reset";
                 } else {
                     ret += std::string(dst) + " = " + m->getType() + "_r_reset";
                 }
@@ -368,6 +385,8 @@ std::string Operation::reset(const char *dst, const char *src, ModuleObject *m, 
                 // copy data from src into dst
                 ret += Operation::addspaces();
                 if (dst[0] == 'r' && (dst[1] == '\0' || dst[1] == '.')) {
+                    ret += std::string(dst) + " <= " + std::string(src);
+                } else if (dst[0] == 'n' && dst[1] == 'r' && (dst[2] == '\0' || dst[2] == '.')) {
                     ret += std::string(dst) + " <= " + std::string(src);
                 } else {
                     ret += std::string(dst) + " = " + std::string(src);
@@ -868,6 +887,8 @@ std::string SETVAL_gen(GenObject **args) {
             || args[2]->getId() == ID_INPUT
             || args[2]->getId() == ID_SIGNAL
             || args[2]->getId() == ID_PARAM
+            || args[2]->getId() == ID_DEF_PARAM
+            || args[2]->getId() == ID_TMPL_PARAM
             || args[2]->getId() == ID_STRUCT_INST
             || args[2]->getId() == ID_VECTOR) {
         ret += Operation::obj2varname(args[2]);
@@ -2857,10 +2878,10 @@ std::string NEW_gen_sv(Operation *op, ModuleObject *mod, std::string name) {
     mod->getTmplParamList(tmpllist);
     mod->getParamList(tmpllist);    
     tcnt = 0;
-    if (mod->isAsyncReset() || tmpllist.size()) {
+    if (mod->getAsyncReset() || tmpllist.size()) {
         ret += "#(\n";
         Operation::set_space(Operation::get_space() + 1);
-        if (mod->isAsyncReset()) {
+        if (mod->getAsyncReset()) {
             ret += Operation::addspaces() + ".async_reset(async_reset)";
             if (tmpllist.size()) {
                 ret += ",";
@@ -2960,7 +2981,7 @@ std::string NEW_gen(GenObject **args) {
     } else {
         ret += "\"" + name + "\"";
     }
-    if (mod->isAsyncReset()) {
+    if (mod->getAsyncReset()) {
         ret += ", async_reset";
     }
     std::list<GenObject *>genlist;

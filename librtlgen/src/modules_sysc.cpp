@@ -117,7 +117,7 @@ std::string ModuleObject::generate_sysc_h() {
     // Constructor declaration:
     std::string space1 = "    " + getType() + "(";
     out += space1 + "sc_module_name name";
-    if (isAsyncReset()) {
+    if (getAsyncReset()) {
         ln = "";
         while (ln.size() < space1.size()) {
             ln += " ";
@@ -155,7 +155,7 @@ std::string ModuleObject::generate_sysc_h() {
 
     // Generic parameter local storage:
     tcnt = 0;
-    if (isAsyncReset()) {
+    if (getAsyncReset()) {
         out += "    " + (new Logic())->getType() + " async_reset_;\n";
         tcnt++;
     }
@@ -376,7 +376,7 @@ std::string ModuleObject::generate_sysc_proc_registers() {
     out += generate_sysc_template_f_name();
     out += "::registers() {\n";
     Operation::set_space(Operation::get_space() + 1);
-    if (isAsyncReset()) {
+    if (getAsyncReset()) {
         if (isCombProcess()) {
             out += Operation::reset("r", 0, this, xrst);
         }
@@ -386,7 +386,7 @@ std::string ModuleObject::generate_sysc_proc_registers() {
     if (isCombProcess()) {
         out += Operation::copyreg("r", "v", this);
     }
-    if (isAsyncReset()) {
+    if (getAsyncReset()) {
         Operation::set_space(Operation::get_space() - 1);
         out += Operation::addspaces();
         out += "}\n";
@@ -700,7 +700,7 @@ std::string ModuleObject::generate_sysc_constructor() {
     }
     space1 += "::" + getType() + "(";
     ret += space1 + "sc_module_name name";
-    if (isAsyncReset()) {
+    if (getAsyncReset()) {
         ln = "";
         while (ln.size() < space1.size()) {
             ln += " ";
@@ -738,7 +738,7 @@ std::string ModuleObject::generate_sysc_constructor() {
     ret += "{\n";
     ret += "\n";
     // local copy of the generic parameters:
-    if (isAsyncReset()) {
+    if (getAsyncReset()) {
         ret += "    async_reset_ = async_reset;\n";
     }
     for (auto &p: entries_) {
@@ -779,10 +779,19 @@ std::string ModuleObject::generate_sysc_constructor() {
     if (isRegProcess()) {
         ret += "\n";
         ret += "    SC_METHOD(registers);\n";
-        if (isAsyncReset()) {
-            ret += "    sensitive << i_nrst;\n";
+        if (getAsyncReset()) {
+            ret += "    sensitive << " + getAsyncReset()->getName() + ";\n";
         }
-        ret += "    sensitive << i_clk.pos();\n";
+        ret += "    sensitive << " + getClockPort()->getName() + ".pos();\n";
+    }
+
+    if (isNRegProcess()) {
+        ret += "\n";
+        ret += "    SC_METHOD(nregisters);\n";
+        if (getAsyncReset()) {
+            ret += "    sensitive << " + getAsyncReset()->getName() + ";\n";
+        }
+        ret += "    sensitive << " + getClockPort()->getName() + ".pos();\n";
     }
     ret += "}\n";
     ret += "\n";

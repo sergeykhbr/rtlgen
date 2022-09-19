@@ -31,30 +31,6 @@ ModuleObject::ModuleObject(GenObject *parent, const char *type, const char *name
     }
 }
 
-
-bool ModuleObject::isAsyncReset() {
-    bool nrst_exist = false;
-    for (auto &e: entries_) {
-        if (strstr(e->getName().c_str(), "nrst")) {
-            nrst_exist = true;
-            break;
-        }
-    }
-    if (!nrst_exist) {
-        return false;
-    }
-    for (auto &e: entries_) {
-        if (e->getId() == ID_MODULE_INST) {
-            if (static_cast<ModuleObject *>(e)->isAsyncReset()) {
-                return true;
-            }
-        } else if (e->isReg() || e->isNReg()) {
-            return true;
-        }
-    }
-    return false;
-}
-
 bool ModuleObject::isCombProcess() {
     for (auto &e: entries_) {
         if (e->getId() == ID_PROCESS

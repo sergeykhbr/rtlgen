@@ -72,6 +72,42 @@ void GenObject::add_entry(GenObject *p) {
     entries_.push_back(p);
 }
 
+GenObject *GenObject::getAsyncReset() {
+    GenObject *rst_port = getResetPort();
+    if (!rst_port) {
+        return rst_port;
+    }
+    for (auto &e: entries_) {
+        if (e->getId() == ID_MODULE_INST) {
+            if (e->getAsyncReset()) {
+                return rst_port;
+            }
+        } else if (e->isReg() || e->isNReg()) {
+            return rst_port;
+        }
+    }
+    rst_port = 0;    // no registers to reset in this module
+    return rst_port;
+}
+
+GenObject *GenObject::getResetPort() {
+    for (auto &e: entries_) {
+        if (strstr(e->getName().c_str(), "nrst")) {
+            return e;
+        }
+    }
+    return 0;
+}
+
+GenObject *GenObject::getClockPort() {
+    for (auto &e: entries_) {
+        if (e->getName(), "i_clk") {
+            return e;
+        }
+    }
+    return 0;
+}
+
 bool GenObject::isLocal() {
     bool local = false;
     GenObject *p = getParent();

@@ -75,6 +75,10 @@ class GenObject {
 
     virtual EIdType getId() { return id_; }
     virtual GenObject *getParent() { return parent_; }
+    virtual GenObject *getAsyncReset();
+    virtual GenObject *getResetPort();
+    virtual GenObject *getClockPort();
+    virtual bool getResetActive() { return false; }
     virtual std::string getName() { return name_; }
     virtual void setName(const char *n) { name_ = std::string(n); }
     virtual std::string getComment() { return comment_; }

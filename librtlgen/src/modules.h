@@ -37,7 +37,6 @@ class ModuleObject : public GenObject {
 
     // Check registers in current module and all sub-modules to create
     // async_reset logic and always (ff) process
-    virtual bool isAsyncReset();
     virtual bool isCombProcess();
     virtual bool isRegProcess();
     virtual bool isNRegProcess();
@@ -58,6 +57,8 @@ class ModuleObject : public GenObject {
     std::string generate_sv_mod_signals();
     std::string generate_sv_mod_proc(GenObject *proc);
     std::string generate_sv_mod_proc_registers();
+    std::string generate_sv_mod_always_ff_rst(bool clkpos=true);
+    std::string generate_sv_mod_always_ops();   // additional operation in always process (if defined)
 
     std::string generate_sysc_proc_registers();
     std::string generate_sysc_param_strings();

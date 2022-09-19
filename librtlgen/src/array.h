@@ -116,7 +116,6 @@ class ModuleArray : public ArrayObject<T> {
     }
     virtual void changeTmplParameter(const char *name, const char *val) {
         getItem(name)->setStrValue(val);
-        //static_cast<ModuleObject *>(getItem())->changeTmplParameter(name, val);
     }
 };
 
