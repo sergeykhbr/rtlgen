@@ -92,7 +92,7 @@ GenObject *GenObject::getAsyncReset() {
 
 GenObject *GenObject::getResetPort() {
     for (auto &e: entries_) {
-        if (strstr(e->getName().c_str(), "nrst")) {
+        if (e->getName() == "i_nrst") {
             return e;
         }
     }
@@ -101,7 +101,7 @@ GenObject *GenObject::getResetPort() {
 
 GenObject *GenObject::getClockPort() {
     for (auto &e: entries_) {
-        if (e->getName(), "i_clk") {
+        if (e->getName() == "i_clk") {
             return e;
         }
     }

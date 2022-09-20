@@ -87,6 +87,7 @@ class GenObject {
     virtual bool isVector() { return false; }
     virtual bool isGenVar() { return false; }   // I32D analog for rtl
     virtual bool isLocal();     // if parent is file then obj is global; if module obj is local
+    virtual bool isTop() { return false; }
 
     virtual uint64_t getValue();
     virtual std::string getStrValue();

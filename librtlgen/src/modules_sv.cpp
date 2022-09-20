@@ -499,8 +499,7 @@ std::string ModuleObject::generate_sv_mod_always_ops() {
     std::string out = "";
     for (auto &e: getEntries()) {
         if (e->getId() != ID_PROCESS
-            || e->getName() != "registers"
-            || e->getName() != "nregisters") {
+            || e->getName() != "registers") {
             continue;
         }
         out += "\n";
@@ -546,7 +545,7 @@ std::string ModuleObject::generate_sv_mod_proc_registers() {
         if (isCombProcess()) {
             out += Operation::copyreg("r", "rin", this);
         }
-        generate_sv_mod_always_ops();   // additional operation on posedge clock events
+        out += generate_sv_mod_always_ops();   // additional operation on posedge clock events
         Operation::set_space(Operation::get_space() - 1);
         out += Operation::addspaces() + "end: rg_proc\n";
         out += "\n";

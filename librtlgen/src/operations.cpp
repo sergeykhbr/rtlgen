@@ -327,7 +327,17 @@ std::string Operation::reset(const char *dst, const char *src, ModuleObject *m, 
             }
             ret += " {\n";
         } else {
-            ret += "if (async_reset_ && i_nrst.read() == 0) {\n";
+            ret += "if (";
+            if (m->getAsyncReset()) {
+                ret += "async_reset_ && ";
+            }
+            ret += m->getResetPort()->getName() + ".read() == ";
+            if (m->getResetActive() == 0) {
+                ret += "0";
+            } else {
+                ret += "1";
+            }
+            ret += ") {\n";
         }
 
         spaces_++;
@@ -335,7 +345,11 @@ std::string Operation::reset(const char *dst, const char *src, ModuleObject *m, 
             if (src == 0) {
                 // reset using function
                 ret += Operation::addspaces();
-                ret += m->getType() + "_r_reset(" + std::string(dst) + ")";
+                if (dst[0] == 'n' && dst[1] == 'r' && (dst[2] == '\0' || dst[2] == '.')) {
+                    ret += m->getType() + "_nr_reset(" + std::string(dst) + ")";
+                } else {
+                    ret += m->getType() + "_r_reset(" + std::string(dst) + ")";
+                }
             } else {
                 // copy data from src into dst
                 ret += Operation::addspaces();

@@ -35,6 +35,9 @@ class Workgroup : public ModuleObject {
  public:
     Workgroup(GenObject *parent, const char *name);
 
+    virtual GenObject *getClockPort() override { return &i_cores_nrst; }
+    virtual bool isTop() override { return true; }
+
     class CombProcess : public ProcObject {
      public:
         CombProcess(GenObject* parent)

@@ -18,7 +18,7 @@
 
 jtagtap::jtagtap(GenObject *parent, const char *name) :
     ModuleObject(parent, "jtagtap", name),
-    idcode(this, "32", "idcode", "0x10e31913"),
+    idcode(this, "idcode", "0x10e31913"),
     abits(this, "abits", "7"),
     irlen(this, "irlen", "5"),
     // Ports
@@ -76,10 +76,10 @@ jtagtap::jtagtap(GenObject *parent, const char *name) :
     tms(this, "tms", "1"),
     tdi(this, "tdi", "1"),
     dr_length(this, "dr_length", "7"),
-    dr(this, "dr", "drlen"),
+    dr(this, "dr", "drlen", "idcode"),
     bypass(this, "bypass", "1"),
     datacnt(this, "datacnt", "32"),
-    ir(this, "ir", "irlen"),
+    ir(this, "ir", "irlen", "IR_IDCODE"),
     dmi_addr(this, "dmi_addr", "abits"),
     comb(this)
 {

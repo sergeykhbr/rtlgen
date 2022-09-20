@@ -28,6 +28,69 @@
 
 namespace sysvc {
 
+std::string ModuleObject::generate_sysc_reg_struct(bool negedge) {
+    std::string out = "";
+    std::string ln = "";
+    bool twodim = false;        // if 2-dimensional register array, then do not use reset function
+    out += "    struct " + getType();
+    if (!negedge) {
+        out += "_registers";
+    } else {
+        out += "_nregisters";
+    }
+    out += " {\n";
+    for (auto &p: getEntries()) {
+        if (!negedge && !p->isReg()) {
+            continue;
+        }
+        if (negedge && !p->isNReg()) {
+            continue;
+        }
+        ln = "        " + p->getType() + " " + p->getName();
+        if (p->getDepth()) {
+            twodim = true;
+            ln += "[" + p->getStrDepth() + "]";
+        }
+        ln += ";";
+        if (p->getComment().size()) {
+            while (ln.size() < 60) {
+                ln += " ";
+            }
+            ln += "// " + p->getComment();
+        }
+        out += ln + "\n";
+    }
+    if (!negedge) {
+        out += "    } v, r;\n";
+    } else {
+        out += "    } nv, nr;\n";
+    }
+    out += "\n";
+    // Reset function only if no two-dimensial signals
+    if (!twodim) {
+        out += "    void " + getType();
+        if (!negedge) {
+            out += "_r_reset(" + getType() + "_registers &iv) {\n";
+        } else {
+            out += "_nr_reset(" + getType() + "_nregisters &iv) {\n";
+        }
+        for (auto &p: entries_) {
+            if (!negedge && !p->isReg()) {
+                continue;
+            }
+            if (negedge && !p->isNReg()) {
+                continue;
+            }
+            out += "        iv." + p->getName() + " = ";
+            out += p->getStrValue();
+            out += ";\n";
+        }
+        out += "    }\n";
+        out += "\n";
+    }
+    return out;
+}
+
 std::string ModuleObject::generate_sysc_h() {
     std::string out = "";
     std::string ln;
@@ -105,6 +168,10 @@ std::string ModuleObject::generate_sysc_h() {
     }
     if (isRegProcess()) {
         out += "    void registers();\n";
+        hasProcess = true;
+    }
+    if (isNRegProcess()) {
+        out += "    void nregisters();\n";
         hasProcess = true;
     }
     if (hasProcess) {
@@ -244,43 +311,11 @@ std::string ModuleObject::generate_sysc_h() {
         tcnt = 0;
     }
     // Register structure definition
-    bool twodim = false;        // if 2-dimensional register array, then do not use reset function
     if (isRegProcess() && isCombProcess()) {
-        out += "    struct " + getType() + "_registers {\n";
-        for (auto &p: entries_) {
-            if (!p->isReg()) {
-                continue;
-            }
-            ln = "        " + p->getType() + " " + p->getName();
-            if (p->getDepth()) {
-                twodim = true;
-                ln += "[" + p->getStrDepth() + "]";
-            }
-            ln += ";";
-            if (p->getComment().size()) {
-                while (ln.size() < 60) {
-                    ln += " ";
-                }
-                ln += "// " + p->getComment();
-            }
-            out += ln + "\n";
-        }
-        out += "    } v, r;\n";
-        out += "\n";
-        // Reset function only if no two-dimensial signals
-        if (!twodim) {
-            out += "    void " + getType() + "_r_reset(" + getType() + "_registers &iv) {\n";
-            for (auto &p: entries_) {
-                if (!p->isReg()) {
-                    continue;
-                }
-                out += "        iv." + p->getName() + " = ";
-                out += p->getStrValue();
-                out += ";\n";
-            }
-            out += "    }\n";
-            out += "\n";
-        }
+        out += generate_sysc_reg_struct(false);
+    }
+    if (isNRegProcess() && isCombProcess()) {
+        out += generate_sysc_reg_struct(true);
     }
 
 
@@ -369,30 +404,39 @@ std::string ModuleObject::generate_sysc_h() {
     return out;
 }
 
-std::string ModuleObject::generate_sysc_proc_registers() {
+std::string ModuleObject::generate_sysc_proc_registers(bool clkpos) {
     std::string out = "";
     std::string xrst = "";
+    std::string src = "v";
+    std::string dst = "r";
 
     out += generate_sysc_template_f_name();
-    out += "::registers() {\n";
+    if (clkpos) {
+        out += "::registers() {\n";
+    } else {
+        out += "::nregisters() {\n";
+        src = "nv";
+        dst = "nr";
+    }
     Operation::set_space(Operation::get_space() + 1);
-    if (getAsyncReset()) {
+    if (getResetPort()) {
         if (isCombProcess()) {
-            out += Operation::reset("r", 0, this, xrst);
+            out += Operation::reset(dst.c_str(), 0, this, xrst);
         }
         out += " else {\n";
         Operation::set_space(Operation::get_space() + 1);
     }
     if (isCombProcess()) {
-        out += Operation::copyreg("r", "v", this);
+        out += Operation::copyreg(dst.c_str(), src.c_str(), this);
     }
-    if (getAsyncReset()) {
+    if (getResetPort()) {
         Operation::set_space(Operation::get_space() - 1);
         out += Operation::addspaces();
         out += "}\n";
     }
     for (auto &e: getEntries()) {
-        if (e->getId() != ID_PROCESS || e->getName() != "registers") {
+        if (e->getId() != ID_PROCESS
+            || e->getName() != "registers") {
             continue;
         }
         out += "\n";
@@ -441,6 +485,10 @@ std::string ModuleObject::generate_sysc_sensitivity(std::string prefix,
         name += obj->getName();
         if (obj->isReg() && !prefix_applied) {
             name = prefix + name;
+        }
+        if (obj->isNReg() && !prefix_applied) {
+            // @warning: Structure is not supported
+            name = "n" + prefix + name;
         }
     }
 
@@ -500,8 +548,7 @@ std::string ModuleObject::generate_sysc_vcd_entries(std::string name1, std::stri
         return ret;
     }
 
-    // TODO: check top level module instead of hardcoded name
-    if (getName() != "RiverTop"
+    if (!isTop()
         && (obj->getName() == "i_clk" || obj->getName() == "i_nrst")) {
         return ret;
     }
@@ -528,6 +575,10 @@ std::string ModuleObject::generate_sysc_vcd_entries(std::string name1, std::stri
         if (obj->isReg() && !prefix_applied) {
             name1 = "r." + name1;
             name2 = ".r_" + name2;
+        }
+        if (obj->isNReg() && !prefix_applied) {
+            name1 = "nr." + name1;
+            name2 = ".nr_" + name2;
         }
     }
 
@@ -729,7 +780,11 @@ std::string ModuleObject::generate_sysc_constructor() {
         if (p->getId() != ID_INPUT && p->getId() != ID_OUTPUT) {
             continue;
         }
-        ret += ",\n    " + p->getName() + "(\"" + p->getName() + "\")";
+        ret += ",\n    " + p->getName() + "(\"" + p->getName() + "\"";
+        if (p->getItem()->isVector()) {
+            ret += ", " + p->getItem()->getStrDepth();
+        }
+        ret += ")";
     }
     if (tcnt == 0) {
         // not IO ports
@@ -779,8 +834,8 @@ std::string ModuleObject::generate_sysc_constructor() {
     if (isRegProcess()) {
         ret += "\n";
         ret += "    SC_METHOD(registers);\n";
-        if (getAsyncReset()) {
-            ret += "    sensitive << " + getAsyncReset()->getName() + ";\n";
+        if (getResetPort()) {
+            ret += "    sensitive << " + getResetPort()->getName() + ";\n";
         }
         ret += "    sensitive << " + getClockPort()->getName() + ".pos();\n";
     }
@@ -788,10 +843,10 @@ std::string ModuleObject::generate_sysc_constructor() {
     if (isNRegProcess()) {
         ret += "\n";
         ret += "    SC_METHOD(nregisters);\n";
-        if (getAsyncReset()) {
-            ret += "    sensitive << " + getAsyncReset()->getName() + ";\n";
+        if (getResetPort()) {
+            ret += "    sensitive << " + getResetPort()->getName() + ";\n";
         }
-        ret += "    sensitive << " + getClockPort()->getName() + ".pos();\n";
+        ret += "    sensitive << " + getClockPort()->getName() + ".neg();\n";
     }
     ret += "}\n";
     ret += "\n";
@@ -954,11 +1009,13 @@ std::string ModuleObject::generate_sysc_cpp() {
         out += generate_sysc_proc(p);
     }
 
+    Operation::set_space(0);
     if (isRegProcess()) {
-        Operation::set_space(0);
-        out += generate_sysc_proc_registers();
+        out += generate_sysc_proc_registers(true);
     }
-
+    if (isNRegProcess()) {
+        out += generate_sysc_proc_registers(false);
+    }
     return out;
 }
 
@@ -1035,13 +1092,23 @@ std::string ModuleObject::generate_sysc_proc(GenObject *proc) {
         }
         ret += "\n";
     }
-
     if (tcnt) {
+        tcnt = 0;
         ret += "\n";
     }
+
     if (isRegProcess()) {
         Operation::set_space(1);
         ret += Operation::copyreg("v", "r", this);
+        tcnt++;
+    }
+    if (isNRegProcess()) {
+        Operation::set_space(1);
+        ret += Operation::copyreg("nv", "nr", this);
+        tcnt++;
+    }
+    if (tcnt) {
+        tcnt = 0;
         ret += "\n";
     }
 

@@ -60,7 +60,8 @@ class ModuleObject : public GenObject {
     std::string generate_sv_mod_always_ff_rst(bool clkpos=true);
     std::string generate_sv_mod_always_ops();   // additional operation in always process (if defined)
 
-    std::string generate_sysc_proc_registers();
+    std::string generate_sysc_reg_struct(bool negedge=false);
+    std::string generate_sysc_proc_registers(bool clkpos=true);
     std::string generate_sysc_param_strings();
     std::string generate_sysc_constructor();
     std::string generate_sysc_submodule_nullify();
