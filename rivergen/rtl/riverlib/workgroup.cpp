@@ -202,7 +202,7 @@ Workgroup::Workgroup(GenObject *parent, const char *name) :
     ENDFORGEN(new STRING("xdummycpu"));
     ENDGENERATE("hartgen");
 
-    IFGEN(NZ(l2cache_ena), new STRING("l2_en"));
+    IFGEN(EQ(l2cache_ena, CONST("1")), new STRING("l2_en"));
         NEW(l2cache, l2cache.getName().c_str());
             CONNECT(l2cache, 0, l2cache.i_clk, i_clk);
             CONNECT(l2cache, 0, l2cache.i_nrst, i_cores_nrst);

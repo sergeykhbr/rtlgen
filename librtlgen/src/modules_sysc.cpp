@@ -227,11 +227,14 @@ std::string ModuleObject::generate_sysc_h() {
         tcnt++;
     }
     for (auto &p: entries_) {
-        if (p->getId() != ID_DEF_PARAM) {
-            continue;
+        if (p->getId() == ID_DEF_PARAM){
+            out += "    " + p->getType() + " " + p->getName() + "_;\n";
+            tcnt++;
+        } else if (p->getId() == ID_PARAM && p->isGenericDep() && tmpllist.size() == 0) {
+            // No underscore symbol
+            out += "    " + p->getType() + " " + p->getName() + ";\n";
+            tcnt++;
         }
-        out += "    " + p->getType() + " " + p->getName() + "_;\n";
-        tcnt++;
     }
     if (tcnt) {
         out += "\n";
@@ -249,7 +252,11 @@ std::string ModuleObject::generate_sysc_h() {
             }
             continue;
         }
-        if (!static_cast<GenValue *>(p)->isLocal()) {
+        if (!p->isLocal()) {
+            prev = 0;
+            continue;
+        }
+        if (p->isGenericDep() && tmpllist.size() == 0) {
             prev = 0;
             continue;
         }
@@ -326,7 +333,8 @@ std::string ModuleObject::generate_sysc_h() {
             || (p->getId() != ID_SIGNAL
                 && p->getId() != ID_VALUE
                 && p->getId() != ID_STRUCT_INST
-                && p->getId() != ID_ARRAY_DEF)) {
+                && p->getId() != ID_ARRAY_DEF
+                && p->getId() != ID_VECTOR)) {
             if (p->getId() == ID_COMMENT) {
                 text += "    " + p->generate();
             } else {
@@ -345,7 +353,7 @@ std::string ModuleObject::generate_sysc_h() {
             text = "";
         }
         ln = "    " + p->getType() + " " + p->getName();
-        if (p->getDepth()) {
+        if (p->getDepth() && !p->isVector()) {
             ln += "[" + p->getStrDepth() + "]";
         }
         ln += ";";
@@ -776,7 +784,7 @@ std::string ModuleObject::generate_sysc_constructor() {
     ret += "    : sc_module(name)";
     // Input/Output signal declaration
     tcnt = 0;
-    for (auto &p: entries_) {
+    for (auto &p: getEntries()) {
         if (p->getId() != ID_INPUT && p->getId() != ID_OUTPUT) {
             continue;
         }
@@ -786,21 +794,28 @@ std::string ModuleObject::generate_sysc_constructor() {
         }
         ret += ")";
     }
-    if (tcnt == 0) {
-        // not IO ports
-        ret += " ";
+    // Signal Vectors also should be initialized
+    for (auto &p: getEntries()) {
+        if (!p->isVector()) {
+            continue;
+        }
+        ret += ",\n    " + p->getName() + "(\"" + p->getName() + "\"";
+        ret += ", " + p->getStrDepth();
+        ret += ")";
     }
-    ret += "{\n";
+    ret += " {\n";
     ret += "\n";
     // local copy of the generic parameters:
     if (getAsyncReset()) {
         ret += "    async_reset_ = async_reset;\n";
     }
     for (auto &p: entries_) {
-        if (p->getId() != ID_DEF_PARAM) {
-            continue;
+        if (p->getId() == ID_DEF_PARAM) {
+            ret += "    " + p->getName() + "_ = " + p->getName() + ";\n";
         }
-        ret += "    " + p->getName() + "_ = " + p->getName() + ";\n";
+        if (p->getId() == ID_PARAM && p->isGenericDep() && tmpllist.size() == 0) {
+            ret += "    " + p->getName() + " = " + p->getStrValue() + ";\n";
+        }
     }
 
     // Sub-module instantiation

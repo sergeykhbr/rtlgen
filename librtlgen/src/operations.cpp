@@ -3001,7 +3001,12 @@ std::string NEW_gen(GenObject **args) {
     std::list<GenObject *>genlist;
     mod->getParamList(genlist);
     for (auto &g : genlist) {
-        ret += ", " + g->getName();
+        if (g->getObjValue()) {
+            // generic parameter but with the defined string value
+            ret += ", " + g->getObjValue()->getName();
+        } else {
+            ret += ", " + g->getName();
+        }
     }
     ret += ");\n";
 
