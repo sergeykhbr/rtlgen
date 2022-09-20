@@ -18,7 +18,7 @@
 
 jtagtap::jtagtap(GenObject *parent, const char *name) :
     ModuleObject(parent, "jtagtap", name),
-    idcode(this, "idcode", "0x10e31913"),
+    idcode(this, "32", "idcode", "0x10e31913"),
     abits(this, "abits", "7"),
     irlen(this, "irlen", "5"),
     // Ports

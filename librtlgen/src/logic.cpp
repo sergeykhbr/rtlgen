@@ -42,7 +42,7 @@ std::string Logic::getType() {
     std::string ret = "";
 
     if (SCV_is_sysc()) {
-        if (getId() == ID_PARAM) {
+        if (getId() == ID_PARAM || getId() == ID_TMPL_PARAM) {
             if (getWidth() <= 1) {
                 ret += "bool";
             } else if (getWidth() <= 8) {
