@@ -53,6 +53,7 @@ Workgroup::Workgroup(GenObject *parent, const char *name) :
     l2o(this, "l2o"),
     wb_dport_i(this, "wb_dport_i"),
     wb_dport_o(this, "wb_dport_o"),
+    wb_irq(this, "wb_irq"),
     wb_halted(this, "wb_halted", "CFG_CPU_MAX"),
     wb_available(this, "wb_available", "CFG_CPU_MAX"),
     w_pdmi_req_valid(this, "w_pdmi_req_valid", "1"),
@@ -180,10 +181,7 @@ Workgroup::Workgroup(GenObject *parent, const char *name) :
             CONNECT(cpux, i, cpux->o_xcfg, ARRITEM(unused_mst_cfg, *i, unused_mst_cfg));
             CONNECT(cpux, i, cpux->i_dport, ARRITEM(wb_dport_i, *i, wb_dport_i));
             CONNECT(cpux, i, cpux->o_dport, ARRITEM(wb_dport_o, *i, wb_dport_o));
-            CONNECT(cpux, i, cpux->i_msip, ARRITEM(i_msip, *i, i_msip));
-            CONNECT(cpux, i, cpux->i_mtip, ARRITEM(i_mtip, *i, i_mtip));
-            CONNECT(cpux, i, cpux->i_meip, ARRITEM(i_meip, *i, i_meip));
-            CONNECT(cpux, i, cpux->i_seip, ARRITEM(i_seip, *i, i_seip));
+            CONNECT(cpux, i, cpux->i_irq_pending, ARRITEM(wb_irq, *i, wb_irq));
             CONNECT(cpux, i, cpux->o_flush_l2, ARRITEM(wb_flush_l2, *i, wb_flush_l2));
             CONNECT(cpux, i, cpux->o_halted, ARRITEM(wb_halted, *i, wb_halted));
             CONNECT(cpux, i, cpux->o_available, ARRITEM(wb_available, *i, wb_available));

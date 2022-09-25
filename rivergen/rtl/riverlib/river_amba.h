@@ -45,8 +45,7 @@ class RiverAmba : public ModuleObject {
             v_cr_valid(this, "v_cr_valid", "1"),
             vb_cr_resp(this, "vb_cr_resp", "5"),
             v_cd_valid(this, "v_cd_valid", "1"),
-            vb_cd_data(this, "vb_cd_data", "L1CACHE_LINE_BITS"),
-            vb_ip(this, "vb_ip", "IRQ_TOTAL", "Interrupt pending bits") {
+            vb_cd_data(this, "vb_cd_data", "L1CACHE_LINE_BITS") {
         }
      public:
         Logic v_resp_mem_valid;
@@ -64,7 +63,6 @@ class RiverAmba : public ModuleObject {
         Logic vb_cr_resp;
         Logic v_cd_valid;
         Logic vb_cd_data;
-        Logic vb_ip;
     };
 
     void proc_comb();
@@ -109,10 +107,7 @@ public:
     OutStruct<types_amba::axi4_master_config_type> o_xcfg;
     InStruct<types_river::dport_in_type> i_dport;
     OutStruct<types_river::dport_out_type> o_dport;
-    InPort i_msip;
-    InPort i_mtip;
-    InPort i_meip;
-    InPort i_seip;
+    InPort i_irq_pending;
     OutPort o_flush_l2;                                // Flush L2 after D$ has been finished
     OutPort o_halted;
     OutPort o_available;
@@ -154,7 +149,6 @@ public:
     Signal resp_snoop_valid_o;
     Signal resp_snoop_data_o;
     Signal resp_snoop_flags_o;
-    Signal wb_ip;
     types_amba::axi4_master_config_type wb_xcfg;
     Signal w_dporti_haltreq;
     Signal w_dporti_resumereq;

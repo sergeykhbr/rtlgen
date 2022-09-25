@@ -110,6 +110,7 @@ public:
     types_river::axi4_l2_out_type l2o;
     types_river::dport_in_vector wb_dport_i;
     types_river::dport_out_vector wb_dport_o;
+    types_river::hart_irq_vector wb_irq;
     Signal wb_halted;
     Signal wb_available;
     Signal w_pdmi_req_valid;

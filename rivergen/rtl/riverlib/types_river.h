@@ -97,7 +97,7 @@ class types_river : public FileObject {
     };
 
     class dport_out_vector : public TStructArray<dport_out_type> {
-        public:
+     public:
         dport_out_vector(GenObject *parent, const char *name)
             : TStructArray(parent, "dport_out_vector", name, "CFG_CPU_MAX") {
             id_ = ID_VECTOR;
@@ -109,6 +109,33 @@ class types_river : public FileObject {
         virtual bool isVector() override { return true; }
     };
 
+    class hart_irq_type : public StructObject {
+    public:
+        hart_irq_type(GenObject* parent, const char* name = "", int idx = -1, const char* comment = "")
+            : StructObject(parent, "dport_out_type", name, idx, comment),
+            irq("IRQ_TOTAL", "irq", "0", this) {
+            registerCfgType(name);                  // will be registered if name == ""
+            if (name[0]) {
+                SCV_get_cfg_parameter(getType());   // to trigger dependecy array
+            }
+        }
+
+    public:
+        Logic irq;
+    };
+
+    class hart_irq_vector : public TStructArray<hart_irq_type> {
+     public:
+        hart_irq_vector(GenObject *parent, const char *name)
+            : TStructArray(parent, "hart_irq_vector", name, "CFG_CPU_MAX") {
+            id_ = ID_VECTOR;
+            registerCfgType(name);                  // will be registered if name == ""
+            if (name[0]) {
+                SCV_get_cfg_parameter(getType());   // to trigger dependecy array
+            }
+        }
+        virtual bool isVector() override { return true; }
+    };
 
     class axi4_l1_out_type : public StructObject {
      public:
@@ -363,6 +390,10 @@ class types_river : public FileObject {
     dport_in_vector dport_in_vector_def_;
     dport_out_vector dport_out_vector_def_;
     TextLine _dbgiface7_;
+    TextLine _irq0_;
+    hart_irq_type hart_irq_type_def_;
+    TextLine _irq1_;
+    hart_irq_vector hart_irq_vector_def_;
     TextLine _axi0_;
     TextLine _axi1_;
     axi4_l1_out_type axi4_l1_out_type_def;

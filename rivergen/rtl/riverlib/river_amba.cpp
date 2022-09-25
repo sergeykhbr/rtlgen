@@ -32,10 +32,7 @@ RiverAmba::RiverAmba(GenObject *parent, const char *name) :
     o_xcfg(this, "o_xcfg"),
     i_dport(this, "i_dport"),
     o_dport(this, "o_dport"),
-    i_msip(this, "i_msip", "1", "machine software pending interrupt"),
-    i_mtip(this, "i_mtip", "1", "machine timer pending interrupt"),
-    i_meip(this, "i_meip", "1", "machine external pending interrupt"),
-    i_seip(this, "i_seip", "1", "supervisor external pending interrupt"),
+    i_irq_pending(this, "i_irq_pending", "IRQ_TOTAL", "Per Hart pending interrupts pins"),
     o_flush_l2(this, "o_flush_l2", "1", "Flush L2 after D$ has been finished"),
     o_halted(this, "o_halted", "1", "CPU halted via debug interface"),
     o_available("1", "o_available", "1", this, "CPU was instantitated of stubbed"),
@@ -75,7 +72,6 @@ RiverAmba::RiverAmba(GenObject *parent, const char *name) :
     resp_snoop_valid_o(this, "resp_snoop_valid_o", "1"),
     resp_snoop_data_o(this, "resp_snoop_data_o", "L1CACHE_LINE_BITS"),
     resp_snoop_flags_o(this, "resp_snoop_flags_o", "DTAG_FL_TOTAL"),
-    wb_ip(this, "wb_ip", "IRQ_TOTAL", "0", "Interrupt pending bits"),
     wb_xcfg(this, "wb_xcfg"),
     w_dporti_haltreq(this, "w_dporti_haltreq", "1"),
     w_dporti_resumereq(this, "w_dporti_resumereq", "1"),
@@ -145,7 +141,7 @@ RiverAmba::RiverAmba(GenObject *parent, const char *name) :
         CONNECT(river0, 0, river0.o_resp_snoop_data, resp_snoop_data_o);
         CONNECT(river0, 0, river0.o_resp_snoop_flags, resp_snoop_flags_o);
         CONNECT(river0, 0, river0.o_flush_l2, o_flush_l2);
-        CONNECT(river0, 0, river0.i_irq_pending, wb_ip);
+        CONNECT(river0, 0, river0.i_irq_pending, i_irq_pending);
         CONNECT(river0, 0, river0.i_haltreq, w_dporti_haltreq);
         CONNECT(river0, 0, river0.i_resumereq, w_dporti_resumereq);
         CONNECT(river0, 0, river0.i_dport_req_valid, w_dporti_req_valid);
@@ -225,10 +221,6 @@ TEXT();
     SETVAL(comb.vdporto.rdata, wb_dporto_rdata, "systemc compatibility");
 
 TEXT();
-    SETBIT(comb.vb_ip, cfg->IRQ_MSIP, i_msip);
-    SETBIT(comb.vb_ip, cfg->IRQ_MTIP, i_mtip);
-    SETBIT(comb.vb_ip, cfg->IRQ_MEIP, i_meip);
-    SETBIT(comb.vb_ip, cfg->IRQ_SEIP, i_seip);
     SETVAL(comb.vmsto, glob_types_river_->axi4_l1_out_none);
     SETVAL(comb.vmsto.ar_bits.burst, glob_types_amba_->AXI_BURST_INCR, "INCR (possible any value actually)");
     SETVAL(comb.vmsto.aw_bits.burst, glob_types_amba_->AXI_BURST_INCR, "INCR (possible any value actually)");
@@ -454,7 +446,6 @@ TEXT();
     SETZERO(comb.vmsto.wack);
 
 TEXT();
-    SETVAL(wb_ip, comb.vb_ip);
     SETVAL(req_mem_ready_i, comb.v_next_ready);
     SETVAL(resp_mem_valid_i, comb.v_resp_mem_valid);
     SETVAL(resp_mem_data_i, i_msti->r_data);
