@@ -39,7 +39,10 @@ CsrRegs::CsrRegs(GenObject *parent, const char *name) :
     o_wakeup(this, "o_wakeup", "1", "There's pending bit even if interrupts globally disabled"),
     o_stack_overflow(this, "o_stack_overflow", "1", "stack overflow exception"),
     o_stack_underflow(this, "o_stack_underflow", "1", "stack underflow exception"),
+    i_f_flush_ready(this, "i_f_flush_ready", "1", "fetcher is ready to accept Flush $I request"),
     i_e_valid(this, "i_e_valid", "1", "instructuin executed flag"),
+    i_m_memop_ready(this, "i_m_memop_ready", "1", "memaccess module is ready to accept the request"),
+    i_flushd_end(this, "i_flushd_end", "1"),
     i_mtimer(this, "i_mtimer", "64", "Read-only shadow value of memory-mapped mtimer register (see CLINT)."),
     o_executed_cnt(this, "o_executed_cnt", "64", "Number of executed instructions"),
     _io0_(this),
@@ -47,8 +50,9 @@ CsrRegs::CsrRegs(GenObject *parent, const char *name) :
     i_dbg_progbuf_ena(this, "i_dbg_progbuf_ena", "1", "Executing progbuf is in progress"),
     o_progbuf_end(this, "o_progbuf_end", "1", "End of execution from prog buffer"),
     o_progbuf_error(this, "o_progbuf_error", "1", "exception during progbuf execution"),
-    o_flushi_ena(this, "o_flushi_ena", "1", "clear specified addr in ICache without execution of fence.i"),
-    o_flushi_addr(this, "o_flushi_addr", "CFG_CPU_ADDR_BITS", "ICache address to flush"),
+    o_flushd_valid(this, "o_flushd_valid", "1", "clear specified addr in DCache"),
+    o_flushi_valid(this, "o_flushi_valid", "1", "clear specified addr in ICache"),
+    o_flush_addr(this, "o_flush_addr", "CFG_CPU_ADDR_BITS", "Cache address to flush. All ones means flush all."),
     _io1_(this),
     o_mpu_region_we(this, "o_mpu_region_we", "1", "write enable into MPU"),
     o_mpu_region_idx(this, "o_mpu_region_idx", "CFG_MPU_TBL_WIDTH", "selected MPU region"),
@@ -68,13 +72,22 @@ CsrRegs::CsrRegs(GenObject *parent, const char *name) :
     State_Halt(this, "State_Halt", "6"),
     State_Resume(this, "State_Resume", "7"),
     State_Wfi(this, "State_Wfi", "8"),
-    State_Response(this, "State_Response", "9"),
+    State_Fence(this, "State_Wfi", "9"),
+    State_Response(this, "State_Response", "10"),
+    _fence0_(this),
+    Fence_None(this, "3", "Fence_None", "0"),
+    Fence_Data(this, "3", "Fence_Data", "1"),
+    Fence_DataWaitEnd(this, "3", "Fence_DataWaitEnd", "2"),
+    Fence_Fetch(this, "3", "Fence_Fetch", "3"),
+    Fence_End(this, "3", "Fence_End", "4"),
+    _fence1_(this),
     SATP_MODE_SV48(this, "4", "SATP_MODE_SV48", "9", "48-bits Page mode"),
     // struct definitions
     RegModeTypeDef_(this),
     // registers
     xmode(this, "xmode"),
     state(this, "state", "4", "State_Idle"),
+    fencestate(this, "fencestate", "3", "Fence_None"),
     irq_pending(this, "irq_pending", "IRQ_TOTAL"),
     cmd_type(this, "cmd_type", "CsrReq_TotalBits"),
     cmd_addr(this, "cmd_addr", "12"),
@@ -119,8 +132,8 @@ CsrRegs::CsrRegs(GenObject *parent, const char *name) :
     dcsr_stepie(this, "dcsr_stepie", "1", "0", "interrupt 0=dis;1=ena during stepping"),
     stepping_mode_cnt(this, "stepping_mode_cnt", "RISCV_ARCH", "0"),
     ins_per_step(this, "ins_per_step", "RISCV_ARCH", "1", "Number of steps before halt in stepping mode"),
-    flushi_ena(this, "flushi_ena", "1"),
-    flushi_addr(this, "flushi_addr", "CFG_CPU_ADDR_BITS"),
+    //flushi_ena(this, "flushi_ena", "1"),
+    //flushi_addr(this, "flushi_addr", "CFG_CPU_ADDR_BITS"),
     // process
     comb(this)
 {
@@ -173,6 +186,9 @@ TEXT();
                 SETVAL(state, State_TrapReturn);
             ELSIF (NZ(BIT(i_req_type, cfg->CsrReq_WfiBit)));
                 SETVAL(state, State_Wfi);
+            ELSIF (NZ(BIT(i_req_type, cfg->CsrReq_FenceBit)));
+                SETVAL(state, State_Fence);
+                SETVAL(fencestate, Fence_Data);
             ELSE();
                 SETVAL(state, State_RW);
             ENDIF();
@@ -258,11 +274,51 @@ TEXT();
         SETVAL(state, State_Response);
         SETZERO(cmd_data, "no error, valid for all mdoes");
         ENDCASE();
+    CASE (State_Fence);
+        IF (EQ(fencestate, Fence_End));
+            SETVAL(state, State_Idle);
+            SETVAL(fencestate, Fence_None);
+        ENDIF();
+        ENDCASE();
     CASE (State_Response);
         SETONE(comb.v_resp_valid);
         IF (NZ(i_resp_ready));
             SETVAL(state, State_Idle);
         ENDIF();
+        ENDCASE();
+    CASEDEF();
+        ENDCASE();
+    ENDSWITCH();
+
+TEXT();
+    TEXT("Caches flushing state machine");
+    SWITCH (fencestate);
+    CASE (Fence_None);
+        ENDCASE();
+    CASE (Fence_Data);
+        SETONE(comb.v_flushd);
+        IF(NZ(i_m_memop_ready));
+            SETVAL(fencestate, Fence_DataWaitEnd);
+        ENDIF();
+        ENDCASE();
+    CASE (Fence_DataWaitEnd);
+        IF(NZ(i_flushd_end));
+            TEXT("[0] flush data");
+            TEXT("[1] flush fetch");
+            IF (NZ(BIT(cmd_addr, 1)));
+                SETVAL(fencestate, Fence_Fetch);
+            ELSE();
+                SETVAL(fencestate, Fence_End);
+            ENDIF();
+        ENDIF();
+        ENDCASE();
+    CASE (Fence_Fetch);
+        SETONE(comb.v_flushi);
+        IF (NZ(i_f_flush_ready));
+            SETVAL(fencestate, Fence_End);
+        ENDIF();
+        ENDCASE();
+    CASE (Fence_End);
         ENDCASE();
     CASEDEF();
         ENDCASE();
@@ -784,12 +840,12 @@ TEXT();
             SETVAL(mpu_we, BIT(cmd_data, 7));
         ENDIF();
         ENDCASE();
-    CASE (CONST("0x800", 12), "flushi: [UWO]");
-        IF (NZ(comb.v_csr_wena));
-            SETONE(flushi_ena);
-            SETVAL(flushi_addr, BITS(cmd_data, DEC(cfg->CFG_CPU_ADDR_BITS), CONST("0")));
-        ENDIF();
-        ENDCASE();
+//    CASE (CONST("0x800", 12), "flushi: [UWO]");
+//        IF (NZ(comb.v_csr_wena));
+//            SETONE(flushi_ena);
+//            SETVAL(flushi_addr, BITS(cmd_data, DEC(cfg->CFG_CPU_ADDR_BITS), CONST("0")));
+//        ENDIF();
+//        ENDCASE();
     CASEDEF();
         TEXT("Not implemented CSR:");
         IF (EQ(state, State_RW));
@@ -944,6 +1000,7 @@ TEXT();
     SETVAL(o_mmu_ena, mmu_ena);
     SETVAL(o_mmu_ppn, satp_ppn);
     SETVAL(o_step, dcsr_step);
-    SETVAL(o_flushi_ena, flushi_ena);
-    SETVAL(o_flushi_addr, flushi_addr);
+    SETVAL(o_flushd_valid, comb.v_flushd);
+    SETVAL(o_flushi_valid, comb.v_flushi);
+    SETVAL(o_flush_addr, BITS(cmd_data, DEC(cfg->CFG_CPU_ADDR_BITS), CONST("0")));
 }

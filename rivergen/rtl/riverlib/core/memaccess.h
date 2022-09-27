@@ -30,6 +30,7 @@ class MemAccess : public ModuleObject {
      public:
         CombProcess(GenObject *parent) :
             ProcObject(parent, "comb"),
+            vb_req_addr(this, "vb_req_addr", "CFG_CPU_ADDR_BITS"),
             vb_memop_wdata(this, "vb_memop_wdata", "64"),
             vb_memop_wstrb(this, "vb_memop_wstrb", "8"),
             v_mem_valid(this, "v_mem_valid", "1"),
@@ -63,6 +64,7 @@ class MemAccess : public ModuleObject {
         }
 
      public:
+        Logic vb_req_addr;
         Logic vb_memop_wdata;
         Logic vb_memop_wstrb;
         Logic v_mem_valid;
@@ -101,7 +103,8 @@ class MemAccess : public ModuleObject {
     InPort i_nrst;
     InPort i_e_pc;
     InPort i_e_instr;
-    InPort i_e_flushd;
+    InPort i_flushd_valid;
+    InPort i_flushd_addr;
     OutPort o_flushd;
     InPort i_mmu_ena;
     OutPort o_mmu_ena;

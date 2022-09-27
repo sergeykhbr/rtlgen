@@ -569,6 +569,7 @@ class river_cfg : public FileObject {
     ParamI32D CsrReq_HaltBit;
     ParamI32D CsrReq_ResumeBit;
     ParamI32D CsrReq_WfiBit;
+    ParamI32D CsrReq_FenceBit;
     ParamI32D CsrReq_TotalBits;
     TextLine _83_;
     ParamLogic CsrReq_ReadCmd;
@@ -580,6 +581,7 @@ class river_cfg : public FileObject {
     ParamLogic CsrReq_HaltCmd;
     ParamLogic CsrReq_ResumeCmd;
     ParamLogic CsrReq_WfiCmd;
+    ParamLogic CsrReq_FenceCmd;
     TextLine _84_;
     ParamI32D MemopType_Store;
     ParamI32D MemopType_Locked;

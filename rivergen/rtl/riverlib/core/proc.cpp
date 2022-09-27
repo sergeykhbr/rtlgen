@@ -120,7 +120,6 @@ Processor::Processor(GenObject *parent, const char *name) :
     iccsr_s0_resp_ready(this, "iccsr_s0_resp_ready", "1"),
     iccsr_s0_resp_exception(this, "iccsr_s0_resp_exception", "1"),
     _CsrBridge4_(this),
-    w_flush_pipeline(this, "w_flush_pipeline", "1"),
     w_mem_resp_error(this, "w_mem_resp_error", "1"),
     w_writeback_ready(this, "w_writeback_ready", "1"),
     w_reg_wena(this, "w_reg_wena", "1"),
@@ -131,6 +130,7 @@ Processor::Processor(GenObject *parent, const char *name) :
     w_reg_ignored(this, "w_reg_ignored", "1"),
     w_mmu_ena(this, "w_mmu_ena", "1", "0", "MMU enabled in U and S modes. Sv48 only."),
     wb_mmu_ppn(this, "wb_mmu_ppn", "44", "0", "Physical Page Number"),
+    w_f_flush_ready(this, "w_f_flush_ready", "1"),
     unused_immu_mem_req_type(this, "unused_immu_mem_req_type", "MemopType_Total"),
     unused_immu_mem_req_wdata(this, "unused_immu_mem_req_wdata", "64"),
     unused_immu_mem_req_wstrb(this, "unused_immu_mem_req_wstrb", "8"),
@@ -177,7 +177,7 @@ Processor::Processor(GenObject *parent, const char *name) :
         CONNECT(fetch0, 0, fetch0.i_mem_load_fault, immu.load_fault);
         CONNECT(fetch0, 0, fetch0.i_mem_executable, immu.fetch_executable);
         CONNECT(fetch0, 0, fetch0.o_mem_resp_ready, w.f.imem_resp_ready);
-        CONNECT(fetch0, 0, fetch0.i_flush_pipeline, w_flush_pipeline);
+        CONNECT(fetch0, 0, fetch0.i_flush_pipeline, csr.flushi_valid);
         CONNECT(fetch0, 0, fetch0.i_progbuf_ena, dbg.progbuf_ena);
         CONNECT(fetch0, 0, fetch0.i_progbuf_pc, dbg.progbuf_pc);
         CONNECT(fetch0, 0, fetch0.i_progbuf_instr, dbg.progbuf_instr);
@@ -226,7 +226,7 @@ Processor::Processor(GenObject *parent, const char *name) :
         CONNECT(immu0, 0, immu0.o_mem_resp_ready, o_resp_ctrl_ready);
         CONNECT(immu0, 0, immu0.i_mmu_ena, w_mmu_ena);
         CONNECT(immu0, 0, immu0.i_mmu_ppn, wb_mmu_ppn);
-        CONNECT(immu0, 0, immu0.i_fence, w_flush_pipeline);
+        CONNECT(immu0, 0, immu0.i_fence, csr.flushi_valid);
         CONNECT(immu0, 0, immu0.i_fence_addr, unused_immu_fence_addr);
     ENDNEW();
 
@@ -243,7 +243,7 @@ Processor::Processor(GenObject *parent, const char *name) :
         CONNECT(dec0, 0, dec0.o_waddr, w.d.waddr);
         CONNECT(dec0, 0, dec0.o_csr_addr, w.d.csr_addr),
         CONNECT(dec0, 0, dec0.o_imm, w.d.imm);
-        CONNECT(dec0, 0, dec0.i_flush_pipeline, w_flush_pipeline);
+        CONNECT(dec0, 0, dec0.i_flush_pipeline, csr.flushi_valid);
         CONNECT(dec0, 0, dec0.i_progbuf_ena, dbg.progbuf_ena);
         CONNECT(dec0, 0, dec0.o_pc, w.d.pc);
         CONNECT(dec0, 0, dec0.o_instr, w.d.instr);
@@ -342,10 +342,6 @@ Processor::Processor(GenObject *parent, const char *name) :
         CONNECT(exec0, 0, exec0.o_pc, w.e.pc);
         CONNECT(exec0, 0, exec0.o_npc, w.e.npc);
         CONNECT(exec0, 0, exec0.o_instr, w.e.instr);
-        CONNECT(exec0, 0, exec0.i_flushd_end, i_data_flush_end);
-        CONNECT(exec0, 0, exec0.o_flushd, w.e.flushd);
-        CONNECT(exec0, 0, exec0.o_flushi, w.e.flushi);
-        CONNECT(exec0, 0, exec0.o_flushi_addr, w.e.flushi_addr);
         CONNECT(exec0, 0, exec0.o_call, w.e.call);
         CONNECT(exec0, 0, exec0.o_ret, w.e.ret);
         CONNECT(exec0, 0, exec0.o_jmp, w.e.jmp);
@@ -357,7 +353,8 @@ Processor::Processor(GenObject *parent, const char *name) :
         CONNECT(mem0, 0, mem0.i_nrst, i_nrst);
         CONNECT(mem0, 0, mem0.i_e_pc, w.e.pc);
         CONNECT(mem0, 0, mem0.i_e_instr, w.e.instr);
-        CONNECT(mem0, 0, mem0.i_e_flushd, w.e.flushd);
+        CONNECT(mem0, 0, mem0.i_flushd_valid, csr.flushd_valid);
+        CONNECT(mem0, 0, mem0.i_flushd_addr, csr.flush_addr);
         CONNECT(mem0, 0, mem0.o_flushd, w.m.flushd);
         CONNECT(mem0, 0, mem0.i_mmu_ena, w_mmu_ena);
         CONNECT(mem0, 0, mem0.o_mmu_ena, w.m.mmu_ena);
@@ -430,7 +427,7 @@ Processor::Processor(GenObject *parent, const char *name) :
         CONNECT(dmmu0, 0, dmmu0.o_mem_resp_ready, o_resp_data_ready);
         CONNECT(dmmu0, 0, dmmu0.i_mmu_ena, w.m.mmu_ena);
         CONNECT(dmmu0, 0, dmmu0.i_mmu_ppn, wb_mmu_ppn);
-        CONNECT(dmmu0, 0, dmmu0.i_fence, w_flush_pipeline);
+        CONNECT(dmmu0, 0, dmmu0.i_fence, csr.flushi_valid);
         CONNECT(dmmu0, 0, dmmu0.i_fence_addr, unused_immu_fence_addr);
     ENDNEW();
 
@@ -438,7 +435,7 @@ Processor::Processor(GenObject *parent, const char *name) :
     NEW(predic0, predic0.getName().c_str());
         CONNECT(predic0, 0, predic0.i_clk, i_clk);
         CONNECT(predic0, 0, predic0.i_nrst, i_nrst);
-        CONNECT(predic0, 0, predic0.i_flush_pipeline, w_flush_pipeline);
+        CONNECT(predic0, 0, predic0.i_flush_pipeline, csr.flushi_valid);
         CONNECT(predic0, 0, predic0.i_resp_mem_valid, i_resp_ctrl_valid);
         CONNECT(predic0, 0, predic0.i_resp_mem_addr, i_resp_ctrl_addr);
         CONNECT(predic0, 0, predic0.i_resp_mem_data, i_resp_ctrl_data);
@@ -531,15 +528,19 @@ Processor::Processor(GenObject *parent, const char *name) :
         CONNECT(csr0, 0, csr0.o_wakeup, csr.wakeup);
         CONNECT(csr0, 0, csr0.o_stack_overflow, csr.stack_overflow);
         CONNECT(csr0, 0, csr0.o_stack_underflow, csr.stack_underflow);
+        CONNECT(csr0, 0, csr0.i_f_flush_ready, w_f_flush_ready);
         CONNECT(csr0, 0, csr0.i_e_valid, w.e.valid);
+        CONNECT(csr0, 0, csr0.i_m_memop_ready, w.m.memop_ready);
+        CONNECT(csr0, 0, csr0.i_flushd_end, i_data_flush_end);
         CONNECT(csr0, 0, csr0.i_mtimer, i_mtimer);
         CONNECT(csr0, 0, csr0.o_executed_cnt, csr.executed_cnt);
         CONNECT(csr0, 0, csr0.o_step, csr.step);
         CONNECT(csr0, 0, csr0.i_dbg_progbuf_ena, dbg.progbuf_ena);
         CONNECT(csr0, 0, csr0.o_progbuf_end, csr.progbuf_end);
         CONNECT(csr0, 0, csr0.o_progbuf_error, csr.progbuf_error);
-        CONNECT(csr0, 0, csr0.o_flushi_ena, csr.flushi_ena);
-        CONNECT(csr0, 0, csr0.o_flushi_addr, csr.flushi_addr);
+        CONNECT(csr0, 0, csr0.o_flushd_valid, csr.flushd_valid);
+        CONNECT(csr0, 0, csr0.o_flushi_valid, csr.flushi_valid);
+        CONNECT(csr0, 0, csr0.o_flush_addr, csr.flush_addr);
         CONNECT(csr0, 0, csr0.o_mpu_region_we, o_mpu_region_we);
         CONNECT(csr0, 0, csr0.o_mpu_region_idx, o_mpu_region_idx);
         CONNECT(csr0, 0, csr0.o_mpu_region_addr, o_mpu_region_addr);
@@ -617,7 +618,7 @@ Processor::Processor(GenObject *parent, const char *name) :
             CONNECT(trace0, 0, trace0.i_e_memop_size, w.e.memop_size);
             CONNECT(trace0, 0, trace0.i_e_memop_addr, w.e.memop_addr);
             CONNECT(trace0, 0, trace0.i_e_memop_wdata, w.e.memop_wdata);
-            CONNECT(trace0, 0, trace0.i_e_flushd, w.e.flushd);
+            CONNECT(trace0, 0, trace0.i_e_flushd, csr.flushd_valid);
             CONNECT(trace0, 0, trace0.i_m_pc, w.m.pc);
             CONNECT(trace0, 0, trace0.i_m_valid, w.m.valid);
             CONNECT(trace0, 0, trace0.i_m_memop_ready, w.m.memop_ready);
@@ -648,15 +649,7 @@ void Processor::proc_comb() {
         SETONE(w_reg_inorder, "Cannot write loaded from memory value if it was overwritten");
     ENDIF();
 
-    SETVAL(w_flush_pipeline, OR2(w.e.flushi, csr.flushi_ena));
-    IF (NZ(w.e.flushi));
-        TEXT("fencei or ebreak instructions");
-        SETVAL(comb.vb_flush_address, w.e.flushi_addr);
-    ELSE();
-        TEXT("request through debug interface to clear cache");
-        SETVAL(comb.vb_flush_address, csr.flushi_addr);
-    ENDIF();
-
+    SETONE(w_f_flush_ready);
     SETZERO(w_immu_core_req_fetch);
     SETONE(w_dmmu_core_req_fetch);
     SETZERO(unused_immu_core_req_type);
@@ -666,8 +659,8 @@ void Processor::proc_comb() {
     SETZERO(unused_immu_mem_resp_store_fault);
     SETZERO(unused_immu_fence_addr);
 
-    SETVAL(o_flush_valid, w_flush_pipeline);
-    SETVAL(o_flush_address, comb.vb_flush_address);
+    SETVAL(o_flush_valid, csr.flushi_valid);
+    SETVAL(o_flush_address, csr.flush_addr);
     SETVAL(o_data_flush_address, ALLONES());
     SETVAL(o_data_flush_valid, w.m.flushd);
     SETVAL(o_halted, w.e.halted);

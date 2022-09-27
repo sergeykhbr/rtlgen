@@ -22,7 +22,8 @@ MemAccess::MemAccess(GenObject *parent, const char *name) :
     i_nrst(this, "i_nrst", "1", "Reset: active LOW"),
     i_e_pc(this, "i_e_pc", "CFG_CPU_ADDR_BITS", "Execution stage instruction pointer"),
     i_e_instr(this, "i_e_instr", "32", "Execution stage instruction value"),
-    i_e_flushd(this, "i_e_flushd", "1"),
+    i_flushd_valid(this, "i_flushd_valid", "1"),
+    i_flushd_addr(this, "i_flushd_addr", "CFG_CPU_ADDR_BITS"),
     o_flushd(this, "o_flushd", "1"),
     i_mmu_ena(this, "i_mmu_ena", "1", "MMU enabled"),
     o_mmu_ena(this, "o_mmu_ena", "1", "Delayed MMU enabled"),
@@ -84,7 +85,7 @@ MemAccess::MemAccess(GenObject *parent, const char *name) :
     comb(this),
     // Signals
     QUEUE_WIDTH(this, "QUEUE_WIDTH", &CALCWIDTHx(14, &memop_debug,
-                                                    &i_e_flushd,
+                                                    &i_flushd_valid,
                                                     &i_mmu_ena,
                                                     &comb.vb_res_wtag,
                                                     &comb.vb_mem_wdata,
@@ -126,6 +127,12 @@ void MemAccess::proc_comb() {
     river_cfg *cfg = glob_river_cfg_;
 
     SETZERO(valid, "valid on next clock");
+TEXT();
+    IF (NZ(i_flushd_valid));
+        SETVAL(comb.vb_req_addr, i_flushd_addr);
+    ELSE();
+        SETVAL(comb.vb_req_addr, i_memop_addr);
+    ENDIF();
 
 TEXT();
     SWITCH (i_memop_size);
@@ -192,7 +199,7 @@ TEXT();
     TEXT("Form Queue inputs:");
     SETVAL(comb.t_memop_debug, i_memop_debug, "looks like bug in systemc, cannot handle bool properly");
     SETVAL(queue_data_i, CCx(14, &comb.t_memop_debug,
-                             &i_e_flushd,
+                             &i_flushd_valid,
                              &i_mmu_ena,
                              &i_reg_wtag,
                              &comb.vb_memop_wdata,
@@ -204,8 +211,8 @@ TEXT();
                              &i_memop_size,
                              &i_memop_sign_ext,
                              &i_memop_type,
-                             &i_memop_addr));
-    SETVAL(queue_we, AND2_L(OR2_L(i_memop_valid, i_e_flushd), INV(queue_full)));
+                             &comb.vb_req_addr));
+    SETVAL(queue_we, AND2_L(OR2_L(i_memop_valid, i_flushd_valid), INV(queue_full)));
 
 TEXT();
     TEXT("Split Queue outputs:");

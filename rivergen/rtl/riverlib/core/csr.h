@@ -53,7 +53,9 @@ class CsrRegs : public ModuleObject {
             v_medeleg_ena(this, "v_medeleg_ena", "1"),
             v_mideleg_ena(this, "v_mideleg_ena", "1"),
             vb_xtvec_off_ideleg(this, "vb_xtvec_off_ideleg", "RISCV_ARCH", "4-bytes aligned"),
-            vb_xtvec_off_edeleg(this, "vb_xtvec_off_edeleg", "RISCV_ARCH", "4-bytes aligned") {
+            vb_xtvec_off_edeleg(this, "vb_xtvec_off_edeleg", "RISCV_ARCH", "4-bytes aligned"),
+            v_flushd(this, "v_flushd", "1"),
+            v_flushi(this, "v_flushi", "1") {
             Operation::start(this);
             CsrRegs *p = static_cast<CsrRegs *>(parent);
             p->proc_comb();
@@ -84,6 +86,8 @@ class CsrRegs : public ModuleObject {
         Logic v_mideleg_ena;
         Logic vb_xtvec_off_ideleg;
         Logic vb_xtvec_off_edeleg;
+        Logic v_flushd;
+        Logic v_flushi;
     };
 
     void proc_comb();
@@ -109,7 +113,10 @@ class CsrRegs : public ModuleObject {
     OutPort o_wakeup;
     OutPort o_stack_overflow;
     OutPort o_stack_underflow;
+    InPort i_f_flush_ready;
     InPort i_e_valid;
+    InPort i_m_memop_ready;
+    InPort i_flushd_end;
     InPort i_mtimer;
     OutPort o_executed_cnt;
     TextLine _io0_;
@@ -117,8 +124,9 @@ class CsrRegs : public ModuleObject {
     InPort i_dbg_progbuf_ena;
     OutPort o_progbuf_end;
     OutPort o_progbuf_error;
-    OutPort o_flushi_ena;
-    OutPort o_flushi_addr;
+    OutPort o_flushd_valid;
+    OutPort o_flushi_valid;
+    OutPort o_flush_addr;
     TextLine _io1_;
     OutPort o_mpu_region_we;
     OutPort o_mpu_region_idx;
@@ -141,7 +149,15 @@ class CsrRegs : public ModuleObject {
     ParamUI32D State_Halt;
     ParamUI32D State_Resume;
     ParamUI32D State_Wfi;
+    ParamUI32D State_Fence;
     ParamUI32D State_Response;
+    TextLine _fence0_;
+    ParamLogic Fence_None;
+    ParamLogic Fence_Data;
+    ParamLogic Fence_DataWaitEnd;
+    ParamLogic Fence_Fetch;
+    ParamLogic Fence_End;
+    TextLine _fence1_;
     ParamLogic SATP_MODE_SV48;
 
     class RegModeType : public StructObject {
@@ -190,6 +206,7 @@ class CsrRegs : public ModuleObject {
 
     ModeTableType xmode;
     RegSignal state;
+    RegSignal fencestate;
     RegSignal irq_pending;
     RegSignal cmd_type;
     RegSignal cmd_addr;
@@ -234,8 +251,6 @@ class CsrRegs : public ModuleObject {
     RegSignal dcsr_stepie;
     RegSignal stepping_mode_cnt;
     RegSignal ins_per_step;
-    RegSignal flushi_ena;
-    RegSignal flushi_addr;
 
     // process should be intialized last to make all signals available
     CombProcess comb;

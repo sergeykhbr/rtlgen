@@ -104,14 +104,13 @@ class Processor : public ModuleObject {
     class CombProcess : public ProcObject {
      public:
         CombProcess(GenObject *parent)
-            : ProcObject(parent, "comb"),
-            vb_flush_address("CFG_CPU_ADDR_BITS", "vb_flush_address", "", this) {
+            : ProcObject(parent, "comb")
+            {
             Processor *p = static_cast<Processor *>(parent);
             Operation::start(this);
             p->proc_comb();
         }
      public:
-        Logic vb_flush_address;
     };
 
     void proc_comb();
@@ -247,9 +246,6 @@ class Processor : public ModuleObject {
         memop_size(this, "memop_size", "2"),
         memop_addr(this, "memop_addr", "CFG_CPU_ADDR_BITS"),
         memop_wdata(this, "memop_wdata", "RISCV_ARCH"),
-        flushd(this, "flushd", "1"),
-        flushi(this, "flushi", "1"),
-        flushi_addr(this, "flushi_addr", "CFG_CPU_ADDR_BITS"),
         call(this, "call", "1", "0", "pseudo-instruction CALL"),
         ret(this, "ret", "1", "0", "pseudo-instruction RET"),
         jmp(this, "jmp", "1", "0", "jump was executed"),
@@ -279,9 +275,6 @@ class Processor : public ModuleObject {
         Signal memop_size;
         Signal memop_addr;
         Signal memop_wdata;
-        Signal flushd;
-        Signal flushi;
-        Signal flushi_addr;
         Signal call;
         Signal ret;
         Signal jmp;
@@ -367,8 +360,9 @@ class Processor : public ModuleObject {
         resp_valid(this, "resp_valid", "1", "0", "CSR module Response is valid"),
         resp_data(this, "resp_data", "RISCV_ARCH", "0", "Responded CSR data"),
         resp_exception(this, "resp_exception", "1", "0", "Exception of CSR access"),
-        flushi_ena(this, "flushi_ena", "1", "0", "clear specified addr in ICache without execution of fence.i"),
-        flushi_addr(this, "flushi_addr", "CFG_CPU_ADDR_BITS"),
+        flushd_valid(this, "flushd_valid", "1", "0", "clear specified addr in D$"),
+        flushi_valid(this, "flushi_valid", "1", "0", "clear specified addr in I$"),
+        flush_addr(this, "flush_addr", "CFG_CPU_ADDR_BITS"),
         executed_cnt(this, "executed_cnt", "64", "0", "Number of executed instruction"),
         irq_pending(this, "irq_pending", "IRQ_TOTAL"),
         wakeup(this, "o_wakeup", "1", "0", "There's pending bit even if interrupts globally disabled"),
@@ -382,8 +376,9 @@ class Processor : public ModuleObject {
         Signal resp_valid;
         Signal resp_data;
         Signal resp_exception;
-        Signal flushi_ena;
-        Signal flushi_addr;
+        Signal flushd_valid;
+        Signal flushi_valid;
+        Signal flush_addr;
         Signal executed_cnt;
         Signal irq_pending;
         Signal wakeup;
@@ -494,7 +489,6 @@ class Processor : public ModuleObject {
     Signal iccsr_s0_resp_ready;
     Signal iccsr_s0_resp_exception;
     TextLine _CsrBridge4_;
-    Signal w_flush_pipeline;
     Signal w_mem_resp_error;
     Signal w_writeback_ready;
     Signal w_reg_wena;
@@ -505,6 +499,7 @@ class Processor : public ModuleObject {
     Signal w_reg_ignored;
     Signal w_mmu_ena;
     Signal wb_mmu_ppn;
+    Signal w_f_flush_ready;
     Signal unused_immu_mem_req_type;
     Signal unused_immu_mem_req_wdata;
     Signal unused_immu_mem_req_wstrb;

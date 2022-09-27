@@ -96,10 +96,6 @@ InstrExecute::InstrExecute(GenObject *parent, const char *name) :
     o_pc(this, "o_pc", "CFG_CPU_ADDR_BITS", "Valid instruction pointer"),
     o_npc(this, "o_npc", "CFG_CPU_ADDR_BITS", "Next instruction pointer. Next decoded pc must match to this value or will be ignored."),
     o_instr(this, "o_instr", "32", "Valid instruction value"),
-    i_flushd_end(this, "i_flushd_end", "1"),
-    o_flushd(this, "o_flushd", "1"),
-    o_flushi(this, "o_flushi", "1"),
-    o_flushi_addr(this, "o_flushi_addr", "CFG_CPU_ADDR_BITS"),
     o_call(this, "o_call", "1", "CALL pseudo instruction detected"),
     o_ret(this, "o_ret", "1", "RET pseudoinstruction detected (hw stack tracing)"),
     o_jmp(this, "o_jmp", "1", "Jump was executed"),
@@ -121,8 +117,6 @@ InstrExecute::InstrExecute(GenObject *parent, const char *name) :
     State_Idle(this, "4", "State_Idle", "0"),
     State_WaitMemAcces(this, "4", "State_WaitMemAcces", "1"),
     State_WaitMulti(this, "4", "State_WaitMulti", "2"),
-    State_WaitFlushingAccept(this, "4", "State_WaitFlushingAccept", "3"),
-    State_Flushing_I(this, "4", "State_Flushing_I", "4"),
     State_Amo(this, "4", "State_Amo", "5"),
     State_Csr(this, "4", "State_Csr", "6"),
     State_Halted(this, "4", "State_Halted", "7"),
@@ -213,9 +207,6 @@ InstrExecute::InstrExecute(GenObject *parent, const char *name) :
     call(this, "call", "1"),
     ret(this, "ret", "1"),
     jmp(this, "jmp", "1"),
-    flushd(this, "flushd", "1"),
-    flushi(this, "flushi", "1"),
-    flushi_addr(this, "flushi_addr", "CFG_CPU_ADDR_BITS"),
     stepdone(this, "stepdone", "1"),
     // process
     comb(this),
@@ -343,7 +334,6 @@ void InstrExecute::proc_comb() {
     SETZERO(call);
     SETZERO(ret);
     SETZERO(reg_write);
-    SETZERO(flushi_addr);
     GenObject &i1 = FOR ("i", CONST("0"), Res_Total, "++");
         SETZERO(ARRITEM(wb_select, i1, wb_select->ena));
     ENDFOR();
@@ -478,8 +468,6 @@ TEXT();
 
 TEXT();
     SETVAL(wb_fpu_vec, BIG_TO_U64(BITS(comb.wv, cfg->Instr_FPU_Last, cfg->Instr_FPU_First)), "directly connected i_ivec");
-    SETVAL(comb.v_fence_d, BIT(comb.wv, "Instr_FENCE"));
-    SETVAL(comb.v_fence_i, BIT(comb.wv, "Instr_FENCE_I"));
     SETVAL(w_arith_residual_high, ORx(7, &BIT(comb.wv, "Instr_REM"),
                                          &BIT(comb.wv, "Instr_REMU"),
                                          &BIT(comb.wv, "Instr_REMW"),
@@ -768,6 +756,15 @@ TEXT();
         SETVAL(comb.vb_csr_cmd_type, cfg->CsrReq_ReadCmd);
         SETVAL(comb.vb_csr_cmd_addr, i_d_csr_addr);
         SETBITS(comb.vb_csr_cmd_wdata, 4, 0, BITS(radr1, 4, 0), "zero-extending 5 to 64-bits");
+    ELSIF(OR2(NZ(BIT(comb.wv, "Instr_FENCE")), NZ(BIT(comb.wv, "Instr_FENCE_I"))));
+        SETVAL(comb.vb_csr_cmd_type, cfg->CsrReq_FenceCmd);
+        IF (NZ(BIT(comb.wv, "Instr_FENCE")));
+            SETVAL(comb.vb_csr_cmd_addr, CONST("0x001", 12));
+        ENDIF();
+        IF (NZ(BIT(comb.wv, "Instr_FENCE_I")));
+            SETVAL(comb.vb_csr_cmd_addr, CONST("0x003", 12));
+        ENDIF();
+        SETVAL(comb.vb_csr_cmd_wdata, ALLONES(), "flush address");
     ENDIF();
 
 TEXT();
@@ -866,15 +863,6 @@ TEXT();
                 IF (EZ(i_memop_ready));
                     TEXT("Wait cycles until FIFO to memoryaccess becomes available");
                     SETVAL(state, State_WaitMemAcces);
-                ELSE();
-                    SETONE(valid);
-                ENDIF();
-            ELSIF (NZ(OR2(comb.v_fence_i, comb.v_fence_d)));
-                SETVAL(comb.vb_memop_memaddr, ALLONES());
-                IF (EZ(i_memop_ready));
-                    SETVAL(state, State_WaitFlushingAccept);
-                ELSIF (NZ(comb.v_fence_i));
-                    SETVAL(state, State_Flushing_I, "Flushing I need to wait ending of flashing D");
                 ELSE();
                     SETONE(valid);
                 ENDIF();
@@ -1027,7 +1015,7 @@ TEXT();
             SETONE(valid);
         ENDIF();
         ENDCASE();
-    CASE (State_WaitFlushingAccept);
+/*    CASE (State_WaitFlushingAccept);
         TEXT("Fifo exec => memacess is full");
         SETVAL(comb.vb_memop_memaddr, ALLONES());
         IF (NZ(i_memop_ready));
@@ -1052,7 +1040,7 @@ TEXT();
             SETVAL(state, State_Idle);
             SETONE(valid);
         ENDIF();
-        ENDCASE();
+        ENDCASE();*/
     CASE (State_Halted);
         SETZERO(stepdone);
         IF (OR2(NZ(i_resumereq), NZ(i_dbg_progbuf_ena)));
@@ -1146,13 +1134,6 @@ TEXT();
         SETVAL(compressed, i_compressed);
         SETVAL(f64, i_f64);
         SETVAL(instr, i_d_instr);
-        SETVAL(flushd, OR2(comb.v_fence_i, comb.v_fence_d));
-        SETVAL(flushi, comb.v_fence_i);
-        IF (NZ(comb.v_fence_i));
-            SETVAL(flushi_addr, ALLONES());
-        ELSIF (NZ(BIT(comb.wv, "Instr_EBREAK")));
-            SETVAL(flushi_addr, i_d_pc);
-        ENDIF();
         SETVAL(call, comb.v_call);
         SETVAL(ret, comb.v_ret);
         SETVAL(jmp, ORx(7, &comb.v_pc_branch,
@@ -1310,9 +1291,6 @@ TEXT();
     SETVAL(o_pc, pc);
     SETVAL(o_npc, comb.vb_o_npc);
     SETVAL(o_instr, instr);
-    SETVAL(o_flushd, flushd, "must be post in a memory queue to avoid to early flushing");
-    SETVAL(o_flushi, flushi);
-    SETVAL(o_flushi_addr, flushi_addr);
     SETVAL(o_call, call);
     SETVAL(o_ret, ret);
     SETVAL(o_jmp, jmp);

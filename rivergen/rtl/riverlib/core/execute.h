@@ -85,8 +85,6 @@ class InstrExecute : public ModuleObject {
      public:
         CombProcess(GenObject *parent) : ProcObject(parent, "comb"),
             v_d_valid(this, "v_d_valid", "1"),
-            v_fence_d(this, "v_fence_d", "1"),
-            v_fence_i(this, "v_fence_i", "1"),
             v_csr_req_valid(this, "v_csr_req_valid", "1"),
             v_csr_resp_ready(this, "v_csr_resp_ready", "1"),
             vb_csr_cmd_wdata(this, "vb_csr_cmd_wdata", "RISCV_ARCH"),
@@ -150,8 +148,6 @@ class InstrExecute : public ModuleObject {
         }
 
         Logic v_d_valid;
-        Logic v_fence_d;
-        Logic v_fence_i;
         Logic v_csr_req_valid;
         Logic v_csr_resp_ready;
         Logic vb_csr_cmd_wdata;
@@ -292,10 +288,10 @@ class InstrExecute : public ModuleObject {
     OutPort o_pc;
     OutPort o_npc;
     OutPort o_instr;
-    InPort i_flushd_end;
-    OutPort o_flushd;
-    OutPort o_flushi;
-    OutPort o_flushi_addr;
+//    InPort i_flushd_end;
+//    OutPort o_flushd;
+//    OutPort o_flushi;
+//    OutPort o_flushi_addr;
     OutPort o_call;
     OutPort o_ret;
     OutPort o_jmp;
@@ -319,8 +315,8 @@ class InstrExecute : public ModuleObject {
     ParamLogic State_Idle;
     ParamLogic State_WaitMemAcces;
     ParamLogic State_WaitMulti;
-    ParamLogic State_WaitFlushingAccept;
-    ParamLogic State_Flushing_I;
+    //ParamLogic State_WaitFlushingAccept;
+    //ParamLogic State_Flushing_I;
     ParamLogic State_Amo;
     ParamLogic State_Csr;
     ParamLogic State_Halted;
@@ -428,9 +424,9 @@ class InstrExecute : public ModuleObject {
     RegSignal call;
     RegSignal ret;
     RegSignal jmp;
-    RegSignal flushd;
-    RegSignal flushi;
-    RegSignal flushi_addr;
+//    RegSignal flushd;
+//    RegSignal flushi;
+//    RegSignal flushi_addr;
     RegSignal stepdone;
 
     // process should be intialized last to make all signals available
