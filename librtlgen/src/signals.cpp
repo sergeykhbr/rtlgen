@@ -40,7 +40,13 @@ Signal::Signal(GenObject *parent, const char *name, const char *width,
 std::string Signal::getType() {
     std::string out = "";
     if (SCV_is_sysc()) {
+        if (isVector()) {
+            out += "sc_vector<";
+        }
         out += "sc_signal<" + Logic::getType() + ">";
+        if (isVector()) {
+            out += ">";
+        }
     } else if (SCV_is_sv()) {
         out += Logic::getType();
     } else {

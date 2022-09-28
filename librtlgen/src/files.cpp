@@ -18,6 +18,7 @@
 #include "comments.h"
 #include "modules.h"
 #include "operations.h"
+#include "signals.h"
 #include "utils.h"
 #include <cstring>
 
@@ -215,6 +216,11 @@ void FileObject::generate_sysc() {
             if (p->getId() == ID_FUNCTION) {
                 // for global functions only
                 out += "static " + p->getType() + " ";
+            } else if (p->getId() == ID_SIGNAL && p->getName() == "") {
+                out += "typedef ";
+                out += p->generate();
+                out += " " + p->getType() + ";\n";
+                continue;
             }
             out += p->generate();
             continue;
@@ -343,6 +349,12 @@ void FileObject::generate_sysv() {
         } else {
             if (p->getId() == ID_FUNCTION) {
                 out += "function automatic ";
+            } else if (p->getId() == ID_SIGNAL && p->getName() == "") {
+                out += "typedef ";
+                out += p->generate();
+                out += "[0:" + p->getStrDepth() + " - 1]";
+                out += " " + p->getType() + ";\n";
+                continue;
             }
             out += p->generate();
         }
