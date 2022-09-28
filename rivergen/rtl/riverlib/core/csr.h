@@ -134,7 +134,8 @@ class CsrRegs : public ModuleObject {
     OutPort o_mpu_region_mask;
     OutPort o_mpu_region_flags;
     TextLine _io2_;
-    OutPort o_mmu_ena;
+    OutPort o_immu_ena;
+    OutPort o_dmmu_ena;
     OutPort o_mmu_ppn;
 
  protected:
@@ -227,7 +228,8 @@ class CsrRegs : public ModuleObject {
     RegSignal mpu_idx;
     RegSignal mpu_flags;
     RegSignal mpu_we;
-    RegSignal mmu_ena;
+    RegSignal immu_ena;
+    RegSignal dmmu_ena;
     RegSignal satp_ppn;
     RegSignal satp_mode;
     RegSignal mode;

@@ -292,7 +292,7 @@ class Processor : public ModuleObject {
             pc(this, "pc", "CFG_CPU_ADDR_BITS"),
             valid(this, "valid", "1"),
             debug_valid(this, "debug_valid", "1"),
-            mmu_ena(this, "mmu_ena", "1"),
+            dmmu_ena(this, "dmmu_ena", "1"),
             req_data_valid(this, "req_data_valid", "1"),
             req_data_type(this, "req_data_type", "MemopType_Total"),
             req_data_addr(this, "req_data_addr", "CFG_CPU_ADDR_BITS"),
@@ -306,7 +306,7 @@ class Processor : public ModuleObject {
         Signal pc;
         Signal valid;
         Signal debug_valid;
-        Signal mmu_ena;
+        Signal dmmu_ena;
         Signal req_data_valid;
         Signal req_data_type;
         Signal req_data_addr;
@@ -497,7 +497,8 @@ class Processor : public ModuleObject {
     Signal wb_reg_wtag;
     Signal w_reg_inorder;
     Signal w_reg_ignored;
-    Signal w_mmu_ena;
+    Signal w_immu_ena;
+    Signal w_dmmu_ena;
     Signal wb_mmu_ppn;
     Signal w_f_flush_ready;
     Signal unused_immu_mem_req_type;

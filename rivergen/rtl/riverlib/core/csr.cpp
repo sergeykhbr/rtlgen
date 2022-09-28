@@ -60,7 +60,8 @@ CsrRegs::CsrRegs(GenObject *parent, const char *name) :
     o_mpu_region_mask(this, "o_mpu_region_mask", "CFG_CPU_ADDR_BITS", "MPU region mask"),
     o_mpu_region_flags(this, "o_mpu_region_flags", "CFG_MPU_FL_TOTAL", "{ena, cachable, r, w, x}"),
     _io2_(this),
-    o_mmu_ena(this, "o_mmu_ena", "1", "MMU enabled in U and S modes. Sv48 only."),
+    o_immu_ena(this, "o_immu_ena", "1", "Instruction MMU enabled in U and S modes. Sv48 only."),
+    o_dmmu_ena(this, "o_dmmu_ena", "1", "Data MMU enabled in U and S modes or MPRV bit is HIGH. Sv48 only."),
     o_mmu_ppn(this, "o_mmu_ppn", "44", "Physical Page Number"),
     // param
     State_Idle(this, "State_Idle", "0"),
@@ -108,7 +109,8 @@ CsrRegs::CsrRegs(GenObject *parent, const char *name) :
     mpu_idx(this, "mpu_idx", "CFG_MPU_TBL_WIDTH"),
     mpu_flags(this, "mpu_flags", "CFG_MPU_FL_TOTAL"),
     mpu_we(this, "mpu_we", "1"),
-    mmu_ena(this, "mmu_ena", "1", "0", "MMU SV48 enabled in U- and S- modes"),
+    immu_ena(this, "immu_ena", "1", "0", "Instruction MMU SV48 enabled in U- and S- modes"),
+    dmmu_ena(this, "dmmu_ena", "1", "0", "Data MMU SV48 enabled in U- and S- modes, MPRV bit"),
     satp_ppn(this, "satp_ppn", "44", "0", "Physcal Page Number"),
     satp_mode(this, "satp_mode", "4", "0", "Supervisor Address Translation and Protection mode"),
     mode(this, "mode", "2", "PRV_M"),
@@ -873,17 +875,21 @@ TEXT();
         IF (NE(ARRITEM_B(xmode, TO_INT(mode), xmode->xpp), cfg->PRV_M), "see page 21");
             SETZERO(mprv);
         ENDIF();
+    ENDIF();
 
-        TEXT();
-        TEXT("Check MMU:");
-        IF (NZ(BIT(comb.vb_xpp, 1)));
-            TEXT("H and M modes");
-            SETZERO(mmu_ena);
-        ELSE();
+TEXT();
+    TEXT("Check MMU:");
+    SETZERO(immu_ena);
+    SETZERO(dmmu_ena);
+    IF (EQ(satp_mode, SATP_MODE_SV48), "Only SV48 implemented");
+        IF (EZ(BIT(mode, 1)));
             TEXT("S and U modes");
-            IF (EQ(satp_mode, SATP_MODE_SV48), "Only SV48 implemented");
-                SETONE(mmu_ena);
-            ENDIF();
+            SETONE(immu_ena);
+            SETONE(dmmu_ena);
+        ELSIF(AND2(NZ(mprv), EZ(BIT(comb.vb_xpp, 1))));
+            TEXT("Previous state is S or U mode");
+            TEXT("Instruction address-translation and protection are unaffected");
+            SETONE(dmmu_ena);
         ENDIF();
     ENDIF();
 
@@ -909,7 +915,8 @@ TEXT();
         SETARRITEM(xmode, comb.iM, xmode->xcause_code, comb.wb_trap_cause);
         SETARRITEM(xmode, comb.iM, xmode->xcause_irq, INV(OR_REDUCE(comb.vb_e_emux)));
         SETVAL(mode, cfg->PRV_M);
-        SETZERO(mmu_ena);
+        SETZERO(immu_ena);
+        SETZERO(dmmu_ena);
     ENDIF();
 
 TEXT();
@@ -998,7 +1005,8 @@ TEXT();
     SETVAL(o_mpu_region_addr, mpu_addr);
     SETVAL(o_mpu_region_mask, mpu_mask);
     SETVAL(o_mpu_region_flags, mpu_flags);
-    SETVAL(o_mmu_ena, mmu_ena);
+    SETVAL(o_immu_ena, immu_ena);
+    SETVAL(o_dmmu_ena, dmmu_ena);
     SETVAL(o_mmu_ppn, satp_ppn);
     SETVAL(o_step, dcsr_step);
     SETVAL(o_flushd_valid, comb.v_flushd);
