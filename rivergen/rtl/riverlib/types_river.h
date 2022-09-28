@@ -112,7 +112,7 @@ class types_river : public FileObject {
     class hart_irq_type : public StructObject {
     public:
         hart_irq_type(GenObject* parent, const char* name = "", int idx = -1, const char* comment = "")
-            : StructObject(parent, "dport_out_type", name, idx, comment),
+            : StructObject(parent, "hart_irq_type", name, idx, comment),
             irq("IRQ_TOTAL", "irq", "0", this) {
             registerCfgType(name);                  // will be registered if name == ""
             if (name[0]) {

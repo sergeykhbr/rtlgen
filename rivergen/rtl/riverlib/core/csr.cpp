@@ -72,7 +72,7 @@ CsrRegs::CsrRegs(GenObject *parent, const char *name) :
     State_Halt(this, "State_Halt", "6"),
     State_Resume(this, "State_Resume", "7"),
     State_Wfi(this, "State_Wfi", "8"),
-    State_Fence(this, "State_Wfi", "9"),
+    State_Fence(this, "State_Fence", "9"),
     State_Response(this, "State_Response", "10"),
     _fence0_(this),
     Fence_None(this, "3", "Fence_None", "0"),
@@ -276,7 +276,8 @@ TEXT();
         ENDCASE();
     CASE (State_Fence);
         IF (EQ(fencestate, Fence_End));
-            SETVAL(state, State_Idle);
+            SETZERO(cmd_data);
+            SETVAL(state, State_Response);
             SETVAL(fencestate, Fence_None);
         ENDIF();
         ENDCASE();

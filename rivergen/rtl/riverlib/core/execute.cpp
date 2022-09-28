@@ -641,7 +641,7 @@ TEXT();
                                  &mem_ex_store_fault,
                                  &mem_ex_mpu_store,
                                  &mem_ex_mpu_load));
-    SETVAL(comb.v_csr_cmd_ena, ORx(25, &i_haltreq,
+    SETVAL(comb.v_csr_cmd_ena, ORx(27, &i_haltreq,
                                     &AND2(i_step, stepdone),
                                     &i_unsup_exception,
                                     &i_instr_load_fault,
@@ -665,7 +665,9 @@ TEXT();
                                     &BIT(comb.wv, "Instr_CSRRS"),
                                     &BIT(comb.wv, "Instr_CSRRSI"),
                                     &BIT(comb.wv, "Instr_CSRRW"),
-                                    &BIT(comb.wv, "Instr_CSRRWI")));
+                                    &BIT(comb.wv, "Instr_CSRRWI"),
+                                    &BIT(comb.wv, "Instr_FENCE"),
+                                    &BIT(comb.wv, "Instr_FENCE_I")));
     IF (NZ(i_haltreq));
         SETVAL(comb.vb_csr_cmd_type, cfg->CsrReq_HaltCmd);
         SETVAL(comb.vb_csr_cmd_addr, cfg->HALT_CAUSE_HALTREQ);
