@@ -216,6 +216,7 @@ TEXT();
             IF (NZ(AND2(i_core_req_valid, i_mem_req_ready)));
                 SETVAL(state, WaitRespNoMmu);
             ENDIF();
+            SETVAL(last_va, ALLONES());
         ELSIF(NZ(tlb_flush_cnt));
             SETVAL(state, FlushTlb);
             SETZERO(tlb_wdata);
