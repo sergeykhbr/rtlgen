@@ -970,6 +970,11 @@ std::string SETSTRF_gen(GenObject **args) {
             ret += ",\n" + Operation::addspaces();
         }
         ret += Operation::obj2varname(args[5 + i]);
+        if (SCV_is_sysc()
+            && args[5+i]->getId() == ID_DEF_PARAM
+            && strstr(args[5+i]->getType().c_str(), "string")) {
+            ret += ".c_str()";
+        }
     }
     Operation::set_space(Operation::get_space() - 2);
     ret += ");\n";
