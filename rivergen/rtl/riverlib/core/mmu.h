@@ -53,6 +53,7 @@ class Mmu : public ModuleObject {
             vb_tlb_adr(this, "vb_tlb_adr", "CFG_MMU_TLB_AWIDTH"),
             vb_pte_start_va(this, "vb_pte_start_va", "SUB(CFG_CPU_ADDR_BITS,12)"),
             vb_pte_base_va(this, "vb_pte_base_va", "SUB(CFG_CPU_ADDR_BITS,12)"),
+            v_va_ena(this, "v_va_ena", "1"),
             vb_level0_off(this, "vb_level0_off", "12"),
             vb_level1_off(this, "vb_level1_off", "12"),
             vb_level2_off(this, "vb_level2_off", "12"),
@@ -89,6 +90,7 @@ class Mmu : public ModuleObject {
         Logic vb_tlb_adr;
         Logic vb_pte_start_va;
         Logic vb_pte_base_va;
+        Logic v_va_ena;
         Logic vb_level0_off;
         Logic vb_level1_off;
         Logic vb_level2_off;
