@@ -46,7 +46,16 @@ std::string ModuleObject::generate_sysc_reg_struct(bool negedge) {
         if (negedge && !p->isNReg()) {
             continue;
         }
-        ln = "        " + p->getType() + " " + p->getName();
+        ln = "        ";
+        if (p->isSignal()) {
+            // some structure are not defined as a signal but probably should be
+            ln += "sc_signal<";
+        }
+        ln += p->getType();
+        if (p->isSignal()) {
+            ln += ">";
+        }
+        ln += " " + p->getName();
         if (p->getDepth()) {
             twodim = true;
             ln += "[" + p->getStrDepth() + "]";
@@ -330,7 +339,7 @@ std::string ModuleObject::generate_sysc_h() {
     text = "";
     for (auto &p: getEntries()) {
         if (p->isReg() || p->isNReg()
-            || (p->getId() != ID_SIGNAL
+            || (!p->isSignal()
                 && p->getId() != ID_VALUE
                 && p->getId() != ID_STRUCT_INST
                 && p->getId() != ID_ARRAY_DEF
@@ -352,7 +361,21 @@ std::string ModuleObject::generate_sysc_h() {
             out += text;
             text = "";
         }
-        ln = "    " + p->getType() + " " + p->getName();
+        ln = "    ";
+        if (p->isVector()) {
+            ln += "sc_vector<";
+        }
+        if (p->isSignal()) {
+            ln += "sc_signal<";
+        }
+        ln += p->getType();
+        if (p->isSignal()) {
+            ln += ">";
+        }
+        if (p->isVector()) {
+            ln += ">";
+        }
+        ln += " " + p->getName();
         if (p->getDepth() && !p->isVector()) {
             ln += "[" + p->getStrDepth() + "]";
         }
@@ -484,7 +507,7 @@ std::string ModuleObject::generate_sysc_sensitivity(std::string prefix,
         }
     }
 
-    if ((obj->getId() == ID_SIGNAL && obj->getParent()->getId() != ID_ARRAY_DEF)    // signal is a part of array not a child structure
+    if ((obj->isSignal() && obj->getParent()->getId() != ID_ARRAY_DEF)    // signal is a part of array not a child structure
         || obj->getId() == ID_ARRAY_DEF
         || obj->getId() == ID_STRUCT_INST) {
         if (name.size()) {
@@ -513,9 +536,19 @@ std::string ModuleObject::generate_sysc_sensitivity(std::string prefix,
         } else {
             ret += "sensitive << " + obj->getName() + ";\n";
         }
-    } else if  (obj->getId() == ID_SIGNAL) {
+    } else if  (obj->isSignal()) {
         ret += Operation::addspaces();
-        ret += "sensitive << " + name + ";\n";
+        if (obj->isVector() || obj->getId() == ID_ARRAY_DEF) {
+            ret += "for (int i = 0; i < " + obj->getStrDepth() + "; i++) {\n";
+            Operation::set_space(Operation::get_space() + 1);
+            ret += Operation::addspaces();
+            ret += "sensitive << " + name + "[i];\n";
+            Operation::set_space(Operation::get_space() - 1);
+            ret += Operation::addspaces();
+            ret += "}\n";
+        } else {
+            ret += "sensitive << " + name + ";\n";
+        }
     } else if (obj->getId() == ID_ARRAY_DEF
         && obj->getItem()->getId() != ID_VALUE) {
         // ignore value (not signals) declared in module scope
@@ -571,7 +604,7 @@ std::string ModuleObject::generate_sysc_vcd_entries(std::string name1, std::stri
         name1 += "[";
         name1 += obj->getName();
         name1 += "]";
-    } else if ((obj->getId() == ID_SIGNAL && obj->getParent()->getId() != ID_ARRAY_DEF)    // signal is a part of array not a child structure
+    } else if ((obj->isSignal() && obj->getParent()->getId() != ID_ARRAY_DEF)    // signal is a part of array not a child structure
         || obj->getId() == ID_ARRAY_DEF
         || obj->getId() == ID_STRUCT_INST) {
         if (name1.size()) {
@@ -610,7 +643,7 @@ std::string ModuleObject::generate_sysc_vcd_entries(std::string name1, std::stri
         Operation::set_space(Operation::get_space() - 1);
         ret += Operation::addspaces();
         ret += "}\n";
-    } else if (obj->getId() == ID_SIGNAL && (obj->isReg() || obj->isNReg())) {
+    } else if (obj->isSignal() && (obj->isReg() || obj->isNReg())) {
         ret += Operation::addspaces();
         if (obj->getParent()->getId() == ID_ARRAY_DEF
             || obj->getParent()->getParent()->getId() == ID_ARRAY_DEF) {

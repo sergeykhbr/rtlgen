@@ -30,7 +30,7 @@ Queue::Queue(GenObject *parent, const char *name, const char *gen_abits, const c
     o_nempty(this, "o_nempty", "1"),
     DEPTH(this, "DEPTH", "POW2(1,abits)"),
     wcnt(this, "wcnt", "ADD(abits,1)", "0"),
-    mem(this, "mem", "dbits", "DEPTH", true),
+    mem(this, "mem", "dbits", "DEPTH"),
     // process
     comb(this)
 {

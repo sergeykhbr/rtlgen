@@ -346,6 +346,18 @@ class types_river : public FileObject {
         Logic r_user;
     };
 
+    class hart_signal_vector : public Signal {
+     public:
+        hart_signal_vector(GenObject *parent, const char *name) :
+            Signal(parent, name, "1") {
+            type_ = std::string("hart_signal_vector");
+            strDepth_ = std::string("CFG_CPU_MAX");
+        }
+        virtual bool isVector() override { return true; }
+        virtual std::string getType() override { return type_; }
+        virtual std::string generate() override { return Signal::getType(); }
+    };
+
     class hart_irq_vector : public Signal {
      public:
         hart_irq_vector(GenObject *parent, const char *name) :
@@ -373,6 +385,7 @@ class types_river : public FileObject {
     dport_in_vector dport_in_vector_def_;
     dport_out_vector dport_out_vector_def_;
     TextLine _dbgiface7_;
+    hart_signal_vector hart_signal_vector_def_;
     hart_irq_vector hart_irq_vector_def_;
     TextLine _axi0_;
     TextLine _axi1_;

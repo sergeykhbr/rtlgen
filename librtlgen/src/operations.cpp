@@ -163,7 +163,7 @@ std::string Operation::obj2varname(GenObject *obj, const char *prefix, bool read
 
     if (read) {
         if (obj->getId() == ID_INPUT
-            || (prefix[0] == 'r' && obj->getId() == ID_SIGNAL)) {
+            || (prefix[0] == 'r' && obj->isSignal())) {
             if (SCV_is_sysc()) {
                 ret += ".read()";
             }

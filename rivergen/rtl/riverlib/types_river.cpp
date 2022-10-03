@@ -34,6 +34,7 @@ types_river::types_river(GenObject *parent) :
     dport_in_vector_def_(this, ""),
     dport_out_vector_def_(this, ""),
     _dbgiface7_(this),
+    hart_signal_vector_def_(this, ""),
     hart_irq_vector_def_(this, ""),
     _axi0_(this),
     _axi1_(this, "L1 AXI interface"),

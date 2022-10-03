@@ -75,7 +75,13 @@ class lrunway : public ModuleObject {
     ParamI32D LINE_WIDTH;
 
     RegSignal radr;
-    WireArray<Signal> tbl;
+
+    class MemTable : public WireArray<Signal> {
+     public:
+        MemTable(GenObject *parent, const char *name, const char *width, const char *depth)
+            : WireArray<Signal>(parent, name, width, depth, true) {}
+        virtual bool isSignal() override { return true; }
+    } mem;
 
     // process should be intialized last to make all signals available
     CombProcess comb;

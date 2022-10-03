@@ -43,7 +43,7 @@ class Signal : public Logic {
            const char *val="0",
            const char *comment="");
 
-    virtual std::string getType() override;
+    virtual bool isSignal() override { return true; }
 };
 
 }  // namespace sysvc

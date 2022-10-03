@@ -41,9 +41,15 @@ class Workgroup : public ModuleObject {
     class CombProcess : public ProcObject {
      public:
         CombProcess(GenObject* parent)
-            : ProcObject(parent, "comb") {
+            : ProcObject(parent, "comb"),
+            v_flush_l2(this, "v_flush_l2", "1"),
+            vb_halted(this, "vb_halted", "CFG_CPU_MAX"),
+            vb_available(this, "vb_available", "CFG_CPU_MAX") {
         }
      public:
+        Logic v_flush_l2;
+        Logic vb_halted;
+        Logic vb_available;
     };
 
     void proc_comb();
@@ -104,13 +110,30 @@ public:
     ParamLogic coherence_ena;
     ParamUI32D ACP_SLOT_IDX;
     // Signals:
+    class axi4_l2_in_type_signal : public types_river::axi4_l2_in_type {
+     public:
+        axi4_l2_in_type_signal(GenObject* parent, const char *name)
+            : types_river::axi4_l2_in_type(parent, name, -1, "") {}
+        virtual bool isSignal() override { return true; }
+    };
+
+    class axi4_l2_out_type_signal : public types_river::axi4_l2_out_type {
+     public:
+        axi4_l2_out_type_signal(GenObject* parent, const char *name)
+            : types_river::axi4_l2_out_type(parent, name, -1, "") {}
+        virtual bool isSignal() override { return true; }
+    };
+
     types_river::axi4_l1_out_vector coreo;
     types_river::axi4_l1_in_vector corei;
-    types_river::axi4_l2_in_type l2i;
-    types_river::axi4_l2_out_type l2o;
+    axi4_l2_in_type_signal l2i;
+    axi4_l2_out_type_signal l2o;
     types_river::dport_in_vector wb_dport_i;
     types_river::dport_out_vector wb_dport_o;
-    types_river::hart_irq_vector wb_irq;
+    types_river::hart_irq_vector vec_irq;
+    types_river::hart_signal_vector vec_halted;
+    types_river::hart_signal_vector vec_available;
+    types_river::hart_signal_vector vec_flush_l2;
     Signal wb_halted;
     Signal wb_available;
     Signal w_pdmi_req_valid;
@@ -138,7 +161,6 @@ public:
     Signal wb_ic_dport_rdata;
     Signal wb_progbuf;
     TStructArray<types_amba::axi4_master_config_type> unused_mst_cfg;
-    Signal wb_flush_l2;
     Signal w_flush_l2;
     types_amba::axi4_master_config_type wb_xcfg;
 

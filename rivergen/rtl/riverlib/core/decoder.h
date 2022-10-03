@@ -145,10 +145,24 @@ class InstrDecoder : public ModuleObject {
         }
     };
 
+     class FetchedPcType : public WireArray<Signal> {
+     public:
+        FetchedPcType(GenObject *parent, const char *name, const char *width, const char *depth)
+            : WireArray<Signal>(parent, name, width, depth) {}
+        virtual bool isSignal() override { return true; }
+    };
+
+     class FetchedInstrType : public WireArray<Signal> {
+     public:
+        FetchedInstrType(GenObject *parent, const char *name, const char *width, const char *depth)
+            : WireArray<Signal>(parent, name, width, depth) {}
+        virtual bool isSignal() override { return true; }
+    };
+
     TStructArray<DecoderDataType> wd;
     DecTableType d;
-    WireArray<Signal> wb_f_pc;
-    WireArray<Signal> wb_f_instr;
+    FetchedPcType wb_f_pc;
+    FetchedInstrType wb_f_instr;
 
     // process should be intialized last to make all signals available
     CombProcess comb;

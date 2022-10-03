@@ -86,8 +86,16 @@ class BpBTB : public ModuleObject {
             setReg();
         }
     };
+
+     class DebugNpcType : public WireArray<Signal> {
+     public:
+        DebugNpcType(GenObject *parent, const char *name, const char *width, const char *depth)
+            : WireArray<Signal>(parent, name, width, depth) {}
+        virtual bool isSignal() override { return true; }
+    };
+
     BtbTableType btb;
-    WireArray<Signal> dbg_npc;
+    DebugNpcType dbg_npc;
 
 
     // process should be intialized last to make all signals available

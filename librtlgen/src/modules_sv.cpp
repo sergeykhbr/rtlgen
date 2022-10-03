@@ -274,7 +274,7 @@ std::string ModuleObject::generate_sv_mod_signals() {
     text = "";
     for (auto &p: getEntries()) {
         if (p->isReg() || p->isNReg()
-            || (p->getId() != ID_SIGNAL
+            || (!p->isSignal()
                 && p->getId() != ID_VALUE
                 && p->getId() != ID_STRUCT_INST
                 && p->getId() != ID_ARRAY_DEF

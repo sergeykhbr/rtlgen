@@ -84,6 +84,7 @@ class GenObject {
     virtual std::string getComment() { return comment_; }
     virtual std::string getType() { return type_; }
     virtual bool isString() { return getType() == "std::string" || getType() == "string"; }
+    virtual bool isSignal() { return false; }
     virtual bool isVector() { return false; }
     virtual bool isGenVar() { return false; }   // I32D analog for rtl
     virtual bool isLocal();     // if parent is file then obj is global; if module obj is local

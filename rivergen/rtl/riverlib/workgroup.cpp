@@ -53,7 +53,10 @@ Workgroup::Workgroup(GenObject *parent, const char *name) :
     l2o(this, "l2o"),
     wb_dport_i(this, "wb_dport_i"),
     wb_dport_o(this, "wb_dport_o"),
-    wb_irq(this, "wb_irq"),
+    vec_irq(this, "vec_irq"),
+    vec_halted(this, "vec_halted"),
+    vec_available(this, "vec_available"),
+    vec_flush_l2(this, "vec_flush_l2"),
     wb_halted(this, "wb_halted", "CFG_CPU_MAX"),
     wb_available(this, "wb_available", "CFG_CPU_MAX"),
     w_pdmi_req_valid(this, "w_pdmi_req_valid", "1"),
@@ -81,7 +84,6 @@ Workgroup::Workgroup(GenObject *parent, const char *name) :
     wb_ic_dport_rdata(this, "wb_ic_dport_rdata", "RISCV_ARCH"),
     wb_progbuf(this, "wb_progbuf", "MUL(32,CFG_PROGBUF_REG_TOTAL)"),
     unused_mst_cfg(this, "",  "unused_mst_cfg", "CFG_CPU_MAX"),
-    wb_flush_l2(this, "wb_flush_l2", "CFG_SLOT_L1_TOTAL"),
     w_flush_l2(this, "w_flush_l2", "1"),
     wb_xcfg(this, "wb_xcfg"),
     // submodules:
@@ -181,10 +183,10 @@ Workgroup::Workgroup(GenObject *parent, const char *name) :
             CONNECT(cpux, i, cpux->o_xcfg, ARRITEM(unused_mst_cfg, *i, unused_mst_cfg));
             CONNECT(cpux, i, cpux->i_dport, ARRITEM(wb_dport_i, *i, wb_dport_i));
             CONNECT(cpux, i, cpux->o_dport, ARRITEM(wb_dport_o, *i, wb_dport_o));
-            CONNECT(cpux, i, cpux->i_irq_pending, ARRITEM(wb_irq, *i, wb_irq));
-            CONNECT(cpux, i, cpux->o_flush_l2, ARRITEM(wb_flush_l2, *i, wb_flush_l2));
-            CONNECT(cpux, i, cpux->o_halted, ARRITEM(wb_halted, *i, wb_halted));
-            CONNECT(cpux, i, cpux->o_available, ARRITEM(wb_available, *i, wb_available));
+            CONNECT(cpux, i, cpux->i_irq_pending, ARRITEM(vec_irq, *i, vec_irq));
+            CONNECT(cpux, i, cpux->o_flush_l2, ARRITEM(vec_flush_l2, *i, vec_flush_l2));
+            CONNECT(cpux, i, cpux->o_halted, ARRITEM(vec_halted, *i, vec_halted));
+            CONNECT(cpux, i, cpux->o_available, ARRITEM(vec_available, *i, vec_available));
             CONNECT(cpux, i, cpux->i_progbuf, wb_progbuf);
         ENDNEW();
 
@@ -193,9 +195,9 @@ Workgroup::Workgroup(GenObject *parent, const char *name) :
         NEW(*dumx.getItem(0), dumx.getName().c_str(), i);
             CONNECT(dumx, i, dumx->o_msto, ARRITEM(coreo, *i, coreo));
             CONNECT(dumx, i, dumx->o_dport, ARRITEM(wb_dport_o, *i, wb_dport_o));
-            CONNECT(dumx, i, dumx->o_flush_l2, ARRITEM(wb_flush_l2, *i, wb_flush_l2));
-            CONNECT(dumx, i, dumx->o_halted, ARRITEM(wb_halted, *i, wb_halted));
-            CONNECT(dumx, i, dumx->o_available, ARRITEM(wb_available, *i, wb_available));
+            CONNECT(dumx, i, dumx->o_flush_l2, ARRITEM(vec_flush_l2, *i, vec_flush_l2));
+            CONNECT(dumx, i, dumx->o_halted, ARRITEM(vec_halted, *i, vec_halted));
+            CONNECT(dumx, i, dumx->o_available, ARRITEM(vec_available, *i, vec_available));
         ENDNEW();
     ENDFORGEN(new STRING("xdummycpu"));
     ENDGENERATE("hartgen");
@@ -242,7 +244,14 @@ void Workgroup::proc_comb() {
     SETVAL(wb_xcfg.did, glob_types_amba_->RISCV_RIVER_WORKGROUP);
 
 TEXT();
-    SETBITZERO(wb_flush_l2, ACP_SLOT_IDX, "ACP port");
-    SETVAL(w_flush_l2, OR_REDUCE(wb_flush_l2));
+    TEXT("Vector to signal conversion is neccessary to implement compatibility with SystemC:");
+    GenObject &i = FOR("i", CONST("0"), glob_river_cfg_->CFG_CPU_MAX, "++");
+        SETVAL(comb.v_flush_l2, OR2(comb.v_flush_l2, ARRITEM(vec_flush_l2, i, vec_flush_l2)));
+        SETARRITEM(comb.vb_halted, i, comb.vb_halted, ARRITEM(vec_halted, i, vec_halted));
+        SETARRITEM(comb.vb_available, i, comb.vb_available, ARRITEM(vec_available, i, vec_available));
+    ENDFOR();
+    SETVAL(w_flush_l2, comb.v_flush_l2);
+    SETVAL(wb_halted, comb.vb_halted);
+    SETVAL(wb_available, comb.vb_available);
     SETVAL(o_xcfg, wb_xcfg);
 }

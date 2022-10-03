@@ -35,12 +35,12 @@ lrunway::lrunway(GenObject *parent,
     WAYS_TOTAL(this, "WAYS_TOTAL", "POW2(1,waybits)"),
     LINE_WIDTH(this, "LINE_WIDTH", "MUL(WAYS_TOTAL,waybits)"),
     radr(this, "radr", "abits", "0"),
-    tbl(this, "mem", "LINE_WIDTH", "LINES_TOTAL", true),
+    mem(this, "mem", "LINE_WIDTH", "LINES_TOTAL"),
     // process
     comb(this)
 {
     Operation::start(this);
-    tbl.disableReset();
+    mem.disableReset();
     disableVcd();
 
     Operation::start(&comb);
@@ -52,7 +52,7 @@ void lrunway::proc_comb() {
     GenObject *i;
 
     SETVAL(radr, i_raddr);
-    SETVAL(comb.vb_tbl_rdata, ARRITEM(tbl, TO_INT(radr), tbl));
+    SETVAL(comb.vb_tbl_rdata, ARRITEM(mem, TO_INT(radr), mem));
 
 TEXT();
     SETVAL(comb.v_we, OR3(i_up, i_down, i_init));
@@ -114,7 +114,7 @@ TEXT();
 
 TEXT();
     IF (NZ(comb.v_we));
-        SETARRITEM(tbl, TO_INT(i_waddr), tbl, comb.vb_tbl_wdata);
+        SETARRITEM(mem, TO_INT(i_waddr), mem, comb.vb_tbl_wdata);
     ENDIF();
 
     SETVAL(o_lru, BITS(comb.vb_tbl_rdata, DEC(waybits), CONST("0")));

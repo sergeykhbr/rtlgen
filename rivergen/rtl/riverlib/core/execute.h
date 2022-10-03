@@ -288,10 +288,6 @@ class InstrExecute : public ModuleObject {
     OutPort o_pc;
     OutPort o_npc;
     OutPort o_instr;
-//    InPort i_flushd_end;
-//    OutPort o_flushd;
-//    OutPort o_flushi;
-//    OutPort o_flushi_addr;
     OutPort o_call;
     OutPort o_ret;
     OutPort o_jmp;
@@ -351,6 +347,13 @@ class InstrExecute : public ModuleObject {
         Signal res;
     } select_type_def_;
 
+     class TagExpectedType : public WireArray<Signal> {
+     public:
+        TagExpectedType(GenObject *parent, const char *name, const char *width, const char *depth)
+            : WireArray<Signal>(parent, name, width, depth) {}
+        virtual bool isSignal() override { return true; }
+    };
+
     input_mux_type input_mux_type_def_;
 
     TStructArray<select_type> wb_select;
@@ -372,7 +375,7 @@ class InstrExecute : public ModuleObject {
     Signal wb_rdata2;
     Signal wb_shifter_a1;
     Signal wb_shifter_a2;
-    WireArray<Signal> tag_expected;
+    TagExpectedType tag_expected;
 
     RegSignal state;
     RegSignal csrstate;
@@ -424,9 +427,6 @@ class InstrExecute : public ModuleObject {
     RegSignal call;
     RegSignal ret;
     RegSignal jmp;
-//    RegSignal flushd;
-//    RegSignal flushi;
-//    RegSignal flushi_addr;
     RegSignal stepdone;
 
     // process should be intialized last to make all signals available

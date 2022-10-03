@@ -26,7 +26,7 @@ StackTraceBuffer::StackTraceBuffer(GenObject *parent, const char *name) :
     i_wdata(this, "i_wdata", "MUL(2,CFG_CPU_ADDR_BITS)"),
     // registers
     raddr(this, "raddr", "5"),
-    stackbuf(this, "stackbuf", "MUL(2,CFG_CPU_ADDR_BITS)", "STACK_TRACE_BUF_SIZE", true, "[pc, npc]"),
+    stackbuf(this, "stackbuf", "MUL(2,CFG_CPU_ADDR_BITS)", "STACK_TRACE_BUF_SIZE"),
     // process
     comb(this)
 {

@@ -79,6 +79,20 @@ class IntMul : public ModuleObject {
     OutPort o_valid;
 
  protected:
+     class MulLevel1Type : public WireArray<RegSignal> {
+     public:
+        MulLevel1Type(GenObject *parent, const char *name, const char *width, const char *depth)
+            : WireArray<RegSignal>(parent, name, width, depth, true) {}
+        virtual bool isSignal() override { return true; }
+    };
+
+     class MulLevel3Type : public WireArray<RegSignal> {
+     public:
+        MulLevel3Type(GenObject *parent, const char *name, const char *width, const char *depth)
+            : WireArray<RegSignal>(parent, name, width, depth, true) {}
+        virtual bool isSignal() override { return true; }
+    };
+
     RegSignal busy;
     RegSignal ena;
     RegSignal a1;
@@ -92,8 +106,8 @@ class IntMul : public ModuleObject {
     RegSignal a1_dbg;
     RegSignal a2_dbg;
     RegSignal reference_mul;
-    WireArray<RegSignal> lvl1;
-    WireArray<RegSignal> lvl3;
+    MulLevel1Type lvl1;
+    MulLevel3Type lvl3;
 
 
     // process should be intialized last to make all signals available

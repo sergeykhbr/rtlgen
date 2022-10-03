@@ -481,7 +481,24 @@ std::string StructObject::generate() {
         if (p->getId() == ID_COMMENT) {
             ln += "//";
         }
-        ln += p->getType() + " " + p->getName();
+        if (SCV_is_sysc()) {
+            if (p->isVector()) {
+                ln += "sc_vector<";
+            }
+            if (p->isSignal()) {
+                ln += "sc_signal<";
+            }
+        }
+        ln += p->getType();
+        if (SCV_is_sysc()) {
+            if (p->isSignal()) {
+                ln += ">";
+            }
+            if (p->isVector()) {
+                ln += ">";
+            }
+        }
+        ln += " " + p->getName();
         if (p->getDepth()) {
             ln += "[";
             if (SCV_is_sysc()) {

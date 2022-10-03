@@ -43,8 +43,8 @@ IntMul::IntMul(GenObject *parent, const char *name) :
     a1_dbg(this, "a1_dbg", "RISCV_ARCH"),
     a2_dbg(this, "a2_dbg", "RISCV_ARCH"),
     reference_mul(this, "reference_mul", "RISCV_ARCH", "0", "Used for run-time comparision"),
-    lvl1(this, "lvl1", "69", "16", true),
-    lvl3(this, "lvl3", "83", "4", true),
+    lvl1(this, "lvl1", "69", "16"),
+    lvl3(this, "lvl3", "83", "4"),
     // process
     comb(this)
 {
