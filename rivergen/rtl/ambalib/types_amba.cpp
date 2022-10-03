@@ -67,7 +67,7 @@ types_amba::types_amba(GenObject *parent) :
     _xmstcfg1_(this, "@brief   Plug-n-play descriptor structure for slave device."),
     _xmstcfg2_(this, "@details Each slave device must generates this datatype output that"),
     _xmstcfg3_(this, "         is connected directly to the 'pnp' slave module on system bus."),
-    axi4_master_config_type_def(this, "", -1),
+    axi4_master_config_type_def(this, ""),
     _xmstcfg4_(this),
     _xmstcfg5_(this, "@brief Default master config value."),
     axi4_master_config_none(this, "axi4_master_config_none"),

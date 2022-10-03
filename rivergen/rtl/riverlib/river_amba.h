@@ -104,7 +104,6 @@ public:
     InPort i_mtimer;
     InStruct<types_river::axi4_l1_in_type> i_msti;
     OutStruct<types_river::axi4_l1_out_type> o_msto;
-    OutStruct<types_amba::axi4_master_config_type> o_xcfg;
     InStruct<types_river::dport_in_type> i_dport;
     OutStruct<types_river::dport_out_type> o_dport;
     InPort i_irq_pending;
@@ -149,7 +148,6 @@ public:
     Signal resp_snoop_valid_o;
     Signal resp_snoop_data_o;
     Signal resp_snoop_flags_o;
-    types_amba::axi4_master_config_type wb_xcfg;
     Signal w_dporti_haltreq;
     Signal w_dporti_resumereq;
     Signal w_dporti_resethaltreq;

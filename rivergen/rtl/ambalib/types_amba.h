@@ -39,8 +39,8 @@ class types_amba : public FileObject {
 
     class axi4_master_config_type : public StructObject {
      public:
-        axi4_master_config_type(GenObject* parent, const char* name = "", int idx = -1, const char* comment = "")
-            : StructObject(parent, "axi4_master_config_type", name, idx, comment),
+        axi4_master_config_type(GenObject* parent, const char* name = "", const char* comment = "")
+            : StructObject(parent, "axi4_master_config_type", name, comment),
             _0_(this, "Descriptor size in bytes."),
             descrsize("8", "descrsize", "PNP_CFG_MASTER_DESCR_BYTES", this),
             _1_(this, "Descriptor type."),
@@ -176,8 +176,8 @@ class types_amba : public FileObject {
 
     class axi4_master_out_type : public StructObject {
      public:
-        axi4_master_out_type(GenObject* parent, const char* name = "", int idx = -1, const char* comment = "")
-            : StructObject(parent, "axi4_master_out_type", name, idx, comment),
+        axi4_master_out_type(GenObject* parent, const char* name = "", const char* comment = "")
+            : StructObject(parent, "axi4_master_out_type", name, comment),
             aw_valid("1", "aw_valid", "0", this),
             aw_bits(this, "aw_bits"),
             aw_id("CFG_SYSBUS_ID_BITS", "aw_id", "0", this),
@@ -218,8 +218,8 @@ class types_amba : public FileObject {
 
     class axi4_master_in_type : public StructObject {
      public:
-        axi4_master_in_type(GenObject* parent, const char* name = "", int idx = -1, const char* comment = "")
-            : StructObject(parent, "axi4_master_in_type", name, idx, comment),
+        axi4_master_in_type(GenObject* parent, const char* name = "", const char* comment = "")
+            : StructObject(parent, "axi4_master_in_type", name, comment),
             aw_ready("1", "aw_ready", "0", this),
             w_ready("1", "w_ready", "0", this),
             b_valid("1", "b_valid", "0", this),

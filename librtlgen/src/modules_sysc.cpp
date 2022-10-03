@@ -138,7 +138,7 @@ std::string ModuleObject::generate_sysc_h() {
 
     // Input/Output signal declaration
     for (auto &p: entries_) {
-        if (p->getId() != ID_INPUT && p->getId() != ID_OUTPUT) {
+        if (!p->isInput() && !p->isOutput()) {
             if (p->getId() == ID_COMMENT) {
                 text = "    " + p->generate();
             } else {
@@ -147,7 +147,26 @@ std::string ModuleObject::generate_sysc_h() {
             continue;
         }
         ln = "";
-        ln += "    " + p->getType();
+        ln += "    ";
+        if (p->isVector()) {
+            ln += "sc_vector<";
+        }
+        if (p->isInput()) {
+            ln += "sc_in<";
+        } else {
+            ln += "sc_out<";
+        }
+        if (p->isVector()) {
+            // element of vector to form sc_vector<sc_in<type>> and
+            // do not use vector type name
+            ln += p->generate();
+        } else {
+            ln += p->getType();
+        }
+        ln += ">";
+        if (p->isVector()) {
+            ln += ">";
+        }
         ln += " " + p->getName() + ";";
         if (p->getComment().size()) {
             while (ln.size() < 60) {
@@ -338,6 +357,10 @@ std::string ModuleObject::generate_sysc_h() {
     // Signals list
     text = "";
     for (auto &p: getEntries()) {
+        if (p->isInput() || p->isOutput()) {
+            text = "";
+            continue;
+        }
         if (p->isReg() || p->isNReg()
             || (!p->isSignal()
                 && p->getId() != ID_VALUE
@@ -362,18 +385,22 @@ std::string ModuleObject::generate_sysc_h() {
             text = "";
         }
         ln = "    ";
-        if (p->isVector()) {
-            ln += "sc_vector<";
-        }
-        if (p->isSignal()) {
-            ln += "sc_signal<";
+        if (!p->isTypedef()) {
+            if (p->isVector()) {
+                ln += "sc_vector<";
+            }
+            if (p->isSignal()) {
+                ln += "sc_signal<";
+            }
         }
         ln += p->getType();
-        if (p->isSignal()) {
-            ln += ">";
-        }
-        if (p->isVector()) {
-            ln += ">";
+        if (!p->isTypedef()) {
+            if (p->isSignal()) {
+                ln += ">";
+            }
+            if (p->isVector()) {
+                ln += ">";
+            }
         }
         ln += " " + p->getName();
         if (p->getDepth() && !p->isVector()) {
@@ -489,7 +516,8 @@ std::string ModuleObject::generate_sysc_sensitivity(std::string prefix,
     bool prefix_applied = true;
     if (obj->getId() == ID_STRUCT_DEF
         || obj->getId() == ID_MODULE_INST
-        || obj->getId() == ID_PROCESS) {
+        || obj->getId() == ID_PROCESS
+        || obj->isOutput()) {
         return ret;
     }
     if (obj->getId() == ID_ARRAY_DEF) {
@@ -523,9 +551,9 @@ std::string ModuleObject::generate_sysc_sensitivity(std::string prefix,
         }
     }
 
-    if (obj->getId() == ID_INPUT && obj->getName() != "i_clk") {
+    if (obj->isInput() && obj->getName() != "i_clk") {
         ret += Operation::addspaces();
-        if (obj->getItem()->getId() == ID_VECTOR) {
+        if (obj->isVector() || obj->getItem()->getId() == ID_VECTOR) {
             ret += "for (int i = 0; i < " + obj->getItem()->getStrDepth() + "; i++) {\n";
             Operation::set_space(Operation::get_space() + 1);
             ret += Operation::addspaces();
@@ -585,6 +613,7 @@ std::string ModuleObject::generate_sysc_vcd_entries(std::string name1, std::stri
     if (obj->getId() == ID_STRUCT_DEF
         || obj->getId() == ID_MODULE_INST
         || obj->getId() == ID_PROCESS
+        || obj->isVector()
         || obj->getItem()->getId() == ID_VECTOR) {
         return ret;
     }
@@ -602,7 +631,11 @@ std::string ModuleObject::generate_sysc_vcd_entries(std::string name1, std::stri
 
     if (obj->getParent()->getId() == ID_ARRAY_DEF) {
         name1 += "[";
-        name1 += obj->getName();
+        if (obj->getSelector()) {
+            name1 += obj->getSelector()->getName();
+        } else {
+            name1 += obj->getName();
+        }
         name1 += "]";
     } else if ((obj->isSignal() && obj->getParent()->getId() != ID_ARRAY_DEF)    // signal is a part of array not a child structure
         || obj->getId() == ID_ARRAY_DEF
@@ -625,11 +658,11 @@ std::string ModuleObject::generate_sysc_vcd_entries(std::string name1, std::stri
 
     if (!obj->isVcd()) {
         // skip it
-    } else if (obj->getId() == ID_INPUT || obj->getId() == ID_OUTPUT) {
+    } else if (obj->isInput() || obj->isOutput()) {
         ret += Operation::addspaces();
         ret += "sc_trace(o_vcd, " + obj->getName() + ", " + obj->getName() + ".name());\n";
     } else if (obj->getId() == ID_ARRAY_DEF && (obj->isReg() || obj->isNReg())) {
-        obj->setSelector(new I32D("0", "i"));
+        (*obj->getEntries().begin())->setSelector(new ParamI32D(0, "i", "0"));
         name2 += "%d";
         ret += Operation::addspaces();
         ret += "for (int i = 0; i < " + obj->getStrDepth() + "; i++) {\n";
@@ -818,7 +851,7 @@ std::string ModuleObject::generate_sysc_constructor() {
     // Input/Output signal declaration
     tcnt = 0;
     for (auto &p: getEntries()) {
-        if (p->getId() != ID_INPUT && p->getId() != ID_OUTPUT) {
+        if (!p->isInput() && !p->isOutput()) {
             continue;
         }
         ret += ",\n    " + p->getName() + "(\"" + p->getName() + "\"";
@@ -829,6 +862,9 @@ std::string ModuleObject::generate_sysc_constructor() {
     }
     // Signal Vectors also should be initialized
     for (auto &p: getEntries()) {
+        if (p->isInput() || p->isOutput()) {
+            continue;
+        }
         if (!p->isVector()) {
             continue;
         }

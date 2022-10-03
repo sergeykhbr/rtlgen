@@ -83,7 +83,6 @@ Workgroup::Workgroup(GenObject *parent, const char *name) :
     w_ic_dport_resp_error(this, "w_ic_dport_resp_error", "1"),
     wb_ic_dport_rdata(this, "wb_ic_dport_rdata", "RISCV_ARCH"),
     wb_progbuf(this, "wb_progbuf", "MUL(32,CFG_PROGBUF_REG_TOTAL)"),
-    unused_mst_cfg(this, "",  "unused_mst_cfg", "CFG_CPU_MAX"),
     w_flush_l2(this, "w_flush_l2", "1"),
     wb_xcfg(this, "wb_xcfg"),
     // submodules:
@@ -180,7 +179,6 @@ Workgroup::Workgroup(GenObject *parent, const char *name) :
             CONNECT(cpux, i, cpux->i_mtimer, i_mtimer);
             CONNECT(cpux, i, cpux->i_msti, ARRITEM(corei, *i, corei));
             CONNECT(cpux, i, cpux->o_msto, ARRITEM(coreo, *i, coreo));
-            CONNECT(cpux, i, cpux->o_xcfg, ARRITEM(unused_mst_cfg, *i, unused_mst_cfg));
             CONNECT(cpux, i, cpux->i_dport, ARRITEM(wb_dport_i, *i, wb_dport_i));
             CONNECT(cpux, i, cpux->o_dport, ARRITEM(wb_dport_o, *i, wb_dport_o));
             CONNECT(cpux, i, cpux->i_irq_pending, ARRITEM(vec_irq, *i, vec_irq));

@@ -34,9 +34,6 @@ enum EIdType {
     ID_FUNCTION = (1<<9),
     ID_MODULE = (1<<10),
     ID_MODULE_INST = (1<<11),
-    ID_INPUT = (1<<12),
-    ID_OUTPUT = (1<<13),
-    ID_SIGNAL = (1<<14),
     ID_STRUCT_DEF = (1<<15),
     ID_STRUCT_INST = (1<<16),
     ID_ARRAY_DEF = (1<<17),
@@ -84,7 +81,10 @@ class GenObject {
     virtual std::string getComment() { return comment_; }
     virtual std::string getType() { return type_; }
     virtual bool isString() { return getType() == "std::string" || getType() == "string"; }
+    virtual bool isTypedef() { return false; }
     virtual bool isSignal() { return false; }
+    virtual bool isInput() { return false; }
+    virtual bool isOutput() { return false; }
     virtual bool isVector() { return false; }
     virtual bool isGenVar() { return false; }   // I32D analog for rtl
     virtual bool isLocal();     // if parent is file then obj is global; if module obj is local

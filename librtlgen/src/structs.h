@@ -31,6 +31,11 @@ class StructObject : public GenObject {
                  const char *name,
                  int idx = -1,
                  const char *comment="");
+    StructObject(GenObject *parent,
+                 const char *type,
+                 const char *name,
+                 const char *comment="")
+                 : StructObject(parent, type, name, -1, comment) {}
 
     /** GenObject generic methods */
     virtual std::string getType() { return type_; }

@@ -29,7 +29,6 @@ RiverAmba::RiverAmba(GenObject *parent, const char *name) :
     i_mtimer(this, "i_mtimer", "64", "Read-only shadow value of memory-mapped mtimer register (see CLINT)."),
     i_msti(this, "i_msti"),
     o_msto(this, "o_msto"),
-    o_xcfg(this, "o_xcfg"),
     i_dport(this, "i_dport"),
     o_dport(this, "o_dport"),
     i_irq_pending(this, "i_irq_pending", "IRQ_TOTAL", "Per Hart pending interrupts pins"),
@@ -72,7 +71,6 @@ RiverAmba::RiverAmba(GenObject *parent, const char *name) :
     resp_snoop_valid_o(this, "resp_snoop_valid_o", "1"),
     resp_snoop_data_o(this, "resp_snoop_data_o", "L1CACHE_LINE_BITS"),
     resp_snoop_flags_o(this, "resp_snoop_flags_o", "DTAG_FL_TOTAL"),
-    wb_xcfg(this, "wb_xcfg"),
     w_dporti_haltreq(this, "w_dporti_haltreq", "1"),
     w_dporti_resumereq(this, "w_dporti_resumereq", "1"),
     w_dporti_resethaltreq(this, "w_dporti_resethaltreq", "1"),
@@ -196,11 +194,6 @@ RiverAmba::reqtype2awsnoop_func::reqtype2awsnoop_func(GenObject *parent)
 
 void RiverAmba::proc_comb() {
     river_cfg *cfg = glob_river_cfg_;
-
-    SETVAL(wb_xcfg.descrsize, glob_types_amba_->PNP_CFG_MASTER_DESCR_BYTES);
-    SETVAL(wb_xcfg.descrtype, glob_types_amba_->PNP_CFG_TYPE_MASTER);
-    SETVAL(wb_xcfg.vid, glob_types_amba_->VENDOR_OPTIMITECH);
-    SETVAL(wb_xcfg.did, glob_types_amba_->RISCV_RIVER_CPU);
 
 TEXT();
     SETVAL(w_dporti_haltreq, i_dport->haltreq, "systemc compatibility");
@@ -459,7 +452,6 @@ TEXT();
 
 TEXT();
     SETVAL(o_msto, comb.vmsto);
-    SETVAL(o_xcfg, wb_xcfg);
     SETVAL(o_dport, comb.vdporto, "systemc compatibility");
     SETVAL(o_available, CONST("1", 1));
 }

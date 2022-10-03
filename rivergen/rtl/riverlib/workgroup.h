@@ -109,18 +109,19 @@ public:
     // Param
     ParamLogic coherence_ena;
     ParamUI32D ACP_SLOT_IDX;
+
     // Signals:
     class axi4_l2_in_type_signal : public types_river::axi4_l2_in_type {
      public:
-        axi4_l2_in_type_signal(GenObject* parent, const char *name)
-            : types_river::axi4_l2_in_type(parent, name, -1, "") {}
+        axi4_l2_in_type_signal(GenObject* parent, const char *name, const char *comment="")
+            : types_river::axi4_l2_in_type(parent, name, comment) {}
         virtual bool isSignal() override { return true; }
     };
 
     class axi4_l2_out_type_signal : public types_river::axi4_l2_out_type {
      public:
-        axi4_l2_out_type_signal(GenObject* parent, const char *name)
-            : types_river::axi4_l2_out_type(parent, name, -1, "") {}
+        axi4_l2_out_type_signal(GenObject* parent, const char *name, const char *comment="")
+            : types_river::axi4_l2_out_type(parent, name, comment) {}
         virtual bool isSignal() override { return true; }
     };
 
@@ -160,7 +161,6 @@ public:
     Signal w_ic_dport_resp_error;
     Signal wb_ic_dport_rdata;
     Signal wb_progbuf;
-    TStructArray<types_amba::axi4_master_config_type> unused_mst_cfg;
     Signal w_flush_l2;
     types_amba::axi4_master_config_type wb_xcfg;
 

@@ -77,8 +77,9 @@ std::string Operation::fullname(const char *prefix, std::string name, GenObject 
     if (!obj) {
         return name;
     }
+    std::string read = "";
 #if 1
-    if (obj->getName() == "ir") {
+    if (obj->getName() == "i_l1i") {
         bool st = true;
     }
 #endif
@@ -97,11 +98,7 @@ std::string Operation::fullname(const char *prefix, std::string name, GenObject 
         curname = "";
         curname = fullname("r", curname, obj->getSelector());
         curname = "[" + curname + "]";
-        if (SCV_is_sysc() && p && p->getId() == ID_INPUT) {
-            curname = obj->getName() + curname + ".read()";
-        } else {
-            curname = obj->getName() + curname;
-        }
+        curname = obj->getName() + curname;
         if (name.size()) {
             curname += ".";
         }
@@ -109,47 +106,31 @@ std::string Operation::fullname(const char *prefix, std::string name, GenObject 
         obj->setSelector(0);
     } else if (obj->getId() == ID_STRUCT_INST
                 || obj->getId() == ID_STRUCT_DEF) {
-        if (p && p->getId() == ID_VECTOR) {
-            // do not generate index for vector of structs
-        } else {
-            curname = obj->getName();
-            if (name.size()) {
-                curname += ".";
-            }
-            if (SCV_is_sysc() && p && p->getId() == ID_INPUT) {
-                // input port with structure always read
-                curname += "read().";
-            }
+        curname = obj->getName();
+        if (name.size()) {
+            curname += ".";
         }
         curname += name;
     } else if (obj->getId() == ID_DEF_PARAM && SCV_is_sysc()) {
         curname = obj->getName() + name + "_";
-    } else if (obj->getId() == ID_OUTPUT && obj->getItem()->getId() == ID_VECTOR) {
-        curname = "";
-        curname = fullname("r", curname, obj->getItem()->getSelector());
-        if (curname.size()) {
-            curname = "[" + curname + "]";
-        }
-        curname = obj->getName() + name + curname;
-    } else if (obj->getId() == ID_INPUT && obj->getItem()->getId() == ID_VECTOR) {
-        curname = "";
-        curname = fullname("v", curname, obj->getItem()->getSelector());
-        if (curname.size()) {
-            curname = "[" + curname + "]";
-        }
-        curname = obj->getName() + name + curname;
     } else {
         curname = obj->getName() + name;
+    }
+
+    if (p && p->isInput()) {
+        if (SCV_is_sysc()) {
+            read += "read().";
+        }
     }
 
     if (p && (p->getId() == ID_STRUCT_INST
             || p->getId() == ID_STRUCT_DEF
             || p->getId() == ID_VECTOR)) {
-        curname = fullname(prefix, curname, obj->getParent());
+        curname = fullname(prefix, read + curname, obj->getParent());
     } else if (obj->isReg()) {
-        curname = std::string(prefix) + "." + curname;
+        curname = std::string(prefix) + "." + read + curname;
     } else if (obj->isNReg()) {
-        curname = std::string("n") + std::string(prefix) + "." + curname;
+        curname = std::string("n") + std::string(prefix) + "." + read + curname;
     }
     return curname;
 }
@@ -162,7 +143,7 @@ std::string Operation::obj2varname(GenObject *obj, const char *prefix, bool read
     ret = fullname(prefix, ret, obj);
 
     if (read) {
-        if (obj->getId() == ID_INPUT
+        if (obj->isInput()
             || (prefix[0] == 'r' && obj->isSignal())) {
             if (SCV_is_sysc()) {
                 ret += ".read()";
@@ -898,8 +879,6 @@ std::string SETVAL_gen(GenObject **args) {
     if (args[2]->getId() == ID_CONST) {
         ret += args[2]->getStrValue();
     } else if (args[2]->getId() == ID_VALUE
-            || args[2]->getId() == ID_INPUT
-            || args[2]->getId() == ID_SIGNAL
             || args[2]->getId() == ID_PARAM
             || args[2]->getId() == ID_DEF_PARAM
             || args[2]->getId() == ID_TMPL_PARAM

@@ -42,7 +42,8 @@ class InPort : public Logic {
            GenValue *width,
            const char *comment="");
 
-    virtual std::string getType() override;
+    virtual bool isInput() override { return true; }
+    //virtual std::string getType() override;
 };
 
 class OutPort : public Logic {
@@ -63,79 +64,68 @@ class OutPort : public Logic {
            GenValue *width,
            const char *comment="");
 
-    virtual std::string getType() override;
+    virtual bool isOutput() override { return true; }
+    //virtual std::string getType() override;
 };
 
 
 template<class T>
-class IoStruct : public GenObject {
+class IoStruct : public T {
 public:
-    IoStruct(GenObject* parent, EIdType id, const char* name, const char* comment = "")
-        : GenObject(parent, "", id, name, comment), s_(this, name) {
+    IoStruct(GenObject* parent, const char* name, const char* comment = "")
+        : T(parent, name, comment) {
     }
-    virtual std::string getType() override {
+    /*virtual std::string getType() override {
         std::string out = "";
         if (SCV_is_sysc()) {
-            if (s_.getId() == ID_VECTOR) {
+            if (isVector()) {
                 out += "sc_vector<";
-                out += getDirection() + "<" + s_.getItem()->getType() + ">";
-                out += ">";
+            }
+            if (isInput()) {
+                out += "sc_in<";
             } else {
-                out += getDirection() + "<" + s_.getType() + ">";
+                out += "sc_out<";
+            }
+            out += T::getType() + ">";
+            if (isVector()) {
+                out += ">";
             }
         } else if (SCV_is_sv()) {
-            out += getDirection() + " ";
-            if (SCV_get_cfg_file(s_.getType()).size()) {
-                out += SCV_get_cfg_file(s_.getType()) + "_pkg::";
+            if (isInput()) {
+                out += "input  ";
+            } else {
+                out += "output  ";
             }
-            out += s_.getType();
+            if (SCV_get_cfg_file(T::getType()).size()) {
+                out += SCV_get_cfg_file(T::getType()) + "_pkg::";
+            }
+            out += T::getType();
         } else {
         }
         return out;
-    }
-    T* operator->() const { return &s_; }
-    T* operator->() { return &s_; }
-    virtual GenObject *getItem() override { return &s_; }
-    virtual T* read() { return &s_; }
-    virtual void setSelector(GenObject *sel) override { s_.setSelector(sel); }
-
- protected:
-    virtual std::string getDirection() = 0;
-    T s_;
+    }*/
+    T* operator->() const { return this; }
+    T* operator->() { return this; }
+    virtual GenObject *getItem() override { return this; }
+    virtual T* read() { return this; }
 };
 
 template<class T>
 class InStruct : public IoStruct<T> {
  public:
     InStruct(GenObject* parent, const char* name, const char* comment = "")
-        : IoStruct<T>(parent, ID_INPUT, name, comment) { }
+        : IoStruct<T>(parent, name, comment) { }
  protected:
-    virtual std::string getDirection() override {
-        std::string ret = "";
-        if (SCV_is_sysc()) {
-            ret = "sc_in";
-        } else {
-            ret = "input";
-        }
-        return ret;
-    }
+    virtual bool isInput() override { return true; }
 };
 
 template<class T>
 class OutStruct : public IoStruct<T> {
  public:
     OutStruct(GenObject* parent, const char* name, const char* comment = "")
-        : IoStruct<T>(parent, ID_OUTPUT, name, comment) { }
+        : IoStruct<T>(parent, name, comment) { }
  protected:
-    virtual std::string getDirection() override {
-        std::string ret = "";
-        if (SCV_is_sysc()) {
-            ret = "sc_out";
-        } else {
-            ret = "output";
-        }
-        return ret;
-    }
+    virtual bool isOutput() override { return true; }
 };
 
 

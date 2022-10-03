@@ -216,9 +216,21 @@ void FileObject::generate_sysc() {
             if (p->getId() == ID_FUNCTION) {
                 // for global functions only
                 out += "static " + p->getType() + " ";
-            } else if (p->isSignal() && p->getName() == "") {
+            } else if (p->isTypedef()) {
                 out += "typedef ";
+                if (p->isVector()) {
+                    out += "sc_vector<";
+                }
+                if (p->isSignal()) {
+                    out += "sc_signal<";
+                }
                 out += p->generate();
+                if (p->isSignal()) {
+                    out += ">";
+                }
+                if (p->isVector()) {
+                    out += ">";
+                }
                 out += " " + p->getType() + ";\n";
                 continue;
             }
@@ -349,7 +361,7 @@ void FileObject::generate_sysv() {
         } else {
             if (p->getId() == ID_FUNCTION) {
                 out += "function automatic ";
-            } else if (p->isSignal() && p->getName() == "") {
+            } else if (p->isTypedef()) {
                 out += "typedef ";
                 out += p->generate();
                 out += "[0:" + p->getStrDepth() + " - 1]";

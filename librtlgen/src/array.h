@@ -97,7 +97,7 @@ class TStructArray : public ArrayObject<T> {
         char tstr[64];
         for (int i = 0; i < getDepth(); i++) {
             RISCV_sprintf(tstr, sizeof(tstr), "%d", i);
-            arr_[i] = new T(this, tstr, i);
+            arr_[i] = new T(this, tstr);
         }
     }
 };

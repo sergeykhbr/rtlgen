@@ -28,8 +28,8 @@ class types_river : public FileObject {
 
     class dport_in_type : public StructObject {
     public:
-        dport_in_type(GenObject* parent, const char* name = "", int idx=-1, const char* comment = "")
-            : StructObject(parent, "dport_in_type", name, idx, comment),
+        dport_in_type(GenObject* parent, const char* name = "", const char* comment = "")
+            : StructObject(parent, "dport_in_type", name, comment),
             haltreq("1", "haltreq", "0", this),
             resumereq("1", "resumereq", "0", this),
             resethaltreq("1", "resethaltreq", "0", this),
@@ -62,8 +62,8 @@ class types_river : public FileObject {
 
     class dport_out_type : public StructObject {
     public:
-        dport_out_type(GenObject* parent, const char* name = "", int idx = -1, const char* comment = "")
-            : StructObject(parent, "dport_out_type", name, idx, comment),
+        dport_out_type(GenObject* parent, const char* name = "", const char* comment = "")
+            : StructObject(parent, "dport_out_type", name, comment),
             req_ready("1", "req_ready", "1", this, "ready to accept request"),
             resp_valid("1", "resp_valid", "1", this, "rdata is valid"),
             resp_error("1", "resp_error", "0", this, "response error"),
@@ -82,37 +82,46 @@ class types_river : public FileObject {
         Logic rdata;
     };
 
-    class dport_in_vector : public TStructArray<dport_in_type> {
+    class dport_in_vector : public dport_in_type {
      public:
-        dport_in_vector(GenObject *parent, const char *name)
-            : TStructArray(parent, "dport_in_vector", name, "CFG_CPU_MAX") {
-            id_ = ID_VECTOR;
+        dport_in_vector(GenObject *parent, const char *name, const char *descr="")
+            : dport_in_type(parent, name, descr) {
+            type_ = std::string("dport_in_vector");
+            setStrDepth("CFG_CPU_MAX");
             
             registerCfgType(name);                  // will be registered if name == ""
             if (name[0]) {
                 SCV_get_cfg_parameter(getType());   // to trigger dependecy array
             }
         }
+        virtual bool isTypedef() override { return true; }
         virtual bool isVector() override { return true; }
+        virtual bool isSignal() override { return true; }
+        virtual std::string generate() override { return std::string("dport_in_type"); }
     };
 
-    class dport_out_vector : public TStructArray<dport_out_type> {
+    class dport_out_vector : public dport_out_type {
      public:
-        dport_out_vector(GenObject *parent, const char *name)
-            : TStructArray(parent, "dport_out_vector", name, "CFG_CPU_MAX") {
-            id_ = ID_VECTOR;
+        dport_out_vector(GenObject *parent, const char *name, const char *descr="")
+            : dport_out_type(parent, name, descr) {
+            type_ = std::string("dport_out_vector");
+            setStrDepth("CFG_CPU_MAX");
+
             registerCfgType(name);                  // will be registered if name == ""
             if (name[0]) {
                 SCV_get_cfg_parameter(getType());   // to trigger dependecy array
             }
         }
+        virtual bool isTypedef() override { return true; }
         virtual bool isVector() override { return true; }
+        virtual bool isSignal() override { return true; }
+        virtual std::string generate() override { return std::string("dport_out_type"); }
     };
 
     class axi4_l1_out_type : public StructObject {
      public:
-        axi4_l1_out_type(GenObject* parent, const char* name = "", int idx = -1, const char* comment = "")
-            : StructObject(parent, "axi4_l1_out_type", name, idx, comment),
+        axi4_l1_out_type(GenObject* parent, const char* name = "", const char* comment = "")
+            : StructObject(parent, "axi4_l1_out_type", name, comment),
             aw_valid("1", "aw_valid", "0", this),
             aw_bits(this, "aw_bits"),
             aw_id("CFG_CPU_ID_BITS", "aw_id", "0", this),
@@ -185,8 +194,8 @@ class types_river : public FileObject {
 
     class axi4_l1_in_type : public StructObject {
      public:
-        axi4_l1_in_type(GenObject* parent, const char* name = "", int idx = -1, const char* comment = "")
-            : StructObject(parent, "axi4_l1_in_type", name, idx, comment),
+        axi4_l1_in_type(GenObject* parent, const char* name = "", const char* comment = "")
+            : StructObject(parent, "axi4_l1_in_type", name, comment),
             aw_ready("1", "aw_ready", "0", this),
             w_ready("1", "w_ready", "0", this),
             b_valid("1", "b_valid", "0", this),
@@ -235,36 +244,44 @@ class types_river : public FileObject {
         Logic cd_ready;
     };
 
-    class axi4_l1_in_vector : public TStructArray<axi4_l1_in_type> {
+    class axi4_l1_in_vector : public axi4_l1_in_type {
         public:
-        axi4_l1_in_vector(GenObject *parent, const char *name)
-            : TStructArray(parent, "axi4_l1_in_vector", name, "CFG_SLOT_L1_TOTAL") {
-            id_ = ID_VECTOR;
+        axi4_l1_in_vector(GenObject *parent, const char *name, const char *comment="")
+            : axi4_l1_in_type(parent, name, comment) {
+            type_ = std::string("axi4_l1_in_vector");
+            setStrDepth("CFG_SLOT_L1_TOTAL");
             registerCfgType(name);                  // will be registered if name == ""
             if (name[0]) {
                 SCV_get_cfg_parameter(getType());   // to trigger dependecy array
             }
         }
+        virtual bool isTypedef() override { return true; }
         virtual bool isVector() override { return true; }
+        virtual bool isSignal() override { return true; }
+        virtual std::string generate() override { return std::string("axi4_l1_in_type"); }
     };
 
-    class axi4_l1_out_vector : public TStructArray<axi4_l1_out_type> {
+    class axi4_l1_out_vector : public axi4_l1_out_type {
         public:
-        axi4_l1_out_vector(GenObject *parent, const char *name)
-            : TStructArray(parent, "axi4_l1_out_vector", name, "CFG_SLOT_L1_TOTAL") {
-            id_ = ID_VECTOR;
+        axi4_l1_out_vector(GenObject *parent, const char *name, const char *descr="")
+            : axi4_l1_out_type(parent, name, descr) {
+            type_ = std::string("axi4_l1_out_vector");
+            setStrDepth("CFG_SLOT_L1_TOTAL");
             registerCfgType(name);                  // will be registered if name == ""
             if (name[0]) {
                 SCV_get_cfg_parameter(getType());   // to trigger dependecy array
             }
         }
+        virtual bool isTypedef() override { return true; }
         virtual bool isVector() override { return true; }
+        virtual bool isSignal() override { return true; }
+        virtual std::string generate() override { return std::string("axi4_l1_out_type"); }
     };
 
     class axi4_l2_out_type : public StructObject {
      public:
-        axi4_l2_out_type(GenObject* parent, const char* name = "", int idx = -1, const char* comment = "")
-            : StructObject(parent, "axi4_l2_out_type", name, idx, comment),
+        axi4_l2_out_type(GenObject* parent, const char* name = "", const char* comment = "")
+            : StructObject(parent, "axi4_l2_out_type", name, comment),
             aw_valid("1", "aw_valid", "0", this),
             aw_bits(this, "aw_bits"),
             aw_id("CFG_CPU_ID_BITS", "aw_id", "0", this),
@@ -307,8 +324,8 @@ class types_river : public FileObject {
 
     class axi4_l2_in_type : public StructObject {
      public:
-        axi4_l2_in_type(GenObject* parent, const char* name = "", int idx = -1, const char* comment = "")
-            : StructObject(parent, "axi4_l2_in_type", name, idx, comment),
+        axi4_l2_in_type(GenObject* parent, const char* name = "", const char* comment = "")
+            : StructObject(parent, "axi4_l2_in_type", name, comment),
             aw_ready("1", "aw_ready", "0", this),
             w_ready("1", "w_ready", "0", this),
             b_valid("1", "b_valid", "0", this),
@@ -328,7 +345,6 @@ class types_river : public FileObject {
                 SCV_get_cfg_parameter(getType());   // to trigger dependecy array
             }
         }
-        axi4_l2_in_type(GenObject* parent, int idx) : axi4_l2_in_type(parent, "", idx, "") {}
 
      public:
         Logic aw_ready;
@@ -353,6 +369,7 @@ class types_river : public FileObject {
             type_ = std::string("hart_signal_vector");
             strDepth_ = std::string("CFG_CPU_MAX");
         }
+        virtual bool isTypedef() override { return true; }
         virtual bool isVector() override { return true; }
         virtual std::string getType() override { return type_; }
         virtual std::string generate() override { return Signal::getType(); }
@@ -365,6 +382,7 @@ class types_river : public FileObject {
             type_ = std::string("hart_irq_vector");
             strDepth_ = std::string("CFG_CPU_MAX");
         }
+        virtual bool isTypedef() override { return true; }
         virtual bool isVector() override { return true; }
         virtual std::string getType() override { return type_; }
         virtual std::string generate() override { return Signal::getType(); }

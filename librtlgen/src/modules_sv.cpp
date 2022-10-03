@@ -585,13 +585,13 @@ std::string ModuleObject::generate_sv_mod() {
     ret += "(\n";
     int port_cnt = 0;
     for (auto &p: entries_) {
-        if (p->getId() == ID_INPUT || p->getId() == ID_OUTPUT) {
+        if (p->isInput() || p->isOutput()) {
             port_cnt++;
         }
     }
     text = "";
     for (auto &p: entries_) {
-        if (p->getId() != ID_INPUT && p->getId() != ID_OUTPUT) {
+        if (!p->isInput() && !p->isOutput()) {
             if (p->getId() == ID_COMMENT) {
                 text += "    " + p->generate();
             } else {
