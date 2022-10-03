@@ -44,12 +44,14 @@ class Workgroup : public ModuleObject {
             : ProcObject(parent, "comb"),
             v_flush_l2(this, "v_flush_l2", "1"),
             vb_halted(this, "vb_halted", "CFG_CPU_MAX"),
-            vb_available(this, "vb_available", "CFG_CPU_MAX") {
+            vb_available(this, "vb_available", "CFG_CPU_MAX"),
+            vb_irq(this, "vb_irq", "IRQ_TOTAL", "CFG_CPU_MAX") {
         }
      public:
         Logic v_flush_l2;
         Logic vb_halted;
         Logic vb_available;
+        WireArray<Logic> vb_irq;
     };
 
     void proc_comb();
@@ -104,6 +106,15 @@ public:
     TextLine _port1_;
     InStruct<types_amba::axi4_master_in_type> i_msti;
     OutStruct<types_amba::axi4_master_out_type> o_msto;
+    TextLine _apb0_;
+    InPort i_apb_dmi_req_valid;
+    OutPort o_apb_dmi_req_ready;
+    InPort i_apb_dmi_req_addr;
+    InPort i_apb_dmi_req_write;
+    InPort i_apb_dmi_req_wdata;
+    OutPort o_apb_dmi_resp_valid;
+    InPort i_apb_dmi_resp_ready;
+    OutPort o_apb_dmi_resp_rdata;
     OutPort o_dmreset;
 
     // Param
@@ -137,14 +148,6 @@ public:
     types_river::hart_signal_vector vec_flush_l2;
     Signal wb_halted;
     Signal wb_available;
-    Signal w_pdmi_req_valid;
-    Signal w_pdmi_req_ready;
-    Signal wb_pdmi_req_addr;
-    Signal w_pdmi_req_write;
-    Signal wb_pdmi_req_wdata;
-    Signal w_pdmi_resp_valid;
-    Signal w_pdmi_resp_ready;
-    Signal wb_pdmi_resp_rdata;
     Signal wb_dmi_hartsel;
     Signal w_dmi_haltreq;
     Signal w_dmi_resumereq;

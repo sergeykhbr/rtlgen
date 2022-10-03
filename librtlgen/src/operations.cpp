@@ -676,7 +676,7 @@ std::string SETBIT_gen(GenObject **args) {
     if (SCV_is_sysc() || SCV_is_sv()) {
         ret += "[";
         ret += Operation::obj2varname(args[2]);
-        ret += "] = " + Operation::obj2varname(args[3]) + ";";
+        ret += "] = " + Operation::obj2varname(args[3], "r", true) + ";";
     } else {
         ret += "(";
         ret += Operation::obj2varname(args[2]);

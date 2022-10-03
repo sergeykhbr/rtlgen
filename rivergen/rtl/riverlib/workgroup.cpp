@@ -42,6 +42,15 @@ Workgroup::Workgroup(GenObject *parent, const char *name) :
     _port1_(this, "System bus port"),
     i_msti(this, "i_msti"),
     o_msto(this, "o_msto"),
+    _apb0_(this, "APB debug access:"),
+    i_apb_dmi_req_valid(this, "i_apb_dmi_req_valid", "1"),
+    o_apb_dmi_req_ready(this, "o_apb_dmi_req_ready", "1"),
+    i_apb_dmi_req_addr(this, "i_apb_dmi_req_addr", "7"),
+    i_apb_dmi_req_write(this, "i_apb_dmi_req_write", "1"),
+    i_apb_dmi_req_wdata(this, "i_apb_dmi_req_wdata", "32"),
+    o_apb_dmi_resp_valid(this, "o_apb_dmi_resp_valid", "1"),
+    i_apb_dmi_resp_ready(this, "i_apb_dmi_resp_ready", "1"),
+    o_apb_dmi_resp_rdata(this, "o_apb_dmi_resp_rdata", "32"),
     o_dmreset(this, "o_dmreset", "1", "reset everything except DMI debug interface"),
     // param
     coherence_ena(this, "1", "coherence_ena", "GT(MUL(cpu_num,l2cache_ena),1)"),
@@ -59,14 +68,6 @@ Workgroup::Workgroup(GenObject *parent, const char *name) :
     vec_flush_l2(this, "vec_flush_l2"),
     wb_halted(this, "wb_halted", "CFG_CPU_MAX"),
     wb_available(this, "wb_available", "CFG_CPU_MAX"),
-    w_pdmi_req_valid(this, "w_pdmi_req_valid", "1"),
-    w_pdmi_req_ready(this, "w_pdmi_req_ready", "1"),
-    wb_pdmi_req_addr(this, "wb_pdmi_req_addr", "7"),
-    w_pdmi_req_write(this, "w_pdmi_req_write", "1"),
-    wb_pdmi_req_wdata(this, "wb_pdmi_req_wdata", "32"),
-    w_pdmi_resp_valid(this, "w_pdmi_resp_valid", "1"),
-    w_pdmi_resp_ready(this, "w_pdmi_resp_ready", "1"),
-    wb_pdmi_resp_rdata(this, "wb_pdmi_resp_rdata", "32"),
     wb_dmi_hartsel(this, "wb_dmi_hartsel", "CFG_LOG2_CPU_MAX"),
     w_dmi_haltreq(this, "w_dmi_haltreq", "1"),
     w_dmi_resumereq(this, "w_dmi_resumereq", "1"),
@@ -107,14 +108,14 @@ Workgroup::Workgroup(GenObject *parent, const char *name) :
         CONNECT(dmi0, 0, dmi0.i_tms, i_tck);
         CONNECT(dmi0, 0, dmi0.i_tdi, i_tdi);
         CONNECT(dmi0, 0, dmi0.o_tdo, o_tdo);
-        CONNECT(dmi0, 0, dmi0.i_bus_req_valid, w_pdmi_req_valid);
-        CONNECT(dmi0, 0, dmi0.o_bus_req_ready, w_pdmi_req_ready);
-        CONNECT(dmi0, 0, dmi0.i_bus_req_addr, wb_pdmi_req_addr);
-        CONNECT(dmi0, 0, dmi0.i_bus_req_write, w_pdmi_req_write);
-        CONNECT(dmi0, 0, dmi0.i_bus_req_wdata, wb_pdmi_req_wdata);
-        CONNECT(dmi0, 0, dmi0.o_bus_resp_valid, w_pdmi_resp_valid);
-        CONNECT(dmi0, 0, dmi0.i_bus_resp_ready, w_pdmi_resp_ready);
-        CONNECT(dmi0, 0, dmi0.o_bus_resp_rdata, wb_pdmi_resp_rdata);
+        CONNECT(dmi0, 0, dmi0.i_bus_req_valid, i_apb_dmi_req_valid);
+        CONNECT(dmi0, 0, dmi0.o_bus_req_ready, o_apb_dmi_req_ready);
+        CONNECT(dmi0, 0, dmi0.i_bus_req_addr, i_apb_dmi_req_addr);
+        CONNECT(dmi0, 0, dmi0.i_bus_req_write, i_apb_dmi_req_write);
+        CONNECT(dmi0, 0, dmi0.i_bus_req_wdata, i_apb_dmi_req_wdata);
+        CONNECT(dmi0, 0, dmi0.o_bus_resp_valid, o_apb_dmi_resp_valid);
+        CONNECT(dmi0, 0, dmi0.i_bus_resp_ready, i_apb_dmi_resp_ready);
+        CONNECT(dmi0, 0, dmi0.o_bus_resp_rdata, o_apb_dmi_resp_rdata);
         CONNECT(dmi0, 0, dmi0.o_ndmreset, o_dmreset, "reset whole system");
         CONNECT(dmi0, 0, dmi0.i_halted, wb_halted);
         CONNECT(dmi0, 0, dmi0.i_available, wb_available);
@@ -236,6 +237,8 @@ Workgroup::Workgroup(GenObject *parent, const char *name) :
 }
 
 void Workgroup::proc_comb() {
+    river_cfg *cfg = glob_river_cfg_;
+
     SETVAL(wb_xcfg.descrsize, glob_types_amba_->PNP_CFG_MASTER_DESCR_BYTES);
     SETVAL(wb_xcfg.descrtype, glob_types_amba_->PNP_CFG_TYPE_MASTER);
     SETVAL(wb_xcfg.vid, glob_types_amba_->VENDOR_OPTIMITECH);
@@ -247,6 +250,14 @@ TEXT();
         SETVAL(comb.v_flush_l2, OR2(comb.v_flush_l2, ARRITEM(vec_flush_l2, i, vec_flush_l2)));
         SETARRITEM(comb.vb_halted, i, comb.vb_halted, ARRITEM(vec_halted, i, vec_halted));
         SETARRITEM(comb.vb_available, i, comb.vb_available, ARRITEM(vec_available, i, vec_available));
+        SETARRIDX(comb.vb_irq, i);
+        SETBIT(comb.vb_irq, cfg->IRQ_MSIP, i_msip);
+        SETARRIDX(comb.vb_irq, i);
+        SETBIT(comb.vb_irq, cfg->IRQ_MTIP, i_mtip);
+        SETARRIDX(comb.vb_irq, i);
+        SETBIT(comb.vb_irq, cfg->IRQ_MEIP, i_meip);
+        SETARRIDX(comb.vb_irq, i);
+        SETBIT(comb.vb_irq, cfg->IRQ_SEIP, i_seip);
     ENDFOR();
     SETVAL(w_flush_l2, comb.v_flush_l2);
     SETVAL(wb_halted, comb.vb_halted);
