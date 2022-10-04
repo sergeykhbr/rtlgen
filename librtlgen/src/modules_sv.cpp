@@ -273,6 +273,10 @@ std::string ModuleObject::generate_sv_mod_signals() {
     tcnt = 0;
     text = "";
     for (auto &p: getEntries()) {
+        if (p->isInput() || p->isOutput()) {
+            text = "";
+            continue;
+        }
         if (p->isReg() || p->isNReg()
             || (!p->isSignal()
                 && p->getId() != ID_VALUE
@@ -604,7 +608,16 @@ std::string ModuleObject::generate_sv_mod() {
             text = "";
         }
         ln = "";
-        ln += "    " + p->getType();
+        ln += "    ";
+        if (p->isInput()) {
+            ln += "input ";
+        } else {
+            ln += "output ";
+        }
+        SCV_set_generator(SV_PKG);  // to generate with package name
+        ln += p->getType();
+        SCV_set_generator(SV_ALL);
+
         ln += " " + p->getName();
         if (--port_cnt) {
             ln += ",";
