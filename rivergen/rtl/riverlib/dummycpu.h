@@ -25,6 +25,15 @@ class DummyCpu : public ModuleObject {
  public:
     DummyCpu(GenObject *parent, const char *name);
 
+    class CombProcess : public ProcObject {
+     public:
+        CombProcess(GenObject* parent)
+            : ProcObject(parent, "comb") {
+        }
+    };
+
+    void proc_comb();
+
 public:
     // Ports:
     OutStruct<types_river::axi4_l1_out_type> o_msto;
@@ -32,6 +41,9 @@ public:
     OutPort o_flush_l2;
     OutPort o_halted;
     OutPort o_available;
+
+    // process
+    CombProcess comb;
 };
 
 class dummycpu_file : public FileObject {

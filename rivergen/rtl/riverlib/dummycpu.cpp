@@ -23,14 +23,19 @@ DummyCpu::DummyCpu(GenObject *parent, const char *name) :
     o_dport(this, "o_dport"),
     o_flush_l2(this, "o_flush_l2", "1", "Flush L2 after D$ has been finished"),
     o_halted(this, "o_halted", "1", "CPU halted via debug interface"),
-    o_available("1", "o_available", "1", this, "CPU was instantitated of stubbed")
+    o_available("1", "o_available", "1", this, "CPU was instantitated of stubbed"),
+    comb(this)
 {
     Operation::start(this);
 
-    ASSIGN(o_msto, glob_types_river_->axi4_l1_out_none);
-    ASSIGN(o_dport, glob_types_river_->dport_out_none);
-    ASSIGN(o_flush_l2, CONST("0", 1));
-    ASSIGN(o_halted, CONST("0", 1));
-    ASSIGN(o_available, CONST("0", 1));
-    TEXT();
+    Operation::start(&comb);
+    proc_comb();
+}
+
+void DummyCpu::proc_comb() {
+    SETVAL(o_msto, glob_types_river_->axi4_l1_out_none);
+    SETVAL(o_dport, glob_types_river_->dport_out_none);
+    SETVAL(o_flush_l2, CONST("0", 1));
+    SETVAL(o_halted, CONST("0", 1));
+    SETVAL(o_available, CONST("0", 1));
 }

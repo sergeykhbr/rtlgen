@@ -1029,7 +1029,7 @@ std::string ModuleObject::generate_sysc_vcd() {
                 ret += Operation::addspaces();
                 ret += "for (int i = 0; i < " + p->getStrDepth() + "; i++) {\n";
                 Operation::set_space(Operation::get_space() + 1);
-                ret += Operation::addspaces() + "if (" + p->getName() + ") {\n";
+                ret += Operation::addspaces() + "if (" + p->getName() + "[i]) {\n";
                 Operation::set_space(Operation::get_space() + 1);
                 ret += Operation::addspaces();
                 ret += p->getName() + "[i]->generateVCD(i_vcd, o_vcd);\n";
