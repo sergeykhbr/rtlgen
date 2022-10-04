@@ -40,6 +40,7 @@ Logic::Logic(GenValue *width,
 
 std::string Logic::getType() {
     std::string ret = "";
+    std::string w = getStrWidth();
 
     if (SCV_is_sysc()) {
         if (getId() == ID_PARAM || getId() == ID_TMPL_PARAM) {
@@ -55,12 +56,12 @@ std::string Logic::getType() {
                 ret += "uint64_t";
             }
         } else {
-            if (getWidth() <= 1 && isNumber(getStrWidth())) {
+            if (getWidth() <= 1 && isNumber(w)) {
                 ret += "bool";
             } else if (getWidth() > 64) {
-                ret += "sc_biguint<" + getStrWidth() + ">";
+                ret += "sc_biguint<" + w + ">";
             } else {
-                ret += "sc_uint<" + getStrWidth() + ">";
+                ret += "sc_uint<" + w + ">";
             }
         }
     } else if (SCV_is_sv()) {
@@ -69,9 +70,8 @@ std::string Logic::getType() {
         } else {
             ret = std::string("logic");
         }
-        if (!isNumber(getStrWidth()) || getWidth() > 1) {
+        if (!isNumber(w) || getWidth() > 1) {
             ret += " [";
-            std::string w = getStrWidth();
             if (isNumber(w)) {
                 char tstr[256];
                 RISCV_sprintf(tstr, sizeof(tstr), "%d", getWidth() - 1);

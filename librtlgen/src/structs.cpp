@@ -435,11 +435,12 @@ std::string StructObject::generate_const_none() {
                 continue;
             }
             ret += Operation::addspaces();
-            if (p->isNumber(p->getStrValue())
+            std::string strvalue = p->getStrValue();
+            if (p->isNumber(strvalue)
                 && p->getWidth() > 1 && p->getValue() == 0) {
                 ret += "'0";
             } else {
-                ret += p->getStrValue();
+                ret += strvalue;
             }
             if (p != entries_.back()) {
                 ret += ",";

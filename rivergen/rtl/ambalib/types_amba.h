@@ -51,7 +51,8 @@ class types_amba : public FileObject {
             did("16", "did", "MST_DID_EMPTY", this) {
             setZeroValue("axi4_master_out_none");
             registerCfgType(name);
-            SCV_get_cfg_parameter(getType());    // to trigger dependecy array
+            std::string strtype = getType();
+            SCV_get_cfg_parameter(strtype);    // to trigger dependecy array
         }
 
     public:
@@ -195,7 +196,8 @@ class types_amba : public FileObject {
             r_ready("1", "r_ready", "0", this) {
             setZeroValue("axi4_master_out_none");
             registerCfgType(name);
-            SCV_get_cfg_parameter(getType());    // to trigger dependecy array
+            std::string strtype = getType();
+            SCV_get_cfg_parameter(strtype);    // to trigger dependecy array
         }
 
     public:
@@ -235,7 +237,8 @@ class types_amba : public FileObject {
             r_user("CFG_SYSBUS_USER_BITS", "r_user", "0", this) {
             setZeroValue("axi4_master_in_none");
             registerCfgType(name);
-            SCV_get_cfg_parameter(getType());    // to trigger dependecy array
+            std::string strtype = getType();
+            SCV_get_cfg_parameter(strtype);    // to trigger dependecy array
         }
 
      public:

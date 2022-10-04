@@ -75,13 +75,14 @@ class WireArray : public ArrayObject<T> {
  public:
     WireArray(GenObject *parent, const char *name, const char *width,
         const char *depth, bool reg=false, const char *comment="")
-        : ArrayObject(parent, "", name, depth, comment) {
+        : ArrayObject<T>(parent, "", name, depth, comment) {
         char tstr[64];
-        reg_ = reg;
-        arr_ = new T *[getDepth()];
-        for (int i = 0; i < getDepth(); i++) {
+        int d = GenObject::getDepth();
+        GenObject::reg_ = reg;
+        ArrayObject<T>::arr_ = new T *[d];
+        for (int i = 0; i < d; i++) {
             RISCV_sprintf(tstr, sizeof(tstr), "%d", i);
-            arr_[i] = new T(width, tstr, "0", this);
+            ArrayObject<T>::arr_[i] = new T(width, tstr, "0", this);
         }
     }
 };
@@ -91,13 +92,13 @@ class TStructArray : public ArrayObject<T> {
     public:
     TStructArray(GenObject *parent, const char *type, const char *name,
         const char *depth, const char *comment="")
-        : ArrayObject(parent, type, name, depth, comment) {
-        //reg_ = reg;
-        arr_ = new T *[getDepth()];
+        : ArrayObject<T>(parent, type, name, depth, comment) {
+        int d = GenObject::getDepth();
+        ArrayObject<T>::arr_ = new T *[d];
         char tstr[64];
-        for (int i = 0; i < getDepth(); i++) {
+        for (int i = 0; i < d; i++) {
             RISCV_sprintf(tstr, sizeof(tstr), "%d", i);
-            arr_[i] = new T(this, tstr);
+            ArrayObject<T>::arr_[i] = new T(this, tstr);
         }
     }
 };
@@ -106,29 +107,31 @@ template<class T>
 class ModuleArray : public ArrayObject<T> {
  public:
     ModuleArray(GenObject *parent, const char *name, const char *depth, const char *comment="")
-        : ArrayObject(parent, "", name, depth, comment) {
-        arr_ = new T *[getDepth()];
+        : ArrayObject<T>(parent, "", name, depth, comment) {
+        int d = GenObject::getDepth();
+        ArrayObject<T>::arr_ = new T *[d];
         char tstr[64];
-        for (int i = 0; i < getDepth(); i++) {
+        for (int i = 0; i < d; i++) {
             RISCV_sprintf(tstr, sizeof(tstr), "%s%d", name, i);
-            arr_[i] = new T(this, tstr);
+            ArrayObject<T>::arr_[i] = new T(this, tstr);
         }
     }
     virtual void changeTmplParameter(const char *name, const char *val) {
-        getItem(name)->setStrValue(val);
+        ArrayObject<T>::getItem(name)->setStrValue(val);
     }
 };
 
 class StringArray : public ArrayObject<ParamString> {
  public:
     StringArray(GenObject *parent, const char *name, const char *depth, const char *comment="")
-        : ArrayObject(parent, "", name, depth, comment) {
+        : ArrayObject<ParamString>(parent, "", name, depth, comment) {
         id_ = ID_ARRAY_STRING;
-        arr_ = new ParamString *[getDepth()];
+        int d = GenObject::getDepth();
+        ArrayObject<ParamString>::arr_ = new ParamString *[d];
         char tstr[64];
-        for (int i = 0; i < getDepth(); i++) {
+        for (int i = 0; i < d; i++) {
             RISCV_sprintf(tstr, sizeof(tstr), "%s%d", name, i);
-            arr_[i] = new ParamString(this, tstr, "");
+            ArrayObject<ParamString>::arr_[i] = new ParamString(this, tstr, "");
         }
     }
 };

@@ -243,7 +243,8 @@ void FileObject::generate_sysc() {
         if (genlist.size() == 0) {
             module_cpp = true;
         }
-        SCV_select_local(p->getType());
+        std::string strtype = p->getType();
+        SCV_select_local(strtype);
         out += static_cast<ModuleObject *>(p)->generate_sysc_h();
     }
     out += 
@@ -271,7 +272,8 @@ void FileObject::generate_sysc() {
         // module definition
         for (auto &p: entries_) {
             if (p->getId() == ID_MODULE) {
-                SCV_select_local(p->getType());
+                std::string strtype = p->getType();
+                SCV_select_local(strtype);
                 out += static_cast<ModuleObject *>(p)->generate_sysc_cpp();
             } else {
                 out += p->generate();
@@ -355,7 +357,8 @@ void FileObject::generate_sysv() {
                 // do not create package for template modules: queue, ram,  etc.
                 skip_pkg = true;
             } else {
-                SCV_select_local(mod->getType());
+                std::string strtype = p->getType();
+                SCV_select_local(strtype);
                 out += mod->generate_sv_pkg();
             }
         } else {
@@ -394,7 +397,8 @@ void FileObject::generate_sysv() {
         for (auto &p: entries_) {
             if (p->getId() == ID_MODULE) {
                 is_module = true;
-                SCV_select_local(p->getType());
+                std::string strtype = p->getType();
+                SCV_select_local(strtype);
                 out += static_cast<ModuleObject *>(p)->generate_sv_mod();
             } else {
                 out += p->generate();

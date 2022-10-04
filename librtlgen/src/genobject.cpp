@@ -16,6 +16,7 @@
 
 #include "genobjects.h"
 #include "utils.h"
+#include <string.h>
 
 namespace sysvc {
 

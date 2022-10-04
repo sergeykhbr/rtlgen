@@ -43,7 +43,8 @@ class types_river : public FileObject {
             setZeroValue("dport_in_none");
             registerCfgType(name);                  // will be registered if name == ""
             if (name[0]) {
-                SCV_get_cfg_parameter(getType());   // to trigger dependecy array
+                std::string strtype = getType();
+                SCV_get_cfg_parameter(strtype);   // to trigger dependecy array
             }
         }
         
@@ -71,7 +72,8 @@ class types_river : public FileObject {
             setZeroValue("dport_out_none");
             registerCfgType(name);                  // will be registered if name == ""
             if (name[0]) {
-                SCV_get_cfg_parameter(getType());   // to trigger dependecy array
+                std::string strtype = getType();
+                SCV_get_cfg_parameter(strtype);   // to trigger dependecy array
             }
         }
 
@@ -91,7 +93,8 @@ class types_river : public FileObject {
             
             registerCfgType(name);                  // will be registered if name == ""
             if (name[0]) {
-                SCV_get_cfg_parameter(getType());   // to trigger dependecy array
+                std::string strtype = getType();
+                SCV_get_cfg_parameter(strtype);   // to trigger dependecy array
             }
         }
         virtual bool isTypedef() override { return true; }
@@ -109,7 +112,8 @@ class types_river : public FileObject {
 
             registerCfgType(name);                  // will be registered if name == ""
             if (name[0]) {
-                SCV_get_cfg_parameter(getType());   // to trigger dependecy array
+                std::string strtype = getType();
+                SCV_get_cfg_parameter(strtype);   // to trigger dependecy array
             }
         }
         virtual bool isTypedef() override { return true; }
@@ -155,7 +159,8 @@ class types_river : public FileObject {
                 setZeroValue("axi4_l1_out_none");
                 registerCfgType(name);                  // will be registered if name == ""
                 if (name[0]) {
-                    SCV_get_cfg_parameter(getType());   // to trigger dependecy array
+                    std::string strtype = getType();
+                    SCV_get_cfg_parameter(strtype);   // to trigger dependecy array
                 }
             }
 
@@ -218,7 +223,8 @@ class types_river : public FileObject {
             setZeroValue("axi4_l1_in_none");
             registerCfgType(name);                  // will be registered if name == ""
             if (name[0]) {
-                SCV_get_cfg_parameter(getType());   // to trigger dependecy array
+                std::string strtype = getType();
+                SCV_get_cfg_parameter(strtype);   // to trigger dependecy array
             }
         }
 
@@ -252,7 +258,8 @@ class types_river : public FileObject {
             setStrDepth("CFG_SLOT_L1_TOTAL");
             registerCfgType(name);                  // will be registered if name == ""
             if (name[0]) {
-                SCV_get_cfg_parameter(getType());   // to trigger dependecy array
+                std::string strtype = getType();
+                SCV_get_cfg_parameter(strtype);   // to trigger dependecy array
             }
         }
         virtual bool isTypedef() override { return true; }
@@ -269,7 +276,8 @@ class types_river : public FileObject {
             setStrDepth("CFG_SLOT_L1_TOTAL");
             registerCfgType(name);                  // will be registered if name == ""
             if (name[0]) {
-                SCV_get_cfg_parameter(getType());   // to trigger dependecy array
+                std::string strtype = getType();
+                SCV_get_cfg_parameter(strtype);   // to trigger dependecy array
             }
         }
         virtual bool isTypedef() override { return true; }
@@ -300,7 +308,8 @@ class types_river : public FileObject {
             setZeroValue("axi4_l2_out_none");
             registerCfgType(name);                  // will be registered if name == ""
             if (name[0]) {
-                SCV_get_cfg_parameter(getType());   // to trigger dependecy array
+                std::string strtype = getType();
+                SCV_get_cfg_parameter(strtype);   // to trigger dependecy array
             }
         }
 
@@ -342,7 +351,8 @@ class types_river : public FileObject {
             setZeroValue("axi4_l2_in_none");
             registerCfgType(name);                  // will be registered if name == ""
             if (name[0]) {
-                SCV_get_cfg_parameter(getType());   // to trigger dependecy array
+                std::string strtype = getType();
+                SCV_get_cfg_parameter(strtype);   // to trigger dependecy array
             }
         }
 

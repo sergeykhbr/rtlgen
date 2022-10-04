@@ -146,8 +146,9 @@ uint64_t SCV_get_cfg_parameter(std::string &name) {
 }
 
 void SCV_register_module(GenObject *m) {
+    std::string strtype = m->getType();
     modules_.push_back(m);
-    SCV_select_local(m->getType());
+    SCV_select_local(strtype);
 }
 
 GenObject *SCV_get_module(const char *name) {
