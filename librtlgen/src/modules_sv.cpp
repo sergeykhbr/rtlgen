@@ -594,6 +594,7 @@ std::string ModuleObject::generate_sv_mod() {
         }
     }
     text = "";
+    std::string strtype;
     for (auto &p: entries_) {
         if (!p->isInput() && !p->isOutput()) {
             if (p->getId() == ID_COMMENT) {
@@ -615,7 +616,14 @@ std::string ModuleObject::generate_sv_mod() {
             ln += "output ";
         }
         SCV_set_generator(SV_PKG);  // to generate with package name
-        ln += p->getType();
+        strtype = p->getType();
+        if (SCV_is_cfg_parameter(strtype) && SCV_get_cfg_file(strtype).size()) {
+            // whole types (like vectors or typedef)
+            ln += SCV_get_cfg_file(strtype) + "_pkg::" + strtype;
+        } else {
+            // Width or depth definitions
+            ln += strtype;
+        }
         SCV_set_generator(SV_ALL);
 
         ln += " " + p->getName();

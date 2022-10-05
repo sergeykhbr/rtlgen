@@ -367,8 +367,9 @@ void FileObject::generate_sysv() {
             } else if (p->isTypedef()) {
                 out += "typedef ";
                 out += p->generate();
+                out += " " + p->getType();
                 out += "[0:" + p->getStrDepth() + " - 1]";
-                out += " " + p->getType() + ";\n";
+                out += ";\n";
                 continue;
             }
             out += p->generate();
