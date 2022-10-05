@@ -96,7 +96,6 @@ public:
     Signal wb_resp_ctrl_addr;
     Signal wb_resp_ctrl_data;
     Signal w_resp_ctrl_load_fault;
-    Signal w_resp_ctrl_executable;
     Signal w_resp_ctrl_ready;
     TextLine _DataPath0_;
     Signal w_req_data_ready;
@@ -111,8 +110,6 @@ public:
     Signal wb_resp_data_data;
     Signal w_resp_data_load_fault;
     Signal w_resp_data_store_fault;
-    Signal w_resp_data_er_mpu_load;
-    Signal w_resp_data_er_mpu_store;
     Signal wb_resp_data_fault_addr;
     Signal w_resp_data_ready;
     Signal w_mpu_region_we;

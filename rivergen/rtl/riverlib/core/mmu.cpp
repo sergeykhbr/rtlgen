@@ -32,8 +32,7 @@ Mmu::Mmu(GenObject *parent, const char *name) :
     o_core_resp_valid(this, "o_core_resp_valid", "1"),
     o_core_resp_addr(this, "o_core_resp_addr", "CFG_CPU_ADDR_BITS"),
     o_core_resp_data(this, "o_core_resp_data", "64"),
-    o_core_resp_executable(this, "o_core_resp_executable", "1", "Ex.2. Instruction access fault when = 0 and fetch"),
-    o_core_resp_load_fault(this, "o_core_resp_load_fault", "1", "Ex.5. Load access fault"),
+    o_core_resp_load_fault(this, "o_core_resp_load_fault", "1", "Ex.2./Ex.5. Instruction access fault when = 0 and fetch or Load access fault"),
     o_core_resp_store_fault(this, "o_core_resp_store_fault", "1", "Ex.7. Store/AMO access fault"),
     o_core_resp_page_x_fault(this, "o_core_resp_page_x_fault", "1", "Ex.12 Instruction page fault"),
     o_core_resp_page_r_fault(this, "o_core_resp_page_r_fault", "1", "Ex.13 Load page fault"),
@@ -50,7 +49,6 @@ Mmu::Mmu(GenObject *parent, const char *name) :
     i_mem_resp_valid(this, "i_mem_resp_valid", "1"),
     i_mem_resp_addr(this, "i_mem_resp_addr", "CFG_CPU_ADDR_BITS"),
     i_mem_resp_data(this, "i_mem_resp_data", "64"),
-    i_mem_resp_executable(this, "i_mem_resp_executable", "1"),
     i_mem_resp_load_fault(this, "i_mem_resp_load_fault", "1"),
     i_mem_resp_store_fault(this, "i_mem_resp_store_fault", "1"),
     o_mem_resp_ready(this, "o_mem_resp_ready", "1"),
@@ -98,7 +96,6 @@ Mmu::Mmu(GenObject *parent, const char *name) :
     last_permission(this, "last_permission", "8", "0", "Last permisison flags: DAGUXWRV"),
     resp_addr(this, "resp_addr", "CFG_CPU_ADDR_BITS"),
     resp_data(this, "resp_data", "64"),
-    resp_executable(this, "resp_executable", "1"),
     resp_load_fault(this, "resp_load_fault", "1"),
     resp_store_fault(this, "resp_store_fault", "1"),
     ex_page_fault(this, "ex_page_fault", "1"),
@@ -187,7 +184,6 @@ TEXT();
     SWITCH (state);
     CASE(Idle);
         SETZERO(tlb_hit);
-        SETZERO(resp_executable);
         SETZERO(resp_load_fault);
         SETZERO(resp_store_fault);
         SETZERO(ex_page_fault);
@@ -204,7 +200,6 @@ TEXT();
             SETVAL(comb.v_core_resp_valid, i_mem_resp_valid);
             SETVAL(comb.vb_core_resp_addr, i_mem_resp_addr);
             SETVAL(comb.vb_core_resp_data, i_mem_resp_data);
-            SETVAL(comb.v_core_resp_executable, i_mem_resp_executable);
             SETVAL(comb.v_core_resp_load_fault, i_mem_resp_load_fault);
             SETVAL(comb.v_core_resp_store_fault, i_mem_resp_store_fault);
             SETVAL(comb.v_mem_req_valid, i_core_req_valid);
@@ -227,7 +222,6 @@ TEXT();
             SETVAL(comb.v_core_resp_valid, i_mem_resp_valid);
             SETVAL(comb.vb_core_resp_addr, last_va);
             SETVAL(comb.vb_core_resp_data, i_mem_resp_data);
-            SETVAL(comb.v_core_resp_executable, i_mem_resp_executable);
             SETVAL(comb.v_core_resp_load_fault, i_mem_resp_load_fault);
             SETVAL(comb.v_core_resp_store_fault, i_mem_resp_store_fault);
             SETVAL(comb.v_mem_req_valid, i_core_req_valid);
@@ -258,7 +252,6 @@ TEXT();
         SETVAL(comb.v_core_resp_valid, i_mem_resp_valid);
         SETVAL(comb.vb_core_resp_addr, i_mem_resp_addr);
         SETVAL(comb.vb_core_resp_data, i_mem_resp_data);
-        SETVAL(comb.v_core_resp_executable, i_mem_resp_executable);
         SETVAL(comb.v_core_resp_load_fault, i_mem_resp_load_fault);
         SETVAL(comb.v_core_resp_store_fault, i_mem_resp_store_fault);
         SETVAL(comb.v_mem_req_valid, i_core_req_valid);
@@ -284,7 +277,6 @@ TEXT();
         SETVAL(comb.v_core_resp_valid, i_mem_resp_valid);
         SETVAL(comb.vb_core_resp_addr, last_va);
         SETVAL(comb.vb_core_resp_data, i_mem_resp_data);
-        SETVAL(comb.v_core_resp_executable, i_mem_resp_executable);
         SETVAL(comb.v_core_resp_load_fault, i_mem_resp_load_fault);
         SETVAL(comb.v_core_resp_store_fault, i_mem_resp_store_fault);
         SETVAL(comb.v_mem_req_valid, i_core_req_valid);
@@ -352,7 +344,6 @@ TEXT();
         IF (NZ(i_mem_resp_valid));
             SETVAL(resp_addr, i_mem_resp_addr);
             SETVAL(resp_data, i_mem_resp_data);
-            SETVAL(resp_executable, i_mem_resp_executable, "MPU executable flag");
             SETVAL(resp_load_fault, i_mem_resp_load_fault, "Hardware error Load (unmapped access)");
             SETVAL(resp_store_fault, i_mem_resp_store_fault, "Hardware error Store/AMO (unmapped access)");
             IF (NZ(OR3(tlb_hit, i_mem_resp_load_fault, i_mem_resp_store_fault)));
@@ -417,7 +408,6 @@ TEXT();
         SETONE(comb.v_core_resp_valid);
         SETVAL(comb.vb_core_resp_addr, last_va);
         SETVAL(comb.vb_core_resp_data, resp_data);
-        SETVAL(comb.v_core_resp_executable, resp_executable);
         SETVAL(comb.v_core_resp_load_fault, resp_load_fault);
         SETVAL(comb.v_core_resp_store_fault, resp_store_fault);
         IF (NZ(i_core_resp_ready));
@@ -466,7 +456,6 @@ TEXT();
     SETVAL(o_core_resp_valid, comb.v_core_resp_valid);
     SETVAL(o_core_resp_addr, comb.vb_core_resp_addr);
     SETVAL(o_core_resp_data, comb.vb_core_resp_data);
-    SETVAL(o_core_resp_executable, comb.v_core_resp_executable);
     SETVAL(o_core_resp_load_fault, comb.v_core_resp_load_fault);
     SETVAL(o_core_resp_store_fault, comb.v_core_resp_store_fault);
     SETVAL(o_core_resp_page_x_fault, AND2(ex_page_fault, req_x));

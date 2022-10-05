@@ -26,7 +26,7 @@ DecoderRv::DecoderRv(GenObject *parent, const char *name) :
     i_f_pc(this, "i_f_pc", "CFG_CPU_ADDR_BITS", "Fetched pc"),
     i_f_instr(this, "i_f_instr", "32", "Fetched instruction value"),
     i_instr_load_fault(this, "i_instr_load_fault", "1", "fault instruction's address"),
-    i_instr_executable(this, "i_instr_executable", "1", "MPU flag"),
+    i_instr_page_fault_x(this, "i_instr_page_fault_x", "1", "IMMU page fault signal"),
     o_radr1(this, "o_radr1", "6", "register bank address 1 (rs1)"),
     o_radr2(this, "o_radr2", "6", "register bank address 2 (rs2)"),
     o_waddr(this, "o_waddr", "6", "register bank output (rd)"),
@@ -47,7 +47,7 @@ DecoderRv::DecoderRv(GenObject *parent, const char *name) :
     o_instr_vec(this, "o_instr_vec", "Instr_Total", "One bit per decoded instruction bus"),
     o_exception(this, "o_exception", "1", "Exception detected"),
     o_instr_load_fault(this, "o_instr_load_fault", "1", "fault instruction's address"),
-    o_instr_executable(this, "o_instr_executable", "1", "MPU flag"),
+    o_instr_page_fault_x(this, "o_instr_page_fault_x", "1", "IMMU page fault signal"),
     o_progbuf_ena(this, "o_progbuf_ena", "1", "Debug execution from progbuf"),
     // param
     OPCODE_LB(this, "5", "OPCODE_LB", "0x00", "00000: LB, LH, LW, LD, LBU, LHU, LWU"),
@@ -83,7 +83,7 @@ DecoderRv::DecoderRv(GenObject *parent, const char *name) :
     compressed(this, "compressed", "1"),
     amo(this, "amo", "1"),
     instr_load_fault(this, "instr_load_fault", "1"),
-    instr_executable(this, "instr_executable", "1"),
+    instr_page_fault_x(this, "instr_page_fault_x", "1"),
     instr_unimplemented(this, "instr_unimplemented", "1"),
     radr1(this, "radr1", "6"),
     radr2(this, "radr2", "6"),
@@ -991,7 +991,7 @@ TEXT();
     SETVAL(compressed, comb.v_compressed);
     SETVAL(amo, comb.v_amo);
     SETVAL(instr_load_fault, i_instr_load_fault);
-    SETVAL(instr_executable, i_instr_executable);
+    SETVAL(instr_page_fault_x, i_instr_page_fault_x);
     SETVAL(instr_unimplemented, comb.v_error);
     SETVAL(radr1, comb.vb_radr1);
     SETVAL(radr2, comb.vb_radr2);
@@ -1019,7 +1019,7 @@ TEXT();
     SETVAL(o_instr_vec, instr_vec);
     SETVAL(o_exception, instr_unimplemented);
     SETVAL(o_instr_load_fault, instr_load_fault);
-    SETVAL(o_instr_executable, instr_executable);
+    SETVAL(o_instr_page_fault_x, instr_page_fault_x);
     SETVAL(o_radr1, radr1);
     SETVAL(o_radr2, radr2);
     SETVAL(o_waddr, waddr);

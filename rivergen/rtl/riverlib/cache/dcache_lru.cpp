@@ -35,8 +35,6 @@ DCacheLru::DCacheLru(GenObject *parent, const char *name) :
     o_resp_er_addr(this, "o_resp_er_addr", "CFG_CPU_ADDR_BITS"),
     o_resp_er_load_fault(this, "o_resp_er_load_fault", "1"),
     o_resp_er_store_fault(this, "o_resp_er_store_fault", "1"),
-    o_resp_er_mpu_load(this, "o_resp_er_mpu_load", "1", "No access rights to read/execute"),
-    o_resp_er_mpu_store(this, "o_resp_er_mpu_store", "1", "No access rights to write"),
     i_resp_ready(this, "i_resp_ready", "1"),
     _mem0_(this, "Memory interface:"),
     i_req_mem_ready(this, "i_req_mem_ready", "1"),
@@ -627,10 +625,8 @@ TEXT();
     SETVAL(o_resp_data, comb.vb_resp_data);
     SETVAL(o_resp_addr, req_addr);
     SETVAL(o_resp_er_addr, req_addr);
-    SETVAL(o_resp_er_load_fault, comb.v_resp_er_load_fault);
-    SETVAL(o_resp_er_store_fault, comb.v_resp_er_store_fault);
-    SETVAL(o_resp_er_mpu_load, mpu_er_load);
-    SETVAL(o_resp_er_mpu_store, mpu_er_store);
+    SETVAL(o_resp_er_load_fault, OR2(comb.v_resp_er_load_fault, mpu_er_load));
+    SETVAL(o_resp_er_store_fault, OR2(comb.v_resp_er_store_fault, mpu_er_store));
     SETVAL(o_mpu_addr, req_addr);
 
 TEXT();

@@ -39,7 +39,6 @@ class Mmu : public ModuleObject {
             v_core_resp_valid(this, "v_core_resp_valid", "1"),
             vb_core_resp_addr(this, "vb_core_resp_addr", "CFG_CPU_ADDR_BITS"),
             vb_core_resp_data(this, "vb_core_resp_data", "64"),
-            v_core_resp_executable(this, "v_core_resp_executable", "1"),
             v_core_resp_load_fault(this, "v_core_resp_load_fault", "1"),
             v_core_resp_store_fault(this, "v_core_resp_store_fault", "1"),
             v_mem_req_valid(this, "v_mem_req_valid", "1"),
@@ -76,7 +75,6 @@ class Mmu : public ModuleObject {
         Logic v_core_resp_valid;
         Logic vb_core_resp_addr;
         Logic vb_core_resp_data;
-        Logic v_core_resp_executable;
         Logic v_core_resp_load_fault;
         Logic v_core_resp_store_fault;
         Logic v_mem_req_valid;
@@ -116,8 +114,7 @@ class Mmu : public ModuleObject {
     OutPort o_core_resp_valid;
     OutPort o_core_resp_addr;
     OutPort o_core_resp_data;
-    OutPort o_core_resp_executable;     // Ex.2. Instruction access fault when = 0 and fetch 
-    OutPort o_core_resp_load_fault;     // Ex.5. Load access fault
+    OutPort o_core_resp_load_fault;     // Ex.2. Instruction access fault when = 0 and fetch  / Ex.5. Load access fault
     OutPort o_core_resp_store_fault;    // Ex.7. Store/AMO access fault
     OutPort o_core_resp_page_x_fault;   // Ex.12 Instruction page fault
     OutPort o_core_resp_page_r_fault;   // Ex.13 Load page fault
@@ -133,7 +130,6 @@ class Mmu : public ModuleObject {
     InPort i_mem_resp_valid;
     InPort i_mem_resp_addr;
     InPort i_mem_resp_data;
-    InPort i_mem_resp_executable;
     InPort i_mem_resp_load_fault;
     InPort i_mem_resp_store_fault;
     OutPort o_mem_resp_ready;
@@ -182,7 +178,6 @@ class Mmu : public ModuleObject {
     RegSignal last_permission;
     RegSignal resp_addr;
     RegSignal resp_data;
-    RegSignal resp_executable;
     RegSignal resp_load_fault;
     RegSignal resp_store_fault;
     RegSignal ex_page_fault;

@@ -77,7 +77,6 @@ RiverTop::RiverTop(GenObject *parent, const char *name) :
     wb_resp_ctrl_addr(this, "wb_resp_ctrl_addr", "CFG_CPU_ADDR_BITS"),
     wb_resp_ctrl_data(this, "wb_resp_ctrl_data", "64"),
     w_resp_ctrl_load_fault(this, "w_resp_ctrl_load_fault", "1"),
-    w_resp_ctrl_executable(this, "w_resp_ctrl_executable", "1"),
     w_resp_ctrl_ready(this, "w_resp_ctrl_ready", "1"),
     _DataPath0_(this, "Data path:"),
     w_req_data_ready(this, "w_req_data_ready", "1"),
@@ -92,8 +91,6 @@ RiverTop::RiverTop(GenObject *parent, const char *name) :
     wb_resp_data_data(this, "wb_resp_data_data", "64"),
     w_resp_data_load_fault(this, "w_resp_data_load_fault", "1"),
     w_resp_data_store_fault(this, "w_resp_data_store_fault", "1"),
-    w_resp_data_er_mpu_load(this, "w_resp_data_er_mpu_load", "1"),
-    w_resp_data_er_mpu_store(this, "w_resp_data_er_mpu_store", "1"),
     wb_resp_data_fault_addr(this, "wb_resp_data_fault_addr", "CFG_CPU_ADDR_BITS"),
     w_resp_data_ready(this, "w_resp_data_ready", "1"),
     w_mpu_region_we(this, "w_mpu_region_we", "1"),
@@ -124,7 +121,6 @@ RiverTop::RiverTop(GenObject *parent, const char *name) :
         CONNECT(proc0, 0, proc0.i_resp_ctrl_addr, wb_resp_ctrl_addr);
         CONNECT(proc0, 0, proc0.i_resp_ctrl_data, wb_resp_ctrl_data);
         CONNECT(proc0, 0, proc0.i_resp_ctrl_load_fault, w_resp_ctrl_load_fault);
-        CONNECT(proc0, 0, proc0.i_resp_ctrl_executable, w_resp_ctrl_executable);
         CONNECT(proc0, 0, proc0.o_resp_ctrl_ready, w_resp_ctrl_ready);
         CONNECT(proc0, 0, proc0.i_req_data_ready, w_req_data_ready);
         CONNECT(proc0, 0, proc0.o_req_data_valid, w_req_data_valid);
@@ -139,8 +135,6 @@ RiverTop::RiverTop(GenObject *parent, const char *name) :
         CONNECT(proc0, 0, proc0.i_resp_data_fault_addr, wb_resp_data_fault_addr);
         CONNECT(proc0, 0, proc0.i_resp_data_load_fault, w_resp_data_load_fault);
         CONNECT(proc0, 0, proc0.i_resp_data_store_fault, w_resp_data_store_fault);
-        CONNECT(proc0, 0, proc0.i_resp_data_er_mpu_load, w_resp_data_er_mpu_load);
-        CONNECT(proc0, 0, proc0.i_resp_data_er_mpu_store, w_resp_data_er_mpu_store);
         CONNECT(proc0, 0, proc0.o_resp_data_ready, w_resp_data_ready);
         CONNECT(proc0, 0, proc0.i_irq_pending, i_irq_pending);
         CONNECT(proc0, 0, proc0.o_mpu_region_we, w_mpu_region_we);
@@ -180,7 +174,6 @@ RiverTop::RiverTop(GenObject *parent, const char *name) :
         CONNECT(cache0, 0, cache0.o_resp_ctrl_addr, wb_resp_ctrl_addr);
         CONNECT(cache0, 0, cache0.o_resp_ctrl_data, wb_resp_ctrl_data);
         CONNECT(cache0, 0, cache0.o_resp_ctrl_load_fault, w_resp_ctrl_load_fault);
-        CONNECT(cache0, 0, cache0.o_resp_ctrl_executable, w_resp_ctrl_executable);
         CONNECT(cache0, 0, cache0.i_resp_ctrl_ready, w_resp_ctrl_ready);
         CONNECT(cache0, 0, cache0.i_req_data_valid, w_req_data_valid);
         CONNECT(cache0, 0, cache0.i_req_data_type, wb_req_data_type);
@@ -195,8 +188,6 @@ RiverTop::RiverTop(GenObject *parent, const char *name) :
         CONNECT(cache0, 0, cache0.o_resp_data_fault_addr, wb_resp_data_fault_addr);
         CONNECT(cache0, 0, cache0.o_resp_data_load_fault, w_resp_data_load_fault);
         CONNECT(cache0, 0, cache0.o_resp_data_store_fault, w_resp_data_store_fault);
-        CONNECT(cache0, 0, cache0.o_resp_data_er_mpu_load, w_resp_data_er_mpu_load);
-        CONNECT(cache0, 0, cache0.o_resp_data_er_mpu_store, w_resp_data_er_mpu_store);
         CONNECT(cache0, 0, cache0.i_resp_data_ready, w_resp_data_ready);
         CONNECT(cache0, 0, cache0.i_req_mem_ready, i_req_mem_ready);
         CONNECT(cache0, 0, cache0.o_req_mem_path, o_req_mem_path);

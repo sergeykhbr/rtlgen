@@ -33,7 +33,6 @@ Processor::Processor(GenObject *parent, const char *name) :
     i_resp_ctrl_addr(this, "i_resp_ctrl_addr", "CFG_CPU_ADDR_BITS", "Response address must be equal to the latest request address"),
     i_resp_ctrl_data(this, "i_resp_ctrl_data", "64", "Read value"),
     i_resp_ctrl_load_fault(this, "i_resp_ctrl_load_fault"),
-    i_resp_ctrl_executable(this, "i_resp_ctrl_executable", "1", "MPU flag"),
     o_resp_ctrl_ready(this, "o_resp_ctrl_ready", "1", "Core is ready to accept response from ICache"),
     _DataPath0_(this, "Data path:"),
     i_req_data_ready(this, "i_req_data_ready", "1", "DCache is ready to accept request"),
@@ -49,8 +48,6 @@ Processor::Processor(GenObject *parent, const char *name) :
     i_resp_data_fault_addr(this, "i_resp_data_fault_addr", "CFG_CPU_ADDR_BITS", "write-error address (B-channel)"),
     i_resp_data_load_fault(this, "i_resp_data_load_fault", "1", "Bus response with SLVERR or DECERR on read"),
     i_resp_data_store_fault(this, "i_resp_data_store_fault", "1", "Bus response with SLVERR or DECERR on write"),
-    i_resp_data_er_mpu_load(this, "i_resp_data_er_mpu_load"),
-    i_resp_data_er_mpu_store(this, "i_resp_data_er_mpu_store"),
     o_resp_data_ready(this, "o_resp_data_ready", "1", "Core is ready to accept response from DCache"),
     _Interrupts0_(this, "Interrupt line from external interrupts controller (PLIC):"),
     i_irq_pending(this, "i_irq_pending", "IRQ_TOTAL", "Per Hart pending interrupts pins"),
@@ -137,14 +134,13 @@ Processor::Processor(GenObject *parent, const char *name) :
     unused_immu_mem_req_wstrb(this, "unused_immu_mem_req_wstrb", "8"),
     unused_immu_mem_req_size(this, "unused_immu_mem_req_size", "2"),
     w_immu_core_req_fetch(this, "w_immu_core_req_fetch", "1", "0", "assign to 1: fetch instruction"),
-    w_dmmu_core_req_fetch(this, "w_dmmu_core_req_fetch", "1", "0", "assign to 1: data"),
+    w_dmmu_core_req_fetch(this, "w_dmmu_core_req_fetch", "1", "0", "assign to 0: data"),
     unused_immu_core_req_type(this, "unused_immu_core_req_type", "MemopType_Total"),
     unused_immu_core_req_wdata(this, "unused_immu_core_req_wdata", "64"),
     unused_immu_core_req_wstrb(this, "unused_immu_core_req_wstrb", "8"),
     unused_immu_core_req_size(this, "unused_immu_core_req_size", "2"),
     unused_immu_mem_resp_store_fault(this, "unused_immu_mem_resp_store_fault", "1"),
     unused_immu_fence_addr(this, "unused_immu_fence_addr", "CFG_MMU_TLB_AWIDTH"),
-    unused_dmmu_mem_resp_executable(this, "unused_dmmu_mem_resp_executable", "1"),
     // process
     comb(this),
     // sub-modules
@@ -164,36 +160,10 @@ Processor::Processor(GenObject *parent, const char *name) :
     Operation::start(this);
 
     // Create and connet Sub-modules:
-    NEW(fetch0, fetch0.getName().c_str());
-        CONNECT(fetch0, 0, fetch0.i_clk, i_clk);
-        CONNECT(fetch0, 0, fetch0.i_nrst, i_nrst);
-        CONNECT(fetch0, 0, fetch0.i_bp_valid, bp.f_valid);
-        CONNECT(fetch0, 0, fetch0.i_bp_pc, bp.f_pc);
-        CONNECT(fetch0, 0, fetch0.i_mem_req_ready, immu.fetch_req_ready);
-        CONNECT(fetch0, 0, fetch0.o_mem_addr_valid, w.f.imem_req_valid);
-        CONNECT(fetch0, 0, fetch0.o_mem_addr, w.f.imem_req_addr);
-        CONNECT(fetch0, 0, fetch0.i_mem_data_valid, immu.fetch_data_valid);
-        CONNECT(fetch0, 0, fetch0.i_mem_data_addr, immu.fetch_data_addr);
-        CONNECT(fetch0, 0, fetch0.i_mem_data, immu.fetch_data);
-        CONNECT(fetch0, 0, fetch0.i_mem_load_fault, immu.load_fault);
-        CONNECT(fetch0, 0, fetch0.i_mem_executable, immu.fetch_executable);
-        CONNECT(fetch0, 0, fetch0.o_mem_resp_ready, w.f.imem_resp_ready);
-        CONNECT(fetch0, 0, fetch0.i_flush_pipeline, csr.flushi_valid);
-        CONNECT(fetch0, 0, fetch0.i_progbuf_ena, dbg.progbuf_ena);
-        CONNECT(fetch0, 0, fetch0.i_progbuf_pc, dbg.progbuf_pc);
-        CONNECT(fetch0, 0, fetch0.i_progbuf_instr, dbg.progbuf_instr);
-        CONNECT(fetch0, 0, fetch0.o_instr_load_fault, w.f.instr_load_fault);
-        CONNECT(fetch0, 0, fetch0.o_instr_executable, w.f.instr_executable);
-        CONNECT(fetch0, 0, fetch0.o_requested_pc, w.f.requested_pc);
-        CONNECT(fetch0, 0, fetch0.o_fetching_pc, w.f.fetching_pc);
-        CONNECT(fetch0, 0, fetch0.o_pc, w.f.pc);
-        CONNECT(fetch0, 0, fetch0.o_instr, w.f.instr);
-    ENDNEW();
-
     NEW(immu0, immu0.getName().c_str());
         CONNECT(immu0, 0, immu0.i_clk, i_clk);
         CONNECT(immu0, 0, immu0.i_nrst, i_nrst);
-        CONNECT(immu0, 0, immu0.o_core_req_ready, immu.fetch_req_ready);
+        CONNECT(immu0, 0, immu0.o_core_req_ready, immu.req_ready);
         CONNECT(immu0, 0, immu0.i_core_req_valid, w.f.imem_req_valid);
         CONNECT(immu0, 0, immu0.i_core_req_addr, w.f.imem_req_addr);
         CONNECT(immu0, 0, immu0.i_core_req_fetch, w_immu_core_req_fetch);
@@ -201,10 +171,9 @@ Processor::Processor(GenObject *parent, const char *name) :
         CONNECT(immu0, 0, immu0.i_core_req_wdata, unused_immu_core_req_wdata);
         CONNECT(immu0, 0, immu0.i_core_req_wstrb, unused_immu_core_req_wstrb);
         CONNECT(immu0, 0, immu0.i_core_req_size, unused_immu_core_req_size);
-        CONNECT(immu0, 0, immu0.o_core_resp_valid, immu.fetch_data_valid);
-        CONNECT(immu0, 0, immu0.o_core_resp_addr, immu.fetch_data_addr);
-        CONNECT(immu0, 0, immu0.o_core_resp_data, immu.fetch_data);
-        CONNECT(immu0, 0, immu0.o_core_resp_executable, immu.fetch_executable);
+        CONNECT(immu0, 0, immu0.o_core_resp_valid, immu.valid);
+        CONNECT(immu0, 0, immu0.o_core_resp_addr, immu.addr);
+        CONNECT(immu0, 0, immu0.o_core_resp_data, immu.data);
         CONNECT(immu0, 0, immu0.o_core_resp_load_fault, immu.load_fault);
         CONNECT(immu0, 0, immu0.o_core_resp_store_fault, immu.store_fault);
         CONNECT(immu0, 0, immu0.o_core_resp_page_x_fault, immu.page_fault_x);
@@ -221,7 +190,6 @@ Processor::Processor(GenObject *parent, const char *name) :
         CONNECT(immu0, 0, immu0.i_mem_resp_valid, i_resp_ctrl_valid);
         CONNECT(immu0, 0, immu0.i_mem_resp_addr, i_resp_ctrl_addr);
         CONNECT(immu0, 0, immu0.i_mem_resp_data, i_resp_ctrl_data);
-        CONNECT(immu0, 0, immu0.i_mem_resp_executable, i_resp_ctrl_executable);
         CONNECT(immu0, 0, immu0.i_mem_resp_load_fault, i_resp_ctrl_load_fault);
         CONNECT(immu0, 0, immu0.i_mem_resp_store_fault, unused_immu_mem_resp_store_fault);
         CONNECT(immu0, 0, immu0.o_mem_resp_ready, o_resp_ctrl_ready);
@@ -231,13 +199,39 @@ Processor::Processor(GenObject *parent, const char *name) :
         CONNECT(immu0, 0, immu0.i_fence_addr, unused_immu_fence_addr);
     ENDNEW();
 
+    NEW(fetch0, fetch0.getName().c_str());
+        CONNECT(fetch0, 0, fetch0.i_clk, i_clk);
+        CONNECT(fetch0, 0, fetch0.i_nrst, i_nrst);
+        CONNECT(fetch0, 0, fetch0.i_bp_valid, bp.f_valid);
+        CONNECT(fetch0, 0, fetch0.i_bp_pc, bp.f_pc);
+        CONNECT(fetch0, 0, fetch0.i_mem_req_ready, immu.req_ready);
+        CONNECT(fetch0, 0, fetch0.o_mem_addr_valid, w.f.imem_req_valid);
+        CONNECT(fetch0, 0, fetch0.o_mem_addr, w.f.imem_req_addr);
+        CONNECT(fetch0, 0, fetch0.i_mem_data_valid, immu.valid);
+        CONNECT(fetch0, 0, fetch0.i_mem_data_addr, immu.addr);
+        CONNECT(fetch0, 0, fetch0.i_mem_data, immu.data);
+        CONNECT(fetch0, 0, fetch0.i_mem_load_fault, immu.load_fault);
+        CONNECT(fetch0, 0, fetch0.i_mem_page_fault_x, immu.page_fault_x);
+        CONNECT(fetch0, 0, fetch0.o_mem_resp_ready, w.f.imem_resp_ready);
+        CONNECT(fetch0, 0, fetch0.i_flush_pipeline, csr.flushi_valid);
+        CONNECT(fetch0, 0, fetch0.i_progbuf_ena, dbg.progbuf_ena);
+        CONNECT(fetch0, 0, fetch0.i_progbuf_pc, dbg.progbuf_pc);
+        CONNECT(fetch0, 0, fetch0.i_progbuf_instr, dbg.progbuf_instr);
+        CONNECT(fetch0, 0, fetch0.o_instr_load_fault, w.f.instr_load_fault);
+        CONNECT(fetch0, 0, fetch0.o_instr_page_fault_x, w.f.instr_page_fault_x);
+        CONNECT(fetch0, 0, fetch0.o_requested_pc, w.f.requested_pc);
+        CONNECT(fetch0, 0, fetch0.o_fetching_pc, w.f.fetching_pc);
+        CONNECT(fetch0, 0, fetch0.o_pc, w.f.pc);
+        CONNECT(fetch0, 0, fetch0.o_instr, w.f.instr);
+    ENDNEW();
+
     NEW(dec0, dec0.getName().c_str());
         CONNECT(dec0, 0, dec0.i_clk, i_clk);
         CONNECT(dec0, 0, dec0.i_nrst, i_nrst);
         CONNECT(dec0, 0, dec0.i_f_pc, w.f.pc);
         CONNECT(dec0, 0, dec0.i_f_instr, w.f.instr);
         CONNECT(dec0, 0, dec0.i_instr_load_fault, w.f.instr_load_fault);
-        CONNECT(dec0, 0, dec0.i_instr_executable, w.f.instr_executable);
+        CONNECT(dec0, 0, dec0.i_instr_page_fault_x, w.f.instr_page_fault_x);
         CONNECT(dec0, 0, dec0.i_e_npc, w.e.npc);
         CONNECT(dec0, 0, dec0.o_radr1, w.d.radr1);
         CONNECT(dec0, 0, dec0.o_radr2, w.d.radr2);
@@ -261,7 +255,7 @@ Processor::Processor(GenObject *parent, const char *name) :
         CONNECT(dec0, 0, dec0.o_instr_vec, w.d.instr_vec);
         CONNECT(dec0, 0, dec0.o_exception, w.d.exception);
         CONNECT(dec0, 0, dec0.o_instr_load_fault, w.d.instr_load_fault);
-        CONNECT(dec0, 0, dec0.o_instr_executable, w.d.instr_executable);
+        CONNECT(dec0, 0, dec0.o_instr_page_fault_x, w.d.page_fault_x);
         CONNECT(dec0, 0, dec0.o_progbuf_ena, w.d.progbuf_ena);
     ENDNEW();
 
@@ -292,13 +286,13 @@ Processor::Processor(GenObject *parent, const char *name) :
         CONNECT(exec0, 0, exec0.i_stack_underflow, csr.stack_underflow);
         CONNECT(exec0, 0, exec0.i_unsup_exception, w.d.exception);
         CONNECT(exec0, 0, exec0.i_instr_load_fault, w.d.instr_load_fault);
-        CONNECT(exec0, 0, exec0.i_instr_executable, w.d.instr_executable);
         CONNECT(exec0, 0, exec0.i_mem_ex_debug, w.m.debug_valid);
         CONNECT(exec0, 0, exec0.i_mem_ex_load_fault, dmmu.load_fault);
         CONNECT(exec0, 0, exec0.i_mem_ex_store_fault, dmmu.store_fault);
-        CONNECT(exec0, 0, exec0.i_mem_ex_mpu_store, i_resp_data_er_mpu_store);
-        CONNECT(exec0, 0, exec0.i_mem_ex_mpu_load, i_resp_data_er_mpu_load);
-        CONNECT(exec0, 0, exec0.i_mem_ex_addr, i_resp_data_fault_addr);
+        CONNECT(exec0, 0, exec0.i_page_fault_x, w.d.page_fault_x);
+        CONNECT(exec0, 0, exec0.i_page_fault_r, dmmu.page_fault_r);
+        CONNECT(exec0, 0, exec0.i_page_fault_w, dmmu.page_fault_w);
+        CONNECT(exec0, 0, exec0.i_mem_ex_addr, dmmu.addr);
         CONNECT(exec0, 0, exec0.i_irq_pending, csr.irq_pending);
         CONNECT(exec0, 0, exec0.i_wakeup, csr.wakeup);
         CONNECT(exec0, 0, exec0.i_haltreq, i_haltreq);
@@ -374,16 +368,16 @@ Processor::Processor(GenObject *parent, const char *name) :
         CONNECT(mem0, 0, mem0.o_wb_wdata, w.w.wdata);
         CONNECT(mem0, 0, mem0.o_wb_wtag, w.w.wtag);
         CONNECT(mem0, 0, mem0.i_wb_ready, w_writeback_ready);
-        CONNECT(mem0, 0, mem0.i_mem_req_ready, dmmu.fetch_req_ready);
+        CONNECT(mem0, 0, mem0.i_mem_req_ready, dmmu.req_ready);
         CONNECT(mem0, 0, mem0.o_mem_valid, w.m.req_data_valid);
         CONNECT(mem0, 0, mem0.o_mem_type, w.m.req_data_type);
         CONNECT(mem0, 0, mem0.o_mem_addr, w.m.req_data_addr);
         CONNECT(mem0, 0, mem0.o_mem_wdata, w.m.req_data_wdata);
         CONNECT(mem0, 0, mem0.o_mem_wstrb, w.m.req_data_wstrb);
         CONNECT(mem0, 0, mem0.o_mem_size, w.m.req_data_size);
-        CONNECT(mem0, 0, mem0.i_mem_data_valid, dmmu.fetch_data_valid);
-        CONNECT(mem0, 0, mem0.i_mem_data_addr, dmmu.fetch_data_addr);
-        CONNECT(mem0, 0, mem0.i_mem_data, dmmu.fetch_data);
+        CONNECT(mem0, 0, mem0.i_mem_data_valid, dmmu.valid);
+        CONNECT(mem0, 0, mem0.i_mem_data_addr, dmmu.addr);
+        CONNECT(mem0, 0, mem0.i_mem_data, dmmu.data);
         CONNECT(mem0, 0, mem0.o_mem_resp_ready, w.m.resp_data_ready);
         CONNECT(mem0, 0, mem0.o_pc, w.m.pc);
         CONNECT(mem0, 0, mem0.o_valid, w.m.valid);
@@ -394,7 +388,7 @@ Processor::Processor(GenObject *parent, const char *name) :
     NEW(dmmu0, dmmu0.getName().c_str());
         CONNECT(dmmu0, 0, dmmu0.i_clk, i_clk);
         CONNECT(dmmu0, 0, dmmu0.i_nrst, i_nrst);
-        CONNECT(dmmu0, 0, dmmu0.o_core_req_ready, dmmu.fetch_req_ready);
+        CONNECT(dmmu0, 0, dmmu0.o_core_req_ready, dmmu.req_ready);
         CONNECT(dmmu0, 0, dmmu0.i_core_req_valid, w.m.req_data_valid);
         CONNECT(dmmu0, 0, dmmu0.i_core_req_addr, w.m.req_data_addr);
         CONNECT(dmmu0, 0, dmmu0.i_core_req_fetch, w_dmmu_core_req_fetch);
@@ -402,10 +396,9 @@ Processor::Processor(GenObject *parent, const char *name) :
         CONNECT(dmmu0, 0, dmmu0.i_core_req_wdata, w.m.req_data_wdata);
         CONNECT(dmmu0, 0, dmmu0.i_core_req_wstrb, w.m.req_data_wstrb);
         CONNECT(dmmu0, 0, dmmu0.i_core_req_size, w.m.req_data_size);
-        CONNECT(dmmu0, 0, dmmu0.o_core_resp_valid, dmmu.fetch_data_valid);
-        CONNECT(dmmu0, 0, dmmu0.o_core_resp_addr, dmmu.fetch_data_addr);
-        CONNECT(dmmu0, 0, dmmu0.o_core_resp_data, dmmu.fetch_data);
-        CONNECT(dmmu0, 0, dmmu0.o_core_resp_executable, dmmu.fetch_executable);
+        CONNECT(dmmu0, 0, dmmu0.o_core_resp_valid, dmmu.valid);
+        CONNECT(dmmu0, 0, dmmu0.o_core_resp_addr, dmmu.addr);
+        CONNECT(dmmu0, 0, dmmu0.o_core_resp_data, dmmu.data);
         CONNECT(dmmu0, 0, dmmu0.o_core_resp_load_fault, dmmu.load_fault);
         CONNECT(dmmu0, 0, dmmu0.o_core_resp_store_fault, dmmu.store_fault);
         CONNECT(dmmu0, 0, dmmu0.o_core_resp_page_x_fault, dmmu.page_fault_x);
@@ -422,7 +415,6 @@ Processor::Processor(GenObject *parent, const char *name) :
         CONNECT(dmmu0, 0, dmmu0.i_mem_resp_valid, i_resp_data_valid);
         CONNECT(dmmu0, 0, dmmu0.i_mem_resp_addr, i_resp_data_addr);
         CONNECT(dmmu0, 0, dmmu0.i_mem_resp_data, i_resp_data_data);
-        CONNECT(dmmu0, 0, dmmu0.i_mem_resp_executable, unused_dmmu_mem_resp_executable);
         CONNECT(dmmu0, 0, dmmu0.i_mem_resp_load_fault, i_resp_data_load_fault);
         CONNECT(dmmu0, 0, dmmu0.i_mem_resp_store_fault, i_resp_data_store_fault);
         CONNECT(dmmu0, 0, dmmu0.o_mem_resp_ready, o_resp_data_ready);
@@ -634,7 +626,7 @@ Processor::Processor(GenObject *parent, const char *name) :
 }
 
 void Processor::proc_comb() {
-    SETVAL(w_mem_resp_error, OR4(i_resp_data_load_fault, i_resp_data_store_fault, i_resp_data_er_mpu_store, i_resp_data_er_mpu_load));
+    SETVAL(w_mem_resp_error, OR2(i_resp_data_load_fault, i_resp_data_store_fault));
     SETVAL(w_writeback_ready, INV(w.e.reg_wena));
 
     IF (NZ(w.e.reg_wena));
@@ -652,8 +644,8 @@ void Processor::proc_comb() {
     ENDIF();
 
     SETONE(w_f_flush_ready);
-    SETZERO(w_immu_core_req_fetch);
-    SETONE(w_dmmu_core_req_fetch);
+    SETONE(w_immu_core_req_fetch);
+    SETZERO(w_dmmu_core_req_fetch);
     SETZERO(unused_immu_core_req_type);
     SETZERO(unused_immu_core_req_wdata);
     SETZERO(unused_immu_core_req_wstrb);

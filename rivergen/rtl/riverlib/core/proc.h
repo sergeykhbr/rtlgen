@@ -52,7 +52,6 @@ class Processor : public ModuleObject {
     InPort i_resp_ctrl_addr;
     InPort i_resp_ctrl_data;
     InPort i_resp_ctrl_load_fault;
-    InPort i_resp_ctrl_executable;
     OutPort o_resp_ctrl_ready;
     TextLine _DataPath0_;
     InPort i_req_data_ready;
@@ -68,8 +67,6 @@ class Processor : public ModuleObject {
     InPort i_resp_data_fault_addr;
     InPort i_resp_data_load_fault;
     InPort i_resp_data_store_fault;
-    InPort i_resp_data_er_mpu_load;
-    InPort i_resp_data_er_mpu_store;
     OutPort o_resp_data_ready;
     TextLine _Interrupts0_;
     InPort i_irq_pending;
@@ -120,7 +117,7 @@ class Processor : public ModuleObject {
         FetchType(GenObject *parent, const char *name="", const char *comment="")
             : StructObject(parent, "FetchType", name, -1, comment),
             instr_load_fault(this, "instr_load_fault", "1"),
-            instr_executable(this, "instr_executable", "1"),
+            instr_page_fault_x(this, "instr_page_fault_x", "1"),
             requested_pc(this, "requested_pc", "CFG_CPU_ADDR_BITS", "0", "requested but responded address"),
             fetching_pc(this, "fetching_pc", "CFG_CPU_ADDR_BITS", "0", "receiving from cache before latch"),
             pc(this, "pc", "CFG_CPU_ADDR_BITS"),
@@ -131,7 +128,7 @@ class Processor : public ModuleObject {
         }
      public:
         Signal instr_load_fault;
-        Signal instr_executable;
+        Signal instr_page_fault_x;
         Signal requested_pc;
         Signal fetching_pc;
         Signal pc;
@@ -145,22 +142,20 @@ class Processor : public ModuleObject {
      public:
         MmuType(GenObject *parent, const char *name="", const char *comment="")
             : StructObject(parent, "MmuType", name, -1, comment),
-        fetch_req_ready(this, "fetch_req_ready", "1"),
-        fetch_data_valid(this, "fetch_data_valid", "1"),
-        fetch_data_addr(this, "fetch_data_addr", "CFG_CPU_ADDR_BITS"),
-        fetch_data(this, "fetch_data", "64"),
-        fetch_executable(this, "fetch_executable", "1"),
+        req_ready(this, "req_ready", "1"),
+        valid(this, "valid", "1"),
+        addr(this, "addr", "CFG_CPU_ADDR_BITS"),
+        data(this, "data", "64"),
         load_fault(this, "load_fault", "1"),
         store_fault(this, "store_fault", "1"),
         page_fault_x(this, "page_fault_x", "1"),
         page_fault_r(this, "page_fault_r", "1"),
         page_fault_w(this, "page_fault_w", "1") {}
      public:
-        Signal fetch_req_ready;
-        Signal fetch_data_valid;
-        Signal fetch_data_addr;
-        Signal fetch_data;
-        Signal fetch_executable;
+        Signal req_ready;
+        Signal valid;
+        Signal addr;
+        Signal data;
         Signal load_fault;
         Signal store_fault;
         Signal page_fault_x;
@@ -188,7 +183,7 @@ class Processor : public ModuleObject {
             instr_vec(this, "instr_vec", "Instr_Total"),
             exception(this, "exception", "1"),
             instr_load_fault(this, "instr_load_fault", "1"),
-            instr_executable(this, "instr_executable", "1"),
+            page_fault_x(this, "page_fault_x", "1"),
             radr1(this, "radr1", "6"),
             radr2(this, "radr2", "6"),
             waddr(this, "waddr", "6"),
@@ -211,7 +206,7 @@ class Processor : public ModuleObject {
         Signal instr_vec;
         Signal exception;
         Signal instr_load_fault;
-        Signal instr_executable;
+        Signal page_fault_x;
         Signal radr1;
         Signal radr2;
         Signal waddr;
@@ -513,7 +508,6 @@ class Processor : public ModuleObject {
     Signal unused_immu_core_req_size;
     Signal unused_immu_mem_resp_store_fault;
     Signal unused_immu_fence_addr;
-    Signal unused_dmmu_mem_resp_executable;
 
     CombProcess comb;
 

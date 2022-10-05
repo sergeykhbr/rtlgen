@@ -53,7 +53,7 @@ class InstrDecoder : public ModuleObject {
     InPort i_f_pc;
     InPort i_f_instr;
     InPort i_instr_load_fault;
-    InPort i_instr_executable;
+    InPort i_instr_page_fault_x;
     InPort i_e_npc;
     OutPort o_radr1;
     OutPort o_radr2;
@@ -77,7 +77,7 @@ class InstrDecoder : public ModuleObject {
     OutPort o_instr_vec;
     OutPort o_exception;
     OutPort o_instr_load_fault;
-    OutPort o_instr_executable;
+    OutPort o_instr_page_fault_x;
     OutPort o_progbuf_ena;
 
  protected:
@@ -104,7 +104,7 @@ class InstrDecoder : public ModuleObject {
         compressed(this, "compressed", "1"),
         amo(this, "amo", "1"),
         instr_load_fault(this, "instr_load_fault", "1"),
-        instr_executable(this, "instr_executable", "1"),
+        instr_page_fault_x(this, "instr_page_fault_x", "1"),
         instr_unimplemented(this, "instr_unimplemented", "1"),
         radr1(this, "radr1", "6"),
         radr2(this, "radr2", "6"),
@@ -127,7 +127,7 @@ class InstrDecoder : public ModuleObject {
         Signal compressed;
         Signal amo;
         Signal instr_load_fault;
-        Signal instr_executable;
+        Signal instr_page_fault_x;
         Signal instr_unimplemented;
         Signal radr1;
         Signal radr2;

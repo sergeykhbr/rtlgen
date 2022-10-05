@@ -45,12 +45,12 @@ InstrExecute::InstrExecute(GenObject *parent, const char *name) :
     i_stack_underflow(this, "i_stack_underflow", "1", "exception stack overflow"),
     i_unsup_exception(this, "i_unsup_exception", "1", "Unsupported instruction exception"),
     i_instr_load_fault(this, "i_instr_load_fault", "1", "fault instruction's address. Bus returned ERR on read transaction"),
-    i_instr_executable(this, "i_instr_executable", "1", "MPU flag 'executable' not set for this memory region"),
     i_mem_ex_debug(this, "i_mem_ex_debug", "1", "Memoryaccess: Debug requested processed with error. Ignore it."),
     i_mem_ex_load_fault(this, "i_mem_ex_load_fault", "1", "Memoryaccess: Bus response with SLVERR or DECERR on read data"),
     i_mem_ex_store_fault(this, "i_mem_ex_store_fault", "1", "Memoryaccess: Bus response with SLVERR or DECERR on write data"),
-    i_mem_ex_mpu_store(this, "i_mem_ex_mpu_store", "1", "Memoryaccess: MPU access error on storing data"),
-    i_mem_ex_mpu_load(this, "i_mem_ex_mpu_load", "1", "Memoryaccess: MPU access error on load data"),
+    i_page_fault_x(this, "i_page_fault_x", "1", "IMMU execute page fault signal"),
+    i_page_fault_r(this, "i_page_fault_r", "1", "DMMU read access page fault"),
+    i_page_fault_w(this, "i_page_fault_w", "1", "DMMU write access page fault"),
     i_mem_ex_addr(this, "i_mem_ex_addr", "CFG_CPU_ADDR_BITS", "Memoryaccess: exception address"),
     i_irq_pending(this, "i_irq_pending", "IRQ_TOTAL", "Per Hart pending interrupts pins"),
     i_wakeup(this, "i_wakeup", "1", "There's pending bit even if interrupts globally disabled"),
@@ -196,8 +196,9 @@ InstrExecute::InstrExecute(GenObject *parent, const char *name) :
     stack_underflow(this, "stack_underflow", "1"),
     mem_ex_load_fault(this, "mem_ex_load_fault", "1"),
     mem_ex_store_fault(this, "mem_ex_store_fault", "1"),
-    mem_ex_mpu_store(this, "mem_ex_mpu_store", "1"),
-    mem_ex_mpu_load(this, "mem_ex_mpu_load", "1"),
+    page_fault_x(this, "page_fault_x", "1"),
+    page_fault_r(this, "page_fault_r", "1"),
+    page_fault_w(this, "page_fault_w", "1"),
     mem_ex_addr(this, "mem_ex_addr", "CFG_CPU_ADDR_BITS"),
     res_npc(this, "res_npc", "CFG_CPU_ADDR_BITS"),
     res_ra(this, "res_ra", "CFG_CPU_ADDR_BITS"),
@@ -509,12 +510,16 @@ TEXT();
         SETONE(mem_ex_store_fault);
         SETVAL(mem_ex_addr, i_mem_ex_addr);
     ENDIF();
-    IF (AND2(NZ(i_mem_ex_mpu_store), EZ(i_mem_ex_debug)));
-        SETONE(mem_ex_mpu_store);
+    IF (AND2(NZ(i_page_fault_x), EZ(i_mem_ex_debug)));
+        SETONE(page_fault_x);
+        SETVAL(mem_ex_addr, i_d_pc);
+    ENDIF();
+    IF (AND2(NZ(i_page_fault_r), EZ(i_mem_ex_debug)));
+        SETONE(page_fault_r);
         SETVAL(mem_ex_addr, i_mem_ex_addr);
     ENDIF();
-    IF (AND2(NZ(i_mem_ex_mpu_load), EZ(i_mem_ex_debug)));
-        SETONE(mem_ex_mpu_load);
+    IF (AND2(NZ(i_page_fault_w), EZ(i_mem_ex_debug)));
+        SETONE(page_fault_w);
         SETVAL(mem_ex_addr, i_mem_ex_addr);
     ENDIF();
 
@@ -636,17 +641,16 @@ TEXT();
     ENDIF();
 
 TEXT();
-    SETVAL(comb.v_instr_executable, OR2(i_instr_executable, i_dbg_progbuf_ena));
-    SETVAL(comb.v_mem_ex, ORx(4, &mem_ex_load_fault,
+    SETVAL(comb.v_mem_ex, ORx(5, &mem_ex_load_fault,
                                  &mem_ex_store_fault,
-                                 &mem_ex_mpu_store,
-                                 &mem_ex_mpu_load));
-    SETVAL(comb.v_csr_cmd_ena, ORx(27, &i_haltreq,
+                                 &page_fault_x,
+                                 &page_fault_r,
+                                 &page_fault_w));
+    SETVAL(comb.v_csr_cmd_ena, ORx(26, &i_haltreq,
                                     &AND2(i_step, stepdone),
                                     &i_unsup_exception,
                                     &i_instr_load_fault,
                                     &comb.v_mem_ex,
-                                    &INV(comb.v_instr_executable),
                                     &stack_overflow,
                                     &stack_underflow,
                                     &comb.v_instr_misaligned,
@@ -678,7 +682,7 @@ TEXT();
         SETVAL(comb.vb_csr_cmd_type, cfg->CsrReq_ExceptionCmd);
         SETVAL(comb.vb_csr_cmd_addr, cfg->EXCEPTION_InstrMisalign, "Instruction address misaligned");
         SETVAL(comb.vb_csr_cmd_wdata, comb.mux.pc);
-    ELSIF (OR2(NZ(i_instr_load_fault), EZ(comb.v_instr_executable)));
+    ELSIF (NZ(i_instr_load_fault));
         SETVAL(comb.vb_csr_cmd_type, cfg->CsrReq_ExceptionCmd);
         SETVAL(comb.vb_csr_cmd_addr, cfg->EXCEPTION_InstrFault, "Instruction access fault");
         SETVAL(comb.vb_csr_cmd_wdata, comb.mux.pc);
@@ -693,7 +697,7 @@ TEXT();
         SETVAL(comb.vb_csr_cmd_type, cfg->CsrReq_ExceptionCmd);
         SETVAL(comb.vb_csr_cmd_addr, cfg->EXCEPTION_LoadMisalign, "Load address misaligned");
         SETVAL(comb.vb_csr_cmd_wdata, comb.vb_memop_memaddr_load);
-    ELSIF (NZ(OR2(mem_ex_load_fault, mem_ex_mpu_load)));
+    ELSIF (NZ(mem_ex_load_fault));
         SETVAL(comb.vb_csr_cmd_type, cfg->CsrReq_ExceptionCmd);
         SETVAL(comb.vb_csr_cmd_addr, cfg->EXCEPTION_LoadFault, "Load access fault");
         SETVAL(comb.vb_csr_cmd_wdata, mem_ex_addr);
@@ -701,9 +705,21 @@ TEXT();
         SETVAL(comb.vb_csr_cmd_type, cfg->CsrReq_ExceptionCmd);
         SETVAL(comb.vb_csr_cmd_addr, cfg->EXCEPTION_StoreMisalign, "Store/AMO address misaligned");
         SETVAL(comb.vb_csr_cmd_wdata, comb.vb_memop_memaddr_store);
-    ELSIF (NZ(OR2(mem_ex_store_fault, mem_ex_mpu_store)));
+    ELSIF (NZ(mem_ex_store_fault));
         SETVAL(comb.vb_csr_cmd_type, cfg->CsrReq_ExceptionCmd);
         SETVAL(comb.vb_csr_cmd_addr, cfg->EXCEPTION_StoreFault, "Store/AMO access fault");
+        SETVAL(comb.vb_csr_cmd_wdata, mem_ex_addr);
+    ELSIF (NZ(page_fault_x));
+        SETVAL(comb.vb_csr_cmd_type, cfg->CsrReq_ExceptionCmd);
+        SETVAL(comb.vb_csr_cmd_addr, cfg->EXCEPTION_InstrPageFault, "Instruction fetch page fault");
+        SETVAL(comb.vb_csr_cmd_wdata, mem_ex_addr);
+    ELSIF (NZ(page_fault_r));
+        SETVAL(comb.vb_csr_cmd_type, cfg->CsrReq_ExceptionCmd);
+        SETVAL(comb.vb_csr_cmd_addr, cfg->EXCEPTION_LoadPageFault, "Data load page fault");
+        SETVAL(comb.vb_csr_cmd_wdata, mem_ex_addr);
+    ELSIF (NZ(page_fault_w));
+        SETVAL(comb.vb_csr_cmd_type, cfg->CsrReq_ExceptionCmd);
+        SETVAL(comb.vb_csr_cmd_addr, cfg->EXCEPTION_StorePageFault, "Data store page fault");
         SETVAL(comb.vb_csr_cmd_wdata, mem_ex_addr);
     ELSIF (NZ(stack_overflow));
         SETVAL(comb.vb_csr_cmd_type, cfg->CsrReq_ExceptionCmd);
@@ -843,8 +859,9 @@ TEXT();
                 SETVAL(csr_req_rmw, BIT(comb.vb_csr_cmd_type, cfg->CsrReq_ReadBit), "read/modify/write");
                 SETZERO(mem_ex_load_fault);
                 SETZERO(mem_ex_store_fault);
-                SETZERO(mem_ex_mpu_store);
-                SETZERO(mem_ex_mpu_load);
+                SETZERO(page_fault_x);
+                SETZERO(page_fault_r);
+                SETZERO(page_fault_w);
                 SETZERO(stack_overflow);
                 SETZERO(stack_underflow);
             ELSIF (NZ(OR3(BIT(comb.vb_select, Res_IMul), BIT(comb.vb_select, Res_IDiv), BIT(comb.vb_select, Res_FPU))));

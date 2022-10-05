@@ -24,7 +24,7 @@ InstrDecoder::InstrDecoder(GenObject *parent, const char *name) :
     i_f_pc(this, "i_f_pc", "CFG_CPU_ADDR_BITS", "Fetched pc"),
     i_f_instr(this, "i_f_instr", "64", "Fetched instruction value"),
     i_instr_load_fault(this, "i_instr_load_fault", "1", "fault instruction's address"),
-    i_instr_executable(this, "i_instr_executable", "1", "MPU flag"),
+    i_instr_page_fault_x(this, "i_instr_page_fault_x", "1", "Instruction MMU page fault"),
     i_e_npc(this, "i_e_npc", "CFG_CPU_ADDR_BITS", "executor expected instr pointer"),
     o_radr1(this, "o_radr1", "6", "register bank address 1 (rs1)"),
     o_radr2(this, "o_radr2", "6", "register bank address 2 (rs2)"),
@@ -48,7 +48,7 @@ InstrDecoder::InstrDecoder(GenObject *parent, const char *name) :
     o_instr_vec(this, "o_instr_vec", "Instr_Total", "One bit per decoded instruction bus"),
     o_exception(this, "o_exception", "1", "Exception detected"),
     o_instr_load_fault(this, "o_instr_load_fault", "1", "fault instruction's address"),
-    o_instr_executable(this, "o_instr_executable", "1", "MPU flag"),
+    o_instr_page_fault_x(this, "o_instr_page_fault_x", "1", "IMMU page fault signal"),
     o_progbuf_ena(this, "o_progbuf_ena", "1"),
     // struct declaration
     DecoderDataTypeDef_(this, "", -1),
@@ -81,7 +81,7 @@ InstrDecoder::InstrDecoder(GenObject *parent, const char *name) :
                 CONNECT(rv, &i, rv->i_f_pc, ARRITEM(wb_f_pc, i, wb_f_pc));
                 CONNECT(rv, &i, rv->i_f_instr, ARRITEM(wb_f_instr, i, wb_f_instr));
                 CONNECT(rv, &i, rv->i_instr_load_fault, i_instr_load_fault);
-                CONNECT(rv, &i, rv->i_instr_executable, i_instr_executable);
+                CONNECT(rv, &i, rv->i_instr_page_fault_x, i_instr_page_fault_x);
                 CONNECT(rv, &i, rv->o_radr1, ARRITEM(wd, MUL2(CONST("2"), i), wd->radr1));
                 CONNECT(rv, &i, rv->o_radr2, ARRITEM(wd, MUL2(CONST("2"), i), wd->radr2));
                 CONNECT(rv, &i, rv->o_waddr, ARRITEM(wd, MUL2(CONST("2"), i), wd->waddr));
@@ -102,7 +102,7 @@ InstrDecoder::InstrDecoder(GenObject *parent, const char *name) :
                 CONNECT(rv, &i, rv->o_instr_vec, ARRITEM(wd, MUL2(CONST("2"), i), wd->instr_vec));
                 CONNECT(rv, &i, rv->o_exception, ARRITEM(wd, MUL2(CONST("2"), i), wd->instr_unimplemented));
                 CONNECT(rv, &i, rv->o_instr_load_fault, ARRITEM(wd, MUL2(CONST("2"), i), wd->instr_load_fault));
-                CONNECT(rv, &i, rv->o_instr_executable, ARRITEM(wd, MUL2(CONST("2"), i), wd->instr_executable));
+                CONNECT(rv, &i, rv->o_instr_page_fault_x, ARRITEM(wd, MUL2(CONST("2"), i), wd->instr_page_fault_x));
                 CONNECT(rv, &i, rv->o_progbuf_ena, ARRITEM(wd, MUL2(CONST("2"), i), wd->progbuf_ena));
             ENDNEW();
         ENDFORGEN(new STRING("rvx"));
@@ -118,7 +118,7 @@ InstrDecoder::InstrDecoder(GenObject *parent, const char *name) :
                 CONNECT(rvc, &i, rvc->i_f_pc, ARRITEM(wb_f_pc, i, wb_f_pc));
                 CONNECT(rvc, &i, rvc->i_f_instr, ARRITEM(wb_f_instr, i, wb_f_instr));
                 CONNECT(rvc, &i, rvc->i_instr_load_fault, i_instr_load_fault);
-                CONNECT(rvc, &i, rvc->i_instr_executable, i_instr_executable);
+                CONNECT(rvc, &i, rvc->i_instr_page_fault_x, i_instr_page_fault_x);
                 CONNECT(rvc, &i, rvc->o_radr1, ARRITEM(wd, INC(MUL2(CONST("2"), i)), wd->radr1));
                 CONNECT(rvc, &i, rvc->o_radr2, ARRITEM(wd, INC(MUL2(CONST("2"), i)), wd->radr2));
                 CONNECT(rvc, &i, rvc->o_waddr, ARRITEM(wd, INC(MUL2(CONST("2"), i)), wd->waddr));
@@ -139,7 +139,7 @@ InstrDecoder::InstrDecoder(GenObject *parent, const char *name) :
                 CONNECT(rvc, &i, rvc->o_instr_vec, ARRITEM(wd, INC(MUL2(CONST("2"), i)), wd->instr_vec));
                 CONNECT(rvc, &i, rvc->o_exception, ARRITEM(wd, INC(MUL2(CONST("2"), i)), wd->instr_unimplemented));
                 CONNECT(rvc, &i, rvc->o_instr_load_fault, ARRITEM(wd, INC(MUL2(CONST("2"), i)), wd->instr_load_fault));
-                CONNECT(rvc, &i, rvc->o_instr_executable, ARRITEM(wd, INC(MUL2(CONST("2"), i)), wd->instr_executable));
+                CONNECT(rvc, &i, rvc->o_instr_page_fault_x, ARRITEM(wd, INC(MUL2(CONST("2"), i)), wd->instr_page_fault_x));
                 CONNECT(rvc, &i, rvc->o_progbuf_ena, ARRITEM(wd, INC(MUL2(CONST("2"), i)), wd->progbuf_ena));
             ENDNEW();
         ENDFORGEN(new STRING("rvcx"));
@@ -209,7 +209,7 @@ TEXT();
     SETVAL(o_instr_vec, ARRITEM(wd, comb.selidx, wd->instr_vec));
     SETVAL(o_exception, ARRITEM(wd, comb.selidx, wd->instr_unimplemented));
     SETVAL(o_instr_load_fault, ARRITEM(wd, comb.selidx, wd->instr_load_fault));
-    SETVAL(o_instr_executable, ARRITEM(wd, comb.selidx, wd->instr_executable));
+    SETVAL(o_instr_page_fault_x, ARRITEM(wd, comb.selidx, wd->instr_page_fault_x));
     SETVAL(o_radr1, ARRITEM(wd, comb.selidx, wd->radr1));
     SETVAL(o_radr2, ARRITEM(wd, comb.selidx, wd->radr2));
     SETVAL(o_waddr, ARRITEM(wd, comb.selidx, wd->waddr));

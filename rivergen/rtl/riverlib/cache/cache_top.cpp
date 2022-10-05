@@ -29,7 +29,6 @@ CacheTop::CacheTop(GenObject *parent, const char *name) :
     o_resp_ctrl_addr(this, "o_resp_ctrl_addr", "CFG_CPU_ADDR_BITS", "ICache response address"),
     o_resp_ctrl_data(this, "o_resp_ctrl_data", "64", "ICache read data"),
     o_resp_ctrl_load_fault(this, "o_resp_ctrl_load_fault", "1", "Bus response ERRSLV or ERRDEC on read"),
-    o_resp_ctrl_executable(this, "o_resp_ctrl_executable", "1", "MPU flag: executable"),
     i_resp_ctrl_ready(this, "i_resp_ctrl_ready", "1", "CPU Core is ready to accept ICache response"),
     _DataPath0_(this, "Data path:"),
     i_req_data_valid(this, "i_req_data_valid", "1", "Data path request from CPU Core is valid"),
@@ -45,8 +44,6 @@ CacheTop::CacheTop(GenObject *parent, const char *name) :
     o_resp_data_fault_addr(this, "o_resp_data_fault_addr", "CFG_CPU_ADDR_BITS", "AXI B-channel error"),
     o_resp_data_load_fault(this, "o_resp_data_load_fault", "1", "Bus response ERRSLV or ERRDEC on read"),
     o_resp_data_store_fault(this, "o_resp_data_store_fault", "1", "Bus response ERRSLV or ERRDEC on write"),
-    o_resp_data_er_mpu_load(this, "o_resp_data_er_mpu_load"),
-    o_resp_data_er_mpu_store(this, "o_resp_data_er_mpu_store"),
     i_resp_data_ready(this, "i_resp_data_ready", "1", "CPU Core is ready to accept DCache repsonse"),
     _MemInterface0_(this, "Memory interface:"),
     i_req_mem_ready(this, "i_req_mem_ready", "1", "System Bus is ready to accept memory operation request"),
@@ -99,8 +96,6 @@ CacheTop::CacheTop(GenObject *parent, const char *name) :
     w_ctrl_resp_mem_data_valid(this, "w_ctrl_resp_mem_data_valid", "1"),
     wb_ctrl_resp_mem_data(this, "wb_ctrl_resp_mem_data", "ICACHE_LINE_BITS"),
     w_ctrl_resp_mem_load_fault(this, "w_ctrl_resp_mem_load_fault", "1"),
-    w_resp_ctrl_writable_unused(this, "w_resp_ctrl_writable_unused", "1"),
-    w_resp_ctrl_readable_unused(this, "w_resp_ctrl_readable_unused", "1"),
     w_ctrl_req_ready(this, "w_ctrl_req_ready", "1"),
     _iface1_(this, "Memory Data interface:"),
     w_data_resp_mem_data_valid(this, "w_data_resp_mem_data_valid", "1"),
@@ -136,9 +131,6 @@ CacheTop::CacheTop(GenObject *parent, const char *name) :
         CONNECT(i1, 0, i1.o_resp_addr, o_resp_ctrl_addr);
         CONNECT(i1, 0, i1.o_resp_data, o_resp_ctrl_data);
         CONNECT(i1, 0, i1.o_resp_load_fault, o_resp_ctrl_load_fault);
-        CONNECT(i1, 0, i1.o_resp_executable, o_resp_ctrl_executable);
-        CONNECT(i1, 0, i1.o_resp_writable, w_resp_ctrl_writable_unused);
-        CONNECT(i1, 0, i1.o_resp_readable, w_resp_ctrl_readable_unused);
         CONNECT(i1, 0, i1.i_resp_ready, i_resp_ctrl_ready);
         CONNECT(i1, 0, i1.i_req_mem_ready, w_ctrl_req_ready);
         CONNECT(i1, 0, i1.o_req_mem_valid, i.req_mem_valid);
@@ -172,8 +164,6 @@ CacheTop::CacheTop(GenObject *parent, const char *name) :
         CONNECT(d0, 0, d0.o_resp_er_addr, o_resp_data_fault_addr);
         CONNECT(d0, 0, d0.o_resp_er_load_fault, o_resp_data_load_fault);
         CONNECT(d0, 0, d0.o_resp_er_store_fault, o_resp_data_store_fault);
-        CONNECT(d0, 0, d0.o_resp_er_mpu_load, o_resp_data_er_mpu_load);
-        CONNECT(d0, 0, d0.o_resp_er_mpu_store, o_resp_data_er_mpu_store);
         CONNECT(d0, 0, d0.i_resp_ready, i_resp_data_ready);
         CONNECT(d0, 0, d0.i_req_mem_ready, w_data_req_ready);
         CONNECT(d0, 0, d0.o_req_mem_valid, d.req_mem_valid);

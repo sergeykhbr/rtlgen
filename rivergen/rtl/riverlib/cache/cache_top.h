@@ -75,7 +75,6 @@ class CacheTop : public ModuleObject {
     OutPort o_resp_ctrl_addr;
     OutPort o_resp_ctrl_data;
     OutPort o_resp_ctrl_load_fault;
-    OutPort o_resp_ctrl_executable;
     InPort i_resp_ctrl_ready;
     TextLine _DataPath0_;
     InPort i_req_data_valid;
@@ -91,8 +90,6 @@ class CacheTop : public ModuleObject {
     OutPort o_resp_data_fault_addr;
     OutPort o_resp_data_load_fault;
     OutPort o_resp_data_store_fault;
-    OutPort o_resp_data_er_mpu_load;
-    OutPort o_resp_data_er_mpu_store;
     InPort i_resp_data_ready;
     TextLine _MemInterface0_;
     InPort i_req_mem_ready;
@@ -162,8 +159,6 @@ class CacheTop : public ModuleObject {
     Signal w_ctrl_resp_mem_data_valid;
     Signal wb_ctrl_resp_mem_data;
     Signal w_ctrl_resp_mem_load_fault;
-    Signal w_resp_ctrl_writable_unused;
-    Signal w_resp_ctrl_readable_unused;
     Signal w_ctrl_req_ready;
     TextLine _iface1_;
     Signal w_data_resp_mem_data_valid;

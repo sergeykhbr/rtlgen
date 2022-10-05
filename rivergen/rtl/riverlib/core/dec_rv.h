@@ -88,7 +88,7 @@ class DecoderRv : public ModuleObject {
     InPort i_f_pc;
     InPort i_f_instr;
     InPort i_instr_load_fault;
-    InPort i_instr_executable;
+    InPort i_instr_page_fault_x;
     OutPort o_radr1;
     OutPort o_radr2;
     OutPort o_waddr;
@@ -109,7 +109,7 @@ class DecoderRv : public ModuleObject {
     OutPort o_instr_vec;
     OutPort o_exception;
     OutPort o_instr_load_fault;
-    OutPort o_instr_executable;
+    OutPort o_instr_page_fault_x;
     OutPort o_progbuf_ena;
 
  protected:
@@ -145,7 +145,7 @@ class DecoderRv : public ModuleObject {
     RegSignal compressed;
     RegSignal amo;
     RegSignal instr_load_fault;
-    RegSignal instr_executable;
+    RegSignal instr_page_fault_x;
     RegSignal instr_unimplemented;
     RegSignal radr1;
     RegSignal radr2;

@@ -50,14 +50,14 @@ class InstrFetch : public ModuleObject {
     InPort i_mem_data_addr;
     InPort i_mem_data;
     InPort i_mem_load_fault;
-    InPort i_mem_executable;
+    InPort i_mem_page_fault_x;
     OutPort o_mem_resp_ready;
     InPort i_flush_pipeline;
     InPort i_progbuf_ena;
     InPort i_progbuf_pc;
     InPort i_progbuf_instr;
     OutPort o_instr_load_fault;
-    OutPort o_instr_executable;
+    OutPort o_instr_page_fault_x;
     OutPort o_pc;
     OutPort o_instr;
 
@@ -74,7 +74,7 @@ class InstrFetch : public ModuleObject {
     RegSignal pc;
     RegSignal instr;
     RegSignal instr_load_fault;
-    RegSignal instr_executable;
+    RegSignal instr_page_fault_x;
     RegSignal progbuf_ena;
 
     // process should be intialized last to make all signals available

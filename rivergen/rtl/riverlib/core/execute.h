@@ -119,7 +119,6 @@ class InstrExecute : public ModuleObject {
             v_memop_debug(this, "v_memop_debug", "1"),
             v_reg_ena(this, "v_reg_ena", "1"),
             vb_reg_waddr(this, "vb_reg_waddr", "6"),
-            v_instr_executable(this, "v_instr_executable", "1"),
             v_instr_misaligned(this, "v_instr_misaligned", "1"),
             v_store_misaligned(this, "v_store_misaligned", "1"),
             v_load_misaligned(this, "v_load_misaligned", "1"),
@@ -182,7 +181,6 @@ class InstrExecute : public ModuleObject {
         Logic v_memop_debug;
         Logic v_reg_ena;
         Logic vb_reg_waddr;
-        Logic v_instr_executable;
         Logic v_instr_misaligned;
         Logic v_store_misaligned;
         Logic v_load_misaligned;
@@ -237,12 +235,12 @@ class InstrExecute : public ModuleObject {
     InPort i_stack_underflow;
     InPort i_unsup_exception;
     InPort i_instr_load_fault;
-    InPort i_instr_executable;
     InPort i_mem_ex_debug;
     InPort i_mem_ex_load_fault;
     InPort i_mem_ex_store_fault;
-    InPort i_mem_ex_mpu_store;
-    InPort i_mem_ex_mpu_load;
+    InPort i_page_fault_x;
+    InPort i_page_fault_r;
+    InPort i_page_fault_w;
     InPort i_mem_ex_addr;
     InPort i_irq_pending;
     InPort i_wakeup;
@@ -416,8 +414,9 @@ class InstrExecute : public ModuleObject {
     RegSignal stack_underflow;
     RegSignal mem_ex_load_fault;
     RegSignal mem_ex_store_fault;
-    RegSignal mem_ex_mpu_store;
-    RegSignal mem_ex_mpu_load;
+    RegSignal page_fault_x;
+    RegSignal page_fault_r;
+    RegSignal page_fault_w;
     RegSignal mem_ex_addr;
     RegSignal res_npc;
     RegSignal res_ra;

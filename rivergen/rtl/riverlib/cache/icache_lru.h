@@ -86,9 +86,6 @@ class ICacheLru : public ModuleObject {
     OutPort o_resp_addr;
     OutPort o_resp_data;
     OutPort o_resp_load_fault;
-    OutPort o_resp_executable;
-    OutPort o_resp_writable;
-    OutPort o_resp_readable;
     InPort i_resp_ready;
     TextLine _mem0_;
     InPort i_req_mem_ready;

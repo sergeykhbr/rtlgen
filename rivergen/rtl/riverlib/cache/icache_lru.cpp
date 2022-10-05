@@ -28,9 +28,6 @@ ICacheLru::ICacheLru(GenObject *parent, const char *name) :
     o_resp_addr(this, "o_resp_addr", "CFG_CPU_ADDR_BITS"),
     o_resp_data(this, "o_resp_data", "64"),
     o_resp_load_fault(this, "o_resp_load_fault", "1"),
-    o_resp_executable(this, "o_resp_executable", "1"),
-    o_resp_writable(this, "o_resp_writable", "1"),
-    o_resp_readable(this, "o_resp_readable", "1"),
     i_resp_ready(this, "i_resp_ready", "1"),
     _mem0_(this, "Memory interface:"),
     i_req_mem_ready(this, "i_req_mem_ready", "1"),
@@ -347,9 +344,6 @@ TEXT();
     SETVAL(o_resp_valid, comb.v_resp_valid);
     SETVAL(o_resp_data, comb.vb_resp_data);
     SETVAL(o_resp_addr, req_addr);
-    SETVAL(o_resp_load_fault, comb.v_resp_er_load_fault);
-    SETVAL(o_resp_executable, executable);
-    SETZERO(o_resp_writable);
-    SETZERO(o_resp_readable);
+    SETVAL(o_resp_load_fault, OR2(comb.v_resp_er_load_fault, INV(executable)));
     SETVAL(o_mpu_addr, req_addr);
 }

@@ -31,14 +31,14 @@ InstrFetch::InstrFetch(GenObject *parent, const char *name) :
     i_mem_data_addr(this, "i_mem_data_addr", "CFG_CPU_ADDR_BITS"),
     i_mem_data(this, "i_mem_data", "64"),
     i_mem_load_fault(this, "i_mem_load_fault", "1"),
-    i_mem_executable(this, "i_mem_executable", "1"),
+    i_mem_page_fault_x(this, "i_mem_page_fault_x", "1"),
     o_mem_resp_ready(this, "o_mem_resp_ready", "1"),
     i_flush_pipeline(this, "i_flush_pipeline", "1", "reset pipeline and cache"),
     i_progbuf_ena(this, "i_progbuf_ena", "1", "executing from prog buffer"),
     i_progbuf_pc(this, "i_progbuf_pc", "CFG_CPU_ADDR_BITS", "progbuf counter"),
     i_progbuf_instr(this, "i_progbuf_instr", "64", "progbuf instruction"),
     o_instr_load_fault(this, "o_instr_load_fault", "1"),
-    o_instr_executable(this, "o_instr_executable", "1"),
+    o_instr_page_fault_x(this, "o_instr_page_fault_x", "1"),
     o_pc(this, "o_pc", "CFG_CPU_ADDR_BITS"),
     o_instr(this, "o_instr", "64"),
     // param
@@ -53,9 +53,9 @@ InstrFetch::InstrFetch(GenObject *parent, const char *name) :
     mem_resp_shadow(this, "mem_resp_shadow", "CFG_CPU_ADDR_BITS", "-1", "the same as memory response but internal"),
     pc(this, "pc", "CFG_CPU_ADDR_BITS", "-1"),
     instr(this, "instr", "64"),
-    instr_load_fault(this, "instr_load_fault"),
-    instr_executable(this, "instr_executable"),
-    progbuf_ena(this, "progbuf_ena"),
+    instr_load_fault(this, "instr_load_fault", "1"),
+    instr_page_fault_x(this, "instr_page_fault_x", "1"),
+    progbuf_ena(this, "progbuf_ena", "1"),
     // process
     comb(this)
 {
@@ -74,7 +74,7 @@ void InstrFetch::proc_comb() {
             SETVAL(pc, i_progbuf_pc);
             SETVAL(instr, i_progbuf_instr);
             SETZERO(instr_load_fault);
-            SETZERO(instr_executable);
+            SETZERO(instr_page_fault_x);
         ELSIF (NZ(i_bp_valid));
             SETVAL(state, WaitReqAccept);
             SETVAL(req_addr, i_bp_pc);
@@ -98,7 +98,7 @@ void InstrFetch::proc_comb() {
             SETVAL(pc, i_mem_data_addr);
             SETVAL(instr, i_mem_data);
             SETVAL(instr_load_fault, i_mem_load_fault);
-            SETVAL(instr_executable, i_mem_executable);
+            SETVAL(instr_page_fault_x, i_mem_page_fault_x);
             SETVAL(req_valid, AND2(i_bp_valid, INV(i_progbuf_ena)));
 
             TEXT();
@@ -129,7 +129,7 @@ TEXT();
         SETVAL(pc, ALLONES());
         SETZERO(instr);
         SETZERO(instr_load_fault);
-        SETZERO(instr_executable);
+        SETZERO(instr_page_fault_x);
     ENDIF();
 
 TEXT();
@@ -140,7 +140,7 @@ TEXT();
     SETVAL(o_mem_addr, req_addr);
     SETVAL(o_mem_resp_ready, resp_ready);
     SETVAL(o_instr_load_fault, instr_load_fault);
-    SETVAL(o_instr_executable, instr_executable);
+    SETVAL(o_instr_page_fault_x, instr_page_fault_x);
     SETVAL(o_requested_pc, req_addr);
     SETVAL(o_fetching_pc, mem_resp_shadow);
     SETVAL(o_pc, pc);
