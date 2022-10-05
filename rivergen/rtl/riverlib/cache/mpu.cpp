@@ -72,6 +72,7 @@ TEXT();
 TEXT();
     IF (NZ(i_region_we));
         SETARRITEM(tbl, TO_INT(i_region_idx), tbl->addr, comb.vb_addr);
+        SETARRITEM(tbl, TO_INT(i_region_idx), tbl->endaddr, ADD2(comb.vb_addr, INV_L(comb.vb_mask)));
         SETARRITEM(tbl, TO_INT(i_region_idx), tbl->mask, comb.vb_mask);
         SETARRITEM(tbl, TO_INT(i_region_idx), tbl->flags, comb.vb_flags);
     ENDIF();

@@ -64,11 +64,13 @@ class MPU : public ModuleObject {
         MpuTableItemType(GenObject *parent, const char *name="", int idx=-1, const char *comment="")
             : StructObject(parent, "MpuTableItemType", name, idx, comment),
             addr(this, "addr", "CFG_CPU_ADDR_BITS"),
+            endaddr(this, "endaddr", "CFG_CPU_ADDR_BITS"),
             mask(this, "mask", "CFG_CPU_ADDR_BITS"),
             flags(this, "flags", "CFG_MPU_FL_TOTAL", "-1", "Enable all regions by default") {
         }
      public:
         Signal addr;
+        Signal endaddr;
         Signal mask;
         Signal flags;
     } MpuTableItemTypeDef_;
