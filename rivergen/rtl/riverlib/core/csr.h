@@ -56,7 +56,10 @@ class CsrRegs : public ModuleObject {
             vb_xtvec_off_edeleg(this, "vb_xtvec_off_edeleg", "RISCV_ARCH", "4-bytes aligned"),
             v_flushd(this, "v_flushd", "1"),
             v_flushi(this, "v_flushi", "1"),
-            v_flushmmu(this, "v_flushmmu", "1") {
+            v_flushmmu(this, "v_flushmmu", "1"),
+            vb_pmp_upd_ena(this, "vb_pmp_upd_ena", "CFG_MPU_TBL_SIZE"),
+            t_pmpdataidx("0", "t_pmpdataidx", this),
+            t_pmpcfgidx("0", "t_pmpcfgidx", this) {
             Operation::start(this);
             CsrRegs *p = static_cast<CsrRegs *>(parent);
             p->proc_comb();
@@ -90,6 +93,9 @@ class CsrRegs : public ModuleObject {
         Logic v_flushd;
         Logic v_flushi;
         Logic v_flushmmu;
+        Logic vb_pmp_upd_ena;
+        I32D t_pmpdataidx;
+        I32D t_pmpcfgidx;
     };
 
     void proc_comb();
@@ -279,6 +285,8 @@ class CsrRegs : public ModuleObject {
     RegSignal dcsr_stepie;
     RegSignal stepping_mode_cnt;
     RegSignal ins_per_step;
+    RegSignal pmp_upd_ena;
+    RegSignal pmp_upd_cnt;
 
     // process should be intialized last to make all signals available
     CombProcess comb;

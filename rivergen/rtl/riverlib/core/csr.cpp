@@ -139,8 +139,8 @@ CsrRegs::CsrRegs(GenObject *parent, const char *name) :
     dcsr_stepie(this, "dcsr_stepie", "1", "0", "interrupt 0=dis;1=ena during stepping"),
     stepping_mode_cnt(this, "stepping_mode_cnt", "RISCV_ARCH", "0"),
     ins_per_step(this, "ins_per_step", "RISCV_ARCH", "1", "Number of steps before halt in stepping mode"),
-    //flushi_ena(this, "flushi_ena", "1"),
-    //flushi_addr(this, "flushi_addr", "CFG_CPU_ADDR_BITS"),
+    pmp_upd_ena(this, "pmp_upd_ena", "CFG_MPU_TBL_SIZE"),
+    pmp_upd_cnt(this, "pmp_upd_cnt", "CFG_MPU_TBL_WIDTH"),
     // process
     comb(this)
 {
@@ -148,9 +148,14 @@ CsrRegs::CsrRegs(GenObject *parent, const char *name) :
 
 void CsrRegs::proc_comb() {
     river_cfg *cfg = glob_river_cfg_;
+    GenObject *i;
+
     SETZERO(mpu_we);
     //SETVAL(dbg_e_valid, i_e_valid, "used in RtlWrapper to count executed instructions");
     SETVAL(comb.vb_xpp, ARRITEM(xmode, TO_INT(mode), xmode->xpp));
+    SETVAL(comb.vb_pmp_upd_ena, pmp_upd_ena);
+    SETVAL(comb.t_pmpdataidx, SUB2(TO_INT(cmd_addr), CONST("0x3B0")));
+    SETVAL(comb.t_pmpcfgidx, MUL2(CONST("8"), TO_INT(BITS(cmd_addr, 3, 1))));
 
 TEXT();
     SETVAL(comb.vb_xtvec_off_edeleg, ARRITEM(xmode, comb.iM, xmode->xtvec_off));
@@ -357,43 +362,32 @@ TEXT();
     TEXT("CSR registers. Priviledge Arch. V20211203, page 9(19):");
     TEXT("    CSR[11:10] indicate whether the register is read/write (00, 01, or 10) or read-only (11)"),
     TEXT("    CSR[9:8] encode the lowest privilege level that can access the CSR"),
-    SWITCH (cmd_addr);
     // User Trap Setup
-    CASE (CONST("0x000", 12), "ustatus: [URW] User status register");
-        ENDCASE();
-    CASE (CONST("0x004", 12), "uie: [URW] User interrupt-enable register");
-        ENDCASE();
-    CASE (CONST("0x005", 12), "ustatus: [URW] User trap handler base address");
-        ENDCASE();
+    IF (EQ(cmd_addr, CONST("0x000", 12)), "ustatus: [URW] User status register");
+    ELSIF (EQ(cmd_addr, CONST("0x004", 12)), "uie: [URW] User interrupt-enable register");
+    ELSIF (EQ(cmd_addr, CONST("0x005", 12)), "ustatus: [URW] User trap handler base address");
     // User Trap handling
-    CASE (CONST("0x040", 12), "uscratch: [URW] Scratch register for user trap handlers");
-        ENDCASE();
-    CASE (CONST("0x041", 12), "uepc: [URW] User exception program counter");
+    ELSIF (EQ(cmd_addr, CONST("0x040", 12)), "uscratch: [URW] Scratch register for user trap handlers");
+    ELSIF (EQ(cmd_addr, CONST("0x041", 12)), "uepc: [URW] User exception program counter");
         SETVAL(comb.vb_rdata, ARRITEM(xmode, comb.iU, xmode->xepc));
         IF (comb.v_csr_wena);
             SETARRITEM(xmode, comb.iU, xmode->xepc, BITS(cmd_data, DEC(cfg->CFG_CPU_ADDR_BITS), CONST("0")));
         ENDIF();
-        ENDCASE();
-    CASE (CONST("0x042", 12), "ucause: [URW] User trap cause");
-        ENDCASE();
-    CASE (CONST("0x043", 12), "utval: [URW] User bad address or instruction");
-        ENDCASE();
-    CASE (CONST("0x044", 12), "uip: [URW] User interrupt pending");
-        ENDCASE();
+    ELSIF (EQ(cmd_addr, CONST("0x042", 12)), "ucause: [URW] User trap cause");
+    ELSIF (EQ(cmd_addr, CONST("0x043", 12)), "utval: [URW] User bad address or instruction");
+    ELSIF (EQ(cmd_addr, CONST("0x044", 12)), "uip: [URW] User interrupt pending");
     // User Floating-Point
-    CASE (CONST("0x001", 12), "fflags: [URW] Floating-Point Accrued Exceptions");
+    ELSIF (EQ(cmd_addr, CONST("0x001", 12)), "fflags: [URW] Floating-Point Accrued Exceptions");
         SETBIT(comb.vb_rdata, 0, ex_fpu_inexact);
         SETBIT(comb.vb_rdata, 1, ex_fpu_underflow);
         SETBIT(comb.vb_rdata, 2, ex_fpu_overflow);
         SETBIT(comb.vb_rdata, 3, ex_fpu_divbyzero);
         SETBIT(comb.vb_rdata, 4, ex_fpu_invalidop);
-        ENDCASE();
-    CASE (CONST("0x002", 12), "fflags: [URW] Floating-Point Dynamic Rounding Mode");
+    ELSIF (EQ(cmd_addr, CONST("0x002", 12)), "fflags: [URW] Floating-Point Dynamic Rounding Mode");
         IF (cfg->CFG_HW_FPU_ENABLE);
             SETBITS(comb.vb_rdata, 2, 0, CONST("4", 3), "Round mode: round to Nearest (RMM)");
         ENDIF();
-        ENDCASE();
-    CASE (CONST("0x003", 12), "fcsr: [URW] Floating-Point Control and Status Register (frm + fflags)");
+    ELSIF (EQ(cmd_addr, CONST("0x003", 12)), "fcsr: [URW] Floating-Point Control and Status Register (frm + fflags)");
         SETBIT(comb.vb_rdata, 0, ex_fpu_inexact);
         SETBIT(comb.vb_rdata, 1, ex_fpu_underflow);
         SETBIT(comb.vb_rdata, 2, ex_fpu_overflow);
@@ -402,9 +396,8 @@ TEXT();
         IF (cfg->CFG_HW_FPU_ENABLE);
             SETBITS(comb.vb_rdata, 7, 5, CONST("4", 3), "Round mode: round to Nearest (RMM)");
         ENDIF();
-        ENDCASE();
     // User Counter/Timers
-    CASE (CONST("0xC00", 12), "cycle: [URO] User Cycle counter for RDCYCLE pseudo-instruction");
+    ELSIF (EQ(cmd_addr, CONST("0xC00", 12)), "cycle: [URO] User Cycle counter for RDCYCLE pseudo-instruction");
         IF (ANDx(2, &EQ(mode, cfg->PRV_U), 
                     &ORx(2, &EZ(BIT(ARRITEM_B(xmode, comb.iM, xmode->xcounteren), 0)),
                             &EZ(BIT(ARRITEM_B(xmode, comb.iS, xmode->xcounteren), 0)))));
@@ -417,8 +410,7 @@ TEXT();
         ELSE();
             SETVAL(comb.vb_rdata, mcycle_cnt, "Read-only shadows of mcycle");
         ENDIF();
-        ENDCASE();
-    CASE (CONST("0xC01", 12), "time: [URO] User Timer for RDTIME pseudo-instruction");
+    ELSIF (EQ(cmd_addr, CONST("0xC01", 12)), "time: [URO] User Timer for RDTIME pseudo-instruction");
         IF (ANDx(2, &EQ(mode, cfg->PRV_U), 
                     &ORx(2, &EZ(BIT(ARRITEM_B(xmode, comb.iM, xmode->xcounteren), 1)),
                             &EZ(BIT(ARRITEM_B(xmode, comb.iS, xmode->xcounteren), 1)))));
@@ -431,8 +423,7 @@ TEXT();
         ELSE();
             SETVAL(comb.vb_rdata, i_mtimer);
         ENDIF();
-        ENDCASE();
-    CASE (CONST("0xC03", 12), "insret: [URO] User Instructions-retired counter for RDINSTRET pseudo-instruction");
+    ELSIF (EQ(cmd_addr, CONST("0xC03", 12)), "insret: [URO] User Instructions-retired counter for RDINSTRET pseudo-instruction");
         IF (ANDx(2, &EQ(mode, cfg->PRV_U),
                     &ORx(2, &EZ(BIT(ARRITEM_B(xmode, comb.iM, xmode->xcounteren), 2)),
                             &EZ(BIT(ARRITEM_B(xmode, comb.iS, xmode->xcounteren), 2)))));
@@ -445,9 +436,8 @@ TEXT();
         ELSE();
             SETVAL(comb.vb_rdata, minstret_cnt, "Read-only shadow of minstret");
         ENDIF();
-        ENDCASE();
     // Supervisor Trap Setup
-    CASE (CONST("0x100", 12), "sstatus: [SRW] Supervisor status register");
+    ELSIF (EQ(cmd_addr, CONST("0x100", 12)), "sstatus: [SRW] Supervisor status register");
         TEXT("[0] WPRI");
         SETBIT(comb.vb_rdata, 1, ARRITEM(xmode, comb.iS, xmode->xie));
         TEXT("[4:2] WPRI");
@@ -473,8 +463,7 @@ TEXT();
             SETARRITEM(xmode, comb.iS, xmode->xpie, BIT(cmd_data, 5));
             SETARRITEM(xmode, comb.iS, xmode->xpp, CC2(CONST("0", 1), BIT(cmd_data, 8)));
         ENDIF();
-        ENDCASE();
-    CASE (CONST("0x104", 12), "sie: [SRW] Supervisor interrupt-enable register");
+    ELSIF (EQ(cmd_addr, CONST("0x104", 12)), "sie: [SRW] Supervisor interrupt-enable register");
         SETBIT(comb.vb_rdata, DEC(cfg->IRQ_SSIP), ARRITEM(xmode, comb.iS, xmode->xsie));
         SETBIT(comb.vb_rdata, DEC(cfg->IRQ_STIP), ARRITEM(xmode, comb.iS, xmode->xtie));
         SETBIT(comb.vb_rdata, DEC(cfg->IRQ_SEIP), ARRITEM(xmode, comb.iS, xmode->xeie));
@@ -484,8 +473,7 @@ TEXT();
             SETARRITEM(xmode, comb.iS, xmode->xtie, BIT(cmd_data, cfg->IRQ_STIP));
             SETARRITEM(xmode, comb.iS, xmode->xeie, BIT(cmd_data, cfg->IRQ_SEIP));
         ENDIF();
-        ENDCASE();
-    CASE (CONST("0x105", 12), "stvec: [SRW] Supervisor trap handler base address");
+    ELSIF (EQ(cmd_addr, CONST("0x105", 12)), "stvec: [SRW] Supervisor trap handler base address");
         SETVAL(comb.vb_rdata, ARRITEM(xmode, comb.iS, xmode->xtvec_off));
         SETBITS(comb.vb_rdata, 1, 0, ARRITEM(xmode, comb.iS, xmode->xtvec_mode));
         IF (NZ(comb.v_csr_wena));
@@ -493,49 +481,41 @@ TEXT();
                 CC2(BITS(cmd_data, DEC(cfg->RISCV_ARCH), CONST("2")), CONST("0", 2)));
             SETARRITEM(xmode, comb.iS, xmode->xtvec_mode, BITS(cmd_data, 1, 0));
         ENDIF();
-        ENDCASE();
-    CASE (CONST("0x106", 12), "scounteren: [SRW] Supervisor counter enable");
+    ELSIF (EQ(cmd_addr, CONST("0x106", 12)), "scounteren: [SRW] Supervisor counter enable");
         SETVAL(comb.vb_rdata, ARRITEM(xmode, comb.iS, xmode->xcounteren));
         IF (NZ(comb.v_csr_wena));
             SETARRITEM(xmode, comb.iS, xmode->xcounteren, BITS(cmd_data, 15, 0));
         ENDIF();
-        ENDCASE();
     // Supervisor configuration
-    CASE (CONST("0x10A", 12), "senvcfg: [SRW] Supervisor environment configuration register");
-        ENDCASE();
+    ELSIF (EQ(cmd_addr, CONST("0x10A", 12)), "senvcfg: [SRW] Supervisor environment configuration register");
     // Supervisor trap handling
-    CASE (CONST("0x140", 12), "sscratch: [SRW] Supervisor register for supervisor trap handlers");
+    ELSIF (EQ(cmd_addr, CONST("0x140", 12)), "sscratch: [SRW] Supervisor register for supervisor trap handlers");
         SETVAL(comb.vb_rdata, ARRITEM(xmode, comb.iS, xmode->xscratch));
         IF (comb.v_csr_wena);
             SETARRITEM(xmode, comb.iS, xmode->xscratch, cmd_data);
         ENDIF();
-        ENDCASE();
-    CASE (CONST("0x141", 12), "sepc: [SRW] Supervisor exception program counter");
+    ELSIF (EQ(cmd_addr, CONST("0x141", 12)), "sepc: [SRW] Supervisor exception program counter");
         SETVAL(comb.vb_rdata, ARRITEM(xmode, comb.iS, xmode->xepc));
         IF (comb.v_csr_wena);
             SETARRITEM(xmode, comb.iS, xmode->xepc, BITS(cmd_data, DEC(cfg->CFG_CPU_ADDR_BITS), CONST("0")));
         ENDIF();
-        ENDCASE();
-    CASE (CONST("0x142", 12), "scause: [SRW] Supervisor trap cause");
+    ELSIF (EQ(cmd_addr, CONST("0x142", 12)), "scause: [SRW] Supervisor trap cause");
         SETBIT(comb.vb_rdata, 63, ARRITEM(xmode, comb.iS, xmode->xcause_irq));
         SETBITS(comb.vb_rdata, 4, 0, ARRITEM(xmode, comb.iS, xmode->xcause_code));
-        ENDCASE();
-    CASE (CONST("0x143", 12), "stval: [SRW] Supervisor bad address or instruction");
+    ELSIF (EQ(cmd_addr, CONST("0x143", 12)), "stval: [SRW] Supervisor bad address or instruction");
         SETVAL(comb.vb_rdata, ARRITEM(xmode, comb.iS, xmode->xtval));
         IF (comb.v_csr_wena);
             SETARRITEM(xmode, comb.iS, xmode->xtval, cmd_data);
         ENDIF();
-        ENDCASE();
-    CASE (CONST("0x144", 12), "sip: [SRW] Supervisor interrupt pending");
+    ELSIF (EQ(cmd_addr, CONST("0x144", 12)), "sip: [SRW] Supervisor interrupt pending");
         SETBITS(comb.vb_rdata, 15, 0, AND2_L(irq_pending, CONST("0x0222", 16)), "see fig 4.7. Only s-bits are visible");
         IF (comb.v_csr_wena);
             SETVAL(mip_ssip, BIT(cmd_data, cfg->IRQ_SSIP));
             SETVAL(mip_stip, BIT(cmd_data, cfg->IRQ_STIP));
             SETVAL(mip_seip, BIT(cmd_data, cfg->IRQ_SEIP));
         ENDIF();
-        ENDCASE();
     // Supervisor Proction and Translation
-    CASE (CONST("0x180", 12), "satp: [SRW] Supervisor address translation and protection");
+    ELSIF (EQ(cmd_addr, CONST("0x180", 12)), "satp: [SRW] Supervisor address translation and protection");
         TEXT("Writing unssoprted MODE[63:60], entire write has no effect");
         TEXT("    MODE = 0 Bare. No translation or protection");
         TEXT("    MODE = 9 Sv48. Page based 48-bit virtual addressing");
@@ -552,27 +532,20 @@ TEXT();
                 SETVAL(satp_mode, BITS(cmd_data, 63, 60));
             ENDIF();
         ENDIF();
-        ENDCASE();
-    CASE (CONST("0x5A8", 12), "scontext: [SRW] Supervisor-mode context register");
-        ENDCASE();
+    ELSIF (EQ(cmd_addr, CONST("0x5A8", 12)), "scontext: [SRW] Supervisor-mode context register");
     // Hypervisor not implemented
 
     // Machine Information Registers
-    CASE (CONST("0xF11", 12), "mvendorid: [MRO] Vendor ID");
+    ELSIF (EQ(cmd_addr, CONST("0xF11", 12)), "mvendorid: [MRO] Vendor ID");
         SETVAL(comb.vb_rdata, cfg->CFG_VENDOR_ID);
-        ENDCASE();
-    CASE (CONST("0xF12", 12), "marchid: [MRO] Architecture ID");
-        ENDCASE();
-    CASE (CONST("0xF13", 12), "mimplementationid: [MRO] Implementation ID");
+    ELSIF (EQ(cmd_addr, CONST("0xF12", 12)), "marchid: [MRO] Architecture ID");
+    ELSIF (EQ(cmd_addr, CONST("0xF13", 12)), "mimplementationid: [MRO] Implementation ID");
         SETVAL(comb.vb_rdata, cfg->CFG_IMPLEMENTATION_ID);
-        ENDCASE();
-    CASE (CONST("0xF14", 12), "mhartid: [MRO] Hardware thread ID");
+    ELSIF (EQ(cmd_addr, CONST("0xF14", 12)), "mhartid: [MRO] Hardware thread ID");
         SETBITS(comb.vb_rdata, 63, 0, hartid);
-        ENDCASE();
-    CASE (CONST("0xF15", 12), "mconfigptr: [MRO] Pointer to configuration data structure");
-        ENDCASE();
+    ELSIF (EQ(cmd_addr, CONST("0xF15", 12)), "mconfigptr: [MRO] Pointer to configuration data structure");
     // Machine Trap setup
-    CASE (CONST("0x300", 12), "mstatus: [MRW] Machine mode status register");
+    ELSIF (EQ(cmd_addr, CONST("0x300", 12)), "mstatus: [MRW] Machine mode status register");
         TEXT("[0] WPRI");
         SETBIT(comb.vb_rdata, 1, ARRITEM(xmode, comb.iS, xmode->xie));
         TEXT("[2] WPRI");
@@ -611,8 +584,7 @@ TEXT();
             SETVAL(mprv, BIT(cmd_data, 17));
             SETVAL(tvm, BIT(cmd_data, 20));
         ENDIF();
-        ENDCASE();
-    CASE (CONST("0x301", 12), "misa: [MRW] ISA and extensions");
+    ELSIF (EQ(cmd_addr, CONST("0x301", 12)), "misa: [MRW] ISA and extensions");
         TEXT("Base[XLEN-1:XLEN-2]");
         TEXT("     1 = 32");
         TEXT("     2 = 64");
@@ -655,22 +627,19 @@ TEXT();
         IF (cfg->CFG_HW_FPU_ENABLE);
             SETBITONE(comb.vb_rdata, 'D' - 'A', "D-extension");
         ENDIF();
-        ENDCASE();
-    CASE (CONST("0x302", 12), "medeleg: [MRW] Machine exception delegation");
+    ELSIF (EQ(cmd_addr, CONST("0x302", 12)), "medeleg: [MRW] Machine exception delegation");
         SETVAL(comb.vb_rdata, medeleg);
         IF (comb.v_csr_wena);
             TEXT("page 31. Read-only zero for exceptions that could not be delegated, especially Call from M-mode");
             SETVAL(medeleg, AND2_L(cmd_data, CONST("0xb3ff", 64)));
         ENDIF();
-        ENDCASE();
-    CASE (CONST("0x303", 12), "mideleg: [MRW] Machine interrupt delegation");
+    ELSIF (EQ(cmd_addr, CONST("0x303", 12)), "mideleg: [MRW] Machine interrupt delegation");
         SETVAL(comb.vb_rdata, mideleg);
         IF (comb.v_csr_wena);
             TEXT("No need to delegate machine interrupts to supervisor (but possible)");
             SETVAL(mideleg, AND2_L(BITS(cmd_data, DEC(cfg->IRQ_TOTAL), CONST("0")), CONST("0x222", 12)));
         ENDIF();
-        ENDCASE();
-    CASE (CONST("0x304", 12), "mie: [MRW] Machine interrupt enable bit");
+    ELSIF (EQ(cmd_addr, CONST("0x304", 12)), "mie: [MRW] Machine interrupt enable bit");
         SETBIT(comb.vb_rdata, DEC(cfg->IRQ_SSIP), ARRITEM(xmode, comb.iS, xmode->xsie));
         SETBIT(comb.vb_rdata, DEC(cfg->IRQ_MSIP), ARRITEM(xmode, comb.iM, xmode->xsie));
         SETBIT(comb.vb_rdata, DEC(cfg->IRQ_STIP), ARRITEM(xmode, comb.iS, xmode->xtie));
@@ -686,8 +655,7 @@ TEXT();
             SETARRITEM(xmode, comb.iS, xmode->xeie, BIT(cmd_data, cfg->IRQ_SEIP));
             SETARRITEM(xmode, comb.iM, xmode->xeie, BIT(cmd_data, cfg->IRQ_MEIP));
         ENDIF();
-        ENDCASE();
-    CASE (CONST("0x305", 12), "mtvec: [MRW] Machine trap-handler base address");
+    ELSIF (EQ(cmd_addr, CONST("0x305", 12)), "mtvec: [MRW] Machine trap-handler base address");
         SETVAL(comb.vb_rdata, ARRITEM(xmode, comb.iM, xmode->xtvec_off));
         SETBITS(comb.vb_rdata, 1, 0, ARRITEM(xmode, comb.iM, xmode->xtvec_mode));
         IF (NZ(comb.v_csr_wena));
@@ -695,108 +663,102 @@ TEXT();
                 CC2(BITS(cmd_data, DEC(cfg->RISCV_ARCH), CONST("2")), CONST("0", 2)));
             SETARRITEM(xmode, comb.iM, xmode->xtvec_mode, BITS(cmd_data, 1, 0));
         ENDIF();
-        ENDCASE();
-    CASE (CONST("0x306", 12), "mcounteren: [MRW] Machine counter enable");
+    ELSIF (EQ(cmd_addr, CONST("0x306", 12)), "mcounteren: [MRW] Machine counter enable");
         SETVAL(comb.vb_rdata, ARRITEM(xmode, comb.iM, xmode->xcounteren));
         IF (NZ(comb.v_csr_wena));
             SETARRITEM(xmode, comb.iM, xmode->xcounteren, BITS(cmd_data, 15, 0));
         ENDIF();
-        ENDCASE();
     // Machine Trap Handling
-    CASE (CONST("0x340", 12), "mscratch: [MRW] Machine scratch register");
+    ELSIF (EQ(cmd_addr, CONST("0x340", 12)), "mscratch: [MRW] Machine scratch register");
         SETVAL(comb.vb_rdata, ARRITEM(xmode, comb.iM, xmode->xscratch));
         IF (comb.v_csr_wena);
             SETARRITEM(xmode, comb.iM, xmode->xscratch, cmd_data);
         ENDIF();
-        ENDCASE();
-    CASE (CONST("0x341", 12), "mepc: [MRW] Machine program counter");
+    ELSIF (EQ(cmd_addr, CONST("0x341", 12)), "mepc: [MRW] Machine program counter");
         SETVAL(comb.vb_rdata, ARRITEM(xmode, comb.iM, xmode->xepc));
         IF (comb.v_csr_wena);
             SETARRITEM(xmode, comb.iM, xmode->xepc, BITS(cmd_data, DEC(cfg->CFG_CPU_ADDR_BITS), CONST("0")));
         ENDIF();
-        ENDCASE();
-    CASE (CONST("0x342", 12), "mcause: [MRW] Machine trap cause");
+    ELSIF (EQ(cmd_addr, CONST("0x342", 12)), "mcause: [MRW] Machine trap cause");
         SETBIT(comb.vb_rdata, 63, ARRITEM(xmode, comb.iM, xmode->xcause_irq));
         SETBITS(comb.vb_rdata, 4, 0, ARRITEM(xmode, comb.iM, xmode->xcause_code));
-        ENDCASE();
-    CASE (CONST("0x343", 12), "mtval: [MRW] Machine bad address or instruction");
+    ELSIF (EQ(cmd_addr, CONST("0x343", 12)), "mtval: [MRW] Machine bad address or instruction");
         SETVAL(comb.vb_rdata, ARRITEM(xmode, comb.iM, xmode->xtval));
         IF (comb.v_csr_wena);
             SETARRITEM(xmode, comb.iM, xmode->xtval, cmd_data);
         ENDIF();
-        ENDCASE();
-    CASE (CONST("0x344", 12), "mip: [MRW] Machine interrupt pending");
+    ELSIF (EQ(cmd_addr, CONST("0x344", 12)), "mip: [MRW] Machine interrupt pending");
         SETBITS(comb.vb_rdata, DEC(cfg->IRQ_TOTAL), CONST("0"), irq_pending);
         IF (comb.v_csr_wena);
             SETVAL(mip_ssip, BIT(cmd_data, cfg->IRQ_SSIP));
             SETVAL(mip_stip, BIT(cmd_data, cfg->IRQ_STIP));
             SETVAL(mip_seip, BIT(cmd_data, cfg->IRQ_SEIP));
         ENDIF();
-        ENDCASE();
-    CASE (CONST("0x34A", 12), "mtinst: [MRW] Machine trap instruction (transformed)");
-        ENDCASE();
-    CASE (CONST("0x34B", 12), "mtval2: [MRW] Machine bad guest physical register");
-        ENDCASE();
+    ELSIF (EQ(cmd_addr, CONST("0x34A", 12)), "mtinst: [MRW] Machine trap instruction (transformed)");
+    ELSIF (EQ(cmd_addr, CONST("0x34B", 12)), "mtval2: [MRW] Machine bad guest physical register");
     // Machine Configuration
-    CASE (CONST("0x30A", 12), "menvcfg: [MRW] Machine environment configuration register");
-        ENDCASE();
-    CASE (CONST("0x747", 12), "mseccfg: [MRW] Machine security configuration register");
-        ENDCASE();
+    ELSIF (EQ(cmd_addr, CONST("0x30A", 12)), "menvcfg: [MRW] Machine environment configuration register");
+    ELSIF (EQ(cmd_addr, CONST("0x747", 12)), "mseccfg: [MRW] Machine security configuration register");
     // Machine protection and tanslation
-    CASE (CONST("0x3A0", 12), "pmpcfg0: [MRW] Physical memory protection configuration");
-        ENDCASE();
-    CASE (CONST("0x3A2", 12), "pmpcfg2: [MRW] Physical memory protection configuration");
-        ENDCASE();
-    //..
-    CASE (CONST("0x3AE", 12), "pmpcfg14: [MRW] Physical memory protection configuration");
-        ENDCASE();
-    CASE (CONST("0x3B0", 12), "pmpaddr0: [MRW] Physical memory protection address register");
-        ENDCASE();
-    CASE (CONST("0x3B1", 12), "pmpaddr1: [MRW] Physical memory protection address register");
-        ENDCASE();
-    //..
-    CASE (CONST("0x3EF", 12), "pmpaddr63: [MRW] Physical memory protection address register");
-        ENDCASE();
+    ELSIF (EQ(BITS(cmd_addr, 11, 4), CONST("0x3A", 8)), "pmpcfg0..63: [MRW] Physical memory protection configuration");
+        IF (NZ(BIT(cmd_addr, 0)));
+            SETONE(cmd_exception, "RV32 only");
+        ELSIF(LS(comb.t_pmpcfgidx, cfg->CFG_MPU_TBL_SIZE));
+            i = &FOR("i", CONST("0"), CONST("8"), "++");
+                SETBITSW(comb.vb_rdata, MUL2(CONST("8"), *i), CONST("8"),
+                        ARRITEM(pmp, ADD2(comb.t_pmpcfgidx, *i), pmp->cfg));
+                IF (ANDx(2, &NZ(comb.v_csr_wena),
+                            &EZ(BIT(ARRITEM_B(pmp, ADD2(comb.t_pmpcfgidx, *i), pmp->cfg), 7))));
+                    TEXT("[7] Bit L = locked cannot be modified upto reset");
+                    SETARRITEM(pmp, ADD2(comb.t_pmpcfgidx, *i), pmp->cfg,
+                                BITSW(cmd_data, MUL2(CONST("8"), *i), CONST("8")));
+                    SETBITONE(comb.vb_pmp_upd_ena, ADD2(comb.t_pmpcfgidx, *i));
+                    SETZERO(pmp_upd_cnt);
+                ENDIF();
+            ENDFOR();
+        ENDIF();
+    ELSIF (ANDx(2, &GE(cmd_addr, CONST("0x3B0", 12)),
+                   &LE(cmd_addr, CONST("0x3EF", 12))));
+        TEXT("pmpaddr0..63: [MRW] Physical memory protection address register");
+        IF (LS(comb.t_pmpdataidx, cfg->CFG_MPU_TBL_SIZE));
+            SETBITS(comb.vb_rdata, 53, 0, ARRITEM(pmp, comb.t_pmpdataidx, pmp->addr));
+                IF (ANDx(2, &NZ(comb.v_csr_wena),
+                            &EZ(BIT(ARRITEM_B(pmp, comb.t_pmpdataidx, pmp->cfg), 7))));
+                SETARRITEM(pmp, comb.t_pmpdataidx, pmp->addr, BITS(cmd_data, 53, 0));
+                SETBITONE(comb.vb_pmp_upd_ena, comb.t_pmpdataidx);
+                SETZERO(pmp_upd_cnt);
+            ENDIF();
+        ENDIF();
+    ELSIF (LE(cmd_addr, CONST("0x3EF", 12)), "pmpaddr63: [MRW] Physical memory protection address register");
     // Machine Counter/Timers
-    CASE (CONST("0xB00", 12), "mcycle: [MRW] Machine cycle counter");
+    ELSIF (EQ(cmd_addr, CONST("0xB00", 12)), "mcycle: [MRW] Machine cycle counter");
         SETVAL(comb.vb_rdata, mcycle_cnt);
         IF (comb.v_csr_wena);
             SETVAL(mcycle_cnt, cmd_data);
         ENDIF();
-        ENDCASE();
-    CASE (CONST("0xB02", 12), "minstret: [MRW] Machine instructions-retired counter");
+    ELSIF (EQ(cmd_addr, CONST("0xB02", 12)), "minstret: [MRW] Machine instructions-retired counter");
         SETVAL(comb.vb_rdata, minstret_cnt);
         IF (comb.v_csr_wena);
             SETVAL(minstret_cnt, cmd_data);
         ENDIF();
-        ENDCASE();
     // Machine counter setup
-    CASE (CONST("0x320", 12), "mcountinhibit: [MRW] Machine counter-inhibit register");
+    ELSIF (EQ(cmd_addr, CONST("0x320", 12)), "mcountinhibit: [MRW] Machine counter-inhibit register");
         SETVAL(comb.vb_rdata, mcountinhibit);
         IF (NZ(comb.v_csr_wena));
             SETVAL(mcountinhibit, BITS(cmd_data, 15, 0));
         ENDIF();
-        ENDCASE();
-    CASE (CONST("0x323", 12), "mpevent3: [MRW] Machine performance-monitoring event selector");
-        ENDCASE();
-    CASE (CONST("0x324", 12), "mpevent4: [MRW] Machine performance-monitoring event selector");
-        ENDCASE();
+    ELSIF (EQ(cmd_addr, CONST("0x323", 12)), "mpevent3: [MRW] Machine performance-monitoring event selector");
+    ELSIF (EQ(cmd_addr, CONST("0x324", 12)), "mpevent4: [MRW] Machine performance-monitoring event selector");
     //..
-    CASE (CONST("0x33F", 12), "mpevent31: [MRW] Machine performance-monitoring event selector");
-        ENDCASE();
+    ELSIF (EQ(cmd_addr, CONST("0x33F", 12)), "mpevent31: [MRW] Machine performance-monitoring event selector");
     // Debug/Trace Registers (shared with Debug Mode)
-    CASE (CONST("0x7A0", 12), "tselect: [MRW] Debug/Trace trigger register select");
-        ENDCASE();
-    CASE (CONST("0x7A1", 12), "tdata1: [MRW] First Debug/Trace trigger data register");
-        ENDCASE();
-    CASE (CONST("0x7A2", 12), "tdata2: [MRW] Second Debug/Trace trigger data register");
-        ENDCASE();
-    CASE (CONST("0x7A3", 12), "tdata3: [MRW] Third Debug/Trace trigger data register");
-        ENDCASE();
-    CASE (CONST("0x7A8", 12), "mcontext: [MRW] Machine-mode context register");
-        ENDCASE();
+    ELSIF (EQ(cmd_addr, CONST("0x7A0", 12)), "tselect: [MRW] Debug/Trace trigger register select");
+    ELSIF (EQ(cmd_addr, CONST("0x7A1", 12)), "tdata1: [MRW] First Debug/Trace trigger data register");
+    ELSIF (EQ(cmd_addr, CONST("0x7A2", 12)), "tdata2: [MRW] Second Debug/Trace trigger data register");
+    ELSIF (EQ(cmd_addr, CONST("0x7A3", 12)), "tdata3: [MRW] Third Debug/Trace trigger data register");
+    ELSIF (EQ(cmd_addr, CONST("0x7A8", 12)), "mcontext: [MRW] Machine-mode context register");
     // Debug Mode registers
-    CASE (CONST("0x7B0", 12), "dcsr: [DRW] Debug control and status register");
+    ELSIF (EQ(cmd_addr, CONST("0x7B0", 12)), "dcsr: [DRW] Debug control and status register");
         SETBITS(comb.vb_rdata, 31, 28, CONST("4", 4), "xdebugver: 4=External debug supported");
         SETBIT(comb.vb_rdata, 15, dcsr_ebreakm);
         SETBIT(comb.vb_rdata, 11, dcsr_stepie, "interrupt dis/ena during step");
@@ -812,8 +774,7 @@ TEXT();
             SETVAL(dcsr_stoptimer, BIT(cmd_data, 9));
             SETVAL(dcsr_step, BIT(cmd_data, 2));
         ENDIF();
-        ENDCASE();
-    CASE (CONST("0x7B1", 12), "dpc: [DRW] Debug PC");
+    ELSIF (EQ(cmd_addr, CONST("0x7B1", 12)), "dpc: [DRW] Debug PC");
         TEXT("Upon entry into debug mode DPC must contains:");
         TEXT("       cause        |   Address");
         TEXT("--------------------|----------------");
@@ -831,63 +792,48 @@ TEXT();
         IF (NZ(comb.v_csr_wena));
             SETVAL(dpc, cmd_data);
         ENDIF();
-        ENDCASE();
-    CASE (CONST("0x7B2", 12), "dscratch0: [DRW] Debug scratch register 0");
+    ELSIF (EQ(cmd_addr, CONST("0x7B2", 12)), "dscratch0: [DRW] Debug scratch register 0");
         SETVAL(comb.vb_rdata, dscratch0);
         IF (NZ(comb.v_csr_wena));
             SETVAL(dscratch0, cmd_data);
         ENDIF();
-        ENDCASE();
-    CASE (CONST("0x7B3", 12), "dscratch1: [DRW] Debug scratch register 1");
+    ELSIF (EQ(cmd_addr, CONST("0x7B3", 12)), "dscratch1: [DRW] Debug scratch register 1");
         SETVAL(comb.vb_rdata, dscratch1);
         IF (comb.v_csr_wena);
             SETVAL(dscratch1, cmd_data);
         ENDIF();
-        ENDCASE();
     // River specific CSRs
-    CASE (CONST("0xBC0", 12), "mstackovr: [MRW] Machine Stack Overflow");
+    ELSIF (EQ(cmd_addr, CONST("0xBC0", 12)), "mstackovr: [MRW] Machine Stack Overflow");
         SETVAL(comb.vb_rdata, mstackovr);
         IF (NZ(comb.v_csr_wena));
             SETVAL(mstackovr, BITS(cmd_data, DEC(cfg->CFG_CPU_ADDR_BITS), CONST("0")));
         ENDIF();
-        ENDCASE();
-    CASE (CONST("0xBC1", 12), "mstackund: [MRW] Machine Stack Underflow");
+    ELSIF (EQ(cmd_addr, CONST("0xBC1", 12)), "mstackund: [MRW] Machine Stack Underflow");
         SETVAL(comb.vb_rdata, mstackund);
         IF (NZ(comb.v_csr_wena));
             SETVAL(mstackund, BITS(cmd_data, DEC(cfg->CFG_CPU_ADDR_BITS), CONST("0")));
         ENDIF();
-        ENDCASE();
-    CASE (CONST("0xBC2", 12), "mpu_addr: [MWO] MPU address");
+    ELSIF (EQ(cmd_addr, CONST("0xBC2", 12)), "mpu_addr: [MWO] MPU address");
         IF (NZ(comb.v_csr_wena));
             SETVAL(mpu_addr, BITS(cmd_data, DEC(cfg->CFG_CPU_ADDR_BITS), CONST("0")));
         ENDIF();
-        ENDCASE();
-    CASE (CONST("0xBC3", 12), "mpu_mask: [MWO] MPU mask");
+    ELSIF (EQ(cmd_addr, CONST("0xBC3", 12)), "mpu_mask: [MWO] MPU mask");
         IF (NZ(comb.v_csr_wena));
             SETVAL(mpu_mask, BITS(cmd_data, DEC(cfg->CFG_CPU_ADDR_BITS), CONST("0")));
         ENDIF();
-        ENDCASE();
-    CASE (CONST("0xBC4", 12), "mpu_ctrl: [MRW] MPU flags and write ena");
+    ELSIF (EQ(cmd_addr, CONST("0xBC4", 12)), "mpu_ctrl: [MRW] MPU flags and write ena");
         SETVAL(comb.vb_rdata, CC2(cfg->CFG_MPU_TBL_SIZE, CONST("0", 8)));
         IF (NZ(comb.v_csr_wena));
             SETVAL(mpu_idx, BITS(cmd_data, ADD2(CONST("8"), DEC(cfg->CFG_MPU_TBL_WIDTH)), CONST("8")));
             SETVAL(mpu_flags, BITS(cmd_data, DEC(cfg->CFG_MPU_FL_TOTAL), CONST("0")));
             SETVAL(mpu_we, BIT(cmd_data, 7));
         ENDIF();
-        ENDCASE();
-//    CASE (CONST("0x800", 12), "flushi: [UWO]");
-//        IF (NZ(comb.v_csr_wena));
-//            SETONE(flushi_ena);
-//            SETVAL(flushi_addr, BITS(cmd_data, DEC(cfg->CFG_CPU_ADDR_BITS), CONST("0")));
-//        ENDIF();
-//        ENDCASE();
-    CASEDEF();
+    ELSE();
         TEXT("Not implemented CSR:");
         IF (EQ(state, State_RW));
             SETONE(cmd_exception);
         ENDIF();
-        ENDCASE();
-    ENDSWITCH();
+    ENDIF();
 
 TEXT();
     IF (NZ(comb.v_csr_rena));
@@ -979,6 +925,16 @@ TEXT();
     SETBIT(comb.vb_pending, cfg->IRQ_SEIP, AND2(OR2(BIT(i_irq_pending, cfg->IRQ_SEIP), mip_seip),
                                                 ARRITEM(xmode, comb.iS, xmode->xeie)));
     SETVAL(irq_pending, comb.vb_pending);
+
+TEXT();
+    TEXT("Transmit data to MPU");
+    IF (NZ(pmp_upd_ena));
+        SETBITZERO(comb.vb_pmp_upd_ena, TO_INT(pmp_upd_cnt));
+        SETVAL(pmp_upd_cnt, INC(pmp_upd_cnt));
+    ELSE();
+        SETZERO(pmp_upd_cnt);
+    ENDIF();
+    SETVAL(pmp_upd_ena, comb.vb_pmp_upd_ena);
 
 TEXT();
     SETZERO(comb.w_mstackovr);
