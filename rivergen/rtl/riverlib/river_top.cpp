@@ -98,11 +98,11 @@ RiverTop::RiverTop(GenObject *parent, const char *name) :
     wb_mpu_region_addr(this, "wb_mpu_region_addr", "CFG_CPU_ADDR_BITS"),
     wb_mpu_region_mask(this, "wb_mpu_region_mask", "CFG_CPU_ADDR_BITS"),
     wb_mpu_region_flags(this, "wb_mpu_region_flags", "CFG_MPU_FL_TOTAL"),
-    wb_flush_address(this, "wb_flush_address", "CFG_CPU_ADDR_BITS"),
-    w_flush_valid(this, "w_flush_valid", "1"),
-    wb_data_flush_address(this, "wb_data_flush_address", "CFG_CPU_ADDR_BITS"),
-    w_data_flush_valid(this, "w_data_flush_valid", "1"),
-    w_data_flush_end(this, "w_data_flush_end", "1"),
+    w_flushi_valid(this, "w_flushi_valid", "1"),
+    wb_flushi_addr(this, "wb_flushi_addr", "CFG_CPU_ADDR_BITS"),
+    w_flushd_valid(this, "w_flushd_valid", "1"),
+    wb_flushd_addr(this, "wb_flushd_addr", "CFG_CPU_ADDR_BITS"),
+    w_flushd_end(this, "w_flushd_end", "1"),
     proc0(this, "proc0"),
     cache0(this, "cache0"),
     comb(this)
@@ -156,11 +156,11 @@ RiverTop::RiverTop(GenObject *parent, const char *name) :
         CONNECT(proc0, 0, proc0.o_dport_rdata, o_dport_rdata);
         CONNECT(proc0, 0, proc0.i_progbuf, i_progbuf);
         CONNECT(proc0, 0, proc0.o_halted, o_halted);
-        CONNECT(proc0, 0, proc0.o_flush_address, wb_flush_address);
-        CONNECT(proc0, 0, proc0.o_flush_valid, w_flush_valid);
-        CONNECT(proc0, 0, proc0.o_data_flush_address, wb_data_flush_address);
-        CONNECT(proc0, 0, proc0.o_data_flush_valid, w_data_flush_valid);
-        CONNECT(proc0, 0, proc0.i_data_flush_end, w_data_flush_end);
+        CONNECT(proc0, 0, proc0.o_flushi_valid, w_flushi_valid);
+        CONNECT(proc0, 0, proc0.o_flushi_addr, wb_flushi_addr);
+        CONNECT(proc0, 0, proc0.o_flushd_valid, w_flushd_valid);
+        CONNECT(proc0, 0, proc0.o_flushd_addr, wb_flushd_addr);
+        CONNECT(proc0, 0, proc0.i_flushd_end, w_flushd_end);
     ENDNEW();
 
     NEW(cache0, cache0.getName().c_str());
@@ -215,11 +215,11 @@ RiverTop::RiverTop(GenObject *parent, const char *name) :
         CONNECT(cache0, 0, cache0.o_resp_snoop_valid, o_resp_snoop_valid);
         CONNECT(cache0, 0, cache0.o_resp_snoop_data, o_resp_snoop_data);
         CONNECT(cache0, 0, cache0.o_resp_snoop_flags, o_resp_snoop_flags);
-        CONNECT(cache0, 0, cache0.i_flush_address, wb_flush_address);
-        CONNECT(cache0, 0, cache0.i_flush_valid, w_flush_valid);
-        CONNECT(cache0, 0, cache0.i_data_flush_address, wb_data_flush_address);
-        CONNECT(cache0, 0, cache0.i_data_flush_valid, w_data_flush_valid);
-        CONNECT(cache0, 0, cache0.o_data_flush_end, w_data_flush_end);
+        CONNECT(cache0, 0, cache0.i_flushi_valid, w_flushi_valid);
+        CONNECT(cache0, 0, cache0.i_flushi_addr, wb_flushi_addr);
+        CONNECT(cache0, 0, cache0.i_flushd_valid, w_flushd_valid);
+        CONNECT(cache0, 0, cache0.i_flushd_addr, wb_flushd_addr);
+        CONNECT(cache0, 0, cache0.o_flushd_end, w_flushd_end);
     ENDNEW();
 
     Operation::start(&comb);
@@ -227,5 +227,5 @@ RiverTop::RiverTop(GenObject *parent, const char *name) :
 }
 
 void RiverTop::proc_comb() {
-    SETVAL(o_flush_l2, w_data_flush_end);
+    SETVAL(o_flush_l2, w_flushd_end);
 }

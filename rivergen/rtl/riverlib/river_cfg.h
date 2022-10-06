@@ -90,7 +90,7 @@ class river_cfg : public FileObject {
             add_value("Instr_FENCE");
             add_value("Instr_FENCE_I");
             add_value("Instr_WFI");
-//            add_value("Instr_SFENCE_VMA");
+            add_value("Instr_SFENCE_VMA");
 //            add_value("Instr_SINVAL_VMA");
 //            add_value("Instr_SFENCE_W_INVAL");
 //            add_value("Instr_SFENCE_INVAL_IR");

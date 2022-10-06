@@ -92,11 +92,11 @@ class Processor : public ModuleObject {
     InPort i_progbuf;
     OutPort o_halted;
     TextLine _CacheDbg0_;
-    OutPort o_flush_address;
-    OutPort o_flush_valid;
-    OutPort o_data_flush_address;
-    OutPort o_data_flush_valid;
-    InPort i_data_flush_end;
+    OutPort o_flushi_valid;
+    OutPort o_flushi_addr;
+    OutPort o_flushd_valid;
+    OutPort o_flushd_addr;
+    InPort i_flushd_end;
 
     class CombProcess : public ProcObject {
      public:
@@ -357,6 +357,7 @@ class Processor : public ModuleObject {
         resp_exception(this, "resp_exception", "1", "0", "Exception of CSR access"),
         flushd_valid(this, "flushd_valid", "1", "0", "clear specified addr in D$"),
         flushi_valid(this, "flushi_valid", "1", "0", "clear specified addr in I$"),
+        flushmmu_valid(this, "flushmmu_valid", "1", "0", "clear specified leaf in xMMU"),
         flush_addr(this, "flush_addr", "CFG_CPU_ADDR_BITS"),
         executed_cnt(this, "executed_cnt", "64", "0", "Number of executed instruction"),
         irq_pending(this, "irq_pending", "IRQ_TOTAL"),
@@ -373,6 +374,7 @@ class Processor : public ModuleObject {
         Signal resp_exception;
         Signal flushd_valid;
         Signal flushi_valid;
+        Signal flushmmu_valid;
         Signal flush_addr;
         Signal executed_cnt;
         Signal irq_pending;
@@ -507,7 +509,6 @@ class Processor : public ModuleObject {
     Signal unused_immu_core_req_wstrb;
     Signal unused_immu_core_req_size;
     Signal unused_immu_mem_resp_store_fault;
-    Signal unused_immu_fence_addr;
 
     CombProcess comb;
 

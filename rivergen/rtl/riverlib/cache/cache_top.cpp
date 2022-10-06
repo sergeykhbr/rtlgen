@@ -75,11 +75,11 @@ CacheTop::CacheTop(GenObject *parent, const char *name) :
     o_resp_snoop_data(this, "o_resp_snoop_data", "L1CACHE_LINE_BITS"),
     o_resp_snoop_flags(this, "o_resp_snoop_flags", "DTAG_FL_TOTAL"),
     _DebugSignals0_(this, "Debug signals:"),
-    i_flush_address(this, "i_flush_address", "CFG_CPU_ADDR_BITS", "clear ICache address from debug interface"),
-    i_flush_valid(this, "i_flush_valid", "1", "address to clear icache is valid"),
-    i_data_flush_address(this, "i_data_flush_address", "CFG_CPU_ADDR_BITS", ""),
-    i_data_flush_valid(this, "i_data_flush_valid"),
-    o_data_flush_end(this, "o_data_flush_end"),
+    i_flushi_valid(this, "i_flushi_valid", "1", "address to clear icache is valid"),
+    i_flushi_addr(this, "i_flushi_addr", "CFG_CPU_ADDR_BITS", "clear ICache address from debug interface"),
+    i_flushd_valid(this, "i_flushd_valid", "1"),
+    i_flushd_addr(this, "i_flushd_addr", "CFG_CPU_ADDR_BITS", ""),
+    o_flushd_end(this, "o_flushd_end", "1"),
     // Params
     DATA_PATH(this, "DATA_PATH", "0"),
     CTRL_PATH(this, "CTRL_PATH", "1"),
@@ -144,8 +144,8 @@ CacheTop::CacheTop(GenObject *parent, const char *name) :
         CONNECT(i1, 0, i1.i_mem_load_fault, w_ctrl_resp_mem_load_fault);
         CONNECT(i1, 0, i1.o_mpu_addr, i.mpu_addr);
         CONNECT(i1, 0, i1.i_mpu_flags, wb_mpu_iflags);
-        CONNECT(i1, 0, i1.i_flush_address, i_flush_address);
-        CONNECT(i1, 0, i1.i_flush_valid, i_flush_valid);
+        CONNECT(i1, 0, i1.i_flush_address, i_flushi_addr);
+        CONNECT(i1, 0, i1.i_flush_valid, i_flushi_valid);
     ENDNEW();
 
     NEW(d0, d0.getName().c_str());
@@ -186,9 +186,9 @@ CacheTop::CacheTop(GenObject *parent, const char *name) :
         CONNECT(d0, 0, d0.o_resp_snoop_valid, o_resp_snoop_valid);
         CONNECT(d0, 0, d0.o_resp_snoop_data, o_resp_snoop_data);
         CONNECT(d0, 0, d0.o_resp_snoop_flags, o_resp_snoop_flags);
-        CONNECT(d0, 0, d0.i_flush_address, i_data_flush_address);
-        CONNECT(d0, 0, d0.i_flush_valid, i_data_flush_valid);
-        CONNECT(d0, 0, d0.o_flush_end, o_data_flush_end);
+        CONNECT(d0, 0, d0.i_flush_address, i_flushd_addr);
+        CONNECT(d0, 0, d0.i_flush_valid, i_flushd_valid);
+        CONNECT(d0, 0, d0.o_flush_end, o_flushd_end);
     ENDNEW();
 
     NEW(mpu0, mpu0.getName().c_str());

@@ -52,7 +52,7 @@ Processor::Processor(GenObject *parent, const char *name) :
     _Interrupts0_(this, "Interrupt line from external interrupts controller (PLIC):"),
     i_irq_pending(this, "i_irq_pending", "IRQ_TOTAL", "Per Hart pending interrupts pins"),
     _MpuInterface0_(this, "MPU interface"),
-    o_mpu_region_we(this, "o_mpu_region_we"),
+    o_mpu_region_we(this, "o_mpu_region_we", "1"),
     o_mpu_region_idx(this, "o_mpu_region_idx", "CFG_MPU_TBL_WIDTH"),
     o_mpu_region_addr(this, "o_mpu_region_addr", "CFG_CPU_ADDR_BITS"),
     o_mpu_region_mask(this, "o_mpu_region_mask", "CFG_CPU_ADDR_BITS"),
@@ -65,7 +65,7 @@ Processor::Processor(GenObject *parent, const char *name) :
     i_dport_addr(this, "i_dport_addr", "CFG_CPU_ADDR_BITS", "dport address"),
     i_dport_wdata(this, "i_dport_wdata", "RISCV_ARCH", "Write value"),
     i_dport_size(this, "i_dport_size", "3", "reg/mem access size:0=1B;...,4=128B;"),
-    o_dport_req_ready(this, "o_dport_req_ready"),
+    o_dport_req_ready(this, "o_dport_req_ready", "1"),
     i_dport_resp_ready(this, "i_dport_resp_ready", "1", "ready to accepd response"),
     o_dport_resp_valid(this, "o_dport_resp_valid", "1", "Response is valid"),
     o_dport_resp_error(this, "o_dport_resp_error", "1", "Something wrong during command execution"),
@@ -73,11 +73,11 @@ Processor::Processor(GenObject *parent, const char *name) :
     i_progbuf(this, "i_progbuf", "MUL(32,CFG_PROGBUF_REG_TOTAL)", "progam buffer"),
     o_halted(this, "o_halted", "1", "CPU halted via debug interface"),
     _CacheDbg0_(this, "Cache debug signals:"),
-    o_flush_address(this, "o_flush_address", "CFG_CPU_ADDR_BITS", "Address of instruction to remove from ICache"),
-    o_flush_valid(this, "o_flush_valid", "1", "Remove address from ICache is valid"),
-    o_data_flush_address(this, "o_data_flush_address", "CFG_CPU_ADDR_BITS", "Address of instruction to remove from D$"),
-    o_data_flush_valid(this, "o_data_flush_valid", "1", "Remove address from D$ is valid"),
-    i_data_flush_end(this, "i_data_flush_end"),
+    o_flushi_valid(this, "o_flushi_valid", "1", "Remove address from ICache is valid"),
+    o_flushi_addr(this, "o_flushi_addr", "CFG_CPU_ADDR_BITS", "Address of instruction to remove from ICache"),
+    o_flushd_valid(this, "o_flushd_valid", "1", "Remove address from D$ is valid"),
+    o_flushd_addr(this, "o_flushd_addr", "CFG_CPU_ADDR_BITS", "Address of instruction to remove from D$"),
+    i_flushd_end(this, "i_flushd_end", "1"),
     // struct declration
     FetchTypeDef_(this),
     MmuTypeDef_(this),
@@ -140,7 +140,6 @@ Processor::Processor(GenObject *parent, const char *name) :
     unused_immu_core_req_wstrb(this, "unused_immu_core_req_wstrb", "8"),
     unused_immu_core_req_size(this, "unused_immu_core_req_size", "2"),
     unused_immu_mem_resp_store_fault(this, "unused_immu_mem_resp_store_fault", "1"),
-    unused_immu_fence_addr(this, "unused_immu_fence_addr", "CFG_MMU_TLB_AWIDTH"),
     // process
     comb(this),
     // sub-modules
@@ -195,8 +194,8 @@ Processor::Processor(GenObject *parent, const char *name) :
         CONNECT(immu0, 0, immu0.o_mem_resp_ready, o_resp_ctrl_ready);
         CONNECT(immu0, 0, immu0.i_mmu_ena, w_immu_ena);
         CONNECT(immu0, 0, immu0.i_mmu_ppn, wb_mmu_ppn);
-        CONNECT(immu0, 0, immu0.i_fence, csr.flushi_valid);
-        CONNECT(immu0, 0, immu0.i_fence_addr, unused_immu_fence_addr);
+        CONNECT(immu0, 0, immu0.i_fence, csr.flushmmu_valid);
+        CONNECT(immu0, 0, immu0.i_fence_addr, csr.flush_addr);
     ENDNEW();
 
     NEW(fetch0, fetch0.getName().c_str());
@@ -420,8 +419,8 @@ Processor::Processor(GenObject *parent, const char *name) :
         CONNECT(dmmu0, 0, dmmu0.o_mem_resp_ready, o_resp_data_ready);
         CONNECT(dmmu0, 0, dmmu0.i_mmu_ena, w.m.dmmu_ena);
         CONNECT(dmmu0, 0, dmmu0.i_mmu_ppn, wb_mmu_ppn);
-        CONNECT(dmmu0, 0, dmmu0.i_fence, csr.flushi_valid);
-        CONNECT(dmmu0, 0, dmmu0.i_fence_addr, unused_immu_fence_addr);
+        CONNECT(dmmu0, 0, dmmu0.i_fence, csr.flushmmu_valid);
+        CONNECT(dmmu0, 0, dmmu0.i_fence_addr, csr.flush_addr);
     ENDNEW();
 
 
@@ -524,7 +523,7 @@ Processor::Processor(GenObject *parent, const char *name) :
         CONNECT(csr0, 0, csr0.i_f_flush_ready, w_f_flush_ready);
         CONNECT(csr0, 0, csr0.i_e_valid, w.e.valid);
         CONNECT(csr0, 0, csr0.i_m_memop_ready, w.m.memop_ready);
-        CONNECT(csr0, 0, csr0.i_flushd_end, i_data_flush_end);
+        CONNECT(csr0, 0, csr0.i_flushd_end, i_flushd_end);
         CONNECT(csr0, 0, csr0.i_mtimer, i_mtimer);
         CONNECT(csr0, 0, csr0.o_executed_cnt, csr.executed_cnt);
         CONNECT(csr0, 0, csr0.o_step, csr.step);
@@ -533,6 +532,7 @@ Processor::Processor(GenObject *parent, const char *name) :
         CONNECT(csr0, 0, csr0.o_progbuf_error, csr.progbuf_error);
         CONNECT(csr0, 0, csr0.o_flushd_valid, csr.flushd_valid);
         CONNECT(csr0, 0, csr0.o_flushi_valid, csr.flushi_valid);
+        CONNECT(csr0, 0, csr0.o_flushmmu_valid, csr.flushmmu_valid);
         CONNECT(csr0, 0, csr0.o_flush_addr, csr.flush_addr);
         CONNECT(csr0, 0, csr0.o_mpu_region_we, o_mpu_region_we);
         CONNECT(csr0, 0, csr0.o_mpu_region_idx, o_mpu_region_idx);
@@ -651,11 +651,10 @@ void Processor::proc_comb() {
     SETZERO(unused_immu_core_req_wstrb);
     SETZERO(unused_immu_core_req_size);
     SETZERO(unused_immu_mem_resp_store_fault);
-    SETZERO(unused_immu_fence_addr);
 
-    SETVAL(o_flush_valid, csr.flushi_valid);
-    SETVAL(o_flush_address, csr.flush_addr);
-    SETVAL(o_data_flush_address, ALLONES());
-    SETVAL(o_data_flush_valid, w.m.flushd);
+    SETVAL(o_flushi_valid, csr.flushi_valid);
+    SETVAL(o_flushi_addr, csr.flush_addr);
+    SETVAL(o_flushd_addr, ALLONES());
+    SETVAL(o_flushd_valid, w.m.flushd);
     SETVAL(o_halted, w.e.halted);
 }

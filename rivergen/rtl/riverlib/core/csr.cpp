@@ -52,6 +52,7 @@ CsrRegs::CsrRegs(GenObject *parent, const char *name) :
     o_progbuf_error(this, "o_progbuf_error", "1", "exception during progbuf execution"),
     o_flushd_valid(this, "o_flushd_valid", "1", "clear specified addr in DCache"),
     o_flushi_valid(this, "o_flushi_valid", "1", "clear specified addr in ICache"),
+    o_flushmmu_valid(this, "o_flushmmu_valid", "1", "clear specific leaf entry in MMU"),
     o_flush_addr(this, "o_flush_addr", "CFG_CPU_ADDR_BITS", "Cache address to flush. All ones means flush all."),
     _io1_(this),
     o_mpu_region_we(this, "o_mpu_region_we", "1", "write enable into MPU"),
@@ -80,7 +81,8 @@ CsrRegs::CsrRegs(GenObject *parent, const char *name) :
     Fence_Data(this, "3", "Fence_Data", "1"),
     Fence_DataWaitEnd(this, "3", "Fence_DataWaitEnd", "2"),
     Fence_Fetch(this, "3", "Fence_Fetch", "3"),
-    Fence_End(this, "3", "Fence_End", "4"),
+    Fence_MMU(this, "3", "Fence_MMU", "4"),
+    Fence_End(this, "3", "Fence_End", "5"),
     _fence1_(this),
     SATP_MODE_SV48(this, "4", "SATP_MODE_SV48", "9", "48-bits Page mode"),
     // struct definitions
@@ -115,6 +117,7 @@ CsrRegs::CsrRegs(GenObject *parent, const char *name) :
     satp_mode(this, "satp_mode", "4", "0", "Supervisor Address Translation and Protection mode"),
     mode(this, "mode", "2", "PRV_M"),
     mprv(this, "mprv", "1", "0", "Modify PRiVilege. (Table 8.5) If MPRV=0, load and stores as normal, when MPRV=1, use translation of previous mode"),
+    tvm(this, "tvm", "1", "0", "Trap Virtual Memory bit. When 1 SFENCE.VMA or SINVAL.VMA or rw access to SATP raise an illegal instruction"),
     ex_fpu_invalidop(this, "ex_fpu_invalidop", "1", "0", "FPU Exception: invalid operation"),
     ex_fpu_divbyzero(this, "ex_fpu_divbyzero", "1", "0", "FPU Exception: divide by zero"),
     ex_fpu_overflow(this, "ex_fpu_overflow", "1", "0", "FPU Exception: overflow"),
@@ -190,7 +193,17 @@ TEXT();
                 SETVAL(state, State_Wfi);
             ELSIF (NZ(BIT(i_req_type, cfg->CsrReq_FenceBit)));
                 SETVAL(state, State_Fence);
-                SETVAL(fencestate, Fence_Data);
+                IF (NZ(BITS(i_req_addr, 1, 0)));
+                    TEXT("FENCE or FENCE.I");
+                    SETVAL(fencestate, Fence_Data);
+                ELSIF(AND3(NZ(BIT(i_req_addr,2)), EZ(tvm), NE(mode, cfg->PRV_S)));
+                    TEXT("FENCE.VMA: is illegal in S-mode when TVM bit=1");
+                    SETVAL(fencestate, Fence_MMU);
+                ELSE();
+                    TEXT("Illegal fence");
+                    SETVAL(state, State_Response);
+                    SETONE(cmd_exception);
+                ENDIF();
             ELSE();
                 SETVAL(state, State_RW);
             ENDIF();
@@ -308,8 +321,11 @@ TEXT();
         IF(NZ(i_flushd_end));
             TEXT("[0] flush data");
             TEXT("[1] flush fetch");
+            TEXT("[2] flush mmu");
             IF (NZ(BIT(cmd_addr, 1)));
                 SETVAL(fencestate, Fence_Fetch);
+            ELSIF (NZ(BIT(cmd_addr, 2)));
+                SETVAL(fencestate, Fence_MMU);
             ELSE();
                 SETVAL(fencestate, Fence_End);
             ENDIF();
@@ -318,8 +334,16 @@ TEXT();
     CASE (Fence_Fetch);
         SETONE(comb.v_flushi);
         IF (NZ(i_f_flush_ready));
-            SETVAL(fencestate, Fence_End);
+            IF (NZ(BIT(cmd_addr, 2)));
+                SETVAL(fencestate, Fence_MMU);
+            ELSE();
+                SETVAL(fencestate, Fence_End);
+            ENDIF();
         ENDIF();
+        ENDCASE();
+    CASE (Fence_MMU);
+        SETONE(comb.v_flushmmu);
+        SETVAL(fencestate, Fence_End);
         ENDCASE();
     CASE (Fence_End);
         ENDCASE();
@@ -513,13 +537,18 @@ TEXT();
         TEXT("Writing unssoprted MODE[63:60], entire write has no effect");
         TEXT("    MODE = 0 Bare. No translation or protection");
         TEXT("    MODE = 9 Sv48. Page based 48-bit virtual addressing");
-        SETBITS(comb.vb_rdata, 43, 0, satp_ppn);
-        SETBITS(comb.vb_rdata, 63, 60, satp_mode);
-        IF (ANDx(2, &NZ(comb.v_csr_wena),
-                    &ORx(2, &EZ(BITS(cmd_data, 63, 60)),
-                            &EQ(TO_U32(BITS(cmd_data, 63, 60)), SATP_MODE_SV48))));
-            SETVAL(satp_ppn, BITS(cmd_data, 43, 0));
-            SETVAL(satp_mode, BITS(cmd_data, 63, 60));
+        IF (AND2(NZ(tvm), EQ(mode, cfg->PRV_S)));
+            TEXT("SATP is illegal in S-mode when TVM=1");
+            SETONE(cmd_exception);
+        ELSE();
+            SETBITS(comb.vb_rdata, 43, 0, satp_ppn);
+            SETBITS(comb.vb_rdata, 63, 60, satp_mode);
+            IF (ANDx(2, &NZ(comb.v_csr_wena),
+                        &ORx(2, &EZ(BITS(cmd_data, 63, 60)),
+                                &EQ(TO_U32(BITS(cmd_data, 63, 60)), SATP_MODE_SV48))));
+                SETVAL(satp_ppn, BITS(cmd_data, 43, 0));
+                SETVAL(satp_mode, BITS(cmd_data, 63, 60));
+            ENDIF();
         ENDIF();
         ENDCASE();
     CASE (CONST("0x5A8", 12), "scontext: [SRW] Supervisor-mode context register");
@@ -560,7 +589,7 @@ TEXT();
         SETBIT(comb.vb_rdata, 17, mprv);
         TEXT("[18] SUM");
         TEXT("[19] MXR");
-        TEXT("[20] TVM");
+        SETBIT(comb.vb_rdata, 20, tvm, "Trap Virtual Memory");
         TEXT("[21] TW");
         TEXT("[22] TSR");
         TEXT("[31:23] WPRI");
@@ -578,6 +607,7 @@ TEXT();
             SETARRITEM(xmode, comb.iS, xmode->xpp, CC2(CONST("0", 1), BIT(cmd_data, 8)));
             SETARRITEM(xmode, comb.iM, xmode->xpp, BITS(cmd_data, 12, 11));
             SETVAL(mprv, BIT(cmd_data, 17));
+            SETVAL(tvm, BIT(cmd_data, 20));
         ENDIF();
         ENDCASE();
     CASE (CONST("0x301", 12), "misa: [MRW] ISA and extensions");
@@ -1011,5 +1041,6 @@ TEXT();
     SETVAL(o_step, dcsr_step);
     SETVAL(o_flushd_valid, comb.v_flushd);
     SETVAL(o_flushi_valid, comb.v_flushi);
+    SETVAL(o_flushmmu_valid, comb.v_flushmmu);
     SETVAL(o_flush_addr, BITS(cmd_data, DEC(cfg->CFG_CPU_ADDR_BITS), CONST("0")));
 }

@@ -646,7 +646,7 @@ TEXT();
                                  &page_fault_x,
                                  &page_fault_r,
                                  &page_fault_w));
-    SETVAL(comb.v_csr_cmd_ena, ORx(26, &i_haltreq,
+    SETVAL(comb.v_csr_cmd_ena, ORx(27, &i_haltreq,
                                     &AND2(i_step, stepdone),
                                     &i_unsup_exception,
                                     &i_instr_load_fault,
@@ -671,7 +671,8 @@ TEXT();
                                     &BIT(comb.wv, "Instr_CSRRW"),
                                     &BIT(comb.wv, "Instr_CSRRWI"),
                                     &BIT(comb.wv, "Instr_FENCE"),
-                                    &BIT(comb.wv, "Instr_FENCE_I")));
+                                    &BIT(comb.wv, "Instr_FENCE_I"),
+                                    &BIT(comb.wv, "Instr_SFENCE_VMA")));
     IF (NZ(i_haltreq));
         SETVAL(comb.vb_csr_cmd_type, cfg->CsrReq_HaltCmd);
         SETVAL(comb.vb_csr_cmd_addr, cfg->HALT_CAUSE_HALTREQ);
@@ -777,12 +778,21 @@ TEXT();
     ELSIF(OR2(NZ(BIT(comb.wv, "Instr_FENCE")), NZ(BIT(comb.wv, "Instr_FENCE_I"))));
         SETVAL(comb.vb_csr_cmd_type, cfg->CsrReq_FenceCmd);
         IF (NZ(BIT(comb.wv, "Instr_FENCE")));
-            SETVAL(comb.vb_csr_cmd_addr, CONST("0x001", 12));
+            SETVAL(comb.vb_csr_cmd_addr, CONST("0x005", 12), "[0]=flush D$; [2]=flush mmu");   
         ENDIF();
         IF (NZ(BIT(comb.wv, "Instr_FENCE_I")));
-            SETVAL(comb.vb_csr_cmd_addr, CONST("0x003", 12));
+            SETVAL(comb.vb_csr_cmd_addr, CONST("0x007", 12), "[0]=flush D$; [1]=flush I$; [2]=flush mmu");
         ENDIF();
         SETVAL(comb.vb_csr_cmd_wdata, ALLONES(), "flush address");
+    ELSIF(NZ(BIT(comb.wv, "Instr_SFENCE_VMA")));
+        SETVAL(comb.vb_csr_cmd_type, cfg->CsrReq_FenceCmd);
+        SETVAL(comb.vb_csr_cmd_addr, CONST("0x004", 12), "[2]=flush mmu");
+        IF (EZ(comb.mux.radr1), "must be set to zero in standard extension for fence and fence.i ");
+            SETVAL(comb.vb_csr_cmd_wdata, ALLONES(), "flush address");
+        ELSE();
+            SETVAL(comb.vb_csr_cmd_wdata, i_rdata1, "flush specific address");
+        ENDIF();
+        TEXT("rs2 register contains Adress Space ID (asid) or Guest Space ID (gsid). Only one MMU implemented.");
     ENDIF();
 
 TEXT();
@@ -1034,32 +1044,6 @@ TEXT();
             SETONE(valid);
         ENDIF();
         ENDCASE();
-/*    CASE (State_WaitFlushingAccept);
-        TEXT("Fifo exec => memacess is full");
-        SETVAL(comb.vb_memop_memaddr, ALLONES());
-        IF (NZ(i_memop_ready));
-            SETZERO(flushd);
-            SETZERO(flushi);
-            IF (NZ(BIT(comb.mux.ivec, "Instr_FENCE")));
-                TEXT("no need to wait ending of D-flashing");
-                SETVAL(state, State_Idle);
-                SETONE(valid);
-            ELSE();
-                SETVAL(state, State_Flushing_I);
-            ENDIF();
-        ENDIF();
-        ENDCASE();
-    CASE (State_Flushing_I);
-        TEXT("Flushing DataCache could take much more time than flushing I");
-        TEXT("so that we should wait D-cache finish before requesting new");
-        TEXT("instruction to avoid reading obsolete data.");
-        SETZERO(flushd);
-        SETZERO(flushi);
-        IF (NZ(i_flushd_end));
-            SETVAL(state, State_Idle);
-            SETONE(valid);
-        ENDIF();
-        ENDCASE();*/
     CASE (State_Halted);
         SETZERO(stepdone);
         IF (OR2(NZ(i_resumereq), NZ(i_dbg_progbuf_ena)));

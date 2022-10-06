@@ -56,7 +56,7 @@ Mmu::Mmu(GenObject *parent, const char *name) :
     i_mmu_ena(this, "i_mmu_ena", "1", "MMU enabled in U and S modes. Sv48 only."),
     i_mmu_ppn(this, "i_mmu_ppn", "44", "Physical Page Number from SATP CSR"),
     i_fence(this, "i_fence", "1", "reset TBL entries at specific address"),
-    i_fence_addr(this, "i_fence_addr", "CFG_MMU_TLB_AWIDTH", "Fence address: 0=clean all TBL"),
+    i_fence_addr(this, "i_fence_addr", "CFG_CPU_ADDR_BITS", "Fence address: 0=clean all TBL"),
     // param
     Idle(this, "Idle", "0"),
     WaitRespNoMmu(this, "WaitRespNoMmu", "1"),
@@ -194,7 +194,10 @@ TEXT();
             SETVAL(req_wstrb, i_core_req_wstrb);
             SETVAL(req_size, i_core_req_size);
         ENDIF();
-        IF (OR2(EZ(i_mmu_ena), EZ(comb.v_va_ena)), "MMU disabled");
+        IF(NZ(tlb_flush_cnt));
+            SETVAL(state, FlushTlb);
+            SETZERO(tlb_wdata);
+        ELSIF (OR2(EZ(i_mmu_ena), EZ(comb.v_va_ena)), "MMU disabled");
             TEXT("Direct connection to Cache");
             SETVAL(comb.v_core_req_ready, i_mem_req_ready);
             SETVAL(comb.v_core_resp_valid, i_mem_resp_valid);
@@ -213,9 +216,6 @@ TEXT();
                 SETVAL(state, WaitRespNoMmu);
             ENDIF();
             SETVAL(last_va, ALLONES());
-        ELSIF(NZ(tlb_flush_cnt));
-            SETVAL(state, FlushTlb);
-            SETZERO(tlb_wdata);
         ELSIF (NZ(comb.v_last_valid), "MMU enabled: Check the request to the same page:");
             TEXT("Direct connection to cache with the fast changing va to last_pa");
             SETVAL(comb.v_core_req_ready, i_mem_req_ready);
@@ -436,13 +436,9 @@ TEXT();
 
 TEXT();
     IF (NZ(i_fence));
-        TEXT("Clear pipeline stage");
-        IF (EZ(i_fence_addr));
-            SETVAL(tlb_flush_cnt, ALLONES());
-        ELSE();
-            SETONE(tlb_flush_cnt);
-        ENDIF();
-        SETVAL(tlb_flush_adr, i_fence_addr);
+        TEXT("Clear whole table ignoring i_fence_addr");
+        SETVAL(tlb_flush_cnt, ALLONES());
+        SETZERO(tlb_flush_adr);
     ENDIF();
 
 TEXT();

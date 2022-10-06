@@ -121,11 +121,11 @@ class CacheTop : public ModuleObject {
     OutPort o_resp_snoop_data;
     OutPort o_resp_snoop_flags;
     TextLine _DebugSignals0_;
-    InPort i_flush_address;
-    InPort i_flush_valid;
-    InPort i_data_flush_address;
-    InPort i_data_flush_valid;
-    OutPort o_data_flush_end;
+    InPort i_flushi_valid;
+    InPort i_flushi_addr;
+    InPort i_flushd_valid;
+    InPort i_flushd_addr;
+    OutPort o_flushd_end;
 
     ParamI32D DATA_PATH;
     ParamI32D CTRL_PATH;

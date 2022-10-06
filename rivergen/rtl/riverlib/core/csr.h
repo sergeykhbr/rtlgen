@@ -55,7 +55,8 @@ class CsrRegs : public ModuleObject {
             vb_xtvec_off_ideleg(this, "vb_xtvec_off_ideleg", "RISCV_ARCH", "4-bytes aligned"),
             vb_xtvec_off_edeleg(this, "vb_xtvec_off_edeleg", "RISCV_ARCH", "4-bytes aligned"),
             v_flushd(this, "v_flushd", "1"),
-            v_flushi(this, "v_flushi", "1") {
+            v_flushi(this, "v_flushi", "1"),
+            v_flushmmu(this, "v_flushmmu", "1") {
             Operation::start(this);
             CsrRegs *p = static_cast<CsrRegs *>(parent);
             p->proc_comb();
@@ -88,6 +89,7 @@ class CsrRegs : public ModuleObject {
         Logic vb_xtvec_off_edeleg;
         Logic v_flushd;
         Logic v_flushi;
+        Logic v_flushmmu;
     };
 
     void proc_comb();
@@ -126,6 +128,7 @@ class CsrRegs : public ModuleObject {
     OutPort o_progbuf_error;
     OutPort o_flushd_valid;
     OutPort o_flushi_valid;
+    OutPort o_flushmmu_valid;
     OutPort o_flush_addr;
     TextLine _io1_;
     OutPort o_mpu_region_we;
@@ -157,6 +160,7 @@ class CsrRegs : public ModuleObject {
     ParamLogic Fence_Data;
     ParamLogic Fence_DataWaitEnd;
     ParamLogic Fence_Fetch;
+    ParamLogic Fence_MMU;
     ParamLogic Fence_End;
     TextLine _fence1_;
     ParamLogic SATP_MODE_SV48;
@@ -234,6 +238,7 @@ class CsrRegs : public ModuleObject {
     RegSignal satp_mode;
     RegSignal mode;
     RegSignal mprv;
+    RegSignal tvm;
     RegSignal ex_fpu_invalidop;
     RegSignal ex_fpu_divbyzero;
     RegSignal ex_fpu_overflow;

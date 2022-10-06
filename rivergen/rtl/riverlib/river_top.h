@@ -117,11 +117,11 @@ public:
     Signal wb_mpu_region_addr;
     Signal wb_mpu_region_mask;
     Signal wb_mpu_region_flags;
-    Signal wb_flush_address;
-    Signal w_flush_valid;
-    Signal wb_data_flush_address;
-    Signal w_data_flush_valid;
-    Signal w_data_flush_end;
+    Signal w_flushi_valid;
+    Signal wb_flushi_addr;
+    Signal w_flushd_valid;
+    Signal wb_flushd_addr;
+    Signal w_flushd_end;
 
     // Sub-module instances:
     Processor proc0;
