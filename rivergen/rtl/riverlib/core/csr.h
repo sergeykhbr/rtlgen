@@ -209,7 +209,28 @@ class CsrRegs : public ModuleObject {
         }
     };
 
+    class PmpItemType : public StructObject {
+     public:
+        PmpItemType(GenObject *parent, const char *name="", int idx=-1, const char *comment="")
+            : StructObject(parent, "PmpItemType", name, idx, comment),
+            cfg(this, "cfg", "8", "0", "pmpcfg bits without changes"),
+            addr(this, "addr", "54", "0", "PMP address bits [55:2]")
+            {}
+     public:
+        RegSignal cfg;
+        RegSignal addr;
+    } PmpItemTypeDef_;
+
+    class PmpTableType : public TStructArray<PmpItemType> {
+     public:
+        PmpTableType(GenObject *parent, const char *name)
+            : TStructArray<PmpItemType>(parent, "", name, "CFG_MPU_TBL_SIZE") {
+            setReg();
+        }
+    };
+
     ModeTableType xmode;
+    PmpTableType pmp;
     RegSignal state;
     RegSignal fencestate;
     RegSignal irq_pending;
