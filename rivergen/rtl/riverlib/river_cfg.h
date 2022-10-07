@@ -377,8 +377,8 @@ class river_cfg : public FileObject {
     ParamI32D CFG_MPU_TBL_WIDTH;
     ParamI32D CFG_MPU_TBL_SIZE;
     TextLine _69_;
-    ParamI32D CFG_MPU_FL_WR;
     ParamI32D CFG_MPU_FL_RD;
+    ParamI32D CFG_MPU_FL_WR;
     ParamI32D CFG_MPU_FL_EXEC;
     ParamI32D CFG_MPU_FL_CACHABLE;
     ParamI32D CFG_MPU_FL_ENA;

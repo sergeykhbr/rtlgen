@@ -58,6 +58,8 @@ class CsrRegs : public ModuleObject {
             v_flushi(this, "v_flushi", "1"),
             v_flushmmu(this, "v_flushmmu", "1"),
             vb_pmp_upd_ena(this, "vb_pmp_upd_ena", "CFG_MPU_TBL_SIZE"),
+            vb_pmp_napot_mask(this, "vb_pmp_napot_mask", "CFG_CPU_ADDR_BITS"),
+            v_napot_shift(this, "v_napot_shift", "1"),
             t_pmpdataidx("0", "t_pmpdataidx", this),
             t_pmpcfgidx("0", "t_pmpcfgidx", this) {
             Operation::start(this);
@@ -94,6 +96,8 @@ class CsrRegs : public ModuleObject {
         Logic v_flushi;
         Logic v_flushmmu;
         Logic vb_pmp_upd_ena;
+        Logic vb_pmp_napot_mask;
+        Logic v_napot_shift;
         I32D t_pmpdataidx;
         I32D t_pmpcfgidx;
     };
@@ -220,11 +224,13 @@ class CsrRegs : public ModuleObject {
         PmpItemType(GenObject *parent, const char *name="", int idx=-1, const char *comment="")
             : StructObject(parent, "PmpItemType", name, idx, comment),
             cfg(this, "cfg", "8", "0", "pmpcfg bits without changes"),
-            addr(this, "addr", "54", "0", "PMP address bits [55:2]")
+            addr(this, "addr", "CFG_CPU_ADDR_BITS", "0", "Maximal PMP address bits [55:2]"),
+            mask(this, "mask", "CFG_CPU_ADDR_BITS", "0", "NAPOT mask formed from address")
             {}
      public:
         RegSignal cfg;
         RegSignal addr;
+        RegSignal mask;
     } PmpItemTypeDef_;
 
     class PmpTableType : public TStructArray<PmpItemType> {
@@ -287,6 +293,11 @@ class CsrRegs : public ModuleObject {
     RegSignal ins_per_step;
     RegSignal pmp_upd_ena;
     RegSignal pmp_upd_cnt;
+    RegSignal pmp_we;
+    RegSignal pmp_region;
+    RegSignal pmp_start_addr;
+    RegSignal pmp_end_addr;
+    RegSignal pmp_flags;
 
     // process should be intialized last to make all signals available
     CombProcess comb;

@@ -200,9 +200,9 @@ InstrExecute::InstrExecute(GenObject *parent, const char *name) :
     page_fault_r(this, "page_fault_r", "1"),
     page_fault_w(this, "page_fault_w", "1"),
     mem_ex_addr(this, "mem_ex_addr", "CFG_CPU_ADDR_BITS"),
-    res_npc(this, "res_npc", "CFG_CPU_ADDR_BITS"),
-    res_ra(this, "res_ra", "CFG_CPU_ADDR_BITS"),
-    res_csr(this, "res_csr", "CFG_CPU_ADDR_BITS"),
+    res_npc(this, "res_npc", "RISCV_ARCH"),
+    res_ra(this, "res_ra", "RISCV_ARCH"),
+    res_csr(this, "res_csr", "RISCV_ARCH"),
     select(this, "select", "Res_Total"),
     valid(this, "valid", "1"),
     call(this, "call", "1"),
@@ -945,7 +945,7 @@ TEXT();
                     ELSE();
                         SETVAL(state, State_Idle);
                         IF (EZ(i_dbg_progbuf_ena));
-                            SETVAL(npc, i_csr_resp_data);
+                            SETVAL(npc, BITS(i_csr_resp_data, DEC(cfg->CFG_CPU_ADDR_BITS), CONST("0")));
                         ENDIF();
                     ENDIF();
                 ELSIF (NZ(ORx(3, &BIT(csr_req_type, cfg->CsrReq_ExceptionBit),
@@ -954,7 +954,7 @@ TEXT();
                     SETZERO(valid, "No valid strob should be generated");
                     SETVAL(state, State_Idle);
                     IF (EZ(i_dbg_progbuf_ena)); 
-                        SETVAL(npc, i_csr_resp_data);
+                        SETVAL(npc, BITS(i_csr_resp_data, DEC(cfg->CFG_CPU_ADDR_BITS), CONST("0")));
                     ENDIF();
                 ELSIF (NZ(BIT(csr_req_type, cfg->CsrReq_WfiBit)));
                     IF (NZ(BIT(i_csr_resp_data, 0)));
@@ -972,7 +972,7 @@ TEXT();
                     SETONE(valid);
                     SETVAL(state, State_Idle);
                     IF (EZ(i_dbg_progbuf_ena));
-                        SETVAL(npc, i_csr_resp_data);
+                        SETVAL(npc, BITS(i_csr_resp_data, DEC(cfg->CFG_CPU_ADDR_BITS), CONST("0")));
                     ENDIF();
                 ELSIF (NZ(csr_req_rmw));
                     SETVAL(csrstate, CsrState_Req);
@@ -1146,8 +1146,16 @@ TEXT();
                            &BIT(comb.wv, "Instr_HRET"),
                            &BIT(comb.wv, "Instr_SRET"),
                            &BIT(comb.wv, "Instr_URET")));
-        SETVAL(res_npc, comb.vb_prog_npc);
-        SETVAL(res_ra, comb.vb_npc_incr);
+        IF (NZ(BIT(comb.vb_prog_npc, DEC(cfg->CFG_CPU_ADDR_BITS))));
+            SETVAL(res_npc, CC2(ALLONES(), comb.vb_prog_npc));
+        ELSE();
+            SETVAL(res_npc, CC2(ALLZEROS(), comb.vb_prog_npc));
+        ENDIF();
+        IF (NZ(BIT(comb.vb_npc_incr, DEC(cfg->CFG_CPU_ADDR_BITS))));
+            SETVAL(res_ra, CC2(ALLONES(), comb.vb_npc_incr));
+        ELSE();
+            SETVAL(res_ra, CC2(ALLZEROS(), comb.vb_npc_incr));
+        ENDIF();
 
 TEXT();
         SETARRITEM(wb_select, Res_IMul, wb_select->ena, BIT(comb.vb_select, Res_IMul));

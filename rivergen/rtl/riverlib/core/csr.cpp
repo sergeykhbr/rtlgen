@@ -141,6 +141,11 @@ CsrRegs::CsrRegs(GenObject *parent, const char *name) :
     ins_per_step(this, "ins_per_step", "RISCV_ARCH", "1", "Number of steps before halt in stepping mode"),
     pmp_upd_ena(this, "pmp_upd_ena", "CFG_MPU_TBL_SIZE"),
     pmp_upd_cnt(this, "pmp_upd_cnt", "CFG_MPU_TBL_WIDTH"),
+    pmp_we(this, "pmp_we", "1"),
+    pmp_region(this, "pmp_region", "CFG_MPU_TBL_WIDTH"),
+    pmp_start_addr(this, "pmp_start_addr", "CFG_CPU_ADDR_BITS"),
+    pmp_end_addr(this, "pmp_end_addr", "CFG_CPU_ADDR_BITS"),
+    pmp_flags(this, "pmp_flags", "CFG_MPU_FL_TOTAL"),
     // process
     comb(this)
 {
@@ -156,6 +161,7 @@ void CsrRegs::proc_comb() {
     SETVAL(comb.vb_pmp_upd_ena, pmp_upd_ena);
     SETVAL(comb.t_pmpdataidx, SUB2(TO_INT(cmd_addr), CONST("0x3B0")));
     SETVAL(comb.t_pmpcfgidx, MUL2(CONST("8"), TO_INT(BITS(cmd_addr, 3, 1))));
+    SETVAL(comb.vb_pmp_napot_mask, CONST("0x7"));
 
 TEXT();
     SETVAL(comb.vb_xtvec_off_edeleg, ARRITEM(xmode, comb.iM, xmode->xtvec_off));
@@ -239,7 +245,7 @@ TEXT();
             SETVAL(cmd_data, ALLONES(), "signal to executor to switch into Debug Mode and halt");
         ELSIF (NZ(dcsr_ebreakm));
             SETVAL(halt_cause, cfg->HALT_CAUSE_EBREAK);
-            SETVAL(dpc, cmd_data);
+            SETVAL(dpc, BITS(cmd_data, DEC(cfg->CFG_CPU_ADDR_BITS), CONST("0")));
             SETVAL(cmd_data, ALLONES(), "signal to executor to switch into Debug Mode and halt");
         ELSE();
             SETBITONE(comb.vb_e_emux, cfg->EXCEPTION_Breakpoint);
@@ -258,7 +264,7 @@ TEXT();
         IF (NZ(i_dbg_progbuf_ena));
             SETZERO(cmd_data);
         ELSE();
-            SETVAL(cmd_data, dpc);
+            SETVAL(cmd_data, CC2(ALLZEROS(), dpc));
         ENDIF();
         ENDCASE();
     CASE (State_Interrupt);
@@ -275,7 +281,7 @@ TEXT();
     CASE (State_TrapReturn);
         SETVAL(state, State_Response);
         SETONE(comb.v_csr_trapreturn);
-        SETVAL(cmd_data, ARRITEM(xmode, TO_INT(mode), xmode->xepc));
+        SETVAL(cmd_data, CC2(ALLZEROS(), ARRITEM(xmode, TO_INT(mode), xmode->xepc)));
         ENDCASE();
     CASE (State_RW);
         SETVAL(state, State_Response);
@@ -714,19 +720,31 @@ TEXT();
                                 BITSW(cmd_data, MUL2(CONST("8"), *i), CONST("8")));
                     SETBITONE(comb.vb_pmp_upd_ena, ADD2(comb.t_pmpcfgidx, *i));
                     SETZERO(pmp_upd_cnt);
+                    SETZERO(pmp_start_addr);
                 ENDIF();
             ENDFOR();
         ENDIF();
     ELSIF (ANDx(2, &GE(cmd_addr, CONST("0x3B0", 12)),
                    &LE(cmd_addr, CONST("0x3EF", 12))));
         TEXT("pmpaddr0..63: [MRW] Physical memory protection address register");
+        i = &FOR("i", CONST("0"), SUB2(cfg->CFG_CPU_ADDR_BITS, CONST("2")), "++");
+            IF (AND2(NZ(BIT(cmd_data, *i)), EZ(comb.v_napot_shift)));
+                SETVAL(comb.vb_pmp_napot_mask, CC2(comb.vb_pmp_napot_mask, CONST("1", 1)));
+            ELSE();
+                SETONE(comb.v_napot_shift);
+            ENDIF();
+        ENDFOR();
         IF (LS(comb.t_pmpdataidx, cfg->CFG_MPU_TBL_SIZE));
-            SETBITS(comb.vb_rdata, 53, 0, ARRITEM(pmp, comb.t_pmpdataidx, pmp->addr));
+            SETBITS(comb.vb_rdata, SUB2(cfg->CFG_CPU_ADDR_BITS, CONST("3")), CONST("0"),
+                    ARRITEM(pmp, comb.t_pmpdataidx, BITS(pmp->addr, DEC(cfg->CFG_CPU_ADDR_BITS), CONST("0"))));
                 IF (ANDx(2, &NZ(comb.v_csr_wena),
                             &EZ(BIT(ARRITEM_B(pmp, comb.t_pmpdataidx, pmp->cfg), 7))));
-                SETARRITEM(pmp, comb.t_pmpdataidx, pmp->addr, BITS(cmd_data, 53, 0));
+                SETARRITEM(pmp, comb.t_pmpdataidx, pmp->addr,
+                        CC2(BITS(cmd_data, SUB2(cfg->CFG_CPU_ADDR_BITS, CONST("3")), CONST("0")), CONST("0", 2)));
+                SETARRITEM(pmp, comb.t_pmpdataidx, pmp->mask, comb.vb_pmp_napot_mask);
                 SETBITONE(comb.vb_pmp_upd_ena, comb.t_pmpdataidx);
                 SETZERO(pmp_upd_cnt);
+                SETZERO(pmp_start_addr);
             ENDIF();
         ENDIF();
     ELSIF (LE(cmd_addr, CONST("0x3EF", 12)), "pmpaddr63: [MRW] Physical memory protection address register");
@@ -790,7 +808,7 @@ TEXT();
             SETVAL(comb.vb_rdata, i_e_pc);
         ENDIF();
         IF (NZ(comb.v_csr_wena));
-            SETVAL(dpc, cmd_data);
+            SETVAL(dpc, BITS(cmd_data, DEC(cfg->CFG_CPU_ADDR_BITS), CONST("0")));
         ENDIF();
     ELSIF (EQ(cmd_addr, CONST("0x7B2", 12)), "dscratch0: [DRW] Debug scratch register 0");
         SETVAL(comb.vb_rdata, dscratch0);
@@ -931,8 +949,43 @@ TEXT();
     IF (NZ(pmp_upd_ena));
         SETBITZERO(comb.vb_pmp_upd_ena, TO_INT(pmp_upd_cnt));
         SETVAL(pmp_upd_cnt, INC(pmp_upd_cnt));
+
+        SETVAL(pmp_we, BIT(pmp_upd_ena, TO_INT(pmp_upd_cnt)));
+        SETVAL(pmp_region, pmp_upd_cnt);
+        IF (EQ(BITS(ARRITEM_B(pmp, TO_INT(pmp_upd_cnt), pmp->cfg), 4, 3), CONST("0", 2)));
+            TEXT("OFF: Null region (disabled)");
+            SETZERO(pmp_start_addr);
+            SETVAL(pmp_end_addr, ARRITEM_B(pmp, TO_INT(pmp_upd_cnt), pmp->addr));
+            SETZERO(pmp_flags);
+        ELSIF (EQ(BITS(ARRITEM_B(pmp, TO_INT(pmp_upd_cnt), pmp->cfg), 4, 3), CONST("1", 2)));
+            TEXT("TOR: Top of range");
+            SETVAL(pmp_start_addr, pmp_end_addr);
+            SETVAL(pmp_end_addr, DEC(ARRITEM_B(pmp, TO_INT(pmp_upd_cnt), pmp->addr)));
+            SETVAL(pmp_flags, CC3(CONST("0x1", 1),
+                                  BIT(ARRITEM_B(pmp, TO_INT(pmp_upd_cnt), pmp->cfg), 7),
+                                  BITS(ARRITEM_B(pmp, TO_INT(pmp_upd_cnt), pmp->cfg), 2, 0)));
+        ELSIF (EQ(BITS(ARRITEM_B(pmp, TO_INT(pmp_upd_cnt), pmp->cfg), 4, 3), CONST("2", 2)));
+            TEXT("NA4: Naturally aligned four-bytes region");
+            SETVAL(pmp_start_addr, ARRITEM_B(pmp, TO_INT(pmp_upd_cnt), pmp->addr));
+            SETVAL(pmp_end_addr, OR2_L(ARRITEM_B(pmp, TO_INT(pmp_upd_cnt), pmp->addr), CONST("0x3", 2)));
+            SETVAL(pmp_flags, CC3(CONST("0x1", 1),
+                                  BIT(ARRITEM_B(pmp, TO_INT(pmp_upd_cnt), pmp->cfg), 7),
+                                  BITS(ARRITEM_B(pmp, TO_INT(pmp_upd_cnt), pmp->cfg), 2, 0)));
+        ELSE();
+            TEXT("NAPOT: Naturally aligned power-of-two region, >=8 bytes");
+            SETVAL(pmp_start_addr, AND2_L(ARRITEM_B(pmp, TO_INT(pmp_upd_cnt), pmp->addr),
+                                          ARRITEM_B(pmp, TO_INT(pmp_upd_cnt), INV_L(pmp->mask))));
+            SETVAL(pmp_end_addr, OR2_L(pmp_start_addr, ARRITEM_B(pmp, TO_INT(pmp_upd_cnt), pmp->mask)));
+            SETVAL(pmp_flags, CC3(CONST("0x1", 1),
+                                  BIT(ARRITEM_B(pmp, TO_INT(pmp_upd_cnt), pmp->cfg), 7),
+                                  BITS(ARRITEM_B(pmp, TO_INT(pmp_upd_cnt), pmp->cfg), 2, 0)));
+        ENDIF();
     ELSE();
         SETZERO(pmp_upd_cnt);
+        SETZERO(pmp_start_addr);
+        SETZERO(pmp_end_addr);
+        SETZERO(pmp_flags);
+        SETZERO(pmp_we);
     ENDIF();
     SETVAL(pmp_upd_ena, comb.vb_pmp_upd_ena);
 
