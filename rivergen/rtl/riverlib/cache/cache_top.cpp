@@ -59,12 +59,13 @@ CacheTop::CacheTop(GenObject *parent, const char *name) :
     i_resp_mem_data(this, "i_resp_mem_data", "L1CACHE_LINE_BITS", "Read data"),
     i_resp_mem_load_fault(this, "i_resp_mem_load_fault", "1", "data load error"),
     i_resp_mem_store_fault(this, "i_resp_mem_store_fault", "1", "data store error"),
-    _MpuInterface0_(this, "MPU interface:"),
-    i_mpu_region_we(this, "i_mpu_region_we"),
-    i_mpu_region_idx(this, "i_mpu_region_idx", "CFG_MPU_TBL_WIDTH", ""),
-    i_mpu_region_addr(this, "i_mpu_region_addr", "CFG_CPU_ADDR_BITS", ""),
-    i_mpu_region_mask(this, "i_mpu_region_mask", "CFG_CPU_ADDR_BITS", ""),
-    i_mpu_region_flags(this, "i_mpu_region_flags", "CFG_MPU_FL_TOTAL", "{ena, cachable, r, w, x}"),
+    _MpuInterface0_(this, "PMP interface:"),
+    i_pmp_ena(this, "i_pmp_ena", "1", "PMP is active in S or U modes or if L/MPRV bit is set in M-mode"),
+    i_pmp_we(this, "i_pmp_we", "1", "write enable into PMP"),
+    i_pmp_region(this, "i_pmp_region", "CFG_PMP_TBL_WIDTH", "selected PMP region"),
+    i_pmp_start_addr(this, "i_pmp_start_addr", "CFG_CPU_ADDR_BITS", "PMP region start address"),
+    i_pmp_end_addr(this, "i_pmp_end_addr", "CFG_CPU_ADDR_BITS", "PMP region end address (inclusive)"),
+    i_pmp_flags(this, "i_pmp_flags", "CFG_PMP_FL_TOTAL", "{ena, lock, r, w, x}"),
     _DSnoopInterface0_(this, "$D Snoop interface:"),
     i_req_snoop_valid(this, "i_req_snoop_valid"),
     i_req_snoop_type(this, "i_req_snoop_type", "SNOOP_REQ_TYPE_BITS"),
@@ -102,8 +103,11 @@ CacheTop::CacheTop(GenObject *parent, const char *name) :
     wb_data_resp_mem_data(this, "wb_data_resp_mem_data", "DCACHE_LINE_BITS"),
     w_data_resp_mem_load_fault(this, "w_data_resp_mem_load_fault", "1"),
     w_data_req_ready(this, "w_data_req_ready", "1"),
-    wb_mpu_iflags(this, "wb_mpu_iflags", "CFG_MPU_FL_TOTAL"),
-    wb_mpu_dflags(this, "wb_mpu_dflags", "CFG_MPU_FL_TOTAL"),
+    w_pma_icached(this, "w_pma_icached", "1"),
+    w_pma_dcached(this, "w_pma_dcached", "1"),
+    w_pmp_r(this, "w_pmp_r", "1"),
+    w_pmp_w(this, "w_pmp_w", "1"),
+    w_pmp_x(this, "w_pmp_x", "1"),
     _iface2_(this, "Queue interface"),
     queue_re_i(this, "queue_re_i", "1"),
     queue_we_i(this, "queue_we_i", "1"),
@@ -116,7 +120,8 @@ CacheTop::CacheTop(GenObject *parent, const char *name) :
     // sub-modules
     i1(this, "i1"),
     d0(this, "d0"),
-    mpu0(this, "mpu0"),
+    pma0(this, "pma0"),
+    pmp0(this, "pmp0"),
     queue0(this, "queue0", "2", "QUEUE_WIDTH")
 {
     Operation::start(this);
@@ -143,7 +148,8 @@ CacheTop::CacheTop(GenObject *parent, const char *name) :
         CONNECT(i1, 0, i1.i_mem_data, wb_ctrl_resp_mem_data);
         CONNECT(i1, 0, i1.i_mem_load_fault, w_ctrl_resp_mem_load_fault);
         CONNECT(i1, 0, i1.o_mpu_addr, i.mpu_addr);
-        CONNECT(i1, 0, i1.i_mpu_flags, wb_mpu_iflags);
+        CONNECT(i1, 0, i1.i_pma_cached, w_pma_icached);
+        CONNECT(i1, 0, i1.i_pmp_x, w_pmp_x);
         CONNECT(i1, 0, i1.i_flush_address, i_flushi_addr);
         CONNECT(i1, 0, i1.i_flush_valid, i_flushi_valid);
     ENDNEW();
@@ -177,7 +183,9 @@ CacheTop::CacheTop(GenObject *parent, const char *name) :
         CONNECT(d0, 0, d0.i_mem_load_fault, w_data_resp_mem_load_fault);
         CONNECT(d0, 0, d0.i_mem_store_fault, i_resp_mem_store_fault);
         CONNECT(d0, 0, d0.o_mpu_addr, d.mpu_addr);
-        CONNECT(d0, 0, d0.i_mpu_flags, wb_mpu_dflags);
+        CONNECT(d0, 0, d0.i_pma_cached, w_pma_dcached);
+        CONNECT(d0, 0, d0.i_pmp_r, w_pmp_r);
+        CONNECT(d0, 0, d0.i_pmp_w, w_pmp_w);
         CONNECT(d0, 0, d0.i_req_snoop_valid, i_req_snoop_valid);
         CONNECT(d0, 0, d0.i_req_snoop_type, i_req_snoop_type);
         CONNECT(d0, 0, d0.o_req_snoop_ready, o_req_snoop_ready);
@@ -191,18 +199,29 @@ CacheTop::CacheTop(GenObject *parent, const char *name) :
         CONNECT(d0, 0, d0.o_flush_end, o_flushd_end);
     ENDNEW();
 
-    NEW(mpu0, mpu0.getName().c_str());
-        CONNECT(mpu0, 0, mpu0.i_clk, i_clk);
-        CONNECT(mpu0, 0, mpu0.i_nrst, i_nrst);
-        CONNECT(mpu0, 0, mpu0.i_iaddr, i.mpu_addr);
-        CONNECT(mpu0, 0, mpu0.i_daddr, d.mpu_addr);
-        CONNECT(mpu0, 0, mpu0.i_region_we, i_mpu_region_we);
-        CONNECT(mpu0, 0, mpu0.i_region_idx, i_mpu_region_idx);
-        CONNECT(mpu0, 0, mpu0.i_region_addr, i_mpu_region_addr);
-        CONNECT(mpu0, 0, mpu0.i_region_mask, i_mpu_region_mask);
-        CONNECT(mpu0, 0, mpu0.i_region_flags, i_mpu_region_flags);
-        CONNECT(mpu0, 0, mpu0.o_iflags, wb_mpu_iflags);
-        CONNECT(mpu0, 0, mpu0.o_dflags, wb_mpu_dflags);
+    NEW(pma0, pma0.getName().c_str());
+        CONNECT(pma0, 0, pma0.i_clk, i_clk);
+        CONNECT(pma0, 0, pma0.i_nrst, i_nrst);
+        CONNECT(pma0, 0, pma0.i_iaddr, i.mpu_addr);
+        CONNECT(pma0, 0, pma0.i_daddr, d.mpu_addr);
+        CONNECT(pma0, 0, pma0.o_icached, w_pma_icached);
+        CONNECT(pma0, 0, pma0.o_dcached, w_pma_dcached);
+    ENDNEW();
+
+    NEW(pmp0, pmp0.getName().c_str());
+        CONNECT(pmp0, 0, pmp0.i_clk, i_clk);
+        CONNECT(pmp0, 0, pmp0.i_nrst, i_nrst);
+        CONNECT(pmp0, 0, pmp0.i_ena, i_pmp_ena);
+        CONNECT(pmp0, 0, pmp0.i_iaddr, i.mpu_addr);
+        CONNECT(pmp0, 0, pmp0.i_daddr, d.mpu_addr);
+        CONNECT(pmp0, 0, pmp0.i_we, i_pmp_we);
+        CONNECT(pmp0, 0, pmp0.i_region, i_pmp_region);
+        CONNECT(pmp0, 0, pmp0.i_start_addr, i_pmp_start_addr);
+        CONNECT(pmp0, 0, pmp0.i_end_addr, i_pmp_end_addr);
+        CONNECT(pmp0, 0, pmp0.i_flags, i_pmp_flags);
+        CONNECT(pmp0, 0, pmp0.o_r, w_pmp_r);
+        CONNECT(pmp0, 0, pmp0.o_w, w_pmp_w);
+        CONNECT(pmp0, 0, pmp0.o_x, w_pmp_x);
     ENDNEW();
 
     NEW(queue0, queue0.getName().c_str());

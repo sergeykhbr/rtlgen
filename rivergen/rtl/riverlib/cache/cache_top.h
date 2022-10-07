@@ -20,7 +20,8 @@
 #include "../river_cfg.h"
 #include "icache_lru.h"
 #include "dcache_lru.h"
-#include "mpu.h"
+#include "pma.h"
+#include "pmp.h"
 #include "../core/queue.h"
 
 using namespace sysvc;
@@ -106,11 +107,12 @@ class CacheTop : public ModuleObject {
     InPort i_resp_mem_load_fault;
     InPort i_resp_mem_store_fault;
     TextLine _MpuInterface0_;
-    InPort i_mpu_region_we;
-    InPort i_mpu_region_idx;
-    InPort i_mpu_region_addr;
-    InPort i_mpu_region_mask;
-    InPort i_mpu_region_flags;
+    InPort i_pmp_ena;
+    InPort i_pmp_we;
+    InPort i_pmp_region;
+    InPort i_pmp_start_addr;
+    InPort i_pmp_end_addr;
+    InPort i_pmp_flags;
     TextLine _DSnoopInterface0_;
     InPort i_req_snoop_valid;
     InPort i_req_snoop_type;
@@ -165,8 +167,11 @@ class CacheTop : public ModuleObject {
     Signal wb_data_resp_mem_data;
     Signal w_data_resp_mem_load_fault;
     Signal w_data_req_ready;
-    Signal wb_mpu_iflags;
-    Signal wb_mpu_dflags;
+    Signal w_pma_icached;
+    Signal w_pma_dcached;
+    Signal w_pmp_r;
+    Signal w_pmp_w;
+    Signal w_pmp_x;
     TextLine _iface2_;
     Signal queue_re_i;
     Signal queue_we_i;
@@ -179,7 +184,8 @@ class CacheTop : public ModuleObject {
 
     ICacheLru i1;
     DCacheLru d0;
-    MPU mpu0;
+    PMA pma0;
+    PMP pmp0;
     Queue queue0;
 
 };

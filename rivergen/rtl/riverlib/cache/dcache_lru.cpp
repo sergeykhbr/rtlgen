@@ -50,7 +50,9 @@ DCacheLru::DCacheLru(GenObject *parent, const char *name) :
     i_mem_store_fault(this, "i_mem_store_fault", "1"),
     _mpu0(this, "Mpu interface"),
     o_mpu_addr(this, "o_mpu_addr", "CFG_CPU_ADDR_BITS"),
-    i_mpu_flags(this, "i_mpu_flags", "CFG_MPU_FL_TOTAL"),
+    i_pma_cached(this, "i_pma_cached", "1"),
+    i_pmp_r(this, "i_pmp_r", "1", "PMP Read access"),
+    i_pmp_w(this, "i_pmp_w", "1", "PMP Write access"),
     _dsnop0_(this, "D$ Snoop interface"),
     i_req_snoop_valid(this, "i_req_snoop_valid", "1"),
     i_req_snoop_type(this, "i_req_snoop_type", "SNOOP_REQ_TYPE_BITS"),
@@ -303,14 +305,12 @@ TEXT();
         ENDIF();
         ENDCASE();
     CASE(State_TranslateAddress);
-        IF (ANDx(2, &NZ(BIT(req_type, cfg->MemopType_Store)),
-                    &EZ(BIT(i_mpu_flags, cfg->CFG_MPU_FL_WR))));
+        IF (AND2(NZ(BIT(req_type, cfg->MemopType_Store)), EZ(i_pmp_w)));
             SETONE(mpu_er_store);
             SETZERO(comb.t_cache_line_i);
             SETVAL(cache_line_i, INV_L(comb.t_cache_line_i));
             SETVAL(state, State_CheckResp);
-        ELSIF (ANDx(2, &EZ(BIT(req_type, cfg->MemopType_Store)),
-                       &EZ(BIT(i_mpu_flags, cfg->CFG_MPU_FL_RD))));
+        ELSIF (AND2(EZ(BIT(req_type, cfg->MemopType_Store)), EZ(i_pmp_r)));
             SETONE(mpu_er_load);
             SETZERO(comb.t_cache_line_i);
             SETVAL(cache_line_i, INV_L(comb.t_cache_line_i));
@@ -318,7 +318,7 @@ TEXT();
         ELSE();
             SETONE(req_mem_valid);
             SETVAL(state, State_WaitGrant);
-            IF (NZ(BIT(i_mpu_flags, cfg->CFG_MPU_FL_CACHABLE)));
+            IF (NZ(i_pma_cached));
                 TEXT("Cached:");
                 IF (NZ(write_share));
                     CALLF(&req_mem_type, cfg->WriteLineUnique, 0);

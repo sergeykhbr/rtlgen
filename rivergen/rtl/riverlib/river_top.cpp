@@ -93,11 +93,12 @@ RiverTop::RiverTop(GenObject *parent, const char *name) :
     w_resp_data_store_fault(this, "w_resp_data_store_fault", "1"),
     wb_resp_data_fault_addr(this, "wb_resp_data_fault_addr", "CFG_CPU_ADDR_BITS"),
     w_resp_data_ready(this, "w_resp_data_ready", "1"),
-    w_mpu_region_we(this, "w_mpu_region_we", "1"),
-    wb_mpu_region_idx(this, "wb_mpu_region_idx", "CFG_MPU_TBL_WIDTH"),
-    wb_mpu_region_addr(this, "wb_mpu_region_addr", "CFG_CPU_ADDR_BITS"),
-    wb_mpu_region_mask(this, "wb_mpu_region_mask", "CFG_CPU_ADDR_BITS"),
-    wb_mpu_region_flags(this, "wb_mpu_region_flags", "CFG_MPU_FL_TOTAL"),
+    w_pmp_ena(this, "w_pmp_ena", "1"),
+    w_pmp_we(this, "w_pmp_we", "1"),
+    wb_pmp_region(this, "wb_pmp_region", "CFG_PMP_TBL_WIDTH"),
+    wb_pmp_start_addr(this, "wb_pmp_start_addr", "CFG_CPU_ADDR_BITS"),
+    wb_pmp_end_addr(this, "wb_pmp_end_addr", "CFG_CPU_ADDR_BITS"),
+    wb_pmp_flags(this, "wb_pmp_flags", "CFG_PMP_FL_TOTAL"),
     w_flushi_valid(this, "w_flushi_valid", "1"),
     wb_flushi_addr(this, "wb_flushi_addr", "CFG_CPU_ADDR_BITS"),
     w_flushd_valid(this, "w_flushd_valid", "1"),
@@ -137,11 +138,12 @@ RiverTop::RiverTop(GenObject *parent, const char *name) :
         CONNECT(proc0, 0, proc0.i_resp_data_store_fault, w_resp_data_store_fault);
         CONNECT(proc0, 0, proc0.o_resp_data_ready, w_resp_data_ready);
         CONNECT(proc0, 0, proc0.i_irq_pending, i_irq_pending);
-        CONNECT(proc0, 0, proc0.o_mpu_region_we, w_mpu_region_we);
-        CONNECT(proc0, 0, proc0.o_mpu_region_idx, wb_mpu_region_idx);
-        CONNECT(proc0, 0, proc0.o_mpu_region_addr, wb_mpu_region_addr);
-        CONNECT(proc0, 0, proc0.o_mpu_region_mask, wb_mpu_region_mask);
-        CONNECT(proc0, 0, proc0.o_mpu_region_flags, wb_mpu_region_flags);
+        CONNECT(proc0, 0, proc0.o_pmp_ena, w_pmp_ena);
+        CONNECT(proc0, 0, proc0.o_pmp_we, w_pmp_we);
+        CONNECT(proc0, 0, proc0.o_pmp_region, wb_pmp_region);
+        CONNECT(proc0, 0, proc0.o_pmp_start_addr, wb_pmp_start_addr);
+        CONNECT(proc0, 0, proc0.o_pmp_end_addr, wb_pmp_end_addr);
+        CONNECT(proc0, 0, proc0.o_pmp_flags, wb_pmp_flags);
         CONNECT(proc0, 0, proc0.i_haltreq, i_haltreq);
         CONNECT(proc0, 0, proc0.i_resumereq, i_resumereq);
         CONNECT(proc0, 0, proc0.i_dport_req_valid, i_dport_req_valid);
@@ -202,11 +204,12 @@ RiverTop::RiverTop(GenObject *parent, const char *name) :
         CONNECT(cache0, 0, cache0.i_resp_mem_data, i_resp_mem_data);
         CONNECT(cache0, 0, cache0.i_resp_mem_load_fault, i_resp_mem_load_fault);
         CONNECT(cache0, 0, cache0.i_resp_mem_store_fault, i_resp_mem_store_fault);
-        CONNECT(cache0, 0, cache0.i_mpu_region_we, w_mpu_region_we);
-        CONNECT(cache0, 0, cache0.i_mpu_region_idx, wb_mpu_region_idx);
-        CONNECT(cache0, 0, cache0.i_mpu_region_addr, wb_mpu_region_addr);
-        CONNECT(cache0, 0, cache0.i_mpu_region_mask, wb_mpu_region_mask);
-        CONNECT(cache0, 0, cache0.i_mpu_region_flags, wb_mpu_region_flags);
+        CONNECT(cache0, 0, cache0.i_pmp_ena, w_pmp_ena);
+        CONNECT(cache0, 0, cache0.i_pmp_we, w_pmp_we);
+        CONNECT(cache0, 0, cache0.i_pmp_region, wb_pmp_region);
+        CONNECT(cache0, 0, cache0.i_pmp_start_addr, wb_pmp_start_addr);
+        CONNECT(cache0, 0, cache0.i_pmp_end_addr, wb_pmp_end_addr);
+        CONNECT(cache0, 0, cache0.i_pmp_flags, wb_pmp_flags);
         CONNECT(cache0, 0, cache0.i_req_snoop_valid, i_req_snoop_valid);
         CONNECT(cache0, 0, cache0.i_req_snoop_type, i_req_snoop_type);
         CONNECT(cache0, 0, cache0.o_req_snoop_ready, o_req_snoop_ready);

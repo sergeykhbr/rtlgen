@@ -112,11 +112,12 @@ public:
     Signal w_resp_data_store_fault;
     Signal wb_resp_data_fault_addr;
     Signal w_resp_data_ready;
-    Signal w_mpu_region_we;
-    Signal wb_mpu_region_idx;
-    Signal wb_mpu_region_addr;
-    Signal wb_mpu_region_mask;
-    Signal wb_mpu_region_flags;
+    Signal w_pmp_ena;
+    Signal w_pmp_we;
+    Signal wb_pmp_region;
+    Signal wb_pmp_start_addr;
+    Signal wb_pmp_end_addr;
+    Signal wb_pmp_flags;
     Signal w_flushi_valid;
     Signal wb_flushi_addr;
     Signal w_flushd_valid;

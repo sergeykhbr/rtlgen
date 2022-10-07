@@ -55,11 +55,12 @@ CsrRegs::CsrRegs(GenObject *parent, const char *name) :
     o_flushmmu_valid(this, "o_flushmmu_valid", "1", "clear specific leaf entry in MMU"),
     o_flush_addr(this, "o_flush_addr", "CFG_CPU_ADDR_BITS", "Cache address to flush. All ones means flush all."),
     _io1_(this),
-    o_mpu_region_we(this, "o_mpu_region_we", "1", "write enable into MPU"),
-    o_mpu_region_idx(this, "o_mpu_region_idx", "CFG_MPU_TBL_WIDTH", "selected MPU region"),
-    o_mpu_region_addr(this, "o_mpu_region_addr", "CFG_CPU_ADDR_BITS", "MPU region base address"),
-    o_mpu_region_mask(this, "o_mpu_region_mask", "CFG_CPU_ADDR_BITS", "MPU region mask"),
-    o_mpu_region_flags(this, "o_mpu_region_flags", "CFG_MPU_FL_TOTAL", "{ena, cachable, r, w, x}"),
+    o_pmp_ena(this, "o_pmp_ena", "1", "PMP is active in S or U modes or if L/MPRV bit is set in M-mode"),
+    o_pmp_we(this, "o_pmp_we", "1", "write enable into PMP"),
+    o_pmp_region(this, "o_pmp_region", "CFG_PMP_TBL_WIDTH", "selected PMP region"),
+    o_pmp_start_addr(this, "o_pmp_start_addr", "CFG_CPU_ADDR_BITS", "PMP region start address"),
+    o_pmp_end_addr(this, "o_pmp_end_addr", "CFG_CPU_ADDR_BITS", "PMP region end address (inclusive)"),
+    o_pmp_flags(this, "o_pmp_flags", "CFG_PMP_FL_TOTAL", "{ena, lock, r, w, x}"),
     _io2_(this),
     o_immu_ena(this, "o_immu_ena", "1", "Instruction MMU enabled in U and S modes. Sv48 only."),
     o_dmmu_ena(this, "o_dmmu_ena", "1", "Data MMU enabled in U and S modes or MPRV bit is HIGH. Sv48 only."),
@@ -75,7 +76,8 @@ CsrRegs::CsrRegs(GenObject *parent, const char *name) :
     State_Resume(this, "State_Resume", "7"),
     State_Wfi(this, "State_Wfi", "8"),
     State_Fence(this, "State_Fence", "9"),
-    State_Response(this, "State_Response", "10"),
+    State_WaitPmp(this, "State_WaitPmp", "10"),
+    State_Response(this, "State_Response", "11"),
     _fence0_(this),
     Fence_None(this, "3", "Fence_None", "0"),
     Fence_Data(this, "3", "Fence_Data", "1"),
@@ -108,11 +110,6 @@ CsrRegs::CsrRegs(GenObject *parent, const char *name) :
     mcountinhibit(this, "mcountinhibit", "32", "0", "When non zero stop specified performance counter"),
     mstackovr(this, "mstackovr", "CFG_CPU_ADDR_BITS"),
     mstackund(this, "mstackund", "CFG_CPU_ADDR_BITS"),
-    mpu_addr(this, "mpu_addr", "CFG_CPU_ADDR_BITS"),
-    mpu_mask(this, "mpu_mask", "CFG_CPU_ADDR_BITS"),
-    mpu_idx(this, "mpu_idx", "CFG_MPU_TBL_WIDTH"),
-    mpu_flags(this, "mpu_flags", "CFG_MPU_FL_TOTAL"),
-    mpu_we(this, "mpu_we", "1"),
     immu_ena(this, "immu_ena", "1", "0", "Instruction MMU SV48 enabled in U- and S- modes"),
     dmmu_ena(this, "dmmu_ena", "1", "0", "Data MMU SV48 enabled in U- and S- modes, MPRV bit"),
     satp_ppn(this, "satp_ppn", "44", "0", "Physcal Page Number"),
@@ -139,13 +136,14 @@ CsrRegs::CsrRegs(GenObject *parent, const char *name) :
     dcsr_stepie(this, "dcsr_stepie", "1", "0", "interrupt 0=dis;1=ena during stepping"),
     stepping_mode_cnt(this, "stepping_mode_cnt", "RISCV_ARCH", "0"),
     ins_per_step(this, "ins_per_step", "RISCV_ARCH", "1", "Number of steps before halt in stepping mode"),
-    pmp_upd_ena(this, "pmp_upd_ena", "CFG_MPU_TBL_SIZE"),
-    pmp_upd_cnt(this, "pmp_upd_cnt", "CFG_MPU_TBL_WIDTH"),
+    pmp_upd_ena(this, "pmp_upd_ena", "CFG_PMP_TBL_SIZE"),
+    pmp_upd_cnt(this, "pmp_upd_cnt", "CFG_PMP_TBL_WIDTH"),
+    pmp_ena(this, "pmp_ena", "1"),
     pmp_we(this, "pmp_we", "1"),
-    pmp_region(this, "pmp_region", "CFG_MPU_TBL_WIDTH"),
+    pmp_region(this, "pmp_region", "CFG_PMP_TBL_WIDTH"),
     pmp_start_addr(this, "pmp_start_addr", "CFG_CPU_ADDR_BITS"),
     pmp_end_addr(this, "pmp_end_addr", "CFG_CPU_ADDR_BITS"),
-    pmp_flags(this, "pmp_flags", "CFG_MPU_FL_TOTAL"),
+    pmp_flags(this, "pmp_flags", "CFG_PMP_FL_TOTAL"),
     // process
     comb(this)
 {
@@ -155,7 +153,6 @@ void CsrRegs::proc_comb() {
     river_cfg *cfg = glob_river_cfg_;
     GenObject *i;
 
-    SETZERO(mpu_we);
     //SETVAL(dbg_e_valid, i_e_valid, "used in RtlWrapper to count executed instructions");
     SETVAL(comb.vb_xpp, ARRITEM(xmode, TO_INT(mode), xmode->xpp));
     SETVAL(comb.vb_pmp_upd_ena, pmp_upd_ena);
@@ -293,6 +290,9 @@ TEXT();
         ELSE ();
             SETVAL(comb.v_csr_rena, BIT(cmd_type, cfg->CsrReq_ReadBit));
             SETVAL(comb.v_csr_wena, BIT(cmd_type, cfg->CsrReq_WriteBit));
+            IF (EQ(BITS(cmd_addr, 11, 4), CONST("0x3A", 8)), "pmpcfgx");
+                SETVAL(state, State_WaitPmp);
+            ENDIF();
         ENDIF();
         TEXT("All operation into CSR implemented through the Read-Modify-Write");
         TEXT("and we cannot generate exception on write access into read-only regs");
@@ -307,6 +307,11 @@ TEXT();
             SETZERO(cmd_data);
             SETVAL(state, State_Response);
             SETVAL(fencestate, Fence_None);
+        ENDIF();
+        ENDCASE();
+    CASE (State_WaitPmp);
+        IF (EZ(pmp_upd_ena));
+            SETVAL(state, State_Response);
         ENDIF();
         ENDCASE();
     CASE (State_Response);
@@ -709,7 +714,7 @@ TEXT();
     ELSIF (EQ(BITS(cmd_addr, 11, 4), CONST("0x3A", 8)), "pmpcfg0..63: [MRW] Physical memory protection configuration");
         IF (NZ(BIT(cmd_addr, 0)));
             SETONE(cmd_exception, "RV32 only");
-        ELSIF(LS(comb.t_pmpcfgidx, cfg->CFG_MPU_TBL_SIZE));
+        ELSIF(LS(comb.t_pmpcfgidx, cfg->CFG_PMP_TBL_SIZE));
             i = &FOR("i", CONST("0"), CONST("8"), "++");
                 SETBITSW(comb.vb_rdata, MUL2(CONST("8"), *i), CONST("8"),
                         ARRITEM(pmp, ADD2(comb.t_pmpcfgidx, *i), pmp->cfg));
@@ -719,8 +724,6 @@ TEXT();
                     SETARRITEM(pmp, ADD2(comb.t_pmpcfgidx, *i), pmp->cfg,
                                 BITSW(cmd_data, MUL2(CONST("8"), *i), CONST("8")));
                     SETBITONE(comb.vb_pmp_upd_ena, ADD2(comb.t_pmpcfgidx, *i));
-                    SETZERO(pmp_upd_cnt);
-                    SETZERO(pmp_start_addr);
                 ENDIF();
             ENDFOR();
         ENDIF();
@@ -734,7 +737,7 @@ TEXT();
                 SETONE(comb.v_napot_shift);
             ENDIF();
         ENDFOR();
-        IF (LS(comb.t_pmpdataidx, cfg->CFG_MPU_TBL_SIZE));
+        IF (LS(comb.t_pmpdataidx, cfg->CFG_PMP_TBL_SIZE));
             SETBITS(comb.vb_rdata, SUB2(cfg->CFG_CPU_ADDR_BITS, CONST("3")), CONST("0"),
                     ARRITEM(pmp, comb.t_pmpdataidx, BITS(pmp->addr, DEC(cfg->CFG_CPU_ADDR_BITS), CONST("0"))));
                 IF (ANDx(2, &NZ(comb.v_csr_wena),
@@ -742,9 +745,6 @@ TEXT();
                 SETARRITEM(pmp, comb.t_pmpdataidx, pmp->addr,
                         CC2(BITS(cmd_data, SUB2(cfg->CFG_CPU_ADDR_BITS, CONST("3")), CONST("0")), CONST("0", 2)));
                 SETARRITEM(pmp, comb.t_pmpdataidx, pmp->mask, comb.vb_pmp_napot_mask);
-                SETBITONE(comb.vb_pmp_upd_ena, comb.t_pmpdataidx);
-                SETZERO(pmp_upd_cnt);
-                SETZERO(pmp_start_addr);
             ENDIF();
         ENDIF();
     ELSIF (LE(cmd_addr, CONST("0x3EF", 12)), "pmpaddr63: [MRW] Physical memory protection address register");
@@ -830,21 +830,6 @@ TEXT();
         SETVAL(comb.vb_rdata, mstackund);
         IF (NZ(comb.v_csr_wena));
             SETVAL(mstackund, BITS(cmd_data, DEC(cfg->CFG_CPU_ADDR_BITS), CONST("0")));
-        ENDIF();
-    ELSIF (EQ(cmd_addr, CONST("0xBC2", 12)), "mpu_addr: [MWO] MPU address");
-        IF (NZ(comb.v_csr_wena));
-            SETVAL(mpu_addr, BITS(cmd_data, DEC(cfg->CFG_CPU_ADDR_BITS), CONST("0")));
-        ENDIF();
-    ELSIF (EQ(cmd_addr, CONST("0xBC3", 12)), "mpu_mask: [MWO] MPU mask");
-        IF (NZ(comb.v_csr_wena));
-            SETVAL(mpu_mask, BITS(cmd_data, DEC(cfg->CFG_CPU_ADDR_BITS), CONST("0")));
-        ENDIF();
-    ELSIF (EQ(cmd_addr, CONST("0xBC4", 12)), "mpu_ctrl: [MRW] MPU flags and write ena");
-        SETVAL(comb.vb_rdata, CC2(cfg->CFG_MPU_TBL_SIZE, CONST("0", 8)));
-        IF (NZ(comb.v_csr_wena));
-            SETVAL(mpu_idx, BITS(cmd_data, ADD2(CONST("8"), DEC(cfg->CFG_MPU_TBL_WIDTH)), CONST("8")));
-            SETVAL(mpu_flags, BITS(cmd_data, DEC(cfg->CFG_MPU_FL_TOTAL), CONST("0")));
-            SETVAL(mpu_we, BIT(cmd_data, 7));
         ENDIF();
     ELSE();
         TEXT("Not implemented CSR:");
@@ -988,6 +973,7 @@ TEXT();
         SETZERO(pmp_we);
     ENDIF();
     SETVAL(pmp_upd_ena, comb.vb_pmp_upd_ena);
+    SETVAL(pmp_ena, OR2_L(INV(BIT(mode, 1)), mprv), "S,U mode or MPRV is set");
 
 TEXT();
     SETZERO(comb.w_mstackovr);
@@ -1041,11 +1027,12 @@ TEXT();
     SETVAL(o_stack_overflow, comb.w_mstackovr);
     SETVAL(o_stack_underflow, comb.w_mstackund);
     SETVAL(o_executed_cnt, minstret_cnt);
-    SETVAL(o_mpu_region_we, mpu_we);
-    SETVAL(o_mpu_region_idx, mpu_idx);
-    SETVAL(o_mpu_region_addr, mpu_addr);
-    SETVAL(o_mpu_region_mask, mpu_mask);
-    SETVAL(o_mpu_region_flags, mpu_flags);
+    SETVAL(o_pmp_ena, pmp_ena, "S,U mode or MPRV is set");
+    SETVAL(o_pmp_we, pmp_we);
+    SETVAL(o_pmp_region, pmp_region);
+    SETVAL(o_pmp_start_addr, pmp_start_addr);
+    SETVAL(o_pmp_end_addr, pmp_end_addr);
+    SETVAL(o_pmp_flags, pmp_flags);
     SETVAL(o_immu_ena, immu_ena);
     SETVAL(o_dmmu_ena, dmmu_ena);
     SETVAL(o_mmu_ppn, satp_ppn);

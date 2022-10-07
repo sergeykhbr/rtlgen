@@ -100,7 +100,8 @@ class ICacheLru : public ModuleObject {
     InPort i_mem_load_fault;
     TextLine _mpu0;
     OutPort o_mpu_addr;
-    InPort i_mpu_flags;
+    InPort i_pma_cached;
+    InPort i_pmp_x;
     TextLine _flush0_;
     InPort i_flush_address;
     InPort i_flush_valid;
@@ -146,7 +147,6 @@ class ICacheLru : public ModuleObject {
     RegSignal mem_addr;
     RegSignal req_mem_type;
     RegSignal req_mem_size;
-    RegSignal executable;
     RegSignal load_fault;
     RegSignal req_flush;
     RegSignal req_flush_all;

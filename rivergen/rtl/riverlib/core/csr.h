@@ -57,7 +57,7 @@ class CsrRegs : public ModuleObject {
             v_flushd(this, "v_flushd", "1"),
             v_flushi(this, "v_flushi", "1"),
             v_flushmmu(this, "v_flushmmu", "1"),
-            vb_pmp_upd_ena(this, "vb_pmp_upd_ena", "CFG_MPU_TBL_SIZE"),
+            vb_pmp_upd_ena(this, "vb_pmp_upd_ena", "CFG_PMP_TBL_SIZE"),
             vb_pmp_napot_mask(this, "vb_pmp_napot_mask", "CFG_CPU_ADDR_BITS"),
             v_napot_shift(this, "v_napot_shift", "1"),
             t_pmpdataidx("0", "t_pmpdataidx", this),
@@ -141,11 +141,12 @@ class CsrRegs : public ModuleObject {
     OutPort o_flushmmu_valid;
     OutPort o_flush_addr;
     TextLine _io1_;
-    OutPort o_mpu_region_we;
-    OutPort o_mpu_region_idx;
-    OutPort o_mpu_region_addr;
-    OutPort o_mpu_region_mask;
-    OutPort o_mpu_region_flags;
+    OutPort o_pmp_ena;
+    OutPort o_pmp_we;
+    OutPort o_pmp_region;
+    OutPort o_pmp_start_addr;
+    OutPort o_pmp_end_addr;
+    OutPort o_pmp_flags;
     TextLine _io2_;
     OutPort o_immu_ena;
     OutPort o_dmmu_ena;
@@ -164,6 +165,7 @@ class CsrRegs : public ModuleObject {
     ParamUI32D State_Resume;
     ParamUI32D State_Wfi;
     ParamUI32D State_Fence;
+    ParamUI32D State_WaitPmp;
     ParamUI32D State_Response;
     TextLine _fence0_;
     ParamLogic Fence_None;
@@ -236,7 +238,7 @@ class CsrRegs : public ModuleObject {
     class PmpTableType : public TStructArray<PmpItemType> {
      public:
         PmpTableType(GenObject *parent, const char *name)
-            : TStructArray<PmpItemType>(parent, "", name, "CFG_MPU_TBL_SIZE") {
+            : TStructArray<PmpItemType>(parent, "", name, "CFG_PMP_TBL_SIZE") {
             setReg();
         }
     };
@@ -260,11 +262,6 @@ class CsrRegs : public ModuleObject {
     RegSignal mcountinhibit;
     RegSignal mstackovr;
     RegSignal mstackund;
-    RegSignal mpu_addr;
-    RegSignal mpu_mask;
-    RegSignal mpu_idx;
-    RegSignal mpu_flags;
-    RegSignal mpu_we;
     RegSignal immu_ena;
     RegSignal dmmu_ena;
     RegSignal satp_ppn;
@@ -293,6 +290,7 @@ class CsrRegs : public ModuleObject {
     RegSignal ins_per_step;
     RegSignal pmp_upd_ena;
     RegSignal pmp_upd_cnt;
+    RegSignal pmp_ena;
     RegSignal pmp_we;
     RegSignal pmp_region;
     RegSignal pmp_start_addr;

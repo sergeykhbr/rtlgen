@@ -129,7 +129,9 @@ class DCacheLru : public ModuleObject {
     InPort i_mem_store_fault;
     TextLine _mpu0;
     OutPort o_mpu_addr;
-    InPort i_mpu_flags;
+    InPort i_pma_cached;
+    InPort i_pmp_r;
+    InPort i_pmp_w;
     TextLine _dsnop0_;
     InPort i_req_snoop_valid;
     InPort i_req_snoop_type;

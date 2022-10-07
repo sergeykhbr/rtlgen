@@ -42,7 +42,8 @@ ICacheLru::ICacheLru(GenObject *parent, const char *name) :
     i_mem_load_fault(this, "i_mem_load_fault", "1"),
     _mpu0(this, "Mpu interface"),
     o_mpu_addr(this, "o_mpu_addr", "CFG_CPU_ADDR_BITS"),
-    i_mpu_flags(this, "i_mpu_flags", "CFG_MPU_FL_TOTAL"),
+    i_pma_cached(this, "i_pma_cached", "1"),
+    i_pmp_x(this, "i_pmp_x", "1", "PMP eXecute access"),
     _flush0_(this, "Flush interface"),
     i_flush_address(this, "i_flush_address", "CFG_CPU_ADDR_BITS"),
     i_flush_valid(this, "i_flush_valid", "1"),
@@ -87,7 +88,6 @@ ICacheLru::ICacheLru(GenObject *parent, const char *name) :
     mem_addr(this, "mem_addr", "CFG_CPU_ADDR_BITS"),
     req_mem_type(this, "req_mem_type", "REQ_MEM_TYPE_BITS"),
     req_mem_size(this, "req_mem_size", "3"),
-    executable(this, "executable", "1"),
     load_fault(this, "load_fault", "1"),
     req_flush(this, "req_flush", "1", "0", "init flush request"),
     req_flush_all(this, "req_flush_all", "1"),
@@ -164,7 +164,6 @@ TEXT();
 TEXT();
     SWITCH (state);
     CASE(State_Idle);
-        SETONE(executable);
         SETONE(comb.v_ready_next);
         ENDCASE();
     CASE(State_CheckHit);
@@ -182,17 +181,19 @@ TEXT();
         ENDIF();
         ENDCASE();
     CASE(State_TranslateAddress);
-        IF (EZ(BIT(i_mpu_flags, cfg->CFG_MPU_FL_EXEC)));
+        IF (EZ(i_pmp_x));
             SETZERO(comb.t_cache_line_i);
             SETVAL(cache_line_i, INV_L(comb.t_cache_line_i));
             SETVAL(state, State_CheckResp);
+            SETONE(load_fault);
         ELSE();
             SETONE(req_mem_valid);
             SETVAL(state, State_WaitGrant);
             SETVAL(write_addr, req_addr);
+            SETZERO(load_fault);
 
             TEXT();
-            IF (NZ(BIT(i_mpu_flags, cfg->CFG_MPU_FL_CACHABLE)));
+            IF (NZ(i_pma_cached));
                 IF (EZ(line_hit_o));
                     SETVAL(mem_addr, LSH(BITS(req_addr, DEC(cfg->CFG_CPU_ADDR_BITS),
                             cfg->CFG_ILOG2_BYTES_PER_LINE), cfg->CFG_ILOG2_BYTES_PER_LINE));
@@ -209,10 +210,6 @@ TEXT();
                 SETVAL(req_mem_size, CONST("4", 3), "uncached, 16 B");
             ENDIF();
         ENDIF();
-
-        TEXT();
-        SETZERO(load_fault);
-        SETVAL(executable, BIT(i_mpu_flags, cfg->CFG_MPU_FL_EXEC));
         ENDCASE();
     CASE(State_WaitGrant);
         IF (NZ(i_req_mem_ready));
@@ -341,6 +338,6 @@ TEXT();
     SETVAL(o_resp_valid, comb.v_resp_valid);
     SETVAL(o_resp_data, comb.vb_resp_data);
     SETVAL(o_resp_addr, req_addr);
-    SETVAL(o_resp_load_fault, OR2(comb.v_resp_er_load_fault, INV(executable)));
+    SETVAL(o_resp_load_fault, comb.v_resp_er_load_fault);
     SETVAL(o_mpu_addr, req_addr);
 }

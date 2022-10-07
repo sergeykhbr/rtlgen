@@ -51,12 +51,13 @@ Processor::Processor(GenObject *parent, const char *name) :
     o_resp_data_ready(this, "o_resp_data_ready", "1", "Core is ready to accept response from DCache"),
     _Interrupts0_(this, "Interrupt line from external interrupts controller (PLIC):"),
     i_irq_pending(this, "i_irq_pending", "IRQ_TOTAL", "Per Hart pending interrupts pins"),
-    _MpuInterface0_(this, "MPU interface"),
-    o_mpu_region_we(this, "o_mpu_region_we", "1"),
-    o_mpu_region_idx(this, "o_mpu_region_idx", "CFG_MPU_TBL_WIDTH"),
-    o_mpu_region_addr(this, "o_mpu_region_addr", "CFG_CPU_ADDR_BITS"),
-    o_mpu_region_mask(this, "o_mpu_region_mask", "CFG_CPU_ADDR_BITS"),
-    o_mpu_region_flags(this, "o_mpu_region_flags", "CFG_MPU_FL_TOTAL", "{ena, cachable, r, w, x}"),
+    _PmpInterface0_(this, "PMP interface"),
+    o_pmp_ena(this, "o_pmp_ena", "1", "PMP is active in S or U modes or if L/MPRV bit is set in M-mode"),
+    o_pmp_we(this, "o_pmp_we", "1", "write enable into PMP"),
+    o_pmp_region(this, "o_pmp_region", "CFG_PMP_TBL_WIDTH", "selected PMP region"),
+    o_pmp_start_addr(this, "o_pmp_start_addr", "CFG_CPU_ADDR_BITS", "PMP region start address"),
+    o_pmp_end_addr(this, "o_pmp_end_addr", "CFG_CPU_ADDR_BITS", "PMP region end address (inclusive)"),
+    o_pmp_flags(this, "o_pmp_flags", "CFG_PMP_FL_TOTAL", "{ena, lock, r, w, x}"),
     _Debug0(this, "Debug interface:"),
     i_haltreq(this, "i_haltreq", "1", "DMI: halt request from debug unit"),
     i_resumereq(this, "i_resumereq", "1", "DMI: resume request from debug unit"),
@@ -534,11 +535,12 @@ Processor::Processor(GenObject *parent, const char *name) :
         CONNECT(csr0, 0, csr0.o_flushi_valid, csr.flushi_valid);
         CONNECT(csr0, 0, csr0.o_flushmmu_valid, csr.flushmmu_valid);
         CONNECT(csr0, 0, csr0.o_flush_addr, csr.flush_addr);
-        CONNECT(csr0, 0, csr0.o_mpu_region_we, o_mpu_region_we);
-        CONNECT(csr0, 0, csr0.o_mpu_region_idx, o_mpu_region_idx);
-        CONNECT(csr0, 0, csr0.o_mpu_region_addr, o_mpu_region_addr);
-        CONNECT(csr0, 0, csr0.o_mpu_region_mask, o_mpu_region_mask);
-        CONNECT(csr0, 0, csr0.o_mpu_region_flags, o_mpu_region_flags);
+        CONNECT(csr0, 0, csr0.o_pmp_ena, o_pmp_ena);
+        CONNECT(csr0, 0, csr0.o_pmp_we, o_pmp_we);
+        CONNECT(csr0, 0, csr0.o_pmp_region, o_pmp_region);
+        CONNECT(csr0, 0, csr0.o_pmp_start_addr, o_pmp_start_addr);
+        CONNECT(csr0, 0, csr0.o_pmp_end_addr, o_pmp_end_addr);
+        CONNECT(csr0, 0, csr0.o_pmp_flags, o_pmp_flags);
         CONNECT(csr0, 0, csr0.o_immu_ena, w_immu_ena);
         CONNECT(csr0, 0, csr0.o_dmmu_ena, w_dmmu_ena);
         CONNECT(csr0, 0, csr0.o_mmu_ppn, wb_mmu_ppn);
