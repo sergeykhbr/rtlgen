@@ -944,7 +944,11 @@ TEXT();
             SETZERO(pmp_flags);
         ELSIF (EQ(BITS(ARRITEM_B(pmp, TO_INT(pmp_upd_cnt), pmp->cfg), 4, 3), CONST("1", 2)));
             TEXT("TOR: Top of range");
-            SETVAL(pmp_start_addr, pmp_end_addr);
+            IF (NZ(BIT(pmp_end_addr, 0)));
+                SETVAL(pmp_start_addr, INC(pmp_end_addr));
+            ELSE();
+                SETVAL(pmp_start_addr, pmp_end_addr);
+            ENDIF();
             SETVAL(pmp_end_addr, DEC(ARRITEM_B(pmp, TO_INT(pmp_upd_cnt), pmp->addr)));
             SETVAL(pmp_flags, CC3(CONST("0x1", 1),
                                   BIT(ARRITEM_B(pmp, TO_INT(pmp_upd_cnt), pmp->cfg), 7),
@@ -960,7 +964,8 @@ TEXT();
             TEXT("NAPOT: Naturally aligned power-of-two region, >=8 bytes");
             SETVAL(pmp_start_addr, AND2_L(ARRITEM_B(pmp, TO_INT(pmp_upd_cnt), pmp->addr),
                                           ARRITEM_B(pmp, TO_INT(pmp_upd_cnt), INV_L(pmp->mask))));
-            SETVAL(pmp_end_addr, OR2_L(pmp_start_addr, ARRITEM_B(pmp, TO_INT(pmp_upd_cnt), pmp->mask)));
+            SETVAL(pmp_end_addr, OR2_L(ARRITEM_B(pmp, TO_INT(pmp_upd_cnt), pmp->addr),
+                                       ARRITEM_B(pmp, TO_INT(pmp_upd_cnt), pmp->mask)));
             SETVAL(pmp_flags, CC3(CONST("0x1", 1),
                                   BIT(ARRITEM_B(pmp, TO_INT(pmp_upd_cnt), pmp->cfg), 7),
                                   BITS(ARRITEM_B(pmp, TO_INT(pmp_upd_cnt), pmp->cfg), 2, 0)));
