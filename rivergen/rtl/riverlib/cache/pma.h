@@ -42,7 +42,6 @@ class PMA : public ModuleObject {
 
  public:
     InPort i_clk;
-    InPort i_nrst;
     InPort i_iaddr;
     InPort i_daddr;
     OutPort o_icached;
@@ -55,8 +54,6 @@ class PMA : public ModuleObject {
     ParamLogic IO1_BAR;
     ParamLogic IO1_MASK;
 
-    RegSignal icached;
-    RegSignal dcached;
     CombProcess comb;
 };
 

@@ -201,7 +201,6 @@ CacheTop::CacheTop(GenObject *parent, const char *name) :
 
     NEW(pma0, pma0.getName().c_str());
         CONNECT(pma0, 0, pma0.i_clk, i_clk);
-        CONNECT(pma0, 0, pma0.i_nrst, i_nrst);
         CONNECT(pma0, 0, pma0.i_iaddr, i.mpu_addr);
         CONNECT(pma0, 0, pma0.i_daddr, d.mpu_addr);
         CONNECT(pma0, 0, pma0.o_icached, w_pma_icached);

@@ -130,6 +130,7 @@ class InstrExecute : public ModuleObject {
             v_dbg_mem_req_ready(this, "v_dbg_mem_req_ready", "1"),
             v_dbg_mem_req_error(this, "v_dbg_mem_req_error", "1"),
             v_halted(this, "v_halted", "1"),
+            v_idle(this, "v_idle", "1"),
             mux(this, "mux"),
             vb_o_npc(this, "vb_o_npc", "CFG_CPU_ADDR_BITS"),
             t_radr1("0", "t_radr1", this),
@@ -192,6 +193,7 @@ class InstrExecute : public ModuleObject {
         Logic v_dbg_mem_req_ready;
         Logic v_dbg_mem_req_error;
         Logic v_halted;
+        Logic v_idle;
         input_mux_type mux;
         Logic vb_o_npc;
         I32D t_radr1;

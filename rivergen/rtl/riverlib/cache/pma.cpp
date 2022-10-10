@@ -19,7 +19,6 @@
 PMA::PMA(GenObject *parent, const char *name) :
     ModuleObject(parent, "PMA", name),
     i_clk(this, "i_clk", "1", "CPU clock"),
-    i_nrst(this, "i_nrst", "1", "Reset: active LOW"),
     i_iaddr(this, "i_iaddr", "CFG_CPU_ADDR_BITS"),
     i_daddr(this, "i_daddr", "CFG_CPU_ADDR_BITS"),
     o_icached(this, "o_icached", "1", "Hardcoded cached memory range for I$"),
@@ -32,8 +31,6 @@ PMA::PMA(GenObject *parent, const char *name) :
     IO1_BAR(this, "CFG_CPU_ADDR_BITS", "IO1_BAR",   "0x0000000010000000"),
     IO1_MASK(this, "CFG_CPU_ADDR_BITS", "IO1_MASK", "0x000000000003FFFF", "256 KB"),
     // registers
-    icached(this, "icached", "1"),
-    dcached(this, "dcached", "1"),
     // process
     comb(this)
 {
@@ -45,32 +42,27 @@ void PMA::proc_comb() {
     river_cfg *cfg = glob_river_cfg_;
 
     SETONE(comb.v_icached);
-    IF (EQ(OR2_L(i_iaddr, CLINT_MASK), CLINT_BAR));
+    IF (EQ(AND2_L(i_iaddr, INV_L(CLINT_MASK)), CLINT_BAR));
         SETZERO(comb.v_icached);
-    ELSIF (EQ(OR2_L(i_iaddr, PLIC_MASK), PLIC_BAR));
+    ELSIF (EQ(AND2_L(i_iaddr, INV_L(PLIC_MASK)), PLIC_BAR));
         SETZERO(comb.v_icached);
-    ELSIF (EQ(OR2_L(i_iaddr, IO1_MASK), IO1_BAR));
+    ELSIF (EQ(AND2_L(i_iaddr, INV_L(IO1_MASK)), IO1_BAR));
         SETZERO(comb.v_icached);
     ENDIF();
 
 TEXT();
-    SETONE(dcached);
-    IF (EQ(OR2_L(i_iaddr, CLINT_MASK), CLINT_BAR));
+    SETONE(comb.v_dcached);
+    IF (EQ(AND2_L(i_daddr, INV_L(CLINT_MASK)), CLINT_BAR));
         SETZERO(comb.v_dcached);
-    ELSIF (EQ(OR2_L(i_iaddr, PLIC_MASK), PLIC_BAR));
+    ELSIF (EQ(AND2_L(i_daddr, INV_L(PLIC_MASK)), PLIC_BAR));
         SETZERO(comb.v_dcached);
-    ELSIF (EQ(OR2_L(i_iaddr, IO1_MASK), IO1_BAR));
+    ELSIF (EQ(AND2_L(i_daddr, INV_L(IO1_MASK)), IO1_BAR));
         SETZERO(comb.v_dcached);
     ENDIF();
 
     TEXT();
-    SETVAL(icached, comb.v_icached);
-    SETVAL(dcached, comb.v_dcached);
 
 TEXT();
-    SYNC_RESET(*this);
-
-TEXT();
-    SETVAL(o_icached, icached);
-    SETVAL(o_dcached, dcached);
+    SETVAL(o_icached, comb.v_icached);
+    SETVAL(o_dcached, comb.v_dcached);
 }
