@@ -703,7 +703,7 @@ TEXT();
         SETBITS(comb.vb_csr_cmd_wdata, 4, 0, BITS(radr1, 4, 0), "zero-extending 5 to 64-bits");
     ENDIF();
     TEXT("Higher priority CSR requests. They can redefine CSR command only in the Idle state,");
-    TEXT("otherwise it is possible situation when read-modify-write sequnce uses wrong cmd_wdata");
+    TEXT("otherwise it is possible situation when read-modify-write sequence uses wrong cmd_wdata");
     IF ((comb.v_idle));
         IF (NZ(i_haltreq));
             SETVAL(comb.vb_csr_cmd_type, cfg->CsrReq_HaltCmd);

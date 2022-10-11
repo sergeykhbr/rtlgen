@@ -29,7 +29,7 @@ PMA::PMA(GenObject *parent, const char *name) :
     PLIC_BAR(this, "CFG_CPU_ADDR_BITS", "PLIC_BAR",   "0x000000000C000000"),
     PLIC_MASK(this, "CFG_CPU_ADDR_BITS", "PLIC_MASK", "0x0000000003FFFFFF", "64 MB"),
     IO1_BAR(this, "CFG_CPU_ADDR_BITS", "IO1_BAR",   "0x0000000010000000"),
-    IO1_MASK(this, "CFG_CPU_ADDR_BITS", "IO1_MASK", "0x000000000003FFFF", "256 KB"),
+    IO1_MASK(this, "CFG_CPU_ADDR_BITS", "IO1_MASK", "0x00000000000FFFFF", "1 MB"),
     // registers
     // process
     comb(this)

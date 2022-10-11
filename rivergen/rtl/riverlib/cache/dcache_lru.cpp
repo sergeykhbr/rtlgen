@@ -115,8 +115,6 @@ DCacheLru::DCacheLru(GenObject *parent, const char *name) :
     req_mem_type(this, "req_mem_type", "REQ_MEM_TYPE_BITS"),
     req_mem_size(this, "req_mem_size", "3"),
     mem_addr(this, "mem_addr", "CFG_CPU_ADDR_BITS"),
-    mpu_er_store(this, "mpu_er_store", "1"),
-    mpu_er_load(this, "mpu_er_load", "1"),
     load_fault(this, "load_fault", "1"),
     write_first(this, "write_first", "1"),
     write_flush(this, "write_flush", "1"),
@@ -238,8 +236,7 @@ TEXT();
     TEXT("System Bus access state machine");
     SWITCH (state);
     CASE(State_Idle);
-        SETZERO(mpu_er_store);
-        SETZERO(mpu_er_load);
+        SETZERO(load_fault);
         SETONE(comb.v_ready_next);
         ENDCASE();
     CASE(State_CheckHit);
@@ -306,17 +303,18 @@ TEXT();
         ENDCASE();
     CASE(State_TranslateAddress);
         IF (AND2(NZ(BIT(req_type, cfg->MemopType_Store)), EZ(i_pmp_w)));
-            SETONE(mpu_er_store);
+            SETONE(load_fault);
             SETZERO(comb.t_cache_line_i);
             SETVAL(cache_line_i, INV_L(comb.t_cache_line_i));
             SETVAL(state, State_CheckResp);
         ELSIF (AND2(EZ(BIT(req_type, cfg->MemopType_Store)), EZ(i_pmp_r)));
-            SETONE(mpu_er_load);
+            SETONE(load_fault);
             SETZERO(comb.t_cache_line_i);
             SETVAL(cache_line_i, INV_L(comb.t_cache_line_i));
             SETVAL(state, State_CheckResp);
         ELSE();
             SETONE(req_mem_valid);
+            SETZERO(load_fault);
             SETVAL(state, State_WaitGrant);
             IF (NZ(i_pma_cached));
                 TEXT("Cached:");
@@ -359,10 +357,7 @@ TEXT();
                 SETVAL(cache_line_o, comb.t_cache_line_i);
             ENDIF();
         ENDIF();
-
-        TEXT();
         SETZERO(cache_line_i);
-        SETZERO(load_fault);
         ENDCASE();
     CASE(State_WaitGrant);
         IF (NZ(i_req_mem_ready));
@@ -625,8 +620,8 @@ TEXT();
     SETVAL(o_resp_data, comb.vb_resp_data);
     SETVAL(o_resp_addr, req_addr);
     SETVAL(o_resp_er_addr, req_addr);
-    SETVAL(o_resp_er_load_fault, OR2(comb.v_resp_er_load_fault, mpu_er_load));
-    SETVAL(o_resp_er_store_fault, OR2(comb.v_resp_er_store_fault, mpu_er_store));
+    SETVAL(o_resp_er_load_fault, comb.v_resp_er_load_fault);
+    SETVAL(o_resp_er_store_fault, comb.v_resp_er_store_fault);
     SETVAL(o_mpu_addr, req_addr);
 
 TEXT();

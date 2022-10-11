@@ -195,8 +195,6 @@ class DCacheLru : public ModuleObject {
     RegSignal req_mem_type;
     RegSignal req_mem_size;
     RegSignal mem_addr;
-    RegSignal mpu_er_store;
-    RegSignal mpu_er_load;
     RegSignal load_fault;
     RegSignal write_first;
     RegSignal write_flush;
