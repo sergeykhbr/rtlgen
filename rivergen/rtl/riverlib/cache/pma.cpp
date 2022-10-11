@@ -25,9 +25,9 @@ PMA::PMA(GenObject *parent, const char *name) :
     o_dcached(this, "o_dcached", "1", "Hardcoded cached memory range for D$"),
     // params
     CLINT_BAR(this, "CFG_CPU_ADDR_BITS", "CLINT_BAR",   "0x0000000002000000"),
-    CLINT_MASK(this, "CFG_CPU_ADDR_BITS", "CLINT_MASK", "0x0000000000007FFF", "32 KB"),
+    CLINT_MASK(this, "CFG_CPU_ADDR_BITS", "CLINT_MASK", "0x000000000000FFFF", "64 KB"),
     PLIC_BAR(this, "CFG_CPU_ADDR_BITS", "PLIC_BAR",   "0x000000000C000000"),
-    PLIC_MASK(this, "CFG_CPU_ADDR_BITS", "PLIC_MASK", "0x000000000000FFFF", "64 KB"),
+    PLIC_MASK(this, "CFG_CPU_ADDR_BITS", "PLIC_MASK", "0x0000000003FFFFFF", "64 MB"),
     IO1_BAR(this, "CFG_CPU_ADDR_BITS", "IO1_BAR",   "0x0000000010000000"),
     IO1_MASK(this, "CFG_CPU_ADDR_BITS", "IO1_MASK", "0x000000000003FFFF", "256 KB"),
     // registers
