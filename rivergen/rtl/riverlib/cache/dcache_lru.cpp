@@ -345,7 +345,7 @@ TEXT();
             ELSE();
                 TEXT("Uncached read/write");
                 SETVAL(mem_addr, req_addr);
-                SETVAL(mem_wstrb, CC2(CONST("0"), req_wstrb));
+                SETVAL(mem_wstrb, CC2(ALLZEROS(), req_wstrb));
                 SETVAL(req_mem_size, CC2(CONST("0", 1), i_req_size));
                 IF (NZ(BIT(req_type, cfg->MemopType_Store)));
                     CALLF(&req_mem_type, cfg->WriteNoSnoop, 0);

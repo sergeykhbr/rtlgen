@@ -42,6 +42,27 @@ GenValue::GenValue(const char *width, GenObject *val, const char *name,
     setStrWidth(width);
 }
 
+std::string GenValue::getStrValue() {
+    if (SCV_is_sv() && getId() == ID_CONST) {
+        char tstr[64];
+        int w = getWidth();
+        uint64_t v = getValue();
+        if (w == 1) {
+            RISCV_sprintf(tstr, sizeof(tstr), "1'b%" RV_PRI64 "x", v);
+        } else if (strValue_.c_str()[1] == 'x') {
+            if (w == 32) {
+                RISCV_sprintf(tstr, sizeof(tstr), "32'h%08" RV_PRI64 "x", v);
+            } else {
+                RISCV_sprintf(tstr, sizeof(tstr), "%d'h%" RV_PRI64 "x", w, v);
+            }
+        } else {
+            return GenObject::getStrValue();
+        }
+        return std::string(tstr);
+    }
+    return GenObject::getStrValue();
+}
+
 
 std::string BOOL::getType() {
     std::string ret = "";

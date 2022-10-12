@@ -301,7 +301,7 @@ TEXT();
             SETVAL(cache_line_o, line_rdata_o);
         ELSE();
             SETVAL(mem_addr, req_addr);
-            SETVAL(mem_wstrb, CC2(CONST("0"), req_wstrb));
+            SETVAL(mem_wstrb, CC2(ALLZEROS(), req_wstrb));
             IF (NZ(BIT(req_type, cfg->L2_REQ_TYPE_WRITE)));
                 CALLF(&req_mem_type, cfg->WriteNoSnoop, 0);
             ELSE();

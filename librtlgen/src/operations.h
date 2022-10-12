@@ -42,7 +42,6 @@ class Operation : public GenObject {
     static int get_space();
     static std::string addspaces();
     static std::string obj2varname(GenObject *obj, const char *prefix="r", bool read=false);
-    static std::string obj2const(GenObject *obj, const char *prefix="r", bool read=false);
     static std::string fullname(const char *prefix, std::string name, GenObject *obj);
     static std::string addtext(GenObject *obj, size_t curpos);
     // Copy signals marked as 'reg' from v to r or vise versa

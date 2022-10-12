@@ -31,6 +31,7 @@ class GenValue : public GenObject {
              GenObject *parent, const char *comment="");
     GenValue(const char *width, GenObject *val, const char *name,
              GenObject *parent, const char *comment="");
+    virtual std::string getStrValue() override;
 };
 
 class BOOL : public GenValue {
@@ -51,6 +52,7 @@ class STRING : public GenValue {
     }
 
     virtual std::string getType();
+    virtual std::string getStrValue() override { return GenObject::getStrValue(); }
 };
 
 class FileValue : public GenValue {

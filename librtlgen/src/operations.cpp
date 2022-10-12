@@ -153,21 +153,6 @@ std::string Operation::obj2varname(GenObject *obj, const char *prefix, bool read
     return ret;
 }
 
-std::string Operation::obj2const(GenObject *obj, const char *prefix, bool read) {
-    if (SCV_is_sv() && obj->getId() == ID_CONST) {
-        char tstr[256];
-        int w = obj->getWidth();
-        uint64_t v = obj->getValue();
-        if (w == 1) {
-            RISCV_sprintf(tstr, sizeof(tstr), "1'b%" RV_PRI64 "x", v);
-        } else {
-            RISCV_sprintf(tstr, sizeof(tstr), "%d'h%" RV_PRI64 "x", w, v);
-        }
-        return std::string(tstr);
-    }
-    return obj2varname(obj, prefix, read);
-}
-
 // dst = r or v
 // src = r, v or 0
 std::string Operation::copyreg_entry(char *idx, std::string dst, std::string src, GenObject *p) {
@@ -2051,8 +2036,8 @@ Operation &SPLx(GenObject &a, size_t cnt, ...) {
 
 // CC2
 std::string CC2_gen(GenObject **args) {
-    std::string A = Operation::obj2const(args[1], "r", true);
-    std::string B = Operation::obj2const(args[2], "r", true);
+    std::string A = Operation::obj2varname(args[1], "r", true);
+    std::string B = Operation::obj2varname(args[2], "r", true);
     if (SCV_is_sysc()) {
         if (args[2]->getId() == ID_CONST) {
             int w = args[2]->getWidth();
@@ -2081,9 +2066,9 @@ Operation &CC2(GenObject &a, GenObject &b, const char *comment) {
 
 // CC3
 std::string CC3_gen(GenObject **args) {
-    std::string A = Operation::obj2const(args[1]);
-    std::string B = Operation::obj2const(args[2]);
-    std::string C = Operation::obj2const(args[3]);
+    std::string A = Operation::obj2varname(args[1]);
+    std::string B = Operation::obj2varname(args[2]);
+    std::string C = Operation::obj2varname(args[3]);
     if (SCV_is_sysc()) {
         if (args[1]->getId() == ID_CONST && args[1]->getValue() == 0
             && args[3]->getId() == ID_CONST) {
@@ -2114,10 +2099,10 @@ Operation &CC3(GenObject &a, GenObject &b, GenObject &c, const char *comment) {
 
 // CC4
 std::string CC4_gen(GenObject **args) {
-    std::string A = Operation::obj2const(args[1]);
-    std::string B = Operation::obj2const(args[2]);
-    std::string C = Operation::obj2const(args[3]);
-    std::string D = Operation::obj2const(args[4]);
+    std::string A = Operation::obj2varname(args[1]);
+    std::string B = Operation::obj2varname(args[2]);
+    std::string C = Operation::obj2varname(args[3]);
+    std::string D = Operation::obj2varname(args[4]);
     if (SCV_is_sysc()) {
         A = "(" + A + ", " + B + ", " + C + + ", " + D + ")";
     } else {
