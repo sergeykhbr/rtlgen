@@ -105,7 +105,7 @@ Workgroup::Workgroup(GenObject *parent, const char *name) :
         CONNECT(dmi0, 0, dmi0.i_nrst, i_dmi_nrst);
         CONNECT(dmi0, 0, dmi0.i_trst, i_trst);
         CONNECT(dmi0, 0, dmi0.i_tck, i_tck);
-        CONNECT(dmi0, 0, dmi0.i_tms, i_tck);
+        CONNECT(dmi0, 0, dmi0.i_tms, i_tms);
         CONNECT(dmi0, 0, dmi0.i_tdi, i_tdi);
         CONNECT(dmi0, 0, dmi0.o_tdo, o_tdo);
         CONNECT(dmi0, 0, dmi0.i_bus_req_valid, i_apb_dmi_req_valid);

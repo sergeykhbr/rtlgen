@@ -115,9 +115,6 @@ public:
 
     // regs
     RegSignal state;
-    RegSignal tck;
-    RegSignal tms;
-    RegSignal tdi;
     RegSignal dr_length;
     RegSignal dr;
     RegSignal bypass;

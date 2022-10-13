@@ -72,9 +72,6 @@ jtagtap::jtagtap(GenObject *parent, const char *name) :
     UPDATE_IR(this, "4", "UPDATE_IR", "15"),
     // registers
     state(this, "state", "4", "RESET_TAP"),
-    tck(this, "tck", "1"),
-    tms(this, "tms", "1"),
-    tdi(this, "tdi", "1"),
     dr_length(this, "dr_length", "7"),
     dr(this, "dr", "drlen", "idcode"),
     bypass(this, "bypass", "1"),
