@@ -206,7 +206,8 @@ TEXT();
                 IF (NZ(BITS(i_req_addr, 1, 0)));
                     TEXT("FENCE or FENCE.I");
                     SETVAL(fencestate, Fence_Data);
-                ELSIF(AND3(NZ(BIT(i_req_addr,2)), EZ(tvm), NE(mode, cfg->PRV_S)));
+                ELSIF(ANDx(2, &NZ(BIT(i_req_addr,2)),
+                              &INV(AND2(NZ(tvm), EZ(BIT(mode, 1))))));
                     TEXT("FENCE.VMA: is illegal in S-mode when TVM bit=1");
                     SETVAL(fencestate, Fence_MMU);
                 ELSE();
