@@ -151,6 +151,8 @@ class CsrRegs : public ModuleObject {
     OutPort o_immu_ena;
     OutPort o_dmmu_ena;
     OutPort o_mmu_ppn;
+    OutPort o_mmu_sv39;
+    OutPort o_mmu_sv48;
 
  protected:
     DefParamUI32D hartid;
@@ -175,6 +177,7 @@ class CsrRegs : public ModuleObject {
     ParamLogic Fence_MMU;
     ParamLogic Fence_End;
     TextLine _fence1_;
+    ParamLogic SATP_MODE_SV39;
     ParamLogic SATP_MODE_SV48;
 
     class RegModeType : public StructObject {
@@ -265,7 +268,8 @@ class CsrRegs : public ModuleObject {
     RegSignal immu_ena;
     RegSignal dmmu_ena;
     RegSignal satp_ppn;
-    RegSignal satp_mode;
+    RegSignal satp_sv39;
+    RegSignal satp_sv48;
     RegSignal mode;
     RegSignal mprv;
     RegSignal tvm;

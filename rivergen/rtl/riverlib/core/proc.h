@@ -289,6 +289,8 @@ class Processor : public ModuleObject {
             valid(this, "valid", "1"),
             debug_valid(this, "debug_valid", "1"),
             dmmu_ena(this, "dmmu_ena", "1"),
+            dmmu_sv39(this, "dmmu_sv39", "1"),
+            dmmu_sv48(this, "dmmu_sv48", "1"),
             req_data_valid(this, "req_data_valid", "1"),
             req_data_type(this, "req_data_type", "MemopType_Total"),
             req_data_addr(this, "req_data_addr", "CFG_CPU_ADDR_BITS"),
@@ -303,6 +305,8 @@ class Processor : public ModuleObject {
         Signal valid;
         Signal debug_valid;
         Signal dmmu_ena;
+        Signal dmmu_sv39;
+        Signal dmmu_sv48;
         Signal req_data_valid;
         Signal req_data_type;
         Signal req_data_addr;
@@ -366,6 +370,11 @@ class Processor : public ModuleObject {
         stack_overflow(this, "stack_overflow", "1"),
         stack_underflow(this, "stack_underflow", "1"),
         step(this, "step", "1"),
+        immu_ena(this, "immu_ena", "1", "0", "Instruction MMU enabled in U and S modes. Sv48 only."),
+        dmmu_ena(this, "dmmu_ena", "1", "0", "Instruction MMU enabled in U and S modes or MPRV. Sv48 only."),
+        mmu_ppn(this, "mmu_ppn", "44", "0", "Physical Page Number"),
+        mmu_sv39(this, "mmu_sv39", "1"),
+        mmu_sv48(this, "mmu_sv48", "1"),
         progbuf_end(this, "progbuf_end", "1"),
         progbuf_error(this, "progbuf_error", "1") {}
      public:
@@ -383,6 +392,11 @@ class Processor : public ModuleObject {
         Signal stack_overflow;
         Signal stack_underflow;
         Signal step;
+        Signal immu_ena;
+        Signal dmmu_ena;
+        Signal mmu_ppn;
+        Signal mmu_sv39;
+        Signal mmu_sv48;
         Signal progbuf_end;
         Signal progbuf_error;
     } CsrTypeDef_;
@@ -495,9 +509,6 @@ class Processor : public ModuleObject {
     Signal wb_reg_wtag;
     Signal w_reg_inorder;
     Signal w_reg_ignored;
-    Signal w_immu_ena;
-    Signal w_dmmu_ena;
-    Signal wb_mmu_ppn;
     Signal w_f_flush_ready;
     Signal unused_immu_mem_req_type;
     Signal unused_immu_mem_req_wdata;

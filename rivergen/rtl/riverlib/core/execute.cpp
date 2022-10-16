@@ -196,7 +196,6 @@ InstrExecute::InstrExecute(GenObject *parent, const char *name) :
     stack_underflow(this, "stack_underflow", "1"),
     mem_ex_load_fault(this, "mem_ex_load_fault", "1"),
     mem_ex_store_fault(this, "mem_ex_store_fault", "1"),
-    page_fault_x(this, "page_fault_x", "1"),
     page_fault_r(this, "page_fault_r", "1"),
     page_fault_w(this, "page_fault_w", "1"),
     mem_ex_addr(this, "mem_ex_addr", "CFG_CPU_ADDR_BITS"),
@@ -515,10 +514,6 @@ TEXT();
         SETONE(mem_ex_store_fault);
         SETVAL(mem_ex_addr, i_mem_ex_addr);
     ENDIF();
-    IF (AND2(NZ(i_page_fault_x), EZ(i_mem_ex_debug)));
-        SETONE(page_fault_x);
-        SETVAL(mem_ex_addr, i_d_pc);
-    ENDIF();
     IF (AND2(NZ(i_page_fault_r), EZ(i_mem_ex_debug)));
         SETONE(page_fault_r);
         SETVAL(mem_ex_addr, i_mem_ex_addr);
@@ -648,7 +643,7 @@ TEXT();
 TEXT();
     SETVAL(comb.v_mem_ex, ORx(5, &mem_ex_load_fault,
                                  &mem_ex_store_fault,
-                                 &page_fault_x,
+                                 &i_page_fault_x,
                                  &page_fault_r,
                                  &page_fault_w));
     SETVAL(comb.v_csr_cmd_ena, ORx(27, &i_haltreq,
@@ -746,10 +741,10 @@ TEXT();
             SETVAL(comb.vb_csr_cmd_type, cfg->CsrReq_ExceptionCmd);
             SETVAL(comb.vb_csr_cmd_addr, cfg->EXCEPTION_StoreFault, "Store/AMO access fault");
             SETVAL(comb.vb_csr_cmd_wdata, mem_ex_addr);
-        ELSIF (NZ(page_fault_x));
+        ELSIF (NZ(i_page_fault_x));
             SETVAL(comb.vb_csr_cmd_type, cfg->CsrReq_ExceptionCmd);
             SETVAL(comb.vb_csr_cmd_addr, cfg->EXCEPTION_InstrPageFault, "Instruction fetch page fault");
-            SETVAL(comb.vb_csr_cmd_wdata, mem_ex_addr);
+            SETVAL(comb.vb_csr_cmd_wdata, comb.mux.pc);
         ELSIF (NZ(page_fault_r));
             SETVAL(comb.vb_csr_cmd_type, cfg->CsrReq_ExceptionCmd);
             SETVAL(comb.vb_csr_cmd_addr, cfg->EXCEPTION_LoadPageFault, "Data load page fault");
@@ -880,7 +875,6 @@ TEXT();
                 SETVAL(csr_req_rmw, BIT(comb.vb_csr_cmd_type, cfg->CsrReq_ReadBit), "read/modify/write");
                 SETZERO(mem_ex_load_fault);
                 SETZERO(mem_ex_store_fault);
-                SETZERO(page_fault_x);
                 SETZERO(page_fault_r);
                 SETZERO(page_fault_w);
                 SETZERO(stack_overflow);

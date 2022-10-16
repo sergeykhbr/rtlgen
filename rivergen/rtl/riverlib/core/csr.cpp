@@ -65,6 +65,8 @@ CsrRegs::CsrRegs(GenObject *parent, const char *name) :
     o_immu_ena(this, "o_immu_ena", "1", "Instruction MMU enabled in U and S modes. Sv48 only."),
     o_dmmu_ena(this, "o_dmmu_ena", "1", "Data MMU enabled in U and S modes or MPRV bit is HIGH. Sv48 only."),
     o_mmu_ppn(this, "o_mmu_ppn", "44", "Physical Page Number"),
+    o_mmu_sv39(this, "o_mmu_sv39", "1", "Translation mode sv39 is active"),
+    o_mmu_sv48(this, "o_mmu_sv48", "1", "Translation mode sv48 is active"),
     // param
     State_Idle(this, "State_Idle", "0"),
     State_RW(this, "State_RW", "1"),
@@ -86,6 +88,7 @@ CsrRegs::CsrRegs(GenObject *parent, const char *name) :
     Fence_MMU(this, "3", "Fence_MMU", "4"),
     Fence_End(this, "3", "Fence_End", "5"),
     _fence1_(this),
+    SATP_MODE_SV39(this, "4", "SATP_MODE_SV39", "8", "39-bits Page mode"),
     SATP_MODE_SV48(this, "4", "SATP_MODE_SV48", "9", "48-bits Page mode"),
     // struct definitions
     RegModeTypeDef_(this),
@@ -113,7 +116,8 @@ CsrRegs::CsrRegs(GenObject *parent, const char *name) :
     immu_ena(this, "immu_ena", "1", "0", "Instruction MMU SV48 enabled in U- and S- modes"),
     dmmu_ena(this, "dmmu_ena", "1", "0", "Data MMU SV48 enabled in U- and S- modes, MPRV bit"),
     satp_ppn(this, "satp_ppn", "44", "0", "Physcal Page Number"),
-    satp_mode(this, "satp_mode", "4", "0", "Supervisor Address Translation and Protection mode"),
+    satp_sv39(this, "satp_sv39", "1"),
+    satp_sv48(this, "satp_sv48", "1"),
     mode(this, "mode", "2", "PRV_M"),
     mprv(this, "mprv", "1", "0", "Modify PRiVilege. (Table 8.5) If MPRV=0, load and stores as normal, when MPRV=1, use translation of previous mode"),
     tvm(this, "tvm", "1", "0", "Trap Virtual Memory bit. When 1 SFENCE.VMA or SINVAL.VMA or rw access to SATP raise an illegal instruction"),
@@ -536,12 +540,20 @@ TEXT();
             SETONE(cmd_exception);
         ELSE();
             SETBITS(comb.vb_rdata, 43, 0, satp_ppn);
-            SETBITS(comb.vb_rdata, 63, 60, satp_mode);
-            IF (ANDx(2, &NZ(comb.v_csr_wena),
-                        &ORx(2, &EZ(BITS(cmd_data, 63, 60)),
-                                &EQ(TO_U32(BITS(cmd_data, 63, 60)), SATP_MODE_SV48))));
+            IF (NZ(satp_sv39));
+                SETBITS(comb.vb_rdata, 63, 60, SATP_MODE_SV39);
+            ELSIF(NZ(satp_sv48));
+                SETBITS(comb.vb_rdata, 63, 60, SATP_MODE_SV48);
+            ENDIF();
+            IF (NZ(comb.v_csr_wena));
                 SETVAL(satp_ppn, BITS(cmd_data, 43, 0));
-                SETVAL(satp_mode, BITS(cmd_data, 63, 60));
+                SETZERO(satp_sv39);
+                SETZERO(satp_sv48);
+                IF (EQ(TO_U32(BITS(cmd_data, 63, 60)), SATP_MODE_SV39));
+                    SETONE(satp_sv39);
+                ELSIF (EQ(TO_U32(BITS(cmd_data, 63, 60)), SATP_MODE_SV48));
+                    SETONE(satp_sv48);
+                ENDIF();
             ENDIF();
         ENDIF();
     ELSIF (EQ(cmd_addr, CONST("0x5A8", 12)), "scontext: [SRW] Supervisor-mode context register");
@@ -863,7 +875,7 @@ TEXT();
     TEXT("Check MMU:");
     SETZERO(immu_ena);
     SETZERO(dmmu_ena);
-    IF (EQ(satp_mode, SATP_MODE_SV48), "Only SV48 implemented");
+    IF (OR2(NZ(satp_sv39), NZ(satp_sv48)), "Sv39 and Sv48 are implemented");
         IF (EZ(BIT(mode, 1)));
             TEXT("S and U modes");
             SETONE(immu_ena);
@@ -1042,6 +1054,8 @@ TEXT();
     SETVAL(o_immu_ena, immu_ena);
     SETVAL(o_dmmu_ena, dmmu_ena);
     SETVAL(o_mmu_ppn, satp_ppn);
+    SETVAL(o_mmu_sv39, satp_sv39);
+    SETVAL(o_mmu_sv48, satp_sv48);
     SETVAL(o_step, dcsr_step);
     SETVAL(o_flushd_valid, comb.v_flushd);
     SETVAL(o_flushi_valid, comb.v_flushi);

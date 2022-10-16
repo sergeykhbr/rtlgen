@@ -126,9 +126,6 @@ Processor::Processor(GenObject *parent, const char *name) :
     wb_reg_wtag(this, "wb_reg_wtag", "CFG_REG_TAG_WIDTH"),
     w_reg_inorder(this, "w_reg_inorder", "1"),
     w_reg_ignored(this, "w_reg_ignored", "1"),
-    w_immu_ena(this, "w_immu_ena", "1", "0", "Instruction MMU enabled in U and S modes. Sv48 only."),
-    w_dmmu_ena(this, "w_dmmu_ena", "1", "0", "Instruction MMU enabled in U and S modes or MPRV. Sv48 only."),
-    wb_mmu_ppn(this, "wb_mmu_ppn", "44", "0", "Physical Page Number"),
     w_f_flush_ready(this, "w_f_flush_ready", "1"),
     unused_immu_mem_req_type(this, "unused_immu_mem_req_type", "MemopType_Total"),
     unused_immu_mem_req_wdata(this, "unused_immu_mem_req_wdata", "64"),
@@ -193,8 +190,10 @@ Processor::Processor(GenObject *parent, const char *name) :
         CONNECT(immu0, 0, immu0.i_mem_resp_load_fault, i_resp_ctrl_load_fault);
         CONNECT(immu0, 0, immu0.i_mem_resp_store_fault, unused_immu_mem_resp_store_fault);
         CONNECT(immu0, 0, immu0.o_mem_resp_ready, o_resp_ctrl_ready);
-        CONNECT(immu0, 0, immu0.i_mmu_ena, w_immu_ena);
-        CONNECT(immu0, 0, immu0.i_mmu_ppn, wb_mmu_ppn);
+        CONNECT(immu0, 0, immu0.i_mmu_ena, csr.immu_ena);
+        CONNECT(immu0, 0, immu0.i_mmu_sv39, csr.mmu_sv39);
+        CONNECT(immu0, 0, immu0.i_mmu_sv48, csr.mmu_sv48);
+        CONNECT(immu0, 0, immu0.i_mmu_ppn, csr.mmu_ppn);
         CONNECT(immu0, 0, immu0.i_fence, csr.flushmmu_valid);
         CONNECT(immu0, 0, immu0.i_fence_addr, csr.flush_addr);
     ENDNEW();
@@ -351,8 +350,12 @@ Processor::Processor(GenObject *parent, const char *name) :
         CONNECT(mem0, 0, mem0.i_flushd_valid, csr.flushd_valid);
         CONNECT(mem0, 0, mem0.i_flushd_addr, csr.flush_addr);
         CONNECT(mem0, 0, mem0.o_flushd, w.m.flushd);
-        CONNECT(mem0, 0, mem0.i_mmu_ena, w_dmmu_ena);
+        CONNECT(mem0, 0, mem0.i_mmu_ena, csr.dmmu_ena);
+        CONNECT(mem0, 0, mem0.i_mmu_sv39, csr.mmu_sv39);
+        CONNECT(mem0, 0, mem0.i_mmu_sv48, csr.mmu_sv48);
         CONNECT(mem0, 0, mem0.o_mmu_ena, w.m.dmmu_ena);
+        CONNECT(mem0, 0, mem0.o_mmu_sv39, w.m.dmmu_sv39);
+        CONNECT(mem0, 0, mem0.o_mmu_sv48, w.m.dmmu_sv48);
         CONNECT(mem0, 0, mem0.i_reg_waddr, w.e.reg_waddr);
         CONNECT(mem0, 0, mem0.i_reg_wtag, w.e.reg_wtag);
         CONNECT(mem0, 0, mem0.i_memop_valid, w.e.memop_valid);
@@ -419,7 +422,9 @@ Processor::Processor(GenObject *parent, const char *name) :
         CONNECT(dmmu0, 0, dmmu0.i_mem_resp_store_fault, i_resp_data_store_fault);
         CONNECT(dmmu0, 0, dmmu0.o_mem_resp_ready, o_resp_data_ready);
         CONNECT(dmmu0, 0, dmmu0.i_mmu_ena, w.m.dmmu_ena);
-        CONNECT(dmmu0, 0, dmmu0.i_mmu_ppn, wb_mmu_ppn);
+        CONNECT(dmmu0, 0, dmmu0.i_mmu_sv39, w.m.dmmu_sv39);
+        CONNECT(dmmu0, 0, dmmu0.i_mmu_sv48, w.m.dmmu_sv48);
+        CONNECT(dmmu0, 0, dmmu0.i_mmu_ppn, csr.mmu_ppn);
         CONNECT(dmmu0, 0, dmmu0.i_fence, csr.flushmmu_valid);
         CONNECT(dmmu0, 0, dmmu0.i_fence_addr, csr.flush_addr);
     ENDNEW();
@@ -429,9 +434,9 @@ Processor::Processor(GenObject *parent, const char *name) :
         CONNECT(predic0, 0, predic0.i_clk, i_clk);
         CONNECT(predic0, 0, predic0.i_nrst, i_nrst);
         CONNECT(predic0, 0, predic0.i_flush_pipeline, csr.flushi_valid);
-        CONNECT(predic0, 0, predic0.i_resp_mem_valid, i_resp_ctrl_valid);
-        CONNECT(predic0, 0, predic0.i_resp_mem_addr, i_resp_ctrl_addr);
-        CONNECT(predic0, 0, predic0.i_resp_mem_data, i_resp_ctrl_data);
+        CONNECT(predic0, 0, predic0.i_resp_mem_valid, immu.valid);
+        CONNECT(predic0, 0, predic0.i_resp_mem_addr, immu.addr);
+        CONNECT(predic0, 0, predic0.i_resp_mem_data, immu.data);
         CONNECT(predic0, 0, predic0.i_e_jmp, w.e.jmp);
         CONNECT(predic0, 0, predic0.i_e_pc, w.e.pc);
         CONNECT(predic0, 0, predic0.i_e_npc, w.e.npc);
@@ -541,9 +546,11 @@ Processor::Processor(GenObject *parent, const char *name) :
         CONNECT(csr0, 0, csr0.o_pmp_start_addr, o_pmp_start_addr);
         CONNECT(csr0, 0, csr0.o_pmp_end_addr, o_pmp_end_addr);
         CONNECT(csr0, 0, csr0.o_pmp_flags, o_pmp_flags);
-        CONNECT(csr0, 0, csr0.o_immu_ena, w_immu_ena);
-        CONNECT(csr0, 0, csr0.o_dmmu_ena, w_dmmu_ena);
-        CONNECT(csr0, 0, csr0.o_mmu_ppn, wb_mmu_ppn);
+        CONNECT(csr0, 0, csr0.o_immu_ena, csr.immu_ena);
+        CONNECT(csr0, 0, csr0.o_dmmu_ena, csr.dmmu_ena);
+        CONNECT(csr0, 0, csr0.o_mmu_ppn, csr.mmu_ppn);
+        CONNECT(csr0, 0, csr0.o_mmu_sv39, csr.mmu_sv39);
+        CONNECT(csr0, 0, csr0.o_mmu_sv48, csr.mmu_sv48);
     ENDNEW();
 
     NEW(dbg0, dbg0.getName().c_str());

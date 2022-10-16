@@ -420,7 +420,6 @@ class InstrExecute : public ModuleObject {
     RegSignal stack_underflow;
     RegSignal mem_ex_load_fault;
     RegSignal mem_ex_store_fault;
-    RegSignal page_fault_x;
     RegSignal page_fault_r;
     RegSignal page_fault_w;
     RegSignal mem_ex_addr;

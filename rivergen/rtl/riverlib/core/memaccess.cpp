@@ -26,7 +26,11 @@ MemAccess::MemAccess(GenObject *parent, const char *name) :
     i_flushd_addr(this, "i_flushd_addr", "CFG_CPU_ADDR_BITS"),
     o_flushd(this, "o_flushd", "1"),
     i_mmu_ena(this, "i_mmu_ena", "1", "MMU enabled"),
+    i_mmu_sv39(this, "i_mmu_sv39", "1", "MMU sv39 mode is enabled"),
+    i_mmu_sv48(this, "i_mmu_sv48", "1", "MMU sv48 mode is enabled"),
     o_mmu_ena(this, "o_mmu_ena", "1", "Delayed MMU enabled"),
+    o_mmu_sv39(this, "o_mmu_sv39", "1", "Delayed MMU sv39 mode is enabled"),
+    o_mmu_sv48(this, "o_mmu_sv48", "1", "Delayed MMU sv48 mode is enabled"),
     i_reg_waddr(this, "i_reg_waddr", "6", "Register address to be written (0=no writing)"),
     i_reg_wtag(this, "i_reg_wtag", "CFG_REG_TAG_WIDTH", "Register tag for writeback operation"),
     i_memop_valid(this, "i_memop_valid", "1", "Memory request is valid"),
@@ -65,6 +69,8 @@ MemAccess::MemAccess(GenObject *parent, const char *name) :
     // registers
     state(this, "state", "2", "State_Idle"),
     mmu_ena(this, "mmu_ena", "1"),
+    mmu_sv39(this, "mmu_sv39", "1"),
+    mmu_sv48(this, "mmu_sv48", "1"),
     memop_type(this, "memop_type", "MemopType_Total"),
     memop_addr(this, "memop_addr", "CFG_CPU_ADDR_BITS"),
     memop_wdata(this, "memop_wdata", "64"),
@@ -84,9 +90,11 @@ MemAccess::MemAccess(GenObject *parent, const char *name) :
     // process
     comb(this),
     // Signals
-    QUEUE_WIDTH(this, "QUEUE_WIDTH", &CALCWIDTHx(14, &memop_debug,
+    QUEUE_WIDTH(this, "QUEUE_WIDTH", &CALCWIDTHx(16, &memop_debug,
                                                     &i_flushd_valid,
                                                     &i_mmu_ena,
+                                                    &i_mmu_sv39,
+                                                    &i_mmu_sv48,
                                                     &comb.vb_res_wtag,
                                                     &comb.vb_mem_wdata,
                                                     &comb.vb_mem_wstrb,
@@ -198,9 +206,11 @@ TEXT();
 TEXT();
     TEXT("Form Queue inputs:");
     SETVAL(comb.t_memop_debug, i_memop_debug, "looks like bug in systemc, cannot handle bool properly");
-    SETVAL(queue_data_i, CCx(14, &comb.t_memop_debug,
+    SETVAL(queue_data_i, CCx(16, &comb.t_memop_debug,
                              &i_flushd_valid,
                              &i_mmu_ena,
+                             &i_mmu_sv39,
+                             &i_mmu_sv48,
                              &i_reg_wtag,
                              &comb.vb_memop_wdata,
                              &comb.vb_memop_wstrb,
@@ -216,9 +226,11 @@ TEXT();
 
 TEXT();
     TEXT("Split Queue outputs:");
-    SPLx(queue_data_o, 14, &comb.v_mem_debug,
+    SPLx(queue_data_o, 16, &comb.v_mem_debug,
                            &comb.v_flushd,
                            &comb.v_mmu_ena,
+                           &comb.v_mmu_sv39,
+                           &comb.v_mmu_sv48,
                            &comb.vb_res_wtag,
                            &comb.vb_mem_wdata,
                            &comb.vb_mem_wstrb,
@@ -305,6 +317,8 @@ TEXT();
             SETVAL(pc, comb.vb_e_pc);
             SETVAL(comb.v_mem_valid, INV(comb.v_flushd));
             SETVAL(mmu_ena, comb.v_mmu_ena);
+            SETVAL(mmu_sv39, comb.v_mmu_sv39);
+            SETVAL(mmu_sv48, comb.v_mmu_sv48);
             SETVAL(memop_res_pc, comb.vb_e_pc);
             SETVAL(memop_res_instr, comb.vb_e_instr);
             SETVAL(memop_res_addr, comb.vb_res_addr);
@@ -337,6 +351,8 @@ TEXT();
     CASE (State_WaitReqAccept);
         SETONE(comb.v_mem_valid);
         SETVAL(comb.v_mmu_ena, mmu_ena);
+        SETVAL(comb.v_mmu_sv39, mmu_sv39);
+        SETVAL(comb.v_mmu_sv48, mmu_sv48);
         SETVAL(comb.vb_mem_type, memop_type);
         SETVAL(comb.vb_mem_sz, memop_size);
         SETVAL(comb.vb_mem_addr, memop_addr);
@@ -368,6 +384,8 @@ TEXT();
                 SETVAL(pc, comb.vb_e_pc);
                 SETVAL(comb.v_mem_valid, INV(comb.v_flushd));
                 SETVAL(mmu_ena, comb.v_mmu_ena);
+                SETVAL(mmu_sv39, comb.v_mmu_sv39);
+                SETVAL(mmu_sv48, comb.v_mmu_sv48);
                 SETVAL(memop_res_pc, comb.vb_e_pc);
                 SETVAL(memop_res_instr, comb.vb_e_instr);
                 SETVAL(memop_res_addr, comb.vb_res_addr);
@@ -413,6 +431,8 @@ TEXT();
                 SETVAL(pc, comb.vb_e_pc);
                 SETVAL(comb.v_mem_valid, INV(comb.v_flushd));
                 SETVAL(mmu_ena, comb.v_mmu_ena);
+                SETVAL(mmu_sv39, comb.v_mmu_sv39);
+                SETVAL(mmu_sv48, comb.v_mmu_sv48);
                 SETVAL(memop_res_pc, comb.vb_e_pc);
                 SETVAL(memop_res_instr, comb.vb_e_instr);
                 SETVAL(memop_res_addr, comb.vb_res_addr);
@@ -462,6 +482,8 @@ TEXT();
     SETVAL(queue_re, comb.v_queue_re);
     SETVAL(o_flushd, AND3(queue_nempty, comb.v_flushd, comb.v_queue_re));
     SETVAL(o_mmu_ena, comb.v_mmu_ena);
+    SETVAL(o_mmu_sv39, comb.v_mmu_sv39);
+    SETVAL(o_mmu_sv48, comb.v_mmu_sv48);
     SETONE(o_mem_resp_ready);
     SETVAL(o_mem_valid, comb.v_mem_valid);
     SETVAL(o_mem_type, comb.vb_mem_type);

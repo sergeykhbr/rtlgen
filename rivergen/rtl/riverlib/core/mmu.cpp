@@ -23,14 +23,14 @@ Mmu::Mmu(GenObject *parent, const char *name) :
     // core <-> mmu interface
     o_core_req_ready(this, "o_core_req_ready", "1"),
     i_core_req_valid(this, "i_core_req_valid", "1"),
-    i_core_req_addr(this, "i_core_req_addr", "CFG_CPU_ADDR_BITS"),
+    i_core_req_addr(this, "i_core_req_addr", "RISCV_ARCH"),
     i_core_req_fetch(this, "i_core_req_fetch", "1", "Memory request from 0=fetcher; 1=memaccess"),
     i_core_req_type(this, "i_core_req_type", "MemopType_Total", "Memory operation type"),
     i_core_req_wdata(this, "i_core_req_wdata", "64", "Data path requested data (write transaction)"),
     i_core_req_wstrb(this, "i_core_req_wstrb", "8", "8-bytes aligned strobs"),
     i_core_req_size(this, "i_core_req_size", "2", "1,2,4 or 8-bytes operation for uncached access"),
     o_core_resp_valid(this, "o_core_resp_valid", "1"),
-    o_core_resp_addr(this, "o_core_resp_addr", "CFG_CPU_ADDR_BITS"),
+    o_core_resp_addr(this, "o_core_resp_addr", "RISCV_ARCH"),
     o_core_resp_data(this, "o_core_resp_data", "64"),
     o_core_resp_load_fault(this, "o_core_resp_load_fault", "1", "Ex.2./Ex.5. Instruction access fault when = 0 and fetch or Load access fault"),
     o_core_resp_store_fault(this, "o_core_resp_store_fault", "1", "Ex.7. Store/AMO access fault"),
@@ -41,22 +41,24 @@ Mmu::Mmu(GenObject *parent, const char *name) :
     // mmu <-> cache interface
     i_mem_req_ready(this, "i_mem_req_ready", "1"),
     o_mem_req_valid(this, "o_mem_req_valid", "1"),
-    o_mem_req_addr(this, "o_mem_req_addr", "CFG_CPU_ADDR_BITS"),
+    o_mem_req_addr(this, "o_mem_req_addr", "RISCV_ARCH"),
     o_mem_req_type(this, "o_mem_req_type", "MemopType_Total", "Memory operation type"),
     o_mem_req_wdata(this, "o_mem_req_wdata", "64", "Data path requested data (write transaction)"),
     o_mem_req_wstrb(this, "o_mem_req_wstrb", "8", "8-bytes aligned strobs"),
     o_mem_req_size(this, "o_mem_req_size", "2", "1,2,4 or 8-bytes operation for uncached access"),
     i_mem_resp_valid(this, "i_mem_resp_valid", "1"),
-    i_mem_resp_addr(this, "i_mem_resp_addr", "CFG_CPU_ADDR_BITS"),
+    i_mem_resp_addr(this, "i_mem_resp_addr", "RISCV_ARCH"),
     i_mem_resp_data(this, "i_mem_resp_data", "64"),
     i_mem_resp_load_fault(this, "i_mem_resp_load_fault", "1"),
     i_mem_resp_store_fault(this, "i_mem_resp_store_fault", "1"),
     o_mem_resp_ready(this, "o_mem_resp_ready", "1"),
     // fence
-    i_mmu_ena(this, "i_mmu_ena", "1", "MMU enabled in U and S modes. Sv48 only."),
+    i_mmu_ena(this, "i_mmu_ena", "1", "MMU enabled in U and S modes. Sv39 or Sv48 are implemented."),
+    i_mmu_sv39(this, "i_mmu_sv39", "1", "MMU sv39 is active"),
+    i_mmu_sv48(this, "i_mmu_sv48", "1", "MMU sv48 is active"),
     i_mmu_ppn(this, "i_mmu_ppn", "44", "Physical Page Number from SATP CSR"),
     i_fence(this, "i_fence", "1", "reset TBL entries at specific address"),
-    i_fence_addr(this, "i_fence_addr", "CFG_CPU_ADDR_BITS", "Fence address: 0=clean all TBL"),
+    i_fence_addr(this, "i_fence_addr", "RISCV_ARCH", "Fence address: 0=clean all TBL"),
     // param
     Idle(this, "Idle", "0"),
     WaitRespNoMmu(this, "WaitRespNoMmu", "1"),
@@ -86,21 +88,24 @@ Mmu::Mmu(GenObject *parent, const char *name) :
     req_x(this, "req_x", "1"),
     req_r(this, "req_r", "1"),
     req_w(this, "req_w", "1"),
-    req_pa(this, "req_pa", "CFG_CPU_ADDR_BITS"),
+    req_pa(this, "req_pa", "RISCV_ARCH"),
     req_type(this, "req_type", "MemopType_Total"),
     req_wdata(this, "req_wdata", "64"),
     req_wstrb(this, "req_wstrb", "8"),
     req_size(this, "req_size", "2"),
-    last_va(this, "last_va", "CFG_CPU_ADDR_BITS", "-1"),
+    last_mmu_ena(this, "last_mmu_ena", "1"),
+    last_va(this, "last_va", "RISCV_ARCH", "-1"),
     last_pa(this, "last_pa", "52", "-1"),
     last_permission(this, "last_permission", "8", "0", "Last permisison flags: DAGUXWRV"),
-    resp_addr(this, "resp_addr", "CFG_CPU_ADDR_BITS"),
+    last_page_size(this, "last_page_size", "2"),
+    resp_addr(this, "resp_addr", "RISCV_ARCH"),
     resp_data(this, "resp_data", "64"),
     resp_load_fault(this, "resp_load_fault", "1"),
     resp_store_fault(this, "resp_store_fault", "1"),
     ex_page_fault(this, "ex_page_fault", "1"),
     tlb_hit(this, "tlb_hit", "1"),
     tlb_level(this, "tlb_level", "4"),
+    tlb_page_size(this, "tlb_page_size", "2"),
     tlb_wdata(this, "tlb_wdata", "CFG_MMU_PTE_DWIDTH"),
     tlb_flush_cnt(this, "tlb_flush_cnt", "CFG_MMU_TLB_AWIDTH", "-1"),
     tlb_flush_adr(this, "tlb_flush_adr", "CFG_MMU_TLB_AWIDTH"),
@@ -122,12 +127,14 @@ Mmu::Mmu(GenObject *parent, const char *name) :
 void Mmu::proc_comb() {
     river_cfg *cfg = glob_river_cfg_;
 
-    SETVAL(comb.vb_tlb_adr, BITS(i_core_req_addr, DEC(CONST("ADD(12,CFG_MMU_TLB_AWIDTH)")), CONST("12")));
+    SETVAL(comb.t_idx_lsb, ADD2(CONST("12"), MUL2(CONST("9"), TO_INT(last_page_size))));
+    SETVAL(comb.vb_tlb_adr, BITSW(i_core_req_addr, comb.t_idx_lsb, cfg->CFG_MMU_TLB_AWIDTH));
 
 TEXT();
     IF (NZ(i_core_req_fetch));
         SETONE(comb.v_core_req_x);
-    ELSIF(OR2(EZ(i_core_req_type), EQ(i_core_req_type, cfg->MemopType_Reserve)));
+    ELSIF(ORx(2, &EZ(i_core_req_type),
+                 &EQ(i_core_req_type, cfg->MemopType_Reserve)));
         SETONE(comb.v_core_req_r);
     ELSE();
         SETONE(comb.v_core_req_w);
@@ -154,30 +161,72 @@ TEXT();
         SETBITS(comb.vb_pte_start_va, 51, 44, ALLONES());
     ENDIF();
     TEXT("Page walking base Physical Address");
-    SETBITS(comb.vb_pte_base_va, 43, 0, BITS(resp_data, 53, 10));
-    IF (NZ(BIT(resp_data, 53)));
-        SETBITS(comb.vb_pte_base_va, 51, 44, ALLONES());
-    ENDIF();
-    SETVAL(comb.v_va_ena, AND_REDUCE(BITS(i_core_req_addr, 63, 48)));
+    SETBITS(comb.vb_resp_ppn, 43, 0, BITS(resp_data, 53, 10));
+    SETVAL(comb.v_va_ena, ORx(2, &AND2(i_mmu_sv48, AND_REDUCE(BITS(i_core_req_addr, 63, 48))),
+                                 &AND2(i_mmu_sv39, AND_REDUCE(BITS(i_core_req_addr, 63, 39)))));
     SETVAL(comb.vb_level0_off, CC2(BITS(last_va, 47, 39), CONST("0",3)));
     SETVAL(comb.vb_level1_off, CC2(BITS(last_va, 38, 30), CONST("0",3)));
     SETVAL(comb.vb_level2_off, CC2(BITS(last_va, 29, 21), CONST("0",3)));
     SETVAL(comb.vb_level3_off, CC2(BITS(last_va, 20, 12), CONST("0",3)));
 
 TEXT();
+    TEXT("Pages: 4 KB, 8MB, 16 GB and 32 TB for sv48 only");
+    TEXT("Check the last hit depending page size:");
     SETZERO(comb.v_last_valid);
-    IF (EQ(BITS(i_core_req_addr, 63, 12), BITS(last_va, 63, 12)));
+    IF (ANDx(2, &EQ(last_page_size, CONST("0", 2)),
+                &EQ(BITS(i_core_req_addr, 63, 12), BITS(last_va, 63, 12))));
         SETONE(comb.v_last_valid);
+        SETVAL(comb.vb_last_pa_req, CC2(last_pa, BITS(i_core_req_addr, 11, 0)));
+    ELSIF (ANDx(2, &EQ(last_page_size, CONST("1", 2)),
+                &EQ(BITS(i_core_req_addr, 63, 21), BITS(last_va, 63, 21))));
+        SETONE(comb.v_last_valid);
+        SETVAL(comb.vb_last_pa_req, CC2(BITS(last_pa, 51, 9), BITS(i_core_req_addr, 20, 0)));
+    ELSIF (ANDx(2, &EQ(last_page_size, CONST("2", 2)),
+                &EQ(BITS(i_core_req_addr, 63, 30), BITS(last_va, 63, 30))));
+        SETONE(comb.v_last_valid);
+        SETVAL(comb.vb_last_pa_req, CC2(BITS(last_pa, 51, 18), BITS(i_core_req_addr, 29, 0)));
+    ELSIF (ANDx(2, &EQ(last_page_size, CONST("3", 2)),
+                &EQ(BITS(i_core_req_addr, 63, 39), BITS(last_va, 63, 39))));
+        SETONE(comb.v_last_valid);
+        SETVAL(comb.vb_last_pa_req, CC2(BITS(last_pa, 51, 27), BITS(i_core_req_addr, 38, 0)));
     ENDIF();
 
 TEXT();
-    TEXT("Temporary variables are neccessary in systemc");
-    SETBITS(comb.t_req_pa, DEC(cfg->CFG_CPU_ADDR_BITS), CONST("12"),
-                           BIG_TO_U64(BITS(wb_tlb_rdata, DEC(cfg->CFG_CPU_ADDR_BITS), CONST("12"))));
-    SETBITS(comb.t_req_pa, 11, 0, BITS(last_va, 11, 0));
+    TEXT("Check table hit depending page size:");
+    SETBITS(comb.vb_tlb_pa0, 63, 12, BIG_TO_U64(BITS(wb_tlb_rdata, 63, 12)));
+    SETBITS(comb.vb_tlb_pa0, 11, 0, BITS(last_va, 11, 0));
+    SETBITS(comb.vb_tlb_pa1, 63, 21, BIG_TO_U64(BITS(wb_tlb_rdata, 63, 21)));
+    SETBITS(comb.vb_tlb_pa1, 20, 0, BITS(last_va, 20, 0));
+    SETBITS(comb.vb_tlb_pa2, 63, 30, BIG_TO_U64(BITS(wb_tlb_rdata, 63, 30)));
+    SETBITS(comb.vb_tlb_pa2, 29, 0, BITS(last_va, 29, 0));
+    SETBITS(comb.vb_tlb_pa3, 63, 39, BIG_TO_U64(BITS(wb_tlb_rdata, 63, 39)));
+    SETBITS(comb.vb_tlb_pa3, 38, 0, BITS(last_va, 38, 0));
+
+TEXT();
+    IF (NZ(BIT(wb_tlb_rdata, PTE_V)));
+        IF (EQ(BIG_TO_U64(BITS(wb_tlb_rdata, 9, 8)), CONST("3", 2)));
+            TEXT("32 TB pages:");
+            SETVAL(comb.v_tlb_hit, INV(XOR2(BITS(last_va, 63, 39), BIG_TO_U64(BITS(wb_tlb_rdata, 115, 91)))));
+            SETVAL(comb.vb_tlb_pa_hit, comb.vb_tlb_pa3);
+        ELSIF (EQ(BIG_TO_U64(BITS(wb_tlb_rdata, 9, 8)), CONST("2", 2)));
+            TEXT("16 GB pages:");
+            SETVAL(comb.v_tlb_hit, INV(XOR2(BITS(last_va, 63, 30), BIG_TO_U64(BITS(wb_tlb_rdata, 115, 82)))));
+            SETVAL(comb.vb_tlb_pa_hit, comb.vb_tlb_pa2);
+        ELSIF (EQ(BIG_TO_U64(BITS(wb_tlb_rdata, 9, 8)), CONST("1", 2)));
+            TEXT("8 MB pages:");
+            SETVAL(comb.v_tlb_hit, INV(XOR2(BITS(last_va, 63, 21), BIG_TO_U64(BITS(wb_tlb_rdata, 115, 73)))));
+            SETVAL(comb.vb_tlb_pa_hit, comb.vb_tlb_pa1);
+        ELSE();
+            TEXT("4 KB pages:");
+            SETVAL(comb.v_tlb_hit, INV(XOR2(BITS(last_va, 63, 12), BIG_TO_U64(BITS(wb_tlb_rdata, 115, 64)))));
+            SETVAL(comb.vb_tlb_pa_hit, comb.vb_tlb_pa0);
+        ENDIF();
+    ENDIF();
+
 TEXT();
     SETBITS(comb.t_tlb_wdata, 115, 64, BITS(last_va, 63, 12));
-    SETBITS(comb.t_tlb_wdata, 63, 12, comb.vb_pte_base_va);
+    SETBITS(comb.t_tlb_wdata, 63, 12, comb.vb_resp_ppn);
+    SETBITS(comb.t_tlb_wdata, 9, 8, tlb_page_size);
     SETBITS(comb.t_tlb_wdata, 7, 0, BITS(resp_data, 7, 0));
 
 TEXT();
@@ -188,6 +237,7 @@ TEXT();
         SETZERO(resp_store_fault);
         SETZERO(ex_page_fault);
         IF (NZ(i_core_req_valid));
+            SETVAL(last_mmu_ena, AND2(i_mmu_ena, comb.v_va_ena));
             SETVAL(last_va, i_core_req_addr);
             SETVAL(req_type, i_core_req_type);
             SETVAL(req_wdata, i_core_req_wdata);
@@ -215,8 +265,7 @@ TEXT();
             IF (NZ(AND2(i_core_req_valid, i_mem_req_ready)));
                 SETVAL(state, WaitRespNoMmu);
             ENDIF();
-            SETVAL(last_va, ALLONES());
-        ELSIF (NZ(comb.v_last_valid), "MMU enabled: Check the request to the same page:");
+        ELSIF (AND2(NZ(last_mmu_ena), NZ(comb.v_last_valid)), "MMU enabled: Check the request to the same page:");
             TEXT("Direct connection to cache with the fast changing va to last_pa");
             SETVAL(comb.v_core_req_ready, i_mem_req_ready);
             SETVAL(comb.v_core_resp_valid, i_mem_resp_valid);
@@ -225,8 +274,7 @@ TEXT();
             SETVAL(comb.v_core_resp_load_fault, i_mem_resp_load_fault);
             SETVAL(comb.v_core_resp_store_fault, i_mem_resp_store_fault);
             SETVAL(comb.v_mem_req_valid, i_core_req_valid);
-            SETBITS(comb.vb_mem_req_addr, 63, 12, last_pa);
-            SETBITS(comb.vb_mem_req_addr, 11, 0, BITS(i_core_req_addr, 11, 0));
+            SETVAL(comb.vb_mem_req_addr, comb.vb_last_pa_req);
             SETVAL(comb.vb_mem_req_type, i_core_req_type);
             SETVAL(comb.vb_mem_req_wdata, i_core_req_wdata);
             SETVAL(comb.vb_mem_req_wstrb, i_core_req_wstrb);
@@ -280,8 +328,7 @@ TEXT();
         SETVAL(comb.v_core_resp_load_fault, i_mem_resp_load_fault);
         SETVAL(comb.v_core_resp_store_fault, i_mem_resp_store_fault);
         SETVAL(comb.v_mem_req_valid, i_core_req_valid);
-        SETBITS(comb.vb_mem_req_addr, 63, 12, last_pa);
-        SETBITS(comb.vb_mem_req_addr, 11, 0, BITS(i_core_req_addr, 11, 0));
+        SETVAL(comb.vb_mem_req_addr, comb.vb_last_pa_req);
         SETVAL(comb.vb_mem_req_type, i_core_req_type);
         SETVAL(comb.vb_mem_req_wdata, i_core_req_wdata);
         SETVAL(comb.vb_mem_req_wstrb, i_core_req_wstrb);
@@ -315,16 +362,23 @@ TEXT();
         ENDIF();
         ENDCASE();
     CASE(CheckTlb);
-        IF (EQ(BITS(last_va, 63, 12), BIG_TO_U64(BITS(wb_tlb_rdata, 115, 64))));
+        IF (NZ(comb.v_tlb_hit));
             TEXT("TLB hit");
             SETONE(tlb_hit);
             SETVAL(last_pa, BIG_TO_U64(BITS(wb_tlb_rdata, 63, 12)));
             SETVAL(last_permission, BIG_TO_U64(BITS(wb_tlb_rdata, 7, 0)));
-            SETVAL(req_pa, comb.t_req_pa);
+            SETVAL(req_pa, comb.vb_tlb_pa_hit);
         ELSE();
             TEXT("TLB miss");
-            SETVAL(tlb_level, CONST("0x1", 4), "Start page decoding");
-            SETVAL(req_pa, CC2(comb.vb_pte_start_va, comb.vb_level0_off));
+            IF (NZ(i_mmu_sv39));
+                SETVAL(tlb_level, CONST("0x2", 4), "Start page decoding sv39");
+                SETVAL(tlb_page_size, CONST("2", 2));
+                SETVAL(req_pa, CC2(comb.vb_pte_start_va, comb.vb_level1_off));
+            ELSE();
+                SETVAL(tlb_level, CONST("0x1", 4), "Start page decoding sv48");
+                SETVAL(tlb_page_size, CONST("3", 2));
+                SETVAL(req_pa, CC2(comb.vb_pte_start_va, comb.vb_level0_off));
+            ENDIF();
         ENDIF();
         SETVAL(state, CacheReq);
         ENDCASE();
@@ -367,12 +421,13 @@ TEXT();
             TEXT("PTE is a apointer to the next level");
             SETVAL(state, CacheReq);
             SETVAL(tlb_level, LSH(tlb_level, 1));
+            SETVAL(tlb_page_size, DEC(tlb_page_size));
             IF(NZ(BIT(tlb_level, 0)));
-                SETVAL(req_pa, CC2(comb.vb_pte_base_va, comb.vb_level1_off));
+                SETVAL(req_pa, CC2(comb.vb_resp_ppn, comb.vb_level1_off));
             ELSIF(NZ(BIT(tlb_level, 1)));
-                SETVAL(req_pa, CC2(comb.vb_pte_base_va, comb.vb_level2_off));
+                SETVAL(req_pa, CC2(comb.vb_resp_ppn, comb.vb_level2_off));
             ELSIF(NZ(BIT(tlb_level, 2)));
-                SETVAL(req_pa, CC2(comb.vb_pte_base_va, comb.vb_level3_off));
+                SETVAL(req_pa, CC2(comb.vb_resp_ppn, comb.vb_level3_off));
             ELSE();
                 TEXT("It was the last level");
                 SETONE(ex_page_fault);
@@ -395,16 +450,29 @@ TEXT();
             ELSE();
                 SETVAL(state, UpdateTlb);
             ENDIF();
-            SETVAL(last_pa, comb.vb_pte_base_va);
             SETVAL(last_permission, BITS(resp_data, 7, 0));
-            SETVAL(req_pa, CC2(comb.vb_pte_base_va, BITS(last_va, 11, 0)));
+            SETVAL(last_page_size, tlb_page_size);
             SETVAL(tlb_wdata, comb.t_tlb_wdata);
+            TEXT("Pages more than 4KB support:");
+            IF (NZ(BIT(tlb_level, 0)));
+                SETVAL(req_pa, CC2(BITS(comb.vb_resp_ppn, 51, 27), BITS(last_va, 38, 0)));
+                SETVAL(last_pa, CC2(BITS(comb.vb_resp_ppn, 51, 27), CONST("0", 27)));
+            ELSIF (NZ(BIT(tlb_level, 1)));
+                SETVAL(req_pa, CC2(BITS(comb.vb_resp_ppn, 51, 18), BITS(last_va, 29, 0)));
+                SETVAL(last_pa, CC2(BITS(comb.vb_resp_ppn, 51, 18), CONST("0", 18)));
+            ELSIF (NZ(BIT(tlb_level, 2)));
+                SETVAL(req_pa, CC2(BITS(comb.vb_resp_ppn, 51, 9), BITS(last_va, 20, 0)));
+                SETVAL(last_pa, CC2(BITS(comb.vb_resp_ppn, 51, 9), CONST("0", 9)));
+            ELSE();
+                SETVAL(req_pa, CC2(comb.vb_resp_ppn, BITS(last_va, 11, 0)));
+                SETVAL(last_pa, comb.vb_resp_ppn);
+            ENDIF();
         ENDIF();
         ENDCASE();
     CASE(UpdateTlb);
         TEXT("Translation is finished: write va/pa into TLB memory");
         SETONE(comb.v_tlb_wena);
-        SETVAL(comb.vb_tlb_adr, BITS(last_va, DEC(CONST("ADD(12,CFG_MMU_TLB_AWIDTH)")), CONST("12")));
+        SETVAL(comb.vb_tlb_adr, BITSW(last_va, comb.t_idx_lsb, cfg->CFG_MMU_TLB_AWIDTH));
         SETVAL(state, CacheReq, "Read data by physical address");
         SETONE(tlb_hit);
         ENDCASE();
@@ -427,6 +495,7 @@ TEXT();
         SETVAL(comb.vb_tlb_adr, tlb_flush_adr);
         SETVAL(last_va, ALLONES());
         SETVAL(last_pa, ALLONES());
+        SETZERO(last_mmu_ena);
         IF (EZ(tlb_flush_cnt));
             SETVAL(state, Idle);
         ELSE();

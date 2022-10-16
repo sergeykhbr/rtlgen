@@ -43,6 +43,8 @@ class MemAccess : public ModuleObject {
             v_queue_re(this, "v_queue_re", "1"),
             v_flushd(this, "v_flushd", "1"),
             v_mmu_ena(this, "v_mmu_ena", "1"),
+            v_mmu_sv39(this, "v_mmu_sv39", "1"),
+            v_mmu_sv48(this, "v_mmu_sv48", "1"),
             vb_res_wtag(this, "vb_res_wtag", "CFG_REG_TAG_WIDTH"),
             vb_mem_wdata(this, "vb_mem_wdata", "64"),
             vb_mem_wstrb(this, "vb_mem_wstrb", "8"),
@@ -77,6 +79,8 @@ class MemAccess : public ModuleObject {
         Logic v_queue_re;
         Logic v_flushd;
         Logic v_mmu_ena;
+        Logic v_mmu_sv39;
+        Logic v_mmu_sv48;
         Logic vb_res_wtag;
         Logic vb_mem_wdata;
         Logic vb_mem_wstrb;
@@ -107,7 +111,11 @@ class MemAccess : public ModuleObject {
     InPort i_flushd_addr;
     OutPort o_flushd;
     InPort i_mmu_ena;
+    InPort i_mmu_sv39;
+    InPort i_mmu_sv48;
     OutPort o_mmu_ena;
+    OutPort o_mmu_sv39;
+    OutPort o_mmu_sv48;
     InPort i_reg_waddr;
     InPort i_reg_wtag;
     InPort i_memop_valid;
@@ -147,6 +155,8 @@ class MemAccess : public ModuleObject {
 
     RegSignal state;
     RegSignal mmu_ena;
+    RegSignal mmu_sv39;
+    RegSignal mmu_sv48;
     RegSignal memop_type;
     RegSignal memop_addr;
     RegSignal memop_wdata;
