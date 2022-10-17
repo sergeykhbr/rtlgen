@@ -34,8 +34,6 @@ class input_mux_type : public StructObject {
     radr1(this, "radr1", "6"),
     radr2(this, "radr2", "6"),
     waddr(this, "waddr", "6"),
-    rdata1(this, "rdata1", "RISCV_ARCH"),
-    rdata2(this, "rdata2", "RISCV_ARCH"),
     imm(this, "imm", "RISCV_ARCH"),
     pc(this, "pc", "CFG_CPU_ADDR_BITS"),
     instr(this, "instr", "32"),
@@ -52,8 +50,6 @@ class input_mux_type : public StructObject {
     Logic radr1;
     Logic radr2;
     Logic waddr;
-    Logic rdata1;
-    Logic rdata2;
     Logic imm;
     Logic pc;
     Logic instr;
