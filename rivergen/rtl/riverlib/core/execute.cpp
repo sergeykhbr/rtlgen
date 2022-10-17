@@ -168,6 +168,7 @@ InstrExecute::InstrExecute(GenObject *parent, const char *name) :
     waddr(this, "waddr", "6"),
     rdata1(this, "rdata1", "RISCV_ARCH"),
     rdata2(this, "rdata2", "RISCV_ARCH"),
+    rdata2_amo(this, "rdata2_amo", "RISCV_ARCH"),
     ivec(this, "ivec", "Instr_Total"),
     isa_type(this, "isa_type", "ISA_Total"),
     imm(this, "imm", "RISCV_ARCH"),
@@ -1197,7 +1198,12 @@ TEXT();
 
 TEXT();
     SETVAL(wb_rdata1, comb.vb_rdata1);
-    SETVAL(wb_rdata2, comb.vb_rdata2);
+    SETVAL(rdata2_amo, comb.vb_rdata2, "Just 1 clock delay to avoid loosing op in a case of rs1=rs2 ");
+    IF (EQ(state, State_Amo));
+        SETVAL(wb_rdata2, rdata2_amo);
+    ELSE();
+        SETVAL(wb_rdata2, comb.vb_rdata2);
+    ENDIF();
 
 TEXT();
     SETBIT(comb.t_alu_mode, 2, ORx(4, &BIT(comb.wv, "Instr_XOR"),

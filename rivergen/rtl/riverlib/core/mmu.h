@@ -205,6 +205,7 @@ class Mmu : public ModuleObject {
     RegSignal tlb_wdata;
     RegSignal tlb_flush_cnt;
     RegSignal tlb_flush_adr;
+    RegSignal dbg_strob;
 
     // process should be intialized last to make all signals available
     CombProcess comb;

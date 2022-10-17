@@ -388,6 +388,7 @@ class InstrExecute : public ModuleObject {
     RegSignal waddr;
     RegSignal rdata1;
     RegSignal rdata2;
+    RegSignal rdata2_amo;
     RegSignal ivec;
     RegSignal isa_type;
     RegSignal imm;
