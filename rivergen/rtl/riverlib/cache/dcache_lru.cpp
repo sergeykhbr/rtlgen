@@ -255,6 +255,9 @@ TEXT();
                     SETVAL(req_type, comb.t_req_type, "clear MemopType_Store bit");
                     SETVAL(comb.vb_line_wstrb, comb.vb_line_rdata_o_wstrb);
                     SETVAL(comb.vb_line_wdata, comb.vb_line_rdata_o_modified);
+                    IF (NZ(BIT(req_type, cfg->MemopType_Release)));
+                        SETZERO(comb.vb_resp_data);
+                    ENDIF();
                     IF (ANDx(2, &NZ(BIT(req_type, cfg->MemopType_Release)),
                                 &EZ(BIT(line_rflags_o, cfg->DTAG_FL_RESERVED))));
                         TEXT("ignore writing if cacheline wasn't reserved before:");
