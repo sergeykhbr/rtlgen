@@ -61,6 +61,7 @@ class MemAccess : public ModuleObject {
             vb_o_wdata(this, "vb_o_wdata", "RISCV_ARCH"),
             vb_o_wtag(this, "vb_o_wtag", "CFG_REG_TAG_WIDTH"),
             v_valid(this, "v_valid", "1"),
+            v_idle(this, "v_idle", "1"),
             t_memop_debug(this, "t_memop_debug")
         {
         }
@@ -97,6 +98,7 @@ class MemAccess : public ModuleObject {
         Logic vb_o_wdata;
         Logic vb_o_wtag;
         Logic v_valid;
+        Logic v_idle;
         Logic1 t_memop_debug;
     };
 
@@ -145,6 +147,7 @@ class MemAccess : public ModuleObject {
     OutPort o_mem_resp_ready;
     OutPort o_pc;
     OutPort o_valid;
+    OutPort o_idle;
     OutPort o_debug_valid;
 
  protected:

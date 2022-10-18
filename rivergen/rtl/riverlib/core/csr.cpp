@@ -42,6 +42,7 @@ CsrRegs::CsrRegs(GenObject *parent, const char *name) :
     i_f_flush_ready(this, "i_f_flush_ready", "1", "fetcher is ready to accept Flush $I request"),
     i_e_valid(this, "i_e_valid", "1", "instructuin executed flag"),
     i_m_memop_ready(this, "i_m_memop_ready", "1", "memaccess module is ready to accept the request"),
+    i_m_idle(this, "i_m_idle", "1", "memaccess is in idle state, no memop in progress"),
     i_flushd_end(this, "i_flushd_end", "1"),
     i_mtimer(this, "i_mtimer", "64", "Read-only shadow value of memory-mapped mtimer register (see CLINT)."),
     o_executed_cnt(this, "o_executed_cnt", "64", "Number of executed instructions"),
@@ -82,11 +83,12 @@ CsrRegs::CsrRegs(GenObject *parent, const char *name) :
     State_Response(this, "State_Response", "11"),
     _fence0_(this),
     Fence_None(this, "3", "Fence_None", "0"),
-    Fence_Data(this, "3", "Fence_Data", "1"),
-    Fence_DataWaitEnd(this, "3", "Fence_DataWaitEnd", "2"),
-    Fence_Fetch(this, "3", "Fence_Fetch", "3"),
-    Fence_MMU(this, "3", "Fence_MMU", "4"),
-    Fence_End(this, "3", "Fence_End", "5"),
+    Fence_DataBarrier(this, "3", "Fence_DataBarrier", "1"),
+    Fence_DataFlush(this, "3", "Fence_DataFlush", "2"),
+    Fence_WaitDataFlushEnd(this, "3", "Fence_WaitDataFlushEnd", "3"),
+    Fence_FlushInstr(this, "3", "Fence_FlushInstr", "4"),
+    Fence_MMU(this, "3", "Fence_MMU", "5"),
+    Fence_End(this, "3", "Fence_End", "6"),
     _fence1_(this),
     SATP_MODE_SV39(this, "4", "SATP_MODE_SV39", "8", "39-bits Page mode"),
     SATP_MODE_SV48(this, "4", "SATP_MODE_SV48", "9", "48-bits Page mode"),
@@ -207,9 +209,12 @@ TEXT();
                 SETVAL(state, State_Wfi);
             ELSIF (NZ(BIT(i_req_type, cfg->CsrReq_FenceBit)));
                 SETVAL(state, State_Fence);
-                IF (NZ(BITS(i_req_addr, 1, 0)));
-                    TEXT("FENCE or FENCE.I");
-                    SETVAL(fencestate, Fence_Data);
+                IF (NZ(BIT(i_req_addr, 0)));
+                    TEXT("FENCE");
+                    SETVAL(fencestate, Fence_DataBarrier);
+                ELSIF (NZ(BIT(i_req_addr, 1)));
+                    TEXT("FENCE.I");
+                    SETVAL(fencestate, Fence_DataFlush);
                 ELSIF(ANDx(2, &NZ(BIT(i_req_addr,2)),
                               &INV(AND2(NZ(tvm), EZ(BIT(mode, 1))))));
                     TEXT("FENCE.VMA: is illegal in S-mode when TVM bit=1");
@@ -334,34 +339,27 @@ TEXT();
     SWITCH (fencestate);
     CASE (Fence_None);
         ENDCASE();
-    CASE (Fence_Data);
+    CASE (Fence_DataBarrier);
+        IF(NZ(i_m_idle));
+            SETVAL(fencestate, Fence_End);
+        ENDIF();
+        ENDCASE();
+    CASE (Fence_DataFlush);
         SETONE(comb.v_flushd);
+        SETONE(comb.v_flushmmu);
         IF(NZ(i_m_memop_ready));
-            SETVAL(fencestate, Fence_DataWaitEnd);
+            SETVAL(fencestate, Fence_WaitDataFlushEnd);
         ENDIF();
         ENDCASE();
-    CASE (Fence_DataWaitEnd);
+    CASE (Fence_WaitDataFlushEnd);
         IF(NZ(i_flushd_end));
-            TEXT("[0] flush data");
-            TEXT("[1] flush fetch");
-            TEXT("[2] flush mmu");
-            IF (NZ(BIT(cmd_addr, 1)));
-                SETVAL(fencestate, Fence_Fetch);
-            ELSIF (NZ(BIT(cmd_addr, 2)));
-                SETVAL(fencestate, Fence_MMU);
-            ELSE();
-                SETVAL(fencestate, Fence_End);
-            ENDIF();
+            SETVAL(fencestate, Fence_FlushInstr);
         ENDIF();
         ENDCASE();
-    CASE (Fence_Fetch);
+    CASE (Fence_FlushInstr);
         SETONE(comb.v_flushi);
         IF (NZ(i_f_flush_ready));
-            IF (NZ(BIT(cmd_addr, 2)));
-                SETVAL(fencestate, Fence_MMU);
-            ELSE();
-                SETVAL(fencestate, Fence_End);
-            ENDIF();
+            SETVAL(fencestate, Fence_End);
         ENDIF();
         ENDCASE();
     CASE (Fence_MMU);

@@ -109,7 +109,6 @@ Mmu::Mmu(GenObject *parent, const char *name) :
     tlb_wdata(this, "tlb_wdata", "CFG_MMU_PTE_DWIDTH"),
     tlb_flush_cnt(this, "tlb_flush_cnt", "CFG_MMU_TLB_AWIDTH", "-1"),
     tlb_flush_adr(this, "tlb_flush_adr", "CFG_MMU_TLB_AWIDTH"),
-    dbg_strob(this, "dbg_strob", "1"),
     // process
     comb(this),
     // sub-modules
@@ -514,14 +513,6 @@ TEXT();
         SETVAL(tlb_flush_cnt, ALLONES());
         SETZERO(tlb_flush_adr);
     ENDIF();
-
-#if 1
-    SETZERO(dbg_strob);
-    IF(ORx(2, &EQ(comb.vb_mem_req_addr, CONST("0x80716c78", 64)),
-              &EQ(comb.vb_mem_req_wdata, CONST("0x11c8000cfull", 64))));
-        SETONE(dbg_strob);
-    ENDIF();
-#endif
 
 TEXT();
     SYNC_RESET(*this);

@@ -384,6 +384,7 @@ Processor::Processor(GenObject *parent, const char *name) :
         CONNECT(mem0, 0, mem0.o_mem_resp_ready, w.m.resp_data_ready);
         CONNECT(mem0, 0, mem0.o_pc, w.m.pc);
         CONNECT(mem0, 0, mem0.o_valid, w.m.valid);
+        CONNECT(mem0, 0, mem0.o_idle, w.m.idle);
         CONNECT(mem0, 0, mem0.o_debug_valid, w.m.debug_valid);
     ENDNEW();
 
@@ -529,6 +530,7 @@ Processor::Processor(GenObject *parent, const char *name) :
         CONNECT(csr0, 0, csr0.i_f_flush_ready, w_f_flush_ready);
         CONNECT(csr0, 0, csr0.i_e_valid, w.e.valid);
         CONNECT(csr0, 0, csr0.i_m_memop_ready, w.m.memop_ready);
+        CONNECT(csr0, 0, csr0.i_m_idle, w.m.idle);
         CONNECT(csr0, 0, csr0.i_flushd_end, i_flushd_end);
         CONNECT(csr0, 0, csr0.i_mtimer, i_mtimer);
         CONNECT(csr0, 0, csr0.o_executed_cnt, csr.executed_cnt);

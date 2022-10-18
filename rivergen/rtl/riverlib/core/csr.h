@@ -128,6 +128,7 @@ class CsrRegs : public ModuleObject {
     InPort i_f_flush_ready;
     InPort i_e_valid;
     InPort i_m_memop_ready;
+    InPort i_m_idle;
     InPort i_flushd_end;
     InPort i_mtimer;
     OutPort o_executed_cnt;
@@ -171,9 +172,10 @@ class CsrRegs : public ModuleObject {
     ParamUI32D State_Response;
     TextLine _fence0_;
     ParamLogic Fence_None;
-    ParamLogic Fence_Data;
-    ParamLogic Fence_DataWaitEnd;
-    ParamLogic Fence_Fetch;
+    ParamLogic Fence_DataBarrier;
+    ParamLogic Fence_DataFlush;
+    ParamLogic Fence_WaitDataFlushEnd;
+    ParamLogic Fence_FlushInstr;
     ParamLogic Fence_MMU;
     ParamLogic Fence_End;
     TextLine _fence1_;

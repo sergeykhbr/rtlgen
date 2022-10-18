@@ -287,6 +287,7 @@ class Processor : public ModuleObject {
             flushd(this, "flushd", "1"),
             pc(this, "pc", "CFG_CPU_ADDR_BITS"),
             valid(this, "valid", "1"),
+            idle(this, "idle", "1"),
             debug_valid(this, "debug_valid", "1"),
             dmmu_ena(this, "dmmu_ena", "1"),
             dmmu_sv39(this, "dmmu_sv39", "1"),
@@ -303,6 +304,7 @@ class Processor : public ModuleObject {
         Signal flushd;
         Signal pc;
         Signal valid;
+        Signal idle;
         Signal debug_valid;
         Signal dmmu_ena;
         Signal dmmu_sv39;

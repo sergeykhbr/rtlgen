@@ -60,6 +60,7 @@ MemAccess::MemAccess(GenObject *parent, const char *name) :
     o_mem_resp_ready(this, "o_mem_resp_ready", "1", "Pipeline is ready to accept memory operation response"),
     o_pc(this, "o_pc", "CFG_CPU_ADDR_BITS", "executed memory/flush request only"),
     o_valid(this, "o_valid", "1", "memory/flush operation completed"),
+    o_idle(this, "o_idle", "1", "All memory operation completed"),
     o_debug_valid(this, "o_debug_valid", "1", "Debug request processed, response is valid"),
     // parameters
     State_Idle(this, "2", "State_Idle", "0"),
@@ -476,6 +477,11 @@ TEXT();
     ENDIF();
 
 TEXT();
+    IF (AND2(EZ(queue_nempty), EQ(state, State_Idle)));
+        SETONE(comb.v_idle);
+    ENDIF();
+
+TEXT();
     SYNC_RESET(*this);
 
 TEXT();
@@ -498,6 +504,7 @@ TEXT();
     SETVAL(o_wb_wtag, comb.vb_o_wtag);
     SETVAL(o_pc, pc);
     SETVAL(o_valid, AND2(OR2(valid, comb.v_valid), INV(memop_debug)));
+    SETVAL(o_idle, comb.v_idle);
     SETVAL(o_debug_valid, AND2(OR2(valid, comb.v_valid), memop_debug));
 }
 
