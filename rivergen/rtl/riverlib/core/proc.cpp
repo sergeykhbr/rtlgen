@@ -472,6 +472,23 @@ Processor::Processor(GenObject *parent, const char *name) :
         CONNECT(iregs0, 0, iregs0.o_dport_rdata, ireg.dport_rdata);
         CONNECT(iregs0, 0, iregs0.o_ra, ireg.ra);
         CONNECT(iregs0, 0, iregs0.o_sp, ireg.sp);
+        CONNECT(iregs0, 0, iregs0.o_t0, ireg.t0);
+        CONNECT(iregs0, 0, iregs0.o_t1, ireg.t1);
+        CONNECT(iregs0, 0, iregs0.o_t2, ireg.t2);
+        CONNECT(iregs0, 0, iregs0.o_s0, ireg.s0);
+        CONNECT(iregs0, 0, iregs0.o_s1, ireg.s1);
+        CONNECT(iregs0, 0, iregs0.o_a0, ireg.a0);
+        CONNECT(iregs0, 0, iregs0.o_a1, ireg.a1);
+        CONNECT(iregs0, 0, iregs0.o_a2, ireg.a2);
+        CONNECT(iregs0, 0, iregs0.o_a3, ireg.a3);
+        CONNECT(iregs0, 0, iregs0.o_a4, ireg.a4);
+        CONNECT(iregs0, 0, iregs0.o_a5, ireg.a5);
+        CONNECT(iregs0, 0, iregs0.o_a6, ireg.a6);
+        CONNECT(iregs0, 0, iregs0.o_a7, ireg.a7);
+        CONNECT(iregs0, 0, iregs0.o_t3, ireg.t3);
+        CONNECT(iregs0, 0, iregs0.o_t4, ireg.t4);
+        CONNECT(iregs0, 0, iregs0.o_t5, ireg.t5);
+        CONNECT(iregs0, 0, iregs0.o_t6, ireg.t6);
     ENDNEW();
 
     NEW(iccsr0, iccsr0.getName().c_str());

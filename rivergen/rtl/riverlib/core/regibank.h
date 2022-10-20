@@ -71,6 +71,23 @@ class RegIntBank : public ModuleObject {
     OutPort o_dport_rdata;
     OutPort o_ra;
     OutPort o_sp;
+    OutPort o_t0;
+    OutPort o_t1;
+    OutPort o_t2;
+    OutPort o_s0;
+    OutPort o_s1;
+    OutPort o_a0;
+    OutPort o_a1;
+    OutPort o_a2;
+    OutPort o_a3;
+    OutPort o_a4;
+    OutPort o_a5;
+    OutPort o_a6;
+    OutPort o_a7;
+    OutPort o_t3;
+    OutPort o_t4;
+    OutPort o_t5;
+    OutPort o_t6;
 
  protected:
     class RegValueType : public StructObject {

@@ -343,7 +343,24 @@ class Processor : public ModuleObject {
         rtag2(this, "rtag2", "CFG_REG_TAG_WIDTH"),
         dport_rdata(this, "dport_rdata", "RISCV_ARCH"),
         ra(this, "ra", "RISCV_ARCH", "0", "Return address"),
-        sp(this, "sp", "RISCV_ARCH", "0", "Stack pointer") {}
+        sp(this, "sp", "RISCV_ARCH", "0", "Stack pointer"),
+        t0(this, "t0", "RISCV_ARCH"),
+        t1(this, "t1", "RISCV_ARCH"),
+        t2(this, "t2", "RISCV_ARCH"),
+        s0(this, "s0", "RISCV_ARCH"),
+        s1(this, "s1", "RISCV_ARCH"),
+        a0(this, "a0", "RISCV_ARCH"),
+        a1(this, "a1", "RISCV_ARCH"),
+        a2(this, "a2", "RISCV_ARCH"),
+        a3(this, "a3", "RISCV_ARCH"),
+        a4(this, "a4", "RISCV_ARCH"),
+        a5(this, "a5", "RISCV_ARCH"),
+        a6(this, "a6", "RISCV_ARCH"),
+        a7(this, "a7", "RISCV_ARCH"),
+        t3(this, "t3", "RISCV_ARCH"),
+        t4(this, "t4", "RISCV_ARCH"),
+        t5(this, "t5", "RISCV_ARCH"),
+        t6(this, "t6", "RISCV_ARCH") {}
      public:
         Signal rdata1;
         Signal rtag1;
@@ -352,6 +369,23 @@ class Processor : public ModuleObject {
         Signal dport_rdata;
         Signal ra;
         Signal sp;
+        Signal t0;
+        Signal t1;
+        Signal t2;
+        Signal s0;
+        Signal s1;
+        Signal a0;
+        Signal a1;
+        Signal a2;
+        Signal a3;
+        Signal a4;
+        Signal a5;
+        Signal a6;
+        Signal a7;
+        Signal t3;
+        Signal t4;
+        Signal t5;
+        Signal t6;
     } IntRegsTypeDef_;
 
     class CsrType : public StructObject {
