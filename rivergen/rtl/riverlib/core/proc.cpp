@@ -285,6 +285,8 @@ Processor::Processor(GenObject *parent, const char *name) :
         CONNECT(exec0, 0, exec0.i_stack_underflow, csr.stack_underflow);
         CONNECT(exec0, 0, exec0.i_unsup_exception, w.d.exception);
         CONNECT(exec0, 0, exec0.i_instr_load_fault, w.d.instr_load_fault);
+        CONNECT(exec0, 0, exec0.i_mem_valid, dmmu.valid);
+        CONNECT(exec0, 0, exec0.i_mem_rdata, dmmu.data);
         CONNECT(exec0, 0, exec0.i_mem_ex_debug, w.m.debug_valid);
         CONNECT(exec0, 0, exec0.i_mem_ex_load_fault, dmmu.load_fault);
         CONNECT(exec0, 0, exec0.i_mem_ex_store_fault, dmmu.store_fault);

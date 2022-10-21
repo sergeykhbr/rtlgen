@@ -237,6 +237,8 @@ class InstrExecute : public ModuleObject {
     InPort i_stack_underflow;
     InPort i_unsup_exception;
     InPort i_instr_load_fault;
+    InPort i_mem_valid;
+    InPort i_mem_rdata;
     InPort i_mem_ex_debug;
     InPort i_mem_ex_load_fault;
     InPort i_mem_ex_store_fault;
@@ -389,6 +391,7 @@ class InstrExecute : public ModuleObject {
     RegSignal waddr;
     RegSignal rdata1;
     RegSignal rdata2;
+    RegSignal rdata1_amo;
     RegSignal rdata2_amo;
     RegSignal ivec;
     RegSignal isa_type;

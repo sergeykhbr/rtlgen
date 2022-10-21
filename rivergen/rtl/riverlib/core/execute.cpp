@@ -45,6 +45,8 @@ InstrExecute::InstrExecute(GenObject *parent, const char *name) :
     i_stack_underflow(this, "i_stack_underflow", "1", "exception stack overflow"),
     i_unsup_exception(this, "i_unsup_exception", "1", "Unsupported instruction exception"),
     i_instr_load_fault(this, "i_instr_load_fault", "1", "fault instruction's address. Bus returned ERR on read transaction"),
+    i_mem_valid(this, "i_mem_valid", "1", "memory operation done (need for AMO)"),
+    i_mem_rdata(this, "i_mem_rdata", "RISCV_ARCH", "memory operation read data (need for AMO)"),
     i_mem_ex_debug(this, "i_mem_ex_debug", "1", "Memoryaccess: Debug requested processed with error. Ignore it."),
     i_mem_ex_load_fault(this, "i_mem_ex_load_fault", "1", "Memoryaccess: Bus response with SLVERR or DECERR on read data"),
     i_mem_ex_store_fault(this, "i_mem_ex_store_fault", "1", "Memoryaccess: Bus response with SLVERR or DECERR on write data"),
@@ -169,6 +171,7 @@ InstrExecute::InstrExecute(GenObject *parent, const char *name) :
     waddr(this, "waddr", "6"),
     rdata1(this, "rdata1", "RISCV_ARCH"),
     rdata2(this, "rdata2", "RISCV_ARCH"),
+    rdata1_amo(this, "rdata1_amo", "RISCV_ARCH"),
     rdata2_amo(this, "rdata2_amo", "RISCV_ARCH"),
     ivec(this, "ivec", "Instr_Total"),
     isa_type(this, "isa_type", "ISA_Total"),
@@ -385,7 +388,13 @@ TEXT();
     SETVAL(comb.wv, comb.mux.ivec);
 
 TEXT();
-    IF (NZ(BIT(comb.mux.isa_type, cfg->ISA_R_type)));
+    IF (EQ(state, State_Amo));
+        TEXT("AMO R-type:");
+        SETVAL(comb.vb_rdata1, rdata1_amo);
+        SETVAL(comb.vb_rdata2, rdata2_amo);
+        SETONE(comb.v_check_tag1);
+        SETONE(comb.v_check_tag2);
+    ELSIF (NZ(BIT(comb.mux.isa_type, cfg->ISA_R_type)));
         SETVAL(comb.vb_rdata1, i_rdata1);
         SETVAL(comb.vb_rdata2, i_rdata2);
         SETONE(comb.v_check_tag1);
@@ -413,6 +422,12 @@ TEXT();
         SETVAL(comb.vb_off, comb.mux.imm);
         SETONE(comb.v_check_tag1);
         SETONE(comb.v_check_tag2);
+    ENDIF();
+    TEXT("AMO value read from memory[rs1]");
+    IF (NZ(OR2(BIT(comb.wv, "Instr_AMOSWAP_D"), BIT(comb.wv, "Instr_AMOSWAP_W"))));
+        SETZERO(rdata1_amo);
+    ELSIF (NZ(i_mem_valid));
+        SETVAL(rdata1_amo, i_mem_rdata);
     ENDIF();
 
 TEXT();
@@ -1005,12 +1020,8 @@ TEXT();
             ENDIF();
             ENDCASE();
         CASE (AmoState_Read);
+            SETVAL(rdata2_amo, i_rdata2);
             SETVAL(amostate, AmoState_Modify);
-            IF (NZ(OR2(BIT(comb.wv, "Instr_AMOSWAP_D"), BIT(comb.wv, "Instr_AMOSWAP_W"))));
-                SETZERO(radr1);
-            ELSE();
-                SETVAL(radr1, waddr);
-            ENDIF();
             ENDCASE();
         CASE (AmoState_Modify);
             IF (NZ(i_memop_idle));
@@ -1197,12 +1208,7 @@ TEXT();
 
 TEXT();
     SETVAL(wb_rdata1, comb.vb_rdata1);
-    SETVAL(rdata2_amo, comb.vb_rdata2, "Just 1 clock delay to avoid loosing op in a case of rs1=rs2 ");
-    IF (EQ(state, State_Amo));
-        SETVAL(wb_rdata2, rdata2_amo);
-    ELSE();
-        SETVAL(wb_rdata2, comb.vb_rdata2);
-    ENDIF();
+    SETVAL(wb_rdata2, comb.vb_rdata2);
 
 TEXT();
     SETBIT(comb.t_alu_mode, 2, ORx(4, &BIT(comb.wv, "Instr_XOR"),
