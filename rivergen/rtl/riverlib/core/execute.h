@@ -277,6 +277,7 @@ class InstrExecute : public ModuleObject {
     OutPort o_memop_memaddr;
     OutPort o_memop_wdata;
     InPort i_memop_ready;
+    InPort i_memop_idle;
     InPort i_dbg_mem_req_valid;
     InPort i_dbg_mem_req_write;
     InPort i_dbg_mem_req_size;

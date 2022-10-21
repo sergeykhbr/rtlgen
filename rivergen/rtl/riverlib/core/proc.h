@@ -344,10 +344,12 @@ class Processor : public ModuleObject {
         dport_rdata(this, "dport_rdata", "RISCV_ARCH"),
         ra(this, "ra", "RISCV_ARCH", "0", "Return address"),
         sp(this, "sp", "RISCV_ARCH", "0", "Stack pointer"),
+        gp(this, "gp", "RISCV_ARCH"),
+        tp(this, "tp", "RISCV_ARCH"),
         t0(this, "t0", "RISCV_ARCH"),
         t1(this, "t1", "RISCV_ARCH"),
         t2(this, "t2", "RISCV_ARCH"),
-        s0(this, "s0", "RISCV_ARCH"),
+        fp(this, "fp", "RISCV_ARCH"),
         s1(this, "s1", "RISCV_ARCH"),
         a0(this, "a0", "RISCV_ARCH"),
         a1(this, "a1", "RISCV_ARCH"),
@@ -357,6 +359,16 @@ class Processor : public ModuleObject {
         a5(this, "a5", "RISCV_ARCH"),
         a6(this, "a6", "RISCV_ARCH"),
         a7(this, "a7", "RISCV_ARCH"),
+        s2(this, "s2", "RISCV_ARCH"),
+        s3(this, "s3", "RISCV_ARCH"),
+        s4(this, "s4", "RISCV_ARCH"),
+        s5(this, "s5", "RISCV_ARCH"),
+        s6(this, "s6", "RISCV_ARCH"),
+        s7(this, "s7", "RISCV_ARCH"),
+        s8(this, "s8", "RISCV_ARCH"),
+        s9(this, "s9", "RISCV_ARCH"),
+        s10(this, "s10", "RISCV_ARCH"),
+        s11(this, "s11", "RISCV_ARCH"),
         t3(this, "t3", "RISCV_ARCH"),
         t4(this, "t4", "RISCV_ARCH"),
         t5(this, "t5", "RISCV_ARCH"),
@@ -369,10 +381,12 @@ class Processor : public ModuleObject {
         Signal dport_rdata;
         Signal ra;
         Signal sp;
+        Signal gp;
+        Signal tp;
         Signal t0;
         Signal t1;
         Signal t2;
-        Signal s0;
+        Signal fp;
         Signal s1;
         Signal a0;
         Signal a1;
@@ -382,6 +396,16 @@ class Processor : public ModuleObject {
         Signal a5;
         Signal a6;
         Signal a7;
+        Signal s2;
+        Signal s3;
+        Signal s4;
+        Signal s5;
+        Signal s6;
+        Signal s7;
+        Signal s8;
+        Signal s9;
+        Signal s10;
+        Signal s11;
         Signal t3;
         Signal t4;
         Signal t5;

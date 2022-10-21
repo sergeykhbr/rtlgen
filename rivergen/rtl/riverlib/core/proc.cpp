@@ -325,6 +325,7 @@ Processor::Processor(GenObject *parent, const char *name) :
         CONNECT(exec0, 0, exec0.o_memop_memaddr, w.e.memop_addr);
         CONNECT(exec0, 0, exec0.o_memop_wdata, w.e.memop_wdata);
         CONNECT(exec0, 0, exec0.i_memop_ready, w.m.memop_ready);
+        CONNECT(exec0, 0, exec0.i_memop_idle, w.m.idle);
         CONNECT(exec0, 0, exec0.i_dbg_mem_req_valid, dbg.mem_req_valid);
         CONNECT(exec0, 0, exec0.i_dbg_mem_req_write, dbg.mem_req_write);
         CONNECT(exec0, 0, exec0.i_dbg_mem_req_size, dbg.mem_req_size);
@@ -472,10 +473,12 @@ Processor::Processor(GenObject *parent, const char *name) :
         CONNECT(iregs0, 0, iregs0.o_dport_rdata, ireg.dport_rdata);
         CONNECT(iregs0, 0, iregs0.o_ra, ireg.ra);
         CONNECT(iregs0, 0, iregs0.o_sp, ireg.sp);
+        CONNECT(iregs0, 0, iregs0.o_gp, ireg.gp);
+        CONNECT(iregs0, 0, iregs0.o_tp, ireg.tp);
         CONNECT(iregs0, 0, iregs0.o_t0, ireg.t0);
         CONNECT(iregs0, 0, iregs0.o_t1, ireg.t1);
         CONNECT(iregs0, 0, iregs0.o_t2, ireg.t2);
-        CONNECT(iregs0, 0, iregs0.o_s0, ireg.s0);
+        CONNECT(iregs0, 0, iregs0.o_fp, ireg.fp);
         CONNECT(iregs0, 0, iregs0.o_s1, ireg.s1);
         CONNECT(iregs0, 0, iregs0.o_a0, ireg.a0);
         CONNECT(iregs0, 0, iregs0.o_a1, ireg.a1);
@@ -485,6 +488,16 @@ Processor::Processor(GenObject *parent, const char *name) :
         CONNECT(iregs0, 0, iregs0.o_a5, ireg.a5);
         CONNECT(iregs0, 0, iregs0.o_a6, ireg.a6);
         CONNECT(iregs0, 0, iregs0.o_a7, ireg.a7);
+        CONNECT(iregs0, 0, iregs0.o_s2, ireg.s2);
+        CONNECT(iregs0, 0, iregs0.o_s3, ireg.s3);
+        CONNECT(iregs0, 0, iregs0.o_s4, ireg.s4);
+        CONNECT(iregs0, 0, iregs0.o_s5, ireg.s5);
+        CONNECT(iregs0, 0, iregs0.o_s6, ireg.s6);
+        CONNECT(iregs0, 0, iregs0.o_s7, ireg.s7);
+        CONNECT(iregs0, 0, iregs0.o_s8, ireg.s8);
+        CONNECT(iregs0, 0, iregs0.o_s9, ireg.s9);
+        CONNECT(iregs0, 0, iregs0.o_s10, ireg.s10);
+        CONNECT(iregs0, 0, iregs0.o_s11, ireg.s11);
         CONNECT(iregs0, 0, iregs0.o_t3, ireg.t3);
         CONNECT(iregs0, 0, iregs0.o_t4, ireg.t4);
         CONNECT(iregs0, 0, iregs0.o_t5, ireg.t5);

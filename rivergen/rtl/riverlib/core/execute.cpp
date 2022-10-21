@@ -85,6 +85,7 @@ InstrExecute::InstrExecute(GenObject *parent, const char *name) :
     o_memop_memaddr(this, "o_memop_memaddr", "CFG_CPU_ADDR_BITS", "Memory access address"),
     o_memop_wdata(this, "o_memop_wdata", "RISCV_ARCH"),
     i_memop_ready(this, "i_memop_ready", "1", "memaccess is ready to accept memop on next clock"),
+    i_memop_idle(this, "i_memop_idle", "1", "No memory operations in progress"),
     i_dbg_mem_req_valid(this, "i_dbg_mem_req_valid", "1", "Debug Request to memory is valid"),
     i_dbg_mem_req_write(this, "i_dbg_mem_req_write", "1", "0=read; 1=write"),
     i_dbg_mem_req_size(this, "i_dbg_mem_req_size", "2", "0=1bytes; 1=2bytes; 2=4bytes; 3=8bytes"),
@@ -1012,7 +1013,7 @@ TEXT();
             ENDIF();
             ENDCASE();
         CASE (AmoState_Modify);
-            IF (AND2(EZ(w_hazard1), EZ(w_hazard2)));
+            IF (NZ(i_memop_idle));
                 TEXT("Need to wait 1 clock to latch addsub/alu output");
                 SETVAL(amostate, AmoState_Write);
                 SETBITONE(comb.mux.memop_type, cfg->MemopType_Store, "no need to do this in rtl, just assign to v.memop_type[0]");

@@ -39,10 +39,12 @@ RegIntBank::RegIntBank(GenObject *parent, const char *name) :
     o_dport_rdata(this, "o_dport_rdata", "RISCV_ARCH", "Debug port read value"),
     o_ra(this, "o_ra", "RISCV_ARCH", "Return address for branch predictor"),
     o_sp(this, "o_sp", "RISCV_ARCH", "Stack Pointer for border control"),
+    o_gp(this, "o_gp", "RISCV_ARCH"),
+    o_tp(this, "o_tp", "RISCV_ARCH"),
     o_t0(this, "o_t0", "RISCV_ARCH"),
     o_t1(this, "o_t1", "RISCV_ARCH"),
     o_t2(this, "o_t2", "RISCV_ARCH"),
-    o_s0(this, "o_s0", "RISCV_ARCH"),
+    o_fp(this, "o_fp", "RISCV_ARCH"),
     o_s1(this, "o_s1", "RISCV_ARCH"),
     o_a0(this, "o_a0", "RISCV_ARCH"),
     o_a1(this, "o_a1", "RISCV_ARCH"),
@@ -52,6 +54,16 @@ RegIntBank::RegIntBank(GenObject *parent, const char *name) :
     o_a5(this, "o_a5", "RISCV_ARCH"),
     o_a6(this, "o_a6", "RISCV_ARCH"),
     o_a7(this, "o_a7", "RISCV_ARCH"),
+    o_s2(this, "o_s2", "RISCV_ARCH"),
+    o_s3(this, "o_s3", "RISCV_ARCH"),
+    o_s4(this, "o_s4", "RISCV_ARCH"),
+    o_s5(this, "o_s5", "RISCV_ARCH"),
+    o_s6(this, "o_s6", "RISCV_ARCH"),
+    o_s7(this, "o_s7", "RISCV_ARCH"),
+    o_s8(this, "o_s8", "RISCV_ARCH"),
+    o_s9(this, "o_s9", "RISCV_ARCH"),
+    o_s10(this, "o_s10", "RISCV_ARCH"),
+    o_s11(this, "o_s11", "RISCV_ARCH"),
     o_t3(this, "o_t3", "RISCV_ARCH"),
     o_t4(this, "o_t4", "RISCV_ARCH"),
     o_t5(this, "o_t5", "RISCV_ARCH"),
@@ -102,10 +114,12 @@ TEXT();
     SETVAL(o_dport_rdata, ARRITEM(arr, comb.int_daddr, arr->val));
     SETVAL(o_ra, ARRITEM(arr, cfg->REG_RA, arr->val));
     SETVAL(o_sp, ARRITEM(arr, cfg->REG_SP, arr->val));
+    SETVAL(o_gp, ARRITEM(arr, cfg->REG_GP, arr->val));
+    SETVAL(o_tp, ARRITEM(arr, cfg->REG_TP, arr->val));
     SETVAL(o_t0, ARRITEM(arr, cfg->REG_T0, arr->val));
     SETVAL(o_t1, ARRITEM(arr, cfg->REG_T1, arr->val));
     SETVAL(o_t2, ARRITEM(arr, cfg->REG_T2, arr->val));
-    SETVAL(o_s0, ARRITEM(arr, cfg->REG_S0, arr->val));
+    SETVAL(o_fp, ARRITEM(arr, cfg->REG_S0, arr->val));
     SETVAL(o_s1, ARRITEM(arr, cfg->REG_S1, arr->val));
     SETVAL(o_a0, ARRITEM(arr, cfg->REG_A0, arr->val));
     SETVAL(o_a1, ARRITEM(arr, cfg->REG_A1, arr->val));
@@ -115,6 +129,16 @@ TEXT();
     SETVAL(o_a5, ARRITEM(arr, cfg->REG_A5, arr->val));
     SETVAL(o_a6, ARRITEM(arr, cfg->REG_A6, arr->val));
     SETVAL(o_a7, ARRITEM(arr, cfg->REG_A7, arr->val));
+    SETVAL(o_s2, ARRITEM(arr, cfg->REG_S2, arr->val));
+    SETVAL(o_s3, ARRITEM(arr, cfg->REG_S3, arr->val));
+    SETVAL(o_s4, ARRITEM(arr, cfg->REG_S4, arr->val));
+    SETVAL(o_s5, ARRITEM(arr, cfg->REG_S5, arr->val));
+    SETVAL(o_s6, ARRITEM(arr, cfg->REG_S6, arr->val));
+    SETVAL(o_s7, ARRITEM(arr, cfg->REG_S7, arr->val));
+    SETVAL(o_s8, ARRITEM(arr, cfg->REG_S8, arr->val));
+    SETVAL(o_s9, ARRITEM(arr, cfg->REG_S9, arr->val));
+    SETVAL(o_s10, ARRITEM(arr, cfg->REG_S10, arr->val));
+    SETVAL(o_s11, ARRITEM(arr, cfg->REG_S11, arr->val));
     SETVAL(o_t3, ARRITEM(arr, cfg->REG_T3, arr->val));
     SETVAL(o_t4, ARRITEM(arr, cfg->REG_T4, arr->val));
     SETVAL(o_t5, ARRITEM(arr, cfg->REG_T5, arr->val));
