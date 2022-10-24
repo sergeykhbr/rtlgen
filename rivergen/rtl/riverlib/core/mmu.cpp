@@ -57,6 +57,9 @@ Mmu::Mmu(GenObject *parent, const char *name) :
     i_mmu_sv39(this, "i_mmu_sv39", "1", "MMU sv39 is active"),
     i_mmu_sv48(this, "i_mmu_sv48", "1", "MMU sv48 is active"),
     i_mmu_ppn(this, "i_mmu_ppn", "44", "Physical Page Number from SATP CSR"),
+    i_mprv(this, "i_mprv", "1", "modify priviledge flag can be active in m-mode"),
+    i_mxr(this, "i_mxr", "1", "make executabale readable"),
+    i_sum(this, "i_sum", "1", "permit Supervisor User Mode access"),
     i_fence(this, "i_fence", "1", "reset TBL entries at specific address"),
     i_fence_addr(this, "i_fence_addr", "RISCV_ARCH", "Fence address: 0=clean all TBL"),
     // param
@@ -162,8 +165,12 @@ TEXT();
     ENDIF();
     TEXT("Page walking base Physical Address");
     SETBITS(comb.vb_resp_ppn, 43, 0, BITS(resp_data, 53, 10));
-    SETVAL(comb.v_va_ena, ORx(2, &AND2(i_mmu_sv48, AND_REDUCE(BITS(i_core_req_addr, 63, 48))),
-                                 &AND2(i_mmu_sv39, AND_REDUCE(BITS(i_core_req_addr, 63, 39)))));
+    SETVAL(comb.v_va_ena, i_mmu_ena);
+    TEXT("M-mode can opearate with physical and virtual addresses when MPRV=1");
+    IF (AND2(NZ(i_mprv), EZ(AND_REDUCE(BITS(i_core_req_addr, 63, 48)))));
+        TEXT("Use physical address");
+        SETZERO(comb.v_va_ena);
+    ENDIF();
     SETVAL(comb.vb_level0_off, CC2(BITS(last_va, 47, 39), CONST("0",3)));
     SETVAL(comb.vb_level1_off, CC2(BITS(last_va, 38, 30), CONST("0",3)));
     SETVAL(comb.vb_level2_off, CC2(BITS(last_va, 29, 21), CONST("0",3)));

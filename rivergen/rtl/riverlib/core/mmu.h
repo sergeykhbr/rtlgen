@@ -151,6 +151,9 @@ class Mmu : public ModuleObject {
     InPort i_mmu_sv39;
     InPort i_mmu_sv48;
     InPort i_mmu_ppn;
+    InPort i_mprv;
+    InPort i_mxr;
+    InPort i_sum;
     InPort i_fence;
     InPort i_fence_addr;
 

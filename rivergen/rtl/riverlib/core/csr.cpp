@@ -54,6 +54,7 @@ CsrRegs::CsrRegs(GenObject *parent, const char *name) :
     o_flushd_valid(this, "o_flushd_valid", "1", "clear specified addr in DCache"),
     o_flushi_valid(this, "o_flushi_valid", "1", "clear specified addr in ICache"),
     o_flushmmu_valid(this, "o_flushmmu_valid", "1", "clear specific leaf entry in MMU"),
+    o_flushpipeline_valid(this, "o_flushpipeline_valid", "1", "flush pipeline, must be don for fence.VMA and fence.i"),
     o_flush_addr(this, "o_flush_addr", "CFG_CPU_ADDR_BITS", "Cache address to flush. All ones means flush all."),
     _io1_(this),
     o_pmp_ena(this, "o_pmp_ena", "1", "PMP is active in S or U modes or if L/MPRV bit is set in M-mode"),
@@ -63,11 +64,13 @@ CsrRegs::CsrRegs(GenObject *parent, const char *name) :
     o_pmp_end_addr(this, "o_pmp_end_addr", "CFG_CPU_ADDR_BITS", "PMP region end address (inclusive)"),
     o_pmp_flags(this, "o_pmp_flags", "CFG_PMP_FL_TOTAL", "{ena, lock, r, w, x}"),
     _io2_(this),
-    o_immu_ena(this, "o_immu_ena", "1", "Instruction MMU enabled in U and S modes. Sv48 only."),
-    o_dmmu_ena(this, "o_dmmu_ena", "1", "Data MMU enabled in U and S modes or MPRV bit is HIGH. Sv48 only."),
-    o_mmu_ppn(this, "o_mmu_ppn", "44", "Physical Page Number"),
+    o_mmu_ena(this, "o_mmu_ena", "1", "MMU enabled in U and S modes. Sv48 only."),
     o_mmu_sv39(this, "o_mmu_sv39", "1", "Translation mode sv39 is active"),
     o_mmu_sv48(this, "o_mmu_sv48", "1", "Translation mode sv48 is active"),
+    o_mmu_ppn(this, "o_mmu_ppn", "44", "Physical Page Number"),
+    o_mprv(this, "o_mprv", "1", "modify priviledge flag can be active in m-mode"),
+    o_mxr(this, "o_mxr", "1", "make executabale readable"),
+    o_sum(this, "o_sum", "1", "permit Supervisor User Mode access"),
     // param
     State_Idle(this, "State_Idle", "0"),
     State_RW(this, "State_RW", "1"),
@@ -115,13 +118,14 @@ CsrRegs::CsrRegs(GenObject *parent, const char *name) :
     mcountinhibit(this, "mcountinhibit", "32", "0", "When non zero stop specified performance counter"),
     mstackovr(this, "mstackovr", "CFG_CPU_ADDR_BITS"),
     mstackund(this, "mstackund", "CFG_CPU_ADDR_BITS"),
-    immu_ena(this, "immu_ena", "1", "0", "Instruction MMU SV48 enabled in U- and S- modes"),
-    dmmu_ena(this, "dmmu_ena", "1", "0", "Data MMU SV48 enabled in U- and S- modes, MPRV bit"),
+    mmu_ena(this, "mmu_ena", "1", "0", "Instruction MMU SV48 enabled in U- and S- modes"),
     satp_ppn(this, "satp_ppn", "44", "0", "Physcal Page Number"),
     satp_sv39(this, "satp_sv39", "1"),
     satp_sv48(this, "satp_sv48", "1"),
     mode(this, "mode", "2", "PRV_M"),
     mprv(this, "mprv", "1", "0", "Modify PRiVilege. (Table 8.5) If MPRV=0, load and stores as normal, when MPRV=1, use translation of previous mode"),
+    mxr(this, "mxr", "1", "0", "Interpret Executable as Readable when =1"),
+    sum(this, "sum", "1", "0", "Access to Userspace from Supervisor mode"),
     tvm(this, "tvm", "1", "0", "Trap Virtual Memory bit. When 1 SFENCE.VMA or SINVAL.VMA or rw access to SATP raise an illegal instruction"),
     ex_fpu_invalidop(this, "ex_fpu_invalidop", "1", "0", "FPU Exception: invalid operation"),
     ex_fpu_divbyzero(this, "ex_fpu_divbyzero", "1", "0", "FPU Exception: divide by zero"),
@@ -367,6 +371,7 @@ TEXT();
         SETVAL(fencestate, Fence_End);
         ENDCASE();
     CASE (Fence_End);
+        SETONE(comb.v_flushpipeline);
         ENDCASE();
     CASEDEF();
         ENDCASE();
@@ -584,8 +589,8 @@ TEXT();
         ENDIF();
         TEXT("[16:15] XS");
         SETBIT(comb.vb_rdata, 17, mprv);
-        TEXT("[18] SUM");
-        TEXT("[19] MXR");
+        SETBIT(comb.vb_rdata, 18, sum);
+        SETBIT(comb.vb_rdata, 19, mxr);
         SETBIT(comb.vb_rdata, 20, tvm, "Trap Virtual Memory");
         TEXT("[21] TW");
         TEXT("[22] TSR");
@@ -604,6 +609,8 @@ TEXT();
             SETARRITEM(xmode, comb.iS, xmode->xpp, CC2(CONST("0", 1), BIT(cmd_data, 8)));
             SETARRITEM(xmode, comb.iM, xmode->xpp, BITS(cmd_data, 12, 11));
             SETVAL(mprv, BIT(cmd_data, 17));
+            SETVAL(sum, BIT(cmd_data, 18));
+            SETVAL(mxr, BIT(cmd_data, 19));
             SETVAL(tvm, BIT(cmd_data, 20));
         ENDIF();
     ELSIF (EQ(cmd_addr, CONST("0x301", 12)), "misa: [MRW] ISA and extensions");
@@ -871,17 +878,17 @@ TEXT();
 
 TEXT();
     TEXT("Check MMU:");
-    SETZERO(immu_ena);
-    SETZERO(dmmu_ena);
+    SETZERO(mmu_ena);
     IF (OR2(NZ(satp_sv39), NZ(satp_sv48)), "Sv39 and Sv48 are implemented");
         IF (EZ(BIT(mode, 1)));
             TEXT("S and U modes");
-            SETONE(immu_ena);
-            SETONE(dmmu_ena);
+            SETONE(mmu_ena);
+            SETVAL(comb.v_flushpipeline, INV(mmu_ena), "Flush pipeline on MMU turning on");
         ELSIF(AND2(NZ(mprv), EZ(BIT(comb.vb_xpp, 1))));
             TEXT("Previous state is S or U mode");
             TEXT("Instruction address-translation and protection are unaffected");
-            SETONE(dmmu_ena);
+            SETONE(mmu_ena);
+            SETVAL(comb.v_flushpipeline, INV(mmu_ena), "Flush pipeline on MMU turning on");
         ENDIF();
     ENDIF();
 
@@ -907,8 +914,7 @@ TEXT();
         SETARRITEM(xmode, comb.iM, xmode->xcause_code, comb.wb_trap_cause);
         SETARRITEM(xmode, comb.iM, xmode->xcause_irq, INV(OR_REDUCE(comb.vb_e_emux)));
         SETVAL(mode, cfg->PRV_M);
-        SETZERO(immu_ena);
-        SETZERO(dmmu_ena);
+        SETZERO(mmu_ena);
     ENDIF();
 
 TEXT();
@@ -1049,14 +1055,17 @@ TEXT();
     SETVAL(o_pmp_start_addr, pmp_start_addr);
     SETVAL(o_pmp_end_addr, pmp_end_addr);
     SETVAL(o_pmp_flags, pmp_flags);
-    SETVAL(o_immu_ena, immu_ena);
-    SETVAL(o_dmmu_ena, dmmu_ena);
-    SETVAL(o_mmu_ppn, satp_ppn);
+    SETVAL(o_mmu_ena, mmu_ena);
     SETVAL(o_mmu_sv39, satp_sv39);
     SETVAL(o_mmu_sv48, satp_sv48);
+    SETVAL(o_mmu_ppn, satp_ppn);
+    SETVAL(o_mprv, mprv);
+    SETVAL(o_mxr, mxr);
+    SETVAL(o_sum, sum);
     SETVAL(o_step, dcsr_step);
     SETVAL(o_flushd_valid, comb.v_flushd);
     SETVAL(o_flushi_valid, comb.v_flushi);
     SETVAL(o_flushmmu_valid, comb.v_flushmmu);
+    SETVAL(o_flushpipeline_valid, comb.v_flushpipeline);
     SETVAL(o_flush_addr, BITS(cmd_data, DEC(cfg->CFG_CPU_ADDR_BITS), CONST("0")));
 }

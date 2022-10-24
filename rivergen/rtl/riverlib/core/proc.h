@@ -423,6 +423,7 @@ class Processor : public ModuleObject {
         flushd_valid(this, "flushd_valid", "1", "0", "clear specified addr in D$"),
         flushi_valid(this, "flushi_valid", "1", "0", "clear specified addr in I$"),
         flushmmu_valid(this, "flushmmu_valid", "1", "0", "clear specified leaf in xMMU"),
+        flushpipeline_valid(this, "flushpipeline_valid", "1", "0", "clear pipeline"),
         flush_addr(this, "flush_addr", "CFG_CPU_ADDR_BITS"),
         executed_cnt(this, "executed_cnt", "64", "0", "Number of executed instruction"),
         irq_pending(this, "irq_pending", "IRQ_TOTAL"),
@@ -430,11 +431,13 @@ class Processor : public ModuleObject {
         stack_overflow(this, "stack_overflow", "1"),
         stack_underflow(this, "stack_underflow", "1"),
         step(this, "step", "1"),
-        immu_ena(this, "immu_ena", "1", "0", "Instruction MMU enabled in U and S modes. Sv48 only."),
-        dmmu_ena(this, "dmmu_ena", "1", "0", "Instruction MMU enabled in U and S modes or MPRV. Sv48 only."),
-        mmu_ppn(this, "mmu_ppn", "44", "0", "Physical Page Number"),
+        mmu_ena(this, "mmu_ena", "1", "0", "MMU enabled in U and S modes. Sv48 only."),
         mmu_sv39(this, "mmu_sv39", "1"),
         mmu_sv48(this, "mmu_sv48", "1"),
+        mmu_ppn(this, "mmu_ppn", "44", "0", "Physical Page Number"),
+        mprv(this, "mprv", "1"),
+        mxr(this, "mxr", "1"),
+        sum(this, "sum", "1"),
         progbuf_end(this, "progbuf_end", "1"),
         progbuf_error(this, "progbuf_error", "1") {}
      public:
@@ -445,6 +448,7 @@ class Processor : public ModuleObject {
         Signal flushd_valid;
         Signal flushi_valid;
         Signal flushmmu_valid;
+        Signal flushpipeline_valid;
         Signal flush_addr;
         Signal executed_cnt;
         Signal irq_pending;
@@ -452,11 +456,13 @@ class Processor : public ModuleObject {
         Signal stack_overflow;
         Signal stack_underflow;
         Signal step;
-        Signal immu_ena;
-        Signal dmmu_ena;
-        Signal mmu_ppn;
+        Signal mmu_ena;
         Signal mmu_sv39;
         Signal mmu_sv48;
+        Signal mmu_ppn;
+        Signal mprv;
+        Signal mxr;
+        Signal sum;
         Signal progbuf_end;
         Signal progbuf_error;
     } CsrTypeDef_;

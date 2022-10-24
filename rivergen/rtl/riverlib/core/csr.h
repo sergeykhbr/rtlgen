@@ -57,6 +57,7 @@ class CsrRegs : public ModuleObject {
             v_flushd(this, "v_flushd", "1"),
             v_flushi(this, "v_flushi", "1"),
             v_flushmmu(this, "v_flushmmu", "1"),
+            v_flushpipeline(this, "v_flushpipeline", "1"),
             vb_pmp_upd_ena(this, "vb_pmp_upd_ena", "CFG_PMP_TBL_SIZE"),
             vb_pmp_napot_mask(this, "vb_pmp_napot_mask", "CFG_CPU_ADDR_BITS"),
             v_napot_shift(this, "v_napot_shift", "1"),
@@ -95,6 +96,7 @@ class CsrRegs : public ModuleObject {
         Logic v_flushd;
         Logic v_flushi;
         Logic v_flushmmu;
+        Logic v_flushpipeline;
         Logic vb_pmp_upd_ena;
         Logic vb_pmp_napot_mask;
         Logic v_napot_shift;
@@ -140,6 +142,7 @@ class CsrRegs : public ModuleObject {
     OutPort o_flushd_valid;
     OutPort o_flushi_valid;
     OutPort o_flushmmu_valid;
+    OutPort o_flushpipeline_valid;
     OutPort o_flush_addr;
     TextLine _io1_;
     OutPort o_pmp_ena;
@@ -149,11 +152,13 @@ class CsrRegs : public ModuleObject {
     OutPort o_pmp_end_addr;
     OutPort o_pmp_flags;
     TextLine _io2_;
-    OutPort o_immu_ena;
-    OutPort o_dmmu_ena;
-    OutPort o_mmu_ppn;
+    OutPort o_mmu_ena;
     OutPort o_mmu_sv39;
     OutPort o_mmu_sv48;
+    OutPort o_mmu_ppn;
+    OutPort o_mprv;
+    OutPort o_mxr;
+    OutPort o_sum;
 
  protected:
     DefParamUI32D hartid;
@@ -267,13 +272,14 @@ class CsrRegs : public ModuleObject {
     RegSignal mcountinhibit;
     RegSignal mstackovr;
     RegSignal mstackund;
-    RegSignal immu_ena;
-    RegSignal dmmu_ena;
+    RegSignal mmu_ena;
     RegSignal satp_ppn;
     RegSignal satp_sv39;
     RegSignal satp_sv48;
     RegSignal mode;
     RegSignal mprv;
+    RegSignal mxr;
+    RegSignal sum;
     RegSignal tvm;
     RegSignal ex_fpu_invalidop;
     RegSignal ex_fpu_divbyzero;
