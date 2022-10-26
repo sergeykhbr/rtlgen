@@ -110,6 +110,7 @@ class InstrExecute : public ModuleObject {
             v_neq(this, "v_neq", "1", "not equal"),
             vb_rdata1(this, "vb_rdata1", "RISCV_ARCH"),
             vb_rdata2(this, "vb_rdata2", "RISCV_ARCH"),
+            vb_rdata1_amo(this, "vb_rdata1_amo", "RISCV_ARCH"),
             v_check_tag1(this, "v_check_tag1", "1"),
             v_check_tag2(this, "v_check_tag2", "1"),
             vb_select(this, "vb_select", "Res_Total"),
@@ -173,6 +174,7 @@ class InstrExecute : public ModuleObject {
         Logic v_neq;
         Logic vb_rdata1;
         Logic vb_rdata2;
+        Logic vb_rdata1_amo;
         Logic v_check_tag1;
         Logic v_check_tag2;
         Logic vb_select;
