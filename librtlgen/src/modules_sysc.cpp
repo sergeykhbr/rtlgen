@@ -578,7 +578,7 @@ std::string ModuleObject::generate_sysc_sensitivity(std::string prefix,
             ret += "sensitive << " + name + ";\n";
         }
     } else if (obj->getId() == ID_ARRAY_DEF
-        && obj->getItem()->getId() != ID_VALUE) {
+        && (obj->getItem()->getId() != ID_VALUE || obj->getItem()->isSignal())) {
         // ignore value (not signals) declared in module scope
         name += "[i]";
         ret += Operation::addspaces();
