@@ -987,7 +987,7 @@ TEXT();
                 ELSIF (NZ(ORx(3, &BIT(csr_req_type, cfg->CsrReq_ExceptionBit),
                                  &BIT(csr_req_type, cfg->CsrReq_InterruptBit),
                                  &BIT(csr_req_type, cfg->CsrReq_ResumeBit))));
-                    SETZERO(valid, "No valid strob should be generated");
+                    SETVAL(valid, BIT(comb.wv, "Instr_ECALL"), "No valid strob should be generated for all exceptions except ECALL");
                     SETVAL(state, State_Idle);
                     IF (EZ(i_dbg_progbuf_ena)); 
                         SETVAL(npc, BITS(i_csr_resp_data, DEC(cfg->CFG_CPU_ADDR_BITS), CONST("0")));
