@@ -257,6 +257,134 @@ class types_amba : public FileObject {
         Logic r_user;
     };
 
+    class axi4_slave_in_type : public StructObject {
+     public:
+        axi4_slave_in_type(GenObject* parent, const char* name = "", const char* comment = "")
+            : StructObject(parent, "axi4_slave_in_type", name, comment),
+            aw_valid("1", "aw_valid", "0", this),
+            aw_bits(this, "aw_bits"),
+            aw_id("CFG_SYSBUS_ID_BITS", "aw_id", "0", this),
+            aw_user("CFG_SYSBUS_USER_BITS", "aw_user", "0", this),
+            w_valid("1", "w_valid", "0", this),
+            w_data("CFG_SYSBUS_DATA_BITS", "w_data", "0", this),
+            w_last("1", "w_last", "0", this),
+            w_strb("CFG_SYSBUS_DATA_BYTES", "w_strb", "0", this),
+            w_user("CFG_SYSBUS_USER_BITS", "w_user", "0", this),
+            b_ready("1", "b_ready", "0", this),
+            ar_valid("1", "ar_valid", "0", this),
+            ar_bits(this, "ar_bits"),
+            ar_id("CFG_SYSBUS_ID_BITS", "ar_id", "0", this),
+            ar_user("CFG_SYSBUS_USER_BITS", "ar_user", "0", this),
+            r_ready("1", "r_ready", "0", this) {
+            setZeroValue("axi4_slave_in_none");
+            registerCfgType(name);
+            std::string strtype = getType();
+            SCV_get_cfg_parameter(strtype);    // to trigger dependecy array
+        }
+
+    public:
+        Logic aw_valid;
+        axi4_metadata_type aw_bits;
+        Logic  aw_id;
+        Logic aw_user;
+        Logic w_valid;
+        Logic w_data;
+        Logic w_last;
+        Logic w_strb;
+        Logic w_user;
+        Logic b_ready;
+        Logic ar_valid;
+        axi4_metadata_type ar_bits;
+        Logic ar_id;
+        Logic ar_user;
+        Logic r_ready;
+    };
+
+    class axi4_slave_out_type : public StructObject {
+     public:
+        axi4_slave_out_type(GenObject* parent, const char* name = "", const char* comment = "")
+            : StructObject(parent, "axi4_slave_out_type", name, comment),
+            aw_ready("1", "aw_ready", "0", this),
+            w_ready("1", "w_ready", "0", this),
+            b_valid("1", "b_valid", "0", this),
+            b_resp("2", "b_resp", "0", this),
+            b_id("CFG_SYSBUS_ID_BITS", "b_id", "0", this),
+            b_user("CFG_SYSBUS_USER_BITS", "b_user", "0", this),
+            ar_ready("1", "ar_ready", "0", this),
+            r_valid("1", "r_valid", "0", this),
+            r_resp("2", "r_resp", "0", this),
+            r_data("CFG_SYSBUS_DATA_BITS", "r_data", "0", this),
+            r_last("1", "r_last", "0", this),
+            r_id("CFG_SYSBUS_ID_BITS", "r_id", "0", this),
+            r_user("CFG_SYSBUS_USER_BITS", "r_user", "0", this) {
+            setZeroValue("axi4_slave_out_none");
+            registerCfgType(name);
+            std::string strtype = getType();
+            SCV_get_cfg_parameter(strtype);    // to trigger dependecy array
+        }
+
+     public:
+        Logic aw_ready;
+        Logic w_ready;
+        Logic b_valid;
+        Logic b_resp;
+        Logic b_id;
+        Logic b_user;
+        Logic ar_ready;
+        Logic r_valid;
+        Logic r_resp;
+        Logic r_data;
+        Logic r_last;
+        Logic r_id;
+        Logic r_user;
+    };
+
+    class apb_in_type : public StructObject {
+     public:
+        apb_in_type(GenObject* parent, const char* name = "", const char* comment = "")
+            : StructObject(parent, "apb_out_type", name, comment),
+            paddr("32", "paddr", "0", this),
+            pprot("3", "pprot", "0", this),
+            pselx("1", "pselx", "0", this),
+            penable("1", "penable", "0", this),
+            pwrite("1", "pwrite", "0", this),
+            pstrb("4", "pstrb", "0", this),
+            pwdata("32", "pwdata", "0", this) {
+            setZeroValue("apb_in_type");
+            registerCfgType(name);
+            std::string strtype = getType();
+            SCV_get_cfg_parameter(strtype);    // to trigger dependecy array
+        }
+
+     public:
+        Logic paddr;
+        Logic pprot;
+        Logic pselx;
+        Logic penable;
+        Logic pwrite;
+        Logic pwdata;
+        Logic pstrb;
+    };
+
+    class apb_out_type : public StructObject {
+     public:
+        apb_out_type(GenObject* parent, const char* name = "", const char* comment = "")
+            : StructObject(parent, "apb_out_type", name, comment),
+            pready("1", "pready", "0", this),
+            prdata("32", "prdata", "0", this),
+            pslverr("1", "pslverr", "0", this) {
+            setZeroValue("apb_out_none");
+            registerCfgType(name);
+            std::string strtype = getType();
+            SCV_get_cfg_parameter(strtype);    // to trigger dependecy array
+        }
+
+     public:
+        Logic pready;
+        Logic prdata;
+        Logic pslverr;
+    };
+
  public:
     ParamI32D CFG_SYSBUS_ADDR_BITS;
     ParamI32D CFG_LOG2_SYSBUS_DATA_BYTES;
@@ -395,6 +523,24 @@ class types_amba : public FileObject {
     axi4_master_in_type axi4_master_in_type_def;
     TextLine _xmst8_;
     axi4_master_in_type axi4_master_in_none;
+    TextLine _xslv0_;
+    TextLine _xslv1_;
+    axi4_slave_in_type axi4_slave_in_type_def;
+    TextLine _xslv2_;
+    axi4_slave_in_type axi4_slave_in_none;
+    TextLine _xslv3_;
+    axi4_slave_out_type axi4_slave_out_type_def;
+    TextLine _xslv4_;
+    axi4_slave_out_type axi4_slave_out_none;
+    TextLine _apb0;
+    TextLine _apb1;
+    apb_in_type apb_in_type_def;
+    TextLine _apb2;
+    apb_in_type apb_in_none;
+    TextLine _apb3;
+    apb_out_type apb_out_type_def;
+    TextLine _apb4;
+    apb_out_type apb_out_none;
     TextLine _n_;
 };
 

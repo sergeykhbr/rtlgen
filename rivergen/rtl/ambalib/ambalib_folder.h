@@ -18,15 +18,18 @@
 
 #include <api.h>
 #include "types_amba.h"
+#include "axi2apb.h"
 
 class ambalib_folder : public FolderObject {
  public:
     ambalib_folder(GenObject *parent) :
         FolderObject(parent, "ambalib"),
-        types_amba_(this) {}
+        types_amba_(this),
+        axi2apb_file_(this) {}
 
  protected:
     // subfolders:
     // files
     types_amba types_amba_;
+    axi2apb_file axi2apb_file_;
 };
