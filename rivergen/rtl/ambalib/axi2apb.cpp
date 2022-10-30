@@ -178,7 +178,7 @@ void axi2apb::proc_comb() {
     CASE (State_setup);
         SETONE(penable);
         SETVAL(state, State_access);
-        ENDIF();
+        ENDCASE();
     CASE (State_access);
         IF (EZ(pwrite));
             IF (NZ(xsize));

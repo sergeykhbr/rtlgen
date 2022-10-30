@@ -342,7 +342,7 @@ class types_amba : public FileObject {
     class apb_in_type : public StructObject {
      public:
         apb_in_type(GenObject* parent, const char* name = "", const char* comment = "")
-            : StructObject(parent, "apb_out_type", name, comment),
+            : StructObject(parent, "apb_in_type", name, comment),
             paddr("32", "paddr", "0", this),
             pprot("3", "pprot", "0", this),
             pselx("1", "pselx", "0", this),

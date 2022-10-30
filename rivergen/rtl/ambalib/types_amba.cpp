@@ -26,7 +26,7 @@ types_amba::types_amba(GenObject *parent) :
     CFG_SYSBUS_USER_BITS(this, "CFG_SYSBUS_USER_BITS", "1"),
     _cfgbus0_(this),
     CFG_SYSBUS_DATA_BYTES(this, "CFG_SYSBUS_DATA_BYTES", "POW2(1,CFG_LOG2_SYSBUS_DATA_BYTES)"),
-    CFG_SYSBUS_DATA_BITS(this, "CFG_SYSBUS_DATA_BITS", "MUL(8,CFG_LOG2_SYSBUS_DATA_BYTES)"),
+    CFG_SYSBUS_DATA_BITS(this, "CFG_SYSBUS_DATA_BITS", "MUL(8,CFG_SYSBUS_DATA_BYTES)"),
     _vid0_(this),
     _vid1_(this, "@name Vendor IDs defintion."),
     VENDOR_GNSSSENSOR(this, "16", "VENDOR_GNSSSENSOR", "0x00F1"),
