@@ -387,7 +387,8 @@ std::string ModuleObject::generate_sv_mod_proc(GenObject *proc) {
     // nullify all local variables to avoid latches:
     GenObject *arritem;
     for (auto &e: proc->getEntries()) {
-        if (e->getId() == ID_VALUE) {
+        if (e->getId() == ID_VALUE
+            || (e->getId() == ID_STRUCT_INST && e->getStrValue().size())) {
             ret += "    " + e->getName() + " = ";
             if (e->getStrValue().size()) {
                 ret += e->getStrValue();

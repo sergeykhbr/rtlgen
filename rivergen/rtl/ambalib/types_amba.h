@@ -350,7 +350,7 @@ class types_amba : public FileObject {
             pwrite("1", "pwrite", "0", this),
             pstrb("4", "pstrb", "0", this),
             pwdata("32", "pwdata", "0", this) {
-            setZeroValue("apb_in_type");
+            setZeroValue("apb_in_none");
             registerCfgType(name);
             std::string strtype = getType();
             SCV_get_cfg_parameter(strtype);    // to trigger dependecy array

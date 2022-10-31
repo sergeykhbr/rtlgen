@@ -70,9 +70,9 @@ std::string StructObject::getName() {
 
 std::string StructObject::getStrValue() {
     std::string ret = zeroval_;
-    if (ret.size() == 0) {
-        SHOW_ERROR("todo: struct initialization", getName());
-    }
+    //if (ret.size() == 0) {
+        //SHOW_ERROR("todo: struct initialization", getName());
+    //}
     return ret;
 }
 

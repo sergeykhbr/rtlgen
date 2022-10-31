@@ -46,9 +46,6 @@ axi2apb::axi2apb(GenObject *parent, const char *name) :
     xsize(this, "xsize", "8"),
     req_id(this, "req_id", "CFG_SYSBUS_ID_BITS"),
     req_user(this, "req_user", "CFG_SYSBUS_USER_BITS"),
-    // functions
-    size2len(this),
-    size2size(this),
     // process
     comb(this)
 {
@@ -57,41 +54,6 @@ axi2apb::axi2apb(GenObject *parent, const char *name) :
     Operation::start(&comb);
     proc_comb();
 }
-
-axi2apb::Size2LenFunction::Size2LenFunction(GenObject *parent)
-    : FunctionObject(parent, "size2len"),
-    ret(this, "ret", "8"),
-    size(this, "size", "3") {
-    SWITCH (size);
-    CASE (CONST("4", 3), "16 Bytes");
-        SETVAL(ret, CONST("1", 8));
-        ENDCASE();
-    CASE (CONST("5", 3), "32 Bytes");
-        SETVAL(ret, CONST("3", 8));
-        ENDCASE();
-    CASE (CONST("6", 3), "64 Bytes");
-        SETVAL(ret, CONST("7", 8));
-        ENDCASE();
-    CASE (CONST("7", 3), "128 Bytes");
-        SETVAL(ret, CONST("15", 8));
-        ENDCASE();
-    CASEDEF();
-        SETZERO(ret);
-        ENDCASE();
-    ENDSWITCH();
-}
-
-axi2apb::Size2SizeFunction::Size2SizeFunction(GenObject *parent)
-    : FunctionObject(parent, "size2size"),
-    ret(this, "ret", "3"),
-    size(this, "size", "3") {
-    IF (GE(size, CONST("3", 3)));
-        SETVAL(ret, CONST("3", 3));
-    ELSE();
-        SETVAL(ret, size);
-    ENDIF();
-}
-
 
 void axi2apb::proc_comb() {
     SWITCH(state);
@@ -182,9 +144,9 @@ void axi2apb::proc_comb() {
     CASE (State_access);
         IF (EZ(pwrite));
             IF (NZ(xsize));
-                SETBITS(pdata, 63, 32, i_apbo.prdata);
+                SETBITS(comb.vb_rdata, 63, 32, i_apbo.prdata);
             ELSE();
-                SETBITS(pdata, 31, 0, i_apbo.prdata);
+                SETBITS(comb.vb_rdata, 31, 0, i_apbo.prdata);
             ENDIF();
         ENDIF();
         SETVAL(pslverr, i_apbo.pslverr);
@@ -216,6 +178,7 @@ void axi2apb::proc_comb() {
     ENDSWITCH();
 
 TEXT();
+    SETVAL(pdata, comb.vb_rdata);
     SETVAL(comb.vapbi.paddr, paddr);
     SETVAL(comb.vapbi.pwrite, pwrite);
     SETVAL(comb.vapbi.pwdata, BITS(pdata, 31, 0));

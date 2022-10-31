@@ -29,53 +29,15 @@ class axi2apb : public ModuleObject {
      public:
         CombProcess(GenObject *parent) :
             ProcObject(parent, "comb"),
-            v_req_mem_ready(this, "v_req_mem_ready", "1"),
-            v_r_valid(this, "v_r_valid", "1"),
-            v_w_valid(this, "v_w_valid", "1"),
-            v_w_last(this, "v_w_last", "1"),
-            v_w_ready(this, "v_w_ready", "1"),
-            vb_len(this, "vb_len", "8"),
-            vb_size(this, "vb_size", "3"),
+            vb_rdata(this, "vb_rdata", "CFG_SYSBUS_DATA_BITS"),
             vslvo(this, "vslvo"),
             vapbi(this, "vapbi") {
         }
 
      public:
-        Logic v_req_mem_ready;
-        Logic v_r_valid;
-        Logic v_w_valid;
-        Logic v_w_last;
-        Logic v_w_ready;
-        Logic vb_len;
-        Logic vb_size;
+        Logic vb_rdata;
         types_amba::axi4_slave_out_type vslvo;
         types_amba::apb_in_type vapbi;
-    };
-
-    class Size2LenFunction : public FunctionObject {
-     public:
-        Size2LenFunction(GenObject *parent);
-        virtual std::string getType() override { return ret.getType(); }
-        virtual void getArgsList(std::list<GenObject *> &args) {
-            args.push_back(&size);
-        }
-        virtual GenObject *getpReturn() { return &ret; }
-     protected:
-        Logic ret;
-        Logic size;
-    };
-
-    class Size2SizeFunction : public FunctionObject {
-     public:
-        Size2SizeFunction(GenObject *parent);
-        virtual std::string getType() override { return ret.getType(); }
-        virtual void getArgsList(std::list<GenObject *> &args) {
-            args.push_back(&size);
-        }
-        virtual GenObject *getpReturn() { return &ret; }
-     protected:
-        Logic ret;
-        Logic size;
     };
 
     void proc_comb();
@@ -110,8 +72,6 @@ class axi2apb : public ModuleObject {
     RegSignal req_id;
     RegSignal req_user;
 
-    Size2LenFunction size2len;
-    Size2SizeFunction size2size;
     CombProcess comb;
 };
 
