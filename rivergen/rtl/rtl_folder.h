@@ -20,6 +20,7 @@
 #include "ambalib/ambalib_folder.h"
 #include "techmap/techmap_folder.h"
 #include "riverlib/riverlib_folder.h"
+#include "riscv_soc.h"
 
 
 class rtl_folder : public FolderObject {
@@ -28,7 +29,8 @@ class rtl_folder : public FolderObject {
         FolderObject(parent, "rtl"),
         ambalib(this),
         techmap(this),
-        riverlib(this) {}
+        riverlib(this),
+        riscv_soc_file_(this) {}
 
  protected:
     // subfolders:
@@ -36,4 +38,5 @@ class rtl_folder : public FolderObject {
     techmap_folder techmap;
     riverlib_folder riverlib;
     // files
+    riscv_soc_file riscv_soc_file_;
 };
