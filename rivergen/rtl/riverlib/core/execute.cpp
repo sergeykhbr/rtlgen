@@ -355,7 +355,7 @@ TEXT();
         SETVAL(comb.mux.pc, i_d_pc);
         SETVAL(comb.mux.instr, i_d_instr);
         SETBIT(comb.mux.memop_type, cfg->MemopType_Store, i_memop_store);
-        SETBIT(comb.mux.memop_type, cfg->MemopType_Locked, i_amo);
+        SETBIT(comb.mux.memop_type, cfg->MemopType_Locked, AND2_L(i_amo, i_memop_load));
         SETBIT(comb.mux.memop_type, cfg->MemopType_Reserve,
                 OR2(BIT(i_ivec, "Instr_LR_D"), BIT(i_ivec, "Instr_LR_W")));
         SETBIT(comb.mux.memop_type, cfg->MemopType_Release,
