@@ -38,12 +38,20 @@ riscv_soc::riscv_soc(GenObject *parent, const char *name) :
     o_uart1_td(this, "o_uart1_td", "1"),
     // param
     // Singals:
-    w_sys_nrst(this, "w_sys_nrst", "1", "System reset of whole system"),
-    w_dbg_nrst(this, "w_dbg_nrst", "1", "Reset workgroup debug interface"),
-    w_dmreset(this, "w_dmreset", "1", "Reset request from workgroup debug interface"),
+    w_sys_nrst(this, "w_sys_nrst", "1", "0", "System reset of whole system"),
+    w_dbg_nrst(this, "w_dbg_nrst", "1", "0", "Reset workgroup debug interface"),
+    w_dmreset(this, "w_dmreset", "1", "0", "Reset request from workgroup debug interface"),
     acpo(this, "acpo"),
     acpi(this, "acpi"),
-    wb_clint_mtimer(this, "wb_clint_mtimer", "64", "Reset request from workgroup debug interface"),
+    apb_dmi_i(this, "apb_dmi_i"),
+    apb_dmi_o(this, "apb_dmi_o"),
+    aximi(this, "aximi"),
+    aximo(this, "aximo"),
+    axisi(this, "axisi"),
+    axiso(this, "axiso"),
+    slv_cfg(this, "slv_cfg"),
+    mst_cfg(this, "mst_cfg"),
+    wb_clint_mtimer(this, "wb_clint_mtimer", "64"),
     wb_clint_msip(this, "wb_clint_msip", "CFG_CPU_MAX"),
     wb_clint_mtip(this, "wb_clint_mtip", "CFG_CPU_MAX"),
     wb_plic_meip(this, "wb_plic_meip", "CFG_CPU_MAX"),
@@ -55,6 +63,9 @@ riscv_soc::riscv_soc(GenObject *parent, const char *name) :
     Operation::start(this);
 
     // Create and connet Sub-modules:
+    //group0.async_reset.setObjValue(&prj_cfg_->CFG_ASYNC_RESET);
+    //group0.cpu_num.setObjValue(&prj_cfg_->CFG_CPU_NUM);
+    //group0.l2cache_ena.setObjValue(&prj_cfg_->CFG_L2CACHE_ENA);
     NEW(group0, group0.getName().c_str());
         CONNECT(group0, 0, group0.i_clk, i_clk);
         CONNECT(group0, 0, group0.i_cores_nrst, w_sys_nrst);
@@ -69,19 +80,13 @@ riscv_soc::riscv_soc(GenObject *parent, const char *name) :
         CONNECT(group0, 0, group0.i_meip, wb_plic_meip);
         CONNECT(group0, 0, group0.i_seip, wb_plic_seip);
         CONNECT(group0, 0, group0.i_mtimer, wb_clint_mtimer);
-        CONNECT(group0, 0, group0.o_xcfg, mst_cfg[CFG_BUS0_XMST_CPU0]);
+        CONNECT(group0, 0, group0.o_xcfg, ARRITEM(mst_cfg, glob_bus0_cfg_->CFG_BUS0_XMST_CPU0, mst_cfg));
         CONNECT(group0, 0, group0.i_acpo, acpo);
         CONNECT(group0, 0, group0.o_acpi, acpi);
-        CONNECT(group0, 0, group0.i_msti, aximi[CFG_BUS0_XMST_CPU0]);
-        CONNECT(group0, 0, group0.o_msto, aximo[CFG_BUS0_XMST_CPU0]);
-        CONNECT(group0, 0, group0.i_apb_dmi_req_valid, );
-        CONNECT(group0, 0, group0.o_apb_dmi_req_ready, );
-        CONNECT(group0, 0, group0.i_apb_dmi_req_addr, );
-        CONNECT(group0, 0, group0.i_apb_dmi_req_write, );
-        CONNECT(group0, 0, group0.i_apb_dmi_req_wdata, );
-        CONNECT(group0, 0, group0.o_apb_dmi_resp_valid, );
-        CONNECT(group0, 0, group0.i_apb_dmi_resp_ready, );
-        CONNECT(group0, 0, group0.o_apb_dmi_resp_rdata, );
+        CONNECT(group0, 0, group0.i_msti, ARRITEM(aximi, glob_bus0_cfg_->CFG_BUS0_XMST_CPU0, aximi));
+        CONNECT(group0, 0, group0.o_msto, ARRITEM(aximo, glob_bus0_cfg_->CFG_BUS0_XMST_CPU0, aximo));
+        CONNECT(group0, 0, group0.i_dmi_apbi, apb_dmi_i);
+        CONNECT(group0, 0, group0.o_dmi_apbo, apb_dmi_o);
         CONNECT(group0, 0, group0.o_dmreset, w_dmreset);
     ENDNEW();
 

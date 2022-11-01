@@ -18,6 +18,7 @@
 
 #include <api.h>
 #include "ambalib/types_amba.h"
+#include "ambalib/types_bus0.h"
 #include "riverlib/river_cfg.h"
 #include "riverlib/types_river.h"
 #include "riverlib/river_amba.h"
@@ -79,12 +80,14 @@ public:
     Signal w_dmreset;
     types_amba::axi4_master_out_type acpo;
     types_amba::axi4_master_in_type acpi;
-    types_amba::bus0_xmst_in_vector   aximi;
-    types_amba::bus0_xmst_out_vector  aximo;
-    types_amba::bus0_xslv_in_vector   axisi;
-    types_amba::bus0_xslv_out_vector  axiso;
-    types_amba::bus0_xslv_cfg_vector  slv_cfg;
-    types_amba::bus0_xmst_cfg_vector  mst_cfg;
+    types_amba::apb_in_type apb_dmi_i;
+    types_amba::apb_out_type apb_dmi_o;
+    types_bus0::bus0_xmst_in_vector   aximi;
+    types_bus0::bus0_xmst_out_vector  aximo;
+    types_bus0::bus0_xslv_in_vector   axisi;
+    types_bus0::bus0_xslv_out_vector  axiso;
+    types_bus0::bus0_xslv_cfg_vector  slv_cfg;
+    types_bus0::bus0_xmst_cfg_vector  mst_cfg;
     Signal wb_clint_mtimer;
     Signal wb_clint_msip;
     Signal wb_clint_mtip;

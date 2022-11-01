@@ -17,22 +17,22 @@
 #pragma once
 
 #include <api.h>
-#include "types_amba.h"
-#include "types_bus0.h"
-#include "axi2apb.h"
 
-class ambalib_folder : public FolderObject {
+using namespace sysvc;
+
+class config_target : public FileObject {
  public:
-    ambalib_folder(GenObject *parent) :
-        FolderObject(parent, "ambalib"),
-        types_amba_(this),
-        types_bus0_(this),
-        axi2apb_file_(this) {}
+    config_target(GenObject *parent);
 
- protected:
-    // subfolders:
-    // files
-    types_amba types_amba_;
-    types_bus0 types_bus0_;
-    axi2apb_file axi2apb_file_;
+ public:
+    ParamBOOL CFG_ASYNC_RESET;
+    TextLine _prj0_;
+    TextLine _prj1_;
+    TextLine _prj2_;
+    ParamI32D CFG_CPU_NUM;
+    TextLine _prj3_;
+    ParamI32D CFG_L2CACHE_ENA;
+    TextLine _n_;
 };
+
+extern config_target* prj_cfg_;

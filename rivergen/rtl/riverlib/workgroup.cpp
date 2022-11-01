@@ -43,14 +43,8 @@ Workgroup::Workgroup(GenObject *parent, const char *name) :
     i_msti(this, "i_msti"),
     o_msto(this, "o_msto"),
     _apb0_(this, "APB debug access:"),
-    i_apb_dmi_req_valid(this, "i_apb_dmi_req_valid", "1"),
-    o_apb_dmi_req_ready(this, "o_apb_dmi_req_ready", "1"),
-    i_apb_dmi_req_addr(this, "i_apb_dmi_req_addr", "7"),
-    i_apb_dmi_req_write(this, "i_apb_dmi_req_write", "1"),
-    i_apb_dmi_req_wdata(this, "i_apb_dmi_req_wdata", "32"),
-    o_apb_dmi_resp_valid(this, "o_apb_dmi_resp_valid", "1"),
-    i_apb_dmi_resp_ready(this, "i_apb_dmi_resp_ready", "1"),
-    o_apb_dmi_resp_rdata(this, "o_apb_dmi_resp_rdata", "32"),
+    i_dmi_apbi(this, "i_dmi_apbi"),
+    o_dmi_apbo(this, "o_dmi_apbo"),
     o_dmreset(this, "o_dmreset", "1", "reset everything except DMI debug interface"),
     // param
     coherence_ena(this, "1", "coherence_ena", "GT(MUL(cpu_num,l2cache_ena),1)"),
@@ -108,14 +102,8 @@ Workgroup::Workgroup(GenObject *parent, const char *name) :
         CONNECT(dmi0, 0, dmi0.i_tms, i_tms);
         CONNECT(dmi0, 0, dmi0.i_tdi, i_tdi);
         CONNECT(dmi0, 0, dmi0.o_tdo, o_tdo);
-        CONNECT(dmi0, 0, dmi0.i_bus_req_valid, i_apb_dmi_req_valid);
-        CONNECT(dmi0, 0, dmi0.o_bus_req_ready, o_apb_dmi_req_ready);
-        CONNECT(dmi0, 0, dmi0.i_bus_req_addr, i_apb_dmi_req_addr);
-        CONNECT(dmi0, 0, dmi0.i_bus_req_write, i_apb_dmi_req_write);
-        CONNECT(dmi0, 0, dmi0.i_bus_req_wdata, i_apb_dmi_req_wdata);
-        CONNECT(dmi0, 0, dmi0.o_bus_resp_valid, o_apb_dmi_resp_valid);
-        CONNECT(dmi0, 0, dmi0.i_bus_resp_ready, i_apb_dmi_resp_ready);
-        CONNECT(dmi0, 0, dmi0.o_bus_resp_rdata, o_apb_dmi_resp_rdata);
+        CONNECT(dmi0, 0, dmi0.i_apbi, i_dmi_apbi);
+        CONNECT(dmi0, 0, dmi0.o_apbo, o_dmi_apbo);
         CONNECT(dmi0, 0, dmi0.o_ndmreset, o_dmreset, "reset whole system");
         CONNECT(dmi0, 0, dmi0.i_halted, wb_halted);
         CONNECT(dmi0, 0, dmi0.i_available, wb_available);

@@ -107,14 +107,8 @@ public:
     InStruct<types_amba::axi4_master_in_type> i_msti;
     OutStruct<types_amba::axi4_master_out_type> o_msto;
     TextLine _apb0_;
-    InPort i_apb_dmi_req_valid;
-    OutPort o_apb_dmi_req_ready;
-    InPort i_apb_dmi_req_addr;
-    InPort i_apb_dmi_req_write;
-    InPort i_apb_dmi_req_wdata;
-    OutPort o_apb_dmi_resp_valid;
-    InPort i_apb_dmi_resp_ready;
-    OutPort o_apb_dmi_resp_rdata;
+    InStruct<types_amba::apb_in_type> i_dmi_apbi;
+    OutStruct<types_amba::apb_out_type> o_dmi_apbo;
     OutPort o_dmreset;
 
     // Param

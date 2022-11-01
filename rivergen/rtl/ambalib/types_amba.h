@@ -37,6 +37,43 @@ class types_amba : public FileObject {
         Logic xsize;
     };
 
+    class axi4_slave_config_type : public StructObject {
+     public:
+        axi4_slave_config_type(GenObject* parent, const char* name = "", const char* comment = "")
+            : StructObject(parent, "axi4_slave_config_type", name, comment),
+            _0_(this, "Descriptor size in bytes."),
+            descrsize("8", "descrsize", "PNP_CFG_SLAVE_DESCR_BYTES", this),
+            _1_(this, "Descriptor type."),
+            descrtype("2", "descrtype", "PNP_CFG_TYPE_SLAVE", this),
+            _2_(this, "Base Address."),
+            xaddr("CFG_SYSBUS_ADDR_BITS", "xaddr", "0", this),
+            _3_(this, "Maskable bits of the base address."),
+            xmask("CFG_SYSBUS_ADDR_BITS", "xmask", "0", this),
+            _4_(this, "Vendor ID."),
+            vid("16", "vid", "VENDOR_GNSSSENSOR", this),
+            _5_(this, "Device ID."),
+            did("16", "did", "SLV_DID_EMPTY", this) {
+            setZeroValue("axi4_slave_config_none");
+            registerCfgType(name);
+            std::string strtype = getType();
+            SCV_get_cfg_parameter(strtype);    // to trigger dependecy array
+        }
+
+    public:
+        TextLine _0_;
+        Logic descrsize;
+        TextLine _1_;
+        Logic descrtype;
+        TextLine _2_;
+        Logic xaddr;
+        TextLine _3_;
+        Logic xmask;
+        TextLine _4_;
+        Logic vid;
+        TextLine _5_;
+        Logic did;
+    };
+
     class axi4_master_config_type : public StructObject {
      public:
         axi4_master_config_type(GenObject* parent, const char* name = "", const char* comment = "")
@@ -49,7 +86,7 @@ class types_amba : public FileObject {
             vid("16", "vid", "VENDOR_GNSSSENSOR", this),
             _3_(this, "Device ID."),
             did("16", "did", "MST_DID_EMPTY", this) {
-            setZeroValue("axi4_master_out_none");
+            setZeroValue("axi4_master_config_none");
             registerCfgType(name);
             std::string strtype = getType();
             SCV_get_cfg_parameter(strtype);    // to trigger dependecy array
@@ -415,6 +452,10 @@ class types_amba : public FileObject {
     ParamLogic GNSSSENSOR_UART_TAP;
     TextLine _didmst9_;
     ParamLogic GNSSSENSOR_JTAG_TAP;
+    TextLine _didslv0_;
+    TextLine _didslv1_;
+    TextLine _didslv2_;
+    ParamLogic SLV_DID_EMPTY;
     TextLine _pnpcfg0_;
     TextLine _pnpcfg1_;
     TextLine _pnpcfg2_;
@@ -429,6 +470,14 @@ class types_amba : public FileObject {
     TextLine _pnpcfg7_;
     TextLine _pnpcfg8_;
     ParamLogic PNP_CFG_MASTER_DESCR_BYTES;
+    TextLine _xslvcfg0_;
+    TextLine _xslvcfg1_;
+    TextLine _xslvcfg2_;
+    TextLine _xslvcfg3_;
+    axi4_slave_config_type axi4_slave_config_type_def_;
+    TextLine _xslvcfg4_;
+    TextLine _xslvcfg5_;
+    axi4_slave_config_type axi4_slave_config_none;
     TextLine _xmstcfg0_;
     TextLine _xmstcfg1_;
     TextLine _xmstcfg2_;

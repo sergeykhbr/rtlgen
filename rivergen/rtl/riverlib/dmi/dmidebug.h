@@ -32,7 +32,7 @@ class dmidebug : public ModuleObject {
      public:
         CombProcess(GenObject* parent)
             : ProcObject(parent, "comb"),
-            v_bus_req_ready(this, "v_bus_req_ready", "1"),
+            vapbo(this, "vapbo"),
             vb_req_type(this, "vb_req_type", "DPortReq_Total"),
             vb_resp_data(this, "vb_resp_data", "32"),
             vb_hartselnext(this, "vb_hartselnext", "CFG_LOG2_CPU_MAX"),
@@ -46,7 +46,7 @@ class dmidebug : public ModuleObject {
             t_idx("0", "t_idx", this) {
         }
      public:
-        Logic v_bus_req_ready;
+        types_amba::apb_out_type vapbo;
         Logic vb_req_type;
         Logic vb_resp_data;
         Logic vb_hartselnext;
@@ -73,14 +73,8 @@ public:
     InPort i_tdi;
     OutPort o_tdo;
     TextLine _bus0_;
-    InPort i_bus_req_valid;
-    OutPort o_bus_req_ready;
-    InPort i_bus_req_addr;
-    InPort i_bus_req_write;
-    InPort i_bus_req_wdata;
-    OutPort o_bus_resp_valid;
-    InPort i_bus_resp_ready;
-    OutPort o_bus_resp_rdata;
+    InStruct<types_amba::apb_in_type> i_apbi;
+    OutStruct<types_amba::apb_out_type> o_apbo;
     TextLine _dmi0_;
     OutPort o_ndmreset;
     InPort i_halted;
@@ -146,7 +140,7 @@ public:
     // regs
     RegSignal bus_jtag;
     RegSignal jtag_resp_data;
-    RegSignal bus_resp_data;
+    RegSignal prdata;
     RegSignal regidx;
     RegSignal wdata;
     RegSignal regwr;
@@ -183,7 +177,7 @@ public:
     RegSignal dport_wdata;
     RegSignal dport_size;
     RegSignal dport_resp_ready;
-    RegSignal bus_resp_valid;
+    RegSignal pready;
 
     // process
     CombProcess comb;

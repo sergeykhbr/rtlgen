@@ -28,14 +28,8 @@ dmidebug::dmidebug(GenObject *parent, const char *name) :
     i_tdi(this, "i_tdi", "1", "Test Data Input"),
     o_tdo(this, "o_tdo", "1", "Test Data Output"),
     _bus0_(this, "Bus interface (APB):"),
-    i_bus_req_valid(this, "i_bus_req_valid", "1"),
-    o_bus_req_ready(this, "o_bus_req_ready", "1"),
-    i_bus_req_addr(this, "i_bus_req_addr", "7"),
-    i_bus_req_write(this, "i_bus_req_write", "1"),
-    i_bus_req_wdata(this, "i_bus_req_wdata", "32"),
-    o_bus_resp_valid(this, "o_bus_resp_valid", "1"),
-    i_bus_resp_ready(this, "i_bus_resp_ready", "1"),
-    o_bus_resp_rdata(this, "o_bus_resp_rdata", "32"),
+    i_apbi(this, "i_apbi", "APB input interface"),
+    o_apbo(this, "o_apbo", "APB output interface"),
     _dmi0_(this, "DMI interface:"),
     o_ndmreset(this, "o_ndmreset", "1", "system reset: cores + peripheries (except dmi itself)"),
     i_halted(this, "i_halted", "CFG_CPU_MAX", "Halted cores"),
@@ -98,7 +92,7 @@ dmidebug::dmidebug(GenObject *parent, const char *name) :
     // registers
     bus_jtag(this, "bus_jtag", "1"),
     jtag_resp_data(this, "jtag_resp_data", "32"),
-    bus_resp_data(this, "bus_resp_data", "32"),
+    prdata(this, "prdata", "32"),
     regidx(this, "regidx", "7"),
     wdata(this, "wdata", "32"),
     regwr(this, "regwr", "1"),
@@ -135,7 +129,7 @@ dmidebug::dmidebug(GenObject *parent, const char *name) :
     dport_wdata(this, "dport_wdata", "RISCV_ARCH"),
     dport_size(this, "dport_size", "3"),
     dport_resp_ready(this, "dport_resp_ready", "1"),
-    bus_resp_valid(this, "bus_resp_valid", "1"),
+    pready(this, "pready", "1"),
     comb(this),
     cdc(this, "cdc"),
     tap(this, "tap")
@@ -204,9 +198,7 @@ TEXT();
 TEXT();
     SWITCH (dmstate);
     CASE(DM_STATE_IDLE);
-        SETONE(comb.v_bus_req_ready);
         IF (NZ(w_cdc_dmi_req_valid));
-            SETZERO(comb.v_bus_req_ready);
             SETONE(comb.v_cdc_dmi_req_ready);
             SETONE(bus_jtag);
             SETVAL(dmstate, DM_STATE_ACCESS);
@@ -214,13 +206,14 @@ TEXT();
             SETVAL(wdata, wb_cdc_dmi_req_data);
             SETVAL(regwr, w_cdc_dmi_req_write);
             SETVAL(regrd, INV_L(w_cdc_dmi_req_write));
-        ELSIF (NZ(i_bus_req_valid));
+        ELSIF (ORx(2, &AND2(NZ(i_apbi.pselx), EZ(i_apbi.pwrite)),
+                      &AND3(NZ(i_apbi.pselx), NZ(i_apbi.penable), NZ(i_apbi.pwrite))));
             SETZERO(bus_jtag);
             SETVAL(dmstate, DM_STATE_ACCESS);
-            SETVAL(regidx, i_bus_req_addr);
-            SETVAL(wdata, i_bus_req_wdata);
-            SETVAL(regwr, i_bus_req_write);
-            SETVAL(regrd, INV(i_bus_req_write));
+            SETVAL(regidx, BITS(i_apbi.paddr, 6, 0));
+            SETVAL(wdata, i_apbi.pwdata);
+            SETVAL(regwr, i_apbi.pwrite);
+            SETVAL(regrd, INV(i_apbi.pwrite));
         ENDIF();
     ENDCASE();
     CASE(DM_STATE_ACCESS);
@@ -552,16 +545,21 @@ TEXT();
 TEXT();
     IF (NZ(comb.v_resp_valid));
         IF (EZ(bus_jtag));
-            SETVAL(bus_resp_data, comb.vb_resp_data);
+            SETVAL(prdata, comb.vb_resp_data);
         ELSE();
             SETVAL(jtag_resp_data, comb.vb_resp_data);
         ENDIF();
     ENDIF();
+    SETZERO(pready);
     IF (AND2(NZ(comb.v_resp_valid), EZ(bus_jtag)));
-        SETONE(bus_resp_valid);
-    ELSIF (NZ(i_bus_resp_ready));
-        SETZERO(bus_resp_valid);
+        SETONE(pready);
+    ELSIF (NZ(i_apbi.penable));
+        SETZERO(pready);
     ENDIF();
+
+TEXT();
+    SETVAL(comb.vapbo.pready, pready);
+    SETVAL(comb.vapbo.prdata, prdata);
 
 TEXT();
     SETBIT(comb.vb_req_type, cfg->DPortReq_Write, cmd_write);
@@ -596,7 +594,5 @@ TEXT();
     SETZERO(w_jtag_dmi_error);
 
 TEXT();
-    SETVAL(o_bus_req_ready, comb.v_bus_req_ready);
-    SETVAL(o_bus_resp_valid, bus_resp_valid);
-    SETVAL(o_bus_resp_rdata, bus_resp_data);
+    SETVAL(o_apbo, comb.vapbo);
 }
