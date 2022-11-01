@@ -212,7 +212,7 @@ std::string ModuleObject::generate_sysc_h() {
     // Constructor declaration:
     std::string space1 = "    " + getType() + "(";
     out += space1 + "sc_module_name name";
-    if (getAsyncReset()) {
+    if (getAsyncReset() && getEntryByName("async_reset") == 0) {
         ln = "";
         while (ln.size() < space1.size()) {
             ln += " ";
@@ -250,7 +250,7 @@ std::string ModuleObject::generate_sysc_h() {
 
     // Generic parameter local storage:
     tcnt = 0;
-    if (getAsyncReset()) {
+    if (getAsyncReset() && getEntryByName("async_reset") == 0) {
         out += "    " + (new Logic())->getType() + " async_reset_;\n";
         tcnt++;
     }
@@ -825,7 +825,7 @@ std::string ModuleObject::generate_sysc_constructor() {
     }
     space1 += "::" + getType() + "(";
     ret += space1 + "sc_module_name name";
-    if (getAsyncReset()) {
+    if (getAsyncReset() && getEntryByName("async_reset") == 0) {
         ln = "";
         while (ln.size() < space1.size()) {
             ln += " ";
@@ -875,7 +875,7 @@ std::string ModuleObject::generate_sysc_constructor() {
     ret += " {\n";
     ret += "\n";
     // local copy of the generic parameters:
-    if (getAsyncReset()) {
+    if (getAsyncReset() && getEntryByName("async_reset") == 0) {
         ret += "    async_reset_ = async_reset;\n";
     }
     for (auto &p: entries_) {

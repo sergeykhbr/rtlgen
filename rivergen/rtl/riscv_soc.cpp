@@ -15,10 +15,12 @@
 // 
 
 #include "riscv_soc.h"
+#include "../prj/impl/asic_full/config_target.h"
 
 riscv_soc::riscv_soc(GenObject *parent, const char *name) :
     ModuleObject(parent, "riscv_soc", name),
     // Generic parameters
+    async_reset(this, "async_reset", "CFG_ASYNC_RESET"),
     // Ports
     i_rst(this, "i_rst", "1", "System reset active HIGH"),
     i_clk(this, "i_clk", "1", "CPU clock"),
@@ -63,9 +65,8 @@ riscv_soc::riscv_soc(GenObject *parent, const char *name) :
     Operation::start(this);
 
     // Create and connet Sub-modules:
-    //group0.async_reset.setObjValue(&prj_cfg_->CFG_ASYNC_RESET);
-    //group0.cpu_num.setObjValue(&prj_cfg_->CFG_CPU_NUM);
-    //group0.l2cache_ena.setObjValue(&prj_cfg_->CFG_L2CACHE_ENA);
+    group0.cpu_num.setObjValue(&prj_cfg_->CFG_CPU_NUM);
+    group0.l2cache_ena.setObjValue(&prj_cfg_->CFG_L2CACHE_ENA);
     NEW(group0, group0.getName().c_str());
         CONNECT(group0, 0, group0.i_clk, i_clk);
         CONNECT(group0, 0, group0.i_cores_nrst, w_sys_nrst);

@@ -2864,7 +2864,7 @@ std::string NEW_gen_sv(Operation *op, ModuleObject *mod, std::string name) {
     if (mod->getAsyncReset() || tmpllist.size()) {
         ret += "#(\n";
         Operation::set_space(Operation::get_space() + 1);
-        if (mod->getAsyncReset()) {
+        if (mod->getAsyncReset() && mod->getEntryByName("async_reset") == 0) {
             ret += Operation::addspaces() + ".async_reset(async_reset)";
             if (tmpllist.size()) {
                 ret += ",";
@@ -2964,7 +2964,7 @@ std::string NEW_gen(GenObject **args) {
     } else {
         ret += "\"" + name + "\"";
     }
-    if (mod->getAsyncReset()) {
+    if (mod->getAsyncReset() && mod->getEntryByName("async_reset") == 0) {
         ret += ", async_reset";
     }
     std::list<GenObject *>genlist;

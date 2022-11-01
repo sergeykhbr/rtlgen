@@ -194,7 +194,7 @@ std::string ModuleObject::generate_sv_mod_genparam() {
     getTmplParamList(genparam);
     getParamList(genparam);
 
-    if (getAsyncReset()) {
+    if (getAsyncReset() && getEntryByName("async_reset") == 0) {
         ret += "    parameter bit async_reset = 1'b0";           // Mandatory generic parameter
         if (genparam.size()) {
             ret += ",";

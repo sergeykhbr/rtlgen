@@ -109,6 +109,15 @@ GenObject *GenObject::getClockPort() {
     return 0;
 }
 
+GenObject *GenObject::getEntryByName(const char *name) {
+    for (auto &e: entries_) {
+        if (e->getName() == name) {
+            return e;
+        }
+    }
+    return 0;
+}
+
 bool GenObject::isLocal() {
     bool local = false;
     GenObject *p = getParent();

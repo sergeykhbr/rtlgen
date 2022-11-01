@@ -75,6 +75,7 @@ class GenObject {
     virtual GenObject *getAsyncReset();
     virtual GenObject *getResetPort();
     virtual GenObject *getClockPort();
+    virtual GenObject *getEntryByName(const char *name);
     virtual bool getResetActive() { return false; }
     virtual std::string getName() { return name_; }
     virtual void setName(const char *n) { name_ = std::string(n); }

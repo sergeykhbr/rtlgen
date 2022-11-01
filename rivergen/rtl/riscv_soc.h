@@ -54,6 +54,7 @@ class riscv_soc : public ModuleObject {
 
 
 public:
+    ParamBOOL async_reset;
     // Ports:
     InPort i_rst;
     InPort i_clk;
@@ -75,13 +76,41 @@ public:
     // Param
 
     // Signals:
+    class axi4_master_out_type_signal : public types_amba::axi4_master_out_type {
+     public:
+        axi4_master_out_type_signal(GenObject* parent, const char *name, const char *comment="")
+            : types_amba::axi4_master_out_type(parent, name, comment) {}
+        virtual bool isSignal() override { return true; }
+    };
+
+    class axi4_master_in_type_signal : public types_amba::axi4_master_in_type {
+     public:
+        axi4_master_in_type_signal(GenObject* parent, const char *name, const char *comment="")
+            : types_amba::axi4_master_in_type(parent, name, comment) {}
+        virtual bool isSignal() override { return true; }
+    };
+
+    class apb_in_type_signal : public types_amba::apb_in_type {
+     public:
+        apb_in_type_signal(GenObject* parent, const char *name, const char *comment="")
+            : types_amba::apb_in_type(parent, name, comment) {}
+        virtual bool isSignal() override { return true; }
+    };
+
+    class apb_out_type_signal : public types_amba::apb_out_type {
+     public:
+        apb_out_type_signal(GenObject* parent, const char *name, const char *comment="")
+            : types_amba::apb_out_type(parent, name, comment) {}
+        virtual bool isSignal() override { return true; }
+    };
+
     Signal w_sys_nrst;
     Signal w_dbg_nrst;
     Signal w_dmreset;
-    types_amba::axi4_master_out_type acpo;
-    types_amba::axi4_master_in_type acpi;
-    types_amba::apb_in_type apb_dmi_i;
-    types_amba::apb_out_type apb_dmi_o;
+    axi4_master_out_type_signal acpo;
+    axi4_master_in_type_signal acpi;
+    apb_in_type_signal apb_dmi_i;
+    apb_out_type_signal apb_dmi_o;
     types_bus0::bus0_xmst_in_vector   aximi;
     types_bus0::bus0_xmst_out_vector  aximo;
     types_bus0::bus0_xslv_in_vector   axisi;

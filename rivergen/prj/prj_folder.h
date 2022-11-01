@@ -14,11 +14,20 @@
 //  limitations under the License.
 // 
 
-#include "prj_river.h"
+#pragma once
 
-RiverProject::RiverProject(const char *rootpath) :
-    ProjectObject(rootpath, "River v3.0 CPU generator"),
-    prj_(this),
-    rtl_(this)
-{
-}
+#include <api.h>
+#include "impl/impl_folder.h"
+
+
+class prj_folder : public FolderObject {
+  public:
+    prj_folder(GenObject *parent) :
+        FolderObject(parent, "prj"),
+        impl(this) {}
+
+ protected:
+    // subfolders:
+    impl_folder impl;
+    // files
+};

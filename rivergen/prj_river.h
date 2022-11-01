@@ -17,6 +17,7 @@
 #pragma once
 
 #include <api.h>
+#include "prj/prj_folder.h"
 #include "rtl/rtl_folder.h"
 
 using namespace sysvc;
@@ -26,6 +27,7 @@ class RiverProject : public ProjectObject {
     RiverProject(const char *rootpath);
 
  protected:
+    prj_folder prj_;
     rtl_folder rtl_;
 };
 

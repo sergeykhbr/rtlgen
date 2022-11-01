@@ -85,6 +85,7 @@ class WireArray : public ArrayObject<T> {
             ArrayObject<T>::arr_[i] = new T(width, tstr, "0", this);
         }
     }
+    virtual bool isSignal() override { return arr_[0]->isSignal(); }
 };
 
 template<class T>

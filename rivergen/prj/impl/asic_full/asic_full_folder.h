@@ -14,11 +14,20 @@
 //  limitations under the License.
 // 
 
-#include "prj_river.h"
+#pragma once
 
-RiverProject::RiverProject(const char *rootpath) :
-    ProjectObject(rootpath, "River v3.0 CPU generator"),
-    prj_(this),
-    rtl_(this)
-{
-}
+#include <api.h>
+#include "config_target.h"
+
+
+class asic_full_folder : public FolderObject {
+  public:
+    asic_full_folder(GenObject *parent) :
+        FolderObject(parent, "asic_full"),
+        config_target_(this) {}
+
+ protected:
+    // subfolders:
+    // files
+    config_target config_target_;
+};
