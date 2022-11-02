@@ -68,7 +68,8 @@ void GenObject::registerCfgType(const char *name) {
         // Variable definition (not a type declaration)
         return;
     }
-    if (SCV_is_cfg_parameter(this->getType())) {
+    std::string t1 = this->getType();
+    if (SCV_is_cfg_parameter(t1)) {
         // Already defined. Avoid redefinition during inheritance.
         return;
     }
