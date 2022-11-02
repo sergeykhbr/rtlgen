@@ -1907,6 +1907,25 @@ Operation &INC(GenObject &a, const char *comment) {
     return *p;
 }
 
+// INCVAL
+std::string INCVAL_gen(GenObject **args) {
+    std::string ret = Operation::addspaces();
+    ret += Operation::obj2varname(args[1], "v");
+    ret += " += ";
+    ret += Operation::obj2varname(args[2], "r", true);
+    ret += ";\n";
+    return ret;
+}
+
+Operation &INCVAL(GenObject &res, GenObject &inc, const char *comment) {
+    Operation *p = new Operation(comment);
+    p->igen_ = INCVAL_gen;
+    p->add_arg(p);
+    p->add_arg(&res);
+    p->add_arg(&inc);
+    return *p;
+}
+
 // MUL2
 std::string MUL2_gen(GenObject **args) {
     std::string A = Operation::obj2varname(args[1], "r", true);

@@ -1019,7 +1019,7 @@ TEXT();
         ENDFOR();
         IF (NZ(comb.entry_valid));
             CALLF(&tracestr, TraceOutput, 1, &comb.rcnt_inc);
-            SETVAL(outstr, ADD2(outstr, tracestr));
+            INCVAL(outstr, tracestr);
             SETVAL(comb.rcnt_inc, INC(comb.rcnt_inc));
         ENDIF();
     ENDWHILE();
@@ -1049,8 +1049,8 @@ TEXT();
            &TO_U64(ARRITEM_B(p->trace_tbl, ircnt, p->trace_tbl->pc)));
 
 TEXT();
-    SETVAL(ostr, ADD2(ostr, disasm));
-    SETVAL(ostr, ADD2(ostr, *new STRING(" \\n", "")));
+    INCVAL(ostr, disasm);
+    INCVAL(ostr, *new STRING(" \\n", ""));
 
 TEXT();
     i = &FOR ("i",CONST("0"), TO_INT(ARRITEM_B(p->trace_tbl, ircnt, p->trace_tbl->memactioncnt)), "++");

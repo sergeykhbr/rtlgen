@@ -64,9 +64,15 @@ std::string GenObject::getFile() {
 }
 
 void GenObject::registerCfgType(const char *name) {
-    if (name[0] == '\0') {
-        SCV_set_cfg_type(this);
+    if (name[0] != '\0') {
+        // Variable definition (not a type declaration)
+        return;
     }
+    if (SCV_is_cfg_parameter(this->getType())) {
+        // Already defined. Avoid redefinition during inheritance.
+        return;
+    }
+    SCV_set_cfg_type(this);
 }
 
 void GenObject::add_entry(GenObject *p) {

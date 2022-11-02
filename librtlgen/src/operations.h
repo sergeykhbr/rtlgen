@@ -154,6 +154,7 @@ Operation &ANDx(size_t cnt, ...);
 Operation &ANDx_L(size_t cnt, ...);
 Operation &DEC(GenObject &a, const char *comment="");
 Operation &INC(GenObject &a, const char *comment="");
+Operation &INCVAL(GenObject &res, GenObject &inc, const char *comment="");
 Operation &MUL2(GenObject &a, GenObject &b, const char *comment="");
 Operation &DIV2(GenObject &a, GenObject &b, const char *comment="");
 Operation &CC2(GenObject &a, GenObject &b, const char *comment="");     // concatation

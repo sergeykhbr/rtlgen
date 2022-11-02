@@ -49,7 +49,7 @@ class types_bus0 : public FileObject {
         bus0_xmst_cfg_vector(GenObject *parent, const char *name, const char *descr="")
             : axi4_master_config_type(parent, name, descr) {
             type_ = std::string("bus0_xmst_cfg_vector");
-            setStrDepth("CFG_BUS0_XSLV_TOTAL");
+            setStrDepth("CFG_BUS0_XMST_TOTAL");
             
             registerCfgType(name);                  // will be registered if name == ""
             if (name[0]) {
@@ -145,6 +145,24 @@ class types_bus0 : public FileObject {
     TextLine _xslv1_;
     TextLine _xslv2_;
     TextLine _xslv3_;
+    TextLine _xslv4_;
+    TextLine _xslv5_;
+    ParamI32D CFG_BUS0_XSLV_BOOTROM;
+    TextLine _xslv7_;
+    ParamI32D CFG_BUS0_XSLV_SRAM;
+    TextLine _xslv8_;
+    ParamI32D CFG_BUS0_XSLV_DDR;
+    TextLine _xslv9_;
+    ParamI32D CFG_BUS0_XSLV_UART0;
+    TextLine _xslv10_;
+    ParamI32D CFG_BUS0_XSLV_GPIO;
+    TextLine _xslv11_;
+    ParamI32D CFG_BUS0_XSLV_CLINT;
+    TextLine _xslv12_;
+    ParamI32D CFG_BUS0_XSLV_PLIC;
+    TextLine _xslv13_;
+    ParamI32D CFG_BUS0_XSLV_PNP;
+    TextLine _xslv14_;
     ParamI32D CFG_BUS0_XSLV_TOTAL;
     TextLine _xmst0_;
     TextLine _xmst1_;
