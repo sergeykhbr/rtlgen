@@ -56,6 +56,9 @@ axi2apb::axi2apb(GenObject *parent, const char *name) :
 }
 
 void axi2apb::proc_comb() {
+    SETVAL(comb.vb_rdata, pdata);
+
+TEXT();
     SWITCH(state);
     CASE (State_Idle);
         SETZERO(pslverr);
@@ -73,13 +76,13 @@ void axi2apb::proc_comb() {
             SETVAL(req_user, i_xslvi.aw_user);
             IF (GE(i_xslvi.aw_bits.size, CONST("3", 3)));
                 SETONE(xsize);
-                SETVAL(pdata, i_xslvi.w_data);
+                SETVAL(comb.vb_rdata, i_xslvi.w_data);
                 SETVAL(pstrb, i_xslvi.w_strb);
             ELSIF(EZ(BIT(i_xslvi.aw_bits.addr, 2)));
-                SETVAL(pdata, CC2(CONST("0", 32), BITS(i_xslvi.w_data, 31, 0)));
+                SETVAL(comb.vb_rdata, CC2(CONST("0", 32), BITS(i_xslvi.w_data, 31, 0)));
                 SETVAL(pstrb, CC2(CONST("0", 4), BITS(i_xslvi.w_strb, 3, 0)));
             ELSE();
-                SETVAL(pdata, CC2(CONST("0", 32), BITS(i_xslvi.w_data, 63, 32)));
+                SETVAL(comb.vb_rdata, CC2(CONST("0", 32), BITS(i_xslvi.w_data, 63, 32)));
                 SETVAL(pstrb, CC2(CONST("0", 4), BITS(i_xslvi.w_strb, 7, 4)));
             ENDIF();
             IF (NZ(i_xslvi.aw_bits.len));
@@ -112,13 +115,13 @@ void axi2apb::proc_comb() {
         SETONE(comb.vslvo.w_ready);
         SETONE(pselx);
         IF (NZ(xsize));
-            SETVAL(pdata, i_xslvi.w_data);
+            SETVAL(comb.vb_rdata, i_xslvi.w_data);
             SETVAL(pstrb, i_xslvi.w_strb);
         ELSIF(EZ(BIT(paddr, 2)));
-            SETVAL(pdata, CC2(CONST("0", 32), BITS(i_xslvi.w_data, 31, 0)));
+            SETVAL(comb.vb_rdata, CC2(CONST("0", 32), BITS(i_xslvi.w_data, 31, 0)));
             SETVAL(pstrb, CC2(CONST("0", 4), BITS(i_xslvi.w_strb, 3, 0)));
         ELSE();
-            SETVAL(pdata, CC2(CONST("0", 32), BITS(i_xslvi.w_data, 63, 32)));
+            SETVAL(comb.vb_rdata, CC2(CONST("0", 32), BITS(i_xslvi.w_data, 63, 32)));
             SETVAL(pstrb, CC2(CONST("0", 4), BITS(i_xslvi.w_strb, 7, 4)));
         ENDIF();
         IF (NZ(i_xslvi.w_valid));
@@ -156,7 +159,9 @@ void axi2apb::proc_comb() {
                 SETVAL(xsize, DEC(xsize));
                 SETVAL(paddr, ADD2(paddr, CONST("4")));
                 SETVAL(pstrb, CC2(CONST("0", 4), BITS(pstrb, 7, 4)));
-                SETVAL(pdata, CC2(CONST("0", 32), BITS(pdata, 63, 32)));
+                IF (NZ(pwrite));
+                    SETVAL(comb.vb_rdata, CC2(CONST("0", 32), BITS(pdata, 63, 32)));
+                ENDIF();
                 SETVAL(state, State_setup);
             ELSIF (NZ(pwrite));
                 SETVAL(state, State_b);
@@ -167,7 +172,7 @@ void axi2apb::proc_comb() {
         ENDCASE();
     CASEDEF();
         TEXT("Burst transactions are not supported:");
-        SETVAL(pdata, ALLONES());
+        SETVAL(comb.vb_rdata, ALLONES());
         SETONE(pslverr);
         IF (NZ(pwrite));
             SETVAL(state, State_b);

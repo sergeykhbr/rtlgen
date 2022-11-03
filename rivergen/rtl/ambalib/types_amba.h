@@ -407,7 +407,7 @@ class types_amba : public FileObject {
      public:
         apb_out_type(GenObject* parent, const char* name = "", const char* comment = "")
             : StructObject(parent, "apb_out_type", name, comment),
-            pready("1", "pready", "0", this),
+            pready("1", "pready", "1", this),
             prdata("32", "prdata", "0", this),
             pslverr("1", "pslverr", "0", this) {
             setZeroValue("apb_out_none");
