@@ -20,6 +20,7 @@
 #include "types_amba.h"
 #include "types_bus0.h"
 #include "axi2apb.h"
+#include "apb_slv.h"
 
 class ambalib_folder : public FolderObject {
  public:
@@ -27,7 +28,8 @@ class ambalib_folder : public FolderObject {
         FolderObject(parent, "ambalib"),
         types_amba_(this),
         types_bus0_(this),
-        axi2apb_file_(this) {}
+        axi2apb_file_(this),
+        apb_slv_file(this) {}
 
  protected:
     // subfolders:
@@ -35,4 +37,5 @@ class ambalib_folder : public FolderObject {
     types_amba types_amba_;
     types_bus0 types_bus0_;
     axi2apb_file axi2apb_file_;
+    apb_slv_file apb_slv_file_;
 };
