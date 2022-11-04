@@ -17,29 +17,16 @@
 #pragma once
 
 #include <api.h>
-#include "ambalib/ambalib_folder.h"
-#include "techmap/techmap_folder.h"
-#include "riverlib/riverlib_folder.h"
-#include "misclib/misclib_folder.h"
-#include "riscv_soc.h"
+#include "apb_uart.h"
 
-
-class rtl_folder : public FolderObject {
-  public:
-    rtl_folder(GenObject *parent) :
-        FolderObject(parent, "rtl"),
-        ambalib(this),
-        techmap(this),
-        riverlib(this),
-        misclib(this),
-        riscv_soc_file_(this) {}
+class misclib_folder : public FolderObject {
+ public:
+    misclib_folder(GenObject *parent) :
+        FolderObject(parent, "misclib"),
+        apb_uart_file_(this) {}
 
  protected:
     // subfolders:
-    ambalib_folder ambalib;
-    techmap_folder techmap;
-    riverlib_folder riverlib;
-    misclib_folder misclib;
     // files
-    riscv_soc_file riscv_soc_file_;
+    apb_uart_file apb_uart_file_;
 };

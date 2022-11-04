@@ -99,7 +99,7 @@ public:
     InPort i_meip;
     InPort i_seip;
     InPort i_mtimer;
-    OutStruct<types_amba::axi4_master_config_type> o_xcfg;
+    OutStruct<types_amba::dev_config_type> o_xcfg;
     TextLine _port0_;
     InStruct<types_amba::axi4_master_out_type> i_acpo;
     OutStruct<types_amba::axi4_master_in_type> o_acpi;
@@ -159,7 +159,7 @@ public:
     Signal wb_ic_dport_rdata;
     Signal wb_progbuf;
     Signal w_flush_l2;
-    types_amba::axi4_master_config_type wb_xcfg;
+    types_amba::dev_config_type wb_xcfg;
 
     // Sub-module instances:
     dmidebug dmi0;

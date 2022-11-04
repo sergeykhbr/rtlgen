@@ -29,7 +29,7 @@ class ambalib_folder : public FolderObject {
         types_amba_(this),
         types_bus0_(this),
         axi2apb_file_(this),
-        apb_slv_file(this) {}
+        apb_slv_file_(this) {}
 
  protected:
     // subfolders:

@@ -56,7 +56,6 @@ types_bus0::types_bus0(GenObject *parent) :
     CFG_BUS0_XMST_TOTAL(this, "CFG_BUS0_XMST_TOTAL", "2"),
     _vec0_(this),
     bus0_xslv_cfg_vector_def_(this, ""),
-    bus0_xmst_cfg_vector_def_(this, ""),
     bus0_xmst_in_vector_def_(this, ""),
     bus0_xmst_out_vector_def_(this, ""),
     bus0_xslv_in_vector_def_(this, ""),

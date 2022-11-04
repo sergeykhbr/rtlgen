@@ -159,7 +159,15 @@ std::string ModuleObject::generate_sv_pkg_struct() {
         if (p->getId() != ID_STRUCT_DEF) {
             continue;
         }
-        ret += p->generate();
+        if (p->isVector()) {
+            ret += "typedef ";
+            ret += p->generate();
+            ret += " " + p->getType();
+            ret += "[0:" + p->getStrDepth() + " - 1]";
+            ret += ";\n";
+        } else {
+            ret += p->generate();
+        }
         tcnt++;
     }
     if (tcnt) {
@@ -275,6 +283,10 @@ std::string ModuleObject::generate_sv_mod_signals() {
     for (auto &p: getEntries()) {
         if (p->isInput() || p->isOutput()) {
             text = "";
+            continue;
+        }
+        if (p->getName() == "") {
+            // typedef should be skipped
             continue;
         }
         if (p->isReg() || p->isNReg()

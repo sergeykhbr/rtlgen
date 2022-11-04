@@ -1475,6 +1475,42 @@ Operation &XOR2(GenObject &a, GenObject &b, const char *comment) {
     return *p;
 }
 
+// XORx
+std::string XORx_gen(GenObject **args) {
+    std::string ret = "(";
+    size_t cnt = reinterpret_cast<size_t>(args[1]);
+    Operation::set_space(Operation::get_space() + 2);
+    for (size_t i = 0; i < cnt; i++) {
+        if (i > 0) {
+            ret += "\n";
+            ret += Operation::addspaces();
+            ret += "^ ";
+        }
+        ret += Operation::obj2varname(args[2 + i]);
+    }
+    Operation::set_space(Operation::get_space() - 2);
+    ret += ")";
+    return ret;
+}
+
+Operation &XORx(size_t cnt, ...) {
+    Operation *p = new Operation(0, "");
+    p->setWidth(1);
+    GenObject *obj;
+    p->igen_ = XORx_gen;
+    p->add_arg(p);
+    p->add_arg(reinterpret_cast<GenObject *>(cnt));
+    va_list arg;
+    va_start(arg, cnt);
+    for (int i = 0; i < cnt; i++) {
+        obj = va_arg(arg, GenObject *);
+        p->add_arg(obj);
+    }
+    va_end(arg);
+    return *p;
+}
+
+
 // ADD2
 class OpADD2 : public Operation {
  public:

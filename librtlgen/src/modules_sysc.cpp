@@ -28,7 +28,7 @@
 
 namespace sysvc {
 
-std::string ModuleObject::generate_sysc_reg_struct(bool negedge) {
+std::string ModuleObject::generate_sysc_h_reg_struct(bool negedge) {
     std::string out = "";
     std::string ln = "";
     bool twodim = false;        // if 2-dimensional register array, then do not use reset function
@@ -96,6 +96,49 @@ std::string ModuleObject::generate_sysc_reg_struct(bool negedge) {
         }
         out += "    }\n";
         out += "\n";
+    }
+    return out;
+}
+
+std::string ModuleObject::generate_sysc_h_struct() {
+    std::string out = "";
+    int tcnt = 0;
+    for (auto &p: entries_) {
+        if (p->getId() != ID_STRUCT_DEF) {
+            continue;
+        }
+        if (p->isVector()) {
+            out += Operation::addspaces();
+            out += "typedef ";
+            if (p->isVector()) {
+                out += "sc_vector<";
+            }
+            if (p->isSignal()) {
+                out += "sc_signal<";
+            }
+            out += p->generate();
+            if (p->isSignal()) {
+                out += ">";
+            }
+            if (p->isVector()) {
+                out += ">";
+            }
+            out += " " + p->getType() + ";\n";
+        } else {
+            out += p->generate();
+        }
+        tcnt++;
+    }
+    if (tcnt) {
+        out += "\n";
+        tcnt = 0;
+    }
+    // Register structure definition
+    if (isRegProcess() && isCombProcess()) {
+        out += generate_sysc_h_reg_struct(false);
+    }
+    if (isNRegProcess() && isCombProcess()) {
+        out += generate_sysc_h_reg_struct(true);
     }
     return out;
 }
@@ -334,31 +377,17 @@ std::string ModuleObject::generate_sysc_h() {
 
     // struct definitions
     Operation::set_space(1);
-    for (auto &p: entries_) {
-        if (p->getId() != ID_STRUCT_DEF) {
-            continue;
-        }
-        out += p->generate();
-        tcnt++;
-    }
-    if (tcnt) {
-        out += "\n";
-        tcnt = 0;
-    }
-    // Register structure definition
-    if (isRegProcess() && isCombProcess()) {
-        out += generate_sysc_reg_struct(false);
-    }
-    if (isNRegProcess() && isCombProcess()) {
-        out += generate_sysc_reg_struct(true);
-    }
-
+    out += generate_sysc_h_struct();
 
     // Signals list
     text = "";
     for (auto &p: getEntries()) {
         if (p->isInput() || p->isOutput()) {
             text = "";
+            continue;
+        }
+        if (p->getName() == "") {
+            // ignore typedef
             continue;
         }
         if (p->isReg() || p->isNReg()
@@ -865,7 +894,7 @@ std::string ModuleObject::generate_sysc_constructor() {
         if (p->isInput() || p->isOutput()) {
             continue;
         }
-        if (!p->isVector()) {
+        if (!p->isVector() || p->getName() == "") {
             continue;
         }
         ret += ",\n    " + p->getName() + "(\"" + p->getName() + "\"";

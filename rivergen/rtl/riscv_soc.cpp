@@ -39,6 +39,8 @@ riscv_soc::riscv_soc(GenObject *parent, const char *name) :
     i_uart1_rd(this, "i_uart1_rd", "1"),
     o_uart1_td(this, "o_uart1_td", "1"),
     // param
+    PNP_SLOTS_TOTAL(this, "PNP_SLOTS_TOTAL", "ADD(CFG_BUS0_XMST_TOTAL,CFG_BUS0_XSLV_TOTAL)"),
+    soc_pnp_vector_def_(this, ""),
     // Singals:
     w_sys_nrst(this, "w_sys_nrst", "1", "0", "System reset of whole system"),
     w_dbg_nrst(this, "w_dbg_nrst", "1", "0", "Reset workgroup debug interface"),
@@ -51,8 +53,7 @@ riscv_soc::riscv_soc(GenObject *parent, const char *name) :
     aximo(this, "aximo"),
     axisi(this, "axisi"),
     axiso(this, "axiso"),
-    slv_cfg(this, "slv_cfg"),
-    mst_cfg(this, "mst_cfg"),
+    dev_pnp(this, "dev_pnp"),
     wb_clint_mtimer(this, "wb_clint_mtimer", "64"),
     wb_clint_msip(this, "wb_clint_msip", "CFG_CPU_MAX"),
     wb_clint_mtip(this, "wb_clint_mtip", "CFG_CPU_MAX"),
@@ -81,7 +82,7 @@ riscv_soc::riscv_soc(GenObject *parent, const char *name) :
         CONNECT(group0, 0, group0.i_meip, wb_plic_meip);
         CONNECT(group0, 0, group0.i_seip, wb_plic_seip);
         CONNECT(group0, 0, group0.i_mtimer, wb_clint_mtimer);
-        CONNECT(group0, 0, group0.o_xcfg, ARRITEM(mst_cfg, glob_bus0_cfg_->CFG_BUS0_XMST_CPU0, mst_cfg));
+        CONNECT(group0, 0, group0.o_xcfg, ARRITEM(dev_pnp, glob_bus0_cfg_->CFG_BUS0_XMST_CPU0, dev_pnp));
         CONNECT(group0, 0, group0.i_acpo, acpo);
         CONNECT(group0, 0, group0.o_acpi, acpi);
         CONNECT(group0, 0, group0.i_msti, ARRITEM(aximi, glob_bus0_cfg_->CFG_BUS0_XMST_CPU0, aximi));

@@ -37,12 +37,12 @@ class types_amba : public FileObject {
         Logic xsize;
     };
 
-    class axi4_slave_config_type : public StructObject {
+    class dev_config_type : public StructObject {
      public:
-        axi4_slave_config_type(GenObject* parent, const char* name = "", const char* comment = "")
-            : StructObject(parent, "axi4_slave_config_type", name, comment),
+        dev_config_type(GenObject* parent, const char* name = "", const char* comment = "")
+            : StructObject(parent, "dev_config_type", name, comment),
             _0_(this, "Descriptor size in bytes."),
-            descrsize("8", "descrsize", "PNP_CFG_SLAVE_DESCR_BYTES", this),
+            descrsize("8", "descrsize", "PNP_CFG_DEV_DESCR_BYTES", this),
             _1_(this, "Descriptor type."),
             descrtype("2", "descrtype", "PNP_CFG_TYPE_SLAVE", this),
             _2_(this, "Base Address."),
@@ -53,7 +53,7 @@ class types_amba : public FileObject {
             vid("16", "vid", "VENDOR_GNSSSENSOR", this),
             _5_(this, "Device ID."),
             did("16", "did", "SLV_DID_EMPTY", this) {
-            setZeroValue("axi4_slave_config_none");
+            setZeroValue("dev_config_none");
             registerCfgType(name);
             std::string strtype = getType();
             SCV_get_cfg_parameter(strtype);    // to trigger dependecy array
@@ -71,35 +71,6 @@ class types_amba : public FileObject {
         TextLine _4_;
         Logic vid;
         TextLine _5_;
-        Logic did;
-    };
-
-    class axi4_master_config_type : public StructObject {
-     public:
-        axi4_master_config_type(GenObject* parent, const char* name = "", const char* comment = "")
-            : StructObject(parent, "axi4_master_config_type", name, comment),
-            _0_(this, "Descriptor size in bytes."),
-            descrsize("8", "descrsize", "PNP_CFG_MASTER_DESCR_BYTES", this),
-            _1_(this, "Descriptor type."),
-            descrtype("2", "descrtype", "PNP_CFG_TYPE_MASTER", this),
-            _2_(this, "Vendor ID."),
-            vid("16", "vid", "VENDOR_GNSSSENSOR", this),
-            _3_(this, "Device ID."),
-            did("16", "did", "MST_DID_EMPTY", this) {
-            setZeroValue("axi4_master_config_none");
-            registerCfgType(name);
-            std::string strtype = getType();
-            SCV_get_cfg_parameter(strtype);    // to trigger dependecy array
-        }
-
-    public:
-        TextLine _0_;
-        Logic descrsize;
-        TextLine _1_;
-        Logic descrtype;
-        TextLine _2_;
-        Logic vid;
-        TextLine _3_;
         Logic did;
     };
 
@@ -407,7 +378,7 @@ class types_amba : public FileObject {
      public:
         apb_out_type(GenObject* parent, const char* name = "", const char* comment = "")
             : StructObject(parent, "apb_out_type", name, comment),
-            pready("1", "pready", "1", this),
+            pready("1", "pready", "0", this, "when 1 it breaks callback to funcitonal model"),
             prdata("32", "prdata", "0", this),
             pslverr("1", "pslverr", "0", this) {
             setZeroValue("apb_out_none");
@@ -482,26 +453,15 @@ class types_amba : public FileObject {
     ParamLogic PNP_CFG_TYPE_SLAVE;
     TextLine _pnpcfg5_;
     TextLine _pnpcfg6_;
-    ParamLogic PNP_CFG_SLAVE_DESCR_BYTES;
-    TextLine _pnpcfg7_;
-    TextLine _pnpcfg8_;
-    ParamLogic PNP_CFG_MASTER_DESCR_BYTES;
+    ParamLogic PNP_CFG_DEV_DESCR_BYTES;
     TextLine _xslvcfg0_;
     TextLine _xslvcfg1_;
     TextLine _xslvcfg2_;
     TextLine _xslvcfg3_;
-    axi4_slave_config_type axi4_slave_config_type_def_;
+    dev_config_type dev_config_type_def_;
     TextLine _xslvcfg4_;
     TextLine _xslvcfg5_;
-    axi4_slave_config_type axi4_slave_config_none;
-    TextLine _xmstcfg0_;
-    TextLine _xmstcfg1_;
-    TextLine _xmstcfg2_;
-    TextLine _xmstcfg3_;
-    axi4_master_config_type axi4_master_config_type_def;
-    TextLine _xmstcfg4_;
-    TextLine _xmstcfg5_;
-    axi4_master_config_type axi4_master_config_none;
+    dev_config_type dev_config_none;
     TextLine _xsize0_;
     TextLine _xsize1_;
     ParamI32D XSIZE_TOTAL;
@@ -554,9 +514,9 @@ class types_amba : public FileObject {
     TextLine _cache6_;
     TextLine _cache7_;
     TextLine _cache8_;
-    ParamI32D ARSNOOP_READ_NO_SNOOP;
-    ParamI32D ARSNOOP_READ_SHARED;
-    ParamI32D ARSNOOP_READ_MAKE_UNIQUE;
+    ParamLogic ARSNOOP_READ_NO_SNOOP;
+    ParamLogic ARSNOOP_READ_SHARED;
+    ParamLogic ARSNOOP_READ_MAKE_UNIQUE;
     TextLine _cache9_;
     TextLine _cache10_;
     TextLine _cache11_;
@@ -564,13 +524,13 @@ class types_amba : public FileObject {
     TextLine _cache13_;
     TextLine _cache14_;
     TextLine _cache15_;
-    ParamI32D AWSNOOP_WRITE_NO_SNOOP;
-    ParamI32D AWSNOOP_WRITE_LINE_UNIQUE;
-    ParamI32D AWSNOOP_WRITE_BACK;
+    ParamLogic AWSNOOP_WRITE_NO_SNOOP;
+    ParamLogic AWSNOOP_WRITE_LINE_UNIQUE;
+    ParamLogic AWSNOOP_WRITE_BACK;
     TextLine _cache16_;
     TextLine _cache17_;
-    ParamI32D AC_SNOOP_READ_UNIQUE;
-    ParamI32D AC_SNOOP_MAKE_INVALID;
+    ParamLogic AC_SNOOP_READ_UNIQUE;
+    ParamLogic AC_SNOOP_MAKE_INVALID;
     TextLine _meta0_;
     axi4_metadata_type axi4_metadata_type_def;
     TextLine _meta1_;

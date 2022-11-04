@@ -227,7 +227,7 @@ Workgroup::Workgroup(GenObject *parent, const char *name) :
 void Workgroup::proc_comb() {
     river_cfg *cfg = glob_river_cfg_;
 
-    SETVAL(wb_xcfg.descrsize, glob_types_amba_->PNP_CFG_MASTER_DESCR_BYTES);
+    SETVAL(wb_xcfg.descrsize, glob_types_amba_->PNP_CFG_DEV_DESCR_BYTES);
     SETVAL(wb_xcfg.descrtype, glob_types_amba_->PNP_CFG_TYPE_MASTER);
     SETVAL(wb_xcfg.vid, glob_types_amba_->VENDOR_OPTIMITECH);
     SETVAL(wb_xcfg.did, glob_types_amba_->RISCV_RIVER_WORKGROUP);

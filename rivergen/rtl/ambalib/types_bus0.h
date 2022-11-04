@@ -25,10 +25,10 @@ class types_bus0 : public FileObject {
  public:
     types_bus0(GenObject *parent);
 
-    class bus0_xslv_cfg_vector : public types_amba::axi4_slave_config_type {
+    class bus0_xslv_cfg_vector : public types_amba::dev_config_type {
      public:
         bus0_xslv_cfg_vector(GenObject *parent, const char *name, const char *descr="")
-            : axi4_slave_config_type(parent, name, descr) {
+            : dev_config_type(parent, name, descr) {
             type_ = std::string("bus0_xslv_cfg_vector");
             setStrDepth("CFG_BUS0_XSLV_TOTAL");
             
@@ -41,26 +41,7 @@ class types_bus0 : public FileObject {
         virtual bool isTypedef() override { return true; }
         virtual bool isVector() override { return true; }
         virtual bool isSignal() override { return true; }
-        virtual std::string generate() override { return std::string("axi4_slave_config_type"); }
-    };
-
-    class bus0_xmst_cfg_vector : public types_amba::axi4_master_config_type {
-     public:
-        bus0_xmst_cfg_vector(GenObject *parent, const char *name, const char *descr="")
-            : axi4_master_config_type(parent, name, descr) {
-            type_ = std::string("bus0_xmst_cfg_vector");
-            setStrDepth("CFG_BUS0_XMST_TOTAL");
-            
-            registerCfgType(name);                  // will be registered if name == ""
-            if (name[0]) {
-                std::string strtype = getType();
-                SCV_get_cfg_parameter(strtype);   // to trigger dependecy array
-            }
-        }
-        virtual bool isTypedef() override { return true; }
-        virtual bool isVector() override { return true; }
-        virtual bool isSignal() override { return true; }
-        virtual std::string generate() override { return std::string("axi4_master_config_type"); }
+        virtual std::string generate() override { return std::string("dev_config_type"); }
     };
 
     class bus0_xmst_in_vector : public types_amba::axi4_master_in_type {
@@ -177,7 +158,6 @@ class types_bus0 : public FileObject {
     ParamI32D CFG_BUS0_XMST_TOTAL;
     TextLine _vec0_;
     bus0_xslv_cfg_vector bus0_xslv_cfg_vector_def_;
-    bus0_xmst_cfg_vector bus0_xmst_cfg_vector_def_;
     bus0_xmst_in_vector bus0_xmst_in_vector_def_;
     bus0_xmst_out_vector bus0_xmst_out_vector_def_;
     bus0_xslv_in_vector bus0_xslv_in_vector_def_;

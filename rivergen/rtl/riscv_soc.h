@@ -52,6 +52,26 @@ class riscv_soc : public ModuleObject {
 
     void proc_comb();
 
+public:
+    class soc_pnp_vector : public types_amba::dev_config_type {
+     public:
+        soc_pnp_vector(GenObject *parent, const char *name, const char *descr="")
+            : dev_config_type(parent, name, descr) {
+            type_ = std::string("soc_pnp_vector");
+            setStrDepth("PNP_SLOTS_TOTAL");
+            
+            registerCfgType(name);                  // will be registered if name == ""
+            if (name[0]) {
+                std::string strtype = getType();
+                SCV_get_cfg_parameter(strtype);   // to trigger dependecy array
+            }
+        }
+        virtual bool isTypedef() override { return true; }
+        virtual bool isVector() override { return true; }
+        virtual bool isSignal() override { return true; }
+        virtual std::string generate() override { return std::string("dev_config_type"); }
+    };
+
 
 public:
     ParamBOOL async_reset;
@@ -104,6 +124,9 @@ public:
         virtual bool isSignal() override { return true; }
     };
 
+    ParamI32D PNP_SLOTS_TOTAL;
+    soc_pnp_vector soc_pnp_vector_def_;
+
     Signal w_sys_nrst;
     Signal w_dbg_nrst;
     Signal w_dmreset;
@@ -115,8 +138,7 @@ public:
     types_bus0::bus0_xmst_out_vector  aximo;
     types_bus0::bus0_xslv_in_vector   axisi;
     types_bus0::bus0_xslv_out_vector  axiso;
-    types_bus0::bus0_xslv_cfg_vector  slv_cfg;
-    types_bus0::bus0_xmst_cfg_vector  mst_cfg;
+    soc_pnp_vector dev_pnp;
     Signal wb_clint_mtimer;
     Signal wb_clint_msip;
     Signal wb_clint_mtip;
