@@ -378,7 +378,7 @@ class types_amba : public FileObject {
      public:
         apb_out_type(GenObject* parent, const char* name = "", const char* comment = "")
             : StructObject(parent, "apb_out_type", name, comment),
-            pready("1", "pready", "0", this, "when 1 it breaks callback to funcitonal model"),
+            pready("1", "pready", "0", this, "when 1 it breaks callback to functional model"),
             prdata("32", "prdata", "0", this),
             pslverr("1", "pslverr", "0", this) {
             setZeroValue("apb_out_none");
