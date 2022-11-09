@@ -32,10 +32,12 @@ class apb_uart : public ModuleObject {
             ProcObject(parent, "comb"),
             vcfg(this, "vcfg"),
             vb_rdata(this, "vb_rdata", "32"),
+            vb_tx_wr_cnt_next(this, "vb_tx_wr_cnt_next", "log2_fifosz"),
             v_tx_fifo_full(this, "v_tx_fifo_full", "1"),
             v_tx_fifo_empty(this, "v_tx_fifo_empty", "1"),
             vb_tx_fifo_rdata(this, "vb_tx_fifo_rdata", "8"),
             v_tx_fifo_we(this, "v_tx_fifo_we", "1"),
+            vb_rx_wr_cnt_next(this, "vb_rx_wr_cnt_next", "log2_fifosz"),
             v_rx_fifo_full(this, "v_rx_fifo_full", "1"),
             v_rx_fifo_empty(this, "v_rx_fifo_empty", "1"),
             vb_rx_fifo_rdata(this, "vb_rx_fifo_rdata", "8"),
@@ -49,10 +51,12 @@ class apb_uart : public ModuleObject {
      public:
         types_amba::dev_config_type vcfg;
         Logic vb_rdata;
+        Logic vb_tx_wr_cnt_next;
         Logic v_tx_fifo_full;
         Logic v_tx_fifo_empty;
         Logic vb_tx_fifo_rdata;
         Logic v_tx_fifo_we;
+        Logic vb_rx_wr_cnt_next;
         Logic v_rx_fifo_full;
         Logic v_rx_fifo_empty;
         Logic vb_rx_fifo_rdata;

@@ -43,7 +43,7 @@ apb_uart::apb_uart(GenObject *parent, const char *name) :
     // registers
     scaler(this, "scaler", "32"),
     scaler_cnt(this, "scaler_cnt", "32"),
-    level(this, "level", "1"),
+    level(this, "level", "1", "1"),
     err_parity(this, "err_parity", "1"),
     err_stopbit(this, "err_stopbit", "1"),
     fwcpuid(this, "fwcpuid", "32"),
@@ -76,7 +76,7 @@ apb_uart::apb_uart(GenObject *parent, const char *name) :
     tx_irq_thresh(this, "tx_irq_thresh", "log2_fifosz"),
     tx_frame_cnt(this, "tx_frame_cnt", "4"),
     tx_stop_cnt(this, "tx_stop_cnt", "1"),
-    tx_shift(this, "tx_shift", "11"),
+    tx_shift(this, "tx_shift", "11", "-1"),
     tx_amo_guard(this, "tx_amo_guard", "1", "0", "AMO operation read-modify-write often hit on full flag border"),
     resp_valid(this, "resp_valid", "1"),
     resp_rdata(this, "resp_rdata", "32"),
@@ -112,25 +112,6 @@ void apb_uart::proc_comb() {
     SETVAL(comb.vb_tx_fifo_rdata, ARRITEM(tx_fifo, tx_rd_cnt, tx_fifo));
 
 TEXT();
-    TEXT("system bus clock scaler to baudrate:");
-    IF (NZ(scaler));
-        IF (EQ(scaler_cnt, DEC(scaler)));
-            SETZERO(scaler_cnt);
-            SETVAL(level, INV(level));
-            SETVAL(comb.v_posedge_flag, INV(level));
-            SETVAL(comb.v_negedge_flag, (level));
-        ELSE();
-            SETVAL(scaler_cnt, INC(scaler_cnt));
-        ENDIF();
-
-        TEXT();
-        IF (AND3(EQ(rx_state, idle),  NZ(i_rd), EQ(tx_state, idle)));
-            SETZERO(scaler_cnt);
-            SETONE(level);
-        ENDIF();
-    ENDIF();
-
-TEXT();
     TEXT("Check FIFOs counters with thresholds:");
     IF (LS(tx_byte_cnt, tx_irq_thresh));
         SETVAL(tx_ip, tx_ie);
@@ -143,7 +124,8 @@ TEXT();
 
 TEXT();
     TEXT("Transmitter's FIFO:");
-    IF (EQ(INC(tx_wr_cnt), tx_rd_cnt));
+    SETVAL(comb.vb_tx_wr_cnt_next, INC(tx_wr_cnt));
+    IF (EQ(comb.vb_tx_wr_cnt_next, tx_rd_cnt));
         SETONE(comb.v_tx_fifo_full);
     ENDIF();
 
@@ -154,7 +136,8 @@ TEXT();
     ENDIF();
 
     TEXT("Receiver's FIFO:");
-    IF (EQ(INC(rx_wr_cnt), rx_rd_cnt));
+    SETVAL(comb.vb_rx_wr_cnt_next, INC(rx_wr_cnt));
+    IF (EQ(comb.vb_rx_wr_cnt_next, rx_rd_cnt));
         SETONE(comb.v_rx_fifo_full);
     ENDIF();
  
@@ -162,6 +145,26 @@ TEXT();
     IF (EQ(rx_rd_cnt, rx_wr_cnt));
         SETONE(comb.v_rx_fifo_empty);
         SETZERO(rx_byte_cnt);
+    ENDIF();
+
+TEXT();
+    TEXT("system bus clock scaler to baudrate:");
+    IF (NZ(scaler));
+        IF (EQ(scaler_cnt, DEC(scaler)));
+            SETZERO(scaler_cnt);
+            SETVAL(level, INV(level));
+            SETVAL(comb.v_posedge_flag, INV(level));
+            SETVAL(comb.v_negedge_flag, (level));
+        ELSE();
+            SETVAL(scaler_cnt, INC(scaler_cnt));
+        ENDIF();
+
+        TEXT();
+        IF (ANDx(2, &AND2(EQ(rx_state, idle),  NZ(i_rd)),
+                    &AND2(EQ(tx_state, idle), NZ(comb.v_tx_fifo_empty))));
+            SETZERO(scaler_cnt);
+            SETONE(level);
+        ENDIF();
     ENDIF();
 
 TEXT();

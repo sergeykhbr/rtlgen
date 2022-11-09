@@ -42,6 +42,15 @@ class DefParamUI32D : public UI32D {
     }
 };
 
+class DefParamUI64H : public UI64H {
+ public:
+    DefParamUI64H(GenObject *parent, const char *name, const char *val,
+                const char *comment="") : UI64H(val, name, parent, comment) {
+        id_ = ID_DEF_PARAM;
+        SCV_set_cfg_parameter(parent, this, getValue());
+    }
+};
+
 class DefParamString : public STRING {
  public:
     DefParamString(GenObject *parent, const char *name, const char *val,

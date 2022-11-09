@@ -443,6 +443,8 @@ class types_amba : public FileObject {
     ParamLogic OPTIMITECH_CLINT;
     TextLine _didslv10_;
     ParamLogic OPTIMITECH_PLIC;
+    TextLine _didslv11_;
+    ParamLogic OPTIMITECH_AXI2APB_BRIDGE;
     TextLine _pnpcfg0_;
     TextLine _pnpcfg1_;
     TextLine _pnpcfg2_;

@@ -69,6 +69,8 @@ types_amba::types_amba(GenObject *parent) :
     OPTIMITECH_CLINT(this, "16", "OPTIMITECH_CLINT", "0x0083"),
     _didslv10_(this, "External interrupt controller"),
     OPTIMITECH_PLIC(this, "16", "OPTIMITECH_PLIC", "0x0084"),
+    _didslv11_(this, "AXI to APB Brdige"),
+    OPTIMITECH_AXI2APB_BRIDGE(this, "16", "OPTIMITECH_AXI2APB_BRIDGE", "0x0085"),
     _pnpcfg0_(this),
     _pnpcfg1_(this, "Plug'n'Play descriptor localparams."),
     _pnpcfg2_(this, "Undefined type of the descriptor (empty device)."),

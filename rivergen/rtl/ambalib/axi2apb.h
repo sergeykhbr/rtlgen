@@ -29,12 +29,14 @@ class axi2apb : public ModuleObject {
      public:
         CombProcess(GenObject *parent) :
             ProcObject(parent, "comb"),
+            vcfg(this, "vcfg"),
             vb_rdata(this, "vb_rdata", "CFG_SYSBUS_DATA_BITS"),
             vslvo(this, "vslvo"),
             vapbi(this, "vapbi") {
         }
 
      public:
+        types_amba::dev_config_type vcfg;
         Logic vb_rdata;
         types_amba::axi4_slave_out_type vslvo;
         types_amba::apb_in_type vapbi;
@@ -43,9 +45,12 @@ class axi2apb : public ModuleObject {
     void proc_comb();
 
  public:
+    DefParamUI64H xaddr;
+    DefParamUI64H xmask;
     // io:
     InPort i_clk;
     InPort i_nrst;
+    OutStruct<types_amba::dev_config_type> o_cfg;
     InStruct<types_amba::axi4_slave_in_type> i_xslvi;
     OutStruct<types_amba::axi4_slave_out_type> o_xslvo;
     OutStruct<types_amba::apb_in_type> o_apbi;

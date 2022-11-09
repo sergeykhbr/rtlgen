@@ -18,8 +18,11 @@
 
 axi2apb::axi2apb(GenObject *parent, const char *name) :
     ModuleObject(parent, "axi2apb", name),
+    xaddr(this, "xaddr", "0"),
+    xmask(this, "xmask", "-1"),
     i_clk(this, "i_clk", "1", "CPU clock"),
     i_nrst(this, "i_nrst", "1", "Reset: active LOW"),
+    o_cfg(this, "o_cfg", "Slave config descriptor"),
     i_xslvi(this, "i_xslvi", "AXI4 Interconnect Bridge interface"),
     o_xslvo(this, "o_xslvo", "AXI4 Bridge to Interconnect interface"),
     i_apbo(this, "i_apbo", "APB  Slave to Bridge interface"),
@@ -56,6 +59,13 @@ axi2apb::axi2apb(GenObject *parent, const char *name) :
 }
 
 void axi2apb::proc_comb() {
+    types_amba* cfg = glob_types_amba_;
+    SETVAL(comb.vcfg.descrsize, cfg->PNP_CFG_DEV_DESCR_BYTES);
+    SETVAL(comb.vcfg.descrtype, cfg->PNP_CFG_TYPE_SLAVE);
+    SETVAL(comb.vcfg.xaddr, xaddr);
+    SETVAL(comb.vcfg.xmask, xmask);
+    SETVAL(comb.vcfg.vid, cfg->VENDOR_OPTIMITECH);
+    SETVAL(comb.vcfg.did, cfg->OPTIMITECH_AXI2APB_BRIDGE);
     SETVAL(comb.vb_rdata, pdata);
 
 TEXT();
@@ -208,6 +218,7 @@ TEXT();
     SYNC_RESET(*this);
 
 TEXT();
+    SETVAL(o_cfg, comb.vcfg);
     SETVAL(o_xslvo, comb.vslvo);
     SETVAL(o_apbi, comb.vapbi);
 }
