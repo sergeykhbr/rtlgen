@@ -26,53 +26,41 @@ class apb_uart : public ModuleObject {
  public:
     apb_uart(GenObject *parent, const char *name);
 
-    class uart_fifo_in_type : public StructObject {
-     public:
-        uart_fifo_in_type(GenObject *parent, const char *name="", const char *comment="")
-            : StructObject(parent, "uart_fifo_in_type", name, -1, comment),
-            raddr(this, "raddr", "log2_fifosz"),
-            waddr(this, "waddr", "log2_fifosz"),
-            we(this, "we", "1"),
-            wdata(this, "wdata", "8") {
-            setZeroValue("uart_fifo_in_none");
-        }
-     public:
-        Signal raddr;
-        Signal waddr;
-        Signal we;
-        Signal wdata;
-    };
-
-
     class CombProcess : public ProcObject {
      public:
         CombProcess(GenObject *parent) :
             ProcObject(parent, "comb"),
-            v_tfifoi(this, "v_tfifoi"),
-            v_rfifoi(this, "v_rfifoi"),
+            vcfg(this, "vcfg"),
             vb_rdata(this, "vb_rdata", "32"),
-            tx_fifo_full(this, "tx_fifo_full", "1"),
-            tx_fifo_empty(this, "tx_fifo_empty", "1"),
-            rx_fifo_full(this, "rx_fifo_full", "1"),
-            rx_fifo_empty(this, "rx_fifo_empty", "1"),
-            rx_fifo_rdata(this, "rx_fifo_rdata", "8"),
-            negedge_flag(this, "negedge_flag", "1"),
-            posedge_flag(this, "posedge_flag", "1"),
-            par(this, "par", "1") {
+            v_tx_fifo_full(this, "v_tx_fifo_full", "1"),
+            v_tx_fifo_empty(this, "v_tx_fifo_empty", "1"),
+            vb_tx_fifo_rdata(this, "vb_tx_fifo_rdata", "8"),
+            v_tx_fifo_we(this, "v_tx_fifo_we", "1"),
+            v_rx_fifo_full(this, "v_rx_fifo_full", "1"),
+            v_rx_fifo_empty(this, "v_rx_fifo_empty", "1"),
+            vb_rx_fifo_rdata(this, "vb_rx_fifo_rdata", "8"),
+            v_rx_fifo_we(this, "v_rx_fifo_we", "1"),
+            v_rx_fifo_re(this, "v_rx_fifo_re", "1"),
+            v_negedge_flag(this, "v_negedge_flag", "1"),
+            v_posedge_flag(this, "v_posedge_flag", "1"),
+            v_par(this, "par", "1") {
         }
 
      public:
-        uart_fifo_in_type v_tfifoi;
-        uart_fifo_in_type v_rfifoi;
+        types_amba::dev_config_type vcfg;
         Logic vb_rdata;
-        Logic tx_fifo_full;
-        Logic tx_fifo_empty;
-        Logic rx_fifo_full;
-        Logic rx_fifo_empty;
-        Logic rx_fifo_rdata;
-        Logic negedge_flag;
-        Logic posedge_flag;
-        Logic par;
+        Logic v_tx_fifo_full;
+        Logic v_tx_fifo_empty;
+        Logic vb_tx_fifo_rdata;
+        Logic v_tx_fifo_we;
+        Logic v_rx_fifo_full;
+        Logic v_rx_fifo_empty;
+        Logic vb_rx_fifo_rdata;
+        Logic v_rx_fifo_we;
+        Logic v_rx_fifo_re;
+        Logic v_negedge_flag;
+        Logic v_posedge_flag;
+        Logic v_par;
     };
 
     void proc_comb();
@@ -97,15 +85,10 @@ class apb_uart : public ModuleObject {
     ParamLogic parity;
     ParamLogic stopbit;
 
-    uart_fifo_in_type uart_fifo_in_type_def_;
-    uart_fifo_in_type uart_fifo_in_none;
-
     Signal w_req_valid;
     Signal wb_req_addr;
     Signal w_req_write;
     Signal wb_req_wdata;
-    Signal w_resp_valid;
-    Signal w_resp_err;
 
     RegSignal scaler;
     RegSignal scaler_cnt;
@@ -113,6 +96,8 @@ class apb_uart : public ModuleObject {
     RegSignal err_parity;
     RegSignal err_stopbit;
     RegSignal fwcpuid;
+
+    TextLine _rx0_;
     WireArray<RegSignal> rx_fifo;
     RegSignal rx_state;
     RegSignal rx_ena;
@@ -129,8 +114,6 @@ class apb_uart : public ModuleObject {
     RegSignal rx_shift;
 
     TextLine _tx0_;
-    uart_fifo_in_type tfifoi;
-    Signal wb_tx_fifo_rdata;
     WireArray<RegSignal> tx_fifo;
     RegSignal tx_state;
     RegSignal tx_ena;

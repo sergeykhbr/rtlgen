@@ -28,8 +28,6 @@ apb_uart::apb_uart(GenObject *parent, const char *name) :
     o_td(this, "o_td", "1"),
     o_irq(this, "o_irq", "1"),
     // params
-    uart_fifo_in_type_def_(this, ""),
-    uart_fifo_in_none(this, "uart_fifo_in_none"),
     fifosz(this, "fifosz", "POW2(1,log2_fifosz)"),
     _state0_(this, "Rx/Tx states"),
     idle(this, "3", "idle", "0"),
@@ -42,15 +40,14 @@ apb_uart::apb_uart(GenObject *parent, const char *name) :
     wb_req_addr(this, "wb_req_addr", "32"),
     w_req_write(this, "w_req_write", "1"),
     wb_req_wdata(this, "wb_req_wdata", "32"),
-    w_resp_valid(this, "w_resp_valid", "1"),
-    w_resp_err(this, "w_resp_err", "1"),
     // registers
     scaler(this, "scaler", "32"),
     scaler_cnt(this, "scaler_cnt", "32"),
     level(this, "level", "1"),
-    err_parity(this, "1", "err_parity"),
-    err_stopbit(this, "1", "err_stopbit"),
+    err_parity(this, "err_parity", "1"),
+    err_stopbit(this, "err_stopbit", "1"),
     fwcpuid(this, "fwcpuid", "32"),
+    _rx0_(this),
     rx_fifo(this, "rx_fifo", "8", "fifosz", true),
     rx_state(this, "rx_state", "3", "idle"),
     rx_ena(this, "rx_ena", "1"),
@@ -66,8 +63,6 @@ apb_uart::apb_uart(GenObject *parent, const char *name) :
     rx_stop_cnt(this, "rx_stop_cnt", "1"),
     rx_shift(this, "rx_shift", "11"),
     _tx0_(this),
-    tfifoi(this, "tfifoi"),
-    wb_tx_fifo_rdata(this, "wb_tx_fifo_rdata", "8"),
     tx_fifo(this, "tx_fifo", "8", "fifosz", true),
     tx_state(this, "tx_state", "3", "idle"),
     tx_ena(this, "tx_ena", "1"),
@@ -82,7 +77,7 @@ apb_uart::apb_uart(GenObject *parent, const char *name) :
     tx_frame_cnt(this, "tx_frame_cnt", "4"),
     tx_stop_cnt(this, "tx_stop_cnt", "1"),
     tx_shift(this, "tx_shift", "11"),
-    tx_amo_guard(this, "tx_amo_guard", "1", "AMO operation read-modify-write often hit on full flag border"),
+    tx_amo_guard(this, "tx_amo_guard", "1", "0", "AMO operation read-modify-write often hit on full flag border"),
     resp_valid(this, "resp_valid", "1"),
     resp_rdata(this, "resp_rdata", "32"),
     resp_err(this, "resp_err", "1"),
@@ -111,13 +106,19 @@ apb_uart::apb_uart(GenObject *parent, const char *name) :
 }
 
 void apb_uart::proc_comb() {
+    SETVAL(comb.vcfg.descrsize, glob_types_amba_->PNP_CFG_DEV_DESCR_BYTES);
+    SETVAL(comb.vcfg.descrtype, glob_types_amba_->PNP_CFG_TYPE_SLAVE);
+    SETVAL(comb.vb_rx_fifo_rdata, ARRITEM(rx_fifo, rx_rd_cnt, rx_fifo));
+    SETVAL(comb.vb_tx_fifo_rdata, ARRITEM(tx_fifo, tx_rd_cnt, tx_fifo));
+
+TEXT();
     TEXT("system bus clock scaler to baudrate:");
     IF (NZ(scaler));
         IF (EQ(scaler_cnt, DEC(scaler)));
             SETZERO(scaler_cnt);
             SETVAL(level, INV(level));
-            SETVAL(comb.posedge_flag, INV(level));
-            SETVAL(comb.negedge_flag, (level));
+            SETVAL(comb.v_posedge_flag, INV(level));
+            SETVAL(comb.v_negedge_flag, (level));
         ELSE();
             SETVAL(scaler_cnt, INC(scaler_cnt));
         ENDIF();
@@ -143,45 +144,45 @@ TEXT();
 TEXT();
     TEXT("Transmitter's FIFO:");
     IF (EQ(INC(tx_wr_cnt), tx_rd_cnt));
-        SETONE(comb.tx_fifo_full);
+        SETONE(comb.v_tx_fifo_full);
     ENDIF();
 
     TEXT();
     IF (EQ(tx_rd_cnt, tx_wr_cnt));
-        SETONE(comb.tx_fifo_empty);
+        SETONE(comb.v_tx_fifo_empty);
         SETZERO(tx_byte_cnt);
     ENDIF();
 
     TEXT("Receiver's FIFO:");
     IF (EQ(INC(rx_wr_cnt), rx_rd_cnt));
-        SETONE(comb.rx_fifo_full);
+        SETONE(comb.v_rx_fifo_full);
     ENDIF();
  
     TEXT();
     IF (EQ(rx_rd_cnt, rx_wr_cnt));
-        SETONE(comb.rx_fifo_empty);
+        SETONE(comb.v_rx_fifo_empty);
         SETZERO(rx_byte_cnt);
     ENDIF();
 
 TEXT();
     TEXT("Transmitter's state machine:");
-    IF (NZ(comb.posedge_flag));
+    IF (NZ(comb.v_posedge_flag));
         SWITCH (tx_state);
         CASE(idle);
-            IF (AND2(EZ(comb.tx_fifo_empty), NZ(tx_ena)));
+            IF (AND2(EZ(comb.v_tx_fifo_empty), NZ(tx_ena)));
                 TEXT("stopbit=1,parity=xor,data[7:0],startbit=0");
                 IF (NZ(tx_par));
-                    SETVAL(comb.par, XORx(8, &BIT(wb_tx_fifo_rdata, 7),
-                                             &BIT(wb_tx_fifo_rdata, 6),
-                                             &BIT(wb_tx_fifo_rdata, 5),
-                                             &BIT(wb_tx_fifo_rdata, 4),
-                                             &BIT(wb_tx_fifo_rdata, 3),
-                                             &BIT(wb_tx_fifo_rdata, 2),
-                                             &BIT(wb_tx_fifo_rdata, 1),
-                                             &BIT(wb_tx_fifo_rdata, 0)));
-                    SETVAL(tx_shift, CC4(CONST("1", 1), comb.par, wb_tx_fifo_rdata, CONST("0", 1)));
+                    SETVAL(comb.v_par, XORx(8, &BIT(comb.vb_tx_fifo_rdata, 7),
+                                               &BIT(comb.vb_tx_fifo_rdata, 6),
+                                               &BIT(comb.vb_tx_fifo_rdata, 5),
+                                               &BIT(comb.vb_tx_fifo_rdata, 4),
+                                               &BIT(comb.vb_tx_fifo_rdata, 3),
+                                               &BIT(comb.vb_tx_fifo_rdata, 2),
+                                               &BIT(comb.vb_tx_fifo_rdata, 1),
+                                               &BIT(comb.vb_tx_fifo_rdata, 0)));
+                    SETVAL(tx_shift, CC4(CONST("1", 1), comb.v_par, comb.vb_tx_fifo_rdata, CONST("0", 1)));
                 ELSE();
-                    SETVAL(tx_shift, CC3(CONST("3", 2), wb_tx_fifo_rdata, CONST("0", 1)));
+                    SETVAL(tx_shift, CC3(CONST("3", 2), comb.vb_tx_fifo_rdata, CONST("0", 1)));
                 ENDIF();
                     
                 TEXT();
@@ -229,7 +230,7 @@ TEXT();
 
 TEXT();
     TEXT("Receiver's state machine:");
-    IF (NZ(comb.negedge_flag));
+    IF (NZ(comb.v_negedge_flag));
         SWITCH (rx_state);
         CASE (idle);
             IF (AND2(EZ(i_rd), NZ(rx_ena)));
@@ -252,15 +253,15 @@ TEXT();
             ENDIF();
             ENDCASE();
         CASE (parity);
-            SETVAL(comb.par, XORx(8, &BIT(rx_shift, 7),
-                                     &BIT(rx_shift, 6),
-                                     &BIT(rx_shift, 5),
-                                     &BIT(rx_shift, 4),
-                                     &BIT(rx_shift, 3),
-                                     &BIT(rx_shift, 2),
-                                     &BIT(rx_shift, 1),
-                                     &BIT(rx_shift, 0)));
-            IF (EQ(comb.par, i_rd));
+            SETVAL(comb.v_par, XORx(8, &BIT(rx_shift, 7),
+                                       &BIT(rx_shift, 6),
+                                       &BIT(rx_shift, 5),
+                                       &BIT(rx_shift, 4),
+                                       &BIT(rx_shift, 3),
+                                       &BIT(rx_shift, 2),
+                                       &BIT(rx_shift, 1),
+                                       &BIT(rx_shift, 0)));
+            IF (EQ(comb.v_par, i_rd));
                 SETZERO(err_parity);
             ELSE();
                 SETONE(err_parity);
@@ -278,10 +279,8 @@ TEXT();
 
             TEXT();
             IF (EZ(rx_stop_cnt));
-                IF (EZ(comb.rx_fifo_full));
-                    SETONE(comb.v_rfifoi.we);
-                    SETVAL(rx_wr_cnt, INC(rx_wr_cnt));
-                    SETVAL(rx_byte_cnt, INC(rx_byte_cnt));
+                IF (EZ(comb.v_rx_fifo_full));
+                    SETONE(comb.v_rx_fifo_we);
                 ENDIF();
                 SETVAL(rx_state, idle);
             ELSE();
@@ -291,62 +290,104 @@ TEXT();
         CASEDEF();
             ENDCASE();
         ENDSWITCH();
-
-
-        SWITCH (BITS(wb_req_addr, 11, 2));
-        CASE (CONST("0", 10), "0x00: txdata");
-            SETBIT(comb.vb_rdata, 31, comb.tx_fifo_full);
-            IF (NZ(w_req_valid));
-                IF (AND3(NZ(w_req_write), EZ(comb.tx_fifo_full), EZ(tx_amo_guard)));
-                    SETONE(comb.v_tfifoi.we);
-                    SETVAL(comb.v_tfifoi.wdata, BITS(wb_req_wdata, 7, 0));
-                    SETVAL(tx_wr_cnt, INC(tx_wr_cnt));
-                    SETVAL(tx_byte_cnt, INC(tx_byte_cnt));
-                ELSE();
-                    SETVAL(tx_amo_guard, comb.tx_fifo_full, "skip next write");
-                ENDIF();
-            ENDIF();
-            ENDCASE();
-        CASE (CONST("1", 10), "0x04: rxdata");
-            SETBIT(comb.vb_rdata, 31, comb.rx_fifo_empty);
-            SETBITS(comb.vb_rdata, 7, 0, comb.rx_fifo_rdata); 
-            IF (AND3(EZ(comb.rx_fifo_empty), NZ(w_req_valid), EZ(w_req_write)));
-                SETVAL(rx_rd_cnt, INC(rx_rd_cnt));
-                SETVAL(rx_byte_cnt, DEC(rx_byte_cnt));
-            ENDIF();
-            ENDCASE();
-       CASE (CONST("2", 10), "0x08: txctrl");
-            SETBIT(comb.vb_rdata, 0, tx_ena, "[0] txena");
-            SETBIT(comb.vb_rdata, 1, tx_nstop, "[1] Number of stop bits");
-            SETBIT(comb.vb_rdata, 2, tx_par);
-            SETBITS(comb.vb_rdata, 18, 16, BITS(tx_irq_thresh, 2, 0));
-            ENDCASE();
-       CASE (CONST("3", 10), "0x0C: rxctrl");
-            SETBIT(comb.vb_rdata, 0, rx_ena, "[0] txena");
-            SETBIT(comb.vb_rdata, 1, rx_nstop, "[1] Number of stop bits");
-            SETBIT(comb.vb_rdata, 2, rx_par);
-            SETBITS(comb.vb_rdata, 18, 16, BITS(rx_irq_thresh, 2, 0));
-            ENDCASE();
-       CASE (CONST("4", 10), "0x10: ie");
-            SETBIT(comb.vb_rdata, 0, tx_ie);
-            SETBIT(comb.vb_rdata, 1, rx_ie);
-            ENDCASE();
-       CASE (CONST("5", 10), "0x14: ip");
-            SETBIT(comb.vb_rdata, 0, tx_ip);
-            SETBIT(comb.vb_rdata, 1, rx_ip);
-            ENDCASE();
-       CASE (CONST("6", 10), "0x18: scaler");
-            SETVAL(comb.vb_rdata, scaler);
-            ENDCASE();
-       CASE (CONST("7", 10), "0x1C: fwcpuid");
-            SETVAL(comb.vb_rdata, fwcpuid);
-            ENDCASE();
-        CASEDEF();
-            ENDCASE();
-        ENDSWITCH();
+    ENDIF();
 
 TEXT();
+    TEXT("Registers access:");
+    SWITCH (BITS(wb_req_addr, 11, 2));
+    CASE (CONST("0", 10), "0x00: txdata");
+        SETBIT(comb.vb_rdata, 31, comb.v_tx_fifo_full);
+        IF (NZ(w_req_valid));
+            IF (NZ(w_req_write));
+                SETVAL(comb.v_tx_fifo_we, AND2_L(INV_L(comb.v_tx_fifo_full), INV_L(tx_amo_guard)));
+            ELSE();
+                SETVAL(tx_amo_guard, comb.v_tx_fifo_full, "skip next write");
+            ENDIF();
+        ENDIF();
+        ENDCASE();
+    CASE (CONST("1", 10), "0x04: rxdata");
+        SETBIT(comb.vb_rdata, 31, comb.v_rx_fifo_empty);
+        SETBITS(comb.vb_rdata, 7, 0, comb.vb_rx_fifo_rdata); 
+        IF (NZ(w_req_valid));
+            IF (NZ(w_req_write));
+                TEXT("do nothing:");
+            ELSE();
+                SETVAL(comb.v_rx_fifo_re, INV(comb.v_rx_fifo_empty));
+            ENDIF();
+        ENDIF();
+        ENDCASE();
+    CASE (CONST("2", 10), "0x08: txctrl");
+        SETBIT(comb.vb_rdata, 0, tx_ena, "[0] tx ena");
+        SETBIT(comb.vb_rdata, 1, tx_nstop, "[1] Number of stop bits");
+        SETBIT(comb.vb_rdata, 2, tx_par, "[2] parity bit enable");
+        SETBITS(comb.vb_rdata, 18, 16, BITS(tx_irq_thresh, 2, 0), "[18:16] FIFO threshold to raise irq");
+        IF (AND2(NZ(w_req_valid), NZ(w_req_write)));
+            SETVAL(tx_ena, BIT(wb_req_wdata, 0));
+            SETVAL(tx_nstop, BIT(wb_req_wdata, 1));
+            SETVAL(tx_par, BIT(wb_req_wdata, 2));
+            SETVAL(tx_irq_thresh, BITS(wb_req_wdata, 18, 16));
+        ENDIF();
+        ENDCASE();
+    CASE (CONST("3", 10), "0x0C: rxctrl");
+        SETBIT(comb.vb_rdata, 0, rx_ena, "[0] txena");
+        SETBIT(comb.vb_rdata, 1, rx_nstop, "[1] Number of stop bits");
+        SETBIT(comb.vb_rdata, 2, rx_par);
+        SETBITS(comb.vb_rdata, 18, 16, BITS(rx_irq_thresh, 2, 0));
+        IF (AND2(NZ(w_req_valid), NZ(w_req_write)));
+            SETVAL(rx_ena, BIT(wb_req_wdata, 0));
+            SETVAL(rx_nstop, BIT(wb_req_wdata, 1));
+            SETVAL(rx_par, BIT(wb_req_wdata, 2));
+            SETVAL(rx_irq_thresh, BITS(wb_req_wdata, 18, 16));
+        ENDIF();
+        ENDCASE();
+    CASE (CONST("4", 10), "0x10: ie");
+        SETBIT(comb.vb_rdata, 0, tx_ie);
+        SETBIT(comb.vb_rdata, 1, rx_ie);
+        IF (AND2(NZ(w_req_valid), NZ(w_req_write)));
+            SETVAL(tx_ie, BIT(wb_req_wdata, 0));
+            SETVAL(rx_ie, BIT(wb_req_wdata, 1));
+        ENDIF();
+        ENDCASE();
+    CASE (CONST("5", 10), "0x14: ip");
+        SETBIT(comb.vb_rdata, 0, tx_ip);
+        SETBIT(comb.vb_rdata, 1, rx_ip);
+        IF (AND2(NZ(w_req_valid), NZ(w_req_write)));
+            SETVAL(tx_ip, BIT(wb_req_wdata, 0));
+            SETVAL(rx_ip, BIT(wb_req_wdata, 1));
+        ENDIF();
+        ENDCASE();
+    CASE (CONST("6", 10), "0x18: scaler");
+        SETVAL(comb.vb_rdata, scaler);
+        IF (AND2(NZ(w_req_valid), NZ(w_req_write)));
+            SETVAL(scaler, BITS(wb_req_wdata, 30, 0));
+            SETZERO(scaler_cnt);
+        ENDIF();
+        ENDCASE();
+    CASE (CONST("7", 10), "0x1C: fwcpuid");
+        SETVAL(comb.vb_rdata, fwcpuid);
+        IF (AND2(NZ(w_req_valid), NZ(w_req_write)));
+            IF (OR2(EZ(fwcpuid), EZ(wb_req_wdata)));
+                SETVAL(fwcpuid, wb_req_wdata);
+            ENDIF();
+        ENDIF();
+        ENDCASE();
+    CASEDEF();
+        ENDCASE();
+    ENDSWITCH();
 
+TEXT();
+    IF (NZ(comb.v_rx_fifo_we));
+        SETVAL(rx_wr_cnt, INC(rx_wr_cnt));
+        SETVAL(rx_byte_cnt, INC(rx_byte_cnt));
+        SETARRITEM(rx_fifo, rx_wr_cnt, rx_fifo, rx_shift);
+    ELSIF (NZ(comb.v_rx_fifo_re));
+        SETVAL(rx_rd_cnt, INC(rx_rd_cnt));
+        SETVAL(rx_byte_cnt, DEC(rx_byte_cnt));
+    ENDIF();
+    IF (NZ(comb.v_tx_fifo_we));
+        SETVAL(tx_wr_cnt, INC(tx_wr_cnt));
+        SETVAL(tx_byte_cnt, INC(tx_byte_cnt));
+        SETARRITEM(tx_fifo, tx_wr_cnt, tx_fifo, BITS(wb_req_wdata, 7, 0));
     ENDIF();
 
 
@@ -358,4 +399,8 @@ TEXT();
 TEXT();
     SYNC_RESET(*this);
 
+TEXT();
+    SETVAL(o_td, BIT(tx_shift, 0));
+    SETVAL(o_irq, OR2_L(tx_ip, rx_ip));
+    SETVAL(o_cfg, comb.vcfg);
 }
