@@ -25,8 +25,8 @@ axi2apb::axi2apb(GenObject *parent, const char *name) :
     o_cfg(this, "o_cfg", "Slave config descriptor"),
     i_xslvi(this, "i_xslvi", "AXI4 Interconnect Bridge interface"),
     o_xslvo(this, "o_xslvo", "AXI4 Bridge to Interconnect interface"),
-    i_apbo(this, "i_apbo", "APB  Slave to Bridge interface"),
-    o_apbi(this, "o_apbi", "APB Bridge to Slave interface"),
+    i_apbmi(this, "i_apbmi", "APB Slave to Bridge master-in/slave-out interface"),
+    o_apbmo(this, "o_apbmo", "APB Bridge to master-out/slave-in interface"),
     // params
     State_Idle(this, "3", "State_Idle", "0"),
     State_w(this, "3", "State_w", "1"),
@@ -157,14 +157,15 @@ TEXT();
     CASE (State_access);
         IF (EZ(pwrite));
             IF (NZ(xsize));
-                SETBITS(comb.vb_rdata, 63, 32, i_apbo.prdata);
+                SETBITS(comb.vb_rdata, 63, 32, i_apbmi.prdata);
             ELSE();
-                SETBITS(comb.vb_rdata, 31, 0, i_apbo.prdata);
+                SETBITS(comb.vb_rdata, 31, 0, i_apbmi.prdata);
             ENDIF();
         ENDIF();
-        SETVAL(pslverr, i_apbo.pslverr);
-        IF (NZ(i_apbo.pready));
+        SETVAL(pslverr, i_apbmi.pslverr);
+        IF (NZ(i_apbmi.pready));
             SETZERO(penable);
+            SETZERO(pselx);
             IF (NZ(xsize));
                 SETVAL(xsize, DEC(xsize));
                 SETVAL(paddr, ADD2(paddr, CONST("4")));
@@ -194,13 +195,13 @@ TEXT();
 
 TEXT();
     SETVAL(pdata, comb.vb_rdata);
-    SETVAL(comb.vapbi.paddr, paddr);
-    SETVAL(comb.vapbi.pwrite, pwrite);
-    SETVAL(comb.vapbi.pwdata, BITS(pdata, 31, 0));
-    SETVAL(comb.vapbi.pstrb, BITS(pstrb, 3, 0));
-    SETVAL(comb.vapbi.pselx, pselx);
-    SETVAL(comb.vapbi.penable, penable);
-    SETVAL(comb.vapbi.pprot, pprot);
+    SETVAL(comb.vapbmo.paddr, paddr);
+    SETVAL(comb.vapbmo.pwrite, pwrite);
+    SETVAL(comb.vapbmo.pwdata, BITS(pdata, 31, 0));
+    SETVAL(comb.vapbmo.pstrb, BITS(pstrb, 3, 0));
+    SETVAL(comb.vapbmo.pselx, pselx);
+    SETVAL(comb.vapbmo.penable, penable);
+    SETVAL(comb.vapbmo.pprot, pprot);
 
 TEXT();
     SETVAL(comb.vslvo.r_data, pdata);
@@ -220,5 +221,5 @@ TEXT();
 TEXT();
     SETVAL(o_cfg, comb.vcfg);
     SETVAL(o_xslvo, comb.vslvo);
-    SETVAL(o_apbi, comb.vapbi);
+    SETVAL(o_apbmo, comb.vapbmo);
 }

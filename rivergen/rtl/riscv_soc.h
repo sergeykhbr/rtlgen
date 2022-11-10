@@ -19,6 +19,9 @@
 #include <api.h>
 #include "ambalib/types_amba.h"
 #include "ambalib/types_bus0.h"
+#include "ambalib/types_bus1.h"
+#include "ambalib/axi2apb.h"
+#include "misclib/apb_uart.h"
 #include "riverlib/river_cfg.h"
 #include "riverlib/types_river.h"
 #include "riverlib/river_amba.h"
@@ -58,7 +61,7 @@ public:
         soc_pnp_vector(GenObject *parent, const char *name, const char *descr="")
             : dev_config_type(parent, name, descr) {
             type_ = std::string("soc_pnp_vector");
-            setStrDepth("PNP_SLOTS_TOTAL");
+            setStrDepth("CFG_SOC_PNP_SLOTS_TOTAL");
             
             registerCfgType(name);                  // will be registered if name == ""
             if (name[0]) {
@@ -124,7 +127,18 @@ public:
         virtual bool isSignal() override { return true; }
     };
 
-    ParamI32D PNP_SLOTS_TOTAL;
+    TextLine _map0_;
+    ParamUI64H CFG_SOC_MAP_UART1_XADDR;
+    ParamUI64H CFG_SOC_MAP_UART1_XMASK;
+    TextLine _pnp0_;
+    ParamI32D CFG_SOC_PNP_0_XMST_GROUP0;
+    ParamI32D CFG_SOC_PNP_1_XMST_DMA0;
+    ParamI32D CFG_SOC_PNP_0_XSLV_PBRIDGE0;
+    ParamI32D CFG_SOC_PNP_1_PSLV_UART1;
+    ParamI32D CFG_SOC_PNP_SLOTS_TOTAL;
+    TextLine _cfg0_;
+    ParamI32D CFG_SOC_UART1_LOG2_FIFOSZ;
+
     soc_pnp_vector soc_pnp_vector_def_;
 
     Signal w_sys_nrst;
@@ -132,20 +146,25 @@ public:
     Signal w_dmreset;
     axi4_master_out_type_signal acpo;
     axi4_master_in_type_signal acpi;
-    apb_in_type_signal apb_dmi_i;
-    apb_out_type_signal apb_dmi_o;
     types_bus0::bus0_xmst_in_vector   aximi;
     types_bus0::bus0_xmst_out_vector  aximo;
     types_bus0::bus0_xslv_in_vector   axisi;
     types_bus0::bus0_xslv_out_vector  axiso;
+    types_bus1::bus1_pmst_in_vector   apbmi;
+    types_bus1::bus1_pmst_out_vector  apbmo;
+    types_bus1::bus1_pslv_in_vector   apbsi;
+    types_bus1::bus1_pslv_out_vector  apbso;
     soc_pnp_vector dev_pnp;
     Signal wb_clint_mtimer;
     Signal wb_clint_msip;
     Signal wb_clint_mtip;
     Signal wb_plic_meip;
     Signal wb_plic_seip;
+    Signal w_irq_uart1; // TODO: change it to plic_irq[x]
 
     // Sub-module instances:
+    axi2apb apbrdg0;
+    apb_uart uart1;
     Workgroup group0;
     // process
     CombProcess comb;

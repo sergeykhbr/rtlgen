@@ -123,6 +123,20 @@ class ParamUI32D : public UI32D,
     }
 };
 
+class ParamUI64H : public UI64H,
+                   public ParamGeneric {
+ public:
+    ParamUI64H(GenObject *parent, const char *name, const char *val,
+        const char *comment="")
+        : UI64H(val, name, parent, comment),
+        ParamGeneric(static_cast<GenValue *>(this)) {
+            id_ = ID_PARAM;
+        }
+    virtual std::string generate() override {
+        return genparam(static_cast<GenValue *>(this));
+    }
+};
+
 class ParamLogic : public Logic,
                    public ParamGeneric {
  public:

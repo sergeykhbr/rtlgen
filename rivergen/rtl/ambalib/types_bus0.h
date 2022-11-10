@@ -25,25 +25,6 @@ class types_bus0 : public FileObject {
  public:
     types_bus0(GenObject *parent);
 
-    class bus0_xslv_cfg_vector : public types_amba::dev_config_type {
-     public:
-        bus0_xslv_cfg_vector(GenObject *parent, const char *name, const char *descr="")
-            : dev_config_type(parent, name, descr) {
-            type_ = std::string("bus0_xslv_cfg_vector");
-            setStrDepth("CFG_BUS0_XSLV_TOTAL");
-            
-            registerCfgType(name);                  // will be registered if name == ""
-            if (name[0]) {
-                std::string strtype = getType();
-                SCV_get_cfg_parameter(strtype);   // to trigger dependecy array
-            }
-        }
-        virtual bool isTypedef() override { return true; }
-        virtual bool isVector() override { return true; }
-        virtual bool isSignal() override { return true; }
-        virtual std::string generate() override { return std::string("dev_config_type"); }
-    };
-
     class bus0_xmst_in_vector : public types_amba::axi4_master_in_type {
      public:
         bus0_xmst_in_vector(GenObject *parent, const char *name, const char *descr="")
@@ -134,7 +115,7 @@ class types_bus0 : public FileObject {
     TextLine _xslv8_;
     ParamI32D CFG_BUS0_XSLV_DDR;
     TextLine _xslv9_;
-    ParamI32D CFG_BUS0_XSLV_UART0;
+    ParamI32D CFG_BUS0_XSLV_BUS1;
     TextLine _xslv10_;
     ParamI32D CFG_BUS0_XSLV_GPIO;
     TextLine _xslv11_;
@@ -151,13 +132,12 @@ class types_bus0 : public FileObject {
     TextLine _xmst3_;
     TextLine _xmst4_;
     TextLine _xmst5_;
-    ParamI32D CFG_BUS0_XMST_CPU0;
+    ParamI32D CFG_BUS0_XMST_GROUP0;
     TextLine _xmst6_;
     ParamI32D CFG_BUS0_XMST_DMA;
     TextLine _xmst7_;
     ParamI32D CFG_BUS0_XMST_TOTAL;
     TextLine _vec0_;
-    bus0_xslv_cfg_vector bus0_xslv_cfg_vector_def_;
     bus0_xmst_in_vector bus0_xmst_in_vector_def_;
     bus0_xmst_out_vector bus0_xmst_out_vector_def_;
     bus0_xslv_in_vector bus0_xslv_in_vector_def_;

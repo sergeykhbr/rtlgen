@@ -32,14 +32,14 @@ class axi2apb : public ModuleObject {
             vcfg(this, "vcfg"),
             vb_rdata(this, "vb_rdata", "CFG_SYSBUS_DATA_BITS"),
             vslvo(this, "vslvo"),
-            vapbi(this, "vapbi") {
+            vapbmo(this, "vapbmo") {
         }
 
      public:
         types_amba::dev_config_type vcfg;
         Logic vb_rdata;
         types_amba::axi4_slave_out_type vslvo;
-        types_amba::apb_in_type vapbi;
+        types_amba::apb_in_type vapbmo;
     };
 
     void proc_comb();
@@ -53,8 +53,8 @@ class axi2apb : public ModuleObject {
     OutStruct<types_amba::dev_config_type> o_cfg;
     InStruct<types_amba::axi4_slave_in_type> i_xslvi;
     OutStruct<types_amba::axi4_slave_out_type> o_xslvo;
-    OutStruct<types_amba::apb_in_type> o_apbi;
-    InStruct<types_amba::apb_out_type> i_apbo;
+    InStruct<types_amba::apb_out_type> i_apbmi;
+    OutStruct<types_amba::apb_in_type> o_apbmo;
 
     ParamLogic State_Idle;
     ParamLogic State_w;

@@ -31,7 +31,9 @@ apb_slv::apb_slv(GenObject *parent, const char *name) :
     i_resp_err(this, "i_resp_err", "1"),
     // params
     State_Idle(this, "2", "State_Idle", "0"),
-    State_Access(this, "2", "State_access", "1"),
+    State_Request(this, "2", "State_Request", "1"),
+    State_WaitResp(this, "2", "State_WaitResp", "2"),
+    State_Resp(this, "2", "State_Resp", "3"),
     // signals
     // registers
     state(this, "state", "3", "State_Idle"),
@@ -57,25 +59,32 @@ void apb_slv::proc_comb() {
 TEXT();
     SWITCH(state);
     CASE(State_Idle);
+        SETZERO(resp_valid);
+        SETZERO(resp_err);
         IF (NZ(i_apbi.pselx));
-            SETVAL(state, State_Access);
+            SETVAL(state, State_Request);
             SETONE(req_valid);
             SETVAL(req_addr, i_apbi.paddr);
             SETVAL(req_write, i_apbi.pwrite);
             SETVAL(req_wdata, i_apbi.pwdata);
         ENDIF();
         ENDCASE();
-    CASE(State_Access);
+    CASE(State_Request);
+        TEXT("One clock wait state:");
+        SETVAL(state, State_WaitResp);
+        ENDCASE();
+    CASE(State_WaitResp);
+        SETVAL(resp_valid, i_resp_valid);
         IF (NZ(i_resp_valid));
-            TEXT("One clock wait state:");
-            SETONE(resp_valid);
             SETVAL(resp_rdata, i_resp_rdata);
             SETVAL(resp_err, i_resp_err);
+            SETVAL(state, State_Resp);
         ENDIF();
-        IF (AND2(NZ(i_apbi.penable), NZ(resp_valid)));
+        ENDCASE();
+    CASE (State_Resp);
+        IF (NZ(i_apbi.penable));
             SETVAL(state, State_Idle);
             SETZERO(resp_valid);
-            SETZERO(resp_err);
         ENDIF();
         ENDCASE();
     CASEDEF();

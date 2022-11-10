@@ -55,7 +55,9 @@ class apb_slv : public ModuleObject {
     InPort i_resp_err;
 
     ParamLogic State_Idle;
-    ParamLogic State_Access;
+    ParamLogic State_Request;
+    ParamLogic State_WaitResp;
+    ParamLogic State_Resp;
 
     RegSignal state;
     RegSignal req_valid;

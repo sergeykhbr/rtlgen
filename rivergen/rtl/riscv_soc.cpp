@@ -39,7 +39,17 @@ riscv_soc::riscv_soc(GenObject *parent, const char *name) :
     i_uart1_rd(this, "i_uart1_rd", "1"),
     o_uart1_td(this, "o_uart1_td", "1"),
     // param
-    PNP_SLOTS_TOTAL(this, "PNP_SLOTS_TOTAL", "ADD(CFG_BUS0_XMST_TOTAL,CFG_BUS0_XSLV_TOTAL)"),
+    _map0_(this),
+    CFG_SOC_MAP_UART1_XADDR(this, "CFG_SOC_MAP_UART1_XADDR", "0x10010"),
+    CFG_SOC_MAP_UART1_XMASK(this, "CFG_SOC_MAP_UART1_XMASK", "-1"),
+    _pnp0_(this),
+    CFG_SOC_PNP_0_XMST_GROUP0(this, "CFG_SOC_PNP_0_XMST_GROUP0", "0"),
+    CFG_SOC_PNP_1_XMST_DMA0(this, "CFG_SOC_PNP_1_XMST_DMA0", "1"),
+    CFG_SOC_PNP_0_XSLV_PBRIDGE0(this, "CFG_SOC_PNP_0_XSLV_PBRIDGE0", "2"),
+    CFG_SOC_PNP_1_PSLV_UART1(this, "CFG_SOC_PNP_1_PSLV_UART1", "3"),
+    CFG_SOC_PNP_SLOTS_TOTAL(this, "CFG_SOC_PNP_SLOTS_TOTAL", "ADD(ADD(CFG_BUS0_XMST_TOTAL,CFG_BUS0_XSLV_TOTAL),CFG_BUS1_PSLV_TOTAL)"),
+    _cfg0_(this),
+    CFG_SOC_UART1_LOG2_FIFOSZ(this, "CFG_SOC_UART1_LOG2_FIFOSZ", "4"),
     soc_pnp_vector_def_(this, ""),
     // Singals:
     w_sys_nrst(this, "w_sys_nrst", "1", "0", "System reset of whole system"),
@@ -47,25 +57,42 @@ riscv_soc::riscv_soc(GenObject *parent, const char *name) :
     w_dmreset(this, "w_dmreset", "1", "0", "Reset request from workgroup debug interface"),
     acpo(this, "acpo"),
     acpi(this, "acpi"),
-    apb_dmi_i(this, "apb_dmi_i"),
-    apb_dmi_o(this, "apb_dmi_o"),
     aximi(this, "aximi"),
     aximo(this, "aximo"),
     axisi(this, "axisi"),
     axiso(this, "axiso"),
+    apbmi(this, "apbmi"),
+    apbmo(this, "apbmo"),
+    apbsi(this, "apbsi"),
+    apbso(this, "apbso"),
     dev_pnp(this, "dev_pnp"),
     wb_clint_mtimer(this, "wb_clint_mtimer", "64"),
     wb_clint_msip(this, "wb_clint_msip", "CFG_CPU_MAX"),
     wb_clint_mtip(this, "wb_clint_mtip", "CFG_CPU_MAX"),
     wb_plic_meip(this, "wb_plic_meip", "CFG_CPU_MAX"),
     wb_plic_seip(this, "wb_plic_seip", "CFG_CPU_MAX"),
+    w_irq_uart1(this, "w_irq_uart1", "1"),
     // submodules:
+    apbrdg0(this, "apbrdg0"),
+    uart1(this, "uart1"),
     group0(this, "group0"),
     comb(this)
 {
     Operation::start(this);
 
     // Create and connet Sub-modules:
+    apbrdg0.xaddr.setObjValue(&CFG_SOC_MAP_UART1_XADDR);
+    apbrdg0.xmask.setObjValue(&CFG_SOC_MAP_UART1_XMASK);
+    NEW(apbrdg0, apbrdg0.getName().c_str());
+        CONNECT(apbrdg0, 0, apbrdg0.i_clk, i_clk);
+        CONNECT(apbrdg0, 0, apbrdg0.i_nrst, w_sys_nrst);
+        CONNECT(apbrdg0, 0, apbrdg0.o_cfg, ARRITEM(dev_pnp, CFG_SOC_PNP_0_XSLV_PBRIDGE0, dev_pnp));
+        CONNECT(apbrdg0, 0, apbrdg0.i_xslvi, ARRITEM(axisi, glob_bus0_cfg_->CFG_BUS0_XSLV_BUS1, axisi));
+        CONNECT(apbrdg0, 0, apbrdg0.o_xslvo, ARRITEM(axiso, glob_bus0_cfg_->CFG_BUS0_XSLV_BUS1, axiso));
+        CONNECT(apbrdg0, 0, apbrdg0.i_apbmi, ARRITEM(apbmi, glob_bus1_cfg_->CFG_BUS1_PMST_BUS0, apbmi));
+        CONNECT(apbrdg0, 0, apbrdg0.o_apbmo, ARRITEM(apbmo, glob_bus1_cfg_->CFG_BUS1_PMST_BUS0, apbmo));
+    ENDNEW();
+
     group0.cpu_num.setObjValue(&prj_cfg_->CFG_CPU_NUM);
     group0.l2cache_ena.setObjValue(&prj_cfg_->CFG_L2CACHE_ENA);
     NEW(group0, group0.getName().c_str());
@@ -82,16 +109,27 @@ riscv_soc::riscv_soc(GenObject *parent, const char *name) :
         CONNECT(group0, 0, group0.i_meip, wb_plic_meip);
         CONNECT(group0, 0, group0.i_seip, wb_plic_seip);
         CONNECT(group0, 0, group0.i_mtimer, wb_clint_mtimer);
-        CONNECT(group0, 0, group0.o_xcfg, ARRITEM(dev_pnp, glob_bus0_cfg_->CFG_BUS0_XMST_CPU0, dev_pnp));
+        CONNECT(group0, 0, group0.o_xcfg, ARRITEM(dev_pnp, CFG_SOC_PNP_0_XMST_GROUP0, dev_pnp));
         CONNECT(group0, 0, group0.i_acpo, acpo);
         CONNECT(group0, 0, group0.o_acpi, acpi);
-        CONNECT(group0, 0, group0.i_msti, ARRITEM(aximi, glob_bus0_cfg_->CFG_BUS0_XMST_CPU0, aximi));
-        CONNECT(group0, 0, group0.o_msto, ARRITEM(aximo, glob_bus0_cfg_->CFG_BUS0_XMST_CPU0, aximo));
-        CONNECT(group0, 0, group0.i_dmi_apbi, apb_dmi_i);
-        CONNECT(group0, 0, group0.o_dmi_apbo, apb_dmi_o);
+        CONNECT(group0, 0, group0.i_msti, ARRITEM(aximi, glob_bus0_cfg_->CFG_BUS0_XMST_GROUP0, aximi));
+        CONNECT(group0, 0, group0.o_msto, ARRITEM(aximo, glob_bus0_cfg_->CFG_BUS0_XMST_GROUP0, aximo));
+        CONNECT(group0, 0, group0.i_dmi_apbi, ARRITEM(apbsi, glob_bus1_cfg_->CFG_BUS1_PSLV_DMI, apbsi));
+        CONNECT(group0, 0, group0.o_dmi_apbo, ARRITEM(apbso, glob_bus1_cfg_->CFG_BUS1_PSLV_DMI, apbso));
         CONNECT(group0, 0, group0.o_dmreset, w_dmreset);
     ENDNEW();
 
+    uart1.log2_fifosz.setObjValue(&CFG_SOC_UART1_LOG2_FIFOSZ);
+    NEW(uart1, uart1.getName().c_str());
+        CONNECT(uart1, 0, uart1.i_clk, i_clk);
+        CONNECT(uart1, 0, uart1.i_nrst, w_sys_nrst);
+        CONNECT(uart1, 0, uart1.i_apbi, ARRITEM(apbsi, glob_bus1_cfg_->CFG_BUS1_PSLV_UART0, apbsi));
+        CONNECT(uart1, 0, uart1.o_apbo, ARRITEM(apbso, glob_bus1_cfg_->CFG_BUS1_PSLV_UART0, apbso));
+        CONNECT(uart1, 0, uart1.o_cfg, ARRITEM(dev_pnp, CFG_SOC_PNP_1_PSLV_UART1, dev_pnp));
+        CONNECT(uart1, 0, uart1.i_rd, i_uart1_rd);
+        CONNECT(uart1, 0, uart1.o_td, o_uart1_td);
+        CONNECT(uart1, 0, uart1.o_irq, w_irq_uart1);
+    ENDNEW();
 
     Operation::start(&comb);
     proc_comb();
@@ -100,5 +138,8 @@ riscv_soc::riscv_soc(GenObject *parent, const char *name) :
 void riscv_soc::proc_comb() {
     river_cfg *cfg = glob_river_cfg_;
 
-
+    TEXT("TODO: APB interconnect");
+    SETARRITEM(apbsi, glob_bus1_cfg_->CFG_BUS1_PSLV_DMI, apbsi, glob_types_amba_->apb_in_none);
+    SETARRITEM(apbsi, glob_bus1_cfg_->CFG_BUS1_PSLV_UART0, apbsi, ARRITEM(apbmo, glob_bus1_cfg_->CFG_BUS1_PMST_BUS0, apbmo));
+    SETARRITEM(apbmi, glob_bus1_cfg_->CFG_BUS1_PMST_BUS0, apbmi, ARRITEM(apbso, glob_bus1_cfg_->CFG_BUS1_PSLV_UART0, apbso));
 }

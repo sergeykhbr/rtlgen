@@ -108,8 +108,8 @@ apb_uart::apb_uart(GenObject *parent, const char *name) :
 void apb_uart::proc_comb() {
     SETVAL(comb.vcfg.descrsize, glob_types_amba_->PNP_CFG_DEV_DESCR_BYTES);
     SETVAL(comb.vcfg.descrtype, glob_types_amba_->PNP_CFG_TYPE_SLAVE);
-    SETVAL(comb.vb_rx_fifo_rdata, ARRITEM(rx_fifo, rx_rd_cnt, rx_fifo));
-    SETVAL(comb.vb_tx_fifo_rdata, ARRITEM(tx_fifo, tx_rd_cnt, tx_fifo));
+    SETVAL(comb.vb_rx_fifo_rdata, ARRITEM(rx_fifo, TO_INT(rx_rd_cnt), rx_fifo));
+    SETVAL(comb.vb_tx_fifo_rdata, ARRITEM(tx_fifo, TO_INT(tx_rd_cnt), tx_fifo));
 
 TEXT();
     TEXT("Check FIFOs counters with thresholds:");
@@ -382,7 +382,7 @@ TEXT();
     IF (NZ(comb.v_rx_fifo_we));
         SETVAL(rx_wr_cnt, INC(rx_wr_cnt));
         SETVAL(rx_byte_cnt, INC(rx_byte_cnt));
-        SETARRITEM(rx_fifo, rx_wr_cnt, rx_fifo, rx_shift);
+        SETARRITEM(rx_fifo, TO_INT(rx_wr_cnt), rx_fifo, BITS(rx_shift, 7, 0));
     ELSIF (NZ(comb.v_rx_fifo_re));
         SETVAL(rx_rd_cnt, INC(rx_rd_cnt));
         SETVAL(rx_byte_cnt, DEC(rx_byte_cnt));
@@ -390,7 +390,7 @@ TEXT();
     IF (NZ(comb.v_tx_fifo_we));
         SETVAL(tx_wr_cnt, INC(tx_wr_cnt));
         SETVAL(tx_byte_cnt, INC(tx_byte_cnt));
-        SETARRITEM(tx_fifo, tx_wr_cnt, tx_fifo, BITS(wb_req_wdata, 7, 0));
+        SETARRITEM(tx_fifo, TO_INT(tx_wr_cnt), tx_fifo, BITS(wb_req_wdata, 7, 0));
     ENDIF();
 
 
