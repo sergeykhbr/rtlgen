@@ -30,7 +30,7 @@ class MemAccess : public ModuleObject {
      public:
         CombProcess(GenObject *parent) :
             ProcObject(parent, "comb"),
-            vb_req_addr(this, "vb_req_addr", "CFG_CPU_ADDR_BITS"),
+            vb_req_addr(this, "vb_req_addr", "RISCV_ARCH"),
             vb_memop_wdata(this, "vb_memop_wdata", "64"),
             vb_memop_wstrb(this, "vb_memop_wstrb", "8"),
             v_mem_valid(this, "v_mem_valid", "1"),
@@ -38,7 +38,7 @@ class MemAccess : public ModuleObject {
             vb_mem_type(this, "vb_mem_type", "MemopType_Total"),
             v_mem_sign_ext(this, "v_mem_sign_ext", "1"),
             vb_mem_sz(this, "vb_mem_sz", "2"),
-            vb_mem_addr(this, "vb_mem_addr", "CFG_CPU_ADDR_BITS"),
+            vb_mem_addr(this, "vb_mem_addr", "RISCV_ARCH"),
             vb_mem_rdata(this, "vb_mem_rdata", "64"),
             v_queue_re(this, "v_queue_re", "1"),
             v_flushd(this, "v_flushd", "1"),
@@ -53,7 +53,7 @@ class MemAccess : public ModuleObject {
             vb_mem_data_signed(this, "vb_mem_data_signed", "64"),
             vb_res_data(this, "vb_res_data", "RISCV_ARCH"),
             vb_res_addr(this, "vb_res_addr", "6"),
-            vb_e_pc(this, "vb_e_pc", "CFG_CPU_ADDR_BITS"),
+            vb_e_pc(this, "vb_e_pc", "RISCV_ARCH"),
             vb_e_instr(this, "vb_e_instr", "32"),
             v_memop_ready(this, "v_memop_ready", "1"),
             v_o_wena(this, "v_o_wena", "1"),

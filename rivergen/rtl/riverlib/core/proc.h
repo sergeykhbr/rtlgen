@@ -119,12 +119,12 @@ class Processor : public ModuleObject {
             : StructObject(parent, "FetchType", name, -1, comment),
             instr_load_fault(this, "instr_load_fault", "1"),
             instr_page_fault_x(this, "instr_page_fault_x", "1"),
-            requested_pc(this, "requested_pc", "CFG_CPU_ADDR_BITS", "0", "requested but responded address"),
-            fetching_pc(this, "fetching_pc", "CFG_CPU_ADDR_BITS", "0", "receiving from cache before latch"),
-            pc(this, "pc", "CFG_CPU_ADDR_BITS"),
+            requested_pc(this, "requested_pc", "RISCV_ARCH", "0", "requested but responded address"),
+            fetching_pc(this, "fetching_pc", "RISCV_ARCH", "0", "receiving from cache before latch"),
+            pc(this, "pc", "RISCV_ARCH"),
             instr(this, "instr", "64"),
             imem_req_valid(this, "imem_req_valid", "1"),
-            imem_req_addr(this, "imem_req_addr", "CFG_CPU_ADDR_BITS"),
+            imem_req_addr(this, "imem_req_addr", "RISCV_ARCH"),
             imem_resp_ready(this, "imem_resp_ready", "1") {
         }
      public:
@@ -145,7 +145,7 @@ class Processor : public ModuleObject {
             : StructObject(parent, "MmuType", name, -1, comment),
         req_ready(this, "req_ready", "1"),
         valid(this, "valid", "1"),
-        addr(this, "addr", "CFG_CPU_ADDR_BITS"),
+        addr(this, "addr", "RISCV_ARCH"),
         data(this, "data", "64"),
         load_fault(this, "load_fault", "1"),
         store_fault(this, "store_fault", "1"),
@@ -169,7 +169,7 @@ class Processor : public ModuleObject {
      public:
         InstructionDecodeType(GenObject *parent, const char *name="", const char *comment="")
             : StructObject(parent, "InstructionDecodeType", name, -1, comment),
-            pc(this, "pc", "CFG_CPU_ADDR_BITS"),
+            pc(this, "pc", "RISCV_ARCH"),
             instr(this, "instr", "32"),
             memop_store(this, "memop_store", "1"),
             memop_load(this, "memop_load", "1"),
@@ -222,8 +222,8 @@ class Processor : public ModuleObject {
             : StructObject(parent, "ExecuteType", name, -1, comment),
         valid(this, "valid", "1"),
         instr(this, "instr", "32"),
-        pc(this, "pc", "CFG_CPU_ADDR_BITS"),
-        npc(this, "npc", "CFG_CPU_ADDR_BITS"),
+        pc(this, "pc", "RISCV_ARCH"),
+        npc(this, "npc", "RISCV_ARCH"),
         radr1(this, "radr1", "6"),
         radr2(this, "radr2", "6"),
         reg_wena(this, "reg_wena", "1"),
@@ -240,7 +240,7 @@ class Processor : public ModuleObject {
         memop_sign_ext(this, "memop_sign_ext", "1"),
         memop_type(this, "memop_type", "MemopType_Total"),
         memop_size(this, "memop_size", "2"),
-        memop_addr(this, "memop_addr", "CFG_CPU_ADDR_BITS"),
+        memop_addr(this, "memop_addr", "RISCV_ARCH"),
         memop_wdata(this, "memop_wdata", "RISCV_ARCH"),
         call(this, "call", "1", "0", "pseudo-instruction CALL"),
         ret(this, "ret", "1", "0", "pseudo-instruction RET"),
@@ -285,7 +285,7 @@ class Processor : public ModuleObject {
             : StructObject(parent, "MemoryType", name, -1, comment),
             memop_ready(this, "memop_ready", "1"),
             flushd(this, "flushd", "1"),
-            pc(this, "pc", "CFG_CPU_ADDR_BITS"),
+            pc(this, "pc", "RISCV_ARCH"),
             valid(this, "valid", "1"),
             idle(this, "idle", "1"),
             debug_valid(this, "debug_valid", "1"),
@@ -294,7 +294,7 @@ class Processor : public ModuleObject {
             dmmu_sv48(this, "dmmu_sv48", "1"),
             req_data_valid(this, "req_data_valid", "1"),
             req_data_type(this, "req_data_type", "MemopType_Total"),
-            req_data_addr(this, "req_data_addr", "CFG_CPU_ADDR_BITS"),
+            req_data_addr(this, "req_data_addr", "RISCV_ARCH"),
             req_data_wdata(this, "req_data_wdata", "64"),
             req_data_wstrb(this, "req_data_wstrb", "8"),
             req_data_size(this, "req_data_size", "2"),
@@ -424,7 +424,7 @@ class Processor : public ModuleObject {
         flushi_valid(this, "flushi_valid", "1", "0", "clear specified addr in I$"),
         flushmmu_valid(this, "flushmmu_valid", "1", "0", "clear specified leaf in xMMU"),
         flushpipeline_valid(this, "flushpipeline_valid", "1", "0", "clear pipeline"),
-        flush_addr(this, "flush_addr", "CFG_CPU_ADDR_BITS"),
+        flush_addr(this, "flush_addr", "RISCV_ARCH"),
         executed_cnt(this, "executed_cnt", "64", "0", "Number of executed instruction"),
         irq_pending(this, "irq_pending", "IRQ_TOTAL"),
         wakeup(this, "o_wakeup", "1", "0", "There's pending bit even if interrupts globally disabled"),
@@ -482,11 +482,11 @@ class Processor : public ModuleObject {
         ireg_write(this, "ireg_write", "1", "0", "Region 1: Integer registers bank write pulse"),
         mem_req_valid(this, "mem_req_valid", "1", "0", "Type 2: request is valid"),
         mem_req_write(this, "mem_req_write", "1", "0", "Type 2: is write"),
-        mem_req_addr(this, "mem_req_addr", "CFG_CPU_ADDR_BITS", "0", "Type 2: Debug memory request"),
+        mem_req_addr(this, "mem_req_addr", "RISCV_ARCH", "0", "Type 2: Debug memory request"),
         mem_req_size(this, "mem_req_size", "2", "0", "Type 2: memory operation size: 0=1B; 1=2B; 2=4B; 3=8B"),
         mem_req_wdata(this, "mem_req_wdata", "RISCV_ARCH", "0", "Type 2: memory write data"),
         progbuf_ena(this, "progbuf_ena", "1", "0", "execute instruction from progbuf"),
-        progbuf_pc(this, "progbuf_pc", "CFG_CPU_ADDR_BITS", "0", "progbuf instruction counter"),
+        progbuf_pc(this, "progbuf_pc", "RISCV_ARCH", "0", "progbuf instruction counter"),
         progbuf_instr(this, "progbuf_instr", "64", "0", "progbuf instruction to execute") {}
      public:
         Signal csr_req_valid;
@@ -513,7 +513,7 @@ class Processor : public ModuleObject {
         BranchPredictorType(GenObject *parent, const char *name="", const char *comment="")
             : StructObject(parent, "BranchPredictorType", name, -1, comment),
             f_valid(this, "f_valid", "1"),
-            f_pc(this, "f_pc", "CFG_CPU_ADDR_BITS") {}
+            f_pc(this, "f_pc", "RISCV_ARCH") {}
      public:
         Signal f_valid;
         Signal f_pc;

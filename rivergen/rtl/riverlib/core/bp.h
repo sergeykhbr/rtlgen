@@ -31,12 +31,12 @@ class BranchPredictor : public ModuleObject {
      public:
         CombProcess(GenObject *parent) :
             ProcObject(parent, "comb"),
-            vb_addr(this, "vb_addr", "CFG_CPU_ADDR_BITS", "CFG_BP_DEPTH"),
-            vb_piped(this, "vb_piped", "SUB(CFG_CPU_ADDR_BITS,2)", "4"),
-            vb_fetch_npc(this, "vb_fetch_npc", "CFG_CPU_ADDR_BITS"),
+            vb_addr(this, "vb_addr", "RISCV_ARCH", "CFG_BP_DEPTH"),
+            vb_piped(this, "vb_piped", "SUB(RISCV_ARCH,2)", "4"),
+            vb_fetch_npc(this, "vb_fetch_npc", "RISCV_ARCH"),
             v_btb_we(this, "v_btb_we", "1"),
-            vb_btb_we_pc(this, "vb_btb_we_pc", "CFG_CPU_ADDR_BITS"),
-            vb_btb_we_npc(this, "vb_btb_we_npc", "CFG_CPU_ADDR_BITS"),
+            vb_btb_we_pc(this, "vb_btb_we_pc", "RISCV_ARCH"),
+            vb_btb_we_npc(this, "vb_btb_we_npc", "RISCV_ARCH"),
             vb_hit(this, "vb_hit", "4"),
             vb_ignore_pd(this, "vb_ignore_pd", "2") {
             proc_comb();
@@ -80,11 +80,11 @@ class BranchPredictor : public ModuleObject {
         PreDecType(GenObject *parent, const char *name="", int idx=-1, const char *comment="")
             : StructObject(parent, "PreDecType", name, idx, comment),
             c_valid(this, "c_valid", "1"),
-            addr(this, "addr", "CFG_CPU_ADDR_BITS"),
+            addr(this, "addr", "RISCV_ARCH"),
             data(this, "data", "32"),
             jmp(this, "jmp", "1"),
-            pc(this, "pc", "CFG_CPU_ADDR_BITS"),
-            npc(this, "npc", "CFG_CPU_ADDR_BITS") {}
+            pc(this, "pc", "RISCV_ARCH"),
+            npc(this, "npc", "RISCV_ARCH") {}
      public:
         Signal c_valid;
         Signal addr;

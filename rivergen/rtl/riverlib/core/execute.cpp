@@ -26,7 +26,7 @@ InstrExecute::InstrExecute(GenObject *parent, const char *name) :
     i_d_waddr(this, "i_d_waddr", "6", "rd address"),
     i_d_csr_addr(this, "i_d_csr_addr", "12", "decoded CSR address"),
     i_d_imm(this, "i_d_imm", "RISCV_ARCH", "immediate value"),
-    i_d_pc(this, "i_d_pc", "CFG_CPU_ADDR_BITS", "Instruction pointer on decoded instruction"),
+    i_d_pc(this, "i_d_pc", "RISCV_ARCH", "Instruction pointer on decoded instruction"),
     i_d_instr(this, "i_d_instr", "32", "Decoded instruction value"),
     i_d_progbuf_ena(this, "i_d_progbuf_ena", "1", "instruction from progbuf passed decoder"),
     i_wb_waddr(this, "i_wb_waddr", "6", "write back address"),
@@ -53,7 +53,7 @@ InstrExecute::InstrExecute(GenObject *parent, const char *name) :
     i_page_fault_x(this, "i_page_fault_x", "1", "IMMU execute page fault signal"),
     i_page_fault_r(this, "i_page_fault_r", "1", "DMMU read access page fault"),
     i_page_fault_w(this, "i_page_fault_w", "1", "DMMU write access page fault"),
-    i_mem_ex_addr(this, "i_mem_ex_addr", "CFG_CPU_ADDR_BITS", "Memoryaccess: exception address"),
+    i_mem_ex_addr(this, "i_mem_ex_addr", "RISCV_ARCH", "Memoryaccess: exception address"),
     i_irq_pending(this, "i_irq_pending", "IRQ_TOTAL", "Per Hart pending interrupts pins"),
     i_wakeup(this, "i_wakeup", "1", "There's pending bit even if interrupts globally disabled"),
     i_haltreq(this, "i_haltreq", "1", "halt request from debug unit"),
@@ -84,20 +84,20 @@ InstrExecute::InstrExecute(GenObject *parent, const char *name) :
     o_memop_sign_ext(this, "o_memop_sign_ext", "1", "Load data with sign extending"),
     o_memop_type(this, "o_memop_type", "MemopType_Total", "[0]: 1=store/0=Load data"),
     o_memop_size(this, "o_memop_size", "2", "0=1bytes; 1=2bytes; 2=4bytes; 3=8bytes"),
-    o_memop_memaddr(this, "o_memop_memaddr", "CFG_CPU_ADDR_BITS", "Memory access address"),
+    o_memop_memaddr(this, "o_memop_memaddr", "RISCV_ARCH", "Memory access address"),
     o_memop_wdata(this, "o_memop_wdata", "RISCV_ARCH"),
     i_memop_ready(this, "i_memop_ready", "1", "memaccess is ready to accept memop on next clock"),
     i_memop_idle(this, "i_memop_idle", "1", "No memory operations in progress"),
     i_dbg_mem_req_valid(this, "i_dbg_mem_req_valid", "1", "Debug Request to memory is valid"),
     i_dbg_mem_req_write(this, "i_dbg_mem_req_write", "1", "0=read; 1=write"),
     i_dbg_mem_req_size(this, "i_dbg_mem_req_size", "2", "0=1bytes; 1=2bytes; 2=4bytes; 3=8bytes"),
-    i_dbg_mem_req_addr(this, "i_dbg_mem_req_addr", "CFG_CPU_ADDR_BITS", "Memory access address"),
+    i_dbg_mem_req_addr(this, "i_dbg_mem_req_addr", "RISCV_ARCH", "Memory access address"),
     i_dbg_mem_req_wdata(this, "i_dbg_mem_req_wdata", "RISCV_ARCH"),
     o_dbg_mem_req_ready(this, "o_dbg_mem_req_ready", "1", "Debug emmory request was accepted"),
     o_dbg_mem_req_error(this, "o_dbg_mem_req_error", "1", "Debug memory reques misaliged"),
     o_valid(this, "o_valid", "1", "Output is valid"),
-    o_pc(this, "o_pc", "CFG_CPU_ADDR_BITS", "Valid instruction pointer"),
-    o_npc(this, "o_npc", "CFG_CPU_ADDR_BITS", "Next instruction pointer. Next decoded pc must match to this value or will be ignored."),
+    o_pc(this, "o_pc", "RISCV_ARCH", "Valid instruction pointer"),
+    o_npc(this, "o_npc", "RISCV_ARCH", "Next instruction pointer. Next decoded pc must match to this value or will be ignored."),
     o_instr(this, "o_instr", "32", "Valid instruction value"),
     o_call(this, "o_call", "1", "CALL pseudo instruction detected"),
     o_ret(this, "o_ret", "1", "RET pseudoinstruction detected (hw stack tracing)"),
@@ -163,9 +163,9 @@ InstrExecute::InstrExecute(GenObject *parent, const char *name) :
     state(this, "state", "4", "State_Idle"),
     csrstate(this, "csrstate", "2", "CsrState_Idle"),
     amostate(this, "amostate", "2", "AmoState_WaitMemAccess"),
-    pc(this, "pc", "CFG_CPU_ADDR_BITS"),
-    npc(this, "npc", "CFG_CPU_ADDR_BITS", "CFG_RESET_VECTOR"),
-    dnpc(this, "dnpc", "CFG_CPU_ADDR_BITS"),
+    pc(this, "pc", "RISCV_ARCH"),
+    npc(this, "npc", "RISCV_ARCH", "CFG_RESET_VECTOR"),
+    dnpc(this, "dnpc", "RISCV_ARCH"),
     radr1(this, "radr1", "6"),
     radr2(this, "radr2", "6"),
     waddr(this, "waddr", "6"),
@@ -191,7 +191,7 @@ InstrExecute::InstrExecute(GenObject *parent, const char *name) :
     memop_type(this, "memop_type", "MemopType_Total"),
     memop_sign_ext(this, "memop_sign_ext", "1"),
     memop_size(this, "memop_size", "2"),
-    memop_memaddr(this, "memop_memaddr", "CFG_CPU_ADDR_BITS"),
+    memop_memaddr(this, "memop_memaddr", "RISCV_ARCH"),
     memop_wdata(this, "memop_wdata", "RISCV_ARCH"),
     unsigned_op(this, "unsigned_op", "1"),
     rv32(this, "rv32", "1"),
@@ -203,7 +203,7 @@ InstrExecute::InstrExecute(GenObject *parent, const char *name) :
     mem_ex_store_fault(this, "mem_ex_store_fault", "1"),
     page_fault_r(this, "page_fault_r", "1"),
     page_fault_w(this, "page_fault_w", "1"),
-    mem_ex_addr(this, "mem_ex_addr", "CFG_CPU_ADDR_BITS"),
+    mem_ex_addr(this, "mem_ex_addr", "RISCV_ARCH"),
     res_npc(this, "res_npc", "RISCV_ARCH"),
     res_ra(this, "res_ra", "RISCV_ARCH"),
     res_csr(this, "res_csr", "RISCV_ARCH"),
@@ -451,10 +451,8 @@ TEXT();
     SETVAL(rdata1_amo, comb.vb_rdata1_amo);
 
 TEXT();
-    SETVAL(comb.vb_memop_memaddr_load, ADD2(BITS(comb.vb_rdata1, DEC(cfg->CFG_CPU_ADDR_BITS), CONST("0")),
-                                            BITS(comb.vb_rdata2, DEC(cfg->CFG_CPU_ADDR_BITS), CONST("0"))));
-    SETVAL(comb.vb_memop_memaddr_store, ADD2(BITS(comb.vb_rdata1, DEC(cfg->CFG_CPU_ADDR_BITS), CONST("0")),
-                                            BITS(comb.vb_off, DEC(cfg->CFG_CPU_ADDR_BITS), CONST("0"))));
+    SETVAL(comb.vb_memop_memaddr_load, ADD2(comb.vb_rdata1, comb.vb_rdata2));
+    SETVAL(comb.vb_memop_memaddr_store, ADD2(comb.vb_rdata1, comb.vb_off));
     IF (EZ(BIT(comb.mux.memop_type, cfg->MemopType_Store)));
         SETVAL(comb.vb_memop_memaddr, comb.vb_memop_memaddr_load);
     ELSE();
@@ -565,13 +563,11 @@ TEXT();
 
 TEXT();
     IF (NZ(comb.v_pc_branch));
-        SETVAL(comb.vb_prog_npc, ADD2(comb.mux.pc, BITS(comb.vb_off, DEC(cfg->CFG_CPU_ADDR_BITS), CONST("0"))));
+        SETVAL(comb.vb_prog_npc, ADD2(comb.mux.pc, comb.vb_off));
     ELSIF (NZ(BIT(comb.wv, "Instr_JAL")));
-        SETVAL(comb.vb_prog_npc, ADD2(BITS(comb.vb_rdata1, DEC(cfg->CFG_CPU_ADDR_BITS), CONST("0")),
-                                      BITS(comb.vb_off, DEC(cfg->CFG_CPU_ADDR_BITS), CONST("0"))));
+        SETVAL(comb.vb_prog_npc, ADD2(comb.vb_rdata1, comb.vb_off));
     ELSIF (NZ(BIT(comb.wv, "Instr_JALR")));
-        SETVAL(comb.vb_prog_npc, ADD2(BITS(comb.vb_rdata1, DEC(cfg->CFG_CPU_ADDR_BITS), CONST("0")),
-                                      BITS(comb.vb_rdata2, DEC(cfg->CFG_CPU_ADDR_BITS), CONST("0"))));
+        SETVAL(comb.vb_prog_npc, ADD2(comb.vb_rdata1, comb.vb_rdata2));
         SETBITZERO(comb.vb_prog_npc, 0);
     ELSE();
         SETVAL(comb.vb_prog_npc, comb.vb_npc_incr);
@@ -914,7 +910,7 @@ TEXT();
                 SETVAL(state, State_WaitMulti);
             ELSIF (NZ(i_amo));
                 SETONE(comb.v_memop_ena);
-                SETVAL(comb.vb_memop_memaddr, BITS(comb.vb_rdata1, DEC(cfg->CFG_CPU_ADDR_BITS), CONST("0")));
+                SETVAL(comb.vb_memop_memaddr, comb.vb_rdata1);
                 SETVAL(comb.vb_memop_wdata, comb.vb_rdata2);
                 SETVAL(state, State_Amo);
                 IF (EZ(i_memop_ready));
@@ -981,7 +977,7 @@ TEXT();
                     ELSE();
                         SETVAL(state, State_Idle);
                         IF (EZ(i_dbg_progbuf_ena));
-                            SETVAL(npc, BITS(i_csr_resp_data, DEC(cfg->CFG_CPU_ADDR_BITS), CONST("0")));
+                            SETVAL(npc, i_csr_resp_data);
                         ENDIF();
                     ENDIF();
                 ELSIF (NZ(ORx(3, &BIT(csr_req_type, cfg->CsrReq_ExceptionBit),
@@ -990,7 +986,7 @@ TEXT();
                     SETVAL(valid, BIT(comb.wv, "Instr_ECALL"), "No valid strob should be generated for all exceptions except ECALL");
                     SETVAL(state, State_Idle);
                     IF (EZ(i_dbg_progbuf_ena)); 
-                        SETVAL(npc, BITS(i_csr_resp_data, DEC(cfg->CFG_CPU_ADDR_BITS), CONST("0")));
+                        SETVAL(npc, i_csr_resp_data);
                     ENDIF();
                 ELSIF (NZ(BIT(csr_req_type, cfg->CsrReq_WfiBit)));
                     IF (NZ(BIT(i_csr_resp_data, 0)));
@@ -1008,7 +1004,7 @@ TEXT();
                     SETONE(valid);
                     SETVAL(state, State_Idle);
                     IF (EZ(i_dbg_progbuf_ena));
-                        SETVAL(npc, BITS(i_csr_resp_data, DEC(cfg->CFG_CPU_ADDR_BITS), CONST("0")));
+                        SETVAL(npc, i_csr_resp_data);
                     ENDIF();
                 ELSIF (NZ(csr_req_rmw));
                     SETVAL(csrstate, CsrState_Req);
@@ -1178,16 +1174,8 @@ TEXT();
                            &BIT(comb.wv, "Instr_HRET"),
                            &BIT(comb.wv, "Instr_SRET"),
                            &BIT(comb.wv, "Instr_URET")));
-        IF (NZ(BIT(comb.vb_prog_npc, DEC(cfg->CFG_CPU_ADDR_BITS))));
-            SETVAL(res_npc, CC2(ALLONES(), comb.vb_prog_npc));
-        ELSE();
-            SETVAL(res_npc, CC2(ALLZEROS(), comb.vb_prog_npc));
-        ENDIF();
-        IF (NZ(BIT(comb.vb_npc_incr, DEC(cfg->CFG_CPU_ADDR_BITS))));
-            SETVAL(res_ra, CC2(ALLONES(), comb.vb_npc_incr));
-        ELSE();
-            SETVAL(res_ra, CC2(ALLZEROS(), comb.vb_npc_incr));
-        ENDIF();
+        SETVAL(res_npc, comb.vb_prog_npc);
+        SETVAL(res_ra, comb.vb_npc_incr);
 
 TEXT();
         SETARRITEM(wb_select, Res_IMul, wb_select->ena, BIT(comb.vb_select, Res_IMul));

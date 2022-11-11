@@ -20,13 +20,13 @@ StackTraceBuffer::StackTraceBuffer(GenObject *parent, const char *name) :
     ModuleObject(parent, "StackTraceBuffer", name),
     i_clk(this, "i_clk", "1", "CPU clock"),
     i_raddr(this, "i_raddr", "CFG_LOG2_STACK_TRACE_ADDR"),
-    o_rdata(this, "o_rdata", "MUL(2,CFG_CPU_ADDR_BITS)"),
+    o_rdata(this, "o_rdata", "MUL(2,RISCV_ARCH)"),
     i_we(this, "i_we", "1"),
     i_waddr(this, "i_waddr", "CFG_LOG2_STACK_TRACE_ADDR"),
-    i_wdata(this, "i_wdata", "MUL(2,CFG_CPU_ADDR_BITS)"),
+    i_wdata(this, "i_wdata", "MUL(2,RISCV_ARCH)"),
     // registers
     raddr(this, "raddr", "5"),
-    stackbuf(this, "stackbuf", "MUL(2,CFG_CPU_ADDR_BITS)", "STACK_TRACE_BUF_SIZE"),
+    stackbuf(this, "stackbuf", "MUL(2,RISCV_ARCH)", "STACK_TRACE_BUF_SIZE"),
     // process
     comb(this)
 {

@@ -21,11 +21,11 @@ InstrDecoder::InstrDecoder(GenObject *parent, const char *name) :
     fpu_ena(this, "fpu_ena", "true"),
     i_clk(this, "i_clk", "1", "CPU clock"),
     i_nrst(this, "i_nrst", "1", "Reset: active LOW"),
-    i_f_pc(this, "i_f_pc", "CFG_CPU_ADDR_BITS", "Fetched pc"),
+    i_f_pc(this, "i_f_pc", "RISCV_ARCH", "Fetched pc"),
     i_f_instr(this, "i_f_instr", "64", "Fetched instruction value"),
     i_instr_load_fault(this, "i_instr_load_fault", "1", "fault instruction's address"),
     i_instr_page_fault_x(this, "i_instr_page_fault_x", "1", "Instruction MMU page fault"),
-    i_e_npc(this, "i_e_npc", "CFG_CPU_ADDR_BITS", "executor expected instr pointer"),
+    i_e_npc(this, "i_e_npc", "RISCV_ARCH", "executor expected instr pointer"),
     o_radr1(this, "o_radr1", "6", "register bank address 1 (rs1)"),
     o_radr2(this, "o_radr2", "6", "register bank address 2 (rs2)"),
     o_waddr(this, "o_waddr", "6", "register bank output (rd)"),
@@ -33,7 +33,7 @@ InstrDecoder::InstrDecoder(GenObject *parent, const char *name) :
     o_imm(this, "o_imm", "RISCV_ARCH", "immediate constant decoded from instruction"),
     i_flush_pipeline(this, "i_flush_pipeline", "1", "reset pipeline and cache"),
     i_progbuf_ena(this, "i_progbuf_ena", "1", "executing from progbuf"),
-    o_pc(this, "o_pc", "CFG_CPU_ADDR_BITS", "Current instruction pointer value"),
+    o_pc(this, "o_pc", "RISCV_ARCH", "Current instruction pointer value"),
     o_instr(this, "o_instr", "32", "Current instruction value"),
     o_memop_store(this, "o_memop_store", "1", "Store to memory operation"),
     o_memop_load(this, "o_memop_load", "1", "Load from memoru operation"),
@@ -60,7 +60,7 @@ InstrDecoder::InstrDecoder(GenObject *parent, const char *name) :
     // Signals
     wd(this, "", "wd", "ADD(FULL_DEC_DEPTH,DEC_BLOCK)"),
     d(this, "d"),
-    wb_f_pc(this, "wb_f_pc", "CFG_CPU_ADDR_BITS", "DEC_NUM"),
+    wb_f_pc(this, "wb_f_pc", "RISCV_ARCH", "DEC_NUM"),
     wb_f_instr(this, "wb_f_instr", "32", "DEC_NUM"),
     // registers
     // process

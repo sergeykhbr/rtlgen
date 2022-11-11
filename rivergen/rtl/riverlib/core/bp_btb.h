@@ -28,9 +28,9 @@ class BpBTB : public ModuleObject {
     class CombProcess : public ProcObject {
      public:
         CombProcess(GenObject *parent) : ProcObject(parent, "comb"),
-            vb_addr(this, "vb_addr", "MUL(CFG_BP_DEPTH,CFG_CPU_ADDR_BITS)"),
+            vb_addr(this, "vb_addr", "MUL(CFG_BP_DEPTH,RISCV_ARCH)"),
             vb_hit(this, "vb_hit", "CFG_BP_DEPTH"),
-            t_addr(this, "t_addr", "CFG_CPU_ADDR_BITS"),
+            t_addr(this, "t_addr", "RISCV_ARCH"),
             vb_pc_equal(this, "vb_pc_equal", "CFG_BTB_SIZE"),
             vb_pc_nshift(this, "vb_pc_nshift", "CFG_BTB_SIZE"),
             vb_bp_exec(this, "vb_bp_exec", "CFG_BP_DEPTH"),
@@ -70,8 +70,8 @@ class BpBTB : public ModuleObject {
         // Structure definition
         BtbEntryType(GenObject *parent, const char *name="", int idx=-1, const char *comment="")
             : StructObject(parent, "BtbEntryType", name, idx, comment),
-            pc(this, "pc", "CFG_CPU_ADDR_BITS", "-1"),
-            npc(this, "npc", "CFG_CPU_ADDR_BITS"),
+            pc(this, "pc", "RISCV_ARCH", "-1"),
+            npc(this, "npc", "RISCV_ARCH"),
             exec(this, "exec", "1", "0", "0=predec; 1=exec (high priority)") {}
      public:
         RegSignal pc;

@@ -23,7 +23,7 @@ DbgPort::DbgPort(GenObject *parent, const char *name) :
     _idbg0_(this, "\"RIVER\" Debug interface"),
     i_dport_req_valid(this, "i_dport_req_valid", "1", "Debug access from DSU is valid"),
     i_dport_type(this, "i_dport_type", "DPortReq_Total", "Debug access type"),
-    i_dport_addr(this, "i_dport_addr", "CFG_CPU_ADDR_BITS", "Debug address (register or memory)"),
+    i_dport_addr(this, "i_dport_addr", "RISCV_ARCH", "Debug address (register or memory)"),
     i_dport_wdata(this, "i_dport_wdata", "RISCV_ARCH", "Write value"),
     i_dport_size(this, "i_dport_size", "3", "reg/mem access size:0=1B;...,4=128B;"),
     o_dport_req_ready(this, "o_dport_req_ready", "1"),
@@ -43,7 +43,7 @@ DbgPort::DbgPort(GenObject *parent, const char *name) :
     i_csr_resp_exception(this, "i_csr_resp_exception", "1", "Exception on CSR access"),
     i_progbuf(this, "i_progbuf", "MUL(32,CFG_PROGBUF_REG_TOTAL)", "progam buffer"),
     o_progbuf_ena(this, "o_progbuf_ena", "1", "Execution from the progbuffer is in progress"),
-    o_progbuf_pc(this, "o_progbuf_pc", "CFG_CPU_ADDR_BITS", "prog buffer instruction counter"),
+    o_progbuf_pc(this, "o_progbuf_pc", "RISCV_ARCH", "prog buffer instruction counter"),
     o_progbuf_instr(this, "o_progbuf_instr", "64", "prog buffer instruction opcode"),
     i_csr_progbuf_end(this, "i_csr_progbuf_end", "1", "End of execution from progbuf"),
     i_csr_progbuf_error(this, "i_csr_progbuf_error", "1", "Exception is occured during progbuf execution"),
@@ -56,14 +56,14 @@ DbgPort::DbgPort(GenObject *parent, const char *name) :
     i_mem_req_ready(this, "i_mem_req_ready", "1", "Type 2: memory request was accepted"),
     i_mem_req_error(this, "i_mem_req_error", "1", "Type 2: memory request is invalid and cannot be processed"),
     o_mem_req_write(this, "o_mem_req_write", "1", "Type 2: is write"),
-    o_mem_req_addr(this, "o_mem_req_addr", "CFG_CPU_ADDR_BITS", "Type 2: Debug memory request"),
+    o_mem_req_addr(this, "o_mem_req_addr", "RISCV_ARCH", "Type 2: Debug memory request"),
     o_mem_req_size(this, "o_mem_req_size", "2", "Type 2: memory operation size: 0=1B; 1=2B; 2=4B; 3=8B"),
     o_mem_req_wdata(this, "o_mem_req_wdata", "RISCV_ARCH", "Type 2: memory write data"),
     i_mem_resp_valid(this, "i_mem_resp_valid", "1", "Type 2: response is valid"),
     i_mem_resp_error(this, "i_mem_resp_error", "1", "Type 2: response error (MPU or unmapped access)"),
     i_mem_resp_rdata(this, "i_mem_resp_rdata", "RISCV_ARCH", "Type 2: Memory response from memaccess module"),
-    i_e_pc(this, "i_e_pc", "CFG_CPU_ADDR_BITS", "Instruction pointer"),
-    i_e_npc(this, "i_e_npc", "CFG_CPU_ADDR_BITS", "Next Instruction pointer"),
+    i_e_pc(this, "i_e_pc", "RISCV_ARCH", "Instruction pointer"),
+    i_e_npc(this, "i_e_npc", "RISCV_ARCH", "Next Instruction pointer"),
     i_e_call(this, "i_e_call", "1", "pseudo-instruction CALL"),
     i_e_ret(this, "i_e_ret", "1", "pseudo-instruction RET"),
     i_e_memop_valid(this, "i_e_memop_valid", "1", "Memory request from executor"),
@@ -83,13 +83,13 @@ DbgPort::DbgPort(GenObject *parent, const char *name) :
     wait_to_accept(this, "4", "wait_to_accept", "11"),
     // signals
     wb_stack_raddr(this, "wb_stack_raddr", "CFG_LOG2_STACK_TRACE_ADDR"),
-    wb_stack_rdata(this, "wb_stack_rdata", "MUL(2,CFG_CPU_ADDR_BITS)"),
+    wb_stack_rdata(this, "wb_stack_rdata", "MUL(2,RISCV_ARCH)"),
     w_stack_we(this, "w_stack_we", "1"),
     wb_stack_waddr(this, "wb_stack_waddr", "CFG_LOG2_STACK_TRACE_ADDR"),
-    wb_stack_wdata(this, "wb_stack_wdata", "MUL(2,CFG_CPU_ADDR_BITS)"),
+    wb_stack_wdata(this, "wb_stack_wdata", "MUL(2,RISCV_ARCH)"),
     // registers
     dport_write(this, "dport_write", "1"),
-    dport_addr(this, "dport_addr", "CFG_CPU_ADDR_BITS"),
+    dport_addr(this, "dport_addr", "RISCV_ARCH"),
     dport_wdata(this, "dport_wdata", "RISCV_ARCH"),
     dport_rdata(this, "dport_rdata", "RISCV_ARCH"),
     dport_size(this, "dport_size", "2"),
@@ -99,7 +99,7 @@ DbgPort::DbgPort(GenObject *parent, const char *name) :
     req_accepted(this, "req_accepted", "1"),
     resp_error(this, "resp_error", "1"),
     progbuf_ena(this, "progbuf_ena", "1"),
-    progbuf_pc(this, "progbuf_pc", "CFG_CPU_ADDR_BITS"),
+    progbuf_pc(this, "progbuf_pc", "RISCV_ARCH"),
     progbuf_instr(this, "progbuf_instr", "64"),
     // process
     comb(this),
@@ -226,11 +226,9 @@ TEXT();
         ENDCASE();
     CASE (reg_stktr_buf_dat);
         IF (EZ(BIT(dport_addr, 0)));
-            SETBITS(comb.vrdata, DEC(cfg->CFG_CPU_ADDR_BITS), CONST("0"),
-                     BITS(wb_stack_rdata, DEC(cfg->CFG_CPU_ADDR_BITS), CONST("0")));
+            SETVAL(comb.vrdata, BITS(wb_stack_rdata, DEC(cfg->RISCV_ARCH), CONST("0")));
         ELSE();
-            SETBITS(comb.vrdata, DEC(cfg->CFG_CPU_ADDR_BITS), CONST("0"),
-                     BITS(wb_stack_rdata, DEC(MUL2(CONST("2"), cfg->CFG_CPU_ADDR_BITS)), cfg->CFG_CPU_ADDR_BITS));
+            SETVAL(comb.vrdata, BITS(wb_stack_rdata, DEC(MUL2(CONST("2"), cfg->RISCV_ARCH)), cfg->RISCV_ARCH));
         ENDIF();
         SETVAL(dstate, wait_to_accept);
         ENDCASE();

@@ -59,7 +59,7 @@ class CsrRegs : public ModuleObject {
             v_flushmmu(this, "v_flushmmu", "1"),
             v_flushpipeline(this, "v_flushpipeline", "1"),
             vb_pmp_upd_ena(this, "vb_pmp_upd_ena", "CFG_PMP_TBL_SIZE"),
-            vb_pmp_napot_mask(this, "vb_pmp_napot_mask", "CFG_CPU_ADDR_BITS"),
+            vb_pmp_napot_mask(this, "vb_pmp_napot_mask", "RISCV_ARCH"),
             v_napot_shift(this, "v_napot_shift", "1"),
             t_pmpdataidx("0", "t_pmpdataidx", this),
             t_pmpcfgidx("0", "t_pmpcfgidx", this) {
@@ -191,7 +191,7 @@ class CsrRegs : public ModuleObject {
      public:
         RegModeType(GenObject *parent, const char *name="", int idx=-1, const char *comment="")
             : StructObject(parent, "RegModeType", name, idx, comment),
-            xepc(this, "xepc", "CFG_CPU_ADDR_BITS", "0", ""),
+            xepc(this, "xepc", "RISCV_ARCH", "0", ""),
             xpp(this, "xpp", "2", "0", "Previous Privildge mode. If x is not implemented, then xPP mus be 0"),
             xpie(this, "xpie", "1", "0", "Previous Privildge mode global interrupt enable"),
             xie(this, "xie", "1", "0", "Global interrupt enbale bit."),
@@ -236,8 +236,8 @@ class CsrRegs : public ModuleObject {
         PmpItemType(GenObject *parent, const char *name="", int idx=-1, const char *comment="")
             : StructObject(parent, "PmpItemType", name, idx, comment),
             cfg(this, "cfg", "8", "0", "pmpcfg bits without changes"),
-            addr(this, "addr", "CFG_CPU_ADDR_BITS", "0", "Maximal PMP address bits [55:2]"),
-            mask(this, "mask", "CFG_CPU_ADDR_BITS", "0", "NAPOT mask formed from address")
+            addr(this, "addr", "RISCV_ARCH", "0", "Maximal PMP address bits [55:2]"),
+            mask(this, "mask", "RISCV_ARCH", "0", "NAPOT mask formed from address")
             {}
      public:
         RegSignal cfg;

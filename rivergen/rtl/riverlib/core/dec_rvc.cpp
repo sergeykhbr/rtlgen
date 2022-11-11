@@ -22,7 +22,7 @@ DecoderRvc::DecoderRvc(GenObject *parent, const char *name) :
     i_nrst(this, "i_nrst", "1", "Reset: active LOW"),
     i_flush_pipeline(this, "i_flush_pipeline", "1", "reset pipeline and cache"),
     i_progbuf_ena(this, "i_progbuf_ena", "1", "executing from progbuf"),
-    i_f_pc(this, "i_f_pc", "CFG_CPU_ADDR_BITS", "Fetched pc"),
+    i_f_pc(this, "i_f_pc", "RISCV_ARCH", "Fetched pc"),
     i_f_instr(this, "i_f_instr", "32", "Fetched instruction value"),
     i_instr_load_fault(this, "i_instr_load_fault", "1", "fault instruction's address"),
     i_instr_page_fault_x(this, "i_instr_page_fault_x", "1", "IMMU page fault signal"),
@@ -31,7 +31,7 @@ DecoderRvc::DecoderRvc(GenObject *parent, const char *name) :
     o_waddr(this, "o_waddr", "6", "register bank output (rd)"),
     o_csr_addr(this, "o_csr_addr", "12", "CSR bank output"),
     o_imm(this, "o_imm", "RISCV_ARCH", "immediate constant decoded from instruction"),
-    o_pc(this, "o_pc", "CFG_CPU_ADDR_BITS", "Current instruction pointer value"),
+    o_pc(this, "o_pc", "RISCV_ARCH", "Current instruction pointer value"),
     o_instr(this, "o_instr", "32", "Current instruction value"),
     o_memop_store(this, "o_memop_store", "1", "Store to memory operation"),
     o_memop_load(this, "o_memop_load", "1", "Load from memoru operation"),
@@ -70,7 +70,7 @@ DecoderRvc::DecoderRvc(GenObject *parent, const char *name) :
     OPCODE_C_SDSP(this, "5", "OPCODE_C_SDSP", "0x1E"),
     // signals
     // registers
-    pc(this, "pc", "CFG_CPU_ADDR_BITS", "-1"),
+    pc(this, "pc", "RISCV_ARCH", "-1"),
     isa_type(this, "isa_type", "ISA_Total"),
     instr_vec(this, "instr_vec", "Instr_Total"),
     instr(this, "instr", "16", "-1"),

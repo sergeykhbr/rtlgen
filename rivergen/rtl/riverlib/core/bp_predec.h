@@ -29,14 +29,14 @@ class BpPreDecoder : public ModuleObject {
      public:
         CombProcess(GenObject *parent) : ProcObject(parent, "comb"),
             vb_tmp(this, "vb_tmp", "32"),
-            vb_npc(this, "vb_npc", "CFG_CPU_ADDR_BITS"),
-            vb_pc(this, "vb_pc", "CFG_CPU_ADDR_BITS"),
-            vb_jal_off(this, "vb_jal_off", "CFG_CPU_ADDR_BITS"),
-            vb_jal_addr(this, "vb_jal_addr", "CFG_CPU_ADDR_BITS"),
-            vb_branch_off(this, "vb_branch_off", "CFG_CPU_ADDR_BITS"),
-            vb_branch_addr(this, "vb_branch_addr", "CFG_CPU_ADDR_BITS"),
-            vb_c_j_off(this, "vb_c_j_off", "CFG_CPU_ADDR_BITS"),
-            vb_c_j_addr(this, "vb_c_j_addr", "CFG_CPU_ADDR_BITS") {
+            vb_npc(this, "vb_npc", "RISCV_ARCH"),
+            vb_pc(this, "vb_pc", "RISCV_ARCH"),
+            vb_jal_off(this, "vb_jal_off", "RISCV_ARCH"),
+            vb_jal_addr(this, "vb_jal_addr", "RISCV_ARCH"),
+            vb_branch_off(this, "vb_branch_off", "RISCV_ARCH"),
+            vb_branch_addr(this, "vb_branch_addr", "RISCV_ARCH"),
+            vb_c_j_off(this, "vb_c_j_off", "RISCV_ARCH"),
+            vb_c_j_addr(this, "vb_c_j_addr", "RISCV_ARCH") {
             BpPreDecoder *p = static_cast<BpPreDecoder *>(parent);
             Operation::start(this);
             p->proc_comb();

@@ -32,7 +32,7 @@ CsrRegs::CsrRegs(GenObject *parent, const char *name) :
     o_resp_data(this, "o_resp_data", "RISCV_ARCH", "Responded CSR data"),
     o_resp_exception(this, "o_resp_exception", "1", "exception on CSR access"),
     i_e_halted(this, "i_e_halted", "1", "core is halted confirmation flag"),
-    i_e_pc(this, "i_e_pc", "CFG_CPU_ADDR_BITS", "current latched instruction pointer in executor"),
+    i_e_pc(this, "i_e_pc", "RISCV_ARCH", "current latched instruction pointer in executor"),
     i_e_instr(this, "i_e_instr", "32", "current latched opcode in executor"),
     i_irq_pending(this, "i_irq_pending", "IRQ_TOTAL", "Per Hart pending interrupts pins"),
     o_irq_pending(this, "o_irq_pending", "IRQ_TOTAL", "Enabled and Unmasked interrupt pending bits"),
@@ -55,13 +55,13 @@ CsrRegs::CsrRegs(GenObject *parent, const char *name) :
     o_flushi_valid(this, "o_flushi_valid", "1", "clear specified addr in ICache"),
     o_flushmmu_valid(this, "o_flushmmu_valid", "1", "clear specific leaf entry in MMU"),
     o_flushpipeline_valid(this, "o_flushpipeline_valid", "1", "flush pipeline, must be don for fence.VMA and fence.i"),
-    o_flush_addr(this, "o_flush_addr", "CFG_CPU_ADDR_BITS", "Cache address to flush. All ones means flush all."),
+    o_flush_addr(this, "o_flush_addr", "RISCV_ARCH", "Cache address to flush. All ones means flush all."),
     _io1_(this),
     o_pmp_ena(this, "o_pmp_ena", "1", "PMP is active in S or U modes or if L/MPRV bit is set in M-mode"),
     o_pmp_we(this, "o_pmp_we", "1", "write enable into PMP"),
     o_pmp_region(this, "o_pmp_region", "CFG_PMP_TBL_WIDTH", "selected PMP region"),
-    o_pmp_start_addr(this, "o_pmp_start_addr", "CFG_CPU_ADDR_BITS", "PMP region start address"),
-    o_pmp_end_addr(this, "o_pmp_end_addr", "CFG_CPU_ADDR_BITS", "PMP region end address (inclusive)"),
+    o_pmp_start_addr(this, "o_pmp_start_addr", "RISCV_ARCH", "PMP region start address"),
+    o_pmp_end_addr(this, "o_pmp_end_addr", "RISCV_ARCH", "PMP region end address (inclusive)"),
     o_pmp_flags(this, "o_pmp_flags", "CFG_PMP_FL_TOTAL", "{ena, lock, r, w, x}"),
     _io2_(this),
     o_mmu_ena(this, "o_mmu_ena", "1", "MMU enabled in U and S modes. Sv48 only."),
@@ -116,8 +116,8 @@ CsrRegs::CsrRegs(GenObject *parent, const char *name) :
     medeleg(this, "medeleg", "64"),
     mideleg(this, "mideleg", "IRQ_TOTAL"),
     mcountinhibit(this, "mcountinhibit", "32", "0", "When non zero stop specified performance counter"),
-    mstackovr(this, "mstackovr", "CFG_CPU_ADDR_BITS"),
-    mstackund(this, "mstackund", "CFG_CPU_ADDR_BITS"),
+    mstackovr(this, "mstackovr", "RISCV_ARCH"),
+    mstackund(this, "mstackund", "RISCV_ARCH"),
     mmu_ena(this, "mmu_ena", "1", "0", "Instruction MMU SV48 enabled in U- and S- modes"),
     satp_ppn(this, "satp_ppn", "44", "0", "Physcal Page Number"),
     satp_sv39(this, "satp_sv39", "1"),
@@ -132,12 +132,12 @@ CsrRegs::CsrRegs(GenObject *parent, const char *name) :
     ex_fpu_overflow(this, "ex_fpu_overflow", "1", "0", "FPU Exception: overflow"),
     ex_fpu_underflow(this, "ex_fpu_underflow", "1", "0", "FPU Exception: underflow"),
     ex_fpu_inexact(this, "ex_fpu_inexact", "1", "0", "FPU Exception: inexact"),
-    trap_addr(this, "trap_addr", "CFG_CPU_ADDR_BITS"),
+    trap_addr(this, "trap_addr", "RISCV_ARCH"),
     mcycle_cnt(this, "mcycle_cnt", "64", "0", "Cycle in clocks."),
     minstret_cnt(this, "minstret_cnt", "64", "0", "Number of the instructions the hart has retired"),
     dscratch0(this, "dscratch0", "RISCV_ARCH"),
     dscratch1(this, "dscratch1", "RISCV_ARCH"),
-    dpc(this, "dpc", "CFG_CPU_ADDR_BITS", "CFG_RESET_VECTOR"),
+    dpc(this, "dpc", "RISCV_ARCH", "CFG_RESET_VECTOR"),
     halt_cause(this, "halt_cause", "3", "0", "1=ebreak instruction; 2=breakpoint exception; 3=haltreq; 4=step"),
     dcsr_ebreakm(this, "dcsr_ebreakm", "1", "0", "Enter or not into Debug Mode on EBREAK instruction"),
     dcsr_stopcount(this, "dcsr_stopcount", "1"),
@@ -151,8 +151,8 @@ CsrRegs::CsrRegs(GenObject *parent, const char *name) :
     pmp_ena(this, "pmp_ena", "1"),
     pmp_we(this, "pmp_we", "1"),
     pmp_region(this, "pmp_region", "CFG_PMP_TBL_WIDTH"),
-    pmp_start_addr(this, "pmp_start_addr", "CFG_CPU_ADDR_BITS"),
-    pmp_end_addr(this, "pmp_end_addr", "CFG_CPU_ADDR_BITS"),
+    pmp_start_addr(this, "pmp_start_addr", "RISCV_ARCH"),
+    pmp_end_addr(this, "pmp_end_addr", "RISCV_ARCH"),
     pmp_flags(this, "pmp_flags", "CFG_PMP_FL_TOTAL"),
     // process
     comb(this)
@@ -256,7 +256,7 @@ TEXT();
             SETVAL(cmd_data, ALLONES(), "signal to executor to switch into Debug Mode and halt");
         ELSIF (NZ(dcsr_ebreakm));
             SETVAL(halt_cause, cfg->HALT_CAUSE_EBREAK);
-            SETVAL(dpc, BITS(cmd_data, DEC(cfg->CFG_CPU_ADDR_BITS), CONST("0")));
+            SETVAL(dpc, cmd_data);
             SETVAL(cmd_data, ALLONES(), "signal to executor to switch into Debug Mode and halt");
         ELSE();
             SETBITONE(comb.vb_e_emux, cfg->EXCEPTION_Breakpoint);
@@ -390,7 +390,7 @@ TEXT();
     ELSIF (EQ(cmd_addr, CONST("0x041", 12)), "uepc: [URW] User exception program counter");
         SETVAL(comb.vb_rdata, ARRITEM(xmode, comb.iU, xmode->xepc));
         IF (comb.v_csr_wena);
-            SETARRITEM(xmode, comb.iU, xmode->xepc, BITS(cmd_data, DEC(cfg->CFG_CPU_ADDR_BITS), CONST("0")));
+            SETARRITEM(xmode, comb.iU, xmode->xepc, cmd_data);
         ENDIF();
     ELSIF (EQ(cmd_addr, CONST("0x042", 12)), "ucause: [URW] User trap cause");
     ELSIF (EQ(cmd_addr, CONST("0x043", 12)), "utval: [URW] User bad address or instruction");
@@ -516,7 +516,7 @@ TEXT();
     ELSIF (EQ(cmd_addr, CONST("0x141", 12)), "sepc: [SRW] Supervisor exception program counter");
         SETVAL(comb.vb_rdata, ARRITEM(xmode, comb.iS, xmode->xepc));
         IF (comb.v_csr_wena);
-            SETARRITEM(xmode, comb.iS, xmode->xepc, BITS(cmd_data, DEC(cfg->CFG_CPU_ADDR_BITS), CONST("0")));
+            SETARRITEM(xmode, comb.iS, xmode->xepc, cmd_data);
         ENDIF();
     ELSIF (EQ(cmd_addr, CONST("0x142", 12)), "scause: [SRW] Supervisor trap cause");
         SETBIT(comb.vb_rdata, 63, ARRITEM(xmode, comb.iS, xmode->xcause_irq));
@@ -706,7 +706,7 @@ TEXT();
     ELSIF (EQ(cmd_addr, CONST("0x341", 12)), "mepc: [MRW] Machine program counter");
         SETVAL(comb.vb_rdata, ARRITEM(xmode, comb.iM, xmode->xepc));
         IF (comb.v_csr_wena);
-            SETARRITEM(xmode, comb.iM, xmode->xepc, BITS(cmd_data, DEC(cfg->CFG_CPU_ADDR_BITS), CONST("0")));
+            SETARRITEM(xmode, comb.iM, xmode->xepc, cmd_data);
         ENDIF();
     ELSIF (EQ(cmd_addr, CONST("0x342", 12)), "mcause: [MRW] Machine trap cause");
         SETBIT(comb.vb_rdata, 63, ARRITEM(xmode, comb.iM, xmode->xcause_irq));
@@ -748,7 +748,7 @@ TEXT();
     ELSIF (ANDx(2, &GE(cmd_addr, CONST("0x3B0", 12)),
                    &LE(cmd_addr, CONST("0x3EF", 12))));
         TEXT("pmpaddr0..63: [MRW] Physical memory protection address register");
-        i = &FOR("i", CONST("0"), SUB2(cfg->CFG_CPU_ADDR_BITS, CONST("2")), "++");
+        i = &FOR("i", CONST("0"), SUB2(cfg->RISCV_ARCH, CONST("2")), "++");
             IF (AND2(NZ(BIT(cmd_data, *i)), EZ(comb.v_napot_shift)));
                 SETVAL(comb.vb_pmp_napot_mask, CC2(comb.vb_pmp_napot_mask, CONST("1", 1)));
             ELSE();
@@ -756,12 +756,12 @@ TEXT();
             ENDIF();
         ENDFOR();
         IF (LS(comb.t_pmpdataidx, cfg->CFG_PMP_TBL_SIZE));
-            SETBITS(comb.vb_rdata, SUB2(cfg->CFG_CPU_ADDR_BITS, CONST("3")), CONST("0"),
-                    ARRITEM(pmp, comb.t_pmpdataidx, BITS(pmp->addr, DEC(cfg->CFG_CPU_ADDR_BITS), CONST("0"))));
+            SETBITS(comb.vb_rdata, SUB2(cfg->RISCV_ARCH, CONST("3")), CONST("0"),
+                    ARRITEM(pmp, comb.t_pmpdataidx, pmp->addr));
                 IF (ANDx(2, &NZ(comb.v_csr_wena),
                             &EZ(BIT(ARRITEM_B(pmp, comb.t_pmpdataidx, pmp->cfg), 7))));
                 SETARRITEM(pmp, comb.t_pmpdataidx, pmp->addr,
-                        CC2(BITS(cmd_data, SUB2(cfg->CFG_CPU_ADDR_BITS, CONST("3")), CONST("0")), CONST("0", 2)));
+                        CC2(BITS(cmd_data, SUB2(cfg->RISCV_ARCH, CONST("3")), CONST("0")), CONST("0", 2)));
                 SETARRITEM(pmp, comb.t_pmpdataidx, pmp->mask, comb.vb_pmp_napot_mask);
             ENDIF();
         ENDIF();
@@ -826,7 +826,7 @@ TEXT();
             SETVAL(comb.vb_rdata, i_e_pc);
         ENDIF();
         IF (NZ(comb.v_csr_wena));
-            SETVAL(dpc, BITS(cmd_data, DEC(cfg->CFG_CPU_ADDR_BITS), CONST("0")));
+            SETVAL(dpc, cmd_data);
         ENDIF();
     ELSIF (EQ(cmd_addr, CONST("0x7B2", 12)), "dscratch0: [DRW] Debug scratch register 0");
         SETVAL(comb.vb_rdata, dscratch0);
@@ -842,12 +842,12 @@ TEXT();
     ELSIF (EQ(cmd_addr, CONST("0xBC0", 12)), "mstackovr: [MRW] Machine Stack Overflow");
         SETVAL(comb.vb_rdata, mstackovr);
         IF (NZ(comb.v_csr_wena));
-            SETVAL(mstackovr, BITS(cmd_data, DEC(cfg->CFG_CPU_ADDR_BITS), CONST("0")));
+            SETVAL(mstackovr, cmd_data);
         ENDIF();
     ELSIF (EQ(cmd_addr, CONST("0xBC1", 12)), "mstackund: [MRW] Machine Stack Underflow");
         SETVAL(comb.vb_rdata, mstackund);
         IF (NZ(comb.v_csr_wena));
-            SETVAL(mstackund, BITS(cmd_data, DEC(cfg->CFG_CPU_ADDR_BITS), CONST("0")));
+            SETVAL(mstackund, cmd_data);
         ENDIF();
     ELSE();
         TEXT("Not implemented CSR:");
@@ -1000,13 +1000,13 @@ TEXT();
 TEXT();
     SETZERO(comb.w_mstackovr);
     IF (AND2(NZ(mstackovr),
-             LS(BITS(i_sp, DEC(cfg->CFG_CPU_ADDR_BITS), CONST("0")), mstackovr)));
+             LS(i_sp, mstackovr)));
         SETONE(comb.w_mstackovr);
         SETZERO(mstackovr);
     ENDIF();
     SETZERO(comb.w_mstackund);
     IF (AND2(NZ(mstackund),
-             GT(BITS(i_sp, DEC(cfg->CFG_CPU_ADDR_BITS), CONST("0")), mstackund)));
+             GT(i_sp, mstackund)));
         SETONE(comb.w_mstackund);
         SETZERO(mstackund);
     ENDIF();
@@ -1067,5 +1067,5 @@ TEXT();
     SETVAL(o_flushi_valid, comb.v_flushi);
     SETVAL(o_flushmmu_valid, comb.v_flushmmu);
     SETVAL(o_flushpipeline_valid, comb.v_flushpipeline);
-    SETVAL(o_flush_addr, BITS(cmd_data, DEC(cfg->CFG_CPU_ADDR_BITS), CONST("0")));
+    SETVAL(o_flush_addr, cmd_data);
 }
