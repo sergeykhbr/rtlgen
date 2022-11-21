@@ -32,8 +32,8 @@ class PMP : public ModuleObject {
             v_r(this, "v_r", "1"),
             v_w(this, "v_w", "1"),
             v_x(this, "v_x", "1"),
-            vb_start_addr(this, "vb_start_addr", "CFG_CPU_ADDR_BITS"),
-            vb_end_addr(this, "vb_end_addr", "CFG_CPU_ADDR_BITS"),
+            vb_start_addr(this, "vb_start_addr", "RISCV_ARCH"),
+            vb_end_addr(this, "vb_end_addr", "RISCV_ARCH"),
             vb_flags(this, "vb_flags", "CFG_PMP_FL_TOTAL") {
         }
 
@@ -67,8 +67,8 @@ class PMP : public ModuleObject {
      public:
         PmpTableItemType(GenObject *parent, const char *name="", int idx=-1, const char *comment="")
             : StructObject(parent, "PmpTableItemType", name, idx, comment),
-            start_addr(this, "start_addr", "CFG_CPU_ADDR_BITS"),
-            end_addr(this, "end_addr", "CFG_CPU_ADDR_BITS"),
+            start_addr(this, "start_addr", "RISCV_ARCH"),
+            end_addr(this, "end_addr", "RISCV_ARCH"),
             flags(this, "flags", "CFG_PMP_FL_TOTAL", "0") {
         }
      public:

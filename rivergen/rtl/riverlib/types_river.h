@@ -36,7 +36,7 @@ class types_river : public FileObject {
             hartreset("1", "hartreset", "0", this),
             req_valid("1", "req_valid", "0", this),
             dtype("DPortReq_Total", "dtype", "0", this),
-            addr("CFG_CPU_ADDR_BITS", "addr", "0", this),
+            addr("RISCV_ARCH", "addr", "0", this),
             wdata("RISCV_ARCH", "wdata", "0", this),
             size("3", "size", "0", this),
             resp_ready("1", "resp_ready", "0", this) {

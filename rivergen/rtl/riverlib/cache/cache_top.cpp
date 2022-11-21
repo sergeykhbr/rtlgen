@@ -23,25 +23,24 @@ CacheTop::CacheTop(GenObject *parent, const char *name) :
     i_nrst(this, "i_nrst", "1", "Reset: active LOW"),
     _ControlPath0_(this, "Control path:"),
     i_req_ctrl_valid(this, "i_req_ctrl_valid", "1", "Control request from CPU Core is valid"),
-    i_req_ctrl_addr(this, "i_req_ctrl_addr", "CFG_CPU_ADDR_BITS", "Control request address"),
+    i_req_ctrl_addr(this, "i_req_ctrl_addr", "RISCV_ARCH", "Control request address"),
     o_req_ctrl_ready(this, "o_req_ctrl_ready", "1", "Control request from CPU Core is accepted"),
     o_resp_ctrl_valid(this, "o_resp_ctrl_valid", "1", "ICache response is valid and can be accepted"),
-    o_resp_ctrl_addr(this, "o_resp_ctrl_addr", "CFG_CPU_ADDR_BITS", "ICache response address"),
+    o_resp_ctrl_addr(this, "o_resp_ctrl_addr", "RISCV_ARCH", "ICache response address"),
     o_resp_ctrl_data(this, "o_resp_ctrl_data", "64", "ICache read data"),
     o_resp_ctrl_load_fault(this, "o_resp_ctrl_load_fault", "1", "Bus response ERRSLV or ERRDEC on read"),
     i_resp_ctrl_ready(this, "i_resp_ctrl_ready", "1", "CPU Core is ready to accept ICache response"),
     _DataPath0_(this, "Data path:"),
     i_req_data_valid(this, "i_req_data_valid", "1", "Data path request from CPU Core is valid"),
     i_req_data_type(this, "i_req_data_type", "MemopType_Total", "Data write memopy operation flag"),
-    i_req_data_addr(this, "i_req_data_addr", "CFG_CPU_ADDR_BITS", "Memory operation address"),
+    i_req_data_addr(this, "i_req_data_addr", "RISCV_ARCH", "Memory operation address"),
     i_req_data_wdata(this, "i_req_data_wdata", "64", "Memory operation write value"),
     i_req_data_wstrb(this, "i_req_data_wstrb", "8", "8-bytes aligned strob"),
     i_req_data_size(this, "i_req_data_size", "2"),
     o_req_data_ready(this, "o_req_data_ready", "1", "Memory operation request accepted by DCache"),
     o_resp_data_valid(this, "o_resp_data_valid", "1", "DCache response is ready"),
-    o_resp_data_addr(this, "o_resp_data_addr", "CFG_CPU_ADDR_BITS", "DCache response address"),
+    o_resp_data_addr(this, "o_resp_data_addr", "RISCV_ARCH", "DCache response address"),
     o_resp_data_data(this, "o_resp_data_data", "64", "DCache response read data"),
-    o_resp_data_fault_addr(this, "o_resp_data_fault_addr", "CFG_CPU_ADDR_BITS", "AXI B-channel error"),
     o_resp_data_load_fault(this, "o_resp_data_load_fault", "1", "Bus response ERRSLV or ERRDEC on read"),
     o_resp_data_store_fault(this, "o_resp_data_store_fault", "1", "Bus response ERRSLV or ERRDEC on write"),
     i_resp_data_ready(this, "i_resp_data_ready", "1", "CPU Core is ready to accept DCache repsonse"),
@@ -63,8 +62,8 @@ CacheTop::CacheTop(GenObject *parent, const char *name) :
     i_pmp_ena(this, "i_pmp_ena", "1", "PMP is active in S or U modes or if L/MPRV bit is set in M-mode"),
     i_pmp_we(this, "i_pmp_we", "1", "write enable into PMP"),
     i_pmp_region(this, "i_pmp_region", "CFG_PMP_TBL_WIDTH", "selected PMP region"),
-    i_pmp_start_addr(this, "i_pmp_start_addr", "CFG_CPU_ADDR_BITS", "PMP region start address"),
-    i_pmp_end_addr(this, "i_pmp_end_addr", "CFG_CPU_ADDR_BITS", "PMP region end address (inclusive)"),
+    i_pmp_start_addr(this, "i_pmp_start_addr", "RISCV_ARCH", "PMP region start address"),
+    i_pmp_end_addr(this, "i_pmp_end_addr", "RISCV_ARCH", "PMP region end address (inclusive)"),
     i_pmp_flags(this, "i_pmp_flags", "CFG_PMP_FL_TOTAL", "{ena, lock, r, w, x}"),
     _DSnoopInterface0_(this, "$D Snoop interface:"),
     i_req_snoop_valid(this, "i_req_snoop_valid"),
@@ -77,9 +76,9 @@ CacheTop::CacheTop(GenObject *parent, const char *name) :
     o_resp_snoop_flags(this, "o_resp_snoop_flags", "DTAG_FL_TOTAL"),
     _DebugSignals0_(this, "Debug signals:"),
     i_flushi_valid(this, "i_flushi_valid", "1", "address to clear icache is valid"),
-    i_flushi_addr(this, "i_flushi_addr", "CFG_CPU_ADDR_BITS", "clear ICache address from debug interface"),
+    i_flushi_addr(this, "i_flushi_addr", "RISCV_ARCH", "clear ICache address from debug interface"),
     i_flushd_valid(this, "i_flushd_valid", "1"),
-    i_flushd_addr(this, "i_flushd_addr", "CFG_CPU_ADDR_BITS", ""),
+    i_flushd_addr(this, "i_flushd_addr", "RISCV_ARCH", ""),
     o_flushd_end(this, "o_flushd_end", "1"),
     // Params
     DATA_PATH(this, "DATA_PATH", "0"),
@@ -91,6 +90,10 @@ CacheTop::CacheTop(GenObject *parent, const char *name) :
     // struct
     CacheOutputTypeDef_(this),
     // Signals
+    wb_i_req_ctrl_addr(this, "wb_i_req_ctrl_addr", "CFG_CPU_ADDR_BITS"),
+    wb_i_req_data_addr(this, "wb_i_req_data_addr", "CFG_CPU_ADDR_BITS"),
+    wb_i_flushi_addr(this, "wb_i_flushi_addr",  "CFG_CPU_ADDR_BITS"),
+    wb_i_flushd_addr(this, "wb_i_flushd_addr",  "CFG_CPU_ADDR_BITS"),
     i(this, "i"),
     d(this, "d"),
     _iface0_(this, "Memory Control interface:"),
@@ -130,10 +133,10 @@ CacheTop::CacheTop(GenObject *parent, const char *name) :
         CONNECT(i1, 0, i1.i_clk, i_clk);
         CONNECT(i1, 0, i1.i_nrst, i_nrst);
         CONNECT(i1, 0, i1.i_req_valid, i_req_ctrl_valid);
-        CONNECT(i1, 0, i1.i_req_addr, i_req_ctrl_addr);
+        CONNECT(i1, 0, i1.i_req_addr, wb_i_req_ctrl_addr);
         CONNECT(i1, 0, i1.o_req_ready, o_req_ctrl_ready);
         CONNECT(i1, 0, i1.o_resp_valid, o_resp_ctrl_valid);
-        CONNECT(i1, 0, i1.o_resp_addr, o_resp_ctrl_addr);
+        CONNECT(i1, 0, i1.o_resp_addr, i.resp_addr);
         CONNECT(i1, 0, i1.o_resp_data, o_resp_ctrl_data);
         CONNECT(i1, 0, i1.o_resp_load_fault, o_resp_ctrl_load_fault);
         CONNECT(i1, 0, i1.i_resp_ready, i_resp_ctrl_ready);
@@ -150,7 +153,7 @@ CacheTop::CacheTop(GenObject *parent, const char *name) :
         CONNECT(i1, 0, i1.o_mpu_addr, i.mpu_addr);
         CONNECT(i1, 0, i1.i_pma_cached, w_pma_icached);
         CONNECT(i1, 0, i1.i_pmp_x, w_pmp_x);
-        CONNECT(i1, 0, i1.i_flush_address, i_flushi_addr);
+        CONNECT(i1, 0, i1.i_flush_address, wb_i_flushi_addr);
         CONNECT(i1, 0, i1.i_flush_valid, i_flushi_valid);
     ENDNEW();
 
@@ -159,15 +162,14 @@ CacheTop::CacheTop(GenObject *parent, const char *name) :
         CONNECT(d0, 0, d0.i_nrst, i_nrst);
         CONNECT(d0, 0, d0.i_req_valid, i_req_data_valid);
         CONNECT(d0, 0, d0.i_req_type, i_req_data_type);
-        CONNECT(d0, 0, d0.i_req_addr, i_req_data_addr);
+        CONNECT(d0, 0, d0.i_req_addr, wb_i_req_data_addr);
         CONNECT(d0, 0, d0.i_req_wdata, i_req_data_wdata);
         CONNECT(d0, 0, d0.i_req_wstrb, i_req_data_wstrb);
         CONNECT(d0, 0, d0.i_req_size, i_req_data_size);
         CONNECT(d0, 0, d0.o_req_ready, o_req_data_ready);
         CONNECT(d0, 0, d0.o_resp_valid, o_resp_data_valid);
-        CONNECT(d0, 0, d0.o_resp_addr, o_resp_data_addr);
+        CONNECT(d0, 0, d0.o_resp_addr, d.resp_addr);
         CONNECT(d0, 0, d0.o_resp_data, o_resp_data_data);
-        CONNECT(d0, 0, d0.o_resp_er_addr, o_resp_data_fault_addr);
         CONNECT(d0, 0, d0.o_resp_er_load_fault, o_resp_data_load_fault);
         CONNECT(d0, 0, d0.o_resp_er_store_fault, o_resp_data_store_fault);
         CONNECT(d0, 0, d0.i_resp_ready, i_resp_data_ready);
@@ -194,7 +196,7 @@ CacheTop::CacheTop(GenObject *parent, const char *name) :
         CONNECT(d0, 0, d0.o_resp_snoop_valid, o_resp_snoop_valid);
         CONNECT(d0, 0, d0.o_resp_snoop_data, o_resp_snoop_data);
         CONNECT(d0, 0, d0.o_resp_snoop_flags, o_resp_snoop_flags);
-        CONNECT(d0, 0, d0.i_flush_address, i_flushd_addr);
+        CONNECT(d0, 0, d0.i_flush_address, wb_i_flushd_addr);
         CONNECT(d0, 0, d0.i_flush_valid, i_flushd_valid);
         CONNECT(d0, 0, d0.o_flush_end, o_flushd_end);
     ENDNEW();
@@ -241,6 +243,10 @@ CacheTop::CacheTop(GenObject *parent, const char *name) :
 void CacheTop::proc_comb() {
     river_cfg *cfg = glob_river_cfg_;
 
+    SETVAL(wb_i_req_ctrl_addr, BITS(i_req_ctrl_addr, DEC(cfg->CFG_CPU_ADDR_BITS), CONST("0")));
+    SETVAL(wb_i_req_data_addr, BITS(i_req_data_addr, DEC(cfg->CFG_CPU_ADDR_BITS), CONST("0")));
+    SETVAL(wb_i_flushi_addr, BITS(i_flushi_addr, DEC(cfg->CFG_CPU_ADDR_BITS), CONST("0")));
+    SETVAL(wb_i_flushd_addr, BITS(i_flushd_addr, DEC(cfg->CFG_CPU_ADDR_BITS), CONST("0")));
     SETVAL(comb.v_queue_re, i_req_mem_ready);
     SETVAL(comb.v_queue_we, OR2(i.req_mem_valid, d.req_mem_valid));
 
@@ -292,7 +298,19 @@ TEXT();
                            &comb.vb_req_mem_type_o,
                            &comb.vb_req_mem_size_o,
                            &comb.vb_req_mem_addr_o);
- 
+
+TEXT();
+    SETBITS(comb.vb_resp_ctrl_addr, DEC(cfg->CFG_CPU_ADDR_BITS), CONST("0"), i.resp_addr);
+    SETBITS(comb.vb_resp_data_addr, DEC(cfg->CFG_CPU_ADDR_BITS), CONST("0"), d.resp_addr);
+    IF(LS(cfg->CFG_CPU_ADDR_BITS, cfg->RISCV_ARCH));
+        IF (NZ(BIT(i.resp_addr, DEC(cfg->CFG_CPU_ADDR_BITS))));
+            SETBITS(comb.vb_resp_ctrl_addr, DEC(cfg->RISCV_ARCH), cfg->CFG_CPU_ADDR_BITS, ALLONES()); 
+        ENDIF();
+        IF (NZ(BIT(d.resp_addr, DEC(cfg->CFG_CPU_ADDR_BITS))));
+            SETBITS(comb.vb_resp_data_addr, DEC(cfg->RISCV_ARCH), cfg->CFG_CPU_ADDR_BITS, ALLONES()); 
+        ENDIF();
+    ENDIF();
+
 TEXT();
     SETVAL(o_req_mem_valid, queue_nempty_o);
     SETVAL(o_req_mem_path, comb.v_req_mem_path_o);
@@ -301,4 +319,6 @@ TEXT();
     SETVAL(o_req_mem_addr, comb.vb_req_mem_addr_o);
     SETVAL(o_req_mem_strob, d.req_mem_strob);
     SETVAL(o_req_mem_data, d.req_mem_wdata);
+    SETVAL(o_resp_ctrl_addr, comb.vb_resp_ctrl_addr);
+    SETVAL(o_resp_data_addr, comb.vb_resp_data_addr);
 }

@@ -29,7 +29,7 @@ ic_dport::ic_dport(GenObject *parent, const char *name) :
     i_hartreset(this, "i_hartreset", "1", "Reset currently selected hart"),
     i_dport_req_valid(this, "i_dport_req_valid", "1", "Debug access from DSU is valid"),
     i_dport_req_type(this, "i_dport_req_type", "DPortReq_Total", "Debug access types"),
-    i_dport_addr(this, "i_dport_addr", "CFG_CPU_ADDR_BITS", "Register index"),
+    i_dport_addr(this, "i_dport_addr", "RISCV_ARCH", "Register index"),
     i_dport_wdata(this, "i_dport_wdata", "RISCV_ARCH", "Write value"),
     i_dport_size(this, "i_dport_size", "3", "0=1B;1=2B;2=4B;3=8B;4=128B"),
     o_dport_req_ready(this, "o_dport_req_ready", "1", "Response is ready"),

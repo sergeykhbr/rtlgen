@@ -111,7 +111,6 @@ class DCacheLru : public ModuleObject {
     OutPort o_resp_valid;
     OutPort o_resp_addr;
     OutPort o_resp_data;
-    OutPort o_resp_er_addr;
     OutPort o_resp_er_load_fault;
     OutPort o_resp_er_store_fault;
     InPort i_resp_ready;

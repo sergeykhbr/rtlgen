@@ -110,7 +110,6 @@ public:
     Signal wb_resp_data_data;
     Signal w_resp_data_load_fault;
     Signal w_resp_data_store_fault;
-    Signal wb_resp_data_fault_addr;
     Signal w_resp_data_ready;
     Signal w_pmp_ena;
     Signal w_pmp_we;

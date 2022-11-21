@@ -58,7 +58,7 @@ RiverTop::RiverTop(GenObject *parent, const char *name) :
     i_resumereq(this, "i_resumereq", "1", "DMI: resume request from debug unit"),
     i_dport_req_valid(this, "i_dport_req_valid", "1", "Debug access from DSU is valid"),
     i_dport_type(this, "i_dport_type", "DPortReq_Total", "Debug access type"),
-    i_dport_addr(this, "i_dport_addr", "CFG_CPU_ADDR_BITS", "dport address"),
+    i_dport_addr(this, "i_dport_addr", "RISCV_ARCH", "dport address"),
     i_dport_wdata(this, "i_dport_wdata", "RISCV_ARCH", "Write value"),
     i_dport_size(this, "i_dport_size", "3", "reg/mem access size:0=1B;...,4=128B;"),
     o_dport_req_ready(this, "o_dport_req_ready"),
@@ -72,9 +72,9 @@ RiverTop::RiverTop(GenObject *parent, const char *name) :
     _ControlPath0_(this, "Control path:"),
     w_req_ctrl_ready(this, "w_req_ctrl_ready", "1"),
     w_req_ctrl_valid(this, "w_req_ctrl_valid", "1"),
-    wb_req_ctrl_addr(this, "wb_req_ctrl_addr", "CFG_CPU_ADDR_BITS"),
+    wb_req_ctrl_addr(this, "wb_req_ctrl_addr", "RISCV_ARCH"),
     w_resp_ctrl_valid(this, "w_resp_ctrl_valid", "1"),
-    wb_resp_ctrl_addr(this, "wb_resp_ctrl_addr", "CFG_CPU_ADDR_BITS"),
+    wb_resp_ctrl_addr(this, "wb_resp_ctrl_addr", "RISCV_ARCH"),
     wb_resp_ctrl_data(this, "wb_resp_ctrl_data", "64"),
     w_resp_ctrl_load_fault(this, "w_resp_ctrl_load_fault", "1"),
     w_resp_ctrl_ready(this, "w_resp_ctrl_ready", "1"),
@@ -82,27 +82,26 @@ RiverTop::RiverTop(GenObject *parent, const char *name) :
     w_req_data_ready(this, "w_req_data_ready", "1"),
     w_req_data_valid(this, "w_req_data_valid", "1"),
     wb_req_data_type(this, "wb_req_data_type", "MemopType_Total"),
-    wb_req_data_addr(this, "wb_req_data_addr", "CFG_CPU_ADDR_BITS"),
+    wb_req_data_addr(this, "wb_req_data_addr", "RISCV_ARCH"),
     wb_req_data_wdata(this, "wb_req_data_wdata", "64"),
     wb_req_data_wstrb(this, "wb_req_data_wstrb", "8"),
     wb_req_data_size(this, "wb_req_data_size", "2"),
     w_resp_data_valid(this, "w_resp_data_valid", "1"),
-    wb_resp_data_addr(this, "wb_resp_data_addr", "CFG_CPU_ADDR_BITS"),
+    wb_resp_data_addr(this, "wb_resp_data_addr", "RISCV_ARCH"),
     wb_resp_data_data(this, "wb_resp_data_data", "64"),
     w_resp_data_load_fault(this, "w_resp_data_load_fault", "1"),
     w_resp_data_store_fault(this, "w_resp_data_store_fault", "1"),
-    wb_resp_data_fault_addr(this, "wb_resp_data_fault_addr", "CFG_CPU_ADDR_BITS"),
     w_resp_data_ready(this, "w_resp_data_ready", "1"),
     w_pmp_ena(this, "w_pmp_ena", "1"),
     w_pmp_we(this, "w_pmp_we", "1"),
     wb_pmp_region(this, "wb_pmp_region", "CFG_PMP_TBL_WIDTH"),
-    wb_pmp_start_addr(this, "wb_pmp_start_addr", "CFG_CPU_ADDR_BITS"),
-    wb_pmp_end_addr(this, "wb_pmp_end_addr", "CFG_CPU_ADDR_BITS"),
+    wb_pmp_start_addr(this, "wb_pmp_start_addr", "RISCV_ARCH"),
+    wb_pmp_end_addr(this, "wb_pmp_end_addr", "RISCV_ARCH"),
     wb_pmp_flags(this, "wb_pmp_flags", "CFG_PMP_FL_TOTAL"),
     w_flushi_valid(this, "w_flushi_valid", "1"),
-    wb_flushi_addr(this, "wb_flushi_addr", "CFG_CPU_ADDR_BITS"),
+    wb_flushi_addr(this, "wb_flushi_addr", "RISCV_ARCH"),
     w_flushd_valid(this, "w_flushd_valid", "1"),
-    wb_flushd_addr(this, "wb_flushd_addr", "CFG_CPU_ADDR_BITS"),
+    wb_flushd_addr(this, "wb_flushd_addr", "RISCV_ARCH"),
     w_flushd_end(this, "w_flushd_end", "1"),
     proc0(this, "proc0"),
     cache0(this, "cache0"),
@@ -133,7 +132,6 @@ RiverTop::RiverTop(GenObject *parent, const char *name) :
         CONNECT(proc0, 0, proc0.i_resp_data_valid, w_resp_data_valid);
         CONNECT(proc0, 0, proc0.i_resp_data_addr, wb_resp_data_addr);
         CONNECT(proc0, 0, proc0.i_resp_data_data, wb_resp_data_data);
-        CONNECT(proc0, 0, proc0.i_resp_data_fault_addr, wb_resp_data_fault_addr);
         CONNECT(proc0, 0, proc0.i_resp_data_load_fault, w_resp_data_load_fault);
         CONNECT(proc0, 0, proc0.i_resp_data_store_fault, w_resp_data_store_fault);
         CONNECT(proc0, 0, proc0.o_resp_data_ready, w_resp_data_ready);
@@ -187,7 +185,6 @@ RiverTop::RiverTop(GenObject *parent, const char *name) :
         CONNECT(cache0, 0, cache0.o_resp_data_valid, w_resp_data_valid);
         CONNECT(cache0, 0, cache0.o_resp_data_addr, wb_resp_data_addr);
         CONNECT(cache0, 0, cache0.o_resp_data_data, wb_resp_data_data);
-        CONNECT(cache0, 0, cache0.o_resp_data_fault_addr, wb_resp_data_fault_addr);
         CONNECT(cache0, 0, cache0.o_resp_data_load_fault, w_resp_data_load_fault);
         CONNECT(cache0, 0, cache0.o_resp_data_store_fault, w_resp_data_store_fault);
         CONNECT(cache0, 0, cache0.i_resp_data_ready, w_resp_data_ready);

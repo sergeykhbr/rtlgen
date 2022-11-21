@@ -25,8 +25,8 @@ PMP::PMP(GenObject *parent, const char *name) :
     i_daddr(this, "i_daddr", "CFG_CPU_ADDR_BITS"),
     i_we(this, "i_we", "1", "write enable into PMP"),
     i_region(this, "i_region", "CFG_PMP_TBL_WIDTH", "selected PMP region"),
-    i_start_addr(this, "i_start_addr", "CFG_CPU_ADDR_BITS", "PMP region start address"),
-    i_end_addr(this, "i_end_addr", "CFG_CPU_ADDR_BITS", "PMP region end address (inclusive)"),
+    i_start_addr(this, "i_start_addr", "RISCV_ARCH", "PMP region start address"),
+    i_end_addr(this, "i_end_addr", "RISCV_ARCH", "PMP region end address (inclusive)"),
     i_flags(this, "i_flags", "CFG_PMP_FL_TOTAL", "{ena, lock, r, w, x}"),
     o_r(this, "o_r", "1"),
     o_w(this, "o_w", "1"),
@@ -62,8 +62,8 @@ TEXT();
 
 TEXT();
     i = &FOR ("i", DEC(cfg->CFG_PMP_TBL_SIZE), CONST("0"), "--");
-        IF (ANDx(2, &GE(i_iaddr, ARRITEM_B(tbl, *i, tbl->start_addr)),
-                    &LE(i_iaddr, ARRITEM_B(tbl, *i, tbl->end_addr))));
+        IF (ANDx(2, &GE(i_iaddr, BITS(ARRITEM_B(tbl, *i, tbl->start_addr), DEC(cfg->CFG_CPU_ADDR_BITS), CONST("0"))),
+                    &LE(i_iaddr, BITS(ARRITEM_B(tbl, *i, tbl->end_addr), DEC(cfg->CFG_CPU_ADDR_BITS), CONST("0")))));
             IF (ANDx(2, &NZ(BIT(ARRITEM_B(tbl, *i, tbl->flags), cfg->CFG_PMP_FL_V)),
                         &OR2(i_ena, BIT(ARRITEM_B(tbl, *i, tbl->flags), cfg->CFG_PMP_FL_L))));
                 SETVAL(comb.v_x, BIT(ARRITEM_B(tbl, *i, tbl->flags), cfg->CFG_PMP_FL_X));
@@ -71,8 +71,8 @@ TEXT();
         ENDIF();
 
         TEXT();
-        IF (ANDx(2, &GE(i_daddr, ARRITEM_B(tbl, *i, tbl->start_addr)),
-                    &LE(i_daddr, ARRITEM_B(tbl, *i, tbl->end_addr))));
+        IF (ANDx(2, &GE(i_daddr, BITS(ARRITEM_B(tbl, *i, tbl->start_addr), DEC(cfg->CFG_CPU_ADDR_BITS), CONST("0"))),
+                    &LE(i_daddr, BITS(ARRITEM_B(tbl, *i, tbl->end_addr), DEC(cfg->CFG_CPU_ADDR_BITS), CONST("0")))));
             IF (ANDx(2, &NZ(BIT(ARRITEM_B(tbl, *i, tbl->flags), cfg->CFG_PMP_FL_V)),
                         &OR2(i_ena, BIT(ARRITEM_B(tbl, *i, tbl->flags), cfg->CFG_PMP_FL_L))));
                 SETVAL(comb.v_r, BIT(ARRITEM_B(tbl, *i, tbl->flags), cfg->CFG_PMP_FL_R));

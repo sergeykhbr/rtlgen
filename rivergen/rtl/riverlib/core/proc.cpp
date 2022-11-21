@@ -45,7 +45,6 @@ Processor::Processor(GenObject *parent, const char *name) :
     i_resp_data_valid(this, "i_resp_data_valid", "1", "DCache response is valid"),
     i_resp_data_addr(this, "i_resp_data_addr", "RISCV_ARCH", "DCache response address must be equal to the latest request address"),
     i_resp_data_data(this, "i_resp_data_data", "64", "Read value"),
-    i_resp_data_fault_addr(this, "i_resp_data_fault_addr", "RISCV_ARCH", "write-error address (B-channel)"),
     i_resp_data_load_fault(this, "i_resp_data_load_fault", "1", "Bus response with SLVERR or DECERR on read"),
     i_resp_data_store_fault(this, "i_resp_data_store_fault", "1", "Bus response with SLVERR or DECERR on write"),
     o_resp_data_ready(this, "o_resp_data_ready", "1", "Core is ready to accept response from DCache"),

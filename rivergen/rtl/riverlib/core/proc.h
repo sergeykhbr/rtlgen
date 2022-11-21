@@ -64,7 +64,6 @@ class Processor : public ModuleObject {
     InPort i_resp_data_valid;
     InPort i_resp_data_addr;
     InPort i_resp_data_data;
-    InPort i_resp_data_fault_addr;
     InPort i_resp_data_load_fault;
     InPort i_resp_data_store_fault;
     OutPort o_resp_data_ready;

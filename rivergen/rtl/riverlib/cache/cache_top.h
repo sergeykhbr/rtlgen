@@ -44,7 +44,9 @@ class CacheTop : public ModuleObject {
             v_req_mem_path_o(this, "v_req_mem_path_o", "1"),
             vb_req_mem_type_o(this, "vb_req_mem_type_o", "REQ_MEM_TYPE_BITS"),
             vb_req_mem_size_o(this, "vb_req_mem_size_o", "3"),
-            vb_req_mem_addr_o(this, "vb_req_mem_addr_o", "CFG_CPU_ADDR_BITS") {
+            vb_req_mem_addr_o(this, "vb_req_mem_addr_o", "CFG_CPU_ADDR_BITS"),
+            vb_resp_ctrl_addr(this, "vb_resp_ctrl_addr", "RISCV_ARCH"),
+            vb_resp_data_addr(this, "vb_resp_data_addr", "RISCV_ARCH") {
         }
 
      public:
@@ -59,6 +61,8 @@ class CacheTop : public ModuleObject {
         Logic vb_req_mem_type_o;
         Logic vb_req_mem_size_o;
         Logic vb_req_mem_addr_o;
+        Logic vb_resp_ctrl_addr;
+        Logic vb_resp_data_addr;
     };
 
     void proc_comb();
@@ -88,7 +92,6 @@ class CacheTop : public ModuleObject {
     OutPort o_resp_data_valid;
     OutPort o_resp_data_addr;
     OutPort o_resp_data_data;
-    OutPort o_resp_data_fault_addr;
     OutPort o_resp_data_load_fault;
     OutPort o_resp_data_store_fault;
     InPort i_resp_data_ready;
@@ -143,7 +146,8 @@ class CacheTop : public ModuleObject {
             req_mem_addr(this, "req_mem_addr", "CFG_CPU_ADDR_BITS"),
             req_mem_strob(this, "req_mem_strob", "DCACHE_BYTES_PER_LINE"),
             req_mem_wdata(this, "req_mem_wdata", "DCACHE_LINE_BITS"),
-            mpu_addr(this, "mpu_addr", "CFG_CPU_ADDR_BITS") {
+            mpu_addr(this, "mpu_addr", "CFG_CPU_ADDR_BITS"),
+            resp_addr(this, "resp_addr", "CFG_CPU_ADDR_BITS") {
         }
      public:
         Signal req_mem_valid;
@@ -153,8 +157,13 @@ class CacheTop : public ModuleObject {
         Signal req_mem_strob;
         Signal req_mem_wdata;
         Signal mpu_addr;
+        Signal resp_addr;
     } CacheOutputTypeDef_;
 
+    Signal wb_i_req_ctrl_addr;
+    Signal wb_i_req_data_addr;
+    Signal wb_i_flushi_addr;
+    Signal wb_i_flushd_addr;
     CacheOutputType i;
     CacheOutputType d;
     TextLine _iface0_;
