@@ -19,11 +19,6 @@
 
 namespace sysvc {
 
-Signal::Signal(const char *width, const char *name, const char *val,
-    GenObject *parent, const char *comment)
-    : Logic(width, name, val, parent, comment) {
-}
-
 Signal::Signal(GenObject *parent, const char *name, GenValue *width, 
     const char *comment) : Logic(width, name, "0", parent, comment) {
 }

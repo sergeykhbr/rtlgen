@@ -26,12 +26,6 @@ namespace sysvc {
 
 class Signal : public Logic {
  public:
-    Signal(const char *width,
-           const char *name,
-           const char *val,
-           GenObject *parent,
-           const char *comment="");
-
     Signal(GenObject *parent,
            const char *name,
            GenValue *width,
@@ -44,6 +38,25 @@ class Signal : public Logic {
            const char *comment="");
 
     virtual bool isSignal() override { return true; }
+};
+
+// Always use sc_biguint in SystemC
+class SignalBig : public Signal {
+ public:
+    SignalBig(GenObject *parent,
+           const char *name,
+           GenValue *width,
+           const char *comment="")
+        : Signal(parent, name, width, comment) {}
+
+    SignalBig(GenObject *parent,
+           const char *name,
+           const char *width,
+           const char *val="0",
+           const char *comment="")
+        : Signal(parent, name, width, val, comment) {}
+
+    virtual bool isBigSC() override { return true; }
 };
 
 }  // namespace sysvc

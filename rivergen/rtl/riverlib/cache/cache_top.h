@@ -50,9 +50,9 @@ class CacheTop : public ModuleObject {
         }
 
      public:
-        Logic vb_ctrl_bus;
-        Logic vb_data_bus;
-        Logic vb_queue_bus;
+        LogicBig vb_ctrl_bus;
+        LogicBig vb_data_bus;
+        LogicBig vb_queue_bus;
         Logic1 ctrl_path_id;
         Logic1 data_path_id;
         Logic v_queue_we;
@@ -184,8 +184,8 @@ class CacheTop : public ModuleObject {
     TextLine _iface2_;
     Signal queue_re_i;
     Signal queue_we_i;
-    Signal queue_wdata_i;
-    Signal queue_rdata_o;
+    SignalBig queue_wdata_i;
+    SignalBig queue_rdata_o;
     Signal queue_full_o;
     Signal queue_nempty_o;
 

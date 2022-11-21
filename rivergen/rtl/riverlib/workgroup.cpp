@@ -69,7 +69,7 @@ Workgroup::Workgroup(GenObject *parent, const char *name) :
     w_dmi_hartreset(this, "w_dmi_hartreset", "1"),
     w_dmi_dport_req_valid(this, "w_dmi_dport_req_valid", "1"),
     wb_dmi_dport_req_type(this, "wb_dmi_dport_req_type", "DPortReq_Total"),
-    wb_dmi_dport_addr(this, "wb_dmi_dport_addr", "CFG_CPU_ADDR_BITS"),
+    wb_dmi_dport_addr(this, "wb_dmi_dport_addr", "RISCV_ARCH"),
     wb_dmi_dport_wdata(this, "wb_dmi_dport_wdata", "RISCV_ARCH"),
     wb_dmi_dport_size(this, "wb_dmi_dport_size", "3"),
     w_ic_dport_req_ready(this, "w_ic_dport_req_ready", "1"),

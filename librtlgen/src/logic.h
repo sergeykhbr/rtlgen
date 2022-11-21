@@ -41,8 +41,9 @@ class Logic : public GenValue {
     Logic(GenObject *parent,
           const char *name,
           const char *width,
+          const char *val="",
           const char *comment="") :
-        Logic(width, name, "", parent, comment) {}
+        Logic(width, name, val, parent, comment) {}
 
     virtual std::string getType();
     virtual std::string getStrValue() override;
@@ -62,6 +63,19 @@ class Logic1 : public Logic {
         Logic("1", name, "", parent, comment) {}
 
     std::string getType() override;
+};
+
+// SystemC only use sc_biguint always
+class LogicBig : public Logic {
+ public:
+    LogicBig(GenObject *parent,
+             const char *name,
+             const char *width,
+             const char *val="0",
+             const char *comment="") :
+        Logic(width, name, val, parent, comment) {}
+
+    bool isBigSC() override { return true; }
 };
 
 }  // namespace sysvc

@@ -23,7 +23,7 @@ axi_slv::axi_slv(GenObject *parent, const char *name) :
     i_xslvi(this, "i_xslvi", "AXI Slave input interface"),
     o_xslvo(this, "o_xslvo", "AXI Slave output interface"),
     o_req_valid(this, "o_req_valid", "1"),
-    o_req_addr(this, "o_req_addr", "CFG_SYSBUS_DATA_BITS"),
+    o_req_addr(this, "o_req_addr", "CFG_SYSBUS_ADDR_BITS"),
     o_req_write(this, "o_req_write", "1"),
     o_req_wdata(this, "o_req_wdata", "CFG_SYSBUS_DATA_BITS"),
     o_req_burst(this, "o_req_burst", "1"),

@@ -30,8 +30,8 @@ class divstage53 : public ModuleObject {
         CombProcess(GenObject *parent) :
             ProcObject(parent, "comb"),
             wb_bits(this, "wb_bits", "8"),
-            wb_divx3(this, "wb_divx3", "55", "width 53+2"),
-            wb_divx2(this, "wb_divx2", "55", "width 53+2"),
+            wb_divx3(this, "wb_divx3", "55", "0", "width 53+2"),
+            wb_divx2(this, "wb_divx2", "55", "0", "width 53+2"),
             wb_muxind(this, "wb_muxind", "7"),
             w_muxind_rdy(this, "w_muxind_rdy", "1") {
         }

@@ -77,7 +77,7 @@ RiverAmba::RiverAmba(GenObject *parent, const char *name) :
     w_dporti_hartreset(this, "w_dporti_hartreset", "1"),
     w_dporti_req_valid(this, "w_dporti_req_valid", "1"),
     wb_dporti_dtype(this, "wb_dporti_dtype", "DPortReq_Total"),
-    wb_dporti_addr(this, "wb_dporti_addr", "CFG_CPU_ADDR_BITS"),
+    wb_dporti_addr(this, "wb_dporti_addr", "RISCV_ARCH"),
     wb_dporti_wdata(this, "wb_dporti_wdata", "RISCV_ARCH"),
     wb_dporti_size(this, "wb_dporti_size", "3"),
     w_dporti_resp_ready(this, "w_dporti_resp_ready", "1"),

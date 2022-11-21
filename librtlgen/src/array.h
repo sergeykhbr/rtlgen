@@ -82,7 +82,7 @@ class WireArray : public ArrayObject<T> {
         ArrayObject<T>::arr_ = new T *[d];
         for (int i = 0; i < d; i++) {
             RISCV_sprintf(tstr, sizeof(tstr), "%d", i);
-            ArrayObject<T>::arr_[i] = new T(width, tstr, "0", this);
+            ArrayObject<T>::arr_[i] = new T(this, tstr, width, "0");
         }
     }
     virtual bool isSignal() override { return ArrayObject<T>::arr_[0]->isSignal(); }

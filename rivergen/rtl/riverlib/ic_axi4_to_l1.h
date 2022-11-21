@@ -33,7 +33,7 @@ class ic_axi4_to_l1 : public ModuleObject {
             : ProcObject(parent, "comb"),
             vb_xmsti(this, "vb_xmsti"),
             vb_l1o(this, "vb_l1o"),
-            idx(this, "idx", "SUB(CFG_DLOG2_BYTES_PER_LINE,3)", "request always 64 bits"),
+            idx(this, "idx", "SUB(CFG_DLOG2_BYTES_PER_LINE,3)", "0", "request always 64 bits"),
             vb_req_xbytes(this, "vb_req_xbytes", "XSIZE_TOTAL"),
             vb_req_mask(this, "vb_req_mask", "64"),
             vb_r_data_modified(this, "vb_r_data_modified", "L1CACHE_LINE_BITS"),

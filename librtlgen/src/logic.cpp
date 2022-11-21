@@ -56,10 +56,10 @@ std::string Logic::getType() {
                 ret += "uint64_t";
             }
         } else {
-            if (getWidth() <= 1 && isNumber(w)) {
-                ret += "bool";
-            } else if (getWidth() > 64) {
+            if (getWidth() > 64 || isBigSC()) {
                 ret += "sc_biguint<" + w + ">";
+            } else if (getWidth() <= 1 && isNumber(w)) {
+                ret += "bool";
             } else {
                 ret += "sc_uint<" + w + ">";
             }

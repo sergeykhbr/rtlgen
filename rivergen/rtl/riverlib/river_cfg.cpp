@@ -28,7 +28,7 @@ river_cfg::river_cfg(GenObject *parent) :
     _arch0_(this, "Architectural size definition"),
     RISCV_ARCH(this, "RISCV_ARCH", "64"),
     _2_(this),
-    CFG_CPU_ADDR_BITS(this, "CFG_CPU_ADDR_BITS", "64"),
+    CFG_CPU_ADDR_BITS(this, "CFG_CPU_ADDR_BITS", "48"),
     CFG_CPU_ID_BITS(this, "CFG_CPU_ID_BITS", "1"),
     CFG_CPU_USER_BITS(this, "CFG_CPU_USER_BITS", "1"),
     _3_(this),

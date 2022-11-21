@@ -84,6 +84,7 @@ class GenObject {
     virtual bool isString() { return getType() == "std::string" || getType() == "string"; }
     virtual bool isTypedef() { return false; }
     virtual bool isSignal() { return false; }
+    virtual bool isBigSC() { return false; }    // Use sc_biguint in systemc always
     virtual bool isInput() { return false; }
     virtual bool isOutput() { return false; }
     virtual bool isVector() { return false; }

@@ -25,12 +25,6 @@ namespace sysvc {
 
 class RegSignal : public Signal {
  public:
-    RegSignal(const char *width,
-              const char *name,
-              const char *val,
-              GenObject *parent,
-             const char *comment="");
-
     RegSignal(GenObject *parent,
            const char *name,
            const char *width="1",

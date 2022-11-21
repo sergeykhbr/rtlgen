@@ -44,7 +44,7 @@ class L2CacheLru : public ModuleObject {
             v_invalidate(this, "v_invalidate", "1"),
             v_flush_end(this, "v_flush_end", "1"),
             v_line_cs_read(this, "v_line_cs_read", "1"),
-            v_line_cs_write(this, "v_line_cs_write", "1", "'cs' should be active when write line and there's no new request"),
+            v_line_cs_write(this, "v_line_cs_write", "1", "0", "'cs' should be active when write line and there's no new request"),
             vb_line_addr(this, "vb_line_addr", "CFG_CPU_ADDR_BITS"),
             vb_line_wdata(this, "vb_line_wdata", "L2CACHE_LINE_BITS"),
             vb_line_wstrb(this, "vb_line_wstrb", "L2CACHE_BYTES_PER_LINE"),
