@@ -40,8 +40,6 @@ riscv_soc::riscv_soc(GenObject *parent, const char *name) :
     o_uart1_td(this, "o_uart1_td", "1"),
     // param
     _map0_(this),
-    CFG_SOC_MAP_UART1_XADDR(this, "CFG_SOC_MAP_UART1_XADDR", "0x10010"),
-    CFG_SOC_MAP_UART1_XMASK(this, "CFG_SOC_MAP_UART1_XMASK", "-1"),
     _pnp0_(this),
     CFG_SOC_PNP_0_XMST_GROUP0(this, "CFG_SOC_PNP_0_XMST_GROUP0", "0"),
     CFG_SOC_PNP_1_XMST_DMA0(this, "CFG_SOC_PNP_1_XMST_DMA0", "1"),
@@ -57,6 +55,7 @@ riscv_soc::riscv_soc(GenObject *parent, const char *name) :
     w_dmreset(this, "w_dmreset", "1", "0", "Reset request from workgroup debug interface"),
     acpo(this, "acpo"),
     acpi(this, "acpi"),
+    bus0_mapinfo(this, "bus0_mapinfo"),
     aximi(this, "aximi"),
     aximo(this, "aximo"),
     axisi(this, "axisi"),
@@ -81,11 +80,10 @@ riscv_soc::riscv_soc(GenObject *parent, const char *name) :
     Operation::start(this);
 
     // Create and connet Sub-modules:
-    apbrdg0.xaddr.setObjValue(&CFG_SOC_MAP_UART1_XADDR);
-    apbrdg0.xmask.setObjValue(&CFG_SOC_MAP_UART1_XMASK);
     NEW(apbrdg0, apbrdg0.getName().c_str());
         CONNECT(apbrdg0, 0, apbrdg0.i_clk, i_clk);
         CONNECT(apbrdg0, 0, apbrdg0.i_nrst, w_sys_nrst);
+        CONNECT(apbrdg0, 0, apbrdg0.i_mapinfo, ARRITEM(bus0_mapinfo, glob_bus0_cfg_->CFG_BUS0_XSLV_BUS1, bus0_mapinfo));
         CONNECT(apbrdg0, 0, apbrdg0.o_cfg, ARRITEM(dev_pnp, CFG_SOC_PNP_0_XSLV_PBRIDGE0, dev_pnp));
         CONNECT(apbrdg0, 0, apbrdg0.i_xslvi, ARRITEM(axisi, glob_bus0_cfg_->CFG_BUS0_XSLV_BUS1, axisi));
         CONNECT(apbrdg0, 0, apbrdg0.o_xslvo, ARRITEM(axiso, glob_bus0_cfg_->CFG_BUS0_XSLV_BUS1, axiso));

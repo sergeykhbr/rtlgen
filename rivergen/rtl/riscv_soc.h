@@ -128,8 +128,6 @@ public:
     };
 
     TextLine _map0_;
-    ParamUI64H CFG_SOC_MAP_UART1_XADDR;
-    ParamUI64H CFG_SOC_MAP_UART1_XMASK;
     TextLine _pnp0_;
     ParamI32D CFG_SOC_PNP_0_XMST_GROUP0;
     ParamI32D CFG_SOC_PNP_1_XMST_DMA0;
@@ -146,6 +144,7 @@ public:
     Signal w_dmreset;
     axi4_master_out_type_signal acpo;
     axi4_master_in_type_signal acpi;
+    types_bus0::bus0_mapinfo_vector   bus0_mapinfo;
     types_bus0::bus0_xmst_in_vector   aximi;
     types_bus0::bus0_xmst_out_vector  aximo;
     types_bus0::bus0_xslv_in_vector   axisi;

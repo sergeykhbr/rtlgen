@@ -30,30 +30,37 @@ class axi_slv : public ModuleObject {
         CombProcess(GenObject *parent) :
             ProcObject(parent, "comb"),
             vb_req_addr_next(this, "vb_req_addr_next", "12"),
-            vb_rdata(this, "vb_rdata", "32"),
-            vapbo(this, "vapbo") {
+            v_req_last(this, "v_req_last", "1"),
+            vcfg(this, "vcfg"),
+            vxslvo(this, "vxslvo") {
         }
 
      public:
         Logic vb_req_addr_next;
-        Logic vb_rdata;
-        types_amba::apb_out_type vapbo;
+        Logic v_req_last;
+        types_amba::dev_config_type vcfg;
+        types_amba::axi4_slave_out_type vxslvo;
     };
 
     void proc_comb();
 
  public:
+    DefParamUI32D vid;
+    DefParamUI32D did;
     // io:
     InPort i_clk;
     InPort i_nrst;
+    InStruct<types_amba::mapinfo_type> i_mapinfo;
+    OutStruct<types_amba::dev_config_type> o_cfg;
     InStruct<types_amba::axi4_slave_in_type> i_xslvi;
     OutStruct<types_amba::axi4_slave_out_type> o_xslvo;
     OutPort o_req_valid;
     OutPort o_req_addr;
     OutPort o_req_write;
     OutPort o_req_wdata;
-    OutPort o_req_burst;
+    OutPort o_req_wstrb;
     OutPort o_req_last;
+    InPort i_req_ready;
     InPort i_resp_valid;
     InPort i_resp_rdata;
     InPort i_resp_err;
@@ -62,8 +69,8 @@ class axi_slv : public ModuleObject {
     ParamLogic State_w;
     ParamLogic State_burst_w;
     ParamLogic State_last_w;
-    ParamLogic State_burst_r;
-    ParamLogic State_last_r;
+    ParamLogic State_addr_r;
+    ParamLogic State_data_r;
     ParamLogic State_b;
 
     RegSignal state;
@@ -75,9 +82,11 @@ class axi_slv : public ModuleObject {
     RegSignal req_xsize;
     RegSignal req_len;
     RegSignal req_user;
+    RegSignal req_id;
     RegSignal req_burst;
     RegSignal req_last;
     RegSignal resp_valid;
+    RegSignal resp_last;
     RegSignal resp_rdata;
     RegSignal resp_err;
 

@@ -18,10 +18,9 @@
 
 axi2apb::axi2apb(GenObject *parent, const char *name) :
     ModuleObject(parent, "axi2apb", name),
-    xaddr(this, "xaddr", "0"),
-    xmask(this, "xmask", "-1"),
     i_clk(this, "i_clk", "1", "CPU clock"),
     i_nrst(this, "i_nrst", "1", "Reset: active LOW"),
+    i_mapinfo(this, "i_mapinfo", "Base address information from the interconnect port"),
     o_cfg(this, "o_cfg", "Slave config descriptor"),
     i_xslvi(this, "i_xslvi", "AXI4 Interconnect Bridge interface"),
     o_xslvo(this, "o_xslvo", "AXI4 Bridge to Interconnect interface"),
@@ -39,7 +38,8 @@ axi2apb::axi2apb(GenObject *parent, const char *name) :
     // registers
     state(this, "state", "3", "State_Idle"),
     paddr(this, "paddr", "32"),
-    pdata(this, "pdata", "CFG_SYSBUS_DATA_BITS"),
+    pwdata(this, "pwdata", "CFG_SYSBUS_DATA_BITS"),
+    prdata(this, "prdata", "CFG_SYSBUS_DATA_BITS"),
     pwrite(this, "pwrite", "1"),
     pstrb(this, "pstrb", "CFG_SYSBUS_DATA_BYTES"),
     pprot(this, "pprot", "3"),
@@ -62,11 +62,10 @@ void axi2apb::proc_comb() {
     types_amba* cfg = glob_types_amba_;
     SETVAL(comb.vcfg.descrsize, cfg->PNP_CFG_DEV_DESCR_BYTES);
     SETVAL(comb.vcfg.descrtype, cfg->PNP_CFG_TYPE_SLAVE);
-    SETVAL(comb.vcfg.xaddr, xaddr);
-    SETVAL(comb.vcfg.xmask, xmask);
+    SETVAL(comb.vcfg.addr_start, i_mapinfo.addr_start);
+    SETVAL(comb.vcfg.addr_end, i_mapinfo.addr_end);
     SETVAL(comb.vcfg.vid, cfg->VENDOR_OPTIMITECH);
     SETVAL(comb.vcfg.did, cfg->OPTIMITECH_AXI2APB_BRIDGE);
-    SETVAL(comb.vb_rdata, pdata);
 
 TEXT();
     SWITCH(state);
@@ -86,19 +85,13 @@ TEXT();
             SETVAL(req_user, i_xslvi.aw_user);
             IF (GE(i_xslvi.aw_bits.size, CONST("3", 3)));
                 SETONE(xsize);
-                SETVAL(comb.vb_rdata, i_xslvi.w_data);
-                SETVAL(pstrb, i_xslvi.w_strb);
-            ELSIF(EZ(BIT(i_xslvi.aw_bits.addr, 2)));
-                SETVAL(comb.vb_rdata, CC2(CONST("0", 32), BITS(i_xslvi.w_data, 31, 0)));
-                SETVAL(pstrb, CC2(CONST("0", 4), BITS(i_xslvi.w_strb, 3, 0)));
-            ELSE();
-                SETVAL(comb.vb_rdata, CC2(CONST("0", 32), BITS(i_xslvi.w_data, 63, 32)));
-                SETVAL(pstrb, CC2(CONST("0", 4), BITS(i_xslvi.w_strb, 7, 4)));
             ENDIF();
             IF (NZ(i_xslvi.aw_bits.len));
                 SETVAL(state, State_err, "Burst is not supported");
             ELSIF (NZ(i_xslvi.w_valid));
                 TEXT("AXILite support");
+                SETVAL(pwdata, i_xslvi.w_data);
+                SETVAL(pstrb, i_xslvi.w_strb);
                 SETVAL(state, State_setup);
                 SETONE(pselx);
             ELSE();
@@ -124,16 +117,8 @@ TEXT();
     CASE (State_w);
         SETONE(comb.vslvo.w_ready);
         SETONE(pselx);
-        IF (NZ(xsize));
-            SETVAL(comb.vb_rdata, i_xslvi.w_data);
-            SETVAL(pstrb, i_xslvi.w_strb);
-        ELSIF(EZ(BIT(paddr, 2)));
-            SETVAL(comb.vb_rdata, CC2(CONST("0", 32), BITS(i_xslvi.w_data, 31, 0)));
-            SETVAL(pstrb, CC2(CONST("0", 4), BITS(i_xslvi.w_strb, 3, 0)));
-        ELSE();
-            SETVAL(comb.vb_rdata, CC2(CONST("0", 32), BITS(i_xslvi.w_data, 63, 32)));
-            SETVAL(pstrb, CC2(CONST("0", 4), BITS(i_xslvi.w_strb, 7, 4)));
-        ENDIF();
+        SETVAL(pwdata, i_xslvi.w_data);
+        SETVAL(pstrb, i_xslvi.w_strb);
         IF (NZ(i_xslvi.w_valid));
             SETVAL(state, State_setup);
         ENDIF();
@@ -155,24 +140,18 @@ TEXT();
         SETVAL(state, State_access);
         ENDCASE();
     CASE (State_access);
-        IF (EZ(pwrite));
-            IF (NZ(xsize));
-                SETBITS(comb.vb_rdata, 63, 32, i_apbmi.prdata);
-            ELSE();
-                SETBITS(comb.vb_rdata, 31, 0, i_apbmi.prdata);
-            ENDIF();
-        ENDIF();
         SETVAL(pslverr, i_apbmi.pslverr);
         IF (NZ(i_apbmi.pready));
             SETZERO(penable);
             SETZERO(pselx);
+            IF (EZ(BIT(paddr, 2)));
+                SETVAL(prdata, CC2(BITS(prdata, 63, 32), i_apbmi.prdata));
+            ELSE();
+                SETVAL(prdata, CC2(i_apbmi.prdata, BITS(prdata, 31, 0)));
+            ENDIF();
             IF (NZ(xsize));
                 SETVAL(xsize, DEC(xsize));
                 SETVAL(paddr, ADD2(paddr, CONST("4")));
-                SETVAL(pstrb, CC2(CONST("0", 4), BITS(pstrb, 7, 4)));
-                IF (NZ(pwrite));
-                    SETVAL(comb.vb_rdata, CC2(CONST("0", 32), BITS(pdata, 63, 32)));
-                ENDIF();
                 SETVAL(state, State_setup);
             ELSIF (NZ(pwrite));
                 SETVAL(state, State_b);
@@ -183,7 +162,7 @@ TEXT();
         ENDCASE();
     CASEDEF();
         TEXT("Burst transactions are not supported:");
-        SETVAL(comb.vb_rdata, ALLONES());
+        SETVAL(prdata, ALLONES());
         SETONE(pslverr);
         IF (NZ(pwrite));
             SETVAL(state, State_b);
@@ -194,17 +173,21 @@ TEXT();
     ENDSWITCH();
 
 TEXT();
-    SETVAL(pdata, comb.vb_rdata);
     SETVAL(comb.vapbmo.paddr, paddr);
     SETVAL(comb.vapbmo.pwrite, pwrite);
-    SETVAL(comb.vapbmo.pwdata, BITS(pdata, 31, 0));
-    SETVAL(comb.vapbmo.pstrb, BITS(pstrb, 3, 0));
+    IF (EZ(BIT(paddr, 2)));
+        SETVAL(comb.vapbmo.pwdata, BITS(pwdata, 31, 0));
+        SETVAL(comb.vapbmo.pstrb, BITS(pstrb, 3, 0));
+    ELSE();
+        SETVAL(comb.vapbmo.pwdata, BITS(pwdata, 63, 32));
+        SETVAL(comb.vapbmo.pstrb, BITS(pstrb, 7, 4));
+    ENDIF();
     SETVAL(comb.vapbmo.pselx, pselx);
     SETVAL(comb.vapbmo.penable, penable);
     SETVAL(comb.vapbmo.pprot, pprot);
 
 TEXT();
-    SETVAL(comb.vslvo.r_data, pdata);
+    SETVAL(comb.vslvo.r_data, prdata);
     SETVAL(comb.vslvo.r_resp, CC2(pslverr, CONST("0", 1)));
     SETVAL(comb.vslvo.r_id, req_id);
     SETVAL(comb.vslvo.r_user, req_user);

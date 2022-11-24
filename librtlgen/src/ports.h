@@ -43,7 +43,6 @@ class InPort : public Logic {
            const char *comment="");
 
     virtual bool isInput() override { return true; }
-    //virtual std::string getType() override;
 };
 
 class OutPort : public Logic {
@@ -65,7 +64,6 @@ class OutPort : public Logic {
            const char *comment="");
 
     virtual bool isOutput() override { return true; }
-    //virtual std::string getType() override;
 };
 
 
@@ -75,35 +73,6 @@ public:
     IoStruct(GenObject* parent, const char* name, const char* comment = "")
         : T(parent, name, comment) {
     }
-    /*virtual std::string getType() override {
-        std::string out = "";
-        if (SCV_is_sysc()) {
-            if (isVector()) {
-                out += "sc_vector<";
-            }
-            if (isInput()) {
-                out += "sc_in<";
-            } else {
-                out += "sc_out<";
-            }
-            out += T::getType() + ">";
-            if (isVector()) {
-                out += ">";
-            }
-        } else if (SCV_is_sv()) {
-            if (isInput()) {
-                out += "input  ";
-            } else {
-                out += "output  ";
-            }
-            if (SCV_get_cfg_file(T::getType()).size()) {
-                out += SCV_get_cfg_file(T::getType()) + "_pkg::";
-            }
-            out += T::getType();
-        } else {
-        }
-        return out;
-    }*/
     T* operator->() const { return this; }
     T* operator->() { return this; }
     virtual GenObject *getItem() override { return this; }

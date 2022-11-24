@@ -102,6 +102,47 @@ class types_bus0 : public FileObject {
         virtual std::string generate() override { return std::string("axi4_slave_out_type"); }
     };
 
+    class bus0_mapinfo_vector : public types_amba::mapinfo_type {
+     public:
+        bus0_mapinfo_vector(GenObject *parent, const char *name, const char *descr="")
+            : mapinfo_type(parent, name, descr) {
+            type_ = std::string("bus0_mapinfo_vector");
+            setStrDepth("CFG_BUS0_XSLV_TOTAL");
+            
+            registerCfgType(name);                  // will be registered if name == ""
+            if (name[0]) {
+                std::string strtype = getType();
+                SCV_get_cfg_parameter(strtype);   // to trigger dependecy array
+            }
+        }
+        virtual bool isTypedef() override { return true; }
+        virtual bool isVector() override { return true; }
+        virtual std::string generate() override { return std::string("mapinfo_type"); }
+    };
+
+    class CONST_CFG_BUS0_MAP : public bus0_mapinfo_vector {
+     public:
+        CONST_CFG_BUS0_MAP(GenObject *parent)
+            : bus0_mapinfo_vector(parent, "CFG_BUS0_MAP"),
+            bootrom(this, "bootrom", "0. bootrom") {
+            bootrom.addr_start.setStrValue("0x0000000000010");
+            bootrom.addr_end.setStrValue("0xffffffffffff0");
+        }
+        virtual GenObject *getItem(int idx) override {
+            GenObject *ret = this;
+            switch (0) {
+            case 0:
+                ret = &bootrom;
+                break;
+            default:;
+            }
+            return ret;
+        }
+
+        mapinfo_type bootrom;
+    };
+
+
  public:
     TextLine _xslv0_;
     TextLine _xslv1_;
@@ -142,6 +183,10 @@ class types_bus0 : public FileObject {
     bus0_xmst_out_vector bus0_xmst_out_vector_def_;
     bus0_xslv_in_vector bus0_xslv_in_vector_def_;
     bus0_xslv_out_vector bus0_xslv_out_vector_def_;
+    bus0_mapinfo_vector bus0_mapinfo_vector_def_;
+    TextLine _map0_;
+    TextLine _map1_;
+    bus0_mapinfo_vector CFG_BUS0_MAP;
     TextLine _n_;
 };
 

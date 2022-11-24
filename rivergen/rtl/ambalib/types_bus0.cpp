@@ -59,6 +59,10 @@ types_bus0::types_bus0(GenObject *parent) :
     bus0_xmst_out_vector_def_(this, ""),
     bus0_xslv_in_vector_def_(this, ""),
     bus0_xslv_out_vector_def_(this, ""),
+    bus0_mapinfo_vector_def_(this, ""),
+    _map0_(this),
+    _map1_(this, "Bus 0 device tree"),
+    CFG_BUS0_MAP(this, "CFG_BUS0_MAP"),
     _n_(this)
 {
     glob_bus0_cfg_ = this;

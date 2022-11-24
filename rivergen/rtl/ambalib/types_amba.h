@@ -37,6 +37,27 @@ class types_amba : public FileObject {
         Logic xsize;
     };
 
+    class mapinfo_type : public StructObject {
+     public:
+        mapinfo_type(GenObject* parent, const char* name = "", const char* comment = "")
+            : StructObject(parent, "mapinfo_type", name, comment),
+            _0_(this, "Base Address."),
+            addr_start("0", "addr_start", this),
+            _1_(this, "Maskable bits of the base address."),
+            addr_end("0", "addr_end", this) {
+            setZeroValue("mapinfo_none");
+            registerCfgType(name);
+            std::string strtype = getType();
+            SCV_get_cfg_parameter(strtype);    // to trigger dependecy array
+        }
+
+    public:
+        TextLine _0_;
+        UI64H addr_start;
+        TextLine _1_;
+        UI64H addr_end;
+    };
+
     class dev_config_type : public StructObject {
      public:
         dev_config_type(GenObject* parent, const char* name = "", const char* comment = "")
@@ -46,9 +67,9 @@ class types_amba : public FileObject {
             _1_(this, "Descriptor type."),
             descrtype("2", "descrtype", "PNP_CFG_TYPE_SLAVE", this),
             _2_(this, "Base Address."),
-            xaddr("CFG_SYSBUS_ADDR_BITS", "xaddr", "0", this),
-            _3_(this, "Maskable bits of the base address."),
-            xmask("CFG_SYSBUS_ADDR_BITS", "xmask", "0", this),
+            addr_start("64", "addr_start", "0", this),
+            _3_(this, "End of the base address."),
+            addr_end("64", "addr_end", "0", this),
             _4_(this, "Vendor ID."),
             vid("16", "vid", "VENDOR_GNSSSENSOR", this),
             _5_(this, "Device ID."),
@@ -65,9 +86,9 @@ class types_amba : public FileObject {
         TextLine _1_;
         Logic descrtype;
         TextLine _2_;
-        Logic xaddr;
+        Logic addr_start;
         TextLine _3_;
-        Logic xmask;
+        Logic addr_end;
         TextLine _4_;
         Logic vid;
         TextLine _5_;
@@ -293,7 +314,7 @@ class types_amba : public FileObject {
     public:
         Logic aw_valid;
         axi4_metadata_type aw_bits;
-        Logic  aw_id;
+        Logic aw_id;
         Logic aw_user;
         Logic w_valid;
         Logic w_data;
@@ -456,6 +477,12 @@ class types_amba : public FileObject {
     TextLine _pnpcfg5_;
     TextLine _pnpcfg6_;
     ParamLogic PNP_CFG_DEV_DESCR_BYTES;
+    TextLine _map0_;
+    TextLine _map1_;
+    mapinfo_type mapinfo_typedef_;
+    TextLine _map3_;
+    TextLine _map4_;
+    mapinfo_type mapinfo_none;
     TextLine _xslvcfg0_;
     TextLine _xslvcfg1_;
     TextLine _xslvcfg2_;
