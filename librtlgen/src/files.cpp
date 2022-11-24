@@ -163,6 +163,48 @@ std::string FileObject::generate() {
     return GenObject::generate();
 }
 
+std::string FileObject::generate_sysc_const(GenObject *obj) {
+    std::string out = "";
+    int tcnt = 0;
+    std::string ln;
+    GenObject *item;
+    if (obj->getDepth() > 1) {
+        out += "{\n";
+        Operation::set_space(Operation::get_space() + 1);
+        for (int i = 0; i < obj->getDepth(); i++) {
+            item = obj->getItem(i);
+            ln = generate_sysc_const(item);
+            if (i < (obj->getDepth() - 1)) {
+                ln += ",";
+            }
+            if (item->getComment().size()) {
+                while (ln.size() < 60) {
+                    ln += " ";
+                }
+                ln += "// " + item->getComment();
+            }
+            out += ln + "\n";
+        }
+        Operation::set_space(Operation::get_space() - 1);
+        out += Operation::addspaces() + "}";
+    } else if (obj->getId() == ID_STRUCT_INST) {
+        out += Operation::addspaces() + "{";
+        for (auto &m: obj->getEntries()) {
+            ln = generate_sysc_const(m);
+            if (ln.size()) {
+                if (tcnt++) {
+                    out += ", ";
+                }
+            }
+            out += ln;
+        }
+        out += "}";
+    } else if (obj->getId() == ID_CONST || obj->getId() == ID_VALUE) {
+        out += obj->getStrValue();
+    }
+    return out;
+}
+
 void FileObject::generate_sysc() {
     bool module_cpp = false;
     std::string out = "";
@@ -235,16 +277,9 @@ void FileObject::generate_sysc() {
                 continue;
             } else if (p->isVector() && p->getName().size()) {
                 out += "static const " + p->generate();
-                out += "[" + p->getStrDepth() + "] = {";
-                Operation::set_space(Operation::get_space() + 1);
-                for (auto &m: p->getEntries()) {
-                    for (int len = 0 ; len < m->getDepth(); len++) {
-                        out += m->getItem(len)->getStrValue();
-                        out += ", //"  + m->getItem(len)->getComment();
-                    }
-                }
-                Operation::set_space(Operation::get_space() - 1);
-                out += "};\n";
+                out += " " + p->getName() + "[" + p->getStrDepth() + "] = ";
+                out += generate_sysc_const(p);
+                out += ";\n";
                 continue;
             }
             out += p->generate();
