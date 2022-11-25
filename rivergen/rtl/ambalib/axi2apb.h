@@ -53,7 +53,7 @@ class axi2apb : public ModuleObject {
     ParamLogic State_Idle;
     ParamLogic State_setup;
     ParamLogic State_access;
-    ParamLogic State_err;
+    ParamLogic State_out;
 
     Signal w_req_valid;
     Signal wb_req_addr;

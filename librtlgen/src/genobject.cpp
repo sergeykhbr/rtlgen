@@ -367,7 +367,14 @@ std::string GenObject::parse_to_str(const char *val, size_t &pos) {
     }
     if (buf[0] >= '0' && buf[0] <= '9') {
         int base = buf[1] == 'x' ? 16: 10;
-        ret = std::string(buf);
+        if (SCV_is_sv() && base == 16) {
+            char tstr[256];
+            int len = 0;
+            len = RISCV_sprintf(tstr, sizeof(tstr), "%d'h%s", getWidth(), &buf[2]);
+            ret = std::string(tstr);
+        } else {
+            ret = std::string(buf);
+        }
         return ret;
     }
     if (buf[0] == '-' && buf[1] == '1') {

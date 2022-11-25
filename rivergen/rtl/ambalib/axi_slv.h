@@ -70,7 +70,9 @@ class axi_slv : public ModuleObject {
     ParamLogic State_burst_w;
     ParamLogic State_last_w;
     ParamLogic State_addr_r;
+    ParamLogic State_addrdata_r;
     ParamLogic State_data_r;
+    ParamLogic State_out_r;
     ParamLogic State_b;
 
     RegSignal state;

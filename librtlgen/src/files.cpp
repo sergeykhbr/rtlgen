@@ -163,17 +163,20 @@ std::string FileObject::generate() {
     return GenObject::generate();
 }
 
-std::string FileObject::generate_sysc_const(GenObject *obj) {
+std::string FileObject::generate_const(GenObject *obj) {
     std::string out = "";
     int tcnt = 0;
     std::string ln;
     GenObject *item;
     if (obj->getDepth() > 1) {
+        if (SCV_is_sv()) {
+            out += "'";
+        }
         out += "{\n";
         Operation::set_space(Operation::get_space() + 1);
         for (int i = 0; i < obj->getDepth(); i++) {
             item = obj->getItem(i);
-            ln = generate_sysc_const(item);
+            ln = generate_const(item);
             if (i < (obj->getDepth() - 1)) {
                 ln += ",";
             }
@@ -188,9 +191,13 @@ std::string FileObject::generate_sysc_const(GenObject *obj) {
         Operation::set_space(Operation::get_space() - 1);
         out += Operation::addspaces() + "}";
     } else if (obj->getId() == ID_STRUCT_INST) {
-        out += Operation::addspaces() + "{";
+        out += Operation::addspaces();
+        if (SCV_is_sv()) {
+            out += "'";
+        }
+        out += "{";
         for (auto &m: obj->getEntries()) {
-            ln = generate_sysc_const(m);
+            ln = generate_const(m);
             if (ln.size()) {
                 if (tcnt++) {
                     out += ", ";
@@ -278,7 +285,7 @@ void FileObject::generate_sysc() {
             } else if (p->isVector() && p->getName().size()) {
                 out += "static const " + p->generate();
                 out += " " + p->getName() + "[" + p->getStrDepth() + "] = ";
-                out += generate_sysc_const(p);
+                out += generate_const(p);
                 out += ";\n";
                 continue;
             }
@@ -396,6 +403,7 @@ void FileObject::generate_sysv() {
     bool skip_pkg = false;
     ModuleObject *mod;
     std::list <GenObject *> tmplparlist;
+    Operation::set_space(0);
     for (auto &p: entries_) {
         if (p->getId() == ID_MODULE) {
             is_module = true;
@@ -412,11 +420,17 @@ void FileObject::generate_sysv() {
         } else {
             if (p->getId() == ID_FUNCTION) {
                 out += "function automatic ";
-            } else if (p->isTypedef()) {
+            } else if (p->isTypedef() && p->getName().size() == 0) {
                 out += "typedef ";
                 out += p->generate();
                 out += " " + p->getType();
                 out += "[0:" + p->getStrDepth() + " - 1]";
+                out += ";\n";
+                continue;
+            } else if (p->isVector() && p->getName().size()) {
+                out += "const " + p->getType();
+                out += " " + p->getName() + " = ";
+                out += generate_const(p);
                 out += ";\n";
                 continue;
             }

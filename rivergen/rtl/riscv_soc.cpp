@@ -112,8 +112,8 @@ riscv_soc::riscv_soc(GenObject *parent, const char *name) :
         CONNECT(group0, 0, group0.o_acpi, acpi);
         CONNECT(group0, 0, group0.i_msti, ARRITEM(aximi, glob_bus0_cfg_->CFG_BUS0_XMST_GROUP0, aximi));
         CONNECT(group0, 0, group0.o_msto, ARRITEM(aximo, glob_bus0_cfg_->CFG_BUS0_XMST_GROUP0, aximo));
-        CONNECT(group0, 0, group0.i_dmi_apbi, ARRITEM(apbsi, glob_bus1_cfg_->CFG_BUS1_PSLV_DMI, apbsi));
-        CONNECT(group0, 0, group0.o_dmi_apbo, ARRITEM(apbso, glob_bus1_cfg_->CFG_BUS1_PSLV_DMI, apbso));
+        CONNECT(group0, 0, group0.i_dmi_apbi, ARRITEM(apbsi, glob_bus1_cfg_->CFG_BUS1_PSLV0_DMI, apbsi));
+        CONNECT(group0, 0, group0.o_dmi_apbo, ARRITEM(apbso, glob_bus1_cfg_->CFG_BUS1_PSLV0_DMI, apbso));
         CONNECT(group0, 0, group0.o_dmreset, w_dmreset);
     ENDNEW();
 
@@ -121,8 +121,8 @@ riscv_soc::riscv_soc(GenObject *parent, const char *name) :
     NEW(uart1, uart1.getName().c_str());
         CONNECT(uart1, 0, uart1.i_clk, i_clk);
         CONNECT(uart1, 0, uart1.i_nrst, w_sys_nrst);
-        CONNECT(uart1, 0, uart1.i_apbi, ARRITEM(apbsi, glob_bus1_cfg_->CFG_BUS1_PSLV_UART0, apbsi));
-        CONNECT(uart1, 0, uart1.o_apbo, ARRITEM(apbso, glob_bus1_cfg_->CFG_BUS1_PSLV_UART0, apbso));
+        CONNECT(uart1, 0, uart1.i_apbi, ARRITEM(apbsi, glob_bus1_cfg_->CFG_BUS1_PSLV1_UART1, apbsi));
+        CONNECT(uart1, 0, uart1.o_apbo, ARRITEM(apbso, glob_bus1_cfg_->CFG_BUS1_PSLV1_UART1, apbso));
         CONNECT(uart1, 0, uart1.o_cfg, ARRITEM(dev_pnp, CFG_SOC_PNP_1_PSLV_UART1, dev_pnp));
         CONNECT(uart1, 0, uart1.i_rd, i_uart1_rd);
         CONNECT(uart1, 0, uart1.o_td, o_uart1_td);
@@ -137,7 +137,7 @@ void riscv_soc::proc_comb() {
     river_cfg *cfg = glob_river_cfg_;
 
     TEXT("TODO: APB interconnect");
-    SETARRITEM(apbsi, glob_bus1_cfg_->CFG_BUS1_PSLV_DMI, apbsi, glob_types_amba_->apb_in_none);
-    SETARRITEM(apbsi, glob_bus1_cfg_->CFG_BUS1_PSLV_UART0, apbsi, ARRITEM(apbmo, glob_bus1_cfg_->CFG_BUS1_PMST_BUS0, apbmo));
-    SETARRITEM(apbmi, glob_bus1_cfg_->CFG_BUS1_PMST_BUS0, apbmi, ARRITEM(apbso, glob_bus1_cfg_->CFG_BUS1_PSLV_UART0, apbso));
+    SETARRITEM(apbsi, glob_bus1_cfg_->CFG_BUS1_PSLV0_DMI, apbsi, glob_types_amba_->apb_in_none);
+    SETARRITEM(apbsi, glob_bus1_cfg_->CFG_BUS1_PSLV1_UART1, apbsi, ARRITEM(apbmo, glob_bus1_cfg_->CFG_BUS1_PMST_BUS0, apbmo));
+    SETARRITEM(apbmi, glob_bus1_cfg_->CFG_BUS1_PMST_BUS0, apbmi, ARRITEM(apbso, glob_bus1_cfg_->CFG_BUS1_PSLV1_UART1, apbso));
 }

@@ -30,7 +30,7 @@ axi2apb::axi2apb(GenObject *parent, const char *name) :
     State_Idle(this, "2", "State_Idle", "0"),
     State_setup(this, "2", "State_setup", "1"),
     State_access(this, "2", "State_access", "2"),
-    State_err(this, "2", "State_err", "3"),
+    State_out(this, "2", "State_out", "3"),
     // signals
     w_req_valid(this, "w_req_valid", "1"),
     wb_req_addr(this, "wb_req_addr", "CFG_SYSBUS_ADDR_BITS"),
@@ -105,8 +105,11 @@ TEXT();
             SETVAL(pstrb, wb_req_wstrb);
             SETVAL(state, State_setup);
             SETVAL(xsize, AND_REDUCE(wb_req_wstrb));
-            IF (NZ(w_req_last));
-                SETVAL(state, State_err, "Burst is not supported");
+            IF (EZ(w_req_last));
+                SETVAL(state, State_out, "Burst is not supported");
+                SETZERO(pselx);
+                SETONE(pslverr);
+                SETVAL(prdata, ALLONES());
             ENDIF();
         ENDIF();
         ENDCASE();
@@ -119,6 +122,7 @@ TEXT();
         IF (NZ(i_apbmi.pready));
             SETZERO(penable);
             SETZERO(pselx);
+            SETZERO(pwrite);
             IF (EZ(BIT(paddr, 2)));
                 SETVAL(prdata, CC2(BITS(prdata, 63, 32), i_apbmi.prdata));
             ELSE();
@@ -130,16 +134,16 @@ TEXT();
                 SETVAL(state, State_setup);
             ELSE();
                 SETONE(pvalid);
-                SETVAL(state, State_Idle);
+                SETVAL(state, State_out);
             ENDIF();
         ENDIF();
         ENDCASE();
-    CASEDEF();
-        TEXT("Burst transactions are not supported:");
-        SETONE(pvalid);
-        SETVAL(prdata, ALLONES());
-        SETONE(pslverr);
+    CASE(State_out);
+        SETZERO(pvalid);
+        SETZERO(pslverr);
         SETVAL(state, State_Idle);
+        ENDCASE();
+    CASEDEF();
         ENDCASE();
     ENDSWITCH();
 

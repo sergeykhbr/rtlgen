@@ -18,7 +18,7 @@
 
 axi_slv::axi_slv(GenObject *parent, const char *name) :
     ModuleObject(parent, "axi_slv", name),
-    vid(this, "vid", "VENDOR_OPTIMITECH", "Vendor ID"),
+    vid(this, "vid", "0", "Vendor ID"),
     did(this, "did", "0", "Device ID"),
     i_clk(this, "i_clk", "1", "CPU clock"),
     i_nrst(this, "i_nrst", "1", "Reset: active LOW"),
@@ -37,16 +37,18 @@ axi_slv::axi_slv(GenObject *parent, const char *name) :
     i_resp_rdata(this, "i_resp_rdata", "CFG_SYSBUS_DATA_BITS"),
     i_resp_err(this, "i_resp_err", "1"),
     // params
-    State_Idle(this, "3", "State_Idle", "0"),
-    State_w(this, "3", "State_w", "1"), 
-    State_burst_w(this, "3", "State_burst_w", "2"),
-    State_last_w(this, "3", "State_last_w", "3"),
-    State_addr_r(this, "3", "State_addr_r", "4"),
-    State_data_r(this, "3", "State_data_r", "5"),
-    State_b(this, "3", "State_b", "6"),
+    State_Idle(this, "4", "State_Idle", "0"),
+    State_w(this, "4", "State_w", "1"), 
+    State_burst_w(this, "4", "State_burst_w", "2"),
+    State_last_w(this, "4", "State_last_w", "3"),
+    State_addr_r(this, "4", "State_addr_r", "4"),
+    State_addrdata_r(this, "4", "State_addrdata_r", "5"),
+    State_data_r(this, "4", "State_data_r", "6"),
+    State_out_r(this, "4", "State_out_r", "7"),
+    State_b(this, "4", "State_b", "8"),
     // signals
     // registers
-    state(this, "state", "3", "State_Idle"),
+    state(this, "state", "4", "State_Idle"),
     req_valid(this, "req_valid", "1"),
     req_addr(this, "req_addr", "CFG_SYSBUS_ADDR_BITS"),
     req_write(this, "req_write", "1"),
@@ -190,36 +192,52 @@ TEXT();
         ENDCASE();
     CASE (State_addr_r);
         TEXT("Setup address:");
-        SETZERO(resp_valid);
         IF (NZ(i_req_ready));
             IF (NZ(req_len));
                 SETVAL(req_addr, CC2(BITS(req_addr, DEC(glb->CFG_SYSBUS_ADDR_BITS), CONST("12")),
                                         comb.vb_req_addr_next));
                 SETVAL(req_len, DEC(req_len));
             ENDIF();
+            SETVAL(state, State_addrdata_r);
+        ENDIF();
+        ENDCASE();
+    CASE (State_addrdata_r);
+        SETVAL(resp_valid, i_resp_valid);
+        SETVAL(resp_rdata, i_resp_rdata);
+        SETVAL(resp_err, i_resp_err);
+        IF (OR2(EZ(i_resp_valid), EZ(req_len)));
+            SETZERO(req_valid);
             SETVAL(state, State_data_r);
+        ELSIF (EZ(i_xslvi.r_ready));
+            TEXT("Bus is not ready to accept read data");
+            SETZERO(req_valid);
+            SETVAL(state, State_out_r);
+        ELSIF(EZ(i_req_ready));
+            TEXT("Slave device is not ready to accept burst request");
+            SETVAL(state, State_addr_r);
+        ELSE();
+            SETVAL(req_addr, CC2(BITS(req_addr, DEC(glb->CFG_SYSBUS_ADDR_BITS), CONST("12")),
+                                    comb.vb_req_addr_next));
+            SETVAL(req_len, DEC(req_len));
         ENDIF();
         ENDCASE();
     CASE (State_data_r);
         IF (NZ(i_resp_valid));
             SETONE(resp_valid);
-            SETVAL(resp_last, req_last);
             SETVAL(resp_rdata, i_resp_rdata);
             SETVAL(resp_err, i_resp_err);
+            SETVAL(resp_last, INV(OR_REDUCE(req_len)));
+            SETVAL(state, State_out_r);
         ENDIF();
-
-        IF (AND3(NZ(req_len), NZ(i_xslvi.r_ready), NZ(i_resp_valid)));
-            SETVAL(req_addr, CC2(BITS(req_addr, DEC(glb->CFG_SYSBUS_ADDR_BITS), CONST("12")),
-                                    comb.vb_req_addr_next));
-            SETVAL(req_len, DEC(req_len));
-        ENDIF();
-        IF(EZ(i_req_ready));
-            SETVAL(state, State_addr_r);
-        ELSIF(EZ(req_len));
-            SETZERO(req_valid);
-            IF(AND2(NZ(i_xslvi.r_ready), NZ(resp_last)));
-                SETZERO(resp_valid);
-                SETZERO(resp_last);
+        ENDCASE();
+    CASE (State_out_r);
+        IF (NZ(i_xslvi.r_ready));
+            SETZERO(resp_valid);
+            SETZERO(resp_last);
+            IF (NZ(req_len));
+                SETONE(req_valid);
+                SETVAL(state, State_addr_r);
+            ELSE();
                 SETVAL(state, State_Idle);
             ENDIF();
         ENDIF();

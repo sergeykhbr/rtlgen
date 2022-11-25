@@ -109,9 +109,9 @@ class types_bus1 : public FileObject {
     TextLine _pslv3_;
     TextLine _pslv4_;
     TextLine _pslv5_;
-    ParamI32D CFG_BUS1_PSLV_DMI;
+    ParamI32D CFG_BUS1_PSLV0_DMI;
     TextLine _pslv6_;
-    ParamI32D CFG_BUS1_PSLV_UART0;
+    ParamI32D CFG_BUS1_PSLV1_UART1;
     TextLine _pslv7_;
     ParamI32D CFG_BUS1_PSLV_TOTAL;
     TextLine _pmst0_;
