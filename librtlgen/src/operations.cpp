@@ -1693,7 +1693,7 @@ Operation &SUB2(GenObject &a, GenObject &b, const char *comment) {
 
 // AND_REDUCE
 std::string AND_REDUCE_gen(GenObject **args) {
-    std::string A = Operation::obj2varname(args[1]);
+    std::string A = Operation::obj2varname(args[1], "r", true);
     if (SCV_is_sysc()) {
         A += ".and_reduce()";
     } else {

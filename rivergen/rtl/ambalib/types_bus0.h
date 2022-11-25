@@ -117,6 +117,7 @@ class types_bus0 : public FileObject {
         }
         virtual bool isTypedef() override { return true; }
         virtual bool isVector() override { return true; }
+        virtual bool isSignal() override { return true; }
         virtual std::string generate() override { return std::string("mapinfo_type"); }
     };
 

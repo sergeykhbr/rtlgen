@@ -18,6 +18,7 @@
 
 #include <api.h>
 #include "types_amba.h"
+#include "axi_slv.h"
 
 using namespace sysvc;
 
@@ -29,14 +30,10 @@ class axi2apb : public ModuleObject {
      public:
         CombProcess(GenObject *parent) :
             ProcObject(parent, "comb"),
-            vcfg(this, "vcfg"),
-            vslvo(this, "vslvo"),
             vapbmo(this, "vapbmo") {
         }
 
      public:
-        types_amba::dev_config_type vcfg;
-        types_amba::axi4_slave_out_type vslvo;
         types_amba::apb_in_type vapbmo;
     };
 
@@ -54,14 +51,20 @@ class axi2apb : public ModuleObject {
     OutStruct<types_amba::apb_in_type> o_apbmo;
 
     ParamLogic State_Idle;
-    ParamLogic State_w;
-    ParamLogic State_b;
-    ParamLogic State_r;
     ParamLogic State_setup;
     ParamLogic State_access;
     ParamLogic State_err;
 
+    Signal w_req_valid;
+    Signal wb_req_addr;
+    Signal w_req_write;
+    Signal wb_req_wdata;
+    Signal wb_req_wstrb;
+    Signal w_req_last;
+    Signal w_req_ready;
+
     RegSignal state;
+    RegSignal pvalid;
     RegSignal paddr;
     RegSignal pwdata;
     RegSignal prdata;
@@ -72,8 +75,8 @@ class axi2apb : public ModuleObject {
     RegSignal penable;
     RegSignal pslverr;
     RegSignal xsize;
-    RegSignal req_id;
-    RegSignal req_user;
+
+    axi_slv axi0;
 
     CombProcess comb;
 };
