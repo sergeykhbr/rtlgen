@@ -77,9 +77,13 @@ riscv_soc::riscv_soc(GenObject *parent, const char *name) :
     wb_clint_mtimer(this, "wb_clint_mtimer", "64"),
     wb_clint_msip(this, "wb_clint_msip", "CFG_CPU_MAX"),
     wb_clint_mtip(this, "wb_clint_mtip", "CFG_CPU_MAX"),
+    wb_plic_xeip(this, "wb_plic_xeip", "CFG_PLIC_CONTEXT_TOTAL"),
     wb_plic_meip(this, "wb_plic_meip", "CFG_CPU_MAX"),
     wb_plic_seip(this, "wb_plic_seip", "CFG_CPU_MAX"),
     w_irq_uart1(this, "w_irq_uart1", "1"),
+    wb_irq_gpio(this, "wb_irq_gpio", "16"),
+    w_irq_pnp(this, "w_irq_pnp", "1"),
+    wb_ext_irqs(this, "wb_ext_irqs", "CFG_PLIC_IRQ_TOTAL"),
     // submodules:
     apbrdg0(this, "apbrdg0"),
     uart1(this, "uart1"),
@@ -147,6 +151,26 @@ riscv_soc::riscv_soc(GenObject *parent, const char *name) :
 
 void riscv_soc::proc_comb() {
     river_cfg *cfg = glob_river_cfg_;
+    types_amba *amba = glob_types_amba_;
+
+
+    TEXT();
+    TEXT("assign interrupts:");
+    SETBITS(comb.vb_ext_irqs, 22, 0, ALLZEROS());
+    SETBITS(comb.vb_ext_irqs, 38, 23, wb_irq_gpio, "FU740: 16 bits, current 12-bits");
+    SETBIT(comb.vb_ext_irqs, 39, w_irq_uart1);
+    SETBITS(comb.vb_ext_irqs, 69, 40, ALLZEROS());
+    SETBIT(comb.vb_ext_irqs, 70, w_irq_pnp);
+    SETBITS(comb.vb_ext_irqs, DEC(target->CFG_PLIC_IRQ_TOTAL), 71, ALLZEROS());;
+    SETVAL(wb_ext_irqs, comb.vb_ext_irqs);
+
+    TEXT();
+    SETONE(o_jtag_vref);
+
+    TEXT();
+    TEXT("Nullify emty AXI-slots:");
+    SETARRITEM(aximo, glob_bus0_cfg_->CFG_BUS0_XMST_DMA, aximo, amba->axi4_master_out_none);
+    SETVAL(acpo, amba->axi4_master_out_none);
 
     TEXT("TODO: APB interconnect");
     SETARRITEM(apbsi, glob_bus1_cfg_->CFG_BUS1_PSLV_DMI, apbsi, glob_types_amba_->apb_in_none);

@@ -41,16 +41,10 @@ class riscv_soc : public ModuleObject {
      public:
         CombProcess(GenObject* parent)
             : ProcObject(parent, "comb"),
-            v_flush_l2(this, "v_flush_l2", "1"),
-            vb_halted(this, "vb_halted", "CFG_CPU_MAX"),
-            vb_available(this, "vb_available", "CFG_CPU_MAX"),
-            vb_irq(this, "vb_irq", "IRQ_TOTAL", "CFG_CPU_MAX") {
+            vb_ext_irqs(this, "wb_ext_irqs", "CFG_PLIC_IRQ_TOTAL") {
         }
      public:
-        Logic v_flush_l2;
-        Logic vb_halted;
-        Logic vb_available;
-        WireArray<Logic> vb_irq;
+        Logic vb_ext_irqs;
     };
 
     void proc_comb();
@@ -166,9 +160,13 @@ public:
     Signal wb_clint_mtimer;
     Signal wb_clint_msip;
     Signal wb_clint_mtip;
+    Signal wb_plic_xeip;
     Signal wb_plic_meip;
     Signal wb_plic_seip;
-    Signal w_irq_uart1; // TODO: change it to plic_irq[x]
+    Signal w_irq_uart1;
+    Signal wb_irq_gpio;
+    Signal w_irq_pnp;
+    Signal wb_ext_irqs;
 
     // Sub-module instances:
     axi2apb apbrdg0;
