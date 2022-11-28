@@ -209,7 +209,7 @@ class types_bus0 : public FileObject {
     TextLine _xslv9_;
     ParamI32D CFG_BUS0_XSLV_DDR;
     TextLine _xslv10_;
-    ParamI32D CFG_BUS0_XSLV_BUS1;
+    ParamI32D CFG_BUS0_XSLV_PBRIDGE;
     TextLine _xslv11_;
     ParamI32D CFG_BUS0_XSLV_GPIO;
     TextLine _xslv12_;

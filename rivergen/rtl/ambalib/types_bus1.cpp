@@ -26,9 +26,9 @@ types_bus1::types_bus1(GenObject *parent) :
     _pslv3_(this, "         Indexes are used to specify a device bus item in a vectors."),
     _pslv4_(this),
     _pslv5_(this, "@brief Worjgroup DMI interface."),
-    CFG_BUS1_PSLV0_DMI(this, "CFG_BUS1_PSLV0_DMI", "0"),
+    CFG_BUS1_PSLV_DMI(this, "CFG_BUS1_PSLV_DMI", "0"),
     _pslv6_(this, "@brief UART0 APB device."),
-    CFG_BUS1_PSLV1_UART1(this, "CFG_BUS1_PSLV1_UART1", "1"),
+    CFG_BUS1_PSLV_UART1(this, "CFG_BUS1_PSLV_UART1", "1"),
     _pslv7_(this, "Total number of the APB slaves devices on Bus[1]."),
     CFG_BUS1_PSLV_TOTAL(this, "CFG_BUS1_PSLV_TOTAL", "2"),
     _pmst0_(this),
@@ -37,7 +37,7 @@ types_bus1::types_bus1(GenObject *parent) :
     _pmst3_(this, "         as an index in the vector array of APB master bus."),
     _pmst4_(this, ""),
     _pmst5_(this, "Bus[0] master interface"),
-    CFG_BUS1_PMST_BUS0(this, "CFG_BUS1_PMST_BUS0", "0"),
+    CFG_BUS1_PMST_PARENT(this, "CFG_BUS1_PMST_PARENT", "0"),
     _pmst6_(this, "Total Number of master devices that have access to APB Bus[1]."),
     CFG_BUS1_PMST_TOTAL(this, "CFG_BUS1_PMST_TOTAL", "1"),
     _vec0_(this),
@@ -45,6 +45,10 @@ types_bus1::types_bus1(GenObject *parent) :
     bus1_pslv_out_vector_def_(this, ""),
     bus1_pmst_in_vector_def_(this, ""),
     bus1_pmst_out_vector_def_(this, ""),
+    bus1_mapinfo_vector_def_(this, ""),
+    _map0_(this),
+    _map1_(this, "Bus 1 device tree"),
+    CFG_BUS1_MAP(this),
     _n_(this)
 {
     glob_bus1_cfg_ = this;

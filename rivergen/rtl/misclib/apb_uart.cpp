@@ -21,9 +21,10 @@ apb_uart::apb_uart(GenObject *parent, const char *name) :
     log2_fifosz(this, "log2_fifosz", "4"),
     i_clk(this, "i_clk", "1", "CPU clock"),
     i_nrst(this, "i_nrst", "1", "Reset: active LOW"),
+    i_mapinfo(this, "i_mapinfo", "interconnect slot information"),
+    o_cfg(this, "o_cfg", "Device descriptor"),
     i_apbi(this, "i_apbi", "APB  Slave to Bridge interface"),
     o_apbo(this, "o_apbo", "APB Bridge to Slave interface"),
-    o_cfg(this, "o_cfg"),
     i_rd(this, "i_rd", "1"),
     o_td(this, "o_td", "1"),
     o_irq(this, "o_irq", "1"),
@@ -87,9 +88,13 @@ apb_uart::apb_uart(GenObject *parent, const char *name) :
 {
     Operation::start(this);
 
+    pslv0.vid.setObjValue(&glob_types_amba_->VENDOR_OPTIMITECH);
+    pslv0.did.setObjValue(&glob_types_amba_->OPTIMITECH_UART);
     NEW(pslv0, pslv0.getName().c_str());
         CONNECT(pslv0, 0, pslv0.i_clk, i_clk);
         CONNECT(pslv0, 0, pslv0.i_nrst, i_nrst);
+        CONNECT(pslv0, 0, pslv0.i_mapinfo, i_mapinfo);
+        CONNECT(pslv0, 0, pslv0.o_cfg, o_cfg);
         CONNECT(pslv0, 0, pslv0.i_apbi, i_apbi);
         CONNECT(pslv0, 0, pslv0.o_apbo, o_apbo);
         CONNECT(pslv0, 0, pslv0.o_req_valid, w_req_valid);
@@ -106,8 +111,6 @@ apb_uart::apb_uart(GenObject *parent, const char *name) :
 }
 
 void apb_uart::proc_comb() {
-    SETVAL(comb.vcfg.descrsize, glob_types_amba_->PNP_CFG_DEV_DESCR_BYTES);
-    SETVAL(comb.vcfg.descrtype, glob_types_amba_->PNP_CFG_TYPE_SLAVE);
     SETVAL(comb.vb_rx_fifo_rdata, ARRITEM(rx_fifo, TO_INT(rx_rd_cnt), rx_fifo));
     SETVAL(comb.vb_tx_fifo_rdata, ARRITEM(tx_fifo, TO_INT(tx_rd_cnt), tx_fifo));
 
@@ -405,5 +408,4 @@ TEXT();
 TEXT();
     SETVAL(o_td, BIT(tx_shift, 0));
     SETVAL(o_irq, OR2_L(tx_ip, rx_ip));
-    SETVAL(o_cfg, comb.vcfg);
 }

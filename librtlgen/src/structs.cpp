@@ -120,6 +120,41 @@ std::string StructObject::generate_interface_constructor() {
     return ret;
 }
 
+std::string StructObject::generate_interface_constructor_init() {
+    std::string ret = "";
+    int argcnt = 0;
+    int aligncnt;
+
+    ret += Operation::addspaces() + getType() + "(";
+    aligncnt = ret.size();
+    for (auto& p : getEntries()) {
+        if (p->getId() == ID_COMMENT) {
+            continue;
+        }
+        if (argcnt++) {
+            ret += ",\n";
+            for (int i = 0; i < aligncnt; i++) {
+                ret += " ";
+            }
+        }
+        ret += p->getType() + " " + p->getName() + "_";
+    }
+    ret += ") {\n";
+    Operation::set_space(Operation::get_space() + 1);
+    for (auto& p : getEntries()) {
+        if (p->getId() == ID_COMMENT) {
+            continue;
+        }
+        ret += Operation::addspaces();
+        ret += p->getName() + " = " + p->getName() + "_;\n";
+    }
+    Operation::set_space(Operation::get_space() - 1);
+    ret += Operation::addspaces() + "}\n";
+    ret += "\n";
+
+    return ret;
+}
+
 std::string StructObject::generate_interface_op_equal() {
     std::string ret = "";
     int tcnt = 0;
@@ -370,6 +405,9 @@ std::string StructObject::generate_interface() {
 
         Operation::set_space(Operation::get_space() + 1);
         ret += generate_interface_constructor();
+        if (isInitable()) {
+            ret += generate_interface_constructor_init();
+        }
         ret += generate_interface_op_equal();
         ret += generate_interface_op_assign();
         ret += generate_interface_sc_trace();

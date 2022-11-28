@@ -28,6 +28,8 @@ dmidebug::dmidebug(GenObject *parent, const char *name) :
     i_tdi(this, "i_tdi", "1", "Test Data Input"),
     o_tdo(this, "o_tdo", "1", "Test Data Output"),
     _bus0_(this, "Bus interface (APB):"),
+    i_mapinfo(this, "i_mapinfo", "interconnect slot information"),
+    o_cfg(this, "o_cfg", "Device descriptor"),
     i_apbi(this, "i_apbi", "APB input interface"),
     o_apbo(this, "o_apbo", "APB output interface"),
     _dmi0_(this, "DMI interface:"),
@@ -177,7 +179,15 @@ dmidebug::dmidebug(GenObject *parent, const char *name) :
 
 void dmidebug::proc_comb() {
     river_cfg *cfg = glob_river_cfg_;
+    types_amba *amba = glob_types_amba_;
+    SETVAL(comb.vcfg.descrsize, amba->PNP_CFG_DEV_DESCR_BYTES);
+    SETVAL(comb.vcfg.descrtype, amba->PNP_CFG_TYPE_SLAVE);
+    SETVAL(comb.vcfg.addr_start, i_mapinfo.addr_start);
+    SETVAL(comb.vcfg.addr_end, i_mapinfo.addr_end);
+    SETVAL(comb.vcfg.vid, amba->VENDOR_OPTIMITECH);
+    SETVAL(comb.vcfg.did, amba->OPTIMITECH_JTAG_DMI);
 
+TEXT();
     SETVAL(comb.vb_hartselnext, BITS(wdata, DEC(ADD2(CONST("16"), cfg->CFG_LOG2_CPU_MAX)), CONST("16")));
     SETVAL(comb.hsel, TO_INT(hartsel));
     SETVAL(comb.v_cmd_busy, OR_REDUCE(cmdstate));
@@ -594,5 +604,6 @@ TEXT();
     SETZERO(w_jtag_dmi_error);
 
 TEXT();
+    SETVAL(o_cfg, comb.vcfg);
     SETVAL(o_apbo, comb.vapbo);
 }

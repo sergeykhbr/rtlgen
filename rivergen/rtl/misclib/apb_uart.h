@@ -30,7 +30,6 @@ class apb_uart : public ModuleObject {
      public:
         CombProcess(GenObject *parent) :
             ProcObject(parent, "comb"),
-            vcfg(this, "vcfg"),
             vb_rdata(this, "vb_rdata", "32"),
             vb_tx_wr_cnt_next(this, "vb_tx_wr_cnt_next", "log2_fifosz"),
             v_tx_fifo_full(this, "v_tx_fifo_full", "1"),
@@ -49,7 +48,6 @@ class apb_uart : public ModuleObject {
         }
 
      public:
-        types_amba::dev_config_type vcfg;
         Logic vb_rdata;
         Logic vb_tx_wr_cnt_next;
         Logic v_tx_fifo_full;
@@ -74,9 +72,10 @@ class apb_uart : public ModuleObject {
     // io:
     InPort i_clk;
     InPort i_nrst;
+    InStruct<types_amba::mapinfo_type> i_mapinfo;
+    OutStruct<types_amba::dev_config_type> o_cfg;
     InStruct<types_amba::apb_in_type> i_apbi;
     OutStruct<types_amba::apb_out_type> o_apbo;
-    OutStruct<types_amba::dev_config_type> o_cfg;
     InPort i_rd;
     OutPort o_td;
     OutPort o_irq;

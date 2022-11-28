@@ -50,6 +50,7 @@ class types_amba : public FileObject {
             std::string strtype = getType();
             SCV_get_cfg_parameter(strtype);    // to trigger dependecy array
         }
+        virtual bool isInitable() override { return true; }
 
     public:
         TextLine _0_;
@@ -443,7 +444,7 @@ class types_amba : public FileObject {
     TextLine _didmst8_;
     ParamLogic GNSSSENSOR_UART_TAP;
     TextLine _didmst9_;
-    ParamLogic GNSSSENSOR_JTAG_TAP;
+    ParamLogic OPTIMITECH_JTAG_DMI;
     TextLine _didslv0_;
     TextLine _didslv1_;
     TextLine _didslv2_;
@@ -466,6 +467,8 @@ class types_amba : public FileObject {
     ParamLogic OPTIMITECH_PLIC;
     TextLine _didslv11_;
     ParamLogic OPTIMITECH_AXI2APB_BRIDGE;
+    TextLine _didslv12_;
+    ParamLogic OPTIMITECH_AXI_INTERCONNECT;
     TextLine _pnpcfg0_;
     TextLine _pnpcfg1_;
     TextLine _pnpcfg2_;

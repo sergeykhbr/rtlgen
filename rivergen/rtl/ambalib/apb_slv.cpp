@@ -18,8 +18,12 @@
 
 apb_slv::apb_slv(GenObject *parent, const char *name) :
     ModuleObject(parent, "apb_slv", name),
+    vid(this, "vid", "0", "Vendor ID"),
+    did(this, "did", "0", "Device ID"),
     i_clk(this, "i_clk", "1", "CPU clock"),
     i_nrst(this, "i_nrst", "1", "Reset: active LOW"),
+    i_mapinfo(this, "i_mapinfo", "Base address information from the interconnect port"),
+    o_cfg(this, "o_cfg", "Slave config descriptor"),
     i_apbi(this, "i_apbi", "APB  Slave to Bridge interface"),
     o_apbo(this, "o_apbo", "APB Bridge to Slave interface"),
     o_req_valid(this, "o_req_valid", "1"),
@@ -54,6 +58,15 @@ apb_slv::apb_slv(GenObject *parent, const char *name) :
 }
 
 void apb_slv::proc_comb() {
+    types_amba *glb = glob_types_amba_;
+    SETVAL(comb.vcfg.descrsize, glb->PNP_CFG_DEV_DESCR_BYTES);
+    SETVAL(comb.vcfg.descrtype, glb->PNP_CFG_TYPE_SLAVE);
+    SETVAL(comb.vcfg.addr_start, i_mapinfo.addr_start);
+    SETVAL(comb.vcfg.addr_end, i_mapinfo.addr_end);
+    SETVAL(comb.vcfg.vid, vid);
+    SETVAL(comb.vcfg.did, did);
+
+TEXT();
     SETZERO(req_valid);
 
 TEXT();
@@ -105,4 +118,5 @@ TEXT();
     SETVAL(comb.vapbo.prdata, resp_rdata);
     SETVAL(comb.vapbo.pslverr, resp_err);
     SETVAL(o_apbo, comb.vapbo);
+    SETVAL(o_cfg, comb.vcfg);
 }

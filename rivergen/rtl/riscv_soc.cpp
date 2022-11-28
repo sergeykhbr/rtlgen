@@ -41,11 +41,19 @@ riscv_soc::riscv_soc(GenObject *parent, const char *name) :
     // param
     _map0_(this),
     _pnp0_(this),
-    CFG_SOC_PNP_0_XMST_GROUP0(this, "CFG_SOC_PNP_0_XMST_GROUP0", "0"),
-    CFG_SOC_PNP_1_XMST_DMA0(this, "CFG_SOC_PNP_1_XMST_DMA0", "1"),
-    CFG_SOC_PNP_0_XSLV_PBRIDGE0(this, "CFG_SOC_PNP_0_XSLV_PBRIDGE0", "2"),
-    CFG_SOC_PNP_1_PSLV_UART1(this, "CFG_SOC_PNP_1_PSLV_UART1", "3"),
-    CFG_SOC_PNP_SLOTS_TOTAL(this, "CFG_SOC_PNP_SLOTS_TOTAL", "ADD(ADD(CFG_BUS0_XMST_TOTAL,CFG_BUS0_XSLV_TOTAL),CFG_BUS1_PSLV_TOTAL)"),
+    SOC_PNP_XCTRL0(this, "SOC_PNP_XCTRL0", "0"),
+    SOC_PNP_GROUP0(this, "SOC_PNP_GROUP0", "1"),
+    SOC_PNP_BOOTROM(this, "SOC_PNP_BOOTROM", "2"),
+    SOC_PNP_SRAM(this, "SOC_PNP_SRAM", "3"),
+    SOC_PNP_DDR(this, "SOC_PNP_DDR", "4"),
+    SOC_PNP_GPIO(this, "SOC_PNP_GPIO", "5"),
+    SOC_PNP_CLINT(this, "SOC_PNP_CLINT", "6"),
+    SOC_PNP_PLIC(this, "SOC_PNP_PLIC", "7"),
+    SOC_PNP_PNP(this, "SOC_PNP_PNP", "8"),
+    SOC_PNP_PBRIDGE0(this, "SOC_PNP_PBRIDGE0", "9"),
+    SOC_PNP_DMI(this, "SOC_PNP_DMI", "10"),
+    SOC_PNP_UART1(this, "SOC_PNP_UART1", "11"),
+    SOC_PNP_TOTAL(this, "SOC_PNP_TOTAL", "12"),
     _cfg0_(this),
     CFG_SOC_UART1_LOG2_FIFOSZ(this, "CFG_SOC_UART1_LOG2_FIFOSZ", "4"),
     soc_pnp_vector_def_(this, ""),
@@ -60,6 +68,7 @@ riscv_soc::riscv_soc(GenObject *parent, const char *name) :
     aximo(this, "aximo"),
     axisi(this, "axisi"),
     axiso(this, "axiso"),
+    bus1_mapinfo(this, "bus1_mapinfo"),
     apbmi(this, "apbmi"),
     apbmo(this, "apbmo"),
     apbsi(this, "apbsi"),
@@ -83,12 +92,12 @@ riscv_soc::riscv_soc(GenObject *parent, const char *name) :
     NEW(apbrdg0, apbrdg0.getName().c_str());
         CONNECT(apbrdg0, 0, apbrdg0.i_clk, i_clk);
         CONNECT(apbrdg0, 0, apbrdg0.i_nrst, w_sys_nrst);
-        CONNECT(apbrdg0, 0, apbrdg0.i_mapinfo, ARRITEM(bus0_mapinfo, glob_bus0_cfg_->CFG_BUS0_XSLV_BUS1, bus0_mapinfo));
-        CONNECT(apbrdg0, 0, apbrdg0.o_cfg, ARRITEM(dev_pnp, CFG_SOC_PNP_0_XSLV_PBRIDGE0, dev_pnp));
-        CONNECT(apbrdg0, 0, apbrdg0.i_xslvi, ARRITEM(axisi, glob_bus0_cfg_->CFG_BUS0_XSLV_BUS1, axisi));
-        CONNECT(apbrdg0, 0, apbrdg0.o_xslvo, ARRITEM(axiso, glob_bus0_cfg_->CFG_BUS0_XSLV_BUS1, axiso));
-        CONNECT(apbrdg0, 0, apbrdg0.i_apbmi, ARRITEM(apbmi, glob_bus1_cfg_->CFG_BUS1_PMST_BUS0, apbmi));
-        CONNECT(apbrdg0, 0, apbrdg0.o_apbmo, ARRITEM(apbmo, glob_bus1_cfg_->CFG_BUS1_PMST_BUS0, apbmo));
+        CONNECT(apbrdg0, 0, apbrdg0.i_mapinfo, ARRITEM(bus0_mapinfo, glob_bus0_cfg_->CFG_BUS0_XSLV_PBRIDGE, bus0_mapinfo));
+        CONNECT(apbrdg0, 0, apbrdg0.o_cfg, ARRITEM(dev_pnp, SOC_PNP_PBRIDGE0, dev_pnp));
+        CONNECT(apbrdg0, 0, apbrdg0.i_xslvi, ARRITEM(axisi, glob_bus0_cfg_->CFG_BUS0_XSLV_PBRIDGE, axisi));
+        CONNECT(apbrdg0, 0, apbrdg0.o_xslvo, ARRITEM(axiso, glob_bus0_cfg_->CFG_BUS0_XSLV_PBRIDGE, axiso));
+        CONNECT(apbrdg0, 0, apbrdg0.i_apbmi, ARRITEM(apbmi, glob_bus1_cfg_->CFG_BUS1_PMST_PARENT, apbmi));
+        CONNECT(apbrdg0, 0, apbrdg0.o_apbmo, ARRITEM(apbmo, glob_bus1_cfg_->CFG_BUS1_PMST_PARENT, apbmo));
     ENDNEW();
 
     group0.cpu_num.setObjValue(&prj_cfg_->CFG_CPU_NUM);
@@ -107,13 +116,15 @@ riscv_soc::riscv_soc(GenObject *parent, const char *name) :
         CONNECT(group0, 0, group0.i_meip, wb_plic_meip);
         CONNECT(group0, 0, group0.i_seip, wb_plic_seip);
         CONNECT(group0, 0, group0.i_mtimer, wb_clint_mtimer);
-        CONNECT(group0, 0, group0.o_xcfg, ARRITEM(dev_pnp, CFG_SOC_PNP_0_XMST_GROUP0, dev_pnp));
         CONNECT(group0, 0, group0.i_acpo, acpo);
         CONNECT(group0, 0, group0.o_acpi, acpi);
+        CONNECT(group0, 0, group0.o_xmst_cfg, ARRITEM(dev_pnp, SOC_PNP_GROUP0, dev_pnp));
         CONNECT(group0, 0, group0.i_msti, ARRITEM(aximi, glob_bus0_cfg_->CFG_BUS0_XMST_GROUP0, aximi));
         CONNECT(group0, 0, group0.o_msto, ARRITEM(aximo, glob_bus0_cfg_->CFG_BUS0_XMST_GROUP0, aximo));
-        CONNECT(group0, 0, group0.i_dmi_apbi, ARRITEM(apbsi, glob_bus1_cfg_->CFG_BUS1_PSLV0_DMI, apbsi));
-        CONNECT(group0, 0, group0.o_dmi_apbo, ARRITEM(apbso, glob_bus1_cfg_->CFG_BUS1_PSLV0_DMI, apbso));
+        CONNECT(group0, 0, group0.i_dmi_mapinfo, ARRITEM(bus1_mapinfo, glob_bus1_cfg_->CFG_BUS1_PSLV_DMI, bus1_mapinfo));
+        CONNECT(group0, 0, group0.o_dmi_cfg, ARRITEM(dev_pnp, SOC_PNP_DMI, dev_pnp));
+        CONNECT(group0, 0, group0.i_dmi_apbi, ARRITEM(apbsi, glob_bus1_cfg_->CFG_BUS1_PSLV_DMI, apbsi));
+        CONNECT(group0, 0, group0.o_dmi_apbo, ARRITEM(apbso, glob_bus1_cfg_->CFG_BUS1_PSLV_DMI, apbso));
         CONNECT(group0, 0, group0.o_dmreset, w_dmreset);
     ENDNEW();
 
@@ -121,9 +132,10 @@ riscv_soc::riscv_soc(GenObject *parent, const char *name) :
     NEW(uart1, uart1.getName().c_str());
         CONNECT(uart1, 0, uart1.i_clk, i_clk);
         CONNECT(uart1, 0, uart1.i_nrst, w_sys_nrst);
-        CONNECT(uart1, 0, uart1.i_apbi, ARRITEM(apbsi, glob_bus1_cfg_->CFG_BUS1_PSLV1_UART1, apbsi));
-        CONNECT(uart1, 0, uart1.o_apbo, ARRITEM(apbso, glob_bus1_cfg_->CFG_BUS1_PSLV1_UART1, apbso));
-        CONNECT(uart1, 0, uart1.o_cfg, ARRITEM(dev_pnp, CFG_SOC_PNP_1_PSLV_UART1, dev_pnp));
+        CONNECT(uart1, 0, uart1.i_mapinfo, ARRITEM(bus1_mapinfo, glob_bus1_cfg_->CFG_BUS1_PSLV_UART1, bus1_mapinfo));
+        CONNECT(uart1, 0, uart1.o_cfg, ARRITEM(dev_pnp, SOC_PNP_UART1, dev_pnp));
+        CONNECT(uart1, 0, uart1.i_apbi, ARRITEM(apbsi, glob_bus1_cfg_->CFG_BUS1_PSLV_UART1, apbsi));
+        CONNECT(uart1, 0, uart1.o_apbo, ARRITEM(apbso, glob_bus1_cfg_->CFG_BUS1_PSLV_UART1, apbso));
         CONNECT(uart1, 0, uart1.i_rd, i_uart1_rd);
         CONNECT(uart1, 0, uart1.o_td, o_uart1_td);
         CONNECT(uart1, 0, uart1.o_irq, w_irq_uart1);
@@ -137,7 +149,7 @@ void riscv_soc::proc_comb() {
     river_cfg *cfg = glob_river_cfg_;
 
     TEXT("TODO: APB interconnect");
-    SETARRITEM(apbsi, glob_bus1_cfg_->CFG_BUS1_PSLV0_DMI, apbsi, glob_types_amba_->apb_in_none);
-    SETARRITEM(apbsi, glob_bus1_cfg_->CFG_BUS1_PSLV1_UART1, apbsi, ARRITEM(apbmo, glob_bus1_cfg_->CFG_BUS1_PMST_BUS0, apbmo));
-    SETARRITEM(apbmi, glob_bus1_cfg_->CFG_BUS1_PMST_BUS0, apbmi, ARRITEM(apbso, glob_bus1_cfg_->CFG_BUS1_PSLV1_UART1, apbso));
+    SETARRITEM(apbsi, glob_bus1_cfg_->CFG_BUS1_PSLV_DMI, apbsi, glob_types_amba_->apb_in_none);
+    SETARRITEM(apbsi, glob_bus1_cfg_->CFG_BUS1_PSLV_UART1, apbsi, ARRITEM(apbmo, glob_bus1_cfg_->CFG_BUS1_PMST_PARENT, apbmo));
+    SETARRITEM(apbmi, glob_bus1_cfg_->CFG_BUS1_PMST_PARENT, apbmi, ARRITEM(apbso, glob_bus1_cfg_->CFG_BUS1_PSLV_UART1, apbso));
 }

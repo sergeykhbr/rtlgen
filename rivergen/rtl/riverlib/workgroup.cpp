@@ -35,14 +35,16 @@ Workgroup::Workgroup(GenObject *parent, const char *name) :
     i_meip(this, "i_meip", "CFG_CPU_MAX"),
     i_seip(this, "i_seip", "CFG_CPU_MAX"),
     i_mtimer(this, "i_mtimer", "64", "Read-only shadow value of memory-mapped mtimer register (see CLINT)."),
-    o_xcfg(this, "o_xcfg"),
     _port0_(this, "coherent port:"),
     i_acpo(this, "i_acpo"),
     o_acpi(this, "o_acpi"),
     _port1_(this, "System bus port"),
+    o_xmst_cfg(this, "o_xmst_cfg", "Workgroup master interface descriptor"),
     i_msti(this, "i_msti"),
     o_msto(this, "o_msto"),
     _apb0_(this, "APB debug access:"),
+    i_dmi_mapinfo(this, "i_dmi_mapinfo", "DMI APB itnerface mapping information"),
+    o_dmi_cfg(this, "o_dmi_cfg", "DMI device descriptor"),
     i_dmi_apbi(this, "i_dmi_apbi"),
     o_dmi_apbo(this, "o_dmi_apbo"),
     o_dmreset(this, "o_dmreset", "1", "reset everything except DMI debug interface"),
@@ -79,7 +81,7 @@ Workgroup::Workgroup(GenObject *parent, const char *name) :
     wb_ic_dport_rdata(this, "wb_ic_dport_rdata", "RISCV_ARCH"),
     wb_progbuf(this, "wb_progbuf", "MUL(32,CFG_PROGBUF_REG_TOTAL)"),
     w_flush_l2(this, "w_flush_l2", "1"),
-    wb_xcfg(this, "wb_xcfg"),
+    wb_xmst_cfg(this, "wb_xmst_cfg"),
     // submodules:
     dmi0(this, "dmi0"),
     dport_ic0(this, "dport_ic0"),
@@ -102,6 +104,8 @@ Workgroup::Workgroup(GenObject *parent, const char *name) :
         CONNECT(dmi0, 0, dmi0.i_tms, i_tms);
         CONNECT(dmi0, 0, dmi0.i_tdi, i_tdi);
         CONNECT(dmi0, 0, dmi0.o_tdo, o_tdo);
+        CONNECT(dmi0, 0, dmi0.i_mapinfo, i_dmi_mapinfo);
+        CONNECT(dmi0, 0, dmi0.o_cfg, o_dmi_cfg);
         CONNECT(dmi0, 0, dmi0.i_apbi, i_dmi_apbi);
         CONNECT(dmi0, 0, dmi0.o_apbo, o_dmi_apbo);
         CONNECT(dmi0, 0, dmi0.o_ndmreset, o_dmreset, "reset whole system");
@@ -227,10 +231,10 @@ Workgroup::Workgroup(GenObject *parent, const char *name) :
 void Workgroup::proc_comb() {
     river_cfg *cfg = glob_river_cfg_;
 
-    SETVAL(wb_xcfg.descrsize, glob_types_amba_->PNP_CFG_DEV_DESCR_BYTES);
-    SETVAL(wb_xcfg.descrtype, glob_types_amba_->PNP_CFG_TYPE_MASTER);
-    SETVAL(wb_xcfg.vid, glob_types_amba_->VENDOR_OPTIMITECH);
-    SETVAL(wb_xcfg.did, glob_types_amba_->RISCV_RIVER_WORKGROUP);
+    SETVAL(wb_xmst_cfg.descrsize, glob_types_amba_->PNP_CFG_DEV_DESCR_BYTES);
+    SETVAL(wb_xmst_cfg.descrtype, glob_types_amba_->PNP_CFG_TYPE_MASTER);
+    SETVAL(wb_xmst_cfg.vid, glob_types_amba_->VENDOR_OPTIMITECH);
+    SETVAL(wb_xmst_cfg.did, glob_types_amba_->RISCV_RIVER_WORKGROUP);
 
 TEXT();
     TEXT("Vector to signal conversion is neccessary to implement compatibility with SystemC:");
@@ -251,5 +255,5 @@ TEXT();
     SETVAL(w_flush_l2, comb.v_flush_l2);
     SETVAL(wb_halted, comb.vb_halted);
     SETVAL(wb_available, comb.vb_available);
-    SETVAL(o_xcfg, wb_xcfg);
+    SETVAL(o_xmst_cfg, wb_xmst_cfg);
 }

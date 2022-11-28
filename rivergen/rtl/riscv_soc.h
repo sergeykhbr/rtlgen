@@ -61,7 +61,7 @@ public:
         soc_pnp_vector(GenObject *parent, const char *name, const char *descr="")
             : dev_config_type(parent, name, descr) {
             type_ = std::string("soc_pnp_vector");
-            setStrDepth("CFG_SOC_PNP_SLOTS_TOTAL");
+            setStrDepth("SOC_PNP_TOTAL");
             
             registerCfgType(name);                  // will be registered if name == ""
             if (name[0]) {
@@ -129,11 +129,19 @@ public:
 
     TextLine _map0_;
     TextLine _pnp0_;
-    ParamI32D CFG_SOC_PNP_0_XMST_GROUP0;
-    ParamI32D CFG_SOC_PNP_1_XMST_DMA0;
-    ParamI32D CFG_SOC_PNP_0_XSLV_PBRIDGE0;
-    ParamI32D CFG_SOC_PNP_1_PSLV_UART1;
-    ParamI32D CFG_SOC_PNP_SLOTS_TOTAL;
+    ParamI32D SOC_PNP_XCTRL0;
+    ParamI32D SOC_PNP_GROUP0;
+    ParamI32D SOC_PNP_BOOTROM;
+    ParamI32D SOC_PNP_SRAM;
+    ParamI32D SOC_PNP_DDR;
+    ParamI32D SOC_PNP_GPIO;
+    ParamI32D SOC_PNP_CLINT;
+    ParamI32D SOC_PNP_PLIC;
+    ParamI32D SOC_PNP_PNP;
+    ParamI32D SOC_PNP_PBRIDGE0;
+    ParamI32D SOC_PNP_DMI;
+    ParamI32D SOC_PNP_UART1;
+    ParamI32D SOC_PNP_TOTAL;
     TextLine _cfg0_;
     ParamI32D CFG_SOC_UART1_LOG2_FIFOSZ;
 
@@ -149,6 +157,7 @@ public:
     types_bus0::bus0_xmst_out_vector  aximo;
     types_bus0::bus0_xslv_in_vector   axisi;
     types_bus0::bus0_xslv_out_vector  axiso;
+    types_bus1::bus1_mapinfo_vector   bus1_mapinfo;
     types_bus1::bus1_pmst_in_vector   apbmi;
     types_bus1::bus1_pmst_out_vector  apbmo;
     types_bus1::bus1_pslv_in_vector   apbsi;

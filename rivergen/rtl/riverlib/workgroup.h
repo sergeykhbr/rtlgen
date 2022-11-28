@@ -99,14 +99,16 @@ public:
     InPort i_meip;
     InPort i_seip;
     InPort i_mtimer;
-    OutStruct<types_amba::dev_config_type> o_xcfg;
     TextLine _port0_;
     InStruct<types_amba::axi4_master_out_type> i_acpo;
     OutStruct<types_amba::axi4_master_in_type> o_acpi;
     TextLine _port1_;
+    OutStruct<types_amba::dev_config_type> o_xmst_cfg;
     InStruct<types_amba::axi4_master_in_type> i_msti;
     OutStruct<types_amba::axi4_master_out_type> o_msto;
     TextLine _apb0_;
+    InStruct<types_amba::mapinfo_type> i_dmi_mapinfo;
+    OutStruct<types_amba::dev_config_type> o_dmi_cfg;
     InStruct<types_amba::apb_in_type> i_dmi_apbi;
     OutStruct<types_amba::apb_out_type> o_dmi_apbo;
     OutPort o_dmreset;
@@ -159,7 +161,7 @@ public:
     Signal wb_ic_dport_rdata;
     Signal wb_progbuf;
     Signal w_flush_l2;
-    types_amba::dev_config_type wb_xcfg;
+    types_amba::dev_config_type wb_xmst_cfg;
 
     // Sub-module instances:
     dmidebug dmi0;

@@ -30,20 +30,26 @@ class apb_slv : public ModuleObject {
         CombProcess(GenObject *parent) :
             ProcObject(parent, "comb"),
             vb_rdata(this, "vb_rdata", "32"),
+            vcfg(this, "vcfg"),
             vapbo(this, "vapbo") {
         }
 
      public:
         Logic vb_rdata;
+        types_amba::dev_config_type vcfg;
         types_amba::apb_out_type vapbo;
     };
 
     void proc_comb();
 
  public:
+    DefParamUI32D vid;
+    DefParamUI32D did;
     // io:
     InPort i_clk;
     InPort i_nrst;
+    InStruct<types_amba::mapinfo_type> i_mapinfo;
+    OutStruct<types_amba::dev_config_type> o_cfg;
     InStruct<types_amba::apb_in_type> i_apbi;
     OutStruct<types_amba::apb_out_type> o_apbo;
     OutPort o_req_valid;

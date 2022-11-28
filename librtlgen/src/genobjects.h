@@ -91,6 +91,7 @@ class GenObject {
     virtual bool isGenVar() { return false; }   // I32D analog for rtl
     virtual bool isLocal();     // if parent is file then obj is global; if module obj is local
     virtual bool isTop() { return false; }
+    virtual bool isInitable() { return false; } // Generate structure constructor with arguemnts to initialize all class variables
 
     virtual uint64_t getValue();
     virtual std::string getStrValue();

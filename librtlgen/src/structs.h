@@ -48,6 +48,7 @@ class StructObject : public GenObject {
     virtual bool isVector() override;
     virtual std::string generate_interface();
     virtual std::string generate_interface_constructor();
+    virtual std::string generate_interface_constructor_init();
     virtual std::string generate_interface_op_equal();      // operator ==
     virtual std::string generate_interface_op_assign();     // operator =
     virtual std::string generate_interface_op_stream();     // operator <<

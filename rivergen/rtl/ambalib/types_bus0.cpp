@@ -45,7 +45,7 @@ types_bus0::types_bus0(GenObject *parent) :
     _xslv9_(this, "External DDR"),
     CFG_BUS0_XSLV_DDR(this, "CFG_BUS0_XSLV_DDR", "2"),
     _xslv10_(this, "Configuration index of the APB Bridge."),
-    CFG_BUS0_XSLV_BUS1(this, "CFG_BUS0_XSLV_BUS1", "3"),
+    CFG_BUS0_XSLV_PBRIDGE(this, "CFG_BUS0_XSLV_PBRIDGE", "3"),
     _xslv11_(this, "Configuration index of the GPIO (General Purpose In/Out) module."),
     CFG_BUS0_XSLV_GPIO(this, "CFG_BUS0_XSLV_GPIO", "4"),
     _xslv12_(this, "Configuration index of the Core Local Interrupt Controller module."),
