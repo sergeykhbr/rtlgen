@@ -30,11 +30,11 @@ class DCacheLru : public ModuleObject {
      public:
         CombProcess(GenObject *parent) :
             ProcObject(parent, "comb"),
-            vb_cache_line_i_modified(this, "vb_cache_line_i_modified", "DCACHE_LINE_BITS"),
-            vb_line_rdata_o_modified(this, "vb_line_rdata_o_modified", "DCACHE_LINE_BITS"),
-            vb_line_rdata_o_wstrb(this, "vb_line_rdata_o_wstrb", "DCACHE_BYTES_PER_LINE"),
+            vb_cache_line_i_modified(this, "vb_cache_line_i_modified", "L1CACHE_LINE_BITS"),
+            vb_line_rdata_o_modified(this, "vb_line_rdata_o_modified", "L1CACHE_LINE_BITS"),
+            vb_line_rdata_o_wstrb(this, "vb_line_rdata_o_wstrb", "L1CACHE_BYTES_PER_LINE"),
             v_req_ready(this, "v_req_ready", "1"),
-            t_cache_line_i(this, "t_cache_line_i", "DCACHE_LINE_BITS"),
+            t_cache_line_i(this, "t_cache_line_i", "L1CACHE_LINE_BITS"),
             vb_cached_data(this, "vb_cached_data", "64"),
             vb_uncached_data(this, "vb_uncached_data", "64"),
             v_resp_valid(this, "v_resp_valid", "1"),
@@ -47,11 +47,11 @@ class DCacheLru : public ModuleObject {
             v_line_cs_read(this, "v_line_cs_read", "1"),
             v_line_cs_write(this, "v_line_cs_write", "1"),
             vb_line_addr(this, "vb_line_addr", "CFG_CPU_ADDR_BITS"),
-            vb_line_wdata(this, "vb_line_wdata", "DCACHE_LINE_BITS"),
-            vb_line_wstrb(this, "vb_line_wstrb", "DCACHE_BYTES_PER_LINE"),
+            vb_line_wdata(this, "vb_line_wdata", "L1CACHE_LINE_BITS"),
+            vb_line_wstrb(this, "vb_line_wstrb", "L1CACHE_BYTES_PER_LINE"),
             vb_req_mask(this, "vb_req_mask", "64"),
             v_line_wflags(this, "v_line_wflags", "DTAG_FL_TOTAL"),
-            ridx(this, "ridx", "SUB(CFG_DLOG2_BYTES_PER_LINE,3)"),
+            ridx(this, "ridx", "SUB(CFG_LOG2_L1CACHE_BYTES_PER_LINE,3)"),
             v_req_same_line(this, "v_req_same_line", "1"),
             v_ready_next(this, "v_ready_next", "1"),
             v_req_snoop_ready(this, "v_req_snoop_ready", "1"),
@@ -96,6 +96,8 @@ class DCacheLru : public ModuleObject {
     void proc_comb();
 
  public:
+    DefParamUI32D waybits;
+    DefParamUI32D ibits;
     DefParamBOOL coherence_ena;
     // io:
     InPort i_clk;
@@ -146,10 +148,9 @@ class DCacheLru : public ModuleObject {
     OutPort o_flush_end;
 
     ParamI32D abus;
-    ParamI32D waybits;
-    ParamI32D ibits;
     ParamI32D lnbits;
     ParamI32D flbits;
+    ParamI32D ways;
     ParamLogic State_Idle;
     ParamLogic State_CheckHit;
     ParamLogic State_TranslateAddress;

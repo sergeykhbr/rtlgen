@@ -18,6 +18,8 @@
 
 DCacheLru::DCacheLru(GenObject *parent, const char *name) :
     ModuleObject(parent, "DCacheLru", name),
+    waybits(this, "waybits", "2", "Log2 of number of ways. Default 2: 4 ways"),
+    ibits(this, "ibits", "7", "Log2 of number of lines per way: 7=16KB; 8=32KB; .. (if bytes per line = 32 B)"),
     coherence_ena(this, "coherence_ena", "false"),
     i_clk(this, "i_clk", "1", "CPU clock"),
     i_nrst(this, "i_nrst", "1", "Reset: active LOW"),
@@ -41,10 +43,10 @@ DCacheLru::DCacheLru(GenObject *parent, const char *name) :
     o_req_mem_type(this, "o_req_mem_type", "REQ_MEM_TYPE_BITS"),
     o_req_mem_size(this, "o_req_mem_size", "3"),
     o_req_mem_addr(this, "o_req_mem_addr", "CFG_CPU_ADDR_BITS"),
-    o_req_mem_strob(this, "o_req_mem_strob", "DCACHE_BYTES_PER_LINE"),
-    o_req_mem_data(this, "o_req_mem_data", "DCACHE_LINE_BITS"),
+    o_req_mem_strob(this, "o_req_mem_strob", "L1CACHE_BYTES_PER_LINE"),
+    o_req_mem_data(this, "o_req_mem_data", "L1CACHE_LINE_BITS"),
     i_mem_data_valid(this, "i_mem_data_valid", "1"),
-    i_mem_data(this, "i_mem_data", "DCACHE_LINE_BITS"),
+    i_mem_data(this, "i_mem_data", "L1CACHE_LINE_BITS"),
     i_mem_load_fault(this, "i_mem_load_fault", "1"),
     i_mem_store_fault(this, "i_mem_store_fault", "1"),
     _mpu0(this, "Mpu interface"),
@@ -67,10 +69,11 @@ DCacheLru::DCacheLru(GenObject *parent, const char *name) :
     o_flush_end(this, "o_flush_end", "1"),
     // params
     abus(this, "abus", "CFG_CPU_ADDR_BITS"),
-    waybits(this, "waybits", "CFG_DLOG2_NWAYS"),
-    ibits(this, "ibits", "CFG_DLOG2_LINES_PER_WAY"),
-    lnbits(this, "lnbits", "CFG_DLOG2_BYTES_PER_LINE"),
+//    waybits(this, "waybits", "CFG_DLOG2_NWAYS"),
+//    ibits(this, "ibits", "CFG_DLOG2_LINES_PER_WAY"),
+    lnbits(this, "lnbits", "CFG_LOG2_L1CACHE_BYTES_PER_LINE"),
     flbits(this, "flbits", "DTAG_FL_TOTAL"),
+    ways(this, "ways", "POW2(1,waybits)"),
     State_Idle(this, "4", "State_Idle", "0"),
     State_CheckHit(this, "4", "State_CheckHit", "1"),
     State_TranslateAddress(this, "4", "State_TranslateAddress", "2"),
@@ -85,18 +88,18 @@ DCacheLru::DCacheLru(GenObject *parent, const char *name) :
     State_ResetWrite(this, "4", "State_ResetWrite", "11"),
     State_SnoopSetupAddr(this, "4", "State_SnoopSetupAddr", "12"),
     State_SnoopReadData(this, "4", "State_SnoopReadData", "13"),
-    LINE_BYTES_MASK(this, "CFG_CPU_ADDR_BITS", "LINE_BYTES_MASK", "SUB(POW2(1,CFG_DLOG2_BYTES_PER_LINE),1)"),
+    LINE_BYTES_MASK(this, "CFG_CPU_ADDR_BITS", "LINE_BYTES_MASK", "SUB(POW2(1,CFG_LOG2_L1CACHE_BYTES_PER_LINE),1)"),
     // signals
     line_direct_access_i(this, "line_direct_access_i", "1"),
     line_invalidate_i(this, "line_invalidate_i", "1"),
     line_re_i(this, "line_re_i", "1"),
     line_we_i(this, "line_we_i", "1"),
     line_addr_i(this, "line_addr_i", "CFG_CPU_ADDR_BITS"),
-    line_wdata_i(this, "line_wdata_i", "DCACHE_LINE_BITS"),
-    line_wstrb_i(this, "line_wstrb_i", "DCACHE_BYTES_PER_LINE"),
+    line_wdata_i(this, "line_wdata_i", "L1CACHE_LINE_BITS"),
+    line_wstrb_i(this, "line_wstrb_i", "L1CACHE_BYTES_PER_LINE"),
     line_wflags_i(this, "line_wflags_i", "DTAG_FL_TOTAL"),
     line_raddr_o(this, "line_raddr_o", "CFG_CPU_ADDR_BITS"),
-    line_rdata_o(this, "line_rdata_o", "DCACHE_LINE_BITS"),
+    line_rdata_o(this, "line_rdata_o", "L1CACHE_LINE_BITS"),
     line_rflags_o(this, "line_rflags_o", "DTAG_FL_TOTAL"),
     line_hit_o(this, "line_hit_o", "1"),
     _snoop1_(this, "Snoop signals:"),
@@ -118,14 +121,14 @@ DCacheLru::DCacheLru(GenObject *parent, const char *name) :
     write_first(this, "write_first", "1"),
     write_flush(this, "write_flush", "1"),
     write_share(this, "write_share", "1"),
-    mem_wstrb(this, "mem_wstrb", "DCACHE_BYTES_PER_LINE"),
+    mem_wstrb(this, "mem_wstrb", "L1CACHE_BYTES_PER_LINE"),
     req_flush(this, "req_flush", "1", "0", "init flush request"),
     req_flush_all(this, "req_flush_all", "1"),
     req_flush_addr(this, "req_flush_addr", "CFG_CPU_ADDR_BITS", "0", "[0]=1 flush all"),
-    req_flush_cnt(this, "req_flush_cnt", "ADD(CFG_DLOG2_LINES_PER_WAY,CFG_DLOG2_NWAYS)"),
-    flush_cnt(this, "flush_cnt", "ADD(CFG_DLOG2_LINES_PER_WAY,CFG_DLOG2_NWAYS)", "-1"),
-    cache_line_i(this, "cache_line_i", "DCACHE_LINE_BITS"),
-    cache_line_o(this, "cache_line_o", "DCACHE_LINE_BITS"),
+    req_flush_cnt(this, "req_flush_cnt", "ADD(ibits,waybits)"),
+    flush_cnt(this, "flush_cnt", "ADD(ibits,waybits)", "-1"),
+    cache_line_i(this, "cache_line_i", "L1CACHE_LINE_BITS"),
+    cache_line_o(this, "cache_line_o", "L1CACHE_LINE_BITS"),
     req_snoop_type(this, "req_snoop_type", "SNOOP_REQ_TYPE_BITS"),
     snoop_flags_valid(this, "snoop_flags_valid", "1"),
     snoop_restore_wait_resp(this, "snoop_restore_wait_resp", "1"),
@@ -167,15 +170,15 @@ void DCacheLru::proc_comb() {
 
     SETVAL(comb.t_req_type, req_type);
     SETVAL(comb.v_resp_snoop_valid, snoop_flags_valid);
-    SETVAL(comb.ridx, BITS(req_addr, DEC(cfg->CFG_DLOG2_BYTES_PER_LINE), CONST("3")));
+    SETVAL(comb.ridx, BITS(req_addr, DEC(cfg->CFG_LOG2_L1CACHE_BYTES_PER_LINE), CONST("3")));
 
 TEXT();
     SETVAL(comb.vb_cached_data, BITSW(line_rdata_o, MUL2(CONST("64"), TO_INT(comb.ridx)), CONST("64")));
     SETVAL(comb.vb_uncached_data, BIG_TO_U64(BITS(cache_line_i, 63, 0)));
 
 TEXT();
-    IF (EQ(BITS(req_addr, DEC(cfg->CFG_CPU_ADDR_BITS), cfg->CFG_DLOG2_BYTES_PER_LINE),
-            BITS(i_req_addr, DEC(cfg->CFG_CPU_ADDR_BITS), cfg-> CFG_DLOG2_BYTES_PER_LINE)));
+    IF (EQ(BITS(req_addr, DEC(cfg->CFG_CPU_ADDR_BITS), cfg->CFG_LOG2_L1CACHE_BYTES_PER_LINE),
+            BITS(i_req_addr, DEC(cfg->CFG_CPU_ADDR_BITS), cfg-> CFG_LOG2_L1CACHE_BYTES_PER_LINE)));
         SETONE(comb.v_req_same_line);
     ENDIF();
 
@@ -202,7 +205,7 @@ TEXT();
 TEXT();
     SETVAL(comb.vb_line_rdata_o_modified, line_rdata_o);
     SETVAL(comb.vb_cache_line_i_modified, cache_line_i);
-    i = &FOR("i", CONST("0"), DIV2(cfg->DCACHE_BYTES_PER_LINE, CONST("8")), "++");
+    i = &FOR("i", CONST("0"), DIV2(cfg->L1CACHE_BYTES_PER_LINE, CONST("8")), "++");
         IF (EQ(*i, TO_INT(comb.ridx)));
             SETBITSW(comb.vb_line_rdata_o_modified, MUL2(CONST("64"), *i), CONST("64"),
                 ORx_L(2, &ANDx_L(2, &BITSW(comb.vb_line_rdata_o_modified, MUL2(CONST("64"), *i), CONST("64")),
@@ -220,8 +223,8 @@ TEXT();
 
 TEXT();
     TEXT("Flush counter when direct access");
-    IF (EQ(BITS(req_addr, DEC(cfg->CFG_DLOG2_NWAYS), CONST("0")), DEC(cfg->DCACHE_WAYS)));
-        SETVAL(comb.vb_addr_direct_next, ANDx_L(2, &ADD2(req_addr, cfg->DCACHE_BYTES_PER_LINE),
+    IF (EQ(BITS(req_addr, DEC(waybits), CONST("0")), DEC(ways)));
+        SETVAL(comb.vb_addr_direct_next, ANDx_L(2, &ADD2(req_addr, cfg->L1CACHE_BYTES_PER_LINE),
                                                    &INV_L(LINE_BYTES_MASK)));
     ELSE();
         SETVAL(comb.vb_addr_direct_next, INC(req_addr));
@@ -323,25 +326,25 @@ TEXT();
                 IF (NZ(write_share));
                     CALLF(&req_mem_type, cfg->WriteLineUnique, 0);
                     SETVAL(mem_addr, LSH(BITS(line_raddr_o, DEC(cfg->CFG_CPU_ADDR_BITS),
-                                cfg->CFG_DLOG2_BYTES_PER_LINE), cfg->CFG_DLOG2_BYTES_PER_LINE));
+                                cfg->CFG_LOG2_L1CACHE_BYTES_PER_LINE), cfg->CFG_LOG2_L1CACHE_BYTES_PER_LINE));
                 ELSIF (ANDx(2, &NZ(BIT(line_rflags_o, cfg->TAG_FL_VALID)),
                                &NZ(BIT(line_rflags_o, cfg->DTAG_FL_DIRTY))));
                     SETONE(write_first);
                     CALLF(&req_mem_type, cfg->WriteBack, 0);
                     SETVAL(mem_addr, LSH(BITS(line_raddr_o, DEC(cfg->CFG_CPU_ADDR_BITS),
-                                cfg->CFG_DLOG2_BYTES_PER_LINE), cfg->CFG_DLOG2_BYTES_PER_LINE));
+                                cfg->CFG_LOG2_L1CACHE_BYTES_PER_LINE), cfg->CFG_LOG2_L1CACHE_BYTES_PER_LINE));
                 ELSE();
                     TEXT("1. Read -> Save cache");
                     TEXT("2. Read -> Modify -> Save cache");
                     SETVAL(mem_addr, LSH(BITS(req_addr, DEC(cfg->CFG_CPU_ADDR_BITS),
-                                cfg->CFG_DLOG2_BYTES_PER_LINE), cfg->CFG_DLOG2_BYTES_PER_LINE));
+                                cfg->CFG_LOG2_L1CACHE_BYTES_PER_LINE), cfg->CFG_LOG2_L1CACHE_BYTES_PER_LINE));
                     IF (NZ(BIT(req_type, cfg->MemopType_Store)));
                         CALLF(&req_mem_type, cfg->ReadMakeUnique, 0);
                     ELSE();
                         CALLF(&req_mem_type, cfg->ReadShared, 0);
                     ENDIF();
                 ENDIF();
-                SETVAL(req_mem_size, cfg->CFG_DLOG2_BYTES_PER_LINE);
+                SETVAL(req_mem_size, cfg->CFG_LOG2_L1CACHE_BYTES_PER_LINE);
                 SETVAL(mem_wstrb, ALLONES());
                 SETVAL(cache_line_o, line_rdata_o);
             ELSE();
@@ -439,8 +442,8 @@ TEXT();
                 SETVAL(state, State_FlushAddr);
             ELSIF (NZ(write_first));
                 TEXT("Obsolete line was offloaded, now read new line");
-                SETVAL(mem_addr, LSH(BITS(req_addr, DEC(cfg->CFG_CPU_ADDR_BITS), cfg->CFG_DLOG2_BYTES_PER_LINE),
-                                cfg->CFG_DLOG2_BYTES_PER_LINE));
+                SETVAL(mem_addr, LSH(BITS(req_addr, DEC(cfg->CFG_CPU_ADDR_BITS), cfg->CFG_LOG2_L1CACHE_BYTES_PER_LINE),
+                                cfg->CFG_LOG2_L1CACHE_BYTES_PER_LINE));
                 SETONE(req_mem_valid);
                 SETZERO(write_first);
                 IF (NZ(BIT(req_type, cfg->MemopType_Store)));
@@ -500,7 +503,7 @@ TEXT();
             IF (NZ(req_flush_all));
                 SETVAL(req_addr, comb.vb_addr_direct_next);
             ELSE();
-                SETVAL(req_addr, ADD2(req_addr, cfg->DCACHE_BYTES_PER_LINE));
+                SETVAL(req_addr, ADD2(req_addr, cfg->L1CACHE_BYTES_PER_LINE));
             ENDIF();
         ENDIF();
         ENDCASE();
@@ -577,7 +580,7 @@ TEXT();
             SETZERO(req_flush);
             SETZERO(cache_line_i);
             SETVAL(req_addr, AND2_L(req_flush_addr, INV_L(LINE_BYTES_MASK)));
-            SETVAL(req_mem_size, cfg->CFG_DLOG2_BYTES_PER_LINE);
+            SETVAL(req_mem_size, cfg->CFG_LOG2_L1CACHE_BYTES_PER_LINE);
             SETVAL(flush_cnt, req_flush_cnt);
         ELSE();
             SETONE(comb.v_req_ready);

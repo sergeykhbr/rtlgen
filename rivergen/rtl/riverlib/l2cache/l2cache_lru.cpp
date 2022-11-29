@@ -18,6 +18,8 @@
 
 L2CacheLru::L2CacheLru(GenObject *parent, const char *name) :
     ModuleObject(parent, "L2CacheLru", name),
+    waybits(this, "waybits", "4", "Log2 of number of ways. Default 4: 16 ways"),
+    ibits(this, "ibits", "9", "Log2 of number of lines per way: 9=64KB (if bytes per line = 32 B)"),
     i_clk(this, "i_clk", "1", "CPU clock"),
     i_nrst(this, "i_nrst", "1", "Reset: active LOW"),
     i_req_valid(this, "i_req_valid", "1"),
@@ -51,10 +53,9 @@ L2CacheLru::L2CacheLru(GenObject *parent, const char *name) :
     o_flush_end(this, "o_flush_end", "1"),
     // params
     abus(this, "abus", "CFG_CPU_ADDR_BITS"),
-    waybits(this, "waybits", "CFG_L2_LOG2_NWAYS"),
-    ibits(this, "ibits", "CFG_L2_LOG2_LINES_PER_WAY"),
     lnbits(this, "lnbits", "CFG_L2_LOG2_BYTES_PER_LINE"),
     flbits(this, "flbits", "L2TAG_FL_TOTAL"),
+    ways(this, "ways", "POW2(1,waybits)"),
     State_Idle(this, "4", "State_Idle", "0"),
     State_CheckHit(this, "4", "State_CheckHit", "1"),
     State_TranslateAddress(this, "4", "State_TranslateAddress", "2"),
@@ -103,8 +104,8 @@ L2CacheLru::L2CacheLru(GenObject *parent, const char *name) :
     req_flush(this, "req_flush", "1", "0", "init flush request"),
     req_flush_all(this, "req_flush_all", "1"),
     req_flush_addr(this, "req_flush_addr", "CFG_CPU_ADDR_BITS", "0", "[0]=1 flush all"),
-    req_flush_cnt(this, "req_flush_cnt", "ADD(CFG_L2_LOG2_LINES_PER_WAY,CFG_L2_LOG2_NWAYS)"),
-    flush_cnt(this, "flush_cnt", "ADD(CFG_L2_LOG2_LINES_PER_WAY,CFG_L2_LOG2_NWAYS)", "-1"),
+    req_flush_cnt(this, "req_flush_cnt", "ADD(ibits,waybits)"),
+    flush_cnt(this, "flush_cnt", "ADD(ibits,waybits)", "-1"),
     cache_line_i(this, "cache_line_i", "L2CACHE_LINE_BITS"),
     cache_line_o(this, "cache_line_o", "L2CACHE_LINE_BITS"),
     // process
@@ -144,7 +145,7 @@ void L2CacheLru::proc_comb() {
     SETVAL(comb.vb_req_type, req_type, "systemc specific");
     IF (NE(cfg->L2CACHE_LINE_BITS, cfg->L1CACHE_LINE_BITS));
         SETVAL(comb.ridx, TO_INT(BITS(req_addr, DEC(cfg->CFG_L2_LOG2_BYTES_PER_LINE),
-                                      SUB2(cfg->CFG_L2_LOG2_BYTES_PER_LINE, cfg->CFG_DLOG2_BYTES_PER_LINE))));
+                                      SUB2(cfg->CFG_L2_LOG2_BYTES_PER_LINE, cfg->CFG_LOG2_L1CACHE_BYTES_PER_LINE))));
     ENDIF();
 
 TEXT();
@@ -200,7 +201,7 @@ TEXT();
 
 TEXT();
     TEXT("Flush counter when direct access");
-    IF (EQ(BITS(req_addr, DEC(cfg->CFG_L2_LOG2_NWAYS), CONST("0")), DEC(cfg->L2CACHE_WAYS)));
+    IF (EQ(BITS(req_addr, DEC(waybits), CONST("0")), DEC(ways)));
         SETVAL(comb.vb_addr_direct_next, ANDx_L(2, &ADD2(req_addr, cfg->L2CACHE_BYTES_PER_LINE),
                                                    &INV_L(LINE_BYTES_MASK)));
     ELSE();

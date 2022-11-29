@@ -72,7 +72,7 @@ void ic_axi4_to_l1::proc_comb() {
     SETVAL(comb.t_req_addr, req_addr);
 
 TEXT();
-    SETVAL(comb.idx, BITS(req_addr, DEC(cfg->CFG_DLOG2_BYTES_PER_LINE), CONST("3")));
+    SETVAL(comb.idx, BITS(req_addr, DEC(cfg->CFG_LOG2_L1CACHE_BYTES_PER_LINE), CONST("3")));
     CALLF(&comb.vb_req_xbytes, amba->XSizeToBytes, 1, &req_size);
 
 TEXT();
@@ -136,10 +136,10 @@ TEXT();
     ENDCASE();
     CASE(ReadLineRequest);
         SETONE(comb.vb_l1o.ar_valid);
-        SETVAL(comb.vb_l1o.ar_bits.addr, LSH(BITS(req_addr, DEC(amba->CFG_SYSBUS_ADDR_BITS), cfg->CFG_DLOG2_BYTES_PER_LINE),
-                                            cfg->CFG_DLOG2_BYTES_PER_LINE));
+        SETVAL(comb.vb_l1o.ar_bits.addr, LSH(BITS(req_addr, DEC(amba->CFG_SYSBUS_ADDR_BITS), cfg->CFG_LOG2_L1CACHE_BYTES_PER_LINE),
+                                            cfg->CFG_LOG2_L1CACHE_BYTES_PER_LINE));
         SETVAL(comb.vb_l1o.ar_bits.cache, amba->ARCACHE_WRBACK_READ_ALLOCATE);
-        SETVAL(comb.vb_l1o.ar_bits.size, cfg->CFG_DLOG2_BYTES_PER_LINE);
+        SETVAL(comb.vb_l1o.ar_bits.size, cfg->CFG_LOG2_L1CACHE_BYTES_PER_LINE);
         SETZERO(comb.vb_l1o.ar_bits.len);
         SETVAL(comb.vb_l1o.ar_bits.prot, req_prot);
         SETVAL(comb.vb_l1o.ar_snoop, amba->ARSNOOP_READ_MAKE_UNIQUE);
@@ -165,10 +165,10 @@ TEXT();
     ENDCASE();
     CASE(WriteLineRequest);
         SETONE(comb.vb_l1o.aw_valid);
-        SETVAL(comb.vb_l1o.aw_bits.addr, LSH(BITS(req_addr, DEC(amba->CFG_SYSBUS_ADDR_BITS), cfg->CFG_DLOG2_BYTES_PER_LINE),
-                                            cfg->CFG_DLOG2_BYTES_PER_LINE));
+        SETVAL(comb.vb_l1o.aw_bits.addr, LSH(BITS(req_addr, DEC(amba->CFG_SYSBUS_ADDR_BITS), cfg->CFG_LOG2_L1CACHE_BYTES_PER_LINE),
+                                            cfg->CFG_LOG2_L1CACHE_BYTES_PER_LINE));
         SETVAL(comb.vb_l1o.aw_bits.cache, amba->AWCACHE_DEVICE_NON_BUFFERABLE);
-        SETVAL(comb.vb_l1o.aw_bits.size, cfg->CFG_DLOG2_BYTES_PER_LINE);
+        SETVAL(comb.vb_l1o.aw_bits.size, cfg->CFG_LOG2_L1CACHE_BYTES_PER_LINE);
         SETZERO(comb.vb_l1o.aw_bits.len);
         SETVAL(comb.vb_l1o.aw_bits.prot, req_prot);
         SETVAL(comb.vb_l1o.aw_snoop, amba->AWSNOOP_WRITE_NO_SNOOP, "offloading non-cached always");

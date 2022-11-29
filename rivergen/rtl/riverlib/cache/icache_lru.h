@@ -30,7 +30,7 @@ class ICacheLru : public ModuleObject {
      public:
         CombProcess(GenObject *parent) :
             ProcObject(parent, "comb"),
-            t_cache_line_i(this, "t_cache_line_i", "ICACHE_LINE_BITS"),
+            t_cache_line_i(this, "t_cache_line_i", "L1CACHE_LINE_BITS"),
             v_req_ready(this, "v_req_ready", "1"),
             v_resp_valid(this, "v_resp_valid", "1"),
             vb_cached_data(this, "vb_cached_data", "64"),
@@ -42,8 +42,8 @@ class ICacheLru : public ModuleObject {
             v_line_cs_read(this, "v_line_cs_read", "1"),
             v_line_cs_write(this, "v_line_cs_write", "1"),
             vb_line_addr(this, "vb_line_addr", "CFG_CPU_ADDR_BITS"),
-            vb_line_wdata(this, "vb_line_wdata", "ICACHE_LINE_BITS"),
-            vb_line_wstrb(this, "vb_line_wstrb", "ICACHE_BYTES_PER_LINE"),
+            vb_line_wdata(this, "vb_line_wdata", "L1CACHE_LINE_BITS"),
+            vb_line_wstrb(this, "vb_line_wstrb", "L1CACHE_BYTES_PER_LINE"),
             v_line_wflags(this, "v_line_wflags", "ITAG_FL_TOTAL"),
             sel_cached("0", "sel_cached", this),
             sel_uncached("0", "sel_uncached", this),
@@ -76,6 +76,9 @@ class ICacheLru : public ModuleObject {
     void proc_comb();
 
  public:
+    DefParamUI32D waybits;
+    DefParamUI32D ibits;
+
     InPort i_clk;
     InPort i_nrst;
     TextLine _ctrl0_;
@@ -107,10 +110,9 @@ class ICacheLru : public ModuleObject {
     InPort i_flush_valid;
 
     ParamI32D abus;
-    ParamI32D waybits;
-    ParamI32D ibits;
     ParamI32D lnbits;
     ParamI32D flbits;
+    ParamI32D ways;
     ParamLogic State_Idle;
     ParamLogic State_CheckHit;
     ParamLogic State_TranslateAddress;

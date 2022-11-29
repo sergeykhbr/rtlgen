@@ -69,6 +69,10 @@ class CacheTop : public ModuleObject {
 
  public:
     DefParamBOOL coherence_ena;
+    DefParamUI32D ilog2_nways;
+    DefParamUI32D ilog2_lines_per_way;
+    DefParamUI32D dlog2_nways;
+    DefParamUI32D dlog2_lines_per_way;
 
     InPort i_clk;
     InPort i_nrst;
@@ -144,8 +148,8 @@ class CacheTop : public ModuleObject {
             req_mem_type(this, "req_mem_type", "REQ_MEM_TYPE_BITS"),
             req_mem_size(this, "req_mem_size", "3"),
             req_mem_addr(this, "req_mem_addr", "CFG_CPU_ADDR_BITS"),
-            req_mem_strob(this, "req_mem_strob", "DCACHE_BYTES_PER_LINE"),
-            req_mem_wdata(this, "req_mem_wdata", "DCACHE_LINE_BITS"),
+            req_mem_strob(this, "req_mem_strob", "L1CACHE_BYTES_PER_LINE"),
+            req_mem_wdata(this, "req_mem_wdata", "L1CACHE_LINE_BITS"),
             mpu_addr(this, "mpu_addr", "CFG_CPU_ADDR_BITS"),
             resp_addr(this, "resp_addr", "CFG_CPU_ADDR_BITS") {
         }

@@ -106,6 +106,12 @@ riscv_soc::riscv_soc(GenObject *parent, const char *name) :
 
     group0.cpu_num.setObjValue(&prj_cfg_->CFG_CPU_NUM);
     group0.l2cache_ena.setObjValue(&prj_cfg_->CFG_L2CACHE_ENA);
+    group0.ilog2_nways.setObjValue(&prj_cfg_->CFG_ILOG2_NWAYS);
+    group0.ilog2_lines_per_way.setObjValue(&prj_cfg_->CFG_ILOG2_LINES_PER_WAY);
+    group0.dlog2_nways.setObjValue(&prj_cfg_->CFG_DLOG2_NWAYS);
+    group0.dlog2_lines_per_way.setObjValue(&prj_cfg_->CFG_DLOG2_LINES_PER_WAY);
+    group0.l2log2_nways.setObjValue(&prj_cfg_->CFG_L2_LOG2_NWAYS);
+    group0.l2log2_lines_per_way.setObjValue(&prj_cfg_->CFG_L2_LOG2_LINES_PER_WAY);
     NEW(group0, group0.getName().c_str());
         CONNECT(group0, 0, group0.i_clk, i_clk);
         CONNECT(group0, 0, group0.i_cores_nrst, w_sys_nrst);
@@ -161,7 +167,7 @@ void riscv_soc::proc_comb() {
     SETBIT(comb.vb_ext_irqs, 39, w_irq_uart1);
     SETBITS(comb.vb_ext_irqs, 69, 40, ALLZEROS());
     SETBIT(comb.vb_ext_irqs, 70, w_irq_pnp);
-    SETBITS(comb.vb_ext_irqs, DEC(target->CFG_PLIC_IRQ_TOTAL), 71, ALLZEROS());;
+    SETBITS(comb.vb_ext_irqs, DEC(prj_cfg_->CFG_PLIC_IRQ_TOTAL), CONST("71"), ALLZEROS());
     SETVAL(wb_ext_irqs, comb.vb_ext_irqs);
 
     TEXT();

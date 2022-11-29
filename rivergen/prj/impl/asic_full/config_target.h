@@ -30,8 +30,25 @@ class config_target : public FileObject {
     TextLine _prj1_;
     TextLine _prj2_;
     ParamI32D CFG_CPU_NUM;
-    TextLine _prj3_;
+    TextLine _cache0_;
+    TextLine _cache1_;
+    TextLine _cache2_;
+    ParamI32D CFG_ILOG2_LINES_PER_WAY;
+    ParamI32D CFG_ILOG2_NWAYS;
+    TextLine _cache3_;
+    ParamI32D CFG_DLOG2_LINES_PER_WAY;
+    ParamI32D CFG_DLOG2_NWAYS;
+    TextLine _cache4_;
+    TextLine _cache5_;
     ParamI32D CFG_L2CACHE_ENA;
+    ParamI32D CFG_L2_LOG2_NWAYS;
+    ParamI32D CFG_L2_LOG2_LINES_PER_WAY;
+    TextLine _plic0_;
+    TextLine _plic1_;
+    TextLine _plic2_;
+    ParamI32D CFG_PLIC_CONTEXT_TOTAL;
+    TextLine _plic3_;
+    ParamI32D CFG_PLIC_IRQ_TOTAL;
     TextLine _n_;
 };
 

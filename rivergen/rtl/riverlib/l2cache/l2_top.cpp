@@ -18,6 +18,8 @@
 
 L2Top::L2Top(GenObject *parent, const char *name) :
     ModuleObject(parent, "L2Top", name),
+    waybits(this, "waybits", "4", "Log2 of number of ways. Default 4: 16 ways"),
+    ibits(this, "ibits", "9", "Log2 of number of lines per way: 9=64KB (if bytes per line = 32 B)"),
     i_clk(this, "i_clk", "1", "CPU clock"),
     i_nrst(this, "i_nrst", "1", "Reset: active LOW"),
     i_l1o(this, "i_l1o"),

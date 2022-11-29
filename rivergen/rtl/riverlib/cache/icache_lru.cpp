@@ -18,6 +18,8 @@
 
 ICacheLru::ICacheLru(GenObject *parent, const char *name) :
     ModuleObject(parent, "ICacheLru", name),
+    waybits(this, "waybits", "2", "Log2 of number of ways. Default 2: 4 ways"),
+    ibits(this, "ibits", "7", "Log2 of number of lines per way: 7=16KB; 8=32KB; .. (if bytes per line = 32 B)"),
     i_clk(this, "i_clk", "1", "CPU clock"),
     i_nrst(this, "i_nrst", "1", "Reset: active LOW"),
     _ctrl0_(this, "Control path:"),
@@ -35,10 +37,10 @@ ICacheLru::ICacheLru(GenObject *parent, const char *name) :
     o_req_mem_type(this, "o_req_mem_type", "REQ_MEM_TYPE_BITS"),
     o_req_mem_size(this, "o_req_mem_size", "3"),
     o_req_mem_addr(this, "o_req_mem_addr", "CFG_CPU_ADDR_BITS"),
-    o_req_mem_strob(this, "o_req_mem_strob", "ICACHE_BYTES_PER_LINE", "unused"),
-    o_req_mem_data(this, "o_req_mem_data", "ICACHE_LINE_BITS"),
+    o_req_mem_strob(this, "o_req_mem_strob", "L1CACHE_BYTES_PER_LINE", "unused"),
+    o_req_mem_data(this, "o_req_mem_data", "L1CACHE_LINE_BITS"),
     i_mem_data_valid(this, "i_mem_data_valid", "1"),
-    i_mem_data(this, "i_mem_data", "ICACHE_LINE_BITS"),
+    i_mem_data(this, "i_mem_data", "L1CACHE_LINE_BITS"),
     i_mem_load_fault(this, "i_mem_load_fault", "1"),
     _mpu0(this, "Mpu interface"),
     o_mpu_addr(this, "o_mpu_addr", "CFG_CPU_ADDR_BITS"),
@@ -49,10 +51,9 @@ ICacheLru::ICacheLru(GenObject *parent, const char *name) :
     i_flush_valid(this, "i_flush_valid", "1"),
     // params
     abus(this, "abus", "CFG_CPU_ADDR_BITS"),
-    waybits(this, "waybits", "CFG_ILOG2_NWAYS"),
-    ibits(this, "ibits", "CFG_ILOG2_LINES_PER_WAY"),
-    lnbits(this, "lnbits", "CFG_ILOG2_BYTES_PER_LINE"),
+    lnbits(this, "lnbits", "CFG_LOG2_L1CACHE_BYTES_PER_LINE"),
     flbits(this, "flbits", "ITAG_FL_TOTAL"),
+    ways(this, "ways", "POW2(1,waybits)"),
     State_Idle(this, "4", "State_Idle", "0"),
     State_CheckHit(this, "4", "State_CheckHit", "1"),
     State_TranslateAddress(this, "4", "State_TranslateAddress", "2"),
@@ -64,18 +65,18 @@ ICacheLru::ICacheLru(GenObject *parent, const char *name) :
     State_FlushCheck(this, "4", "State_FlushCheck", "9"),
     State_Reset(this, "4", "State_Reset", "10"),
     State_ResetWrite(this, "4", "State_ResetWrite", "11"),
-    LINE_BYTES_MASK(this, "CFG_CPU_ADDR_BITS", "LINE_BYTES_MASK", "SUB(POW2(1,CFG_ILOG2_BYTES_PER_LINE),1)"),
+    LINE_BYTES_MASK(this, "CFG_CPU_ADDR_BITS", "LINE_BYTES_MASK", "SUB(POW2(1,CFG_LOG2_L1CACHE_BYTES_PER_LINE),1)"),
     // signals
     line_direct_access_i(this, "line_direct_access_i", "1"),
     line_invalidate_i(this, "line_invalidate_i", "1"),
     line_re_i(this, "line_re_i", "1"),
     line_we_i(this, "line_we_i", "1"),
     line_addr_i(this, "line_addr_i", "CFG_CPU_ADDR_BITS"),
-    line_wdata_i(this, "line_wdata_i", "ICACHE_LINE_BITS"),
-    line_wstrb_i(this, "line_wstrb_i", "POW2(1,CFG_ILOG2_BYTES_PER_LINE)"),
+    line_wdata_i(this, "line_wdata_i", "L1CACHE_LINE_BITS"),
+    line_wstrb_i(this, "line_wstrb_i", "POW2(1,CFG_LOG2_L1CACHE_BYTES_PER_LINE)"),
     line_wflags_i(this, "line_wflags_i", "ITAG_FL_TOTAL"),
     line_raddr_o(this, "line_raddr_o", "CFG_CPU_ADDR_BITS"),
-    line_rdata_o(this, "line_rdata_o", "ADD(ICACHE_LINE_BITS,32)"),
+    line_rdata_o(this, "line_rdata_o", "ADD(L1CACHE_LINE_BITS,32)"),
     line_rflags_o(this, "line_rflags_o", "ITAG_FL_TOTAL"),
     line_hit_o(this, "line_hit_o", "1"),
     line_hit_next_o(this, "line_hit_next_o", "1"),
@@ -92,9 +93,9 @@ ICacheLru::ICacheLru(GenObject *parent, const char *name) :
     req_flush(this, "req_flush", "1", "0", "init flush request"),
     req_flush_all(this, "req_flush_all", "1"),
     req_flush_addr(this, "req_flush_addr", "CFG_CPU_ADDR_BITS", "0", "[0]=1 flush all"),
-    req_flush_cnt(this, "req_flush_cnt", "ADD(CFG_ILOG2_LINES_PER_WAY,CFG_ILOG2_NWAYS)"),
-    flush_cnt(this, "flush_cnt", "ADD(CFG_ILOG2_LINES_PER_WAY,CFG_ILOG2_NWAYS)", "-1"),
-    cache_line_i(this, "cache_line_i", "ICACHE_LINE_BITS"),
+    req_flush_cnt(this, "req_flush_cnt", "ADD(ibits,waybits)"),
+    flush_cnt(this, "flush_cnt", "ADD(ibits,waybits)", "-1"),
+    cache_line_i(this, "cache_line_i", "L1CACHE_LINE_BITS"),
     // process
     comb(this),
     mem0(this, "mem0", "abus", "waybits", "ibits", "lnbits", "flbits")
@@ -126,7 +127,7 @@ ICacheLru::ICacheLru(GenObject *parent, const char *name) :
 void ICacheLru::proc_comb() {
     river_cfg *cfg = glob_river_cfg_;
 
-    SETVAL(comb.sel_cached, TO_INT(BITS(req_addr, DEC(cfg->CFG_ILOG2_BYTES_PER_LINE), CONST("2"))));
+    SETVAL(comb.sel_cached, TO_INT(BITS(req_addr, DEC(cfg->CFG_LOG2_L1CACHE_BYTES_PER_LINE), CONST("2"))));
     SETVAL(comb.sel_uncached, TO_INT(BITS(req_addr, 2, 2)));
 
     SETVAL(comb.vb_cached_data, BITSW(line_rdata_o, MUL2(CONST("32"), comb.sel_cached),
@@ -150,8 +151,8 @@ TEXT();
 
 TEXT();
     TEXT("Flush counter when direct access");
-    IF (EQ(BITS(req_addr, DEC(cfg->CFG_ILOG2_NWAYS), CONST("0")), DEC(cfg->ICACHE_WAYS)));
-        SETVAL(comb.vb_addr_direct_next, AND2_L(ADD2(req_addr, cfg->ICACHE_BYTES_PER_LINE),
+    IF (EQ(BITS(req_addr, DEC(waybits), CONST("0")), DEC(ways)));
+        SETVAL(comb.vb_addr_direct_next, AND2_L(ADD2(req_addr, cfg->L1CACHE_BYTES_PER_LINE),
                                                 INV_L(LINE_BYTES_MASK)));
     ELSE();
         SETVAL(comb.vb_addr_direct_next, INC(req_addr));
@@ -196,14 +197,14 @@ TEXT();
             IF (NZ(i_pma_cached));
                 IF (EZ(line_hit_o));
                     SETVAL(mem_addr, LSH(BITS(req_addr, DEC(cfg->CFG_CPU_ADDR_BITS),
-                            cfg->CFG_ILOG2_BYTES_PER_LINE), cfg->CFG_ILOG2_BYTES_PER_LINE));
+                            cfg->CFG_LOG2_L1CACHE_BYTES_PER_LINE), cfg->CFG_LOG2_L1CACHE_BYTES_PER_LINE));
                 ELSE();
                     SETVAL(write_addr, req_addr_next);
                     SETVAL(mem_addr, LSH(BITS(req_addr_next, DEC(cfg->CFG_CPU_ADDR_BITS),
-                            cfg->CFG_ILOG2_BYTES_PER_LINE), cfg->CFG_ILOG2_BYTES_PER_LINE));
+                            cfg->CFG_LOG2_L1CACHE_BYTES_PER_LINE), cfg->CFG_LOG2_L1CACHE_BYTES_PER_LINE));
                 ENDIF();
                 CALLF(&req_mem_type, cfg->ReadShared, 0);
-                SETVAL(req_mem_size, cfg->CFG_ILOG2_BYTES_PER_LINE);
+                SETVAL(req_mem_size, cfg->CFG_LOG2_L1CACHE_BYTES_PER_LINE);
             ELSE();
                 SETVAL(mem_addr, CC2(BITS(req_addr, DEC(cfg->CFG_CPU_ADDR_BITS), CONST("3")), CONST("0", 3)));
                 CALLF(&req_mem_type, cfg->ReadNoSnoop, 0);
@@ -263,7 +264,7 @@ TEXT();
             IF (NZ(req_flush_all));
                 SETVAL(req_addr, comb.vb_addr_direct_next);
             ELSE();
-                SETVAL(req_addr, ADD2(req_addr, cfg->ICACHE_BYTES_PER_LINE));
+                SETVAL(req_addr, ADD2(req_addr, cfg->L1CACHE_BYTES_PER_LINE));
             ENDIF();
         ELSE();
             SETVAL(state, State_Idle);
@@ -306,7 +307,7 @@ TEXT();
             SETVAL(comb.vb_line_addr, i_req_addr);
             IF (NZ(i_req_valid));
                 SETVAL(req_addr, i_req_addr);
-                SETVAL(req_addr_next, ADD2(i_req_addr, cfg->ICACHE_BYTES_PER_LINE));
+                SETVAL(req_addr_next, ADD2(i_req_addr, cfg->L1CACHE_BYTES_PER_LINE));
                 SETVAL(state, State_CheckHit);
             ENDIF();
         ENDIF();
