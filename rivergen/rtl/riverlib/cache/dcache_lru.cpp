@@ -69,11 +69,11 @@ DCacheLru::DCacheLru(GenObject *parent, const char *name) :
     o_flush_end(this, "o_flush_end", "1"),
     // params
     abus(this, "abus", "CFG_CPU_ADDR_BITS"),
-//    waybits(this, "waybits", "CFG_DLOG2_NWAYS"),
-//    ibits(this, "ibits", "CFG_DLOG2_LINES_PER_WAY"),
     lnbits(this, "lnbits", "CFG_LOG2_L1CACHE_BYTES_PER_LINE"),
     flbits(this, "flbits", "DTAG_FL_TOTAL"),
     ways(this, "ways", "POW2(1,waybits)"),
+    _1_(this),
+    _2_(this, "State machine states:"),
     State_Idle(this, "4", "State_Idle", "0"),
     State_CheckHit(this, "4", "State_CheckHit", "1"),
     State_TranslateAddress(this, "4", "State_TranslateAddress", "2"),
@@ -88,7 +88,9 @@ DCacheLru::DCacheLru(GenObject *parent, const char *name) :
     State_ResetWrite(this, "4", "State_ResetWrite", "11"),
     State_SnoopSetupAddr(this, "4", "State_SnoopSetupAddr", "12"),
     State_SnoopReadData(this, "4", "State_SnoopReadData", "13"),
+    _3_(this),
     LINE_BYTES_MASK(this, "CFG_CPU_ADDR_BITS", "LINE_BYTES_MASK", "SUB(POW2(1,CFG_LOG2_L1CACHE_BYTES_PER_LINE),1)"),
+    FLUSH_ALL_VALUE(this, "32", "FLUSH_ALL_VALUE", "SUB(POW2(1,ADD(ibits,waybits)),1)", "Actual bitwidth is (ibits + waybits) but to avoid sc template generation use 32-bits"),
     // signals
     line_direct_access_i(this, "line_direct_access_i", "1"),
     line_invalidate_i(this, "line_invalidate_i", "1"),
@@ -125,8 +127,8 @@ DCacheLru::DCacheLru(GenObject *parent, const char *name) :
     req_flush(this, "req_flush", "1", "0", "init flush request"),
     req_flush_all(this, "req_flush_all", "1"),
     req_flush_addr(this, "req_flush_addr", "CFG_CPU_ADDR_BITS", "0", "[0]=1 flush all"),
-    req_flush_cnt(this, "req_flush_cnt", "ADD(ibits,waybits)"),
-    flush_cnt(this, "flush_cnt", "ADD(ibits,waybits)", "-1"),
+    req_flush_cnt(this, "req_flush_cnt", "32"),
+    flush_cnt(this, "flush_cnt", "32"),
     cache_line_i(this, "cache_line_i", "L1CACHE_LINE_BITS"),
     cache_line_o(this, "cache_line_o", "L1CACHE_LINE_BITS"),
     req_snoop_type(this, "req_snoop_type", "SNOOP_REQ_TYPE_BITS"),
@@ -140,6 +142,9 @@ DCacheLru::DCacheLru(GenObject *parent, const char *name) :
 {
     Operation::start(this);
 
+    // Generic paramters to template parameters assignment
+    mem0.waybits.setObjValue(&waybits);
+    mem0.ibits.setObjValue(&ibits);
     NEW(mem0, mem0.getName().c_str());
         CONNECT(mem0, 0, mem0.i_clk, i_clk);
         CONNECT(mem0, 0, mem0.i_nrst, i_nrst);
@@ -187,7 +192,7 @@ TEXT();
         SETONE(req_flush);
         SETVAL(req_flush_all, BIT(i_flush_address, 0));
         IF (NZ(BIT(i_flush_address, 0)));
-            SETVAL(req_flush_cnt, ALLONES());
+            SETVAL(req_flush_cnt, FLUSH_ALL_VALUE);
             SETZERO(req_flush_addr);
         ELSE();
             SETZERO(req_flush_cnt);
@@ -509,6 +514,7 @@ TEXT();
         ENDCASE();
     CASE(State_Reset);
         TEXT("Write clean line");
+        SETVAL(flush_cnt, FLUSH_ALL_VALUE);
         SETONE(comb.v_direct_access);
         SETONE(comb.v_invalidate, "generate: wstrb='1; wflags='0");
         SETVAL(state, State_ResetWrite);

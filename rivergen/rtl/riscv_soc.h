@@ -41,7 +41,7 @@ class riscv_soc : public ModuleObject {
      public:
         CombProcess(GenObject* parent)
             : ProcObject(parent, "comb"),
-            vb_ext_irqs(this, "wb_ext_irqs", "CFG_PLIC_IRQ_TOTAL") {
+            vb_ext_irqs(this, "vb_ext_irqs", "CFG_PLIC_IRQ_TOTAL") {
         }
      public:
         Logic vb_ext_irqs;

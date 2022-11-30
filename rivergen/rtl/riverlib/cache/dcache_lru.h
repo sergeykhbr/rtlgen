@@ -151,6 +151,8 @@ class DCacheLru : public ModuleObject {
     ParamI32D lnbits;
     ParamI32D flbits;
     ParamI32D ways;
+    TextLine _1_;
+    TextLine _2_;
     ParamLogic State_Idle;
     ParamLogic State_CheckHit;
     ParamLogic State_TranslateAddress;
@@ -165,7 +167,9 @@ class DCacheLru : public ModuleObject {
     ParamLogic State_ResetWrite;
     ParamLogic State_SnoopSetupAddr;
     ParamLogic State_SnoopReadData;
+    TextLine _3_;
     ParamLogic LINE_BYTES_MASK;
+    ParamLogic FLUSH_ALL_VALUE;
 
     Signal line_direct_access_i;
     Signal line_invalidate_i;

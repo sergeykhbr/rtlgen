@@ -188,8 +188,7 @@ std::string GenObject::getStrValue() {
         } else if (objValue_->getId() == ID_PARAM) {
             return objValue_->getName();
         } else {
-            SHOW_ERROR("Unsupported value ID=%d", objValue_->getId());
-            return strValue_;
+            return objValue_->getStrValue();
         }
 
     } else {
