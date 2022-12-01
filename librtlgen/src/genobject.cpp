@@ -187,6 +187,13 @@ std::string GenObject::getStrValue() {
             return objValue_->generate();
         } else if (objValue_->getId() == ID_PARAM) {
             return objValue_->getName();
+        } else if (objValue_->getId() == ID_DEF_PARAM) {
+            if (SCV_is_sysc()) {
+                // Cannot use generic parameter as template parameters, so use const value
+                return objValue_->getStrValue();
+            } else {
+                return objValue_->getName();
+            }
         } else {
             return objValue_->getStrValue();
         }

@@ -124,7 +124,7 @@ DCacheLru::DCacheLru(GenObject *parent, const char *name) :
     write_flush(this, "write_flush", "1"),
     write_share(this, "write_share", "1"),
     mem_wstrb(this, "mem_wstrb", "L1CACHE_BYTES_PER_LINE"),
-    req_flush(this, "req_flush", "1", "0", "init flush request"),
+    req_flush(this, "req_flush", "1", "1", "init flush request"),
     req_flush_all(this, "req_flush_all", "1"),
     req_flush_addr(this, "req_flush_addr", "CFG_CPU_ADDR_BITS", "0", "[0]=1 flush all"),
     req_flush_cnt(this, "req_flush_cnt", "32"),
@@ -514,7 +514,10 @@ TEXT();
         ENDCASE();
     CASE(State_Reset);
         TEXT("Write clean line");
-        SETVAL(flush_cnt, FLUSH_ALL_VALUE);
+        IF (NZ(req_flush));
+            SETZERO(req_flush);
+            SETVAL(flush_cnt, FLUSH_ALL_VALUE, "Init after power-on-reset");
+        ENDIF();
         SETONE(comb.v_direct_access);
         SETONE(comb.v_invalidate, "generate: wstrb='1; wflags='0");
         SETVAL(state, State_ResetWrite);
