@@ -90,8 +90,7 @@ CsrRegs::CsrRegs(GenObject *parent, const char *name) :
     Fence_DataFlush(this, "3", "Fence_DataFlush", "2"),
     Fence_WaitDataFlushEnd(this, "3", "Fence_WaitDataFlushEnd", "3"),
     Fence_FlushInstr(this, "3", "Fence_FlushInstr", "4"),
-    Fence_MMU(this, "3", "Fence_MMU", "5"),
-    Fence_End(this, "3", "Fence_End", "6"),
+    Fence_End(this, "3", "Fence_End", "7"),
     _fence1_(this),
     SATP_MODE_SV39(this, "4", "SATP_MODE_SV39", "8", "39-bits Page mode"),
     SATP_MODE_SV48(this, "4", "SATP_MODE_SV48", "9", "48-bits Page mode"),
@@ -221,11 +220,13 @@ TEXT();
                     SETVAL(fencestate, Fence_DataBarrier);
                 ELSIF (NZ(BIT(i_req_addr, 1)));
                     TEXT("FENCE.I");
+                    SETONE(comb.v_flushmmu);
                     SETVAL(fencestate, Fence_DataFlush);
                 ELSIF(ANDx(2, &NZ(BIT(i_req_addr,2)),
                               &INV(AND2(NZ(tvm), EZ(BIT(mode, 1))))));
                     TEXT("FENCE.VMA: is illegal in S-mode when TVM bit=1");
-                    SETVAL(fencestate, Fence_MMU);
+                    SETONE(comb.v_flushmmu);
+                    SETVAL(fencestate, Fence_End);
                 ELSE();
                     TEXT("Illegal fence");
                     SETVAL(state, State_Response);
@@ -350,7 +351,6 @@ TEXT();
         ENDCASE();
     CASE (Fence_DataFlush);
         SETONE(comb.v_flushd);
-        SETONE(comb.v_flushmmu);
         IF(NZ(i_m_memop_ready));
             SETVAL(fencestate, Fence_WaitDataFlushEnd);
         ENDIF();
@@ -365,10 +365,6 @@ TEXT();
         IF (NZ(i_f_flush_ready));
             SETVAL(fencestate, Fence_End);
         ENDIF();
-        ENDCASE();
-    CASE (Fence_MMU);
-        SETONE(comb.v_flushmmu);
-        SETVAL(fencestate, Fence_End);
         ENDCASE();
     CASE (Fence_End);
         SETONE(comb.v_flushpipeline);

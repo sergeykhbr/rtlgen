@@ -192,6 +192,7 @@ class Mmu : public ModuleObject {
     RegSignal req_wdata;
     RegSignal req_wstrb;
     RegSignal req_size;
+    RegSignal req_flush;
     RegSignal last_mmu_ena;
     RegSignal last_va;
     RegSignal last_pa;

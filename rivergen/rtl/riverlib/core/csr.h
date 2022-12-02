@@ -181,7 +181,6 @@ class CsrRegs : public ModuleObject {
     ParamLogic Fence_DataFlush;
     ParamLogic Fence_WaitDataFlushEnd;
     ParamLogic Fence_FlushInstr;
-    ParamLogic Fence_MMU;
     ParamLogic Fence_End;
     TextLine _fence1_;
     ParamLogic SATP_MODE_SV39;

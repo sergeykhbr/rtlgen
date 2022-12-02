@@ -88,6 +88,7 @@ Mmu::Mmu(GenObject *parent, const char *name) :
     wb_tlb_rdata(this, "wb_tlb_rdata", "CFG_MMU_PTE_DWIDTH"),
     // registers
     state(this, "state", "4", "FlushTlb"),
+    req_flush(this, "req_flush", "1"),
     req_x(this, "req_x", "1"),
     req_r(this, "req_r", "1"),
     req_w(this, "req_w", "1"),
@@ -251,9 +252,10 @@ TEXT();
             SETVAL(req_wstrb, i_core_req_wstrb);
             SETVAL(req_size, i_core_req_size);
         ENDIF();
-        IF(NZ(tlb_flush_cnt));
-            SETVAL(state, FlushTlb);
+        IF(NZ(req_flush));
+            SETZERO(req_flush);
             SETZERO(tlb_wdata);
+            SETVAL(state, FlushTlb);
         ELSIF (OR2(EZ(i_mmu_ena), EZ(comb.v_va_ena)), "MMU disabled");
             TEXT("Direct connection to Cache");
             SETVAL(comb.v_core_req_ready, i_mem_req_ready);
@@ -517,6 +519,7 @@ TEXT();
 TEXT();
     IF (NZ(i_fence));
         TEXT("Clear whole table ignoring i_fence_addr");
+        SETONE(req_flush);
         SETVAL(tlb_flush_cnt, ALLONES());
         SETZERO(tlb_flush_adr);
     ENDIF();
