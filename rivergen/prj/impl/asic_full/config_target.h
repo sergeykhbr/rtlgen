@@ -43,12 +43,14 @@ class config_target : public FileObject {
     ParamI32D CFG_L2CACHE_ENA;
     ParamI32D CFG_L2_LOG2_NWAYS;
     ParamI32D CFG_L2_LOG2_LINES_PER_WAY;
-    TextLine _plic0_;
-    TextLine _plic1_;
-    TextLine _plic2_;
-    ParamI32D CFG_PLIC_CONTEXT_TOTAL;
-    TextLine _plic3_;
-    ParamI32D CFG_PLIC_IRQ_TOTAL;
+    TextLine _mem0_;
+    TextLine _mem1_;
+    ParamI32D CFG_BOOTROM_LOG2_SIZE;
+    TextLine _mem2_;
+    TextLine _mem3_;
+    TextLine _mem4_;
+    TextLine _mem5_;
+    ParamI32D CFG_SRAM_LOG2_SIZE;
     TextLine _n_;
 };
 

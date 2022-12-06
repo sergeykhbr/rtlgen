@@ -38,12 +38,14 @@ config_target::config_target(GenObject *parent) :
     CFG_L2CACHE_ENA(this, "CFG_L2CACHE_ENA", "1"),
     CFG_L2_LOG2_NWAYS(this, "CFG_L2_LOG2_NWAYS", "4"),
     CFG_L2_LOG2_LINES_PER_WAY(this, "CFG_L2_LOG2_LINES_PER_WAY", "9", "7=16KB; 8=32KB; 9=64KB, .."),
-    _plic0_(this),
-    _plic1_(this, "Number of context in PLIC controller."),
-    _plic2_(this, "Example FU740: S7 Core0 (M) + 4xU74 Cores (M+S)."),
-    CFG_PLIC_CONTEXT_TOTAL(this, "CFG_PLIC_CONTEXT_TOTAL", "9"),
-    _plic3_(this, "Any number up to 1024. Zero interrupt must be 0."),
-    CFG_PLIC_IRQ_TOTAL(this, "CFG_PLIC_IRQ_TOTAL", "73"),
+    _mem0_(this),
+    _mem1_(this, "Internal Boot ROM size:"),
+    CFG_BOOTROM_LOG2_SIZE(this, "CFG_BOOTROM_LOG2_SIZE", "16", "16=64 KB (default); 17=128KB; .."),
+    _mem2_(this),
+    _mem3_(this, "Internal SRAM block:"),   
+    _mem4_(this, "    - Increase memory map if need > 2MB FU740"),
+    _mem5_(this, "    - Change bootloader stack pointer if need less than 512 KB"),
+    CFG_SRAM_LOG2_SIZE(this, "CFG_SRAM_LOG2_SIZE", "21", "19=512 KB (KC705); 21=2 MB (ASIC); .."),
     _n_(this)
 {
     prj_cfg_ = this;

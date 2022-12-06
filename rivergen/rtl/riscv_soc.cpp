@@ -56,6 +56,12 @@ riscv_soc::riscv_soc(GenObject *parent, const char *name) :
     SOC_PNP_TOTAL(this, "SOC_PNP_TOTAL", "12"),
     _cfg0_(this),
     CFG_SOC_UART1_LOG2_FIFOSZ(this, "CFG_SOC_UART1_LOG2_FIFOSZ", "4"),
+    _plic0_(this),
+    _plic1_(this, "Number of contexts in PLIC controller."),
+    _plic2_(this, "Example FU740: S7 Core0 (M) + 4xU74 Cores (M+S)."),
+    CFG_PLIC_CONTEXT_TOTAL(this, "CFG_PLIC_CONTEXT_TOTAL", "9"),
+    _plic3_(this, "Any number up to 1024. Zero interrupt must be 0."),
+    CFG_PLIC_IRQ_TOTAL(this, "CFG_PLIC_IRQ_TOTAL", "73"),
     soc_pnp_vector_def_(this, ""),
     // Singals:
     w_sys_nrst(this, "w_sys_nrst", "1", "0", "System reset of whole system"),
@@ -167,7 +173,7 @@ void riscv_soc::proc_comb() {
     SETBIT(comb.vb_ext_irqs, 39, w_irq_uart1);
     SETBITS(comb.vb_ext_irqs, 69, 40, ALLZEROS());
     SETBIT(comb.vb_ext_irqs, 70, w_irq_pnp);
-    SETBITS(comb.vb_ext_irqs, DEC(prj_cfg_->CFG_PLIC_IRQ_TOTAL), CONST("71"), ALLZEROS());
+    SETBITS(comb.vb_ext_irqs, DEC(CFG_PLIC_IRQ_TOTAL), CONST("71"), ALLZEROS());
     SETVAL(wb_ext_irqs, comb.vb_ext_irqs);
 
     TEXT();

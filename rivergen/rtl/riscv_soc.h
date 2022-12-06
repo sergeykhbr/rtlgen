@@ -138,6 +138,12 @@ public:
     ParamI32D SOC_PNP_TOTAL;
     TextLine _cfg0_;
     ParamI32D CFG_SOC_UART1_LOG2_FIFOSZ;
+    TextLine _plic0_;
+    TextLine _plic1_;
+    TextLine _plic2_;
+    ParamI32D CFG_PLIC_CONTEXT_TOTAL;
+    TextLine _plic3_;
+    ParamI32D CFG_PLIC_IRQ_TOTAL;
 
     soc_pnp_vector soc_pnp_vector_def_;
 
