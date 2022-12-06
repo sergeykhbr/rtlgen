@@ -197,8 +197,10 @@ TEXT();
                 SETVAL(req_addr, CC2(BITS(req_addr, DEC(glb->CFG_SYSBUS_ADDR_BITS), CONST("12")),
                                         comb.vb_req_addr_next));
                 SETVAL(req_len, DEC(req_len));
+                SETVAL(state, State_addrdata_r);
+            ELSE();
+                SETVAL(state, State_data_r);
             ENDIF();
-            SETVAL(state, State_addrdata_r);
         ENDIF();
         ENDCASE();
     CASE (State_addrdata_r);
