@@ -131,9 +131,9 @@ TEXT();
     IF (NE(cfg->CFG_LOG2_STACK_TRACE_ADDR, CONST("0")));
         IF (AND2(NZ(i_e_call), 
             NE(stack_trace_cnt, DEC(cfg->STACK_TRACE_BUF_SIZE))));
-            SETONE(w_stack_we);
-            SETVAL(wb_stack_waddr, stack_trace_cnt);
-            SETVAL(wb_stack_wdata, CC2(i_e_npc, i_e_pc));
+            SETONE(comb.v_stack_we);
+            SETVAL(comb.vb_stack_waddr, stack_trace_cnt);
+            SETVAL(comb.vb_stack_wdata, CC2(i_e_npc, i_e_pc));
             SETVAL(stack_trace_cnt, INC(stack_trace_cnt));
         ELSIF (AND2(NZ(i_e_ret), NZ(stack_trace_cnt)));
             SETVAL(stack_trace_cnt, DEC(stack_trace_cnt));
@@ -296,6 +296,11 @@ TEXT();
 
 TEXT();
     SYNC_RESET(*this);
+
+TEXT();
+    SETVAL(w_stack_we, comb.v_stack_we);
+    SETVAL(wb_stack_waddr, comb.vb_stack_waddr);
+    SETVAL(wb_stack_wdata, comb.vb_stack_wdata);
 
 TEXT();
     SETVAL(o_csr_req_valid, comb.v_csr_req_valid);

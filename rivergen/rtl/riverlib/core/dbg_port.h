@@ -29,6 +29,9 @@ class DbgPort : public ModuleObject {
     class CombProcess : public ProcObject {
      public:
         CombProcess(GenObject *parent) : ProcObject(parent, "comb"),
+            v_stack_we(this, "v_stack_we", "1"),
+            vb_stack_waddr(this, "vb_stack_waddr", "CFG_LOG2_STACK_TRACE_ADDR"),
+            vb_stack_wdata(this, "vb_stack_wdata", "MUL(2,RISCV_ARCH)"),
             v_csr_req_valid(this, "v_csr_req_valid", "1"),
             v_csr_resp_ready(this, "v_csr_resp_ready", "1"),
             vb_csr_req_type(this, "vb_csr_req_type", "CsrReq_TotalBits"),
@@ -50,6 +53,9 @@ class DbgPort : public ModuleObject {
             p->proc_comb();
         }
 
+        Logic v_stack_we;
+        Logic vb_stack_waddr;
+        Logic vb_stack_wdata;
         Logic v_csr_req_valid;
         Logic v_csr_resp_ready;
         Logic vb_csr_req_type;
