@@ -158,10 +158,8 @@ public:
     types_bus0::bus0_xslv_in_vector   axisi;
     types_bus0::bus0_xslv_out_vector  axiso;
     types_bus1::bus1_mapinfo_vector   bus1_mapinfo;
-    types_bus1::bus1_pmst_in_vector   apbmi;
-    types_bus1::bus1_pmst_out_vector  apbmo;
-    types_bus1::bus1_pslv_in_vector   apbsi;
-    types_bus1::bus1_pslv_out_vector  apbso;
+    types_bus1::bus1_apb_in_vector   apbi;
+    types_bus1::bus1_apb_out_vector  apbo;
     soc_pnp_vector dev_pnp;
     Signal wb_clint_mtimer;
     Signal wb_clint_msip;

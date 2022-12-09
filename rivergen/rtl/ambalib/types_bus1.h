@@ -25,11 +25,11 @@ class types_bus1 : public FileObject {
  public:
     types_bus1(GenObject *parent);
 
-    class bus1_pslv_in_vector : public types_amba::apb_in_type {
+    class bus1_apb_in_vector : public types_amba::apb_in_type {
      public:
-        bus1_pslv_in_vector(GenObject *parent, const char *name, const char *descr="")
+        bus1_apb_in_vector(GenObject *parent, const char *name, const char *descr="")
             : apb_in_type(parent, name, descr) {
-            type_ = std::string("bus1_pslv_in_vector");
+            type_ = std::string("bus1_apb_in_vector");
             setStrDepth("CFG_BUS1_PSLV_TOTAL");
             
             registerCfgType(name);                  // will be registered if name == ""
@@ -44,51 +44,12 @@ class types_bus1 : public FileObject {
         virtual std::string generate() override { return std::string("apb_in_type"); }
     };
 
-    class bus1_pslv_out_vector : public types_amba::apb_out_type {
+    class bus1_apb_out_vector : public types_amba::apb_out_type {
      public:
-        bus1_pslv_out_vector(GenObject *parent, const char *name, const char *descr="")
+        bus1_apb_out_vector(GenObject *parent, const char *name, const char *descr="")
             : apb_out_type(parent, name, descr) {
-            type_ = std::string("bus1_pslv_out_vector");
+            type_ = std::string("bus1_apb_out_vector");
             setStrDepth("CFG_BUS1_PSLV_TOTAL");
-            
-            registerCfgType(name);                  // will be registered if name == ""
-            if (name[0]) {
-                std::string strtype = getType();
-                SCV_get_cfg_parameter(strtype);   // to trigger dependecy array
-            }
-        }
-        virtual bool isTypedef() override { return true; }
-        virtual bool isVector() override { return true; }
-        virtual bool isSignal() override { return true; }
-        virtual std::string generate() override { return std::string("apb_out_type"); }
-    };
-
-
-    class bus1_pmst_out_vector : public types_amba::apb_in_type {
-     public:
-        bus1_pmst_out_vector(GenObject *parent, const char *name, const char *descr="")
-            : apb_in_type(parent, name, descr) {
-            type_ = std::string("bus1_pmst_out_vector");
-            setStrDepth("CFG_BUS1_PMST_TOTAL");
-            
-            registerCfgType(name);                  // will be registered if name == ""
-            if (name[0]) {
-                std::string strtype = getType();
-                SCV_get_cfg_parameter(strtype);   // to trigger dependecy array
-            }
-        }
-        virtual bool isTypedef() override { return true; }
-        virtual bool isVector() override { return true; }
-        virtual bool isSignal() override { return true; }
-        virtual std::string generate() override { return std::string("apb_in_type"); }
-    };
-
-    class bus1_pmst_in_vector : public types_amba::apb_out_type {
-     public:
-        bus1_pmst_in_vector(GenObject *parent, const char *name, const char *descr="")
-            : apb_out_type(parent, name, descr) {
-            type_ = std::string("bus1_pmst_in_vector");
-            setStrDepth("CFG_BUS1_PMST_TOTAL");
             
             registerCfgType(name);                  // will be registered if name == ""
             if (name[0]) {
@@ -160,20 +121,9 @@ class types_bus1 : public FileObject {
     ParamI32D CFG_BUS1_PSLV_UART1;
     TextLine _pslv7_;
     ParamI32D CFG_BUS1_PSLV_TOTAL;
-    TextLine _pmst0_;
-    TextLine _pmst1_;
-    TextLine _pmst2_;
-    TextLine _pmst3_;
-    TextLine _pmst4_;
-    TextLine _pmst5_;
-    ParamI32D CFG_BUS1_PMST_PARENT;
-    TextLine _pmst6_;
-    ParamI32D CFG_BUS1_PMST_TOTAL;
     TextLine _vec0_;
-    bus1_pslv_in_vector bus1_pslv_in_vector_def_;
-    bus1_pslv_out_vector bus1_pslv_out_vector_def_;
-    bus1_pmst_in_vector bus1_pmst_in_vector_def_;
-    bus1_pmst_out_vector bus1_pmst_out_vector_def_;
+    bus1_apb_in_vector bus1_apb_in_vector_def_;
+    bus1_apb_out_vector bus1_apb_out_vector_def_;
     bus1_mapinfo_vector bus1_mapinfo_vector_def_;
     TextLine _map0_;
     TextLine _map1_;

@@ -24,8 +24,9 @@ axi2apb::axi2apb(GenObject *parent, const char *name) :
     o_cfg(this, "o_cfg", "Slave config descriptor"),
     i_xslvi(this, "i_xslvi", "AXI4 Interconnect Bridge interface"),
     o_xslvo(this, "o_xslvo", "AXI4 Bridge to Interconnect interface"),
-    i_apbmi(this, "i_apbmi", "APB Slave to Bridge master-in/slave-out interface"),
-    o_apbmo(this, "o_apbmo", "APB Bridge to master-out/slave-in interface"),
+    i_apbo(this, "i_apbo", "APB slaves output vector"),
+    o_apbi(this, "o_apbi", "APB slaves input vector"),
+    o_mapinfo(this, "o_mapinfo", "APB devices memory mapping information"),
     // params
     State_Idle(this, "2", "State_Idle", "0"),
     State_setup(this, "2", "State_setup", "1"),
@@ -41,6 +42,7 @@ axi2apb::axi2apb(GenObject *parent, const char *name) :
     w_req_ready(this, "w_req_ready", "1"),
     // registers
     state(this, "state", "3", "State_Idle"),
+    selidx(this, "selidx", "2"),
     pvalid(this, "pvalid", "1"),
     paddr(this, "paddr", "32"),
     pwdata(this, "pwdata", "CFG_SYSBUS_DATA_BITS"),
@@ -85,6 +87,16 @@ axi2apb::axi2apb(GenObject *parent, const char *name) :
 
 void axi2apb::proc_comb() {
     types_amba* cfg = glob_types_amba_;
+    types_bus1 *bus1 = glob_bus1_cfg_;
+    GenObject *i;
+    
+    i = &FOR ("i", CONST("0"), bus1->CFG_BUS1_PSLV_TOTAL, "++");
+        SETARRITEM(comb.vapbo, *i, comb.vapbo, ARRITEM(i_apbo, *i, i_apbo), "Cannot read vector item from port in systemc");
+    ENDFOR();
+    TEXT("Unmapped default slave:");
+    SETARRITEM(comb.vapbo, bus1->CFG_BUS1_PSLV_TOTAL, comb.vapbo->pready, CONST("1", 1));
+    SETARRITEM(comb.vapbo, bus1->CFG_BUS1_PSLV_TOTAL, comb.vapbo->pslverr, CONST("1", 1));
+    SETARRITEM(comb.vapbo, bus1->CFG_BUS1_PSLV_TOTAL, comb.vapbo->prdata, ALLONES());
     SETZERO(w_req_ready);
     SETZERO(pvalid);
 
@@ -96,6 +108,13 @@ TEXT();
         SETZERO(penable);
         SETZERO(pselx);
         SETZERO(xsize);
+        SETVAL(selidx, bus1->CFG_BUS1_PSLV_TOTAL);
+        i = &FOR ("i", CONST("0"), bus1->CFG_BUS1_PSLV_TOTAL, "++");
+            IF (ANDx(2, &GE(wb_req_addr, ARRITEM(bus1->CFG_BUS1_MAP, *i, bus1->CFG_BUS1_MAP.addr_start)),
+                        &LS(wb_req_addr, ARRITEM(bus1->CFG_BUS1_MAP, *i, bus1->CFG_BUS1_MAP.addr_end))));
+                SETVAL(selidx, *i);
+            ENDIF();
+        ENDFOR();
         IF (NZ(w_req_valid));
             SETVAL(pwrite, w_req_write);
             SETONE(pselx);
@@ -118,15 +137,16 @@ TEXT();
         SETVAL(state, State_access);
         ENDCASE();
     CASE (State_access);
-        SETVAL(pslverr, i_apbmi.pslverr);
-        IF (NZ(i_apbmi.pready));
+        SETVAL(pslverr, ARRITEM(comb.vapbo, selidx, comb.vapbo->pslverr));
+        IF (NZ(ARRITEM(comb.vapbo, selidx, comb.vapbo->pready)));
             SETZERO(penable);
             SETZERO(pselx);
             SETZERO(pwrite);
             IF (EZ(BIT(paddr, 2)));
-                SETVAL(prdata, CC2(BITS(prdata, 63, 32), i_apbmi.prdata));
+                SETVAL(prdata, CC2(BITS(prdata, 63, 32), ARRITEM(comb.vapbo, selidx, comb.vapbo->prdata)));
             ELSE();
-                SETVAL(prdata, CC2(i_apbmi.prdata, BITS(prdata, 31, 0)));
+                SETVAL(prdata, CC2(ARRITEM(comb.vapbo, selidx, comb.vapbo->prdata),
+                                   BITS(ARRITEM(comb.vapbo, selidx, comb.vapbo->prdata), 31, 0)));
             ENDIF();
             IF (NZ(xsize));
                 SETVAL(xsize, DEC(xsize));
@@ -148,23 +168,26 @@ TEXT();
     ENDSWITCH();
 
 TEXT();
-    SETVAL(comb.vapbmo.paddr, paddr);
-    SETVAL(comb.vapbmo.pwrite, pwrite);
+    SETARRITEM(comb.vapbi, selidx, comb.vapbi->paddr, paddr);
+    SETARRITEM(comb.vapbi, selidx, comb.vapbi->pwrite, pwrite);
     IF (EZ(BIT(paddr, 2)));
-        SETVAL(comb.vapbmo.pwdata, BITS(pwdata, 31, 0));
-        SETVAL(comb.vapbmo.pstrb, BITS(pstrb, 3, 0));
+        SETARRITEM(comb.vapbi, selidx, comb.vapbi->pwdata, BITS(pwdata, 31, 0));
+        SETARRITEM(comb.vapbi, selidx, comb.vapbi->pstrb, BITS(pstrb, 3, 0));
     ELSE();
-        SETVAL(comb.vapbmo.pwdata, BITS(pwdata, 63, 32));
-        SETVAL(comb.vapbmo.pstrb, BITS(pstrb, 7, 4));
+        SETARRITEM(comb.vapbi, selidx, comb.vapbi->pwdata, BITS(pwdata, 63, 32));
+        SETARRITEM(comb.vapbi, selidx, comb.vapbi->pstrb, BITS(pstrb, 7, 4));
     ENDIF();
-    SETVAL(comb.vapbmo.pselx, pselx);
-    SETVAL(comb.vapbmo.penable, penable);
-    SETVAL(comb.vapbmo.pprot, pprot);
+    SETARRITEM(comb.vapbi, selidx, comb.vapbi->pselx, pselx);
+    SETARRITEM(comb.vapbi, selidx, comb.vapbi->penable, penable);
+    SETARRITEM(comb.vapbi, selidx, comb.vapbi->pprot, pprot);
 
 
 TEXT();
     SYNC_RESET(*this);
 
 TEXT();
-    SETVAL(o_apbmo, comb.vapbmo);
+     i = &FOR ("i", CONST("0"), bus1->CFG_BUS1_PSLV_TOTAL, "++");
+        SETARRITEM(o_apbi, *i, o_apbi, ARRITEM(comb.vapbi, *i, comb.vapbi));
+        SETARRITEM(o_mapinfo, *i, o_mapinfo, ARRITEM(bus1->CFG_BUS1_MAP, *i, bus1->CFG_BUS1_MAP));
+    ENDFOR();
 }

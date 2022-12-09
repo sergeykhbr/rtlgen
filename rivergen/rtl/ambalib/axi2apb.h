@@ -19,6 +19,7 @@
 #include <api.h>
 #include "types_amba.h"
 #include "axi_slv.h"
+#include "types_bus1.h"
 
 using namespace sysvc;
 
@@ -30,11 +31,13 @@ class axi2apb : public ModuleObject {
      public:
         CombProcess(GenObject *parent) :
             ProcObject(parent, "comb"),
-            vapbmo(this, "vapbmo") {
+            vapbi(this, "", "vapbi", "CFG_BUS1_PSLV_TOTAL"),
+            vapbo(this, "", "vapbo", "ADD(CFG_BUS1_PSLV_TOTAL,1)") {
         }
 
      public:
-        types_amba::apb_in_type vapbmo;
+        TStructArray<types_amba::apb_in_type> vapbi;
+        TStructArray<types_amba::apb_out_type> vapbo;
     };
 
     void proc_comb();
@@ -47,8 +50,9 @@ class axi2apb : public ModuleObject {
     OutStruct<types_amba::dev_config_type> o_cfg;
     InStruct<types_amba::axi4_slave_in_type> i_xslvi;
     OutStruct<types_amba::axi4_slave_out_type> o_xslvo;
-    InStruct<types_amba::apb_out_type> i_apbmi;
-    OutStruct<types_amba::apb_in_type> o_apbmo;
+    InStruct<types_bus1::bus1_apb_out_vector> i_apbo;
+    OutStruct<types_bus1::bus1_apb_in_vector> o_apbi;
+    OutStruct<types_bus1::bus1_mapinfo_vector> o_mapinfo;
 
     ParamLogic State_Idle;
     ParamLogic State_setup;
@@ -64,6 +68,7 @@ class axi2apb : public ModuleObject {
     Signal w_req_ready;
 
     RegSignal state;
+    RegSignal selidx;
     RegSignal pvalid;
     RegSignal paddr;
     RegSignal pwdata;

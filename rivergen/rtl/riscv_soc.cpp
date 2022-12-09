@@ -75,10 +75,8 @@ riscv_soc::riscv_soc(GenObject *parent, const char *name) :
     axisi(this, "axisi"),
     axiso(this, "axiso"),
     bus1_mapinfo(this, "bus1_mapinfo"),
-    apbmi(this, "apbmi"),
-    apbmo(this, "apbmo"),
-    apbsi(this, "apbsi"),
-    apbso(this, "apbso"),
+    apbi(this, "apbi"),
+    apbo(this, "apbo"),
     dev_pnp(this, "dev_pnp"),
     wb_clint_mtimer(this, "wb_clint_mtimer", "64"),
     wb_clint_msip(this, "wb_clint_msip", "CFG_CPU_MAX"),
@@ -106,8 +104,9 @@ riscv_soc::riscv_soc(GenObject *parent, const char *name) :
         CONNECT(apbrdg0, 0, apbrdg0.o_cfg, ARRITEM(dev_pnp, SOC_PNP_PBRIDGE0, dev_pnp));
         CONNECT(apbrdg0, 0, apbrdg0.i_xslvi, ARRITEM(axisi, glob_bus0_cfg_->CFG_BUS0_XSLV_PBRIDGE, axisi));
         CONNECT(apbrdg0, 0, apbrdg0.o_xslvo, ARRITEM(axiso, glob_bus0_cfg_->CFG_BUS0_XSLV_PBRIDGE, axiso));
-        CONNECT(apbrdg0, 0, apbrdg0.i_apbmi, ARRITEM(apbmi, glob_bus1_cfg_->CFG_BUS1_PMST_PARENT, apbmi));
-        CONNECT(apbrdg0, 0, apbrdg0.o_apbmo, ARRITEM(apbmo, glob_bus1_cfg_->CFG_BUS1_PMST_PARENT, apbmo));
+        CONNECT(apbrdg0, 0, apbrdg0.i_apbo, apbo);
+        CONNECT(apbrdg0, 0, apbrdg0.o_apbi, apbi);
+        CONNECT(apbrdg0, 0, apbrdg0.o_mapinfo, bus1_mapinfo);
     ENDNEW();
 
     group0.cpu_num.setObjValue(&prj_cfg_->CFG_CPU_NUM);
@@ -139,8 +138,8 @@ riscv_soc::riscv_soc(GenObject *parent, const char *name) :
         CONNECT(group0, 0, group0.o_msto, ARRITEM(aximo, glob_bus0_cfg_->CFG_BUS0_XMST_GROUP0, aximo));
         CONNECT(group0, 0, group0.i_dmi_mapinfo, ARRITEM(bus1_mapinfo, glob_bus1_cfg_->CFG_BUS1_PSLV_DMI, bus1_mapinfo));
         CONNECT(group0, 0, group0.o_dmi_cfg, ARRITEM(dev_pnp, SOC_PNP_DMI, dev_pnp));
-        CONNECT(group0, 0, group0.i_dmi_apbi, ARRITEM(apbsi, glob_bus1_cfg_->CFG_BUS1_PSLV_DMI, apbsi));
-        CONNECT(group0, 0, group0.o_dmi_apbo, ARRITEM(apbso, glob_bus1_cfg_->CFG_BUS1_PSLV_DMI, apbso));
+        CONNECT(group0, 0, group0.i_dmi_apbi, ARRITEM(apbi, glob_bus1_cfg_->CFG_BUS1_PSLV_DMI, apbi));
+        CONNECT(group0, 0, group0.o_dmi_apbo, ARRITEM(apbo, glob_bus1_cfg_->CFG_BUS1_PSLV_DMI, apbo));
         CONNECT(group0, 0, group0.o_dmreset, w_dmreset);
     ENDNEW();
 
@@ -150,8 +149,8 @@ riscv_soc::riscv_soc(GenObject *parent, const char *name) :
         CONNECT(uart1, 0, uart1.i_nrst, w_sys_nrst);
         CONNECT(uart1, 0, uart1.i_mapinfo, ARRITEM(bus1_mapinfo, glob_bus1_cfg_->CFG_BUS1_PSLV_UART1, bus1_mapinfo));
         CONNECT(uart1, 0, uart1.o_cfg, ARRITEM(dev_pnp, SOC_PNP_UART1, dev_pnp));
-        CONNECT(uart1, 0, uart1.i_apbi, ARRITEM(apbsi, glob_bus1_cfg_->CFG_BUS1_PSLV_UART1, apbsi));
-        CONNECT(uart1, 0, uart1.o_apbo, ARRITEM(apbso, glob_bus1_cfg_->CFG_BUS1_PSLV_UART1, apbso));
+        CONNECT(uart1, 0, uart1.i_apbi, ARRITEM(apbi, glob_bus1_cfg_->CFG_BUS1_PSLV_UART1, apbi));
+        CONNECT(uart1, 0, uart1.o_apbo, ARRITEM(apbo, glob_bus1_cfg_->CFG_BUS1_PSLV_UART1, apbo));
         CONNECT(uart1, 0, uart1.i_rd, i_uart1_rd);
         CONNECT(uart1, 0, uart1.o_td, o_uart1_td);
         CONNECT(uart1, 0, uart1.o_irq, w_irq_uart1);
@@ -183,9 +182,4 @@ void riscv_soc::proc_comb() {
     TEXT("Nullify emty AXI-slots:");
     SETARRITEM(aximo, glob_bus0_cfg_->CFG_BUS0_XMST_DMA, aximo, amba->axi4_master_out_none);
     SETVAL(acpo, amba->axi4_master_out_none);
-
-    TEXT("TODO: APB interconnect");
-    SETARRITEM(apbsi, glob_bus1_cfg_->CFG_BUS1_PSLV_DMI, apbsi, glob_types_amba_->apb_in_none);
-    SETARRITEM(apbsi, glob_bus1_cfg_->CFG_BUS1_PSLV_UART1, apbsi, ARRITEM(apbmo, glob_bus1_cfg_->CFG_BUS1_PMST_PARENT, apbmo));
-    SETARRITEM(apbmi, glob_bus1_cfg_->CFG_BUS1_PMST_PARENT, apbmi, ARRITEM(apbso, glob_bus1_cfg_->CFG_BUS1_PSLV_UART1, apbso));
 }
