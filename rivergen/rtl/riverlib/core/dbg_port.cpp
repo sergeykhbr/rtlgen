@@ -221,7 +221,7 @@ TEXT();
         SETVAL(dstate, wait_to_accept);
         ENDCASE();
     CASE (reg_stktr_buf_adr);
-        SETVAL(wb_stack_raddr, BITS(dport_addr, cfg->CFG_LOG2_STACK_TRACE_ADDR, CONST("1")));
+        SETVAL(comb.vb_stack_raddr, BITS(dport_addr, cfg->CFG_LOG2_STACK_TRACE_ADDR, CONST("1")));
         SETVAL(dstate, reg_stktr_buf_dat);
         ENDCASE();
     CASE (reg_stktr_buf_dat);
@@ -298,6 +298,7 @@ TEXT();
     SYNC_RESET(*this);
 
 TEXT();
+    SETVAL(wb_stack_raddr, comb.vb_stack_raddr);
     SETVAL(w_stack_we, comb.v_stack_we);
     SETVAL(wb_stack_waddr, comb.vb_stack_waddr);
     SETVAL(wb_stack_wdata, comb.vb_stack_wdata);

@@ -29,6 +29,7 @@ class DbgPort : public ModuleObject {
     class CombProcess : public ProcObject {
      public:
         CombProcess(GenObject *parent) : ProcObject(parent, "comb"),
+            vb_stack_raddr(this, "vb_stack_raddr", "CFG_LOG2_STACK_TRACE_ADDR"),
             v_stack_we(this, "v_stack_we", "1"),
             vb_stack_waddr(this, "vb_stack_waddr", "CFG_LOG2_STACK_TRACE_ADDR"),
             vb_stack_wdata(this, "vb_stack_wdata", "MUL(2,RISCV_ARCH)"),
@@ -53,6 +54,7 @@ class DbgPort : public ModuleObject {
             p->proc_comb();
         }
 
+        Logic vb_stack_raddr;
         Logic v_stack_we;
         Logic vb_stack_waddr;
         Logic vb_stack_wdata;
