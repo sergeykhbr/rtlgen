@@ -86,27 +86,51 @@ class types_bus1 : public FileObject {
      public:
         CONST_CFG_BUS1_MAP(GenObject *parent)
             : bus1_mapinfo_vector(parent, "CFG_BUS1_MAP"),
-            dmi(this, "dmi", "0, dmi 4KB. TODO: change base address"),
-            uart1(this, "uart1", "1, uart1 4KB") {
-
-            dmi.addr_start.setStrValue("0x000001001E000");
-            dmi.addr_end.setStrValue(  "0x000001001F000");
+            uart1(this, "uart1", "0, uart1 4KB"),
+            prci(this, "prci", "1, PRCI 4KB"),
+            dmi(this, "dmi", "2, dmi 4KB. TODO: change base address"),
+            gpio(this, "gpio", "3, GPIO 4KB"),
+            ddr(this, "ddr", "4, DDR MGMT 4KB"),
+            pnp(this, "pnp", "5, Plug'n'Play 4KB") {
 
             uart1.addr_start.setStrValue("0x0000010010000");
             uart1.addr_end.setStrValue(  "0x0000010011000");
+
+            prci.addr_start.setStrValue( "0x0000010011000");
+            prci.addr_end.setStrValue(   "0x0000010012000");
+
+            dmi.addr_start.setStrValue(  "0x000001001E000");
+            dmi.addr_end.setStrValue(    "0x000001001F000");
+
+            gpio.addr_start.setStrValue( "0x0000010060000");
+            gpio.addr_end.setStrValue(   "0x0000010061000");
+
+            ddr.addr_start.setStrValue(  "0x00000100C0000");
+            ddr.addr_end.setStrValue(    "0x00000100C1000");
+
+            pnp.addr_start.setStrValue(  "0x00000100ff000");
+            pnp.addr_end.setStrValue(    "0x0000010100000");
         }
         virtual GenObject *getItem(int idx) override {
             GenObject *ret = this;
             switch (idx) {
-            case 0: ret = &dmi; break;
-            case 1: ret = &uart1; break;
-            default: ret = &uart1;
+            case 0: ret = &uart1; break;
+            case 1: ret = &prci; break;
+            case 2: ret = &dmi; break;
+            case 3: ret = &gpio; break;
+            case 4: ret = &ddr; break;
+            case 5: ret = &pnp; break;
+            default: ret = &pnp;
             }
             return ret;
         }
 
-        mapinfo_type dmi;
         mapinfo_type uart1;
+        mapinfo_type prci;
+        mapinfo_type dmi;
+        mapinfo_type gpio;
+        mapinfo_type ddr;
+        mapinfo_type pnp;
     };
 
  public:
@@ -116,10 +140,18 @@ class types_bus1 : public FileObject {
     TextLine _pslv3_;
     TextLine _pslv4_;
     TextLine _pslv5_;
-    ParamI32D CFG_BUS1_PSLV_DMI;
-    TextLine _pslv6_;
     ParamI32D CFG_BUS1_PSLV_UART1;
+    TextLine _pslv6_;
+    ParamI32D CFG_BUS1_PSLV_PRCI;
     TextLine _pslv7_;
+    ParamI32D CFG_BUS1_PSLV_DMI;
+    TextLine _pslv8_;
+    ParamI32D CFG_BUS1_PSLV_GPIO;
+    TextLine _pslv9_;
+    ParamI32D CFG_BUS1_PSLV_DDR;
+    TextLine _xslv10_;
+    ParamI32D CFG_BUS1_PSLV_PNP;
+    TextLine _pslv11_;
     ParamI32D CFG_BUS1_PSLV_TOTAL;
     TextLine _vec0_;
     bus1_apb_in_vector bus1_apb_in_vector_def_;

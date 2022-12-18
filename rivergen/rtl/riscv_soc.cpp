@@ -38,6 +38,13 @@ riscv_soc::riscv_soc(GenObject *parent, const char *name) :
     _uart1_(this, "UART1 signals"),
     i_uart1_rd(this, "i_uart1_rd", "1"),
     o_uart1_td(this, "o_uart1_td", "1"),
+    _bus0_(this, "External Bus interfaces:"),
+    i_ddr_xslvi(this, "i_ddr_xslvi", "AXI DDR input interface"),
+    o_ddr_xslvo(this, "o_ddr_xslvo", "AXI DDR output interface"),
+    i_ddr_pslvi(this, "i_ddr_pslvi", "APB in: DDR status and configuration register"),
+    o_ddr_pslvo(this, "o_ddr_pslvo", "APB out: DDR status and configuration register"),
+    i_prci_pslvi(this, "i_prci_pslvi", "APB in: PLL and Reset configuration interface"),
+    o_prci_pslvo(this, "o_prci_pslvo", "APB out: PLL and Reset configuration interface"),
     // param
     _map0_(this),
     _pnp0_(this),

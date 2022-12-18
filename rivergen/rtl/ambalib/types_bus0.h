@@ -126,60 +126,49 @@ class types_bus0 : public FileObject {
         CONST_CFG_BUS0_MAP(GenObject *parent)
             : bus0_mapinfo_vector(parent, "CFG_BUS0_MAP"),
             bootrom(this, "bootrom", "0, bootrom"),
-            sram(this, "sram", "1, sram, 2MB"),
-            ddr(this, "ddr", "2, ddr, 512 MB"),
-            bus1(this, "bus1", "3, APB bridge: uart1"),
-            gpio(this, "gpio", "4, gpio"),
-            clint(this, "clint", "5, clint"),
-            plic(this, "plic", "6, plic"),
-            pnp(this, "pnp", "7, pnp") {
+            clint(this, "clint", "1, clint"),
+            sram(this, "sram", "2, sram, 2MB"),
+            plic(this, "plic", "3, plic"),
+            bus1(this, "bus1", "4, APB bridge: uart1"),
+            ddr(this, "ddr", "5, ddr, 512 MB") {
             bootrom.addr_start.setStrValue("0x0000000010000");
             bootrom.addr_end.setStrValue(  "0x0000000020000");
-
-            sram.addr_start.setStrValue("0x0000008000000");
-            sram.addr_end.setStrValue(  "0x0000008200000");
-
-            ddr.addr_start.setStrValue("0x0000080000000");
-            ddr.addr_end.setStrValue(  "0x00000C0000000");
-
-            bus1.addr_start.setStrValue("0x0000010010000");
-            bus1.addr_end.setStrValue(  "0x0000010011000");
-
-            gpio.addr_start.setStrValue("0x0000010060000");
-            gpio.addr_end.setStrValue(  "0x0000010061000");
 
             clint.addr_start.setStrValue("0x0000002000000");
             clint.addr_end.setStrValue(  "0x0000002010000");
 
-            plic.addr_start.setStrValue("0x000000C000000");
-            plic.addr_end.setStrValue(  "0x0000010000000");
+            sram.addr_start.setStrValue( "0x0000008000000");
+            sram.addr_end.setStrValue(   "0x0000008200000");
 
-            pnp.addr_start.setStrValue("0x00000100ff000");
-            pnp.addr_end.setStrValue(  "0x0000010100000");
+            plic.addr_start.setStrValue( "0x000000C000000");
+            plic.addr_end.setStrValue(   "0x0000010000000");
+
+            bus1.addr_start.setStrValue( "0x0000010000000");
+            bus1.addr_end.setStrValue(   "0x0000010100000");
+
+            ddr.addr_start.setStrValue(  "0x0000080000000");
+            ddr.addr_end.setStrValue(    "0x00000C0000000");
         }
         virtual GenObject *getItem(int idx) override {
             GenObject *ret = this;
             switch (idx) {
             case 0: ret = &bootrom; break;
-            case 1: ret = &sram; break;
-            case 2: ret = &ddr; break;
-            case 3: ret = &bus1; break;
-            case 4: ret = &gpio; break;
-            case 5: ret = &clint; break;
-            case 6: ret = &plic; break;
-            default: ret = &pnp;
+            case 1: ret = &clint; break;
+            case 2: ret = &sram; break;
+            case 3: ret = &plic; break;
+            case 4: ret = &bus1; break;
+            case 5: ret = &ddr; break;
+            default: ret = &ddr;
             }
             return ret;
         }
 
         mapinfo_type bootrom;
-        mapinfo_type sram;
-        mapinfo_type ddr;
-        mapinfo_type bus1;
-        mapinfo_type gpio;
         mapinfo_type clint;
+        mapinfo_type sram;
         mapinfo_type plic;
-        mapinfo_type pnp;
+        mapinfo_type bus1;
+        mapinfo_type ddr;
     };
 
 
@@ -205,20 +194,16 @@ class types_bus0 : public FileObject {
     TextLine _xslv7_;
     ParamI32D CFG_BUS0_XSLV_BOOTROM;
     TextLine _xslv8_;
-    ParamI32D CFG_BUS0_XSLV_SRAM;
-    TextLine _xslv9_;
-    ParamI32D CFG_BUS0_XSLV_DDR;
-    TextLine _xslv10_;
-    ParamI32D CFG_BUS0_XSLV_PBRIDGE;
-    TextLine _xslv11_;
-    ParamI32D CFG_BUS0_XSLV_GPIO;
-    TextLine _xslv12_;
     ParamI32D CFG_BUS0_XSLV_CLINT;
-    TextLine _xslv13_;
+    TextLine _xslv9_;
+    ParamI32D CFG_BUS0_XSLV_SRAM;
+    TextLine _xslv10_;
     ParamI32D CFG_BUS0_XSLV_PLIC;
-    TextLine _xslv14_;
-    ParamI32D CFG_BUS0_XSLV_PNP;
-    TextLine _xslv15_;
+    TextLine _xslv11_;
+    ParamI32D CFG_BUS0_XSLV_PBRIDGE;
+    TextLine _xslv12_;
+    ParamI32D CFG_BUS0_XSLV_DDR;
+    TextLine _xslv13_;
     ParamI32D CFG_BUS0_XSLV_TOTAL;
     TextLine _vec0_;
     bus0_xmst_in_vector bus0_xmst_in_vector_def_;

@@ -17,16 +17,22 @@
 #pragma once
 
 #include <api.h>
+#include "apb_prci.h"
 #include "apb_uart.h"
+#include "apb_ddr.h"
 
 class misclib_folder : public FolderObject {
  public:
     misclib_folder(GenObject *parent) :
         FolderObject(parent, "misclib"),
-        apb_uart_file_(this) {}
+        apb_prci_file_(this),
+        apb_uart_file_(this),
+        apb_ddr_file_(this) {}
 
  protected:
     // subfolders:
     // files
+    apb_prci_file apb_prci_file_;
     apb_uart_file apb_uart_file_;
+    apb_ddr_file apb_ddr_file_;
 };

@@ -469,6 +469,10 @@ class types_amba : public FileObject {
     ParamLogic OPTIMITECH_AXI2APB_BRIDGE;
     TextLine _didslv12_;
     ParamLogic OPTIMITECH_AXI_INTERCONNECT;
+    TextLine _didslv13_;
+    ParamLogic OPTIMITECH_PRCI;
+    TextLine _didslv14_;
+    ParamLogic OPTIMITECH_DDRCTRL;
     TextLine _pnpcfg0_;
     TextLine _pnpcfg1_;
     TextLine _pnpcfg2_;

@@ -89,6 +89,13 @@ public:
     TextLine _uart1_;
     InPort i_uart1_rd;
     OutPort o_uart1_td;
+    TextLine _bus0_;
+    InStruct<types_amba::axi4_slave_in_type> i_ddr_xslvi;
+    OutStruct<types_amba::axi4_slave_out_type> o_ddr_xslvo;
+    InStruct<types_amba::apb_in_type> i_ddr_pslvi;
+    OutStruct<types_amba::apb_out_type> o_ddr_pslvo;
+    InStruct<types_amba::apb_in_type> i_prci_pslvi;
+    OutStruct<types_amba::apb_out_type> o_prci_pslvo;
 
     // Param
 
