@@ -28,6 +28,7 @@ axi_slv::axi_slv(GenObject *parent, const char *name) :
     o_xslvo(this, "o_xslvo", "AXI Slave output interface"),
     o_req_valid(this, "o_req_valid", "1"),
     o_req_addr(this, "o_req_addr", "CFG_SYSBUS_ADDR_BITS"),
+    o_req_size(this, "o_req_size", "8"),
     o_req_write(this, "o_req_write", "1"),
     o_req_wdata(this, "o_req_wdata", "CFG_SYSBUS_DATA_BITS"),
     o_req_wstrb(this, "o_req_wstrb", "CFG_SYSBUS_DATA_BYTES"),
@@ -199,6 +200,7 @@ TEXT();
                 SETVAL(req_len, DEC(req_len));
                 SETVAL(state, State_addrdata_r);
             ELSE();
+                SETZERO(req_valid);
                 SETVAL(state, State_data_r);
             ENDIF();
         ENDIF();
@@ -255,6 +257,7 @@ TEXT();
     SETVAL(o_req_valid, req_valid);
     SETVAL(o_req_last, comb.v_req_last);
     SETVAL(o_req_addr, req_addr);
+    SETVAL(o_req_size, req_xsize);
     SETVAL(o_req_write, req_write);
     SETVAL(o_req_wdata, req_wdata);
     SETVAL(o_req_wstrb, req_wstrb);

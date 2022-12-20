@@ -56,6 +56,7 @@ class axi_slv : public ModuleObject {
     OutStruct<types_amba::axi4_slave_out_type> o_xslvo;
     OutPort o_req_valid;
     OutPort o_req_addr;
+    OutPort o_req_size;
     OutPort o_req_write;
     OutPort o_req_wdata;
     OutPort o_req_wstrb;

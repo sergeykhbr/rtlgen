@@ -61,6 +61,7 @@ class axi2apb : public ModuleObject {
 
     Signal w_req_valid;
     Signal wb_req_addr;
+    Signal wb_req_size;
     Signal w_req_write;
     Signal wb_req_wdata;
     Signal wb_req_wstrb;
@@ -79,7 +80,7 @@ class axi2apb : public ModuleObject {
     RegSignal pselx;
     RegSignal penable;
     RegSignal pslverr;
-    RegSignal xsize;
+    RegSignal size;
 
     axi_slv axi0;
 

@@ -74,7 +74,7 @@ types_amba::types_amba(GenObject *parent) :
     _didslv12_(this, "AXI interconnect"),
     OPTIMITECH_AXI_INTERCONNECT(this, "16", "OPTIMITECH_AXI_INTERCONNECT", "0x0086"),
     _didslv13_(this, "APB PLL and Register Interface"),
-    OPTIMITECH_PRCI(this, "16", "OPTIMITECH_SYSCTRL", "0x0087"),
+    OPTIMITECH_PRCI(this, "16", "OPTIMITECH_PRCI", "0x0087"),
     _didslv14_(this, "DDR controller status registers"),
     OPTIMITECH_DDRCTRL(this, "16", "OPTIMITECH_DDRCTRL", "0x0088"),
     _pnpcfg0_(this),

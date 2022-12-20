@@ -35,6 +35,7 @@ axi2apb::axi2apb(GenObject *parent, const char *name) :
     // signals
     w_req_valid(this, "w_req_valid", "1"),
     wb_req_addr(this, "wb_req_addr", "CFG_SYSBUS_ADDR_BITS"),
+    wb_req_size(this, "wb_req_size", "8"),
     w_req_write(this, "w_req_write", "1"),
     wb_req_wdata(this, "wb_req_wdata", "CFG_SYSBUS_DATA_BITS"),
     wb_req_wstrb(this, "wb_req_wstrb", "CFG_SYSBUS_DATA_BYTES"),
@@ -42,7 +43,7 @@ axi2apb::axi2apb(GenObject *parent, const char *name) :
     w_req_ready(this, "w_req_ready", "1"),
     // registers
     state(this, "state", "3", "State_Idle"),
-    selidx(this, "selidx", "2"),
+    selidx(this, "selidx", "3", "0", "TODO: clog2 depending slaves number"),
     pvalid(this, "pvalid", "1"),
     paddr(this, "paddr", "32"),
     pwdata(this, "pwdata", "CFG_SYSBUS_DATA_BITS"),
@@ -53,7 +54,7 @@ axi2apb::axi2apb(GenObject *parent, const char *name) :
     pselx(this, "pselx", "1"),
     penable(this, "penable", "1"),
     pslverr(this, "pslverr", "1"),
-    xsize(this, "xsize", "8"),
+    size(this, "size", "8"),
     // modules
     axi0(this, "axi0"),
     // process
@@ -71,6 +72,7 @@ axi2apb::axi2apb(GenObject *parent, const char *name) :
         CONNECT(axi0, 0, axi0.o_xslvo, o_xslvo);
         CONNECT(axi0, 0, axi0.o_req_valid, w_req_valid);
         CONNECT(axi0, 0, axi0.o_req_addr, wb_req_addr);
+        CONNECT(axi0, 0, axi0.o_req_size, wb_req_size);
         CONNECT(axi0, 0, axi0.o_req_write, w_req_write);
         CONNECT(axi0, 0, axi0.o_req_wdata, wb_req_wdata);
         CONNECT(axi0, 0, axi0.o_req_wstrb, wb_req_wstrb);
@@ -107,7 +109,6 @@ TEXT();
         SETZERO(pslverr);
         SETZERO(penable);
         SETZERO(pselx);
-        SETZERO(xsize);
         SETVAL(selidx, bus1->CFG_BUS1_PSLV_TOTAL);
         i = &FOR ("i", CONST("0"), bus1->CFG_BUS1_PSLV_TOTAL, "++");
             IF (ANDx(2, &GE(wb_req_addr, ARRITEM(bus1->CFG_BUS1_MAP, *i, bus1->CFG_BUS1_MAP.addr_start)),
@@ -120,10 +121,15 @@ TEXT();
             SETONE(pselx);
             SETVAL(paddr, CC2(BITS(wb_req_addr, 31, 2), CONST("0", 2)));
             SETZERO(pprot);
-            SETVAL(pwdata, wb_req_wdata);
-            SETVAL(pstrb, wb_req_wstrb);
+            IF (NZ(BIT(wb_req_addr, 2)));
+                SETVAL(pwdata, CC2(CONST("0", 32), BITS(wb_req_wdata, 63, 32)));
+                SETVAL(pstrb, CC2(CONST("0", 4), BITS(wb_req_wstrb, 7, 4)));
+            ELSE();
+                SETVAL(pwdata, wb_req_wdata);
+                SETVAL(pstrb, wb_req_wstrb);
+            ENDIF();
             SETVAL(state, State_setup);
-            SETVAL(xsize, AND_REDUCE(wb_req_wstrb));
+            SETVAL(size, wb_req_size);
             IF (EZ(w_req_last));
                 SETVAL(state, State_out, "Burst is not supported");
                 SETZERO(pselx);
@@ -140,21 +146,23 @@ TEXT();
         SETVAL(pslverr, ARRITEM(comb.vapbo, selidx, comb.vapbo->pslverr));
         IF (NZ(ARRITEM(comb.vapbo, selidx, comb.vapbo->pready)));
             SETZERO(penable);
-            SETZERO(pselx);
-            SETZERO(pwrite);
             IF (EZ(BIT(paddr, 2)));
                 SETVAL(prdata, CC2(BITS(prdata, 63, 32), ARRITEM(comb.vapbo, selidx, comb.vapbo->prdata)));
             ELSE();
                 SETVAL(prdata, CC2(ARRITEM(comb.vapbo, selidx, comb.vapbo->prdata),
-                                   BITS(ARRITEM(comb.vapbo, selidx, comb.vapbo->prdata), 31, 0)));
+                                   BITS(prdata, 31, 0)));
             ENDIF();
-            IF (NZ(xsize));
-                SETVAL(xsize, DEC(xsize));
+            IF (GT(size, CONST("4", 8)));
+                SETVAL(size, SUB2(size, CONST("4")));
                 SETVAL(paddr, ADD2(paddr, CONST("4")));
+                SETVAL(pwdata, CC2(CONST("0", 32), BITS(wb_req_wdata, 63, 32)));
+                SETVAL(pstrb, CC2(CONST("0", 4), BITS(wb_req_wstrb, 7, 4)));
                 SETVAL(state, State_setup);
             ELSE();
                 SETONE(pvalid);
                 SETVAL(state, State_out);
+                SETZERO(pselx);
+                SETZERO(pwrite);
             ENDIF();
         ENDIF();
         ENDCASE();
@@ -170,13 +178,8 @@ TEXT();
 TEXT();
     SETARRITEM(comb.vapbi, selidx, comb.vapbi->paddr, paddr);
     SETARRITEM(comb.vapbi, selidx, comb.vapbi->pwrite, pwrite);
-    IF (EZ(BIT(paddr, 2)));
-        SETARRITEM(comb.vapbi, selidx, comb.vapbi->pwdata, BITS(pwdata, 31, 0));
-        SETARRITEM(comb.vapbi, selidx, comb.vapbi->pstrb, BITS(pstrb, 3, 0));
-    ELSE();
-        SETARRITEM(comb.vapbi, selidx, comb.vapbi->pwdata, BITS(pwdata, 63, 32));
-        SETARRITEM(comb.vapbi, selidx, comb.vapbi->pstrb, BITS(pstrb, 7, 4));
-    ENDIF();
+    SETARRITEM(comb.vapbi, selidx, comb.vapbi->pwdata, BITS(pwdata, 31, 0));
+    SETARRITEM(comb.vapbi, selidx, comb.vapbi->pstrb, BITS(pstrb, 3, 0));
     SETARRITEM(comb.vapbi, selidx, comb.vapbi->pselx, pselx);
     SETARRITEM(comb.vapbi, selidx, comb.vapbi->penable, penable);
     SETARRITEM(comb.vapbi, selidx, comb.vapbi->pprot, pprot);
