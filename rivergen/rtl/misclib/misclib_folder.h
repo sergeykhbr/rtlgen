@@ -20,6 +20,7 @@
 #include "apb_prci.h"
 #include "apb_uart.h"
 #include "apb_ddr.h"
+#include "apb_spi.h"
 
 class misclib_folder : public FolderObject {
  public:
@@ -27,7 +28,8 @@ class misclib_folder : public FolderObject {
         FolderObject(parent, "misclib"),
         apb_prci_file_(this),
         apb_uart_file_(this),
-        apb_ddr_file_(this) {}
+        apb_ddr_file_(this),
+        apb_spi_file_(this) {}
 
  protected:
     // subfolders:
@@ -35,4 +37,5 @@ class misclib_folder : public FolderObject {
     apb_prci_file apb_prci_file_;
     apb_uart_file apb_uart_file_;
     apb_ddr_file apb_ddr_file_;
+    apb_spi_file apb_spi_file_;
 };

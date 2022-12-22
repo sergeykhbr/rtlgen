@@ -22,8 +22,11 @@ riscv_soc::riscv_soc(GenObject *parent, const char *name) :
     // Generic parameters
     async_reset(this, "async_reset", "CFG_ASYNC_RESET"),
     // Ports
-    i_rst(this, "i_rst", "1", "System reset active HIGH"),
-    i_clk(this, "i_clk", "1", "CPU clock"),
+    i_sys_nrst(this, "i_sys_nrst", "1", "Power-on system reset active LOW"),
+    i_sys_clk(this, "i_sys_clk", "1", "System/Bus clock"),
+    i_dbg_nrst(this, "i_dbg_nrst", "1", "Reset from Debug interface (DMI). Reset everything except DMI"),
+    i_ddr_nrst(this, "i_ddr_nrst", "1", "DDR related logic reset (AXI clock transformator)"),
+    i_ddr_clk(this, "i_ddr_clk", "1", "DDR memoru clock"),
     _gpio0_(this, "GPIO signals:"),
     i_gpio(this, "i_gpio", "12"),
     o_gpio(this, "o_gpio", "12"),
@@ -38,13 +41,21 @@ riscv_soc::riscv_soc(GenObject *parent, const char *name) :
     _uart1_(this, "UART1 signals"),
     i_uart1_rd(this, "i_uart1_rd", "1"),
     o_uart1_td(this, "o_uart1_td", "1"),
-    _bus0_(this, "External Bus interfaces:"),
-    i_ddr_xslvi(this, "i_ddr_xslvi", "AXI DDR input interface"),
-    o_ddr_xslvo(this, "o_ddr_xslvo", "AXI DDR output interface"),
-    i_ddr_pslvi(this, "i_ddr_pslvi", "APB in: DDR status and configuration register"),
-    o_ddr_pslvo(this, "o_ddr_pslvo", "APB out: DDR status and configuration register"),
-    i_prci_pslvi(this, "i_prci_pslvi", "APB in: PLL and Reset configuration interface"),
-    o_prci_pslvo(this, "o_prci_pslvo", "APB out: PLL and Reset configuration interface"),
+    _prci0_(this, "PLL and Reset interfaces:"),
+    o_dmreset(this, "o_dmreset", "1", "Debug reset request. Everything except DMI."),
+    o_prci_pmapinfo(this, "o_prci_pmapinfo", "PRCI mapping information"),
+    i_prci_pdevcfg(this, "i_prci_pdevcfg", "PRCI device descriptor"),
+    o_prci_apbi(this, "o_prci_apbi", "APB: PLL and Reset configuration interface"),
+    i_prci_apbo(this, "i_prci_apbo", "APB: PLL and Reset configuration interface"),
+    _ddr0_(this, "DDR interfaces:"),
+    o_ddr_pmapinfo(this, "o_ddr_pmapinfo", "DDR configuration mapping information"),
+    i_ddr_pdevcfg(this, "i_ddr_pdevcfg", "DDR configuration device descriptor"),
+    o_ddr_apbi(this, "o_ddr_apbi", "APB: DDR configuration interface"),
+    i_ddr_apbo(this, "i_ddr_apbo", "APB: DDR configuration interface"),
+    o_ddr_xmapinfo(this, "o_ddr_xmapinfo", "DDR memory bank mapping information"),
+    i_ddr_xdevcfg(this, "i_ddr_xdevcfg", "DDR memory bank descriptor"),
+    o_ddr_xslvi(this, "o_ddr_xslvi", "AXI DDR memory interface"),
+    i_ddr_xslvo(this, "i_ddr_xslvo", "AXI DDR memory interface"),
     // param
     _map0_(this),
     _pnp0_(this),
@@ -71,9 +82,6 @@ riscv_soc::riscv_soc(GenObject *parent, const char *name) :
     CFG_PLIC_IRQ_TOTAL(this, "CFG_PLIC_IRQ_TOTAL", "73"),
     soc_pnp_vector_def_(this, ""),
     // Singals:
-    w_sys_nrst(this, "w_sys_nrst", "1", "0", "System reset of whole system"),
-    w_dbg_nrst(this, "w_dbg_nrst", "1", "0", "Reset workgroup debug interface"),
-    w_dmreset(this, "w_dmreset", "1", "0", "Reset request from workgroup debug interface"),
     acpo(this, "acpo"),
     acpi(this, "acpi"),
     bus0_mapinfo(this, "bus0_mapinfo"),
@@ -105,8 +113,8 @@ riscv_soc::riscv_soc(GenObject *parent, const char *name) :
 
     // Create and connet Sub-modules:
     NEW(apbrdg0, apbrdg0.getName().c_str());
-        CONNECT(apbrdg0, 0, apbrdg0.i_clk, i_clk);
-        CONNECT(apbrdg0, 0, apbrdg0.i_nrst, w_sys_nrst);
+        CONNECT(apbrdg0, 0, apbrdg0.i_clk, i_sys_clk);
+        CONNECT(apbrdg0, 0, apbrdg0.i_nrst, i_sys_nrst);
         CONNECT(apbrdg0, 0, apbrdg0.i_mapinfo, ARRITEM(bus0_mapinfo, glob_bus0_cfg_->CFG_BUS0_XSLV_PBRIDGE, bus0_mapinfo));
         CONNECT(apbrdg0, 0, apbrdg0.o_cfg, ARRITEM(dev_pnp, SOC_PNP_PBRIDGE0, dev_pnp));
         CONNECT(apbrdg0, 0, apbrdg0.i_xslvi, ARRITEM(axisi, glob_bus0_cfg_->CFG_BUS0_XSLV_PBRIDGE, axisi));
@@ -125,9 +133,9 @@ riscv_soc::riscv_soc(GenObject *parent, const char *name) :
     group0.l2log2_nways.setObjValue(&prj_cfg_->CFG_L2_LOG2_NWAYS);
     group0.l2log2_lines_per_way.setObjValue(&prj_cfg_->CFG_L2_LOG2_LINES_PER_WAY);
     NEW(group0, group0.getName().c_str());
-        CONNECT(group0, 0, group0.i_clk, i_clk);
-        CONNECT(group0, 0, group0.i_cores_nrst, w_sys_nrst);
-        CONNECT(group0, 0, group0.i_dmi_nrst, w_dbg_nrst);
+        CONNECT(group0, 0, group0.i_clk, i_sys_clk);
+        CONNECT(group0, 0, group0.i_cores_nrst, i_sys_nrst);
+        CONNECT(group0, 0, group0.i_dmi_nrst, i_dbg_nrst);
         CONNECT(group0, 0, group0.i_trst, i_jtag_trst);
         CONNECT(group0, 0, group0.i_tck, i_jtag_tck);
         CONNECT(group0, 0, group0.i_tms, i_jtag_tms);
@@ -147,13 +155,13 @@ riscv_soc::riscv_soc(GenObject *parent, const char *name) :
         CONNECT(group0, 0, group0.o_dmi_cfg, ARRITEM(dev_pnp, SOC_PNP_DMI, dev_pnp));
         CONNECT(group0, 0, group0.i_dmi_apbi, ARRITEM(apbi, glob_bus1_cfg_->CFG_BUS1_PSLV_DMI, apbi));
         CONNECT(group0, 0, group0.o_dmi_apbo, ARRITEM(apbo, glob_bus1_cfg_->CFG_BUS1_PSLV_DMI, apbo));
-        CONNECT(group0, 0, group0.o_dmreset, w_dmreset);
+        CONNECT(group0, 0, group0.o_dmreset, o_dmreset);
     ENDNEW();
 
     uart1.log2_fifosz.setObjValue(&CFG_SOC_UART1_LOG2_FIFOSZ);
     NEW(uart1, uart1.getName().c_str());
-        CONNECT(uart1, 0, uart1.i_clk, i_clk);
-        CONNECT(uart1, 0, uart1.i_nrst, w_sys_nrst);
+        CONNECT(uart1, 0, uart1.i_clk, i_sys_clk);
+        CONNECT(uart1, 0, uart1.i_nrst, i_sys_nrst);
         CONNECT(uart1, 0, uart1.i_mapinfo, ARRITEM(bus1_mapinfo, glob_bus1_cfg_->CFG_BUS1_PSLV_UART1, bus1_mapinfo));
         CONNECT(uart1, 0, uart1.o_cfg, ARRITEM(dev_pnp, SOC_PNP_UART1, dev_pnp));
         CONNECT(uart1, 0, uart1.i_apbi, ARRITEM(apbi, glob_bus1_cfg_->CFG_BUS1_PSLV_UART1, apbi));

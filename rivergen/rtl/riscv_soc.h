@@ -33,8 +33,8 @@ class riscv_soc : public ModuleObject {
  public:
     riscv_soc(GenObject *parent, const char *name);
 
-    virtual GenObject *getResetPort() override { return &i_rst; }
-    virtual bool getResetActive() override { return true; }
+    virtual GenObject *getResetPort() override { return &i_sys_nrst; }
+    //virtual bool getResetActive() override { return true; }
     virtual bool isTop() override { return true; }
 
     class CombProcess : public ProcObject {
@@ -73,8 +73,11 @@ public:
 public:
     ParamBOOL async_reset;
     // Ports:
-    InPort i_rst;
-    InPort i_clk;
+    InPort i_sys_nrst;
+    InPort i_sys_clk;
+    InPort i_dbg_nrst;
+    InPort i_ddr_nrst;
+    InPort i_ddr_clk;
     TextLine _gpio0_;
     InPort i_gpio;
     OutPort o_gpio;
@@ -89,13 +92,21 @@ public:
     TextLine _uart1_;
     InPort i_uart1_rd;
     OutPort o_uart1_td;
-    TextLine _bus0_;
-    InStruct<types_amba::axi4_slave_in_type> i_ddr_xslvi;
-    OutStruct<types_amba::axi4_slave_out_type> o_ddr_xslvo;
-    InStruct<types_amba::apb_in_type> i_ddr_pslvi;
-    OutStruct<types_amba::apb_out_type> o_ddr_pslvo;
-    InStruct<types_amba::apb_in_type> i_prci_pslvi;
-    OutStruct<types_amba::apb_out_type> o_prci_pslvo;
+    TextLine _prci0_;
+    OutPort o_dmreset;
+    OutStruct<types_amba::mapinfo_type> o_prci_pmapinfo;
+    OutStruct<types_amba::dev_config_type> i_prci_pdevcfg;
+    OutStruct<types_amba::apb_in_type> o_prci_apbi;
+    InStruct<types_amba::apb_out_type> i_prci_apbo;
+    TextLine _ddr0_;
+    OutStruct<types_amba::mapinfo_type> o_ddr_pmapinfo;
+    OutStruct<types_amba::dev_config_type> i_ddr_pdevcfg;
+    OutStruct<types_amba::apb_in_type> o_ddr_apbi;
+    InStruct<types_amba::apb_out_type> i_ddr_apbo;
+    OutStruct<types_amba::mapinfo_type> o_ddr_xmapinfo;
+    OutStruct<types_amba::dev_config_type> i_ddr_xdevcfg;
+    OutStruct<types_amba::axi4_slave_in_type> o_ddr_xslvi;
+    InStruct<types_amba::axi4_slave_out_type> i_ddr_xslvo;
 
     // Param
 
@@ -154,9 +165,6 @@ public:
 
     soc_pnp_vector soc_pnp_vector_def_;
 
-    Signal w_sys_nrst;
-    Signal w_dbg_nrst;
-    Signal w_dmreset;
     axi4_master_out_type_signal acpo;
     axi4_master_in_type_signal acpi;
     types_bus0::bus0_mapinfo_vector   bus0_mapinfo;

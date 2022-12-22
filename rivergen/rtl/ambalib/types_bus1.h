@@ -96,8 +96,8 @@ class types_bus1 : public FileObject {
             uart1.addr_start.setStrValue("0x0000010010000");
             uart1.addr_end.setStrValue(  "0x0000010011000");
 
-            prci.addr_start.setStrValue( "0x0000010011000");
-            prci.addr_end.setStrValue(   "0x0000010012000");
+            prci.addr_start.setStrValue( "0x0000010012000");
+            prci.addr_end.setStrValue(   "0x0000010013000");
 
             dmi.addr_start.setStrValue(  "0x000001001E000");
             dmi.addr_end.setStrValue(    "0x000001001F000");
