@@ -287,7 +287,14 @@ std::string Operation::reset(const char *dst, const char *src, ModuleObject *m, 
             if (xrst.size()) {
                 ret += "(";
             }
-            ret += "(!async_reset_ && i_nrst.read() == 0)";
+            ret += "(!async_reset_ && ";
+            ret += m->getResetPort()->getName() + ".read() == ";
+            if (m->getResetActive()) {
+                ret += "1";
+            } else {
+                ret += "0";
+            }
+            ret += ")";
             if (xrst.size()) {
                 ret += " || " + xrst + ")";
             }
@@ -334,7 +341,14 @@ std::string Operation::reset(const char *dst, const char *src, ModuleObject *m, 
             if (xrst.size()) {
                 ret += "(";
             }
-            ret += "(~async_reset && i_nrst == 1'b0)";
+            ret += "(~async_reset && ";
+            ret += m->getResetPort()->getName() + " == ";
+            if (!m->getResetActive()) {
+                ret += "1'b0";
+            } else {
+                ret += "1'b1";
+            }
+            ret += ")";
             if (xrst.size()) {
                 ret += " || " + xrst + ")";
             }

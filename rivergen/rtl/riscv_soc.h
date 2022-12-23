@@ -34,7 +34,6 @@ class riscv_soc : public ModuleObject {
     riscv_soc(GenObject *parent, const char *name);
 
     virtual GenObject *getResetPort() override { return &i_sys_nrst; }
-    //virtual bool getResetActive() override { return true; }
     virtual bool isTop() override { return true; }
 
     class CombProcess : public ProcObject {

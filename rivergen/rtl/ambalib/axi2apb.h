@@ -31,11 +31,13 @@ class axi2apb : public ModuleObject {
      public:
         CombProcess(GenObject *parent) :
             ProcObject(parent, "comb"),
+            iselidx("0", "iselidx", this),
             vapbi(this, "", "vapbi", "CFG_BUS1_PSLV_TOTAL"),
             vapbo(this, "", "vapbo", "ADD(CFG_BUS1_PSLV_TOTAL,1)") {
         }
 
      public:
+        I32D iselidx;
         TStructArray<types_amba::apb_in_type> vapbi;
         TStructArray<types_amba::apb_out_type> vapbo;
     };

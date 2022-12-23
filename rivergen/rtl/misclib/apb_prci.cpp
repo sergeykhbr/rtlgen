@@ -73,10 +73,6 @@ apb_prci::apb_prci(GenObject *parent, const char *name) :
     proc_comb();
 }
 
-GenObject *apb_prci::getResetPort() {
-    return &i_pwrreset;
-}
-
 void apb_prci::proc_comb() {
     SETVAL(sys_rst, OR3(i_pwrreset, INV(i_sys_locked), i_dmireset));
     SETVAL(sys_nrst, INV(OR3(i_pwrreset, INV(i_sys_locked), i_dmireset)));

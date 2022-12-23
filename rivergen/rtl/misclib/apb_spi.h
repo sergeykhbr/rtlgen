@@ -81,6 +81,7 @@ class apb_spi : public ModuleObject {
     OutPort o_miso;
     InPort i_mosi;
     InPort i_detected;
+    InPort i_protect;
     
     ParamI32D fifosz;
     TextLine _state0_;
@@ -96,6 +97,7 @@ class apb_spi : public ModuleObject {
     RegSignal scaler;
     RegSignal scaler_cnt;
     RegSignal level;
+    RegSignal cs;
 
     WireArray<RegSignal> rx_fifo;
     WireArray<RegSignal> tx_fifo;

@@ -90,8 +90,9 @@ class types_bus1 : public FileObject {
             prci(this, "prci", "1, PRCI 4KB"),
             dmi(this, "dmi", "2, dmi 4KB. TODO: change base address"),
             gpio(this, "gpio", "3, GPIO 4KB"),
-            ddr(this, "ddr", "4, DDR MGMT 4KB"),
-            pnp(this, "pnp", "5, Plug'n'Play 4KB") {
+            spi(this, "spi", "4, SPI SD-card 4KB"),
+            ddr(this, "ddr", "5, DDR MGMT 4KB"),
+            pnp(this, "pnp", "6, Plug'n'Play 4KB") {
 
             uart1.addr_start.setStrValue("0x0000010010000");
             uart1.addr_end.setStrValue(  "0x0000010011000");
@@ -104,6 +105,9 @@ class types_bus1 : public FileObject {
 
             gpio.addr_start.setStrValue( "0x0000010060000");
             gpio.addr_end.setStrValue(   "0x0000010061000");
+
+            spi.addr_start.setStrValue( "0x0000010070000");
+            spi.addr_end.setStrValue(   "0x0000010071000");
 
             ddr.addr_start.setStrValue(  "0x00000100C0000");
             ddr.addr_end.setStrValue(    "0x00000100C1000");
@@ -118,8 +122,9 @@ class types_bus1 : public FileObject {
             case 1: ret = &prci; break;
             case 2: ret = &dmi; break;
             case 3: ret = &gpio; break;
-            case 4: ret = &ddr; break;
-            case 5: ret = &pnp; break;
+            case 4: ret = &spi; break;
+            case 5: ret = &ddr; break;
+            case 6: ret = &pnp; break;
             default: ret = &pnp;
             }
             return ret;
@@ -129,6 +134,7 @@ class types_bus1 : public FileObject {
         mapinfo_type prci;
         mapinfo_type dmi;
         mapinfo_type gpio;
+        mapinfo_type spi;
         mapinfo_type ddr;
         mapinfo_type pnp;
     };
@@ -148,10 +154,12 @@ class types_bus1 : public FileObject {
     TextLine _pslv8_;
     ParamI32D CFG_BUS1_PSLV_GPIO;
     TextLine _pslv9_;
+    ParamI32D CFG_BUS1_PSLV_SPI;
+    TextLine _pslv10_;
     ParamI32D CFG_BUS1_PSLV_DDR;
-    TextLine _xslv10_;
+    TextLine _xslv11_;
     ParamI32D CFG_BUS1_PSLV_PNP;
-    TextLine _pslv11_;
+    TextLine _pslv12_;
     ParamI32D CFG_BUS1_PSLV_TOTAL;
     TextLine _vec0_;
     bus1_apb_in_vector bus1_apb_in_vector_def_;

@@ -101,6 +101,7 @@ void axi2apb::proc_comb() {
     SETARRITEM(comb.vapbo, bus1->CFG_BUS1_PSLV_TOTAL, comb.vapbo->prdata, ALLONES());
     SETZERO(w_req_ready);
     SETZERO(pvalid);
+    SETVAL(comb.iselidx, TO_INT(selidx));
 
 TEXT();
     SWITCH(state);
@@ -143,13 +144,13 @@ TEXT();
         SETVAL(state, State_access);
         ENDCASE();
     CASE (State_access);
-        SETVAL(pslverr, ARRITEM(comb.vapbo, selidx, comb.vapbo->pslverr));
-        IF (NZ(ARRITEM(comb.vapbo, selidx, comb.vapbo->pready)));
+        SETVAL(pslverr, ARRITEM(comb.vapbo, comb.iselidx, comb.vapbo->pslverr));
+        IF (NZ(ARRITEM(comb.vapbo, comb.iselidx, comb.vapbo->pready)));
             SETZERO(penable);
             IF (EZ(BIT(paddr, 2)));
-                SETVAL(prdata, CC2(BITS(prdata, 63, 32), ARRITEM(comb.vapbo, selidx, comb.vapbo->prdata)));
+                SETVAL(prdata, CC2(BITS(prdata, 63, 32), ARRITEM(comb.vapbo, comb.iselidx, comb.vapbo->prdata)));
             ELSE();
-                SETVAL(prdata, CC2(ARRITEM(comb.vapbo, selidx, comb.vapbo->prdata),
+                SETVAL(prdata, CC2(ARRITEM(comb.vapbo, comb.iselidx, comb.vapbo->prdata),
                                    BITS(prdata, 31, 0)));
             ENDIF();
             IF (GT(size, CONST("4", 8)));
@@ -176,13 +177,13 @@ TEXT();
     ENDSWITCH();
 
 TEXT();
-    SETARRITEM(comb.vapbi, selidx, comb.vapbi->paddr, paddr);
-    SETARRITEM(comb.vapbi, selidx, comb.vapbi->pwrite, pwrite);
-    SETARRITEM(comb.vapbi, selidx, comb.vapbi->pwdata, BITS(pwdata, 31, 0));
-    SETARRITEM(comb.vapbi, selidx, comb.vapbi->pstrb, BITS(pstrb, 3, 0));
-    SETARRITEM(comb.vapbi, selidx, comb.vapbi->pselx, pselx);
-    SETARRITEM(comb.vapbi, selidx, comb.vapbi->penable, penable);
-    SETARRITEM(comb.vapbi, selidx, comb.vapbi->pprot, pprot);
+    SETARRITEM(comb.vapbi, comb.iselidx, comb.vapbi->paddr, paddr);
+    SETARRITEM(comb.vapbi, comb.iselidx, comb.vapbi->pwrite, pwrite);
+    SETARRITEM(comb.vapbi, comb.iselidx, comb.vapbi->pwdata, BITS(pwdata, 31, 0));
+    SETARRITEM(comb.vapbi, comb.iselidx, comb.vapbi->pstrb, BITS(pstrb, 3, 0));
+    SETARRITEM(comb.vapbi, comb.iselidx, comb.vapbi->pselx, pselx);
+    SETARRITEM(comb.vapbi, comb.iselidx, comb.vapbi->penable, penable);
+    SETARRITEM(comb.vapbi, comb.iselidx, comb.vapbi->pprot, pprot);
 
 
 TEXT();

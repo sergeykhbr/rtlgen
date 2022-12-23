@@ -26,6 +26,9 @@ class apb_prci : public ModuleObject {
  public:
     apb_prci(GenObject *parent, const char *name);
 
+    virtual GenObject *getResetPort() override { return &i_pwrreset; }
+    virtual bool getResetActive() override { return true; }
+
     class CombProcess : public ProcObject {
      public:
         CombProcess(GenObject *parent) :
@@ -38,8 +41,6 @@ class apb_prci : public ModuleObject {
     };
 
     void proc_comb();
-
-    virtual GenObject *getResetPort() override ;
 
  public:
     // io:
