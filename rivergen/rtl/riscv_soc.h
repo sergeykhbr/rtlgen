@@ -22,6 +22,7 @@
 #include "ambalib/types_bus1.h"
 #include "ambalib/axi2apb.h"
 #include "misclib/apb_uart.h"
+#include "misclib/apb_spi.h"
 #include "riverlib/river_cfg.h"
 #include "riverlib/types_river.h"
 #include "riverlib/river_amba.h"
@@ -91,6 +92,13 @@ public:
     TextLine _uart1_;
     InPort i_uart1_rd;
     OutPort o_uart1_td;
+    TextLine _spi0_;
+    OutPort o_spi_cs;
+    OutPort o_spi_sclk;
+    OutPort o_spi_miso;
+    InPort i_spi_mosi;
+    InPort i_sd_detected;
+    InPort i_sd_protect;
     TextLine _prci0_;
     OutPort o_dmreset;
     OutStruct<types_amba::mapinfo_type> o_prci_pmapinfo;
@@ -152,9 +160,12 @@ public:
     ParamI32D SOC_PNP_PBRIDGE0;
     ParamI32D SOC_PNP_DMI;
     ParamI32D SOC_PNP_UART1;
+    ParamI32D SOC_PNP_SPI;
     ParamI32D SOC_PNP_TOTAL;
     TextLine _cfg0_;
     ParamI32D CFG_SOC_UART1_LOG2_FIFOSZ;
+    TextLine _cfg1_;
+    ParamI32D CFG_SOC_SPI0_LOG2_FIFOSZ;
     TextLine _plic0_;
     TextLine _plic1_;
     TextLine _plic2_;
@@ -189,6 +200,7 @@ public:
     // Sub-module instances:
     axi2apb apbrdg0;
     apb_uart uart1;
+    apb_spi spi0;
     Workgroup group0;
     // process
     CombProcess comb;

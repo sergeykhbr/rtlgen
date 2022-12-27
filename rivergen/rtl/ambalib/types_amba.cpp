@@ -77,6 +77,8 @@ types_amba::types_amba(GenObject *parent) :
     OPTIMITECH_PRCI(this, "16", "OPTIMITECH_PRCI", "0x0087"),
     _didslv14_(this, "DDR controller status registers"),
     OPTIMITECH_DDRCTRL(this, "16", "OPTIMITECH_DDRCTRL", "0x0088"),
+    _didslv15_(this, "SPI controller (SD-card in SPI mode)"),
+    OPTIMITECH_SPI(this, "16", "OPTIMITECH_SPI", "0x0089"),
     _pnpcfg0_(this),
     _pnpcfg1_(this, "Plug'n'Play descriptor localparams."),
     _pnpcfg2_(this, "Undefined type of the descriptor (empty device)."),

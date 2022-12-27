@@ -19,6 +19,7 @@
 #include <api.h>
 #include "../ambalib/types_amba.h"
 #include "../ambalib/apb_slv.h"
+#include "sfifo.h"
 
 using namespace sysvc;
 
@@ -30,45 +31,34 @@ class apb_spi : public ModuleObject {
      public:
         CombProcess(GenObject *parent) :
             ProcObject(parent, "comb"),
-            vb_rdata(this, "vb_rdata", "32"),
-            vb_tx_wr_cnt_next(this, "vb_tx_wr_cnt_next", "log2_fifosz"),
-            v_tx_fifo_full(this, "v_tx_fifo_full", "1"),
-            v_tx_fifo_empty(this, "v_tx_fifo_empty", "1"),
-            vb_tx_fifo_rdata(this, "vb_tx_fifo_rdata", "8"),
-            v_tx_fifo_we(this, "v_tx_fifo_we", "1"),
-            vb_rx_wr_cnt_next(this, "vb_rx_wr_cnt_next", "log2_fifosz"),
-            v_rx_fifo_full(this, "v_rx_fifo_full", "1"),
-            v_rx_fifo_empty(this, "v_rx_fifo_empty", "1"),
-            vb_rx_fifo_rdata(this, "vb_rx_fifo_rdata", "8"),
-            v_rx_fifo_we(this, "v_rx_fifo_we", "1"),
-            v_rx_fifo_re(this, "v_rx_fifo_re", "1"),
-            v_negedge_flag(this, "v_negedge_flag", "1"),
-            v_posedge_flag(this, "v_posedge_flag", "1"),
-            v_par(this, "par", "1") {
+            v_posedge(this, "v_posedge", "1"),
+            v_negedge(this, "v_negedge", "1"),
+            v_txfifo_re(this, "v_txfifo_re", "1"),
+            v_txfifo_we(this, "v_txfifo_we", "1"),
+            vb_txfifo_wdata(this, "vb_txfifo_wdata", "8"),
+            v_rxfifo_re(this, "v_rxfifo_re", "1"),
+            v_rxfifo_we(this, "v_rxfifo_we", "1"),
+            vb_rxfifo_wdata(this, "vb_rxfifo_wdata", "8"),
+            vb_rdata(this, "vb_rdata", "32") {
         }
 
      public:
+        Logic v_posedge;
+        Logic v_negedge;
+        Logic v_txfifo_re;
+        Logic v_txfifo_we;
+        Logic vb_txfifo_wdata;
+        Logic v_rxfifo_re;
+        Logic v_rxfifo_we;
+        Logic vb_rxfifo_wdata;
         Logic vb_rdata;
-        Logic vb_tx_wr_cnt_next;
-        Logic v_tx_fifo_full;
-        Logic v_tx_fifo_empty;
-        Logic vb_tx_fifo_rdata;
-        Logic v_tx_fifo_we;
-        Logic vb_rx_wr_cnt_next;
-        Logic v_rx_fifo_full;
-        Logic v_rx_fifo_empty;
-        Logic vb_rx_fifo_rdata;
-        Logic v_rx_fifo_we;
-        Logic v_rx_fifo_re;
-        Logic v_negedge_flag;
-        Logic v_posedge_flag;
-        Logic v_par;
     };
 
     void proc_comb();
 
  public:
     TmplParamI32D log2_fifosz;
+    ParamI32D fifo_dbits;
     // io:
     InPort i_clk;
     InPort i_nrst;
@@ -83,7 +73,6 @@ class apb_spi : public ModuleObject {
     InPort i_detected;
     InPort i_protect;
     
-    ParamI32D fifosz;
     TextLine _state0_;
     ParamLogic idle;
     ParamLogic send_data;
@@ -94,17 +83,37 @@ class apb_spi : public ModuleObject {
     Signal w_req_write;
     Signal wb_req_wdata;
 
+    TextLine _rx0_;
+    Signal wb_rxfifo_thresh;
+    Signal w_rxfifo_we;
+    Signal wb_rxfifo_wdata;
+    Signal w_rxfifo_re;
+    Signal wb_rxfifo_rdata;
+    Signal w_rxfifo_full;
+    Signal w_rxfifo_empty;
+    Signal w_rxfifo_less;
+    Signal w_rxfifo_greater;
+
+    TextLine _tx0_;
+    Signal wb_txfifo_thresh;
+    Signal w_txfifo_we;
+    Signal wb_txfifo_wdata;
+    Signal w_txfifo_re;
+    Signal wb_txfifo_rdata;
+    Signal w_txfifo_full;
+    Signal w_txfifo_empty;
+    Signal w_txfifo_less;
+    Signal w_txfifo_greater;
+
     RegSignal scaler;
     RegSignal scaler_cnt;
+    RegSignal generate_crc;
     RegSignal level;
     RegSignal cs;
 
-    WireArray<RegSignal> rx_fifo;
-    WireArray<RegSignal> tx_fifo;
 
     RegSignal state;
-    RegSignal wr_cnt;
-    RegSignal rd_cnt;
+    RegSignal ena_byte_cnt;
     RegSignal bit_cnt;
     RegSignal tx_shift;
     RegSignal rx_shift;
@@ -116,6 +125,8 @@ class apb_spi : public ModuleObject {
     CombProcess comb;
 
     apb_slv pslv0;
+    sfifo rxfifo;
+    sfifo txfifo;
 };
 
 class apb_spi_file : public FileObject {

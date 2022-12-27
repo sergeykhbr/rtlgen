@@ -41,6 +41,13 @@ riscv_soc::riscv_soc(GenObject *parent, const char *name) :
     _uart1_(this, "UART1 signals"),
     i_uart1_rd(this, "i_uart1_rd", "1"),
     o_uart1_td(this, "o_uart1_td", "1"),
+    _spi0_(this, "SPI SD-card signals:"),
+    o_spi_cs(this, "o_spi_cs", "1"),
+    o_spi_sclk(this, "o_spi_sclk", "1"),
+    o_spi_miso(this, "o_spi_miso", "1"),
+    i_spi_mosi(this, "i_spi_mosi", "1"),
+    i_sd_detected(this, "i_sd_detected", "1", "SD-card detected"),
+    i_sd_protect(this, "i_sd_protect", "1", "SD-card write protect"),
     _prci0_(this, "PLL and Reset interfaces:"),
     o_dmreset(this, "o_dmreset", "1", "Debug reset request. Everything except DMI."),
     o_prci_pmapinfo(this, "o_prci_pmapinfo", "PRCI mapping information"),
@@ -71,9 +78,12 @@ riscv_soc::riscv_soc(GenObject *parent, const char *name) :
     SOC_PNP_PBRIDGE0(this, "SOC_PNP_PBRIDGE0", "9"),
     SOC_PNP_DMI(this, "SOC_PNP_DMI", "10"),
     SOC_PNP_UART1(this, "SOC_PNP_UART1", "11"),
-    SOC_PNP_TOTAL(this, "SOC_PNP_TOTAL", "12"),
+    SOC_PNP_SPI(this, "SOC_PNP_SPI", "12"),
+    SOC_PNP_TOTAL(this, "SOC_PNP_TOTAL", "13"),
     _cfg0_(this),
     CFG_SOC_UART1_LOG2_FIFOSZ(this, "CFG_SOC_UART1_LOG2_FIFOSZ", "4"),
+    _cfg1_(this),
+    CFG_SOC_SPI0_LOG2_FIFOSZ(this, "CFG_SOC_SPI0_LOG2_FIFOSZ", "9"),
     _plic0_(this),
     _plic1_(this, "Number of contexts in PLIC controller."),
     _plic2_(this, "Example FU740: S7 Core0 (M) + 4xU74 Cores (M+S)."),
@@ -106,6 +116,7 @@ riscv_soc::riscv_soc(GenObject *parent, const char *name) :
     // submodules:
     apbrdg0(this, "apbrdg0"),
     uart1(this, "uart1"),
+    spi0(this, "spi0"),
     group0(this, "group0"),
     comb(this)
 {
@@ -169,6 +180,22 @@ riscv_soc::riscv_soc(GenObject *parent, const char *name) :
         CONNECT(uart1, 0, uart1.i_rd, i_uart1_rd);
         CONNECT(uart1, 0, uart1.o_td, o_uart1_td);
         CONNECT(uart1, 0, uart1.o_irq, w_irq_uart1);
+    ENDNEW();
+
+    spi0.log2_fifosz.setObjValue(&CFG_SOC_SPI0_LOG2_FIFOSZ);
+    NEW(spi0, spi0.getName().c_str());
+        CONNECT(spi0, 0, spi0.i_clk, i_sys_clk);
+        CONNECT(spi0, 0, spi0.i_nrst, i_sys_nrst);
+        CONNECT(spi0, 0, spi0.i_mapinfo, ARRITEM(bus1_mapinfo, glob_bus1_cfg_->CFG_BUS1_PSLV_SPI, bus1_mapinfo));
+        CONNECT(spi0, 0, spi0.o_cfg, ARRITEM(dev_pnp, SOC_PNP_SPI, dev_pnp));
+        CONNECT(spi0, 0, spi0.i_apbi, ARRITEM(apbi, glob_bus1_cfg_->CFG_BUS1_PSLV_SPI, apbi));
+        CONNECT(spi0, 0, spi0.o_apbo, ARRITEM(apbo, glob_bus1_cfg_->CFG_BUS1_PSLV_SPI, apbo));
+        CONNECT(spi0, 0, spi0.o_cs, o_spi_cs);
+        CONNECT(spi0, 0, spi0.o_sclk, o_spi_sclk);
+        CONNECT(spi0, 0, spi0.o_miso, o_spi_miso);
+        CONNECT(spi0, 0, spi0.i_mosi, i_spi_mosi);
+        CONNECT(spi0, 0, spi0.i_detected, i_sd_detected);
+        CONNECT(spi0, 0, spi0.i_protect, i_sd_protect);
     ENDNEW();
 
     Operation::start(&comb);

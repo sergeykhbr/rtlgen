@@ -19,6 +19,7 @@
 apb_spi::apb_spi(GenObject *parent, const char *name) :
     ModuleObject(parent, "apb_spi", name),
     log2_fifosz(this, "log2_fifosz", "9"),
+    fifo_dbits(this, "fifo_dbits", "8"),
     i_clk(this, "i_clk", "1", "CPU clock"),
     i_nrst(this, "i_nrst", "1", "Reset: active LOW"),
     i_mapinfo(this, "i_mapinfo", "interconnect slot information"),
@@ -32,7 +33,6 @@ apb_spi::apb_spi(GenObject *parent, const char *name) :
     i_detected(this, "i_detected", "1"),
     i_protect(this, "i_protect", "1"),
     // params
-    fifosz(this, "fifosz", "POW2(1,log2_fifosz)"),
     _state0_(this, "SPI states"),
     idle(this, "2", "idle", "0"),
     send_data(this, "2", "send_data", "1"),
@@ -42,31 +42,51 @@ apb_spi::apb_spi(GenObject *parent, const char *name) :
     wb_req_addr(this, "wb_req_addr", "32"),
     w_req_write(this, "w_req_write", "1"),
     wb_req_wdata(this, "wb_req_wdata", "32"),
+    _rx0_(this, "Rx FIFO signals:"),
+    wb_rxfifo_thresh(this, "wb_rxfifo_thresh", "log2_fifosz"),
+    w_rxfifo_we(this, "w_rxfifo_we", "1"),
+    wb_rxfifo_wdata(this, "wb_rxfifo_wdata", "8"),
+    w_rxfifo_re(this, "w_rxfifo_re", "1"),
+    wb_rxfifo_rdata(this, "wb_rxfifo_rdata", "8"),
+    w_rxfifo_full(this, "w_rxfifo_full", "1"),
+    w_rxfifo_empty(this, "w_rxfifo_empty", "1"),
+    w_rxfifo_less(this, "w_rxfifo_less", "1"),
+    w_rxfifo_greater(this, "w_rxfifo_greater", "1"),
+    _tx0_(this, "Tx FIFO signals:"),
+    wb_txfifo_thresh(this, "wb_txfifo_thresh", "log2_fifosz"),
+    w_txfifo_we(this, "w_txfifo_we", "1"),
+    wb_txfifo_wdata(this, "wb_txfifo_wdata", "8"),
+    w_txfifo_re(this, "w_txfifo_re", "1"),
+    wb_txfifo_rdata(this, "wb_txfifo_rdata", "8"),
+    w_txfifo_full(this, "w_txfifo_full", "1"),
+    w_txfifo_empty(this, "w_txfifo_empty", "1"),
+    w_txfifo_less(this, "w_txfifo_less", "1"),
+    w_txfifo_greater(this, "w_txfifo_greater", "1"),
     // registers
     scaler(this, "scaler", "32"),
     scaler_cnt(this, "scaler_cnt", "32"),
+    generate_crc(this, "generate_crc", "1"),
     level(this, "level", "1", "1"),
     cs(this, "cs", "1"),
-    rx_fifo(this, "rx_fifo", "8", "fifosz", true),
-    tx_fifo(this, "tx_fifo", "8", "fifosz", true),
     state(this, "state", "2", "idle"),
-    wr_cnt(this, "wr_cnt", "log2_fifosz"),
-    rd_cnt(this, "rd_cnt", "log2_fifosz"),
+    ena_byte_cnt(this, "ena_byte_cnt", "16"),
     bit_cnt(this, "bit_cnt", "3"),
     tx_shift(this, "tx_shift", "8", "-1"),
     rx_shift(this, "rx_shift", "8"),
-    spi_resp(this, "rx_shift", "8"),
+    spi_resp(this, "spi_resp", "8"),
     resp_valid(this, "resp_valid", "1"),
     resp_rdata(this, "resp_rdata", "32"),
     resp_err(this, "resp_err", "1"),
     //
     comb(this),
-    pslv0(this, "pslv0")
+    pslv0(this, "pslv0"),
+    rxfifo(this, "rxfifo"),
+    txfifo(this, "txfifo")
 {
     Operation::start(this);
 
     pslv0.vid.setObjValue(&glob_types_amba_->VENDOR_OPTIMITECH);
-    pslv0.did.setObjValue(&glob_types_amba_->OPTIMITECH_UART);
+    pslv0.did.setObjValue(&glob_types_amba_->OPTIMITECH_SPI);
     NEW(pslv0, pslv0.getName().c_str());
         CONNECT(pslv0, 0, pslv0.i_clk, i_clk);
         CONNECT(pslv0, 0, pslv0.i_nrst, i_nrst);
@@ -83,47 +103,51 @@ apb_spi::apb_spi(GenObject *parent, const char *name) :
         CONNECT(pslv0, 0, pslv0.i_resp_err, resp_err);
     ENDNEW();
 
+    rxfifo.dbits.setObjValue(&fifo_dbits);
+    rxfifo.log2_depth.setObjValue(&log2_fifosz);
+    NEW(rxfifo, rxfifo.getName().c_str());
+        CONNECT(rxfifo, 0, rxfifo.i_clk, i_clk);
+        CONNECT(rxfifo, 0, rxfifo.i_nrst, i_nrst);
+        CONNECT(rxfifo, 0, rxfifo.i_thresh, wb_rxfifo_thresh);
+        CONNECT(rxfifo, 0, rxfifo.i_we, w_rxfifo_we);
+        CONNECT(rxfifo, 0, rxfifo.i_wdata, wb_rxfifo_wdata);
+        CONNECT(rxfifo, 0, rxfifo.i_re, w_rxfifo_re);
+        CONNECT(rxfifo, 0, rxfifo.o_rdata, wb_rxfifo_rdata);
+        CONNECT(rxfifo, 0, rxfifo.o_full, w_rxfifo_full);
+        CONNECT(rxfifo, 0, rxfifo.o_empty, w_rxfifo_empty);
+        CONNECT(rxfifo, 0, rxfifo.o_less, w_rxfifo_less);
+        CONNECT(rxfifo, 0, rxfifo.o_greater, w_rxfifo_greater);
+    ENDNEW();
+
+    txfifo.dbits.setObjValue(&fifo_dbits);
+    txfifo.log2_depth.setObjValue(&log2_fifosz);
+    NEW(txfifo, txfifo.getName().c_str());
+        CONNECT(txfifo, 0, txfifo.i_clk, i_clk);
+        CONNECT(txfifo, 0, txfifo.i_nrst, i_nrst);
+        CONNECT(txfifo, 0, txfifo.i_thresh, wb_txfifo_thresh);
+        CONNECT(txfifo, 0, txfifo.i_we, w_txfifo_we);
+        CONNECT(txfifo, 0, txfifo.i_wdata, wb_txfifo_wdata);
+        CONNECT(txfifo, 0, txfifo.i_re, w_txfifo_re);
+        CONNECT(txfifo, 0, txfifo.o_rdata, wb_txfifo_rdata);
+        CONNECT(txfifo, 0, txfifo.o_full, w_txfifo_full);
+        CONNECT(txfifo, 0, txfifo.o_empty, w_txfifo_empty);
+        CONNECT(txfifo, 0, txfifo.o_less, w_txfifo_less);
+        CONNECT(txfifo, 0, txfifo.o_greater, w_txfifo_greater);
+    ENDNEW();
+
     Operation::start(&comb);
     proc_comb();
 }
 
 void apb_spi::proc_comb() {
-    //SETVAL(comb.vb_rx_fifo_rdata, ARRITEM(rx_fifo, TO_INT(rx_rd_cnt), rx_fifo));
-    //SETVAL(comb.vb_tx_fifo_rdata, ARRITEM(tx_fifo, TO_INT(tx_rd_cnt), tx_fifo));
-
-TEXT();
-    TEXT("Transmitter's FIFO:");
-    SETVAL(comb.vb_tx_wr_cnt_next, INC(wr_cnt));
-    IF (EQ(comb.vb_tx_wr_cnt_next, rd_cnt));
-        SETONE(comb.v_tx_fifo_full);
-    ENDIF();
-
-    TEXT();
-    IF (EQ(rd_cnt, wr_cnt));
-        SETONE(comb.v_tx_fifo_empty);
-        SETZERO(bit_cnt);
-    ENDIF();
-
-    TEXT("Receiver's FIFO:");
-//    SETVAL(comb.vb_rx_wr_cnt_next, INC(rx_wr_cnt));
-    //IF (EQ(comb.vb_rx_wr_cnt_next, rx_rd_cnt));
-        //SETONE(comb.v_rx_fifo_full);
-    //ENDIF();
- 
-    //TEXT();
-    //IF (EQ(rx_rd_cnt, rx_wr_cnt));
-        //SETONE(comb.v_rx_fifo_empty);
-        //SETZERO(rx_byte_cnt);
-    //ENDIF();
-
 TEXT();
     TEXT("system bus clock scaler to baudrate:");
     IF (NZ(scaler));
         IF (EQ(scaler_cnt, DEC(scaler)));
             SETZERO(scaler_cnt);
             SETVAL(level, INV(level));
-            SETVAL(comb.v_posedge_flag, INV(level));
-            SETVAL(comb.v_negedge_flag, (level));
+            SETVAL(comb.v_posedge, INV(level));
+            SETVAL(comb.v_negedge, (level));
         ELSE();
             SETVAL(scaler_cnt, INC(scaler_cnt));
         ENDIF();
@@ -131,14 +155,15 @@ TEXT();
 
 TEXT();
     TEXT("Transmitter's state machine:");
-    IF (NZ(comb.v_posedge_flag));
+    IF (NZ(comb.v_posedge));
         SWITCH (state);
         CASE(idle);
-            IF (EZ(comb.v_tx_fifo_empty));
-                SETVAL(tx_shift, comb.vb_tx_fifo_rdata);
+            IF (NZ(ena_byte_cnt));
+                SETONE(comb.v_txfifo_re);
+                SETVAL(tx_shift, wb_txfifo_rdata);
                 SETVAL(state, send_data);
-                SETVAL(rd_cnt, INC(rd_cnt));
                 SETVAL(bit_cnt, CONST("7"));
+                SETVAL(ena_byte_cnt, DEC(ena_byte_cnt));
                 SETONE(cs);
             ELSE();
                 SETVAL(tx_shift, ALLONES());
@@ -171,35 +196,42 @@ TEXT();
 TEXT();
     TEXT("Registers access:");
     SWITCH (BITS(wb_req_addr, 11, 2));
-    CASE (CONST("0", 10), "0x00: txdata");
-        SETBIT(comb.vb_rdata, 31, comb.v_tx_fifo_full);
-        IF (NZ(w_req_valid));
-            IF (NZ(w_req_write));
-                SETVAL(comb.v_tx_fifo_we, INV_L(comb.v_tx_fifo_full));
-            ENDIF();
-        ENDIF();
-        ENDCASE();
-    CASE (CONST("1", 10), "0x04: rxdata");
-        SETBIT(comb.vb_rdata, 31, comb.v_rx_fifo_empty);
-        SETBITS(comb.vb_rdata, 7, 0, comb.vb_rx_fifo_rdata); 
-        IF (NZ(w_req_valid));
-            IF (NZ(w_req_write));
-                TEXT("do nothing:");
-            ELSE();
-                SETVAL(comb.v_rx_fifo_re, INV(comb.v_rx_fifo_empty));
-            ENDIF();
-        ENDIF();
-        ENDCASE();
-    CASE (CONST("2", 10), "0x08: txctrl");
-        SETBIT(comb.vb_rdata, 0, i_detected, "[0] sd card inserted");
-        SETBIT(comb.vb_rdata, 1, i_protect, "[1] write protect");
-        SETBITS(comb.vb_rdata, 5,4, state, "[5:4] state machine");
-        ENDCASE();
-    CASE (CONST("6", 10), "0x18: scaler");
+    CASE (CONST("0x0", 10), "0x00: sckdiv");
         SETVAL(comb.vb_rdata, scaler);
         IF (AND2(NZ(w_req_valid), NZ(w_req_write)));
             SETVAL(scaler, BITS(wb_req_wdata, 30, 0));
             SETZERO(scaler_cnt);
+        ENDIF();
+        ENDCASE();
+    CASE (CONST("0x11", 10), "0x44: reserved 4 (txctrl)");
+        SETBIT(comb.vb_rdata, 0, i_detected, "[0] sd card inserted");
+        SETBIT(comb.vb_rdata, 1, i_protect, "[1] write protect");
+        SETBITS(comb.vb_rdata, 5, 4, state, "[5:4] state machine");
+        SETBIT(comb.vb_rdata, 7, generate_crc, "[7] Compute and generate CRC as the last Tx byte");
+        SETBITS(comb.vb_rdata, 31, 16, ena_byte_cnt, "[31:16] Number of bytes to transmit");
+        IF (AND2(NZ(w_req_valid), NZ(w_req_write)));
+            SETVAL(generate_crc, BIT(wb_req_wdata, 7));
+            SETVAL(ena_byte_cnt, BITS(wb_req_wdata, 31, 16));
+        ENDIF();
+        ENDCASE();
+    CASE (CONST("0x12", 10), "0x48: Tx FIFO Data");
+        SETBIT(comb.vb_rdata, 31, w_txfifo_full);
+        IF (NZ(w_req_valid));
+            IF (NZ(w_req_write));
+                SETVAL(comb.v_txfifo_we, CONST("1", 1));
+                SETVAL(comb.vb_txfifo_wdata, BITS(wb_req_wdata, 7, 0));
+            ENDIF();
+        ENDIF();
+        ENDCASE();
+    CASE (CONST("0x13", 10), "0x4C: Rx FIFO Data");
+        SETBITS(comb.vb_rdata, 7, 0, wb_rxfifo_rdata); 
+        SETBIT(comb.vb_rdata, 31, w_rxfifo_empty);
+        IF (NZ(w_req_valid));
+            IF (NZ(w_req_write));
+                TEXT("do nothing:");
+            ELSE();
+                SETVAL(comb.v_rxfifo_re, CONST("1", 1));
+            ENDIF();
         ENDIF();
         ENDCASE();
     CASEDEF();
@@ -207,19 +239,16 @@ TEXT();
     ENDSWITCH();
 
 TEXT();
-    IF (NZ(comb.v_rx_fifo_we));
-        //SETVAL(rx_wr_cnt, INC(rx_wr_cnt));
-        //SETVAL(rx_byte_cnt, INC(rx_byte_cnt));
-        //SETARRITEM(rx_fifo, TO_INT(rx_wr_cnt), rx_fifo, BITS(rx_shift, 7, 0));
-    ELSIF (NZ(comb.v_rx_fifo_re));
-        //SETVAL(rx_rd_cnt, INC(rx_rd_cnt));
-        //SETVAL(rx_byte_cnt, DEC(rx_byte_cnt));
-    ENDIF();
-    IF (NZ(comb.v_tx_fifo_we));
-        SETVAL(wr_cnt, INC(wr_cnt));
-        SETARRITEM(tx_fifo, TO_INT(wr_cnt), tx_fifo, BITS(wb_req_wdata, 7, 0));
-    ENDIF();
+    SETVAL(wb_rxfifo_thresh, CONST("0"));
+    SETVAL(w_rxfifo_we, comb.v_rxfifo_we);
+    SETVAL(wb_rxfifo_wdata, comb.vb_rxfifo_wdata);
+    SETVAL(w_rxfifo_re, comb.v_rxfifo_re);
 
+TEXT();
+    SETVAL(wb_txfifo_thresh, CONST("0"));
+    SETVAL(w_txfifo_we, comb.v_txfifo_we);
+    SETVAL(wb_txfifo_wdata, comb.vb_txfifo_wdata);
+    SETVAL(w_txfifo_re, comb.v_txfifo_re);
 
 TEXT();
     SETVAL(resp_valid, w_req_valid);

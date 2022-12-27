@@ -89,8 +89,8 @@ class types_bus1 : public FileObject {
             uart1(this, "uart1", "0, uart1 4KB"),
             prci(this, "prci", "1, PRCI 4KB"),
             dmi(this, "dmi", "2, dmi 4KB. TODO: change base address"),
-            gpio(this, "gpio", "3, GPIO 4KB"),
             spi(this, "spi", "4, SPI SD-card 4KB"),
+            gpio(this, "gpio", "3, GPIO 4KB"),
             ddr(this, "ddr", "5, DDR MGMT 4KB"),
             pnp(this, "pnp", "6, Plug'n'Play 4KB") {
 
@@ -103,11 +103,11 @@ class types_bus1 : public FileObject {
             dmi.addr_start.setStrValue(  "0x000001001E000");
             dmi.addr_end.setStrValue(    "0x000001001F000");
 
+            spi.addr_start.setStrValue(  "0x0000010050000");
+            spi.addr_end.setStrValue(    "0x0000010051000");
+
             gpio.addr_start.setStrValue( "0x0000010060000");
             gpio.addr_end.setStrValue(   "0x0000010061000");
-
-            spi.addr_start.setStrValue( "0x0000010070000");
-            spi.addr_end.setStrValue(   "0x0000010071000");
 
             ddr.addr_start.setStrValue(  "0x00000100C0000");
             ddr.addr_end.setStrValue(    "0x00000100C1000");
@@ -121,8 +121,8 @@ class types_bus1 : public FileObject {
             case 0: ret = &uart1; break;
             case 1: ret = &prci; break;
             case 2: ret = &dmi; break;
-            case 3: ret = &gpio; break;
-            case 4: ret = &spi; break;
+            case 3: ret = &spi; break;
+            case 4: ret = &gpio; break;
             case 5: ret = &ddr; break;
             case 6: ret = &pnp; break;
             default: ret = &pnp;
@@ -133,8 +133,8 @@ class types_bus1 : public FileObject {
         mapinfo_type uart1;
         mapinfo_type prci;
         mapinfo_type dmi;
-        mapinfo_type gpio;
         mapinfo_type spi;
+        mapinfo_type gpio;
         mapinfo_type ddr;
         mapinfo_type pnp;
     };
