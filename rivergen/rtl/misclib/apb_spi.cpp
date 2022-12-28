@@ -35,8 +35,9 @@ apb_spi::apb_spi(GenObject *parent, const char *name) :
     // params
     _state0_(this, "SPI states"),
     idle(this, "2", "idle", "0"),
-    send_data(this, "2", "send_data", "1"),
-    receive_data(this, "2", "receive_data", "2"),
+    wait_edge(this, "2", "wait_edge", "1"),
+    send_data(this, "2", "send_data", "2"),
+    ending(this, "2", "ending", "3"),
     // signals
     w_req_valid(this, "w_req_valid", "1"),
     wb_req_addr(this, "wb_req_addr", "32"),
@@ -71,8 +72,11 @@ apb_spi::apb_spi(GenObject *parent, const char *name) :
     state(this, "state", "2", "idle"),
     ena_byte_cnt(this, "ena_byte_cnt", "16"),
     bit_cnt(this, "bit_cnt", "3"),
+    tx_val(this, "tx_val", "8"),
     tx_shift(this, "tx_shift", "8", "-1"),
     rx_shift(this, "rx_shift", "8"),
+    rx_ready(this, "rx_ready", "1"),
+    crc7(this, "crc7", "8"),
     spi_resp(this, "spi_resp", "8"),
     resp_valid(this, "resp_valid", "1"),
     resp_rdata(this, "resp_rdata", "32"),
@@ -140,6 +144,17 @@ apb_spi::apb_spi(GenObject *parent, const char *name) :
 }
 
 void apb_spi::proc_comb() {
+    SETVAL(comb.v_xor7, XOR2(BIT(crc7, 0), BIT(tx_shift, 7)));
+    SETBIT(comb.vb_crc7, 0, BIT(crc7, 1));
+    SETBIT(comb.vb_crc7, 1, BIT(crc7, 2));
+    SETBIT(comb.vb_crc7, 2, BIT(crc7, 3));
+    SETBIT(comb.vb_crc7, 3, BIT(crc7, 4));
+    SETBIT(comb.vb_crc7, 4, XOR2(BIT(crc7, 5), comb.v_xor7));
+    SETBIT(comb.vb_crc7, 5, BIT(crc7, 6));
+    SETBIT(comb.vb_crc7, 6, BIT(crc7, 7));
+    SETBIT(comb.vb_crc7, 7, comb.v_xor7);
+
+
 TEXT();
     TEXT("system bus clock scaler to baudrate:");
     IF (NZ(scaler));
@@ -154,44 +169,78 @@ TEXT();
     ENDIF();
 
 TEXT();
-    TEXT("Transmitter's state machine:");
+    IF (AND2(NZ(comb.v_negedge), NZ(cs)));
+        SETVAL(tx_shift, CC2(BITS(tx_shift, 6, 0), CONST("1", 1)));
+        IF (NZ(bit_cnt));
+            SETVAL(bit_cnt, DEC(bit_cnt));
+        ELSE();
+            SETZERO(cs);
+        ENDIF();
+    ENDIF();
+
+TEXT();
     IF (NZ(comb.v_posedge));
-        SWITCH (state);
-        CASE(idle);
+        IF (NZ(rx_ready));
+            SETZERO(rx_ready);
+            SETONE(comb.v_rxfifo_we);
+            SETVAL(comb.vb_rxfifo_wdata, rx_shift);
+            SETZERO(rx_shift);
+        ENDIF();
+
+        TEXT();
+        IF (NZ(cs));
+            SETVAL(rx_shift, CC2(BITS(rx_shift, 6, 0), i_mosi));
+            SETVAL(crc7, comb.vb_crc7);
+        ENDIF();
+    ENDIF();
+
+TEXT();
+    TEXT("Transmitter's state machine:");
+    SWITCH (state);
+    CASE(idle);
+        IF (NZ(ena_byte_cnt));
+            SETONE(comb.v_txfifo_re);
+            SETVAL(tx_val, wb_txfifo_rdata);
+            SETVAL(state, wait_edge);
+            SETVAL(ena_byte_cnt, DEC(ena_byte_cnt));
+            SETVAL(crc7, ALLONES());
+        ELSE();
+            SETVAL(tx_val, ALLONES());
+        ENDIF();
+        ENDCASE();
+    CASE(wait_edge);
+        IF(NZ(comb.v_negedge));
+            SETONE(cs);
+            SETVAL(bit_cnt, CONST("7"));
+            SETVAL(tx_shift, tx_val);
+            SETVAL(state, send_data);
+        ENDIF();
+        ENDCASE();
+    CASE(send_data);
+        IF(AND2(EZ(bit_cnt), NZ(comb.v_posedge)));
             IF (NZ(ena_byte_cnt));
                 SETONE(comb.v_txfifo_re);
-                SETVAL(tx_shift, wb_txfifo_rdata);
-                SETVAL(state, send_data);
-                SETVAL(bit_cnt, CONST("7"));
+                SETVAL(tx_val, wb_txfifo_rdata);
+                SETVAL(state, wait_edge);
                 SETVAL(ena_byte_cnt, DEC(ena_byte_cnt));
-                SETONE(cs);
+            ELSIF(NZ(generate_crc));
+                SETVAL(tx_val, CC2(BITS(comb.vb_crc7, 7, 1), CONST("1", 1)));
+                SETZERO(generate_crc);
+                SETVAL(state, wait_edge);
             ELSE();
-                SETVAL(tx_shift, ALLONES());
+                SETVAL(state, ending);
             ENDIF();
-            ENDCASE();
-        CASE(send_data);
-            IF(EZ(bit_cnt));
-                SETVAL(state, receive_data);
-                SETVAL(bit_cnt, CONST("7"));
-            ENDIF();
-            ENDCASE();
-        CASE (receive_data);
-            IF(EZ(BITS(bit_cnt, 2, 0)));
-                SETVAL(state, idle);
-                SETVAL(spi_resp, rx_shift);
-            ENDIF();
-            ENDCASE();
-        CASEDEF();
-            ENDCASE();
-        ENDSWITCH();
-        
-        TEXT();
-        IF (NE(state, idle));
-            SETVAL(bit_cnt, INC(bit_cnt));
-            SETVAL(tx_shift, CC2(BITS(tx_shift, 7, 1), CONST("1", 1)));
+            SETONE(rx_ready);
         ENDIF();
-    ENDIF("posedge");
-
+        ENDCASE();
+    CASE (ending);
+        IF(EZ(cs));
+            SETVAL(state, idle);
+        ENDIF();
+        ENDCASE();
+    CASEDEF();
+        ENDCASE();
+    ENDSWITCH();
 
 TEXT();
     TEXT("Registers access:");
@@ -261,4 +310,5 @@ TEXT();
 TEXT();
     SETVAL(o_sclk, level);
     SETVAL(o_miso, BIT(tx_shift, 7));
+    SETVAL(o_cs, cs);
 }

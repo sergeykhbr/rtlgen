@@ -39,6 +39,8 @@ class apb_spi : public ModuleObject {
             v_rxfifo_re(this, "v_rxfifo_re", "1"),
             v_rxfifo_we(this, "v_rxfifo_we", "1"),
             vb_rxfifo_wdata(this, "vb_rxfifo_wdata", "8"),
+            v_xor7(this, "v_xor7", "1"),
+            vb_crc7(this, "vb_crc", "8"),
             vb_rdata(this, "vb_rdata", "32") {
         }
 
@@ -51,6 +53,8 @@ class apb_spi : public ModuleObject {
         Logic v_rxfifo_re;
         Logic v_rxfifo_we;
         Logic vb_rxfifo_wdata;
+        Logic v_xor7;
+        Logic vb_crc7;
         Logic vb_rdata;
     };
 
@@ -75,8 +79,9 @@ class apb_spi : public ModuleObject {
     
     TextLine _state0_;
     ParamLogic idle;
+    ParamLogic wait_edge;
     ParamLogic send_data;
-    ParamLogic receive_data;
+    ParamLogic ending;
 
     Signal w_req_valid;
     Signal wb_req_addr;
@@ -115,8 +120,11 @@ class apb_spi : public ModuleObject {
     RegSignal state;
     RegSignal ena_byte_cnt;
     RegSignal bit_cnt;
+    RegSignal tx_val;
     RegSignal tx_shift;
     RegSignal rx_shift;
+    RegSignal rx_ready;
+    RegSignal crc7;
     RegSignal spi_resp;
     RegSignal resp_valid;
     RegSignal resp_rdata;
