@@ -39,8 +39,8 @@ class apb_spi : public ModuleObject {
             v_rxfifo_re(this, "v_rxfifo_re", "1"),
             v_rxfifo_we(this, "v_rxfifo_we", "1"),
             vb_rxfifo_wdata(this, "vb_rxfifo_wdata", "8"),
-            v_xor7(this, "v_xor7", "1"),
-            vb_crc7(this, "vb_crc", "8"),
+            v_inv7(this, "v_inv7", "1"),
+            vb_crc7(this, "vb_crc", "7"),
             vb_rdata(this, "vb_rdata", "32") {
         }
 
@@ -53,7 +53,7 @@ class apb_spi : public ModuleObject {
         Logic v_rxfifo_re;
         Logic v_rxfifo_we;
         Logic vb_rxfifo_wdata;
-        Logic v_xor7;
+        Logic v_inv7;
         Logic vb_crc7;
         Logic vb_rdata;
     };

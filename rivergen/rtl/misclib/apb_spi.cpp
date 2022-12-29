@@ -76,7 +76,7 @@ apb_spi::apb_spi(GenObject *parent, const char *name) :
     tx_shift(this, "tx_shift", "8", "-1"),
     rx_shift(this, "rx_shift", "8"),
     rx_ready(this, "rx_ready", "1"),
-    crc7(this, "crc7", "8"),
+    crc7(this, "crc7", "7"),
     spi_resp(this, "spi_resp", "8"),
     resp_valid(this, "resp_valid", "1"),
     resp_rdata(this, "resp_rdata", "32"),
@@ -144,15 +144,15 @@ apb_spi::apb_spi(GenObject *parent, const char *name) :
 }
 
 void apb_spi::proc_comb() {
-    SETVAL(comb.v_xor7, XOR2(BIT(crc7, 0), BIT(tx_shift, 7)));
-    SETBIT(comb.vb_crc7, 0, BIT(crc7, 1));
-    SETBIT(comb.vb_crc7, 1, BIT(crc7, 2));
-    SETBIT(comb.vb_crc7, 2, BIT(crc7, 3));
-    SETBIT(comb.vb_crc7, 3, BIT(crc7, 4));
-    SETBIT(comb.vb_crc7, 4, XOR2(BIT(crc7, 5), comb.v_xor7));
-    SETBIT(comb.vb_crc7, 5, BIT(crc7, 6));
-    SETBIT(comb.vb_crc7, 6, BIT(crc7, 7));
-    SETBIT(comb.vb_crc7, 7, comb.v_xor7);
+    TEXT("CRC7 = x^7 + x^3 + 1");
+    SETVAL(comb.v_inv7, XOR2(BIT(crc7, 6), BIT(tx_shift, 7)));
+    SETBIT(comb.vb_crc7, 6, BIT(crc7, 5));
+    SETBIT(comb.vb_crc7, 5, BIT(crc7, 4));
+    SETBIT(comb.vb_crc7, 4, BIT(crc7, 3));
+    SETBIT(comb.vb_crc7, 3, XOR2(BIT(crc7, 2), comb.v_inv7));
+    SETBIT(comb.vb_crc7, 2, BIT(crc7, 1));
+    SETBIT(comb.vb_crc7, 1, BIT(crc7, 0));
+    SETBIT(comb.vb_crc7, 0, comb.v_inv7);
 
 
 TEXT();
@@ -200,10 +200,14 @@ TEXT();
     CASE(idle);
         IF (NZ(ena_byte_cnt));
             SETONE(comb.v_txfifo_re);
-            SETVAL(tx_val, wb_txfifo_rdata);
+            IF (NZ(w_txfifo_empty));
+                SETVAL(tx_val, ALLONES());
+            ELSE();
+                SETVAL(tx_val, wb_txfifo_rdata);
+            ENDIF();
             SETVAL(state, wait_edge);
             SETVAL(ena_byte_cnt, DEC(ena_byte_cnt));
-            SETVAL(crc7, ALLONES());
+            SETVAL(crc7, ALLZEROS());
         ELSE();
             SETVAL(tx_val, ALLONES());
         ENDIF();
@@ -220,11 +224,15 @@ TEXT();
         IF(AND2(EZ(bit_cnt), NZ(comb.v_posedge)));
             IF (NZ(ena_byte_cnt));
                 SETONE(comb.v_txfifo_re);
-                SETVAL(tx_val, wb_txfifo_rdata);
+                IF (NZ(w_txfifo_empty));
+                    SETVAL(tx_val, ALLONES());
+                ELSE();
+                    SETVAL(tx_val, wb_txfifo_rdata);
+                ENDIF();
                 SETVAL(state, wait_edge);
                 SETVAL(ena_byte_cnt, DEC(ena_byte_cnt));
             ELSIF(NZ(generate_crc));
-                SETVAL(tx_val, CC2(BITS(comb.vb_crc7, 7, 1), CONST("1", 1)));
+                SETVAL(tx_val, CC2(comb.vb_crc7, CONST("1", 1)));
                 SETZERO(generate_crc);
                 SETVAL(state, wait_edge);
             ELSE();
@@ -310,5 +318,5 @@ TEXT();
 TEXT();
     SETVAL(o_sclk, level);
     SETVAL(o_miso, BIT(tx_shift, 7));
-    SETVAL(o_cs, cs);
+    SETVAL(o_cs, INV(cs));
 }
