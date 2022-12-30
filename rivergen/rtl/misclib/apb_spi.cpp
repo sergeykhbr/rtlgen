@@ -263,6 +263,7 @@ TEXT();
     CASE (CONST("0x11", 10), "0x44: reserved 4 (txctrl)");
         SETBIT(comb.vb_rdata, 0, i_detected, "[0] sd card inserted");
         SETBIT(comb.vb_rdata, 1, i_protect, "[1] write protect");
+        SETBIT(comb.vb_rdata, 2, i_mosi, "[2] mosi data bit");
         SETBITS(comb.vb_rdata, 5, 4, state, "[5:4] state machine");
         SETBIT(comb.vb_rdata, 7, generate_crc, "[7] Compute and generate CRC as the last Tx byte");
         SETBITS(comb.vb_rdata, 31, 16, ena_byte_cnt, "[31:16] Number of bytes to transmit");

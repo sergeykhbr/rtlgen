@@ -440,11 +440,9 @@ class types_amba : public FileObject {
     TextLine _didmst6_;
     ParamLogic RISCV_RIVER_WORKGROUP;
     TextLine _didmst7_;
-    ParamLogic RISCV_WASSERFALL_DMI;
-    TextLine _didmst8_;
     ParamLogic GNSSSENSOR_UART_TAP;
-    TextLine _didmst9_;
-    ParamLogic OPTIMITECH_JTAG_DMI;
+    TextLine _didmst8_;
+    ParamLogic OPTIMITECH_JTAG_SBA;
     TextLine _didslv0_;
     TextLine _didslv1_;
     TextLine _didslv2_;
@@ -475,6 +473,8 @@ class types_amba : public FileObject {
     ParamLogic OPTIMITECH_DDRCTRL;
     TextLine _didslv15_;
     ParamLogic OPTIMITECH_SPI;
+    TextLine _didslv16_;
+    ParamLogic OPTIMITECH_RIVER_DMI;
     TextLine _pnpcfg0_;
     TextLine _pnpcfg1_;
     TextLine _pnpcfg2_;

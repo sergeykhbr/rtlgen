@@ -185,7 +185,7 @@ void dmidebug::proc_comb() {
     SETVAL(comb.vcfg.addr_start, i_mapinfo.addr_start);
     SETVAL(comb.vcfg.addr_end, i_mapinfo.addr_end);
     SETVAL(comb.vcfg.vid, amba->VENDOR_OPTIMITECH);
-    SETVAL(comb.vcfg.did, amba->OPTIMITECH_JTAG_DMI);
+    SETVAL(comb.vcfg.did, amba->OPTIMITECH_RIVER_DMI);
 
 TEXT();
     SETVAL(comb.vb_hartselnext, BITS(wdata, DEC(ADD2(CONST("16"), cfg->CFG_LOG2_CPU_MAX)), CONST("16")));
