@@ -20,6 +20,7 @@
 #include "sfifo.h"
 #include "apb_prci.h"
 #include "apb_uart.h"
+#include "apb_gpio.h"
 #include "apb_ddr.h"
 #include "apb_spi.h"
 
@@ -30,6 +31,7 @@ class misclib_folder : public FolderObject {
         sfifo_file_(this),
         apb_prci_file_(this),
         apb_uart_file_(this),
+        apb_gpio_file_(this),
         apb_ddr_file_(this),
         apb_spi_file_(this) {}
 
@@ -39,6 +41,7 @@ class misclib_folder : public FolderObject {
     sfifo_file sfifo_file_;
     apb_prci_file apb_prci_file_;
     apb_uart_file apb_uart_file_;
+    apb_gpio_file apb_gpio_file_;
     apb_ddr_file apb_ddr_file_;
     apb_spi_file apb_spi_file_;
 };
