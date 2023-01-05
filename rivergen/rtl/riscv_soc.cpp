@@ -83,6 +83,8 @@ riscv_soc::riscv_soc(GenObject *parent, const char *name) :
     _cfg0_(this),
     CFG_SOC_UART1_LOG2_FIFOSZ(this, "CFG_SOC_UART1_LOG2_FIFOSZ", "4"),
     _cfg1_(this),
+    CFG_SOC_GPIO0_WIDTH(this, "CFG_SOC_GPIO0_WIDTH", "12"),
+    _cfg2_(this),
     CFG_SOC_SPI0_LOG2_FIFOSZ(this, "CFG_SOC_SPI0_LOG2_FIFOSZ", "9"),
     _plic0_(this),
     _plic1_(this, "Number of contexts in PLIC controller."),
@@ -110,12 +112,13 @@ riscv_soc::riscv_soc(GenObject *parent, const char *name) :
     wb_plic_meip(this, "wb_plic_meip", "CFG_CPU_MAX"),
     wb_plic_seip(this, "wb_plic_seip", "CFG_CPU_MAX"),
     w_irq_uart1(this, "w_irq_uart1", "1"),
-    wb_irq_gpio(this, "wb_irq_gpio", "16"),
+    wb_irq_gpio(this, "wb_irq_gpio", "CFG_SOC_GPIO0_WIDTH"),
     w_irq_pnp(this, "w_irq_pnp", "1"),
     wb_ext_irqs(this, "wb_ext_irqs", "CFG_PLIC_IRQ_TOTAL"),
     // submodules:
     apbrdg0(this, "apbrdg0"),
     uart1(this, "uart1"),
+    gpio0(this, "gpio0"),
     spi0(this, "spi0"),
     group0(this, "group0"),
     comb(this)
@@ -182,6 +185,20 @@ riscv_soc::riscv_soc(GenObject *parent, const char *name) :
         CONNECT(uart1, 0, uart1.o_irq, w_irq_uart1);
     ENDNEW();
 
+    gpio0.width.setObjValue(&CFG_SOC_GPIO0_WIDTH);
+    NEW(gpio0, gpio0.getName().c_str());
+        CONNECT(gpio0, 0, gpio0.i_clk, i_sys_clk);
+        CONNECT(gpio0, 0, gpio0.i_nrst, i_sys_nrst);
+        CONNECT(gpio0, 0, gpio0.i_mapinfo, ARRITEM(bus1_mapinfo, glob_bus1_cfg_->CFG_BUS1_PSLV_GPIO, bus1_mapinfo));
+        CONNECT(gpio0, 0, gpio0.o_cfg, ARRITEM(dev_pnp, SOC_PNP_GPIO, dev_pnp));
+        CONNECT(gpio0, 0, gpio0.i_apbi, ARRITEM(apbi, glob_bus1_cfg_->CFG_BUS1_PSLV_GPIO, apbi));
+        CONNECT(gpio0, 0, gpio0.o_apbo, ARRITEM(apbo, glob_bus1_cfg_->CFG_BUS1_PSLV_GPIO, apbo));
+        CONNECT(gpio0, 0, gpio0.i_gpio, i_gpio);
+        CONNECT(gpio0, 0, gpio0.o_gpio_dir, o_gpio_dir);
+        CONNECT(gpio0, 0, gpio0.o_gpio, o_gpio);
+        CONNECT(gpio0, 0, gpio0.o_irq, wb_irq_gpio);
+    ENDNEW();
+
     spi0.log2_fifosz.setObjValue(&CFG_SOC_SPI0_LOG2_FIFOSZ);
     NEW(spi0, spi0.getName().c_str());
         CONNECT(spi0, 0, spi0.i_clk, i_sys_clk);
@@ -210,7 +227,9 @@ void riscv_soc::proc_comb() {
     TEXT();
     TEXT("assign interrupts:");
     SETBITS(comb.vb_ext_irqs, 22, 0, ALLZEROS());
-    SETBITS(comb.vb_ext_irqs, 38, 23, wb_irq_gpio, "FU740: 16 bits, current 12-bits");
+    SETBITS(comb.vb_ext_irqs, DEC(ADD2(CONST("23"), CFG_SOC_GPIO0_WIDTH)),
+                              CONST("23"),
+                              wb_irq_gpio, "FU740: 16 bits, current 12-bits");
     SETBIT(comb.vb_ext_irqs, 39, w_irq_uart1);
     SETBITS(comb.vb_ext_irqs, 69, 40, ALLZEROS());
     SETBIT(comb.vb_ext_irqs, 70, w_irq_pnp);

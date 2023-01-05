@@ -22,6 +22,7 @@
 #include "ambalib/types_bus1.h"
 #include "ambalib/axi2apb.h"
 #include "misclib/apb_uart.h"
+#include "misclib/apb_gpio.h"
 #include "misclib/apb_spi.h"
 #include "riverlib/river_cfg.h"
 #include "riverlib/types_river.h"
@@ -165,6 +166,8 @@ public:
     TextLine _cfg0_;
     ParamI32D CFG_SOC_UART1_LOG2_FIFOSZ;
     TextLine _cfg1_;
+    ParamI32D CFG_SOC_GPIO0_WIDTH;
+    TextLine _cfg2_;
     ParamI32D CFG_SOC_SPI0_LOG2_FIFOSZ;
     TextLine _plic0_;
     TextLine _plic1_;
@@ -200,6 +203,7 @@ public:
     // Sub-module instances:
     axi2apb apbrdg0;
     apb_uart uart1;
+    apb_gpio gpio0;
     apb_spi spi0;
     Workgroup group0;
     // process
