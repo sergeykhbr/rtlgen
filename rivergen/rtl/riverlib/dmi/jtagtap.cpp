@@ -102,6 +102,7 @@ TEXT();
 TEXT();
     SWITCH (state);
     CASE(RESET_TAP);
+        SETVAL(ir, IR_IDCODE);
         IF (NZ(i_tms));
             SETVAL(state, RESET_TAP);
         ELSE();
