@@ -28,15 +28,11 @@ class sfifo : public ModuleObject {
      public:
         CombProcess(GenObject *parent) :
             ProcObject(parent, "comb"),
-            v_less(this, "v_less", "1"),
-            v_greater(this, "v_greater", "1"),
             v_full(this, "v_full", "1"),
             v_empty(this, "v_empty", "1") {
         }
 
      public:
-        Logic v_less;
-        Logic v_greater;
         Logic v_full;
         Logic v_empty;
     };
@@ -49,15 +45,11 @@ class sfifo : public ModuleObject {
     // io:
     InPort i_clk;
     InPort i_nrst;
-    InPort i_thresh;
     InPort i_we;
     InPort i_wdata;
     InPort i_re;
     OutPort o_rdata;
-    OutPort o_full;
-    OutPort o_empty;
-    OutPort o_less;
-    OutPort o_greater;
+    OutPort o_count;
 
     ParamI32D DEPTH;
 

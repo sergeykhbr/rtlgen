@@ -22,15 +22,11 @@ sfifo::sfifo(GenObject *parent, const char *name) :
     log2_depth(this, "log2_depth", "4", "Fifo depth"),
     i_clk(this, "i_clk", "1", "CPU clock"),
     i_nrst(this, "i_nrst", "1", "Reset: active LOW"),
-    i_thresh(this, "i_thresh", "log2_depth", "Threshold to generate less/greater signals"),
     i_we(this, "i_we", "1"),
     i_wdata(this, "i_wdata", "dbits"),
     i_re(this, "i_re", "1"),
     o_rdata(this, "o_rdata", "dbits"),
-    o_full(this, "o_full", "1"),
-    o_empty(this, "o_empty", "1"),
-    o_less(this, "o_less", "1"),
-    o_greater(this, "o_greater", "1"),
+    o_count(this, "o_count", "log2_depth", "Number of words in FIFO"),
     // params
     DEPTH(this, "DEPTH", "POW2(1,log2_depth)"),
     // signals
@@ -50,16 +46,7 @@ sfifo::sfifo(GenObject *parent, const char *name) :
 
 void sfifo::proc_comb() {
 TEXT();
-    TEXT("Check FIFOs counters with thresholds:");
-    IF (LS(total_cnt, i_thresh));
-        SETONE(comb.v_less);
-    ENDIF();
-
-    TEXT();
-    IF (GT(total_cnt, i_thresh));
-        SETONE(comb.v_greater);
-    ENDIF();
-
+    TEXT("Check FIFO counter:");
     TEXT();
     IF (EZ(total_cnt));
         SETONE(comb.v_empty);
@@ -93,8 +80,5 @@ TEXT();
 
 TEXT();
     SETVAL(o_rdata, ARRITEM(databuf, TO_INT(rd_cnt), databuf));
-    SETVAL(o_full, comb.v_full);
-    SETVAL(o_empty, comb.v_empty);
-    SETVAL(o_less, comb.v_less);
-    SETVAL(o_greater, comb.v_greater);
+    SETVAL(o_count, total_cnt);
 }

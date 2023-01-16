@@ -40,7 +40,9 @@ class apb_spi : public ModuleObject {
             v_rxfifo_we(this, "v_rxfifo_we", "1"),
             vb_rxfifo_wdata(this, "vb_rxfifo_wdata", "8"),
             v_inv7(this, "v_inv7", "1"),
-            vb_crc7(this, "vb_crc", "7"),
+            vb_crc7(this, "vb_crc7", "7"),
+            v_inv16(this, "v_inv16", "1"),
+            vb_crc16(this, "vb_crc16", "16"),
             vb_rdata(this, "vb_rdata", "32") {
         }
 
@@ -55,6 +57,8 @@ class apb_spi : public ModuleObject {
         Logic vb_rxfifo_wdata;
         Logic v_inv7;
         Logic vb_crc7;
+        Logic v_inv16;
+        Logic vb_crc16;
         Logic vb_rdata;
     };
 
@@ -89,26 +93,18 @@ class apb_spi : public ModuleObject {
     Signal wb_req_wdata;
 
     TextLine _rx0_;
-    Signal wb_rxfifo_thresh;
     Signal w_rxfifo_we;
     Signal wb_rxfifo_wdata;
     Signal w_rxfifo_re;
     Signal wb_rxfifo_rdata;
-    Signal w_rxfifo_full;
-    Signal w_rxfifo_empty;
-    Signal w_rxfifo_less;
-    Signal w_rxfifo_greater;
+    Signal wb_rxfifo_count;
 
     TextLine _tx0_;
-    Signal wb_txfifo_thresh;
     Signal w_txfifo_we;
     Signal wb_txfifo_wdata;
     Signal w_txfifo_re;
     Signal wb_txfifo_rdata;
-    Signal w_txfifo_full;
-    Signal w_txfifo_empty;
-    Signal w_txfifo_less;
-    Signal w_txfifo_greater;
+    Signal wb_txfifo_count;
 
     RegSignal scaler;
     RegSignal scaler_cnt;
@@ -125,7 +121,10 @@ class apb_spi : public ModuleObject {
     RegSignal rx_shift;
     RegSignal rx_ready;
     RegSignal crc7;
+    RegSignal crc16;
     RegSignal spi_resp;
+    RegSignal txmark;
+    RegSignal rxmark;
     RegSignal resp_valid;
     RegSignal resp_rdata;
     RegSignal resp_err;
