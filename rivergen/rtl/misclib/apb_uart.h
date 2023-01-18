@@ -81,6 +81,7 @@ class apb_uart : public ModuleObject {
     OutPort o_irq;
 
     ParamI32D fifosz;
+    ParamI32D speedup_rate;
     TextLine _state0_;
     ParamLogic idle;
     ParamLogic startbit;

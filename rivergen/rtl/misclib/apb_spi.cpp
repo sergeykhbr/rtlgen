@@ -28,8 +28,8 @@ apb_spi::apb_spi(GenObject *parent, const char *name) :
     o_apbo(this, "o_apbo", "APB Bridge to Slave interface"),
     o_cs(this, "o_cs", "1"),
     o_sclk(this, "o_sclk", "1"),
-    o_miso(this, "o_miso", "1"),
-    i_mosi(this, "i_mosi", "1"),
+    o_mosi(this, "o_mosi", "1"),
+    i_miso(this, "i_miso", "1"),
     i_detected(this, "i_detected", "1"),
     i_protect(this, "i_protect", "1"),
     // params
@@ -48,13 +48,13 @@ apb_spi::apb_spi(GenObject *parent, const char *name) :
     wb_rxfifo_wdata(this, "wb_rxfifo_wdata", "8"),
     w_rxfifo_re(this, "w_rxfifo_re", "1"),
     wb_rxfifo_rdata(this, "wb_rxfifo_rdata", "8"),
-    wb_rxfifo_count(this, "wb_rxfifo_count", "log2_fifosz"),
+    wb_rxfifo_count(this, "wb_rxfifo_count", "ADD(log2_fifosz,1)"),
     _tx0_(this, "Tx FIFO signals:"),
     w_txfifo_we(this, "w_txfifo_we", "1"),
     wb_txfifo_wdata(this, "wb_txfifo_wdata", "8"),
     w_txfifo_re(this, "w_txfifo_re", "1"),
     wb_txfifo_rdata(this, "wb_txfifo_rdata", "8"),
-    wb_txfifo_count(this, "wb_txfifo_count", "log2_fifosz"),
+    wb_txfifo_count(this, "wb_txfifo_count", "ADD(log2_fifosz,1)"),
     // registers
     scaler(this, "scaler", "32"),
     scaler_cnt(this, "scaler_cnt", "32"),
@@ -142,7 +142,7 @@ void apb_spi::proc_comb() {
     SETBIT(comb.vb_crc7, 0, comb.v_inv7);
 
     TEXT("CRC16 = x^16 + x^12 + x^5 + 1");
-    SETVAL(comb.v_inv16, XOR2(BIT(crc16, 15), i_mosi));
+    SETVAL(comb.v_inv16, XOR2(BIT(crc16, 15), i_miso));
     SETBIT(comb.vb_crc16, 15, BIT(crc16, 14));
     SETBIT(comb.vb_crc16, 14, BIT(crc16, 13));
     SETBIT(comb.vb_crc16, 13, BIT(crc16, 12));
@@ -195,7 +195,7 @@ TEXT();
 
         TEXT();
         IF (NZ(cs));
-            SETVAL(rx_shift, CC2(BITS(rx_shift, 6, 0), i_mosi));
+            SETVAL(rx_shift, CC2(BITS(rx_shift, 6, 0), i_miso));
             SETVAL(crc7, comb.vb_crc7);
             SETVAL(crc16, comb.vb_crc16);
         ENDIF();
@@ -272,7 +272,7 @@ TEXT();
     CASE (CONST("0x11", 10), "0x44: reserved 4 (txctrl)");
         SETBIT(comb.vb_rdata, 0, i_detected, "[0] sd card inserted");
         SETBIT(comb.vb_rdata, 1, i_protect, "[1] write protect");
-        SETBIT(comb.vb_rdata, 2, i_mosi, "[2] mosi data bit");
+        SETBIT(comb.vb_rdata, 2, i_miso, "[2] miso data bit");
         SETBITS(comb.vb_rdata, 5, 4, state, "[5:4] state machine");
         SETBIT(comb.vb_rdata, 7, generate_crc, "[7] Compute and generate CRC as the last Tx byte");
         SETBITS(comb.vb_rdata, 31, 16, ena_byte_cnt, "[31:16] Number of bytes to transmit");
@@ -349,6 +349,6 @@ TEXT();
 
 TEXT();
     SETVAL(o_sclk, AND2_L(level, cs));
-    SETVAL(o_miso, BIT(tx_shift, 7));
+    SETVAL(o_mosi, BIT(tx_shift, 7));
     SETVAL(o_cs, INV(cs));
 }

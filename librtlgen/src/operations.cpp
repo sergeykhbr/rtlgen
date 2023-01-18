@@ -2983,6 +2983,7 @@ std::string NEW_gen_sv(Operation *op, ModuleObject *mod, std::string name) {
 std::string NEW_gen(GenObject **args) {
     std::string ret = "";
     std::string ln = "";
+    std::string lasttmpl = "";
     std::string idx = "";
     int tcnt = 0;
     std::string name = Operation::obj2varname(args[2]);
@@ -3022,12 +3023,15 @@ std::string NEW_gen(GenObject **args) {
                 }
             }
             ret += e->getStrValue();
+            lasttmpl = e->getStrValue(); // need to properly compute space value
             tcnt++;
         }
         ret += ">";
+        ln += lasttmpl + ">";
     }
 
     ret += "(";
+    ln += "(";
     if (idx.size()) {
         ret += "tstr";
     } else {
@@ -3039,11 +3043,15 @@ std::string NEW_gen(GenObject **args) {
     std::list<GenObject *>genlist;
     mod->getParamList(genlist);
     for (auto &g : genlist) {
+        ret += ",\n";
+        for (int i = 0; i <= ln.size(); i++) {
+            ret += " ";
+        }
         if (g->getObjValue()) {
             // generic parameter but with the defined string value
-            ret += ", " + g->getObjValue()->getName();
+            ret += g->getObjValue()->getName();
         } else {
-            ret += ", " + g->getName();
+            ret += g->getName();
         }
     }
     ret += ");\n";

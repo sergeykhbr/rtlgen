@@ -26,7 +26,7 @@ sfifo::sfifo(GenObject *parent, const char *name) :
     i_wdata(this, "i_wdata", "dbits"),
     i_re(this, "i_re", "1"),
     o_rdata(this, "o_rdata", "dbits"),
-    o_count(this, "o_count", "log2_depth", "Number of words in FIFO"),
+    o_count(this, "o_count", "ADD(log2_depth,1)", "Number of words in FIFO"),
     // params
     DEPTH(this, "DEPTH", "POW2(1,log2_depth)"),
     // signals
@@ -34,7 +34,7 @@ sfifo::sfifo(GenObject *parent, const char *name) :
     databuf(this, "databuf", "dbits", "DEPTH", true),
     wr_cnt(this, "wr_cnt", "log2_depth"),
     rd_cnt(this, "rd_cnt", "log2_depth"),
-    total_cnt(this, "total_cnt", "log2_depth"),
+    total_cnt(this, "total_cnt", "ADD(log2_depth,1)"),
     //
     comb(this)
 {
@@ -53,9 +53,7 @@ TEXT();
     ENDIF();
 
     TEXT();
-    IF (EQ(total_cnt, DEC(DEPTH)));
-        SETONE(comb.v_full);
-    ENDIF();
+    SETVAL(comb.v_full, BIT(total_cnt, log2_depth));
 
 
 TEXT();

@@ -44,8 +44,8 @@ riscv_soc::riscv_soc(GenObject *parent, const char *name) :
     _spi0_(this, "SPI SD-card signals:"),
     o_spi_cs(this, "o_spi_cs", "1"),
     o_spi_sclk(this, "o_spi_sclk", "1"),
-    o_spi_miso(this, "o_spi_miso", "1"),
-    i_spi_mosi(this, "i_spi_mosi", "1"),
+    o_spi_mosi(this, "o_spi_mosi", "1", "SPI: Master Output Slave Input"),
+    i_spi_miso(this, "i_spi_miso", "1", "SPI: Master Input Slave Output"),
     i_sd_detected(this, "i_sd_detected", "1", "SD-card detected"),
     i_sd_protect(this, "i_sd_protect", "1", "SD-card write protect"),
     _prci0_(this, "PLL and Reset interfaces:"),
@@ -173,6 +173,7 @@ riscv_soc::riscv_soc(GenObject *parent, const char *name) :
     ENDNEW();
 
     uart1.log2_fifosz.setObjValue(&CFG_SOC_UART1_LOG2_FIFOSZ);
+    uart1.speedup_rate.setObjValue(&prj_cfg_->CFG_UART_SPEED_UP_RATE);
     NEW(uart1, uart1.getName().c_str());
         CONNECT(uart1, 0, uart1.i_clk, i_sys_clk);
         CONNECT(uart1, 0, uart1.i_nrst, i_sys_nrst);
@@ -209,8 +210,8 @@ riscv_soc::riscv_soc(GenObject *parent, const char *name) :
         CONNECT(spi0, 0, spi0.o_apbo, ARRITEM(apbo, glob_bus1_cfg_->CFG_BUS1_PSLV_SPI, apbo));
         CONNECT(spi0, 0, spi0.o_cs, o_spi_cs);
         CONNECT(spi0, 0, spi0.o_sclk, o_spi_sclk);
-        CONNECT(spi0, 0, spi0.o_miso, o_spi_miso);
-        CONNECT(spi0, 0, spi0.i_mosi, i_spi_mosi);
+        CONNECT(spi0, 0, spi0.o_mosi, o_spi_mosi);
+        CONNECT(spi0, 0, spi0.i_miso, i_spi_miso);
         CONNECT(spi0, 0, spi0.i_detected, i_sd_detected);
         CONNECT(spi0, 0, spi0.i_protect, i_sd_protect);
     ENDNEW();

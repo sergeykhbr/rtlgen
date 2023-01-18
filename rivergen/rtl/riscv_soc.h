@@ -96,8 +96,8 @@ public:
     TextLine _spi0_;
     OutPort o_spi_cs;
     OutPort o_spi_sclk;
-    OutPort o_spi_miso;
-    InPort i_spi_mosi;
+    OutPort o_spi_mosi;
+    InPort i_spi_miso;
     InPort i_sd_detected;
     InPort i_sd_protect;
     TextLine _prci0_;

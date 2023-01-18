@@ -76,8 +76,8 @@ class apb_spi : public ModuleObject {
     OutStruct<types_amba::apb_out_type> o_apbo;
     OutPort o_cs;
     OutPort o_sclk;
-    OutPort o_miso;
-    InPort i_mosi;
+    OutPort o_mosi;
+    InPort i_miso;
     InPort i_detected;
     InPort i_protect;
     
