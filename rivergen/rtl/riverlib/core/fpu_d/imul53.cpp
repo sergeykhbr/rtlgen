@@ -27,6 +27,9 @@ imul53::imul53(GenObject *parent, const char *name) :
     o_shift(this, "o_shift", "7", "first non-zero bit index"),
     o_rdy(this, "o_rdy", "1", "delayed 'enable' signal"),
     o_overflow(this, "o_overflow", "1", "overflow flag"),
+    // signals:
+    wb_sumInv(this, "wb_sumInv", "105"),
+    wb_lshift(this, "wb_lshift", "7"),
     // registers
     delay(this, "delay", "16"),
     shift(this, "shift", "7"),
@@ -35,8 +38,17 @@ imul53::imul53(GenObject *parent, const char *name) :
     sum(this, "sum", "106"),
     overflow(this, "overflow", "1"),
     // process
-    comb(this)
+    comb(this),
+    // submodules
+    enc0(this, "enc0")
 {
+    Operation::start(this);
+
+    NEW(enc0, enc0.getName().c_str());
+        CONNECT(enc0, 0, enc0.i_value, wb_sumInv);
+        CONNECT(enc0, 0, enc0.o_shift, wb_lshift);
+    ENDNEW();
+
     Operation::start(&comb);
     proc_comb();
 }
@@ -141,21 +153,7 @@ TEXT();
     i = &FOR ("i", CONST("0"), CONST("104"), "++");
         SETBIT(comb.vb_sumInv, INC(*i), BIT(sum, SUB2(CONST("103"), *i)));
     ENDFOR();
-
-TEXT();
-    i = &FOR ("i", CONST("0"), CONST("64"), "++");
-        IF (AND2(EZ(comb.vb_lshift_p1), NZ(BIT(comb.vb_sumInv, *i))));
-            SETVAL(comb.vb_lshift_p1, *i);
-        ENDIF();
-    ENDFOR();
-
-TEXT();
-    i = &FOR ("i", CONST("0"), CONST("41"), "++");
-        IF (AND2(EZ(comb.vb_lshift_p2), NZ(BIT(comb.vb_sumInv, ADD2(CONST("64"), *i)))));
-            SETVAL(comb.vb_lshift_p2, *i);
-            SETBIT(comb.vb_lshift_p2, 6, CONST("1", 1));
-        ENDIF();
-    ENDFOR();
+    SETVAL(wb_sumInv, comb.vb_sumInv);
 
 TEXT();
     IF (NZ(BIT(sum, 105)));
@@ -163,10 +161,8 @@ TEXT();
         SETONE(overflow);
     ELSIF (NZ(BIT(sum, 104)));
         SETZERO(comb.vb_shift);
-    ELSIF (NZ(comb.vb_lshift_p1));
-        SETVAL(comb.vb_shift, comb.vb_lshift_p1);
     ELSE();
-        SETVAL(comb.vb_shift, comb.vb_lshift_p2);
+        SETVAL(comb.vb_shift, wb_lshift);
     ENDIF();
 
 TEXT();

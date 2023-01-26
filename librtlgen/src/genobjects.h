@@ -89,6 +89,7 @@ class GenObject {
     virtual bool isOutput() { return false; }
     virtual bool isVector() { return false; }
     virtual bool isGenVar() { return false; }   // I32D analog for rtl
+    virtual bool isGenerate() { return false; } // use generate instead of comb in sv and vhdl
     virtual bool isLocal();     // if parent is file then obj is global; if module obj is local
     virtual bool isTop() { return false; }
     virtual bool isInitable() { return false; } // Generate structure constructor with arguemnts to initialize all class variables

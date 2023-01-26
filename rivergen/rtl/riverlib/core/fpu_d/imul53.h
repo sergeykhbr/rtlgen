@@ -18,6 +18,7 @@
 
 #include <api.h>
 #include "../../river_cfg.h"
+#include "zeroenc.h"
 
 using namespace sysvc;
 
@@ -33,9 +34,7 @@ class imul53 : public ModuleObject {
             vb_mux(this, "vb_mux", "57", "17"),
             vb_sel(this, "vb_sel", "57"),
             vb_shift(this, "vb_shift", "7"),
-            vb_sumInv(this, "vb_sumInv", "105"),
-            vb_lshift_p1(this, "vb_lshift_p1", "7"),
-            vb_lshift_p2(this, "vb_lshift_p2", "7") {
+            vb_sumInv(this, "vb_sumInv", "105") {
         }
 
      public:
@@ -44,8 +43,6 @@ class imul53 : public ModuleObject {
         Logic vb_sel;
         Logic vb_shift;
         Logic vb_sumInv;
-        Logic vb_lshift_p1;
-        Logic vb_lshift_p2;
     };
 
     void proc_comb();
@@ -62,6 +59,9 @@ class imul53 : public ModuleObject {
     OutPort o_overflow;
 
  protected:
+    Signal wb_sumInv;
+    Signal wb_lshift;
+
     RegSignal delay;
     RegSignal shift;
     RegSignal accum_ena;
@@ -71,6 +71,8 @@ class imul53 : public ModuleObject {
 
     // process should be intialized last to make all signals available
     CombProcess comb;
+
+    zeroenc enc0;
 };
 
 class imul53_file : public FileObject {

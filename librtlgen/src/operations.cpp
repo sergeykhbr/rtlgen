@@ -2351,6 +2351,11 @@ Operation &SETARRIDX(GenObject &arr, GenObject &idx) {
 std::string SETARRITEM_gen(GenObject **args) {
     args[1]->setSelector(args[2]);
     std::string ret = Operation::addspaces();
+    if (args[5]) {
+        if (SCV_is_sv()) {
+            ret += "assign ";
+        }
+    }
     ret += Operation::obj2varname(args[3], "v");
     ret += " = ";
     ret += Operation::obj2varname(args[4]);
@@ -2368,6 +2373,19 @@ Operation &SETARRITEM(GenObject &arr, GenObject &idx, GenObject &item, GenObject
     p->add_arg(&idx);
     p->add_arg(&item);
     p->add_arg(&var);
+    p->add_arg(0);  // [5] do not use 'assign '
+    return *p;
+}
+
+Operation &ASSIGNARRITEM(GenObject &arr, GenObject &idx, GenObject &item, GenObject &var, const char *comment) {
+    Operation *p = new Operation(comment);
+    p->igen_ = SETARRITEM_gen;
+    p->add_arg(p);
+    p->add_arg(&arr);
+    p->add_arg(&idx);
+    p->add_arg(&item);
+    p->add_arg(&var);
+    p->add_arg(p);  // [5] add 'assign '
     return *p;
 }
 
@@ -2382,8 +2400,46 @@ Operation &SETARRITEM(GenObject &arr, int idx, GenObject &val) {
     p->add_arg(new I32D(tstr));
     p->add_arg(&arr);
     p->add_arg(&val);
+    p->add_arg(0);  // [5] do not use 'assign '
     return *p;
 }
+
+Operation &ASSIGNARRITEM(GenObject &arr, int idx, GenObject &val) {
+    Operation *p = new Operation("");
+    char tstr[256];
+    RISCV_sprintf(tstr, sizeof(tstr), "%d", idx);
+    p->igen_ = SETARRITEM_gen;
+    p->add_arg(p);
+    p->add_arg(&arr);
+    p->add_arg(new I32D(tstr));
+    p->add_arg(&arr);
+    p->add_arg(&val);
+    p->add_arg(p);  // [5] use 'assign '
+    return *p;
+}
+
+
+//IF_OTHERWISE
+std::string IF_OTHERWISE_gen(GenObject **args) {
+    std::string ret = "";
+    ret += Operation::obj2varname(args[1]);
+    ret += " ? ";
+    ret += Operation::obj2varname(args[2]);
+    ret += " : ";
+    ret += Operation::obj2varname(args[3]);
+    return ret;
+}
+
+Operation &IF_OTHERWISE(GenObject &cond, GenObject &a, GenObject &b, const char *comment) {
+    Operation *p = new Operation(0, comment);
+    p->igen_ = IF_OTHERWISE_gen;
+    p->add_arg(p);
+    p->add_arg(&cond);
+    p->add_arg(&a);
+    p->add_arg(&b);
+    return *p;
+}
+
 
 // IF
 std::string IF_gen(GenObject **args) {
@@ -3260,23 +3316,10 @@ std::string ASSIGN_gen(GenObject **args) {
     }
     ret += Operation::obj2varname(args[1], "v");
     ret += " = ";
-
-    /*if (SCV_is_sysc()) {
-        ret += args[1]->getStrValue();
-    } else if (SCV_is_sv()) {
-        if (args[1]->getValue() == 0
-            && args[1]->getWidth() > 1
-            && args[1]->isNumber(args[1]->getStrValue())) {
-            ret += "'0";
-        } else {
-            ret += args[1]->getStrValue();
-        }
-    } else  {
-        ret += " = (others => '0')";
-    }*/
     ret += b;
     ret +=  ";";
     ret += Operation::addtext(args[0], ret.size());
+    ret += "\n";
     return ret;
 }
 

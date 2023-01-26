@@ -354,8 +354,10 @@ std::string ModuleObject::generate_sv_mod_proc(GenObject *proc) {
     std::string ln;
     int tcnt = 0;
 
-    ret += "always_comb\n";
-    ret += "begin: " + proc->getName() + "_proc\n";
+    if (proc->isGenerate() == false) {
+        ret += "always_comb\n";
+        ret += "begin: " + proc->getName() + "_proc\n";
+    }
     
     // process variables declaration
     tcnt = 0;
@@ -445,7 +447,9 @@ std::string ModuleObject::generate_sv_mod_proc(GenObject *proc) {
     }
 
     // Generate operations:
-    Operation::set_space(1);
+    if (proc->isGenerate() == false) {
+        Operation::set_space(1);
+    }
     for (auto &e: proc->getEntries()) {
         if (e->getId() != ID_OPERATION) {
             continue;
@@ -460,7 +464,9 @@ std::string ModuleObject::generate_sv_mod_proc(GenObject *proc) {
     if (isNRegProcess()) {
         ret += Operation::copyreg("nrin", "nv", this);
     }
-    ret += "end: " + proc->getName() + "_proc\n";
+    if (proc->isGenerate() == false) {
+        ret += "end: " + proc->getName() + "_proc\n";
+    }
     ret += "\n";
     return ret;
 }

@@ -173,8 +173,11 @@ Operation &ARRITEM(GenObject &arr, int idx, GenObject &item, const char *comment
 Operation &ARRITEM(GenObject &arr, int idx);
 Operation &ARRITEM_B(GenObject &arr, GenObject &idx, GenObject &item, const char *comment="");  // .read() for signals and ports in bits operations
 Operation &SETARRITEM(GenObject &arr, GenObject &idx, GenObject &item, GenObject &val, const char *comment="");
+Operation &ASSIGNARRITEM(GenObject &arr, GenObject &idx, GenObject &item, GenObject &val, const char *comment="");
 Operation &SETARRITEM(GenObject &arr, int idx, GenObject &val);
+Operation &ASSIGNARRITEM(GenObject &arr, int idx, GenObject &val);
 Operation &SETARRIDX(GenObject &arr, GenObject &idx);
+Operation &IF_OTHERWISE(GenObject &cond, GenObject &a, GenObject &b, const char *comment="");
 
 void IF(GenObject &a, const char *comment="");
 void ELSIF(GenObject &a, const char *comment="");
