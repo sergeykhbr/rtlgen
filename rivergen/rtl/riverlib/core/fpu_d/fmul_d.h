@@ -54,7 +54,9 @@ class DoubleMul : public ModuleObject {
             nanB(this, "nanB", "1"),
             mantZeroA(this, "mantZeroA", "1"),
             mantZeroB(this, "mantZeroB", "1"),
-            res(this, "res", "64") {
+            v_res_sign(this, "v_res_sign", "1"),
+            vb_res_exp(this, "vb_res_exp", "11"),
+            vb_res_mant(this, "vb_res_mant", "52") {
         }
 
      public:
@@ -82,7 +84,9 @@ class DoubleMul : public ModuleObject {
         Logic nanB;
         Logic mantZeroA;
         Logic mantZeroB;
-        Logic res;
+        Logic v_res_sign;
+        Logic vb_res_exp;
+        Logic vb_res_mant;
     };
 
     void proc_comb();

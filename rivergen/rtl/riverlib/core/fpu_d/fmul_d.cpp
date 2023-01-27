@@ -242,49 +242,47 @@ TEXT();
 TEXT();
     TEXT("Result multiplexers:");
     IF (OR2(AND3(comb.nanA, comb.mantZeroA, zeroB), AND3(comb.nanB, comb.mantZeroB, zeroA)));
-        SETBIT(comb.res, 63, CONST("1", 1));
+        SETVAL(comb.v_res_sign, CONST("1", 1));
     ELSIF (NZ(AND2(comb.nanA, INV(comb.mantZeroA))));
         TEXT("when both values are NaN, value B has higher priority if sign=1");
-        SETBIT(comb.res, 63, OR2(comb.signA, AND2(comb.nanA, comb.signB)));
+        SETVAL(comb.v_res_sign, OR2(comb.signA, AND2(comb.nanA, comb.signB)));
     ELSIF (NZ(AND2(comb.nanB, INV(comb.mantZeroB))));
-        SETBIT(comb.res, 63, comb.signB);
+        SETVAL(comb.v_res_sign, comb.signB);
     ELSE();
-        SETBIT(comb.res, 63, XOR2(BIT(a, 63), BIT(b, 63)));
+        SETVAL(comb.v_res_sign, XOR2(BIT(a, 63), BIT(b, 63)));
     ENDIF();
 
 TEXT();
     IF (NZ(comb.nanA));
-        SETBITS(comb.res, 62, 52, BITS(a, 62, 52));
+        SETVAL(comb.vb_res_exp, BITS(a, 62, 52));
     ELSIF (NZ(comb.nanB));
-        SETBITS(comb.res, 62, 52, BITS(b, 62, 52));
+        SETVAL(comb.vb_res_exp, BITS(b, 62, 52));
     ELSIF (NZ(OR3(BIT(expAlign, 11), zeroA, zeroB)));
-        SETBITS(comb.res, 62, 52, ALLZEROS());
+        SETVAL(comb.vb_res_exp, ALLZEROS());
     ELSIF (NZ(overflow));
-        SETBITS(comb.res, 62, 52, ALLONES());
+        SETVAL(comb.vb_res_exp, ALLONES());
     ELSE();
-        SETBITS(comb.res, 62, 52, ADDx(2, &BITS(expAlign, 10, 0),
-                                          &AND3(comb.mantOnes, comb.rndBit, INV(overflow))));
+        SETVAL(comb.vb_res_exp, ADDx(2, &BITS(expAlign, 10, 0),
+                                        &AND3(comb.mantOnes, comb.rndBit, INV(overflow))));
     ENDIF();
 
 TEXT();
     IF (ORx(3, &AND3(comb.nanA, comb.mantZeroA, INV(comb.mantZeroB)),
                &AND3(comb.nanB, comb.mantZeroB, INV(comb.mantZeroA)),
                &AND3(INV(comb.nanA), INV(comb.nanB), overflow)));
-        SETBITS(comb.res, 51, 0, ALLZEROS());
+        SETVAL(comb.vb_res_mant, ALLZEROS());
     ELSIF (NZ(AND2(comb.nanA, INV(AND2(comb.nanB, comb.signB)))));
         TEXT("when both values are NaN, value B has higher priority if sign=1");
-        SETBIT(comb.res, 51, CONST("1", 1));
-        SETBITS(comb.res, 50, 0, BITS(a, 50, 0));
+        SETVAL(comb.vb_res_mant, CC2(CONST("1", 1), BITS(a, 50, 0)));
     ELSIF (NZ(comb.nanB));
-        SETBIT(comb.res, 51, CONST("1", 1));
-        SETBITS(comb.res, 50, 0, BITS(b, 50, 0));
+        SETVAL(comb.vb_res_mant, CC2(CONST("1", 1), BITS(b, 50, 0)));
     ELSE();
-        SETBITS(comb.res, 51, 0, ADD2(BITS(comb.mantShort, 51, 0), comb.rndBit));
+        SETVAL(comb.vb_res_mant, ADD2(BITS(comb.mantShort, 51, 0), comb.rndBit));
     ENDIF();
 
 TEXT();
     IF (NZ(BIT(ena, 3)));
-        SETVAL(result, comb.res);
+        SETVAL(result, CC3(comb.v_res_sign, comb.vb_res_exp, comb.vb_res_mant));
         SETVAL(illegal_op, OR2(comb.nanA, comb.nanB));
         SETZERO(busy);
     ENDIF();
