@@ -34,7 +34,6 @@ jtagtap::jtagtap(GenObject *parent, const char *name) :
     i_dmi_resp_data(this, "i_dmi_resp_data", "32"),
     i_dmi_busy(this, "i_dmi_busy", "1"),
     i_dmi_error(this, "i_dmi_error", "1"),
-    o_dmi_reset(this, "o_dmi_reset", "1"),
     o_dmi_hardreset(this, "o_dmi_hardreset", "1"),
     // param
     _ir0_(this),
@@ -76,6 +75,7 @@ jtagtap::jtagtap(GenObject *parent, const char *name) :
     dr(this, "dr", "drlen", "idcode"),
     bypass(this, "bypass", "1"),
     datacnt(this, "datacnt", "32"),
+    err_sticky(this, "err_sticky", "2"),
     ir(this, "ir", "irlen", "IR_IDCODE"),
     dmi_addr(this, "dmi_addr", "abits"),
     comb(this)
@@ -89,15 +89,7 @@ jtagtap::jtagtap(GenObject *parent, const char *name) :
 
 void jtagtap::proc_comb() {
     SETVAL(comb.vb_dr, dr);
-
-TEXT();
-    IF (NZ(i_dmi_busy));
-        SETVAL(comb.vb_stat, DMISTAT_BUSY);
-    ELSIF (NZ(i_dmi_error));
-        SETVAL(comb.vb_stat, DMISTAT_FAILED);
-    ELSE();
-        SETVAL(comb.vb_stat, DMISTAT_SUCCESS);
-    ENDIF();
+    SETVAL(comb.vb_err_sticky, err_sticky);
 
 TEXT();
     SWITCH (state);
@@ -136,10 +128,15 @@ TEXT();
             SETBITS(comb.vb_dr, 31, 0, ALLZEROS());
             SETBITS(comb.vb_dr, 3, 0, CONST("0x1", 4), "version");
             SETBITS(comb.vb_dr, 9, 4, abits, "the size of the address");
-            SETBITS(comb.vb_dr, 11, 10, comb.vb_stat);
+            SETBITS(comb.vb_dr, 11, 10, err_sticky);
             SETVAL(dr_length, CONST("32", 7));
         ELSIF (EQ(ir, IR_DBUS));
-            SETBITS(comb.vb_dr, 1, 0, comb.vb_stat);
+            IF (NZ(i_dmi_error));
+                SETVAL(comb.vb_err_sticky, DMISTAT_FAILED);
+                SETBITS(comb.vb_dr, 1, 0, DMISTAT_FAILED);
+            ELSE();
+                SETBITS(comb.vb_dr, 1, 0, err_sticky);
+            ENDIF();
             SETBITS(comb.vb_dr, 33, 2, i_dmi_resp_data);
             SETBITS(comb.vb_dr, DEC(ADD2(CONST("34"), abits)), CONST("34"), dmi_addr);
             SETVAL(dr_length, ADD2(abits, CONST("34", 7)));
@@ -192,12 +189,20 @@ TEXT();
             SETVAL(state, IDLE);
         ENDIF();
         IF (EQ(ir, IR_DTMCONTROL));
-            SETVAL(comb.v_dmi_reset, BIT(dr, DTMCONTROL_DMIRESET));
             SETVAL(comb.v_dmi_hardreset, BIT(dr, DTMCONTROL_DMIHARDRESET));
+            IF (NZ(BIT(dr, DTMCONTROL_DMIRESET)));
+                SETVAL(comb.vb_err_sticky, DMISTAT_SUCCESS);
+            ENDIF();
         ELSIF (EQ(ir, IR_BYPASS));
             SETVAL(bypass, BIT(dr, 0));
         ELSIF (EQ(ir, IR_DBUS));
-            SETVAL(comb.v_dmi_req_valid, OR_REDUCE(BITS(dr, 1, 0)));
+            IF (NE(err_sticky, DMISTAT_SUCCESS));
+                TEXT("This operation should never result in a busy or error response.");
+            ELSIF (NZ(i_dmi_busy));
+                SETVAL(comb.vb_err_sticky, DMISTAT_BUSY);
+            ELSE();
+                SETVAL(comb.v_dmi_req_valid, OR_REDUCE(BITS(dr, 1, 0)));
+            ENDIF();
             SETVAL(comb.v_dmi_req_write, BIT(dr, 1));
             SETVAL(comb.vb_dmi_req_data, BITS(dr, 33, 2));
             SETVAL(comb.vb_dmi_req_addr, BITS(dr, DEC(ADD2(CONST("34"), abits )), CONST("34")));
@@ -264,6 +269,7 @@ TEXT();
         ENDCASE();
     ENDSWITCH();
     SETVAL(dr, comb.vb_dr);
+    SETVAL(err_sticky, comb.vb_err_sticky);
 
 TEXT();
     SETVAL(o_tdo, BIT(dr, 0));
@@ -271,6 +277,5 @@ TEXT();
     SETVAL(o_dmi_req_write, comb.v_dmi_req_write);
     SETVAL(o_dmi_req_data, comb.vb_dmi_req_data);
     SETVAL(o_dmi_req_addr, comb.vb_dmi_req_addr);
-    SETVAL(o_dmi_reset, comb.v_dmi_reset);
     SETVAL(o_dmi_hardreset, comb.v_dmi_hardreset);
 }

@@ -79,14 +79,12 @@ dmidebug::dmidebug(GenObject *parent, const char *name) :
     w_tap_dmi_req_write(this, "w_tap_dmi_req_write", "1"),
     wb_tap_dmi_req_addr(this, "wb_tap_dmi_req_addr", "7"),
     wb_tap_dmi_req_data(this, "wb_tap_dmi_req_data", "32"),
-    w_tap_dmi_reset(this, "w_tap_dmi_reset", "1"),
     w_tap_dmi_hardreset(this, "w_tap_dmi_hardreset", "1"),
     w_cdc_dmi_req_valid(this, "w_cdc_dmi_req_valid", "1"),
     w_cdc_dmi_req_ready(this, "w_cdc_dmi_req_ready", "1"),
     w_cdc_dmi_req_write(this, "w_cdc_dmi_req_write", "1"),
     wb_cdc_dmi_req_addr(this, "wb_cdc_dmi_req_addr", "7"),
     wb_cdc_dmi_req_data(this, "wb_cdc_dmi_req_data", "32"),
-    w_cdc_dmi_reset(this, "w_cdc_dmi_reset", "1"),
     w_cdc_dmi_hardreset(this, "w_cdc_dmi_hardreset", "1"),
     wb_jtag_dmi_resp_data(this, "wb_jtag_dmi_resp_data", "32"),
     w_jtag_dmi_busy(this, "w_jtag_dmi_busy", "1"),
@@ -151,7 +149,6 @@ dmidebug::dmidebug(GenObject *parent, const char *name) :
         CONNECT(tap, 0, tap.i_dmi_resp_data, wb_jtag_dmi_resp_data);
         CONNECT(tap, 0, tap.i_dmi_busy, w_jtag_dmi_busy);
         CONNECT(tap, 0, tap.i_dmi_error, w_jtag_dmi_error);
-        CONNECT(tap, 0, tap.o_dmi_reset, w_tap_dmi_reset);
         CONNECT(tap, 0, tap.o_dmi_hardreset, w_tap_dmi_hardreset);
     ENDNEW();
 
@@ -162,14 +159,12 @@ dmidebug::dmidebug(GenObject *parent, const char *name) :
         CONNECT(cdc, 0, cdc.i_dmi_req_write, w_tap_dmi_req_write);
         CONNECT(cdc, 0, cdc.i_dmi_req_addr, wb_tap_dmi_req_addr);
         CONNECT(cdc, 0, cdc.i_dmi_req_data, wb_tap_dmi_req_data);
-        CONNECT(cdc, 0, cdc.i_dmi_reset, w_tap_dmi_reset);
         CONNECT(cdc, 0, cdc.i_dmi_hardreset, w_tap_dmi_hardreset);
         CONNECT(cdc, 0, cdc.o_dmi_req_valid, w_cdc_dmi_req_valid);
         CONNECT(cdc, 0, cdc.i_dmi_req_ready, w_cdc_dmi_req_ready);
         CONNECT(cdc, 0, cdc.o_dmi_req_write, w_cdc_dmi_req_write);
         CONNECT(cdc, 0, cdc.o_dmi_req_addr, wb_cdc_dmi_req_addr);
         CONNECT(cdc, 0, cdc.o_dmi_req_data, wb_cdc_dmi_req_data);
-        CONNECT(cdc, 0, cdc.o_dmi_reset, w_cdc_dmi_reset);
         CONNECT(cdc, 0, cdc.o_dmi_hardreset, w_cdc_dmi_hardreset);
     ENDNEW();
 
@@ -340,7 +335,7 @@ TEXT();
             SETBIT(comb.vb_resp_data, 12, comb.v_cmd_busy, "busy");
             SETBITS(comb.vb_resp_data, 10, 8, cmderr);
             SETBITS(comb.vb_resp_data, 3, 0, cfg->CFG_DATA_REG_TOTAL);
-            IF (AND2(NZ(regwr), NZ(BITS(wdata, 10, 8))));
+            IF (AND2(NZ(regwr), EQ(BITS(wdata, 10, 8), CONST("1", 3))));
                 SETVAL(cmderr, CMDERR_NONE);
             ENDIF();
         ELSIF (EQ(regidx, CONST("0x17", 7)), "command");
@@ -580,7 +575,7 @@ TEXT();
 
 
 TEXT();
-    SYNC_RESET(*this);
+    SYNC_RESET(*this, &NZ(w_cdc_dmi_hardreset));
 
 TEXT();
     SETVAL(o_ndmreset, ndmreset);
@@ -600,7 +595,9 @@ TEXT();
 TEXT();
     SETVAL(w_cdc_dmi_req_ready, comb.v_cdc_dmi_req_ready);
     SETVAL(wb_jtag_dmi_resp_data, jtag_resp_data);
-    SETZERO(w_jtag_dmi_busy, "|r.dmstate");
+    SETVAL(w_jtag_dmi_busy, dmstate);
+    TEXT("There are no specified cases in which the DM would respond with an error,");
+    TEXT("and DMI is not required to support returning errors.");
     SETZERO(w_jtag_dmi_error);
 
 TEXT();

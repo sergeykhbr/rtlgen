@@ -34,22 +34,20 @@ class jtagtap : public ModuleObject {
         CombProcess(GenObject* parent)
             : ProcObject(parent, "comb"),
             vb_dr(this, "vb_dr", "drlen"),
-            vb_stat(this, "vb_stat", "2"),
             v_dmi_req_valid(this, "v_dmi_req_valid", "1"),
             v_dmi_req_write(this, "v_dmi_req_write", "1"),
             vb_dmi_req_data(this, "vb_dmi_req_data", "32"),
             vb_dmi_req_addr(this, "vb_dmi_req_addr", "abits"),
-            v_dmi_reset(this, "v_dmi_reset", "1"),
+            vb_err_sticky(this, "vb_err_sticky", "2"),
             v_dmi_hardreset(this, "v_dmi_hardreset", "1") {
         }
      public:
         Logic vb_dr;
-        Logic vb_stat;
         Logic v_dmi_req_valid;
         Logic v_dmi_req_write;
         Logic vb_dmi_req_data;
         Logic vb_dmi_req_addr;
-        Logic v_dmi_reset;
+        Logic vb_err_sticky;
         Logic v_dmi_hardreset;
     };
 
@@ -73,7 +71,6 @@ public:
     InPort i_dmi_resp_data;
     InPort i_dmi_busy;
     InPort i_dmi_error;
-    OutPort o_dmi_reset;
     OutPort o_dmi_hardreset;
 
     // param
@@ -119,6 +116,7 @@ public:
     RegSignal dr;
     RegSignal bypass;
     RegSignal datacnt;
+    RegSignal err_sticky;
 
     NRegSignal ir;
     NRegSignal dmi_addr;

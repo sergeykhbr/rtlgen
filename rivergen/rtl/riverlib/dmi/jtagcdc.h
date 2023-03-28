@@ -45,7 +45,6 @@ public:
     InPort i_dmi_req_write;
     InPort i_dmi_req_addr;
     InPort i_dmi_req_data;
-    InPort i_dmi_reset;
     InPort i_dmi_hardreset;
     TextLine _clk1_;
     InPort i_dmi_req_ready;
@@ -53,7 +52,6 @@ public:
     OutPort o_dmi_req_write;
     OutPort o_dmi_req_addr;
     OutPort o_dmi_req_data;
-    OutPort o_dmi_reset;
     OutPort o_dmi_hardreset;
 
     // param

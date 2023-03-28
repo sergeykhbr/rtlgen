@@ -26,7 +26,6 @@ jtagcdc::jtagcdc(GenObject *parent, const char *name) :
     i_dmi_req_write(this, "i_dmi_req_write", "1"),
     i_dmi_req_addr(this, "i_dmi_req_addr", "7"),
     i_dmi_req_data(this, "i_dmi_req_data", "32"),
-    i_dmi_reset(this, "i_dmi_reset", "1"),
     i_dmi_hardreset(this, "i_dmi_hardreset", "1"),
     _clk1_(this, "system clock"),
     i_dmi_req_ready(this, "i_dmi_req_ready", "1"),
@@ -34,11 +33,9 @@ jtagcdc::jtagcdc(GenObject *parent, const char *name) :
     o_dmi_req_write(this, "o_dmi_req_write", "1"),
     o_dmi_req_addr(this, "o_dmi_req_addr", "7"),
     o_dmi_req_data(this, "o_dmi_req_data", "32"),
-    o_dmi_reset(this, "o_dmi_reset", "1"),
     o_dmi_hardreset(this, "o_dmi_hardreset", "1"),
     // param
     CDC_REG_WIDTH(this, "CDC_REG_WIDTH", &CALCWIDTHx(6, &i_dmi_hardreset,
-                                                    &i_dmi_reset,
                                                     &i_dmi_req_addr,
                                                     &i_dmi_req_data,
                                                     &i_dmi_req_write,
@@ -64,7 +61,6 @@ jtagcdc::jtagcdc(GenObject *parent, const char *name) :
 
 void jtagcdc::proc_comb() {
     SETVAL(comb.vb_bus, CCx(6, &i_dmi_hardreset,
-                              &i_dmi_reset,
                               &i_dmi_req_addr,
                               &i_dmi_req_data,
                               &i_dmi_req_write,
@@ -98,7 +94,6 @@ TEXT();
     SETVAL(o_dmi_req_write, req_write);
     SETVAL(o_dmi_req_data, req_data);
     SETVAL(o_dmi_req_addr, req_addr);
-    SETVAL(o_dmi_reset, req_reset);
     SETVAL(o_dmi_hardreset, req_hardreset);
 
 }
