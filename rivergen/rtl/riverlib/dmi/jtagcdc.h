@@ -67,7 +67,6 @@ public:
     RegSignal req_write;
     RegSignal req_addr;
     RegSignal req_data;
-    RegSignal req_reset;
     RegSignal req_hardreset;
 
     // process

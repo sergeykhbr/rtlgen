@@ -281,7 +281,9 @@ TEXT();
             SETBIT(comb.vb_resp_data, 0, dmactive);
             IF (NZ(regwr));
                 IF (NZ(BIT(wdata, 31)));
-                    IF (NZ(BIT(i_halted, comb.vb_hartselnext)));
+                    TEXT("Do not set cmderr before/after ndmreset");
+                    IF (ANDx(2, &EZ(OR2(BIT(wdata, 1), ndmreset)),
+                                &NZ(BIT(i_halted, comb.vb_hartselnext))));
                         SETVAL(cmderr, CMDERR_WRONGSTATE);
                     ELSE();
                         SETONE(haltreq);

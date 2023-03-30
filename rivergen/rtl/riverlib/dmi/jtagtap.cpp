@@ -75,6 +75,7 @@ jtagtap::jtagtap(GenObject *parent, const char *name) :
     dr(this, "dr", "drlen", "idcode"),
     bypass(this, "bypass", "1"),
     datacnt(this, "datacnt", "32"),
+    dmi_busy(this, "dmi_busy", "1"),
     err_sticky(this, "err_sticky", "2"),
     ir(this, "ir", "irlen", "IR_IDCODE"),
     dmi_addr(this, "dmi_addr", "abits"),
@@ -198,7 +199,7 @@ TEXT();
         ELSIF (EQ(ir, IR_DBUS));
             IF (NE(err_sticky, DMISTAT_SUCCESS));
                 TEXT("This operation should never result in a busy or error response.");
-            ELSIF (NZ(i_dmi_busy));
+            ELSIF (NZ(dmi_busy));
                 SETVAL(comb.vb_err_sticky, DMISTAT_BUSY);
             ELSE();
                 SETVAL(comb.v_dmi_req_valid, OR_REDUCE(BITS(dr, 1, 0)));
@@ -269,6 +270,7 @@ TEXT();
         ENDCASE();
     ENDSWITCH();
     SETVAL(dr, comb.vb_dr);
+    SETVAL(dmi_busy, i_dmi_busy);
     SETVAL(err_sticky, comb.vb_err_sticky);
 
 TEXT();

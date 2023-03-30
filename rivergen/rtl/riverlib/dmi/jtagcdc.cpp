@@ -35,7 +35,7 @@ jtagcdc::jtagcdc(GenObject *parent, const char *name) :
     o_dmi_req_data(this, "o_dmi_req_data", "32"),
     o_dmi_hardreset(this, "o_dmi_hardreset", "1"),
     // param
-    CDC_REG_WIDTH(this, "CDC_REG_WIDTH", &CALCWIDTHx(6, &i_dmi_hardreset,
+    CDC_REG_WIDTH(this, "CDC_REG_WIDTH", &CALCWIDTHx(5, &i_dmi_hardreset,
                                                     &i_dmi_req_addr,
                                                     &i_dmi_req_data,
                                                     &i_dmi_req_write,
@@ -48,7 +48,6 @@ jtagcdc::jtagcdc(GenObject *parent, const char *name) :
     req_write(this, "req_write", "1"),
     req_addr(this, "req_addr", "7"),
     req_data(this, "req_data", "32"),
-    req_reset(this, "req_reset", "1"),
     req_hardreset(this, "req_hardreset", "1"),
     comb(this)
 {
@@ -60,7 +59,7 @@ jtagcdc::jtagcdc(GenObject *parent, const char *name) :
 }
 
 void jtagcdc::proc_comb() {
-    SETVAL(comb.vb_bus, CCx(6, &i_dmi_hardreset,
+    SETVAL(comb.vb_bus, CCx(5, &i_dmi_hardreset,
                               &i_dmi_req_addr,
                               &i_dmi_req_data,
                               &i_dmi_req_write,
@@ -75,8 +74,7 @@ TEXT();
         SETVAL(req_write, BIT(l2, 1));
         SETVAL(req_data, BITS(l2, 33, 2));
         SETVAL(req_addr, BITS(l2, 40, 34));
-        SETVAL(req_reset, BIT(l2, 41));
-        SETVAL(req_hardreset, BIT(l2, 42));
+        SETVAL(req_hardreset, BIT(l2, 41));
     ELSIF (NZ(i_dmi_req_ready));
         SETZERO(req_valid);
     ENDIF();

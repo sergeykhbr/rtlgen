@@ -116,6 +116,7 @@ public:
     RegSignal dr;
     RegSignal bypass;
     RegSignal datacnt;
+    RegSignal dmi_busy;
     RegSignal err_sticky;
 
     NRegSignal ir;
