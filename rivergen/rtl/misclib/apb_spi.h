@@ -85,6 +85,7 @@ class apb_spi : public ModuleObject {
     ParamLogic idle;
     ParamLogic wait_edge;
     ParamLogic send_data;
+    ParamLogic recv_data;
     ParamLogic ending;
 
     Signal w_req_valid;
@@ -109,6 +110,9 @@ class apb_spi : public ModuleObject {
     RegSignal scaler;
     RegSignal scaler_cnt;
     RegSignal generate_crc;
+    RegSignal rx_ena;
+    RegSignal rx_synced;
+    RegSignal rx_watchdog;
     RegSignal level;
     RegSignal cs;
 
