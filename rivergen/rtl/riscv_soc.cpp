@@ -70,16 +70,18 @@ riscv_soc::riscv_soc(GenObject *parent, const char *name) :
     SOC_PNP_GROUP0(this, "SOC_PNP_GROUP0", "1"),
     SOC_PNP_BOOTROM(this, "SOC_PNP_BOOTROM", "2"),
     SOC_PNP_SRAM(this, "SOC_PNP_SRAM", "3"),
-    SOC_PNP_DDR(this, "SOC_PNP_DDR", "4"),
-    SOC_PNP_GPIO(this, "SOC_PNP_GPIO", "5"),
-    SOC_PNP_CLINT(this, "SOC_PNP_CLINT", "6"),
-    SOC_PNP_PLIC(this, "SOC_PNP_PLIC", "7"),
-    SOC_PNP_PNP(this, "SOC_PNP_PNP", "8"),
-    SOC_PNP_PBRIDGE0(this, "SOC_PNP_PBRIDGE0", "9"),
-    SOC_PNP_DMI(this, "SOC_PNP_DMI", "10"),
-    SOC_PNP_UART1(this, "SOC_PNP_UART1", "11"),
-    SOC_PNP_SPI(this, "SOC_PNP_SPI", "12"),
-    SOC_PNP_TOTAL(this, "SOC_PNP_TOTAL", "13"),
+    SOC_PNP_DDR_AXI(this, "SOC_PNP_DDR_AXI", "4"),
+    SOC_PNP_DDR_APB(this, "SOC_PNP_DDR_APB", "5"),
+    SOC_PNP_PRCI(this, "SOC_PNP_PRCI", "6"),
+    SOC_PNP_GPIO(this, "SOC_PNP_GPIO", "7"),
+    SOC_PNP_CLINT(this, "SOC_PNP_CLINT", "8"),
+    SOC_PNP_PLIC(this, "SOC_PNP_PLIC", "9"),
+    SOC_PNP_PNP(this, "SOC_PNP_PNP", "10"),
+    SOC_PNP_PBRIDGE0(this, "SOC_PNP_PBRIDGE0", "11"),
+    SOC_PNP_DMI(this, "SOC_PNP_DMI", "12"),
+    SOC_PNP_UART1(this, "SOC_PNP_UART1", "13"),
+    SOC_PNP_SPI(this, "SOC_PNP_SPI", "14"),
+    SOC_PNP_TOTAL(this, "SOC_PNP_TOTAL", "15"),
     _cfg0_(this),
     CFG_SOC_UART1_LOG2_FIFOSZ(this, "CFG_SOC_UART1_LOG2_FIFOSZ", "4"),
     _cfg1_(this),
@@ -116,6 +118,7 @@ riscv_soc::riscv_soc(GenObject *parent, const char *name) :
     w_irq_pnp(this, "w_irq_pnp", "1"),
     wb_ext_irqs(this, "wb_ext_irqs", "CFG_PLIC_IRQ_TOTAL"),
     // submodules:
+    sram0(this, "sram0"),
     apbrdg0(this, "apbrdg0"),
     uart1(this, "uart1"),
     gpio0(this, "gpio0"),
@@ -170,6 +173,16 @@ riscv_soc::riscv_soc(GenObject *parent, const char *name) :
         CONNECT(group0, 0, group0.i_dmi_apbi, ARRITEM(apbi, glob_bus1_cfg_->CFG_BUS1_PSLV_DMI, apbi));
         CONNECT(group0, 0, group0.o_dmi_apbo, ARRITEM(apbo, glob_bus1_cfg_->CFG_BUS1_PSLV_DMI, apbo));
         CONNECT(group0, 0, group0.o_dmreset, o_dmreset);
+    ENDNEW();
+
+    sram0.abits.setObjValue(&prj_cfg_->CFG_SRAM_LOG2_SIZE);
+    NEW(sram0, sram0.getName().c_str());
+        CONNECT(sram0, 0, sram0.i_clk, i_sys_clk);
+        CONNECT(sram0, 0, sram0.i_nrst, i_sys_nrst);
+        CONNECT(sram0, 0, sram0.i_mapinfo, ARRITEM(bus0_mapinfo, glob_bus0_cfg_->CFG_BUS0_XSLV_SRAM, bus0_mapinfo));
+        CONNECT(sram0, 0, sram0.o_cfg, ARRITEM(dev_pnp, SOC_PNP_SRAM, dev_pnp));
+        CONNECT(sram0, 0, sram0.i_xslvi, ARRITEM(axisi, glob_bus0_cfg_->CFG_BUS0_XSLV_SRAM, axisi));
+        CONNECT(sram0, 0, sram0.o_xslvo, ARRITEM(axiso, glob_bus0_cfg_->CFG_BUS0_XSLV_SRAM, axiso));
     ENDNEW();
 
     uart1.log2_fifosz.setObjValue(&CFG_SOC_UART1_LOG2_FIFOSZ);
@@ -244,4 +257,19 @@ void riscv_soc::proc_comb() {
     TEXT("Nullify emty AXI-slots:");
     SETARRITEM(aximo, glob_bus0_cfg_->CFG_BUS0_XMST_DMA, aximo, amba->axi4_master_out_none);
     SETVAL(acpo, amba->axi4_master_out_none);
+
+    TEXT();
+    TEXT("PRCI:");
+    SETVAL(o_prci_apbi, ARRITEM(apbi, glob_bus1_cfg_->CFG_BUS1_PSLV_PRCI, apbi));
+    SETARRITEM(apbo, glob_bus1_cfg_->CFG_BUS1_PSLV_PRCI, apbo, i_prci_apbo);
+    SETARRITEM(dev_pnp, SOC_PNP_PRCI, dev_pnp, i_prci_pdevcfg);
+
+    TEXT();
+    TEXT("DDR:");
+    SETVAL(o_ddr_xmapinfo, ARRITEM(bus0_mapinfo, glob_bus0_cfg_->CFG_BUS0_XSLV_DDR, bus0_mapinfo));
+    SETARRITEM(dev_pnp, SOC_PNP_DDR_AXI, dev_pnp, i_ddr_xdevcfg);
+    SETVAL(o_ddr_pmapinfo, ARRITEM(bus1_mapinfo, glob_bus1_cfg_->CFG_BUS1_PSLV_DDR, bus1_mapinfo));
+    SETARRITEM(dev_pnp, SOC_PNP_DDR_APB, dev_pnp, i_ddr_pdevcfg);
+    SETVAL(o_ddr_apbi, ARRITEM(apbi, glob_bus1_cfg_->CFG_BUS1_PSLV_DDR, apbi));
+    SETARRITEM(apbo, glob_bus1_cfg_->CFG_BUS1_PSLV_DDR, apbo, i_ddr_apbo);
 }

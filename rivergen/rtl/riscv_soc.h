@@ -24,6 +24,7 @@
 #include "misclib/apb_uart.h"
 #include "misclib/apb_gpio.h"
 #include "misclib/apb_spi.h"
+#include "misclib/axi_sram.h"
 #include "riverlib/river_cfg.h"
 #include "riverlib/types_river.h"
 #include "riverlib/river_amba.h"
@@ -153,7 +154,9 @@ public:
     ParamI32D SOC_PNP_GROUP0;
     ParamI32D SOC_PNP_BOOTROM;
     ParamI32D SOC_PNP_SRAM;
-    ParamI32D SOC_PNP_DDR;
+    ParamI32D SOC_PNP_DDR_AXI;
+    ParamI32D SOC_PNP_DDR_APB;
+    ParamI32D SOC_PNP_PRCI;
     ParamI32D SOC_PNP_GPIO;
     ParamI32D SOC_PNP_CLINT;
     ParamI32D SOC_PNP_PLIC;
@@ -201,6 +204,7 @@ public:
     Signal wb_ext_irqs;
 
     // Sub-module instances:
+    axi_sram sram0;
     axi2apb apbrdg0;
     apb_uart uart1;
     apb_gpio gpio0;

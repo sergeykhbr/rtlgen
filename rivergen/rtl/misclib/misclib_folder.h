@@ -23,6 +23,7 @@
 #include "apb_gpio.h"
 #include "apb_ddr.h"
 #include "apb_spi.h"
+#include "axi_sram.h"
 
 class misclib_folder : public FolderObject {
  public:
@@ -33,7 +34,8 @@ class misclib_folder : public FolderObject {
         apb_uart_file_(this),
         apb_gpio_file_(this),
         apb_ddr_file_(this),
-        apb_spi_file_(this) {}
+        apb_spi_file_(this),
+        axi_sram_file_(this) {}
 
  protected:
     // subfolders:
@@ -44,4 +46,5 @@ class misclib_folder : public FolderObject {
     apb_gpio_file apb_gpio_file_;
     apb_ddr_file apb_ddr_file_;
     apb_spi_file apb_spi_file_;
+    axi_sram_file axi_sram_file_;
 };

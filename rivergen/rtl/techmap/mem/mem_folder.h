@@ -18,6 +18,7 @@
 
 #include <api.h>
 #include "ram_tech.h"
+#include "ram_bytes_tech.h"
 #include "ram_mmu_tech.h"
 #include "ram_cache_bwe_tech.h"
 
@@ -26,11 +27,13 @@ class mem_folder : public FolderObject {
     mem_folder(GenObject *parent) :
         FolderObject(parent, "mem"),
         ram_tech_(this),
+        ram_bytes_tech_(this),
         ram_mmu_tech_(this),
         ram_cache_bwe_tech_(this) {}
 
  protected:
     ram_tech_file ram_tech_;
+    ram_bytes_tech_file ram_bytes_tech_;
     ram_mmu_tech_file ram_mmu_tech_;
     ram_cache_bwe_tech_file ram_cache_bwe_tech_;
 };
