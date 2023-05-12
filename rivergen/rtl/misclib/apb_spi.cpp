@@ -38,7 +38,8 @@ apb_spi::apb_spi(GenObject *parent, const char *name) :
     wait_edge(this, "3", "wait_edge", "1"),
     send_data(this, "3", "send_data", "2"),
     recv_data(this, "3", "recv_data", "3"),
-    ending(this, "3", "ending", "4"),
+    recv_sync(this, "3", "recv_sync", "4"),
+    ending(this, "3", "ending", "5"),
     // signals
     w_req_valid(this, "w_req_valid", "1"),
     wb_req_addr(this, "wb_req_addr", "32"),
@@ -59,13 +60,15 @@ apb_spi::apb_spi(GenObject *parent, const char *name) :
     // registers
     scaler(this, "scaler", "32"),
     scaler_cnt(this, "scaler_cnt", "32"),
+    wdog(this, "wdog", "16"),
+    wdog_cnt(this, "wdog_cnt", "16"),
     generate_crc(this, "generate_crc", "1"),
     rx_ena(this, "rx_ena", "1"),
     rx_synced(this, "rx_synced", "1"),
-    rx_watchdog(this, "rx_watchdog", "32"),
+    rx_data_block(this, "rx_data_block", "1", "0", "Wait 0xFE start data block marker"),
     level(this, "level", "1", "1"),
     cs(this, "cs", "1"),
-    state(this, "state", "2", "idle"),
+    state(this, "state", "3", "idle"),
     ena_byte_cnt(this, "ena_byte_cnt", "16"),
     bit_cnt(this, "bit_cnt", "3"),
     tx_val(this, "tx_val", "8"),
@@ -192,17 +195,18 @@ TEXT();
     ENDIF();
 
 TEXT();
+    SETVAL(comb.vb_rxshift_next, CC2(BITS(rx_shift, 6, 0), i_miso));
     IF (NZ(comb.v_posedge));
         IF (NZ(rx_ready));
             SETZERO(rx_ready);
-            SETVAL(comb.v_rxfifo_we, AND2(rx_ena, rx_synced));
+            SETVAL(comb.v_rxfifo_we, AND2(rx_ena, OR2(rx_synced, rx_data_block)));
             SETVAL(comb.vb_rxfifo_wdata, rx_shift);
             SETZERO(rx_shift);
         ENDIF();
 
         TEXT();
         IF (NZ(cs));
-            SETVAL(rx_shift, CC2(BITS(rx_shift, 6, 0), i_miso));
+            SETVAL(rx_shift, comb.vb_rxshift_next);
             SETVAL(crc7, comb.vb_crc7);
             SETVAL(crc16, comb.vb_crc16);
         ENDIF();
@@ -212,6 +216,7 @@ TEXT();
     TEXT("Transmitter's state machine:");
     SWITCH (state);
     CASE(idle);
+        SETVAL(wdog_cnt, wdog);
         IF (NZ(ena_byte_cnt));
             SETVAL(comb.v_txfifo_re, INV(rx_ena));
             IF (OR2(EZ(wb_txfifo_count), NZ(rx_ena)));
@@ -233,7 +238,11 @@ TEXT();
             SETVAL(bit_cnt, CONST("7"));
             SETVAL(tx_shift, tx_val);
             IF (NZ(rx_ena));
-                SETVAL(state, recv_data);
+                IF (NZ(rx_data_block));
+                    SETVAL(state, recv_sync);
+                ELSE();
+                    SETVAL(state, recv_data);
+                ENDIF();
             ELSE();
                 SETVAL(state, send_data);
             ENDIF();
@@ -261,29 +270,46 @@ TEXT();
         ENDIF();
         ENDCASE();
     CASE (recv_data);
-        IF (EZ(rx_synced));
-            SETVAL(rx_synced, AND2(NZ(cs), INV(i_miso)));
-            IF (NZ(rx_watchdog));
-                SETVAL(rx_watchdog, DEC(rx_watchdog));
-            ELSE();
-                TEXT("Wait Start bit time is out:");
-                SETONE(rx_synced);
+        IF (NZ(comb.v_posedge));
+            IF (EZ(rx_synced));
+                SETVAL(rx_synced, AND2(NZ(cs), INV(i_miso)));
+                IF (NZ(wdog_cnt));
+                    SETVAL(wdog_cnt, DEC(wdog_cnt));
+                ELSIF(EZ(wdog));
+                    TEXT("Wait Start bit infinitely");
+                ELSE();
+                    TEXT("Wait Start bit time is out:");
+                    SETONE(rx_synced);
+                ENDIF();
+            ENDIF();
+
+            TEXT("Check RX shift ready");
+            IF(EZ(bit_cnt));
+                IF (NZ(ena_byte_cnt));
+                    SETVAL(state, wait_edge);
+                    SETVAL(ena_byte_cnt, DEC(ena_byte_cnt));
+                ELSE();
+                    SETVAL(state, ending);
+                ENDIF();
+                SETONE(rx_ready);
             ENDIF();
         ENDIF();
-
-        TEXT("Check RX shift ready");
-        IF(AND2(EZ(bit_cnt), NZ(comb.v_posedge)));
-            IF (NZ(ena_byte_cnt));
-                SETVAL(state, wait_edge);
-                SETVAL(ena_byte_cnt, DEC(ena_byte_cnt));
-            ELSE();
+        ENDCASE();
+    CASE (recv_sync);
+        IF (NZ(comb.v_posedge));
+            IF (ORx(2, &EQ(comb.vb_rxshift_next, CONST("0xFE", 8)),
+                       &EZ(wdog_cnt)));
                 SETVAL(state, ending);
+                SETONE(rx_ready);
+                SETZERO(ena_byte_cnt);
+                SETZERO(bit_cnt);
+            ELSE();
+                SETVAL(wdog_cnt, DEC(wdog_cnt));
             ENDIF();
-            SETONE(rx_ready);
         ENDIF();
         ENDCASE();
     CASE (ending);
-        IF(EZ(cs));
+        IF (EZ(cs));
             SETVAL(state, idle);
         ENDIF();
         ENDCASE();
@@ -301,19 +327,27 @@ TEXT();
             SETZERO(scaler_cnt);
         ENDIF();
         ENDCASE();
+    CASE (CONST("0x2", 10), "0x08: reserved (watchdog)");
+        SETBITS(comb.vb_rdata, 15, 0, wdog);
+        IF (AND2(NZ(w_req_valid), NZ(w_req_write)));
+            SETVAL(wdog, BITS(wb_req_wdata, 15, 0));
+        ENDIF();
+        ENDCASE();
     CASE (CONST("0x11", 10), "0x44: reserved 4 (txctrl)");
         SETBIT(comb.vb_rdata, 0, i_detected, "[0] sd card inserted");
         SETBIT(comb.vb_rdata, 1, i_protect, "[1] write protect");
         SETBIT(comb.vb_rdata, 2, i_miso, "[2] miso data bit");
-        SETBITS(comb.vb_rdata, 5, 4, state, "[5:4] state machine");
+        SETBITS(comb.vb_rdata, 6, 4, state, "[6:4] state machine");
         SETBIT(comb.vb_rdata, 7, generate_crc, "[7] Compute and generate CRC as the last Tx byte");
         SETBIT(comb.vb_rdata, 8, rx_ena, "[8] Receive data and write into FIFO only if rx_synced");
         SETBIT(comb.vb_rdata, 9, rx_synced, "[9] rx_ena=1 and start bit received");
+        SETBIT(comb.vb_rdata, 10, rx_data_block, "[10] rx_data_block=1 receive certain template byte");
         SETBITS(comb.vb_rdata, 31, 16, ena_byte_cnt, "[31:16] Number of bytes to transmit");
         IF (AND2(NZ(w_req_valid), NZ(w_req_write)));
             SETVAL(generate_crc, BIT(wb_req_wdata, 7));
             SETVAL(rx_ena, BIT(wb_req_wdata, 8));
             SETVAL(rx_synced, BIT(wb_req_wdata, 9));
+            SETVAL(rx_data_block, BIT(wb_req_wdata, 10));
             SETVAL(ena_byte_cnt, BITS(wb_req_wdata, 31, 16));
         ENDIF();
         ENDCASE();

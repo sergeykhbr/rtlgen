@@ -43,7 +43,8 @@ class apb_spi : public ModuleObject {
             vb_crc7(this, "vb_crc7", "7"),
             v_inv16(this, "v_inv16", "1"),
             vb_crc16(this, "vb_crc16", "16"),
-            vb_rdata(this, "vb_rdata", "32") {
+            vb_rdata(this, "vb_rdata", "32"),
+            vb_rxshift_next(this, "vb_rxshift_next", "8") {
         }
 
      public:
@@ -60,6 +61,7 @@ class apb_spi : public ModuleObject {
         Logic v_inv16;
         Logic vb_crc16;
         Logic vb_rdata;
+        Logic vb_rxshift_next;
     };
 
     void proc_comb();
@@ -86,6 +88,7 @@ class apb_spi : public ModuleObject {
     ParamLogic wait_edge;
     ParamLogic send_data;
     ParamLogic recv_data;
+    ParamLogic recv_sync;
     ParamLogic ending;
 
     Signal w_req_valid;
@@ -109,10 +112,12 @@ class apb_spi : public ModuleObject {
 
     RegSignal scaler;
     RegSignal scaler_cnt;
+    RegSignal wdog;
+    RegSignal wdog_cnt;
     RegSignal generate_crc;
     RegSignal rx_ena;
     RegSignal rx_synced;
-    RegSignal rx_watchdog;
+    RegSignal rx_data_block;    // wait 0xFE marker
     RegSignal level;
     RegSignal cs;
 
