@@ -38,13 +38,12 @@ class apb_spi : public ModuleObject {
             vb_txfifo_wdata(this, "vb_txfifo_wdata", "8"),
             v_rxfifo_re(this, "v_rxfifo_re", "1"),
             v_rxfifo_we(this, "v_rxfifo_we", "1"),
-            vb_rxfifo_wdata(this, "vb_rxfifo_wdata", "8"),
             v_inv7(this, "v_inv7", "1"),
             vb_crc7(this, "vb_crc7", "7"),
             v_inv16(this, "v_inv16", "1"),
             vb_crc16(this, "vb_crc16", "16"),
             vb_rdata(this, "vb_rdata", "32"),
-            vb_rxshift_next(this, "vb_rxshift_next", "8") {
+            vb_shiftreg_next(this, "vb_shiftreg_next", "8") {
         }
 
      public:
@@ -55,13 +54,12 @@ class apb_spi : public ModuleObject {
         Logic vb_txfifo_wdata;
         Logic v_rxfifo_re;
         Logic v_rxfifo_we;
-        Logic vb_rxfifo_wdata;
         Logic v_inv7;
         Logic vb_crc7;
         Logic v_inv16;
         Logic vb_crc16;
         Logic vb_rdata;
-        Logic vb_rxshift_next;
+        Logic vb_shiftreg_next;
     };
 
     void proc_comb();
@@ -123,11 +121,11 @@ class apb_spi : public ModuleObject {
 
 
     RegSignal state;
+    RegSignal shiftreg;
     RegSignal ena_byte_cnt;
     RegSignal bit_cnt;
     RegSignal tx_val;
-    RegSignal tx_shift;
-    RegSignal rx_shift;
+    RegSignal rx_val;
     RegSignal rx_ready;
     RegSignal crc7;
     RegSignal crc16;

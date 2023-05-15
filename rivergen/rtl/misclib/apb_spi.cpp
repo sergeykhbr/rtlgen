@@ -72,8 +72,8 @@ apb_spi::apb_spi(GenObject *parent, const char *name) :
     ena_byte_cnt(this, "ena_byte_cnt", "16"),
     bit_cnt(this, "bit_cnt", "3"),
     tx_val(this, "tx_val", "8"),
-    tx_shift(this, "tx_shift", "8", "-1"),
-    rx_shift(this, "rx_shift", "8"),
+    rx_val(this, "rx_val", "8"),
+    shiftreg(this, "shiftreg", "8", "-1"),
     rx_ready(this, "rx_ready", "1"),
     crc7(this, "crc7", "7"),
     crc16(this, "crc16", "16"),
@@ -139,7 +139,7 @@ apb_spi::apb_spi(GenObject *parent, const char *name) :
 
 void apb_spi::proc_comb() {
     TEXT("CRC7 = x^7 + x^3 + 1");
-    SETVAL(comb.v_inv7, XOR2(BIT(crc7, 6), BIT(tx_shift, 7)));
+    SETVAL(comb.v_inv7, XOR2(BIT(crc7, 6), BIT(shiftreg, 7)));
     SETBIT(comb.vb_crc7, 6, BIT(crc7, 5));
     SETBIT(comb.vb_crc7, 5, BIT(crc7, 4));
     SETBIT(comb.vb_crc7, 4, BIT(crc7, 3));
@@ -182,8 +182,20 @@ TEXT();
     ENDIF();
 
 TEXT();
+    IF(EZ(rx_ena));
+        SETVAL(comb.vb_shiftreg_next, CC2(BITS(shiftreg, 6, 0), CONST("1", 1)));
+    ELSE();
+        SETVAL(comb.vb_shiftreg_next, CC2(BITS(shiftreg, 6, 0), i_miso));
+    ENDIF();
+    IF (NZ(cs));
+        IF(ORx(2, &AND2(NZ(comb.v_negedge), EZ(rx_ena)),
+                  &AND2(NZ(comb.v_posedge), NZ(rx_ena))));
+            SETVAL(shiftreg, comb.vb_shiftreg_next);
+        ENDIF();
+    ENDIF();
+
+TEXT();
     IF (AND2(NZ(comb.v_negedge), NZ(cs)));
-        SETVAL(tx_shift, CC2(BITS(tx_shift, 6, 0), CONST("1", 1)));
         IF (NZ(bit_cnt));
             IF (ORx(2, &EZ(rx_ena),
                        &AND2(NZ(rx_ena), NZ(rx_synced))));
@@ -195,18 +207,9 @@ TEXT();
     ENDIF();
 
 TEXT();
-    SETVAL(comb.vb_rxshift_next, CC2(BITS(rx_shift, 6, 0), i_miso));
+    SETZERO(rx_ready);
     IF (NZ(comb.v_posedge));
-        IF (NZ(rx_ready));
-            SETZERO(rx_ready);
-            SETVAL(comb.v_rxfifo_we, AND2(rx_ena, OR2(rx_synced, rx_data_block)));
-            SETVAL(comb.vb_rxfifo_wdata, rx_shift);
-            SETZERO(rx_shift);
-        ENDIF();
-
-        TEXT();
-        IF (NZ(cs));
-            SETVAL(rx_shift, comb.vb_rxshift_next);
+        IF (AND2(NZ(cs), OR2(EZ(rx_ena), NZ(rx_synced))));
             SETVAL(crc7, comb.vb_crc7);
             SETVAL(crc16, comb.vb_crc16);
         ENDIF();
@@ -236,14 +239,15 @@ TEXT();
         IF(NZ(comb.v_negedge));
             SETONE(cs);
             SETVAL(bit_cnt, CONST("7"));
-            SETVAL(tx_shift, tx_val);
             IF (NZ(rx_ena));
+                SETZERO(shiftreg);
                 IF (NZ(rx_data_block));
                     SETVAL(state, recv_sync);
                 ELSE();
                     SETVAL(state, recv_data);
                 ENDIF();
             ELSE();
+                SETVAL(shiftreg, tx_val);
                 SETVAL(state, send_data);
             ENDIF();
         ENDIF();
@@ -292,17 +296,20 @@ TEXT();
                     SETVAL(state, ending);
                 ENDIF();
                 SETONE(rx_ready);
+                SETVAL(rx_val, comb.vb_shiftreg_next);
             ENDIF();
         ENDIF();
         ENDCASE();
     CASE (recv_sync);
         IF (NZ(comb.v_posedge));
-            IF (ORx(2, &EQ(comb.vb_rxshift_next, CONST("0xFE", 8)),
+            IF (ORx(2, &EQ(comb.vb_shiftreg_next, CONST("0xFE", 8)),
                        &EZ(wdog_cnt)));
                 SETVAL(state, ending);
+                SETVAL(rx_val, comb.vb_shiftreg_next);
                 SETONE(rx_ready);
                 SETZERO(ena_byte_cnt);
                 SETZERO(bit_cnt);
+                SETZERO(crc16);
             ELSE();
                 SETVAL(wdog_cnt, DEC(wdog_cnt));
             ENDIF();
@@ -400,8 +407,8 @@ TEXT();
     ENDSWITCH();
 
 TEXT();
-    SETVAL(w_rxfifo_we, comb.v_rxfifo_we);
-    SETVAL(wb_rxfifo_wdata, comb.vb_rxfifo_wdata);
+    SETVAL(w_rxfifo_we, rx_ready);
+    SETVAL(wb_rxfifo_wdata, rx_val);
     SETVAL(w_rxfifo_re, comb.v_rxfifo_re);
 
 TEXT();
@@ -419,6 +426,6 @@ TEXT();
 
 TEXT();
     SETVAL(o_sclk, AND2_L(level, cs));
-    SETVAL(o_mosi, BIT(tx_shift, 7));
+    SETVAL(o_mosi, OR2(rx_ena, BIT(shiftreg, 7)));
     SETVAL(o_cs, INV(cs));
 }
