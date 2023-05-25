@@ -33,8 +33,9 @@ class axictrl_bus0 : public ModuleObject {
             ProcObject(parent, "comb"),
             vmsti(this, "", "vmsti", "ADD(CFG_BUS0_XMST_TOTAL,1)"),
             vmsto(this, "", "vmsto", "ADD(CFG_BUS0_XMST_TOTAL,1)"),
-            vslvi(this, "", "vmsti", "ADD(CFG_BUS0_XSLV_TOTAL,1)"),
-            vslvo(this, "", "vmsto", "ADD(CFG_BUS0_XSLV_TOTAL,1)"),
+            vslvi(this, "", "vslvi", "ADD(CFG_BUS0_XSLV_TOTAL,1)"),
+            vslvo(this, "", "vslvo", "ADD(CFG_BUS0_XSLV_TOTAL,1)"),
+            vb_def_mapinfo(this, "vb_def_mapinfo"),
             vb_ar_midx(this, "vb_ar_midx", "CFG_BUS0_XMST_LOG2_TOTAL"),
             vb_aw_midx(this, "vb_aw_midx", "CFG_BUS0_XMST_LOG2_TOTAL"),
             vb_ar_sidx(this, "vb_ar_sidx", "CFG_BUS0_XSLV_LOG2_TOTAL"),
@@ -54,6 +55,7 @@ class axictrl_bus0 : public ModuleObject {
         TStructArray<types_amba::axi4_master_out_type> vmsto;
         TStructArray<types_amba::axi4_slave_in_type> vslvi;
         TStructArray<types_amba::axi4_slave_out_type> vslvo;
+        types_amba::mapinfo_type vb_def_mapinfo;
         Logic vb_ar_midx;
         Logic vb_aw_midx;
         Logic vb_ar_sidx;
@@ -70,81 +72,6 @@ class axictrl_bus0 : public ModuleObject {
 
     void proc_comb();
 
-    class bus0_xmst_in_vector_miss : public types_amba::axi4_master_in_type {
-     public:
-        bus0_xmst_in_vector_miss(GenObject *parent, const char *name, const char *descr="")
-            : axi4_master_in_type(parent, name, descr) {
-            type_ = std::string("bus0_xmst_in_vector_miss");
-            setStrDepth("ADD(CFG_BUS0_XMST_TOTAL,1)");
-            
-            registerCfgType(name);                  // will be registered if name == ""
-            if (name[0]) {
-                std::string strtype = getType();
-                SCV_get_cfg_parameter(strtype);   // to trigger dependecy array
-            }
-        }
-        virtual bool isTypedef() override { return true; }
-        virtual bool isVector() override { return true; }
-        virtual bool isSignal() override { return true; }
-        virtual std::string generate() override { return std::string("axi4_master_in_type"); }
-    };
-
-    class bus0_xmst_out_vector_miss : public types_amba::axi4_master_out_type {
-     public:
-        bus0_xmst_out_vector_miss(GenObject *parent, const char *name, const char *descr="")
-            : axi4_master_out_type(parent, name, descr) {
-            type_ = std::string("bus0_xmst_out_vector_miss");
-            setStrDepth("ADD(CFG_BUS0_XMST_TOTAL,1)");
-            
-            registerCfgType(name);                  // will be registered if name == ""
-            if (name[0]) {
-                std::string strtype = getType();
-                SCV_get_cfg_parameter(strtype);   // to trigger dependecy array
-            }
-        }
-        virtual bool isTypedef() override { return true; }
-        virtual bool isVector() override { return true; }
-        virtual bool isSignal() override { return true; }
-        virtual std::string generate() override { return std::string("axi4_master_out_type"); }
-    };
-
-    class bus0_xslv_in_vector_miss : public types_amba::axi4_slave_in_type {
-     public:
-        bus0_xslv_in_vector_miss(GenObject *parent, const char *name, const char *descr="")
-            : axi4_slave_in_type(parent, name, descr) {
-            type_ = std::string("bus0_xslv_in_vector_miss");
-            setStrDepth("ADD(CFG_BUS0_XSLV_TOTAL,1)");
-            
-            registerCfgType(name);                  // will be registered if name == ""
-            if (name[0]) {
-                std::string strtype = getType();
-                SCV_get_cfg_parameter(strtype);   // to trigger dependecy array
-            }
-        }
-        virtual bool isTypedef() override { return true; }
-        virtual bool isVector() override { return true; }
-        virtual bool isSignal() override { return true; }
-        virtual std::string generate() override { return std::string("axi4_slave_in_type"); }
-    };
-
-    class bus0_xslv_out_vector_miss : public types_amba::axi4_slave_out_type {
-     public:
-        bus0_xslv_out_vector_miss(GenObject *parent, const char *name, const char *descr="")
-            : axi4_slave_out_type(parent, name, descr) {
-            type_ = std::string("bus0_xslv_out_vector_miss");
-            setStrDepth("ADD(CFG_BUS0_XSLV_TOTAL,1)");
-            
-            registerCfgType(name);                  // will be registered if name == ""
-            if (name[0]) {
-                std::string strtype = getType();
-                SCV_get_cfg_parameter(strtype);   // to trigger dependecy array
-            }
-        }
-        virtual bool isTypedef() override { return true; }
-        virtual bool isVector() override { return true; }
-        virtual bool isSignal() override { return true; }
-        virtual std::string generate() override { return std::string("axi4_slave_out_type"); }
-    };
 
  public:
     // io:
@@ -157,15 +84,26 @@ class axictrl_bus0 : public ModuleObject {
     OutStruct<types_bus0::bus0_xslv_in_vector> o_xslvi;
     OutStruct<types_bus0::bus0_mapinfo_vector> o_mapinfo;
 
-    TextLine _miss0_;
-    bus0_xmst_in_vector_miss bus0_xmst_in_vector_miss_def_;
-    bus0_xmst_out_vector_miss bus0_xmst_out_vector_miss_def_;
-    bus0_xslv_in_vector_miss bus0_xslv_in_vector_miss_def_;
-    bus0_xslv_out_vector_miss bus0_xslv_out_vector_miss_def_;
-
-    types_amba::mapinfo_type wb_def_mapinfo;
-    types_amba::axi4_slave_in_type wb_def_xslvi;
-    types_amba::axi4_slave_out_type wb_def_xslvo;
+    class mapinfo_type_signal : public types_amba::mapinfo_type {
+     public:
+        mapinfo_type_signal(GenObject* parent, const char *name, const char *comment="")
+            : types_amba::mapinfo_type(parent, name, comment) {}
+        virtual bool isSignal() override { return true; }
+    } wb_def_mapinfo;
+    
+    class axi4_slave_in_type_signal : public types_amba::axi4_slave_in_type {
+     public:
+        axi4_slave_in_type_signal(GenObject* parent, const char *name, const char *comment="")
+            : types_amba::axi4_slave_in_type(parent, name, comment) {}
+        virtual bool isSignal() override { return true; }
+    } wb_def_xslvi;
+    
+    class axi4_slave_out_type_signal : public types_amba::axi4_slave_out_type {
+     public:
+        axi4_slave_out_type_signal(GenObject* parent, const char *name, const char *comment="")
+            : types_amba::axi4_slave_out_type(parent, name, comment) {}
+        virtual bool isSignal() override { return true; }
+    } wb_def_xslvo;
     Signal w_def_req_valid;
     Signal wb_def_req_addr;
     Signal wb_def_req_size;

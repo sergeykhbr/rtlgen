@@ -26,12 +26,6 @@ axictrl_bus0::axictrl_bus0(GenObject *parent, const char *name) :
     i_xslvo(this, "i_xslvo", "AXI4 slaves output vectors"),
     o_xslvi(this, "o_xslvi", "AXI4 slaves input vectors"),
     o_mapinfo(this, "o_mapinfo", "AXI devices memory mapping information"),
-    // type defintions:
-    _miss0_(this, "Vectors including miss access slots:"),
-    bus0_xmst_in_vector_miss_def_(this, ""),
-    bus0_xmst_out_vector_miss_def_(this, ""),
-    bus0_xslv_in_vector_miss_def_(this, ""),
-    bus0_xslv_out_vector_miss_def_(this, ""),
     // params
     // signals
     wb_def_mapinfo(this, "wb_def_mapinfo"),
@@ -83,9 +77,6 @@ axictrl_bus0::axictrl_bus0(GenObject *parent, const char *name) :
         CONNECT(xdef0, 0, xdef0.i_resp_err, w_def_resp_err);
     ENDNEW();
 
-    ASSIGNZERO(ARRITEM(wb_def_mapinfo, 0, wb_def_mapinfo.addr_start));
-    ASSIGNZERO(ARRITEM(wb_def_mapinfo, 0, wb_def_mapinfo.addr_end));
-
     Operation::start(&comb);
     proc_comb();
 }
@@ -95,6 +86,8 @@ void axictrl_bus0::proc_comb() {
     types_bus0 *bus0 = glob_bus0_cfg_;
     GenObject *i;
     
+    SETZERO(comb.vb_def_mapinfo.addr_start);
+    SETZERO(comb.vb_def_mapinfo.addr_end);
     i = &FOR ("i", CONST("0"), bus0->CFG_BUS0_XMST_TOTAL, "++");
         SETARRITEM(comb.vmsto, *i, comb.vmsto, ARRITEM(i_xmsto, *i, i_xmsto), "Cannot read vector item from port in systemc");
         SETARRITEM(comb.vmsti, *i, comb.vmsti, cfg->axi4_master_in_none);
@@ -266,4 +259,5 @@ TEXT();
         SETARRITEM(o_mapinfo, *i, o_mapinfo, ARRITEM(bus0->CFG_BUS0_MAP, *i, bus0->CFG_BUS0_MAP));
     ENDFOR();
     SETVAL(wb_def_xslvi, ARRITEM(comb.vslvi, bus0->CFG_BUS0_XSLV_TOTAL, comb.vslvi));
+    SETVAL(wb_def_mapinfo, comb.vb_def_mapinfo);
 }
