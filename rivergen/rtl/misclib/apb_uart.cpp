@@ -19,6 +19,7 @@
 apb_uart::apb_uart(GenObject *parent, const char *name) :
     ModuleObject(parent, "apb_uart", name),
     log2_fifosz(this, "log2_fifosz", "4"),
+    sim_speedup_rate(this, "sim_speedup_rate", "0", "simulation speed-up: 0=no speed up, 1=2x, 2=4x, etc"),
     i_clk(this, "i_clk", "1", "CPU clock"),
     i_nrst(this, "i_nrst", "1", "Reset: active LOW"),
     i_mapinfo(this, "i_mapinfo", "interconnect slot information"),
@@ -30,7 +31,6 @@ apb_uart::apb_uart(GenObject *parent, const char *name) :
     o_irq(this, "o_irq", "1"),
     // params
     fifosz(this, "fifosz", "POW2(1,log2_fifosz)"),
-    speedup_rate(this, "speedup_rate", "0", "simulation speed-up: 0=no speed up, 1=2x, 2=4x, etc"),
     _state0_(this, "Rx/Tx states"),
     idle(this, "3", "idle", "0"),
     startbit(this, "3", "startbit", "1"),
@@ -366,7 +366,7 @@ TEXT();
     CASE (CONST("6", 10), "0x18: scaler");
         SETVAL(comb.vb_rdata, scaler);
         IF (AND2(NZ(w_req_valid), NZ(w_req_write)));
-            SETVAL(scaler, BITS(wb_req_wdata, CONST("30"), speedup_rate));
+            SETVAL(scaler, BITS(wb_req_wdata, CONST("30"), sim_speedup_rate));
             SETZERO(scaler_cnt);
         ENDIF();
         ENDCASE();

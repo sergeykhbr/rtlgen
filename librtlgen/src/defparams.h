@@ -32,6 +32,14 @@ class DefParamBOOL : public BOOL {
     }
 };
 
+class DefParamI32D : public I32D {
+ public:
+    DefParamI32D(GenObject *parent, const char *name, const char *val,
+                const char *comment="") : I32D(val, name, parent, comment) {
+        id_ = ID_DEF_PARAM;
+        SCV_set_cfg_parameter(parent, this, getValue());
+    }
+};
 
 class DefParamUI32D : public UI32D {
  public:

@@ -184,6 +184,8 @@ class types_bus0 : public FileObject {
     ParamI32D CFG_BUS0_XMST_DMA;
     TextLine _xmst7_;
     ParamI32D CFG_BUS0_XMST_TOTAL;
+    TextLine _xmst8_;
+    ParamI32D CFG_BUS0_XMST_LOG2_TOTAL;
     TextLine _xslv0_;
     TextLine _xslv1_;
     TextLine _xslv2_;
@@ -205,6 +207,8 @@ class types_bus0 : public FileObject {
     ParamI32D CFG_BUS0_XSLV_DDR;
     TextLine _xslv13_;
     ParamI32D CFG_BUS0_XSLV_TOTAL;
+    TextLine _xslv14_;
+    ParamI32D CFG_BUS0_XSLV_LOG2_TOTAL;
     TextLine _vec0_;
     bus0_xmst_in_vector bus0_xmst_in_vector_def_;
     bus0_xmst_out_vector bus0_xmst_out_vector_def_;

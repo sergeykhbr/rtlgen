@@ -161,6 +161,8 @@ class types_bus1 : public FileObject {
     ParamI32D CFG_BUS1_PSLV_PNP;
     TextLine _pslv12_;
     ParamI32D CFG_BUS1_PSLV_TOTAL;
+    TextLine _pslv13_;
+    ParamI32D CFG_BUS1_PSLV_LOG2_TOTAL;
     TextLine _vec0_;
     bus1_apb_in_vector bus1_apb_in_vector_def_;
     bus1_apb_out_vector bus1_apb_out_vector_def_;

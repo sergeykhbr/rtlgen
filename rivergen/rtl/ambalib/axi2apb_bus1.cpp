@@ -14,10 +14,10 @@
 //  limitations under the License.
 // 
 
-#include "axi2apb.h"
+#include "axi2apb_bus1.h"
 
-axi2apb::axi2apb(GenObject *parent, const char *name) :
-    ModuleObject(parent, "axi2apb", name),
+axi2apb_bus1::axi2apb_bus1(GenObject *parent, const char *name) :
+    ModuleObject(parent, "axi2apb_bus1", name),
     i_clk(this, "i_clk", "1", "CPU clock"),
     i_nrst(this, "i_nrst", "1", "Reset: active LOW"),
     i_mapinfo(this, "i_mapinfo", "Base address information from the interconnect port"),
@@ -43,7 +43,7 @@ axi2apb::axi2apb(GenObject *parent, const char *name) :
     w_req_ready(this, "w_req_ready", "1"),
     // registers
     state(this, "state", "3", "State_Idle"),
-    selidx(this, "selidx", "3", "0", "TODO: clog2 depending slaves number"),
+    selidx(this, "selidx", "CFG_BUS1_PSLV_LOG2_TOTAL", "0"),
     pvalid(this, "pvalid", "1"),
     paddr(this, "paddr", "32"),
     pwdata(this, "pwdata", "CFG_SYSBUS_DATA_BITS"),
@@ -87,7 +87,7 @@ axi2apb::axi2apb(GenObject *parent, const char *name) :
     proc_comb();
 }
 
-void axi2apb::proc_comb() {
+void axi2apb_bus1::proc_comb() {
     types_amba* cfg = glob_types_amba_;
     types_bus1 *bus1 = glob_bus1_cfg_;
     GenObject *i;

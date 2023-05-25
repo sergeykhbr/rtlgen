@@ -20,7 +20,8 @@
 #include "ambalib/types_amba.h"
 #include "ambalib/types_bus0.h"
 #include "ambalib/types_bus1.h"
-#include "ambalib/axi2apb.h"
+#include "ambalib/axictrl_bus0.h"
+#include "ambalib/axi2apb_bus1.h"
 #include "misclib/apb_uart.h"
 #include "misclib/apb_gpio.h"
 #include "misclib/apb_spi.h"
@@ -73,6 +74,7 @@ public:
 
 
 public:
+    DefParamI32D sim_uart_speedup_rate;
     ParamBOOL async_reset;
     // Ports:
     InPort i_sys_nrst;
@@ -204,8 +206,9 @@ public:
     Signal wb_ext_irqs;
 
     // Sub-module instances:
+    axictrl_bus0 bus0;
+    axi2apb_bus1 bus1;
     axi_sram sram0;
-    axi2apb apbrdg0;
     apb_uart uart1;
     apb_gpio gpio0;
     apb_spi spi0;

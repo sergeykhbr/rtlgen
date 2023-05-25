@@ -41,6 +41,8 @@ types_bus1::types_bus1(GenObject *parent) :
     CFG_BUS1_PSLV_PNP(this, "CFG_BUS1_PSLV_PNP", "6"),
     _pslv12_(this, "Total number of the APB slaves devices on Bus[1]."),
     CFG_BUS1_PSLV_TOTAL(this, "CFG_BUS1_PSLV_TOTAL", "7"),
+    _pslv13_(this, "Necessary bus width to store index + 1."),
+    CFG_BUS1_PSLV_LOG2_TOTAL(this, "CFG_BUS1_PSLV_LOG2_TOTAL", "3", "$clog2(CFG_BUS1_PSLV_TOTAL + 1)"),
     _vec0_(this),
     bus1_apb_in_vector_def_(this, ""),
     bus1_apb_out_vector_def_(this, ""),

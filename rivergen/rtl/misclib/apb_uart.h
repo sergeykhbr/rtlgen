@@ -69,6 +69,7 @@ class apb_uart : public ModuleObject {
 
  public:
     TmplParamI32D log2_fifosz;
+    DefParamI32D sim_speedup_rate;
     // io:
     InPort i_clk;
     InPort i_nrst;
@@ -81,7 +82,6 @@ class apb_uart : public ModuleObject {
     OutPort o_irq;
 
     ParamI32D fifosz;
-    ParamI32D speedup_rate;
     TextLine _state0_;
     ParamLogic idle;
     ParamLogic startbit;

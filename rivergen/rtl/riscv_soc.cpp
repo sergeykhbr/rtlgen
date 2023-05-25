@@ -19,6 +19,8 @@
 
 riscv_soc::riscv_soc(GenObject *parent, const char *name) :
     ModuleObject(parent, "riscv_soc", name),
+    // simulation parameters
+    sim_uart_speedup_rate(this, "sim_uart_speedup_rate", "0", "simulation UART speed-up: 0=no speed up, 1=2x, 2=4x, etc"),
     // Generic parameters
     async_reset(this, "async_reset", "CFG_ASYNC_RESET"),
     // Ports
@@ -118,8 +120,9 @@ riscv_soc::riscv_soc(GenObject *parent, const char *name) :
     w_irq_pnp(this, "w_irq_pnp", "1"),
     wb_ext_irqs(this, "wb_ext_irqs", "CFG_PLIC_IRQ_TOTAL"),
     // submodules:
+    bus0(this, "bus0"),
+    bus1(this, "bus1"),
     sram0(this, "sram0"),
-    apbrdg0(this, "apbrdg0"),
     uart1(this, "uart1"),
     gpio0(this, "gpio0"),
     spi0(this, "spi0"),
@@ -129,16 +132,27 @@ riscv_soc::riscv_soc(GenObject *parent, const char *name) :
     Operation::start(this);
 
     // Create and connet Sub-modules:
-    NEW(apbrdg0, apbrdg0.getName().c_str());
-        CONNECT(apbrdg0, 0, apbrdg0.i_clk, i_sys_clk);
-        CONNECT(apbrdg0, 0, apbrdg0.i_nrst, i_sys_nrst);
-        CONNECT(apbrdg0, 0, apbrdg0.i_mapinfo, ARRITEM(bus0_mapinfo, glob_bus0_cfg_->CFG_BUS0_XSLV_PBRIDGE, bus0_mapinfo));
-        CONNECT(apbrdg0, 0, apbrdg0.o_cfg, ARRITEM(dev_pnp, SOC_PNP_PBRIDGE0, dev_pnp));
-        CONNECT(apbrdg0, 0, apbrdg0.i_xslvi, ARRITEM(axisi, glob_bus0_cfg_->CFG_BUS0_XSLV_PBRIDGE, axisi));
-        CONNECT(apbrdg0, 0, apbrdg0.o_xslvo, ARRITEM(axiso, glob_bus0_cfg_->CFG_BUS0_XSLV_PBRIDGE, axiso));
-        CONNECT(apbrdg0, 0, apbrdg0.i_apbo, apbo);
-        CONNECT(apbrdg0, 0, apbrdg0.o_apbi, apbi);
-        CONNECT(apbrdg0, 0, apbrdg0.o_mapinfo, bus1_mapinfo);
+    NEW(bus0, bus0.getName().c_str());
+        CONNECT(bus0, 0, bus0.i_clk, i_sys_clk);
+        CONNECT(bus0, 0, bus0.i_nrst, i_sys_nrst);
+        CONNECT(bus0, 0, bus0.o_cfg, ARRITEM(dev_pnp, SOC_PNP_XCTRL0, dev_pnp));
+        CONNECT(bus0, 0, bus0.i_xmsto, aximo);
+        CONNECT(bus0, 0, bus0.o_xmsti, aximi);
+        CONNECT(bus0, 0, bus0.i_xslvo, axiso);
+        CONNECT(bus0, 0, bus0.o_xslvi, axisi);
+        CONNECT(bus0, 0, bus0.o_mapinfo, bus0_mapinfo);
+    ENDNEW();
+
+    NEW(bus1, bus1.getName().c_str());
+        CONNECT(bus1, 0, bus1.i_clk, i_sys_clk);
+        CONNECT(bus1, 0, bus1.i_nrst, i_sys_nrst);
+        CONNECT(bus1, 0, bus1.i_mapinfo, ARRITEM(bus0_mapinfo, glob_bus0_cfg_->CFG_BUS0_XSLV_PBRIDGE, bus0_mapinfo));
+        CONNECT(bus1, 0, bus1.o_cfg, ARRITEM(dev_pnp, SOC_PNP_PBRIDGE0, dev_pnp));
+        CONNECT(bus1, 0, bus1.i_xslvi, ARRITEM(axisi, glob_bus0_cfg_->CFG_BUS0_XSLV_PBRIDGE, axisi));
+        CONNECT(bus1, 0, bus1.o_xslvo, ARRITEM(axiso, glob_bus0_cfg_->CFG_BUS0_XSLV_PBRIDGE, axiso));
+        CONNECT(bus1, 0, bus1.i_apbo, apbo);
+        CONNECT(bus1, 0, bus1.o_apbi, apbi);
+        CONNECT(bus1, 0, bus1.o_mapinfo, bus1_mapinfo);
     ENDNEW();
 
     group0.cpu_num.setObjValue(&prj_cfg_->CFG_CPU_NUM);
@@ -186,7 +200,7 @@ riscv_soc::riscv_soc(GenObject *parent, const char *name) :
     ENDNEW();
 
     uart1.log2_fifosz.setObjValue(&CFG_SOC_UART1_LOG2_FIFOSZ);
-    uart1.speedup_rate.setObjValue(&prj_cfg_->CFG_UART_SPEED_UP_RATE);
+    uart1.sim_speedup_rate.setObjValue(&sim_uart_speedup_rate);
     NEW(uart1, uart1.getName().c_str());
         CONNECT(uart1, 0, uart1.i_clk, i_sys_clk);
         CONNECT(uart1, 0, uart1.i_nrst, i_sys_nrst);

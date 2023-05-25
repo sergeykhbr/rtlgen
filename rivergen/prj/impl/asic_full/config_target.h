@@ -51,12 +51,6 @@ class config_target : public FileObject {
     TextLine _mem4_;
     TextLine _mem5_;
     ParamI32D CFG_SRAM_LOG2_SIZE;
-    TextLine _uart0_;
-    TextLine _uart1_;
-    TextLine _uart2_;
-    ParamI32D CFG_UART_SPEED_UP_RATE;
-    //TextLine _top0_;
-    //ParamString CFG_TOPDIR;
     TextLine _n_;
 };
 

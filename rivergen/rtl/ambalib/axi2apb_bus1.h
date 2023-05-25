@@ -23,9 +23,9 @@
 
 using namespace sysvc;
 
-class axi2apb : public ModuleObject {
+class axi2apb_bus1 : public ModuleObject {
  public:
-    axi2apb(GenObject *parent, const char *name);
+    axi2apb_bus1(GenObject *parent, const char *name);
 
     class CombProcess : public ProcObject {
      public:
@@ -89,13 +89,13 @@ class axi2apb : public ModuleObject {
     CombProcess comb;
 };
 
-class axi2apb_file : public FileObject {
+class axi2apb_bus1_file : public FileObject {
  public:
-    axi2apb_file(GenObject *parent) :
-        FileObject(parent, "axi2apb"),
-        axi2apb_(this, "") {}
+    axi2apb_bus1_file(GenObject *parent) :
+        FileObject(parent, "axi2apb_bus1"),
+        axi2apb_bus1_(this, "") {}
 
  private:
-    axi2apb axi2apb_;
+    axi2apb_bus1 axi2apb_bus1_;
 };
 
