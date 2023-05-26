@@ -36,10 +36,16 @@ class axictrl_bus0 : public ModuleObject {
             vslvi(this, "", "vslvi", "ADD(CFG_BUS0_XSLV_TOTAL,1)"),
             vslvo(this, "", "vslvo", "ADD(CFG_BUS0_XSLV_TOTAL,1)"),
             vb_def_mapinfo(this, "vb_def_mapinfo"),
-            vb_ar_midx(this, "vb_ar_midx", "CFG_BUS0_XMST_LOG2_TOTAL"),
-            vb_aw_midx(this, "vb_aw_midx", "CFG_BUS0_XMST_LOG2_TOTAL"),
-            vb_ar_sidx(this, "vb_ar_sidx", "CFG_BUS0_XSLV_LOG2_TOTAL"),
-            vb_aw_sidx(this, "vb_aw_sidx", "CFG_BUS0_XSLV_LOG2_TOTAL"),
+            i_ar_midx("0", "i_ar_midx", this),
+            i_aw_midx("0", "i_aw_midx", this),
+            i_ar_sidx("0", "i_ar_sidx", this),
+            i_aw_sidx("0", "i_aw_sidx", this),
+            i_r_midx("0", "i_r_midx", this),
+            i_r_sidx("0", "i_r_sidx", this),
+            i_w_midx("0", "i_w_midx", this),
+            i_w_sidx("0", "i_w_sidx", this),
+            i_b_midx("0", "i_b_midx", this),
+            i_b_sidx("0", "i_b_sidx", this),
             v_aw_fire(this, "v_aw_fire", "1"),
             v_ar_fire(this, "v_ar_fire", "1"),
             v_w_fire(this, "v_w_fire", "1"),
@@ -56,10 +62,16 @@ class axictrl_bus0 : public ModuleObject {
         TStructArray<types_amba::axi4_slave_in_type> vslvi;
         TStructArray<types_amba::axi4_slave_out_type> vslvo;
         types_amba::mapinfo_type vb_def_mapinfo;
-        Logic vb_ar_midx;
-        Logic vb_aw_midx;
-        Logic vb_ar_sidx;
-        Logic vb_aw_sidx;
+        I32D i_ar_midx;
+        I32D i_aw_midx;
+        I32D i_ar_sidx;
+        I32D i_aw_sidx;
+        I32D i_r_midx;
+        I32D i_r_sidx;
+        I32D i_w_midx;
+        I32D i_w_sidx;
+        I32D i_b_midx;
+        I32D i_b_sidx;
         Logic v_aw_fire;
         Logic v_ar_fire;
         Logic v_w_fire;

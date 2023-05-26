@@ -500,25 +500,35 @@ Operation &BIT(GenObject &a, int b, const char *comment) {
 // BITS
 std::string BITS_gen(GenObject **args) {
     std::string ret = "";
+    bool use_shift = false;
+    std::string t1 = args[1]->getType();
+    if (SCV_is_sysc() && 
+        (t1 == "uint64_t" || t1 == "int" || t1 == "uint32_t" || t1 == "uint16_t")) {
+        use_shift = true;
+        ret += "(";
+    }
     ret += Operation::obj2varname(args[1], "r", true);
-    if (SCV_is_sysc()) {
-         ret += "(";
-         ret += Operation::obj2varname(args[2], "r", true);
-         ret += ", ";
-         ret += Operation::obj2varname(args[3], "r", true);
-         ret += ")";
+    if (use_shift) {
+        ret += " >> " + Operation::obj2varname(args[3], "r", true);
+        ret += ")";
+    } else if (SCV_is_sysc()) {
+        ret += "(";
+        ret += Operation::obj2varname(args[2], "r", true);
+        ret += ", ";
+        ret += Operation::obj2varname(args[3], "r", true);
+        ret += ")";
     } else if (SCV_is_sv()) {
-         ret += "[";
-         ret += Operation::obj2varname(args[2], "r", true);
-         ret += ": ";
-         ret += Operation::obj2varname(args[3], "r", true);
-         ret += "]";
+        ret += "[";
+        ret += Operation::obj2varname(args[2], "r", true);
+        ret += ": ";
+        ret += Operation::obj2varname(args[3], "r", true);
+        ret += "]";
     } else {
-         ret += "(";
-         ret += Operation::obj2varname(args[2], "r", true);
-         ret += " downto ";
-         ret += Operation::obj2varname(args[3], "r", true);
-         ret += ")";
+        ret += "(";
+        ret += Operation::obj2varname(args[2], "r", true);
+        ret += " downto ";
+        ret += Operation::obj2varname(args[3], "r", true);
+        ret += ")";
     }
     return ret;
 }
