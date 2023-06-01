@@ -59,7 +59,6 @@ class ParamString : public STRING,
     }
 };
 
-
 class TmplParamI32D : public I32D,
                       public ParamGeneric {
  public:

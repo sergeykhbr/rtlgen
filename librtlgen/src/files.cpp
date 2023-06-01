@@ -252,6 +252,9 @@ void FileObject::generate_sysc() {
     if (tmpllist.size()) {
         out += "#include \"api_core.h\"\n";
     }
+    if (isSvApiUsed()) {
+        out += "#include \"sv_func.h\"\n";
+    }
 
     out += "\n";
     out += 

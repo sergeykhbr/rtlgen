@@ -72,6 +72,7 @@ class GenObject {
 
     virtual EIdType getId() { return id_; }
     virtual GenObject *getParent() { return parent_; }
+    virtual GenObject *getParentFile();
     virtual GenObject *getAsyncReset();
     virtual GenObject *getResetPort();
     virtual GenObject *getClockPort();
@@ -122,6 +123,8 @@ class GenObject {
     virtual void disableVcd() { vcd_enabled_ = false; }
     virtual bool isVcd() { return vcd_enabled_; }
     virtual bool isGenericDep();      // depend on generic parameters
+    virtual bool isSvApiUsed() { return sv_api_; }  // readmemh or similar methods used
+    virtual void setSvApiUsed() { sv_api_ = true; }
 
     virtual std::string generate() { return std::string(""); }
     virtual uint64_t parse_to_u64(const char *val, size_t &pos);
@@ -152,6 +155,7 @@ class GenObject {
     bool nreg_;             // Mark object (signal, value, port, structure) as a Flip-flop negedge clock
     bool reset_disabled_;   // register without reset (memory)
     bool vcd_enabled_;      // show instance in VCD trace file
+    bool sv_api_;           // method readmemh or similar were used
     std::string comment_;
     std::list<GenObject *> entries_;
 

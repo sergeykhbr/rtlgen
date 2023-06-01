@@ -126,7 +126,7 @@ std::string StructObject::generate_interface_constructor_init() {
     int aligncnt;
 
     ret += Operation::addspaces() + getType() + "(";
-    aligncnt = ret.size();
+    aligncnt = static_cast<int>(ret.size());
     for (auto& p : getEntries()) {
         if (p->getId() == ID_COMMENT) {
             continue;

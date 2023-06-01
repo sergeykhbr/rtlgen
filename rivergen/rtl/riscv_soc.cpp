@@ -85,17 +85,24 @@ riscv_soc::riscv_soc(GenObject *parent, const char *name) :
     SOC_PNP_SPI(this, "SOC_PNP_SPI", "14"),
     SOC_PNP_TOTAL(this, "SOC_PNP_TOTAL", "15"),
     _cfg0_(this),
-    CFG_SOC_UART1_LOG2_FIFOSZ(this, "CFG_SOC_UART1_LOG2_FIFOSZ", "4"),
+    SOC_UART1_LOG2_FIFOSZ(this, "SOC_UART1_LOG2_FIFOSZ", "4"),
     _cfg1_(this),
-    CFG_SOC_GPIO0_WIDTH(this, "CFG_SOC_GPIO0_WIDTH", "12"),
+    SOC_GPIO0_WIDTH(this, "SOC_GPIO0_WIDTH", "12"),
     _cfg2_(this),
-    CFG_SOC_SPI0_LOG2_FIFOSZ(this, "CFG_SOC_SPI0_LOG2_FIFOSZ", "9"),
+    SOC_SPI0_LOG2_FIFOSZ(this, "SOC_SPI0_LOG2_FIFOSZ", "9"),
     _plic0_(this),
     _plic1_(this, "Number of contexts in PLIC controller."),
     _plic2_(this, "Example FU740: S7 Core0 (M) + 4xU74 Cores (M+S)."),
-    CFG_PLIC_CONTEXT_TOTAL(this, "CFG_PLIC_CONTEXT_TOTAL", "9"),
+    SOC_PLIC_CONTEXT_TOTAL(this, "SOC_PLIC_CONTEXT_TOTAL", "9"),
     _plic3_(this, "Any number up to 1024. Zero interrupt must be 0."),
-    CFG_PLIC_IRQ_TOTAL(this, "CFG_PLIC_IRQ_TOTAL", "73"),
+    SOC_PLIC_IRQ_TOTAL(this, "SOC_PLIC_IRQ_TOTAL", "73"),
+    _hex0_(this),
+    _hex1_(this, "HEX-image for the initialization of the Boot ROM."),
+    SOC_BOOTROM_FILE_HEX(this, "SOC_BOOTROM_FILE_HEX", "../../../../examples/bootrom_tests/linuxbuild/bin/bootrom_tests"),
+    _hwid0_(this),
+    _hwid1_(this, "Hardware SoC Identificator."),
+    _hwid2_(this, "Read Only unique platform identificator that could be read by FW"),
+    SOC_HW_ID(this, "32", "SOC_HW_ID", "0x20220903"),
     soc_pnp_vector_def_(this, ""),
     // Singals:
     acpo(this, "acpo"),
@@ -112,16 +119,17 @@ riscv_soc::riscv_soc(GenObject *parent, const char *name) :
     wb_clint_mtimer(this, "wb_clint_mtimer", "64"),
     wb_clint_msip(this, "wb_clint_msip", "CFG_CPU_MAX"),
     wb_clint_mtip(this, "wb_clint_mtip", "CFG_CPU_MAX"),
-    wb_plic_xeip(this, "wb_plic_xeip", "CFG_PLIC_CONTEXT_TOTAL"),
+    wb_plic_xeip(this, "wb_plic_xeip", "SOC_PLIC_CONTEXT_TOTAL"),
     wb_plic_meip(this, "wb_plic_meip", "CFG_CPU_MAX"),
     wb_plic_seip(this, "wb_plic_seip", "CFG_CPU_MAX"),
     w_irq_uart1(this, "w_irq_uart1", "1"),
-    wb_irq_gpio(this, "wb_irq_gpio", "CFG_SOC_GPIO0_WIDTH"),
+    wb_irq_gpio(this, "wb_irq_gpio", "SOC_GPIO0_WIDTH"),
     w_irq_pnp(this, "w_irq_pnp", "1"),
-    wb_ext_irqs(this, "wb_ext_irqs", "CFG_PLIC_IRQ_TOTAL"),
+    wb_ext_irqs(this, "wb_ext_irqs", "SOC_PLIC_IRQ_TOTAL"),
     // submodules:
     bus0(this, "bus0"),
     bus1(this, "bus1"),
+    rom0(this, "rom0"),
     sram0(this, "sram0"),
     uart1(this, "uart1"),
     gpio0(this, "gpio0"),
@@ -189,6 +197,17 @@ riscv_soc::riscv_soc(GenObject *parent, const char *name) :
         CONNECT(group0, 0, group0.o_dmreset, o_dmreset);
     ENDNEW();
 
+    rom0.abits.setObjValue(&prj_cfg_->CFG_BOOTROM_LOG2_SIZE);
+    rom0.filename.setObjValue(&SOC_BOOTROM_FILE_HEX);
+    NEW(rom0, rom0.getName().c_str());
+        CONNECT(rom0, 0, rom0.i_clk, i_sys_clk);
+        CONNECT(rom0, 0, rom0.i_nrst, i_sys_nrst);
+        CONNECT(rom0, 0, rom0.i_mapinfo, ARRITEM(bus0_mapinfo, glob_bus0_cfg_->CFG_BUS0_XSLV_BOOTROM, bus0_mapinfo));
+        CONNECT(rom0, 0, rom0.o_cfg, ARRITEM(dev_pnp, SOC_PNP_SRAM, dev_pnp));
+        CONNECT(rom0, 0, rom0.i_xslvi, ARRITEM(axisi, glob_bus0_cfg_->CFG_BUS0_XSLV_BOOTROM, axisi));
+        CONNECT(rom0, 0, rom0.o_xslvo, ARRITEM(axiso, glob_bus0_cfg_->CFG_BUS0_XSLV_BOOTROM, axiso));
+    ENDNEW();
+
     sram0.abits.setObjValue(&prj_cfg_->CFG_SRAM_LOG2_SIZE);
     NEW(sram0, sram0.getName().c_str());
         CONNECT(sram0, 0, sram0.i_clk, i_sys_clk);
@@ -199,7 +218,7 @@ riscv_soc::riscv_soc(GenObject *parent, const char *name) :
         CONNECT(sram0, 0, sram0.o_xslvo, ARRITEM(axiso, glob_bus0_cfg_->CFG_BUS0_XSLV_SRAM, axiso));
     ENDNEW();
 
-    uart1.log2_fifosz.setObjValue(&CFG_SOC_UART1_LOG2_FIFOSZ);
+    uart1.log2_fifosz.setObjValue(&SOC_UART1_LOG2_FIFOSZ);
     uart1.sim_speedup_rate.setObjValue(&sim_uart_speedup_rate);
     NEW(uart1, uart1.getName().c_str());
         CONNECT(uart1, 0, uart1.i_clk, i_sys_clk);
@@ -213,7 +232,7 @@ riscv_soc::riscv_soc(GenObject *parent, const char *name) :
         CONNECT(uart1, 0, uart1.o_irq, w_irq_uart1);
     ENDNEW();
 
-    gpio0.width.setObjValue(&CFG_SOC_GPIO0_WIDTH);
+    gpio0.width.setObjValue(&SOC_GPIO0_WIDTH);
     NEW(gpio0, gpio0.getName().c_str());
         CONNECT(gpio0, 0, gpio0.i_clk, i_sys_clk);
         CONNECT(gpio0, 0, gpio0.i_nrst, i_sys_nrst);
@@ -227,7 +246,7 @@ riscv_soc::riscv_soc(GenObject *parent, const char *name) :
         CONNECT(gpio0, 0, gpio0.o_irq, wb_irq_gpio);
     ENDNEW();
 
-    spi0.log2_fifosz.setObjValue(&CFG_SOC_SPI0_LOG2_FIFOSZ);
+    spi0.log2_fifosz.setObjValue(&SOC_SPI0_LOG2_FIFOSZ);
     NEW(spi0, spi0.getName().c_str());
         CONNECT(spi0, 0, spi0.i_clk, i_sys_clk);
         CONNECT(spi0, 0, spi0.i_nrst, i_sys_nrst);
@@ -255,13 +274,13 @@ void riscv_soc::proc_comb() {
     TEXT();
     TEXT("assign interrupts:");
     SETBITS(comb.vb_ext_irqs, 22, 0, ALLZEROS());
-    SETBITS(comb.vb_ext_irqs, DEC(ADD2(CONST("23"), CFG_SOC_GPIO0_WIDTH)),
+    SETBITS(comb.vb_ext_irqs, DEC(ADD2(CONST("23"), SOC_GPIO0_WIDTH)),
                               CONST("23"),
                               wb_irq_gpio, "FU740: 16 bits, current 12-bits");
     SETBIT(comb.vb_ext_irqs, 39, w_irq_uart1);
     SETBITS(comb.vb_ext_irqs, 69, 40, ALLZEROS());
     SETBIT(comb.vb_ext_irqs, 70, w_irq_pnp);
-    SETBITS(comb.vb_ext_irqs, DEC(CFG_PLIC_IRQ_TOTAL), CONST("71"), ALLZEROS());
+    SETBITS(comb.vb_ext_irqs, DEC(SOC_PLIC_IRQ_TOTAL), CONST("71"), ALLZEROS());
     SETVAL(wb_ext_irqs, comb.vb_ext_irqs);
 
     TEXT();

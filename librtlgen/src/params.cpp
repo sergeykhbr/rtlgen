@@ -20,9 +20,12 @@
 namespace sysvc {
 
 ParamGeneric::ParamGeneric(GenValue *parent) {
-    SCV_set_cfg_parameter(parent,
-                          parent,
-                          parent->getValue());
+    if (parent->isString()) {
+    } else {
+        SCV_set_cfg_parameter(parent,
+                              parent,
+                              parent->getValue());
+    }
 }
 
 std::string ParamGeneric::genparam(GenValue *p) {

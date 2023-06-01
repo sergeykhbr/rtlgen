@@ -210,6 +210,7 @@ void CALLF(GenObject *ret, GenObject &a, size_t argcnt, ...);
 // write string into file
 void FOPEN(GenObject &f, GenObject &str);
 void FWRITE(GenObject &f, GenObject &str);
+void READMEMH(GenObject &fname, GenObject &mem);
 
 // Create new module
 void NEW(GenObject &m, const char *name, GenObject *idx=0, const char *comment="");

@@ -1,0 +1,63 @@
+// 
+//  Copyright 2023 Sergey Khabarov, sergeykhbr@gmail.com
+// 
+//  Licensed under the Apache License, Version 2.0 (the "License");
+//  you may not use this file except in compliance with the License.
+//  You may obtain a copy of the License at
+// 
+//      http://www.apache.org/licenses/LICENSE-2.0
+// 
+//  Unless required by applicable law or agreed to in writing, software
+//  distributed under the License is distributed on an "AS IS" BASIS,
+//  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+//  See the License for the specific language governing permissions and
+//  limitations under the License.
+// 
+
+#include "rom_inferred_2x32.h"
+
+rom_inferred_2x32::rom_inferred_2x32(GenObject *parent,
+    const char *name, const char *gen_abits) :
+    ModuleObject(parent, "rom_inferred_2x32", name),
+    abits(this, "abits", gen_abits),
+    filename(this, "filename", ""),
+    i_clk(this, "i_clk", "1", "CPU clock"),
+    i_addr(this, "i_addr", &abits),
+    o_rdata(this, "o_rdata", "64"),
+    DEPTH(this, "DEPTH", "POW2(1,abits)"),
+    hexname0("", "hexname0", this),
+    hexname1("", "hexname1", this),
+    wb_rdata0(this, "wb_rdata0", "32"),
+    wb_rdata1(this, "wb_rdata1", "32"),
+    mem0(this, "mem0", "32", "DEPTH"),
+    mem1(this, "mem1", "32", "DEPTH"),
+    // process
+    rproc(this)
+{
+    Operation::start(this);
+    INITIAL();
+        DECLARE_TSTR();
+        SETSTRF(hexname0, "%s_lo.log", 1, &filename);
+        READMEMH(filename, mem0);
+
+        TEXT();
+        SETSTRF(hexname1, "%s_hi.log", 1, &filename);
+        READMEMH(filename, mem1);
+    ENDINITIAL();
+
+    mem0.disableReset();
+    mem1.disableReset();
+    disableVcd();
+
+    Operation::start(&rproc);
+    registers();
+}
+
+void rom_inferred_2x32::registers() {
+    SETVAL(wb_rdata0, ARRITEM(mem0, TO_INT(i_addr), mem0));
+    SETVAL(wb_rdata1, ARRITEM(mem1, TO_INT(i_addr), mem1));
+
+TEXT();
+    SETVAL(o_rdata, CC2(wb_rdata1, wb_rdata0));
+}
+

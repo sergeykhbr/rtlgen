@@ -37,6 +37,7 @@ GenObject::GenObject(GenObject *parent, const char *type, EIdType id,
     nreg_ = false;
     reset_disabled_ = false;
     vcd_enabled_ = true;
+    sv_api_ = false;
     type_ = std::string(type);
     name_ = std::string(name);
     comment_ = std::string(comment);
@@ -53,12 +54,21 @@ std::string GenObject::getFullPath() {
     return ret;
 }
 
+GenObject *GenObject::getParentFile() {
+    GenObject *ret = 0;
+    if (getId() == ID_FILE) {
+        ret = this;
+    } else if (parent_) {
+        ret = parent_->getParentFile();
+    }
+    return ret;
+}
+
 std::string GenObject::getFile() {
     std::string ret = "";
-    if (getId() == ID_FILE) {
-        return getName();
-    } else if (parent_) {
-        return parent_->getFile();
+    GenObject *pfile = getParentFile();
+    if (pfile) {
+        return pfile->getName();
     }
     return ret;
 }
@@ -141,6 +151,10 @@ bool GenObject::isLocal() {
 }
 
 bool GenObject::isGenericDep() {
+    if (isString()) {
+        // String value shouldn't be parsed. Use value as is.
+        return false;
+    }
     std::list<GenObject *> objlist;
     parse_to_objlist(strValue_.c_str(), 0, objlist);
 
@@ -197,7 +211,8 @@ std::string GenObject::getStrValue() {
         } else {
             return objValue_->getStrValue();
         }
-
+    } else if (isString()) {
+        return strValue_;
     } else {
         return parse_to_str(strValue_.c_str(), tpos);
     }

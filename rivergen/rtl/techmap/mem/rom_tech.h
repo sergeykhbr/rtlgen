@@ -17,29 +17,33 @@
 #pragma once
 
 #include <api.h>
-#include "ram_tech.h"
-#include "ram_bytes_tech.h"
-#include "ram_mmu_tech.h"
-#include "ram_cache_bwe_tech.h"
 #include "rom_inferred_2x32.h"
-#include "rom_tech.h"
 
-class mem_folder : public FolderObject {
+using namespace sysvc;
+
+class rom_tech : public ModuleObject {
  public:
-    mem_folder(GenObject *parent) :
-        FolderObject(parent, "mem"),
-        ram_tech_(this),
-        ram_bytes_tech_(this),
-        ram_mmu_tech_(this),
-        ram_cache_bwe_tech_(this),
-        rom_inferred_2x32_(this),
-        rom_tech_(this) {}
+    rom_tech(GenObject *parent, const char *name, const char *gen_abits="6", const char *gen_dbits="8");
 
- protected:
-    ram_tech_file ram_tech_;
-    ram_bytes_tech_file ram_bytes_tech_;
-    ram_mmu_tech_file ram_mmu_tech_;
-    ram_cache_bwe_tech_file ram_cache_bwe_tech_;
-    rom_inferred_2x32_file rom_inferred_2x32_;
-    rom_tech_file rom_tech_;
+ public:
+    TmplParamI32D abits;
+    TmplParamI32D dbits;
+    DefParamString filename;
+
+    InPort i_clk;
+    InPort i_addr;
+    OutPort o_rdata;
+
+    rom_inferred_2x32 inf0;
 };
+
+class rom_tech_file : public FileObject {
+ public:
+    rom_tech_file(GenObject *parent) :
+        FileObject(parent, "rom_tech"),
+        rom_tech_(this, "") {}
+
+ private:
+    rom_tech rom_tech_;
+};
+

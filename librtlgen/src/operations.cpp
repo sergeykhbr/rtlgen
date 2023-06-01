@@ -2981,6 +2981,31 @@ void FWRITE(GenObject &f, GenObject &str) {
     p->add_arg(&str);
 }
 
+// READMEMH
+std::string READMEMH_gen(GenObject **args) {
+    std::string ret = Operation::addspaces();
+    if (SCV_is_sysc()) {
+        ret += "SV_readmemh(";
+        ret += Operation::obj2varname(args[1]) + ".c_str(), ";
+        ret += Operation::obj2varname(args[2]);
+    } else {
+        ret += "$readmemh(";
+        ret += Operation::obj2varname(args[1]) + ", ";
+        ret += Operation::obj2varname(args[2]);
+    }
+    ret += ");\n";
+    return ret;
+}
+
+void READMEMH(GenObject &fname, GenObject &mem) {
+    Operation *p = new Operation("");
+    p->igen_ = READMEMH_gen;
+    p->add_arg(p);
+    p->add_arg(&fname);
+    p->add_arg(&mem);
+    mem.getParentFile()->setSvApiUsed();
+}
+
 // NEW module instance
 std::string NEW_gen_sv(Operation *op, ModuleObject *mod, std::string name) {
     std::string ret = "";

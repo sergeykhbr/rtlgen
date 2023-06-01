@@ -51,6 +51,7 @@ class STRING : public GenValue {
         strValue_ = "\"" + std::string(val) + "\"";
     }
 
+    virtual bool isString() override { return true; }
     virtual std::string getType();
     virtual std::string getStrValue() override { return GenObject::getStrValue(); }
 };

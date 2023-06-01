@@ -26,6 +26,7 @@
 #include "misclib/apb_gpio.h"
 #include "misclib/apb_spi.h"
 #include "misclib/axi_sram.h"
+#include "misclib/axi_rom.h"
 #include "riverlib/river_cfg.h"
 #include "riverlib/types_river.h"
 #include "riverlib/river_amba.h"
@@ -44,7 +45,7 @@ class riscv_soc : public ModuleObject {
      public:
         CombProcess(GenObject* parent)
             : ProcObject(parent, "comb"),
-            vb_ext_irqs(this, "vb_ext_irqs", "CFG_PLIC_IRQ_TOTAL") {
+            vb_ext_irqs(this, "vb_ext_irqs", "SOC_PLIC_IRQ_TOTAL") {
         }
      public:
         Logic vb_ext_irqs;
@@ -169,17 +170,24 @@ public:
     ParamI32D SOC_PNP_SPI;
     ParamI32D SOC_PNP_TOTAL;
     TextLine _cfg0_;
-    ParamI32D CFG_SOC_UART1_LOG2_FIFOSZ;
+    ParamI32D SOC_UART1_LOG2_FIFOSZ;
     TextLine _cfg1_;
-    ParamI32D CFG_SOC_GPIO0_WIDTH;
+    ParamI32D SOC_GPIO0_WIDTH;
     TextLine _cfg2_;
-    ParamI32D CFG_SOC_SPI0_LOG2_FIFOSZ;
+    ParamI32D SOC_SPI0_LOG2_FIFOSZ;
     TextLine _plic0_;
     TextLine _plic1_;
     TextLine _plic2_;
-    ParamI32D CFG_PLIC_CONTEXT_TOTAL;
+    ParamI32D SOC_PLIC_CONTEXT_TOTAL;
     TextLine _plic3_;
-    ParamI32D CFG_PLIC_IRQ_TOTAL;
+    ParamI32D SOC_PLIC_IRQ_TOTAL;
+    TextLine _hex0_;
+    TextLine _hex1_;
+    ParamString SOC_BOOTROM_FILE_HEX;
+    TextLine _hwid0_;
+    TextLine _hwid1_;
+    TextLine _hwid2_;
+    ParamLogic SOC_HW_ID;
 
     soc_pnp_vector soc_pnp_vector_def_;
 
@@ -208,6 +216,7 @@ public:
     // Sub-module instances:
     axictrl_bus0 bus0;
     axi2apb_bus1 bus1;
+    axi_rom rom0;
     axi_sram sram0;
     apb_uart uart1;
     apb_gpio gpio0;
