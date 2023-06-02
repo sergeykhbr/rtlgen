@@ -25,6 +25,7 @@
 #include "apb_spi.h"
 #include "axi_sram.h"
 #include "axi_rom.h"
+#include "plic.h"
 
 class misclib_folder : public FolderObject {
  public:
@@ -37,7 +38,8 @@ class misclib_folder : public FolderObject {
         apb_ddr_file_(this),
         apb_spi_file_(this),
         axi_sram_file_(this),
-        axi_rom_file_(this) {}
+        axi_rom_file_(this),
+        plic_file_(this) {}
 
  protected:
     // subfolders:
@@ -50,4 +52,5 @@ class misclib_folder : public FolderObject {
     apb_spi_file apb_spi_file_;
     axi_sram_file axi_sram_file_;
     axi_rom_file axi_rom_file_;
+    plic_file plic_file_;
 };

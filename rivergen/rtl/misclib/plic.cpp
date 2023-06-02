@@ -14,19 +14,23 @@
 //  limitations under the License.
 // 
 
-#include "axi_rom.h"
+#include "plic.h"
 
-axi_rom::axi_rom(GenObject *parent, const char *name) :
-    ModuleObject(parent, "axi_rom", name),
-    abits(this, "abits", "17"),
-    filename(this, "filename", ""),
+plic::plic(GenObject *parent, const char *name) :
+    ModuleObject(parent, "plic", name),
+    ctxmax(this, "ctxmax", "8"),
+    irqmax(this, "irqmax", "128"),
     i_clk(this, "i_clk", "1", "CPU clock"),
     i_nrst(this, "i_nrst", "1", "Reset: active LOW"),
     i_mapinfo(this, "i_mapinfo", "interconnect slot information"),
     o_cfg(this, "o_cfg", "Device descriptor"),
     i_xslvi(this, "i_xslvi", "AXI Slave to Bridge interface"),
     o_xslvo(this, "o_xslvo", "AXI Bridge to Slave interface"),
+    i_irq_request(this, "i_irq_request", "irqmax"),
+    o_ip(this, "o_ip", "ctxmax"),
     // params
+    // struct declaration
+    PlicContextTypeDef_(this, "", -1),
     // signals
     w_req_valid(this, "w_req_valid", "1"),
     wb_req_addr(this, "wb_req_addr", "CFG_SYSBUS_ADDR_BITS"),
@@ -39,16 +43,20 @@ axi_rom::axi_rom(GenObject *parent, const char *name) :
     w_resp_valid(this, "w_resp_valid", "1"),
     wb_resp_rdata(this, "wb_resp_rdata", "CFG_SYSBUS_DATA_BITS"),
     wb_resp_err(this, "wb_resp_err", "1"),
-    wb_req_addr_abits(this, "wb_req_addr_abits", "abits"),
+    // registers
+    src_priority(this, "src_priority", "MUL(4,1024)"),
+    pending(this, "pending", "1024"),
+    ip(this, "ip", "ctxmax"),
+    ctx(this, "ctx"),
+    rdata(this, "rdata", "64"),
     //
     comb(this),
-    xslv0(this, "xslv0"),
-    tech0(this, "tech0", "abits", "CFG_LOG2_SYSBUS_DATA_BYTES")
+    xslv0(this, "xslv0")
 {
     Operation::start(this);
 
     xslv0.vid.setObjValue(&glob_types_amba_->VENDOR_OPTIMITECH);
-    xslv0.did.setObjValue(&glob_types_amba_->OPTIMITECH_ROM);
+    xslv0.did.setObjValue(&glob_types_amba_->OPTIMITECH_PLIC);
     NEW(xslv0, xslv0.getName().c_str());
         CONNECT(xslv0, 0, xslv0.i_clk, i_clk);
         CONNECT(xslv0, 0, xslv0.i_nrst, i_nrst);
@@ -69,22 +77,9 @@ axi_rom::axi_rom(GenObject *parent, const char *name) :
         CONNECT(xslv0, 0, xslv0.i_resp_err, wb_resp_err);
     ENDNEW();
 
-    tech0.changeTmplParameter("abits", "abits");
-    tech0.changeTmplParameter("log2_dbytes", "CFG_LOG2_SYSBUS_DATA_BYTES");
-    NEW(tech0, tech0.getName().c_str());
-        CONNECT(tech0, 0, tech0.i_clk, i_clk);
-        CONNECT(tech0, 0, tech0.i_addr, wb_req_addr_abits);
-        CONNECT(tech0, 0, tech0.o_rdata, wb_resp_rdata);
-    ENDNEW();
-
     Operation::start(&comb);
     proc_comb();
 }
 
-void axi_rom::proc_comb() {
-TEXT();
-    SETVAL(wb_req_addr_abits, BITS(wb_req_addr, DEC(abits), CONST("0")));
-    SETONE(w_req_ready);
-    SETONE(w_resp_valid);
-    SETZERO(wb_resp_err);
+void plic::proc_comb() {
 }

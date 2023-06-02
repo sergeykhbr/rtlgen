@@ -131,6 +131,7 @@ riscv_soc::riscv_soc(GenObject *parent, const char *name) :
     bus1(this, "bus1"),
     rom0(this, "rom0"),
     sram0(this, "sram0"),
+    plic0(this, "plic0"),
     uart1(this, "uart1"),
     gpio0(this, "gpio0"),
     spi0(this, "spi0"),
@@ -218,6 +219,19 @@ riscv_soc::riscv_soc(GenObject *parent, const char *name) :
         CONNECT(sram0, 0, sram0.o_xslvo, ARRITEM(axiso, glob_bus0_cfg_->CFG_BUS0_XSLV_SRAM, axiso));
     ENDNEW();
 
+    plic0.ctxmax.setObjValue(&SOC_PLIC_CONTEXT_TOTAL);
+    plic0.irqmax.setObjValue(&SOC_PLIC_IRQ_TOTAL);
+    NEW(plic0, plic0.getName().c_str());
+        CONNECT(plic0, 0, plic0.i_clk, i_sys_clk);
+        CONNECT(plic0, 0, plic0.i_nrst, i_sys_nrst);
+        CONNECT(plic0, 0, plic0.i_mapinfo, ARRITEM(bus0_mapinfo, glob_bus0_cfg_->CFG_BUS0_XSLV_PLIC, bus0_mapinfo));
+        CONNECT(plic0, 0, plic0.o_cfg, ARRITEM(dev_pnp, SOC_PNP_PLIC, dev_pnp));
+        CONNECT(plic0, 0, plic0.i_xslvi, ARRITEM(axisi, glob_bus0_cfg_->CFG_BUS0_XSLV_PLIC, axisi));
+        CONNECT(plic0, 0, plic0.o_xslvo, ARRITEM(axiso, glob_bus0_cfg_->CFG_BUS0_XSLV_PLIC, axiso));
+        CONNECT(plic0, 0, plic0.i_irq_request, wb_ext_irqs);
+        CONNECT(plic0, 0, plic0.o_ip, wb_plic_xeip);
+    ENDNEW();
+
     uart1.log2_fifosz.setObjValue(&SOC_UART1_LOG2_FIFOSZ);
     uart1.sim_speedup_rate.setObjValue(&sim_uart_speedup_rate);
     NEW(uart1, uart1.getName().c_str());
@@ -282,6 +296,20 @@ void riscv_soc::proc_comb() {
     SETBIT(comb.vb_ext_irqs, 70, w_irq_pnp);
     SETBITS(comb.vb_ext_irqs, DEC(SOC_PLIC_IRQ_TOTAL), CONST("71"), ALLZEROS());
     SETVAL(wb_ext_irqs, comb.vb_ext_irqs);
+
+    TEXT();
+    TEXT("FU740 implements 5 cores (we implement only 4):");
+    TEXT("    Hart0 - M-mode only (S7 Core RV64IMAC)");
+    TEXT("    Hart1..4 - M+S modes (U74 Cores RV64GC)");
+    TEXT("Hart4 ignored");
+    SETVAL(wb_plic_meip, CCx(4, &BIT(wb_plic_xeip, 5),
+                                &BIT(wb_plic_xeip, 3),
+                                &BIT(wb_plic_xeip, 1),
+                                &BIT(wb_plic_xeip, 0)));
+    SETVAL(wb_plic_seip, CCx(4, &BIT(wb_plic_xeip, 6),
+                                &BIT(wb_plic_xeip, 4),
+                                &BIT(wb_plic_xeip, 2),
+                                &comb.v_gnd1));
 
     TEXT();
     SETONE(o_jtag_vref);

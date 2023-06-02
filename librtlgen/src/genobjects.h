@@ -86,6 +86,7 @@ class GenObject {
     virtual bool isTypedef() { return false; }
     virtual bool isSignal() { return false; }
     virtual bool isBigSC() { return false; }    // Use sc_biguint in systemc always
+    virtual bool isBvSC() { return false; }    // Use sc_bv in systemc always (for bitwidth > 512)
     virtual bool isInput() { return false; }
     virtual bool isOutput() { return false; }
     virtual bool isVector() { return false; }

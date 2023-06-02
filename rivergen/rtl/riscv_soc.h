@@ -27,6 +27,7 @@
 #include "misclib/apb_spi.h"
 #include "misclib/axi_sram.h"
 #include "misclib/axi_rom.h"
+#include "misclib/plic.h"
 #include "riverlib/river_cfg.h"
 #include "riverlib/types_river.h"
 #include "riverlib/river_amba.h"
@@ -45,9 +46,11 @@ class riscv_soc : public ModuleObject {
      public:
         CombProcess(GenObject* parent)
             : ProcObject(parent, "comb"),
+            v_gnd1(this, "v_gnd1", "1"),
             vb_ext_irqs(this, "vb_ext_irqs", "SOC_PLIC_IRQ_TOTAL") {
         }
      public:
+        Logic v_gnd1;
         Logic vb_ext_irqs;
     };
 
@@ -218,6 +221,7 @@ public:
     axi2apb_bus1 bus1;
     axi_rom rom0;
     axi_sram sram0;
+    plic plic0;
     apb_uart uart1;
     apb_gpio gpio0;
     apb_spi spi0;

@@ -62,7 +62,7 @@ class Logic1 : public Logic {
           const char *comment="") :
         Logic("1", name, "", parent, comment) {}
 
-    std::string getType() override;
+    virtual std::string getType() override;
 };
 
 // SystemC only use sc_biguint always
@@ -75,7 +75,19 @@ class LogicBig : public Logic {
              const char *comment="") :
         Logic(width, name, val, parent, comment) {}
 
-    bool isBigSC() override { return true; }
+    virtual bool isBigSC() override { return true; }
+};
+
+class LogicBv : public Logic {
+ public:
+    LogicBv(GenObject *parent,
+             const char *name,
+             const char *width,
+             const char *val="0",
+             const char *comment="") :
+        Logic(width, name, val, parent, comment) {}
+
+    virtual bool isBvSC() override { return true; }
 };
 
 }  // namespace sysvc
