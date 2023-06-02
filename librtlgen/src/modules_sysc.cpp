@@ -313,36 +313,24 @@ std::string ModuleObject::generate_sysc_h() {
     }
 
     // Local paramaters visible inside of module
-    GenObject *prev = 0;
     Operation::set_space(1);
+    std::string comment = "";
     for (auto &p: entries_) {
-        if (p->getId() != ID_PARAM) {
-            prev = 0;
-            if (p->getId() == ID_COMMENT) {
-                prev = p;
-            }
+        if (p->getId() == ID_COMMENT) {
+            comment += Operation::addspaces() + p->generate();
             continue;
-        }
-        if (!p->isLocal()) {
-            prev = 0;
-            continue;
-        }
-        if (p->isGenericDep() && tmpllist.size() == 0) {
-            prev = 0;
-            continue;
-        }
-        if (p->isString()) {
-            prev = 0;
-            continue;
+        } else if (p->getId() != ID_PARAM || !p->isLocal()
+              || (p->isGenericDep() && tmpllist.size() == 0)) {
+              // do nothing
+        } else if (p->isString()) {
+            // strings defined in cpp-file
         } else {
-            if (prev) {
-                out += Operation::addspaces() + prev->generate();
-            }
+            out += comment;
             out += Operation::addspaces() + "static const " + p->getType() + " " + p->getName();
             out += " = " + p->getStrValue() + ";\n";
+            tcnt++;
         }
-        tcnt++;
-        prev = 0;
+        comment = "";
     }
     if (tcnt) {
         out += "\n";

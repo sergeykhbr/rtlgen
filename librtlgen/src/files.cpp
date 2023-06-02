@@ -402,6 +402,11 @@ void FileObject::generate_sysv() {
     }
     out += "\n";
 
+#if 1
+    if (getName() == "riscv_soc") {
+        bool st = true;
+    }
+#endif
     // header
     bool skip_pkg = false;
     ModuleObject *mod;

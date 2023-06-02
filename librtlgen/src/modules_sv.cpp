@@ -32,35 +32,28 @@ namespace sysvc {
 std::string ModuleObject::generate_sv_pkg_localparam() {
     std::string ret = "";
     std::string ln = "";
+    std::string comment = "";
     int tcnt = 0;
-    GenObject *prev = 0;
     // Local paramaters visible inside of module
     for (auto &p: entries_) {
-        if (p->getId() != ID_PARAM) {
-            prev = 0;
-            if (p->getId() == ID_COMMENT) {
-                prev = p;
-            }
+        if (p->getId() == ID_COMMENT) {
+            comment += p->generate();
             continue;
-        }
-        if (!p->isLocal() || p->isGenericDep()) {
-            prev = 0;
-            continue;
-        }
-        if (prev) {
-            ret += prev->generate();
-        }
-        ln = "localparam " + p->getType() + " " + p->getName();
-        ln += " = " + p->getStrValue() + ";";
-        if (p->getComment().size()) {
-            while (ln.size() < 60) {
-                ln += " ";
+        } else if (p->getId() != ID_PARAM || !p->isLocal() || p->isGenericDep()) {
+            // do nothing
+        } else {
+            ln = "localparam " + p->getType() + " " + p->getName();
+            ln += " = " + p->getStrValue() + ";";
+            if (p->getComment().size()) {
+                while (ln.size() < 60) {
+                    ln += " ";
+                }
+                ln += "// " + p->getComment();
             }
-            ln += "// " + p->getComment();
+            ret += comment + ln + "\n";
+            tcnt++;
         }
-        ret += ln + "\n";
-        tcnt++;
-        prev = 0;
+        comment = "";
     }
     if (tcnt) {
         ret += "\n";

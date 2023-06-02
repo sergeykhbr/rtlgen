@@ -23,17 +23,31 @@ using namespace sysvc;
 
 class rom_tech : public ModuleObject {
  public:
-    rom_tech(GenObject *parent, const char *name, const char *gen_abits="6", const char *gen_dbits="8");
+    rom_tech(GenObject *parent, const char *name, const char *gen_abits="6", const char *log2_dbytes="3");
+
+    class CombProcess : public ProcObject {
+     public:
+        CombProcess(GenObject *parent) :
+            ProcObject(parent, "comb") {
+        }
+    };
+
+    void proc_comb();
 
  public:
     TmplParamI32D abits;
-    TmplParamI32D dbits;
+    TmplParamI32D log2_dbytes;
     DefParamString filename;
+    ParamI32D dbits;
 
     InPort i_clk;
     InPort i_addr;
     OutPort o_rdata;
 
+    Signal wb_addr;
+
+    // process should be intialized last to make all signals available
+    CombProcess comb;
     rom_inferred_2x32 inf0;
 };
 

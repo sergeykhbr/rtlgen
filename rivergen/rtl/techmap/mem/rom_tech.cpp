@@ -16,14 +16,19 @@
 
 #include "rom_tech.h"
 
-rom_tech::rom_tech(GenObject *parent, const char *name, const char *gen_abits, const char *gen_dbits) :
+rom_tech::rom_tech(GenObject *parent, const char *name, const char *gen_abits, const char *log2_dbytes) :
     ModuleObject(parent, "rom_tech", name),
     abits(this, "abits", gen_abits),
-    dbits(this, "dbits", gen_dbits),
+    log2_dbytes(this, "log2_dbytes", log2_dbytes),
+    dbits(this, "dbits", "MUL(8,POW2(1,log2_dbytes))"),
     filename(this, "filename", ""),
     i_clk(this, "i_clk", "1", "CPU clock"),
     i_addr(this, "i_addr", &abits),
-    o_rdata(this, "o_rdata", &dbits),
+    o_rdata(this, "o_rdata", "MUL(8,POW2(1,log2_dbytes))"),
+    // signals
+    wb_addr(this, "wb_addr", "SUB(abits,log2_dbytes)"),
+    // process
+    comb(this),
     inf0(this, "inf0", "abits")
 {
     Operation::start(this);
@@ -32,12 +37,20 @@ rom_tech::rom_tech(GenObject *parent, const char *name, const char *gen_abits, c
     TEXT("    TODO: GENERATE assert");
     TEXT("else");
 
+    inf0.changeTmplParameter("abits", "SUB(abits,log2_dbytes)");
     NEW(inf0, inf0.getName().c_str());
         CONNECT(inf0, 0, inf0.i_clk, i_clk);
-        CONNECT(inf0, 0, inf0.i_addr, i_addr);
+        CONNECT(inf0, 0, inf0.i_addr, wb_addr);
         CONNECT(inf0, 0, inf0.o_rdata, o_rdata);
     ENDNEW();
 
     TEXT("endif");
+
+    Operation::start(&comb);
+    proc_comb();
+}
+
+void rom_tech::proc_comb() {
+    SETVAL(wb_addr, BITS(i_addr, DEC(abits), log2_dbytes));
 }
 

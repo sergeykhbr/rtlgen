@@ -82,7 +82,7 @@ class GenObject {
     virtual void setName(const char *n) { name_ = std::string(n); }
     virtual std::string getComment() { return comment_; }
     virtual std::string getType() { return type_; }
-    virtual bool isString() { return getType() == "std::string" || getType() == "string"; }
+    virtual bool isString() { return false; } //getType() == "std::string" || getType() == "string"; }
     virtual bool isTypedef() { return false; }
     virtual bool isSignal() { return false; }
     virtual bool isBigSC() { return false; }    // Use sc_biguint in systemc always

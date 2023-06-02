@@ -65,7 +65,8 @@ std::string FunctionObject::generate_sysc() {
     ret += ") {\n";
     
     // process variables declaration
-    if (isString()) {
+    if (getType() == "std::string" || getType() == "string") {
+        // return value is string
         ret += "    char tstr[256];\n";
     }
     tcnt = 0;
