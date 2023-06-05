@@ -26,7 +26,7 @@ plic::plic(GenObject *parent, const char *name) :
     o_cfg(this, "o_cfg", "Device descriptor"),
     i_xslvi(this, "i_xslvi", "AXI Slave to Bridge interface"),
     o_xslvo(this, "o_xslvo", "AXI Bridge to Slave interface"),
-    i_irq_request(this, "i_irq_request", "irqmax"),
+    i_irq_request(this, "i_irq_request", "irqmax", "[0] must be tight to GND"),
     o_ip(this, "o_ip", "ctxmax"),
     // params
     // struct declaration
@@ -118,7 +118,7 @@ TEXT();
 TEXT();
     TEXT("Select max priority in each context");
     n = &FOR ("n", CONST("0"), ctxmax, "++");
-        i = &FOR ("i", CONST("0"), irqmax, "++");
+        i = &FOR ("i", CONST("0"), CONST("16"), "++");
             IF (NZ(BIT(ARRITEM(ctx, *n, ctx->prio_mask), *i)));
                 SETARRITEM(ctx, *n, ctx->sel_prio, *i);
             ENDIF();
@@ -161,10 +161,15 @@ TEXT();
         ENDIF();
 
         TEXT();
-        SETBITS(comb.vrdata, 35, 32, BITSW(src_priority, MUL2(CONST("8"), BITS(wb_req_addr, 11, 3)), CONST("4")));
+        SETBITS(comb.vrdata, 35, 32, BITSW(src_priority, 
+                                            ADD2(MUL2(CONST("8"), BITS(wb_req_addr, 11, 3)), CONST("32")),
+                                            CONST("4")));
         IF (AND2(NZ(w_req_valid), NZ(w_req_write)));
             IF (NZ(OR_REDUCE(BITS(wb_req_wstrb, 7, 4))));
-                SETBITSW(src_priority, ADD2(MUL2(CONST("8"), BITS(wb_req_addr, 11, 3)), CONST("32")), CONST("4"), BITS(wb_req_wdata, 35, 32));
+                SETBITSW(src_priority,
+                         ADD2(MUL2(CONST("8"), BITS(wb_req_addr, 11, 3)), CONST("32")),
+                         CONST("4"),
+                         BITS(wb_req_wdata, 35, 32));
             ENDIF();
         ENDIF();
     ELSIF (EQ(BITS(wb_req_addr, 21, 12), CONST("1", 10)));

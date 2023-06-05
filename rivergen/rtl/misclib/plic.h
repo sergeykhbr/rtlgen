@@ -64,7 +64,7 @@ class plic : public ModuleObject {
         // Structure definition
         PlicContextType(GenObject *parent, const char *name="", int idx=-1, const char *comment="")
             : StructObject(parent, "PlicContextType", name, idx, comment),
-            priority_th(this, "priority_th", "4"),
+            priority_th(this, "priority_th", "4", "0"),
             ie(this, "ie", "1024", "0", "interrupt enable per context"),
             ip_prio(this, "ip_prio", "MUL(4,1024)", "0", "interrupt pending priority per context"),
             prio_mask(this, "prio_mask", "16", "0", "pending interrupts priorites"),

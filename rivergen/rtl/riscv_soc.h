@@ -50,7 +50,7 @@ class riscv_soc : public ModuleObject {
             vb_ext_irqs(this, "vb_ext_irqs", "SOC_PLIC_IRQ_TOTAL") {
         }
      public:
-        Logic v_gnd1;
+        Logic1 v_gnd1;
         Logic vb_ext_irqs;
     };
 
