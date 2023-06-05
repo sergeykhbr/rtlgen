@@ -79,7 +79,7 @@ std::string Operation::fullname(const char *prefix, std::string name, GenObject 
     }
     std::string read = "";
 #if 1
-    if (obj->getName() == "i_l1i") {
+    if (obj->getName() == "vb_irq_idx") {
         bool st = true;
     }
 #endif
@@ -2425,6 +2425,91 @@ Operation &ASSIGNARRITEM(GenObject &arr, int idx, GenObject &val) {
     p->add_arg(&arr);
     p->add_arg(&val);
     p->add_arg(p);  // [5] use 'assign '
+    return *p;
+}
+
+// Set bits value in array element
+// SETARRITEMBIT
+std::string SETARRITEMBIT_gen(GenObject **args) {
+    args[1]->setSelector(args[2]);
+    std::string ret = Operation::addspaces();
+    ret += Operation::obj2varname(args[3], "v");
+    if (SCV_is_sysc()) {
+        ret += "(";
+    } else if (SCV_is_sv()) {
+        ret += "[";
+    } else {
+    }
+
+    ret += Operation::obj2varname(args[4]);
+
+    if (SCV_is_sysc()) {
+        ret += ")";
+    } else if (SCV_is_sv()) {
+        ret += "]";
+    } else {
+    }
+    ret += " = ";
+    ret += Operation::obj2varname(args[5]);
+    ret += ";";
+    ret += Operation::addtext(args[0], ret.size());
+    ret += "\n";
+    return ret;
+}
+
+Operation &SETARRITEMBIT(GenObject &arr, GenObject &idx, GenObject &item, 
+                           GenObject &bitidx, GenObject &val, const char *comment) {
+    Operation *p = new Operation(comment);
+    p->igen_ = SETARRITEMBIT_gen;
+    p->add_arg(p);      // 0
+    p->add_arg(&arr);   // 1
+    p->add_arg(&idx);   // 2
+    p->add_arg(&item);  // 3
+    p->add_arg(&bitidx); // 4
+    p->add_arg(&val);   // 5
+    return *p;
+}
+
+// SETARRITEMBITS
+std::string SETARRITEMBITSW_gen(GenObject **args) {
+    args[1]->setSelector(args[2]);
+    std::string ret = Operation::addspaces();
+    ret += Operation::obj2varname(args[3], "v");
+    if (SCV_is_sysc()) {
+        ret += "(";
+        ret += Operation::obj2varname(args[4]);
+        ret += " + ";
+        ret += Operation::obj2varname(args[5]);
+        ret += "- 1, ";
+        ret += Operation::obj2varname(args[4]);
+        ret += ")";
+    } else if (SCV_is_sv()) {
+        ret += "[";
+        ret += Operation::obj2varname(args[4]);
+        ret += " +: ";
+        ret += Operation::obj2varname(args[5]);
+        ret += "]";
+    } else {
+    }
+    ret += " = ";
+    ret += Operation::obj2varname(args[6]);
+    ret += ";";
+    ret += Operation::addtext(args[0], ret.size());
+    ret += "\n";
+    return ret;
+}
+
+Operation &SETARRITEMBITSW(GenObject &arr, GenObject &idx, GenObject &item, 
+                           GenObject &start, GenObject &width, GenObject &val, const char *comment) {
+    Operation *p = new Operation(comment);
+    p->igen_ = SETARRITEMBITSW_gen;
+    p->add_arg(p);      // 0
+    p->add_arg(&arr);   // 1
+    p->add_arg(&idx);   // 2
+    p->add_arg(&item);  // 3
+    p->add_arg(&start); // 4
+    p->add_arg(&width); // 5
+    p->add_arg(&val);   // 6
     return *p;
 }
 

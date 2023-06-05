@@ -175,6 +175,10 @@ Operation &ARRITEM_B(GenObject &arr, GenObject &idx, GenObject &item, const char
 Operation &SETARRITEM(GenObject &arr, GenObject &idx, GenObject &item, GenObject &val, const char *comment="");
 Operation &ASSIGNARRITEM(GenObject &arr, GenObject &idx, GenObject &item, GenObject &val, const char *comment="");
 Operation &SETARRITEM(GenObject &arr, int idx, GenObject &val);
+Operation &SETARRITEMBIT(GenObject &arr, GenObject &idx, GenObject &item, 
+                           GenObject &bitidx, GenObject &val, const char *comment="");
+Operation &SETARRITEMBITSW(GenObject &arr, GenObject &idx, GenObject &item,
+                           GenObject &start, GenObject &width, GenObject &val, const char *comment="");
 Operation &ASSIGNARRITEM(GenObject &arr, int idx, GenObject &val);
 Operation &SETARRIDX(GenObject &arr, GenObject &idx);
 Operation &IF_OTHERWISE(GenObject &cond, GenObject &a, GenObject &b, const char *comment="");

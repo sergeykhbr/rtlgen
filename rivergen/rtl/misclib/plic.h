@@ -29,10 +29,18 @@ class plic : public ModuleObject {
     class CombProcess : public ProcObject {
      public:
         CombProcess(GenObject *parent) :
-            ProcObject(parent, "comb") {
+            ProcObject(parent, "comb"),
+            vrdata(this, "vrdata", "CFG_SYSBUS_DATA_BITS"),
+            vb_irq_idx(this, "vb_irq_idx", "10", "ctxmax", false, "Currently selected most prio irq"),
+            vb_irq_prio(this, "vb_irq_prio", "10", "ctxmax", false, "Currently selected prio level"),
+            rctx_idx("0", "rctx_idx", this) {
         }
 
      public:
+        Logic vrdata;
+        WireArray<Logic> vb_irq_idx;
+        WireArray<Logic> vb_irq_prio;
+        I32D rctx_idx;
     };
 
     void proc_comb();
