@@ -2435,7 +2435,7 @@ std::string SETARRITEMBIT_gen(GenObject **args) {
     std::string ret = Operation::addspaces();
     ret += Operation::obj2varname(args[3], "v");
     if (SCV_is_sysc()) {
-        ret += "(";
+        ret += "[";
     } else if (SCV_is_sv()) {
         ret += "[";
     } else {
@@ -2444,7 +2444,7 @@ std::string SETARRITEMBIT_gen(GenObject **args) {
     ret += Operation::obj2varname(args[4]);
 
     if (SCV_is_sysc()) {
-        ret += ")";
+        ret += "]";
     } else if (SCV_is_sv()) {
         ret += "]";
     } else {

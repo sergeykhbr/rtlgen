@@ -56,6 +56,7 @@ class ModuleObject : public GenObject {
     std::string generate_sv_mod_func(GenObject *func);
     std::string generate_sv_mod_signals();
     std::string generate_sv_mod_proc(GenObject *proc);
+    std::string generate_sv_mod_proc_nullify(GenObject *obj, std::string prefix, std::string i);
     std::string generate_sv_mod_proc_registers();
     std::string generate_sv_mod_always_ff_rst(bool clkpos=true);
     std::string generate_sv_mod_always_ops();   // additional operation in always process (if defined)
@@ -69,6 +70,7 @@ class ModuleObject : public GenObject {
     std::string generate_sysc_destructor();
     std::string generate_sysc_vcd();
     std::string generate_sysc_func(GenObject *func);
+    std::string generate_sysc_proc_nullify(GenObject *obj, std::string prefix, std::string i);
     std::string generate_sysc_proc(GenObject *proc);
     std::string generate_sysc_template_param(GenObject *p);
     std::string generate_sysc_template_f_name(const char *rettype="void");

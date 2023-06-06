@@ -342,6 +342,54 @@ std::string ModuleObject::generate_sv_mod_signals() {
     return ret;
 }
 
+std::string ModuleObject::generate_sv_mod_proc_nullify(GenObject *obj,
+                                                       std::string prefix,
+                                                       std::string i) {
+    std::string ret = "";
+    if (obj->getId() == ID_VALUE
+        || (obj->getId() == ID_STRUCT_INST && obj->getStrValue().size() != 0)) {
+        ret += Operation::addspaces() + prefix;
+        if (obj->getName() != "0") {
+            if (prefix.size() != 0) {
+                ret += ".";
+            }
+            ret += obj->getName();
+        }
+        ret += " = ";
+        if (obj->getStrValue().size() == 0) {
+            ret += "0";
+        } else {
+            ret += obj->getStrValue();
+        }
+        ret += ";\n";
+    } else if (obj->getId() == ID_STRUCT_INST) {
+        std::string prefix2 = prefix;
+        if (obj->getName() != "0") {
+            if (prefix.size()) {
+                prefix2 += ".";
+            }
+            prefix2 += obj->getName();
+        }
+        for (auto &e: obj->getEntries()) {
+            ret += generate_sv_mod_proc_nullify(e, prefix2, i);
+        }
+    } else if (obj->getId() == ID_ARRAY_DEF) {
+        GenObject *item = obj->getItem();
+        ret += Operation::addspaces();
+        ret += "for (int " + i + " = 0; " + i + " < " + obj->getStrDepth() + "; " + i + "++) begin\n";
+        Operation::set_space(Operation::get_space() + 1);
+
+        std::string prefix2 = prefix + obj->getName() + "[" + i + "]";
+        const char tidx[2] = {i.c_str()[0], 0};
+        std::string i2 = std::string(tidx);
+        ret += generate_sv_mod_proc_nullify(item, prefix2, i2);
+
+        Operation::set_space(Operation::get_space() - 1);
+        ret += Operation::addspaces() + "end\n";
+    }
+    return ret;
+}
+
 std::string ModuleObject::generate_sv_mod_proc(GenObject *proc) {
     std::string ret = "";
     std::string ln;
@@ -351,14 +399,15 @@ std::string ModuleObject::generate_sv_mod_proc(GenObject *proc) {
         ret += "always_comb\n";
         ret += "begin: " + proc->getName() + "_proc\n";
     }
+    Operation::set_space(1);
     
     // process variables declaration
     tcnt = 0;
     if (isRegProcess()) {
-        ret += "    " + getType() + "_registers v;\n";
+        ret += Operation::addspaces() + getType() + "_registers v;\n";
     }
     if (isNRegProcess()) {
-        ret += "    " + getType() + "_nregisters nv;\n";
+        ret += Operation::addspaces() + getType() + "_nregisters nv;\n";
     }
 
     for (auto &e: proc->getEntries()) {
@@ -392,38 +441,14 @@ std::string ModuleObject::generate_sv_mod_proc(GenObject *proc) {
     }
 
     // nullify all local variables to avoid latches:
-    GenObject *arritem;
+    size_t ret_sz = ret.size();
     for (auto &e: proc->getEntries()) {
-        if (e->getId() == ID_VALUE
-            || (e->getId() == ID_STRUCT_INST && e->getStrValue().size())) {
-            ret += "    " + e->getName() + " = ";
-            if (e->getStrValue().size()) {
-                ret += e->getStrValue();
-            } else {
-                ret += "0";
-            }
-            ret += ";";
-            tcnt++;
-        } else if (e->getId() == ID_ARRAY_DEF) {
-            ret += "    for (int i = 0; i < " + e->getStrDepth() + "; i++) begin\n";
-            ret += "        " + e->getName() + "[i] = ";
-            arritem = e->getItem();
-            if (arritem->getId() == ID_STRUCT_INST && arritem->getStrValue().size() == 0) {
-                SHOW_ERROR("todo: %s", "crawl through sub-structure element");
-            }
-            ret += arritem->getStrValue();
-            ret += ";\n";
-            ret += "    end";
-        } else {
-            continue;
-        }
+        ret += generate_sv_mod_proc_nullify(e, "", "i");
+    }
+    if (ret.size() != ret_sz) {
         ret += "\n";
     }
 
-    if (tcnt) {
-        ret += "\n";
-        tcnt = 0;
-    }
     if (isRegProcess()) {
         Operation::set_space(1);
         ret += Operation::copyreg("v", "r", this);
