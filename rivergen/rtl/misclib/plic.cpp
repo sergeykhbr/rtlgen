@@ -250,4 +250,5 @@ TEXT();
     SETONE(w_resp_valid);
     SETVAL(wb_resp_rdata, rdata);
     SETZERO(wb_resp_err);
+    SETVAL(o_ip, ip);
 }
