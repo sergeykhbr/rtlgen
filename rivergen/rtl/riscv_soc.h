@@ -28,6 +28,7 @@
 #include "misclib/axi_sram.h"
 #include "misclib/axi_rom.h"
 #include "misclib/plic.h"
+#include "misclib/clint.h"
 #include "riverlib/river_cfg.h"
 #include "riverlib/types_river.h"
 #include "riverlib/river_amba.h"
@@ -222,6 +223,7 @@ public:
     axi_rom rom0;
     axi_sram sram0;
     plic plic0;
+    clint clint0;
     apb_uart uart1;
     apb_gpio gpio0;
     apb_spi spi0;
