@@ -85,10 +85,16 @@ void plic::proc_comb() {
     GenObject *i;
     GenObject *n;
 
+    TEXT("Warning SystemC limitation workaround:");
+    TEXT("  Cannot directly write into bitfields of the signals v.* registers");
+    TEXT("  So, use the following vb_* logic variables for that and then copy them.");
+    SETVAL(comb.vb_src_priority, src_priority);
+    SETVAL(comb.vb_pending, pending);
     i = &FOR ("i", CONST("0"), ctxmax, "++");
-        SETARRITEM(ctx, *i, ctx->ip_prio, ALLZEROS());
-        SETARRITEM(ctx, *i, ctx->prio_mask, ALLZEROS());
-        SETARRITEM(ctx, *i, ctx->sel_prio, ALLZEROS());
+        SETARRITEM(comb.vb_ctx, *i, comb.vb_ctx->priority_th, ARRITEM(ctx, *i, ctx->priority_th));
+        SETARRITEM(comb.vb_ctx, *i, comb.vb_ctx->ie, ARRITEM(ctx, *i, ctx->ie));
+        SETARRITEM(comb.vb_ctx, *i, comb.vb_ctx->irq_idx, ARRITEM(ctx, *i, ctx->irq_idx));
+        SETARRITEM(comb.vb_ctx, *i, comb.vb_ctx->irq_prio, ARRITEM(ctx, *i, ctx->irq_prio));
     ENDFOR();
 
 TEXT();
