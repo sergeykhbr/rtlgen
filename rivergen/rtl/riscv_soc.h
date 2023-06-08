@@ -222,8 +222,8 @@ public:
     axi2apb_bus1 bus1;
     axi_rom rom0;
     axi_sram sram0;
-    plic plic0;
     clint clint0;
+    plic plic0;
     apb_uart uart1;
     apb_gpio gpio0;
     apb_spi spi0;

@@ -32,11 +32,15 @@ class clint : public ModuleObject {
         CombProcess(GenObject *parent) :
             ProcObject(parent, "comb"),
             vrdata(this, "vrdata", "CFG_SYSBUS_DATA_BITS"),
+            vb_msip(this, "vb_msip", "cpu_total"),
+            vb_mtip(this, "vb_mtip", "cpu_total"),
             regidx("0", "regidx", this) {
         }
 
      public:
         Logic vrdata;
+        Logic vb_msip;
+        Logic vb_mtip;
         I32D regidx;
     };
 
@@ -56,7 +60,30 @@ class clint : public ModuleObject {
     OutPort o_mtip;
 
  protected:
+    class clint_cpu_type : public StructObject {
+     public:
+        // Structure definition
+        clint_cpu_type(GenObject *parent, const char *name="", int idx=-1, const char *comment="")
+            : StructObject(parent, "clint_cpu_type", name, idx, comment),
+            msip(this, "msip", "1", "0"),
+            mtip(this, "mtip", "1", "0"),
+            mtimecmp(this, "mtimecmp", "64", "0") {}
+     public:
+        Logic msip;
+        Logic mtip;
+        Logic mtimecmp;
+    };
 
+
+    class ClintCpuTableType : public TStructArray<clint_cpu_type> {
+     public:
+        ClintCpuTableType(GenObject *parent, const char *name)
+            : TStructArray<clint_cpu_type>(parent, "", name, "cpu_total") {
+            setReg();
+        }
+    };
+
+    clint_cpu_type clint_cpu_type_def_;
     Signal w_req_valid;
     Signal wb_req_addr;
     Signal wb_req_size;
@@ -69,10 +96,8 @@ class clint : public ModuleObject {
     Signal wb_resp_rdata;
     Signal wb_resp_err;
 
-    RegSignal msip;
-    RegSignal mtip;
     RegSignal mtime;
-    RegSignal mtimecmp;
+    ClintCpuTableType hart;
     RegSignal rdata;
 
     CombProcess comb;

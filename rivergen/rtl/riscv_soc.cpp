@@ -131,8 +131,8 @@ riscv_soc::riscv_soc(GenObject *parent, const char *name) :
     bus1(this, "bus1"),
     rom0(this, "rom0"),
     sram0(this, "sram0"),
-    plic0(this, "plic0"),
     clint0(this, "clint0"),
+    plic0(this, "plic0"),
     uart1(this, "uart1"),
     gpio0(this, "gpio0"),
     spi0(this, "spi0"),
@@ -221,18 +221,6 @@ riscv_soc::riscv_soc(GenObject *parent, const char *name) :
     ENDNEW();
 
     plic0.ctxmax.setObjValue(&SOC_PLIC_CONTEXT_TOTAL);
-    plic0.irqmax.setObjValue(&SOC_PLIC_IRQ_TOTAL);
-    NEW(plic0, plic0.getName().c_str());
-        CONNECT(plic0, 0, plic0.i_clk, i_sys_clk);
-        CONNECT(plic0, 0, plic0.i_nrst, i_sys_nrst);
-        CONNECT(plic0, 0, plic0.i_mapinfo, ARRITEM(bus0_mapinfo, glob_bus0_cfg_->CFG_BUS0_XSLV_PLIC, bus0_mapinfo));
-        CONNECT(plic0, 0, plic0.o_cfg, ARRITEM(dev_pnp, SOC_PNP_PLIC, dev_pnp));
-        CONNECT(plic0, 0, plic0.i_xslvi, ARRITEM(axisi, glob_bus0_cfg_->CFG_BUS0_XSLV_PLIC, axisi));
-        CONNECT(plic0, 0, plic0.o_xslvo, ARRITEM(axiso, glob_bus0_cfg_->CFG_BUS0_XSLV_PLIC, axiso));
-        CONNECT(plic0, 0, plic0.i_irq_request, wb_ext_irqs);
-        CONNECT(plic0, 0, plic0.o_ip, wb_plic_xeip);
-    ENDNEW();
-
     clint0.cpu_total.setObjValue(&glob_river_cfg_->CFG_CPU_MAX);
     NEW(clint0, clint0.getName().c_str());
         CONNECT(clint0, 0, clint0.i_clk, i_sys_clk);
@@ -244,6 +232,18 @@ riscv_soc::riscv_soc(GenObject *parent, const char *name) :
         CONNECT(clint0, 0, clint0.o_mtimer, wb_clint_mtimer);
         CONNECT(clint0, 0, clint0.o_msip, wb_clint_msip);
         CONNECT(clint0, 0, clint0.o_mtip, wb_clint_mtip);
+    ENDNEW();
+
+    plic0.irqmax.setObjValue(&SOC_PLIC_IRQ_TOTAL);
+    NEW(plic0, plic0.getName().c_str());
+        CONNECT(plic0, 0, plic0.i_clk, i_sys_clk);
+        CONNECT(plic0, 0, plic0.i_nrst, i_sys_nrst);
+        CONNECT(plic0, 0, plic0.i_mapinfo, ARRITEM(bus0_mapinfo, glob_bus0_cfg_->CFG_BUS0_XSLV_PLIC, bus0_mapinfo));
+        CONNECT(plic0, 0, plic0.o_cfg, ARRITEM(dev_pnp, SOC_PNP_PLIC, dev_pnp));
+        CONNECT(plic0, 0, plic0.i_xslvi, ARRITEM(axisi, glob_bus0_cfg_->CFG_BUS0_XSLV_PLIC, axisi));
+        CONNECT(plic0, 0, plic0.o_xslvo, ARRITEM(axiso, glob_bus0_cfg_->CFG_BUS0_XSLV_PLIC, axiso));
+        CONNECT(plic0, 0, plic0.i_irq_request, wb_ext_irqs);
+        CONNECT(plic0, 0, plic0.o_ip, wb_plic_xeip);
     ENDNEW();
 
     uart1.log2_fifosz.setObjValue(&SOC_UART1_LOG2_FIFOSZ);

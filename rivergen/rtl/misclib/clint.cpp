@@ -26,9 +26,11 @@ clint::clint(GenObject *parent, const char *name) :
     i_xslvi(this, "i_xslvi", "AXI Slave to Bridge interface"),
     o_xslvo(this, "o_xslvo", "AXI Bridge to Slave interface"),
     o_mtimer(this, "o_mtimer", "64", "Shadow read-only access from Harts"),
-    o_msip(this, "o_msip", "cpu_total"),
-    o_mtip(this, "o_mtip", "cpu_total"),
+    o_msip(this, "o_msip", "cpu_total", "Machine mode Softare Pending Interrupt"),
+    o_mtip(this, "o_mtip", "cpu_total", "Machine mode Timer Pending Interrupt"),
     // params
+    // struct declaration
+    clint_cpu_type_def_(this, "", -1),
     // signals
     w_req_valid(this, "w_req_valid", "1"),
     wb_req_addr(this, "wb_req_addr", "CFG_SYSBUS_ADDR_BITS"),
@@ -42,10 +44,8 @@ clint::clint(GenObject *parent, const char *name) :
     wb_resp_rdata(this, "wb_resp_rdata", "CFG_SYSBUS_DATA_BITS"),
     wb_resp_err(this, "wb_resp_err", "1"),
     // registers
-    msip(this, "msip", "cpu_total"),
-    mtip(this, "mtip", "cpu_total"),
     mtime(this, "mtime", "64"),
-    mtimecmp(this, "mtimecmp", "MUL(64,cpu_total)"),
+    hart(this, "hart"),
     rdata(this, "rdata", "64"),
     //
     comb(this),
@@ -81,27 +81,62 @@ clint::clint(GenObject *parent, const char *name) :
 
 void clint::proc_comb() {
     GenObject *i;
-    SETZERO(mtip);
     SETVAL(mtime, INC(mtime));
     SETVAL(comb.regidx, TO_INT(BITS(wb_req_addr, 13, 3)));
 
 TEXT();
     i = &FOR ("i", CONST("0"), cpu_total, "++");
-        IF (GE(mtime, BITSW(mtimecmp, MUL2(CONST("64"), *i), CONST("64"))));
-            SETBIT(mtip, *i, CONST("1", 1));
+        SETARRITEM(hart, *i, hart->mtip, CONST("0", 1));
+        IF (GE(mtime, ARRITEM(hart, *i, hart->mtimecmp)));
+            SETARRITEM(hart, *i, hart->mtip, CONST("1", 1));
         ENDIF();
     ENDFOR();
 
+TEXT();
+    SWITCH (BITS(wb_req_addr, 15, 14));
+    CASE (CONST("0", 2));
+        SETBIT(comb.vrdata, 0, ARRITEM(hart, comb.regidx, hart->msip));
+        SETBIT(comb.vrdata, 32, ARRITEM(hart, INC(comb.regidx), hart->msip));
+        IF (AND2(NZ(w_req_valid), NZ(w_req_write)));
+            IF (NZ(OR_REDUCE(BITS(wb_req_wstrb, 3, 0))));
+                SETARRITEM(hart, comb.regidx, hart->msip, BIT(wb_req_wdata, 0));
+            ENDIF();
+            IF (NZ(OR_REDUCE(BITS(wb_req_wstrb, 7, 4))));
+                SETARRITEM(hart, INC(comb.regidx), hart->msip, BIT(wb_req_wdata, 32));
+            ENDIF();
+        ENDIF();
+        ENDCASE();
+    CASE (CONST("1", 2));
+        SETVAL(comb.vrdata, ARRITEM(hart, comb.regidx, hart->mtimecmp));
+        IF (AND2(NZ(w_req_valid), NZ(w_req_write)));
+            SETARRITEM(hart, comb.regidx, hart->mtimecmp, wb_req_wdata);
+        ENDIF();
+        ENDCASE();
+    CASE (CONST("2", 2));
+        IF (EQ(BITS(wb_req_addr, 13, 3), CONST("0x7ff", 11)));
+            SETVAL(comb.vrdata, mtime, "[RO]");
+        ENDIF();
+        ENDCASE();
+    CASEDEF();
+        ENDCASE();
+    ENDSWITCH();
+    SETVAL(rdata, comb.vrdata);
 
 TEXT();
     SYNC_RESET(*this);
+
+TEXT();
+    i = &FOR ("i", CONST("0"), cpu_total, "++");
+        SETBIT(comb.vb_msip, *i, ARRITEM(hart, *i, hart->msip));
+        SETBIT(comb.vb_mtip, *i, ARRITEM(hart, *i, hart->mtip));
+    ENDFOR();
 
 TEXT();
     SETONE(w_req_ready);
     SETONE(w_resp_valid);
     SETVAL(wb_resp_rdata, rdata);
     SETZERO(wb_resp_err);
-    SETVAL(o_msip, msip);
-    SETVAL(o_mtip, mtip);
+    SETVAL(o_msip, comb.vb_msip);
+    SETVAL(o_mtip, comb.vb_mtip);
     SETVAL(o_mtimer, mtime);
 }
