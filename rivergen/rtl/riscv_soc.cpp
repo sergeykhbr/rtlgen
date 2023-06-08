@@ -20,6 +20,7 @@
 riscv_soc::riscv_soc(GenObject *parent, const char *name) :
     ModuleObject(parent, "riscv_soc", name),
     // simulation parameters
+    bootfile(this, "bootfile", "", "Project relative HEX-file name to init boot ROM without .hex extension"),
     sim_uart_speedup_rate(this, "sim_uart_speedup_rate", "0", "simulation UART speed-up: 0=no speed up, 1=2x, 2=4x, etc"),
     // Generic parameters
     async_reset(this, "async_reset", "CFG_ASYNC_RESET"),
@@ -66,29 +67,18 @@ riscv_soc::riscv_soc(GenObject *parent, const char *name) :
     o_ddr_xslvi(this, "o_ddr_xslvi", "AXI DDR memory interface"),
     i_ddr_xslvo(this, "i_ddr_xslvo", "AXI DDR memory interface"),
     // param
-    _map0_(this),
-    _pnp0_(this),
-    SOC_PNP_XCTRL0(this, "SOC_PNP_XCTRL0", "0"),
-    SOC_PNP_GROUP0(this, "SOC_PNP_GROUP0", "1"),
-    SOC_PNP_BOOTROM(this, "SOC_PNP_BOOTROM", "2"),
-    SOC_PNP_SRAM(this, "SOC_PNP_SRAM", "3"),
-    SOC_PNP_DDR_AXI(this, "SOC_PNP_DDR_AXI", "4"),
-    SOC_PNP_DDR_APB(this, "SOC_PNP_DDR_APB", "5"),
-    SOC_PNP_PRCI(this, "SOC_PNP_PRCI", "6"),
-    SOC_PNP_GPIO(this, "SOC_PNP_GPIO", "7"),
-    SOC_PNP_CLINT(this, "SOC_PNP_CLINT", "8"),
-    SOC_PNP_PLIC(this, "SOC_PNP_PLIC", "9"),
-    SOC_PNP_PNP(this, "SOC_PNP_PNP", "10"),
-    SOC_PNP_PBRIDGE0(this, "SOC_PNP_PBRIDGE0", "11"),
-    SOC_PNP_DMI(this, "SOC_PNP_DMI", "12"),
-    SOC_PNP_UART1(this, "SOC_PNP_UART1", "13"),
-    SOC_PNP_SPI(this, "SOC_PNP_SPI", "14"),
-    SOC_PNP_TOTAL(this, "SOC_PNP_TOTAL", "15"),
+    _hwid0_(this),
+    _hwid1_(this, "Hardware SoC Identificator."),
+    _hwid2_(this, "Read Only unique platform identificator that could be read by FW"),
+    SOC_HW_ID(this, "32", "SOC_HW_ID", "0x20220903"),
     _cfg0_(this),
+    _cfg1_(this, "UARTx fifo log2(size) in bytes:"),
     SOC_UART1_LOG2_FIFOSZ(this, "SOC_UART1_LOG2_FIFOSZ", "4"),
-    _cfg1_(this),
-    SOC_GPIO0_WIDTH(this, "SOC_GPIO0_WIDTH", "12"),
     _cfg2_(this),
+    _cfg3_(this, "Number of available generic IO pins:"),
+    SOC_GPIO0_WIDTH(this, "SOC_GPIO0_WIDTH", "12"),
+    _cfg4_(this),
+    _cfg5_(this, "SD-card in SPI mode buffer size. It should be at least log2(512) Bytes:"),
     SOC_SPI0_LOG2_FIFOSZ(this, "SOC_SPI0_LOG2_FIFOSZ", "9"),
     _plic0_(this),
     _plic1_(this, "Number of contexts in PLIC controller."),
@@ -96,14 +86,6 @@ riscv_soc::riscv_soc(GenObject *parent, const char *name) :
     SOC_PLIC_CONTEXT_TOTAL(this, "SOC_PLIC_CONTEXT_TOTAL", "9"),
     _plic3_(this, "Any number up to 1024. Zero interrupt must be 0."),
     SOC_PLIC_IRQ_TOTAL(this, "SOC_PLIC_IRQ_TOTAL", "73"),
-    _hex0_(this),
-    _hex1_(this, "HEX-image for the initialization of the Boot ROM."),
-    SOC_BOOTROM_FILE_HEX(this, "SOC_BOOTROM_FILE_HEX", "../../../../examples/bootrom_tests/linuxbuild/bin/bootrom_tests"),
-    _hwid0_(this),
-    _hwid1_(this, "Hardware SoC Identificator."),
-    _hwid2_(this, "Read Only unique platform identificator that could be read by FW"),
-    SOC_HW_ID(this, "32", "SOC_HW_ID", "0x20220903"),
-    soc_pnp_vector_def_(this, ""),
     // Singals:
     acpo(this, "acpo"),
     acpi(this, "acpi"),
@@ -145,7 +127,7 @@ riscv_soc::riscv_soc(GenObject *parent, const char *name) :
     NEW(bus0, bus0.getName().c_str());
         CONNECT(bus0, 0, bus0.i_clk, i_sys_clk);
         CONNECT(bus0, 0, bus0.i_nrst, i_sys_nrst);
-        CONNECT(bus0, 0, bus0.o_cfg, ARRITEM(dev_pnp, SOC_PNP_XCTRL0, dev_pnp));
+        CONNECT(bus0, 0, bus0.o_cfg, ARRITEM(dev_pnp, glob_pnp_cfg_->SOC_PNP_XCTRL0, dev_pnp));
         CONNECT(bus0, 0, bus0.i_xmsto, aximo);
         CONNECT(bus0, 0, bus0.o_xmsti, aximi);
         CONNECT(bus0, 0, bus0.i_xslvo, axiso);
@@ -157,7 +139,7 @@ riscv_soc::riscv_soc(GenObject *parent, const char *name) :
         CONNECT(bus1, 0, bus1.i_clk, i_sys_clk);
         CONNECT(bus1, 0, bus1.i_nrst, i_sys_nrst);
         CONNECT(bus1, 0, bus1.i_mapinfo, ARRITEM(bus0_mapinfo, glob_bus0_cfg_->CFG_BUS0_XSLV_PBRIDGE, bus0_mapinfo));
-        CONNECT(bus1, 0, bus1.o_cfg, ARRITEM(dev_pnp, SOC_PNP_PBRIDGE0, dev_pnp));
+        CONNECT(bus1, 0, bus1.o_cfg, ARRITEM(dev_pnp, glob_pnp_cfg_->SOC_PNP_PBRIDGE0, dev_pnp));
         CONNECT(bus1, 0, bus1.i_xslvi, ARRITEM(axisi, glob_bus0_cfg_->CFG_BUS0_XSLV_PBRIDGE, axisi));
         CONNECT(bus1, 0, bus1.o_xslvo, ARRITEM(axiso, glob_bus0_cfg_->CFG_BUS0_XSLV_PBRIDGE, axiso));
         CONNECT(bus1, 0, bus1.i_apbo, apbo);
@@ -189,23 +171,23 @@ riscv_soc::riscv_soc(GenObject *parent, const char *name) :
         CONNECT(group0, 0, group0.i_mtimer, wb_clint_mtimer);
         CONNECT(group0, 0, group0.i_acpo, acpo);
         CONNECT(group0, 0, group0.o_acpi, acpi);
-        CONNECT(group0, 0, group0.o_xmst_cfg, ARRITEM(dev_pnp, SOC_PNP_GROUP0, dev_pnp));
+        CONNECT(group0, 0, group0.o_xmst_cfg, ARRITEM(dev_pnp, glob_pnp_cfg_->SOC_PNP_GROUP0, dev_pnp));
         CONNECT(group0, 0, group0.i_msti, ARRITEM(aximi, glob_bus0_cfg_->CFG_BUS0_XMST_GROUP0, aximi));
         CONNECT(group0, 0, group0.o_msto, ARRITEM(aximo, glob_bus0_cfg_->CFG_BUS0_XMST_GROUP0, aximo));
         CONNECT(group0, 0, group0.i_dmi_mapinfo, ARRITEM(bus1_mapinfo, glob_bus1_cfg_->CFG_BUS1_PSLV_DMI, bus1_mapinfo));
-        CONNECT(group0, 0, group0.o_dmi_cfg, ARRITEM(dev_pnp, SOC_PNP_DMI, dev_pnp));
+        CONNECT(group0, 0, group0.o_dmi_cfg, ARRITEM(dev_pnp, glob_pnp_cfg_->SOC_PNP_DMI, dev_pnp));
         CONNECT(group0, 0, group0.i_dmi_apbi, ARRITEM(apbi, glob_bus1_cfg_->CFG_BUS1_PSLV_DMI, apbi));
         CONNECT(group0, 0, group0.o_dmi_apbo, ARRITEM(apbo, glob_bus1_cfg_->CFG_BUS1_PSLV_DMI, apbo));
         CONNECT(group0, 0, group0.o_dmreset, o_dmreset);
     ENDNEW();
 
     rom0.abits.setObjValue(&prj_cfg_->CFG_BOOTROM_LOG2_SIZE);
-    rom0.filename.setObjValue(&SOC_BOOTROM_FILE_HEX);
+    rom0.filename.setObjValue(&bootfile);
     NEW(rom0, rom0.getName().c_str());
         CONNECT(rom0, 0, rom0.i_clk, i_sys_clk);
         CONNECT(rom0, 0, rom0.i_nrst, i_sys_nrst);
         CONNECT(rom0, 0, rom0.i_mapinfo, ARRITEM(bus0_mapinfo, glob_bus0_cfg_->CFG_BUS0_XSLV_BOOTROM, bus0_mapinfo));
-        CONNECT(rom0, 0, rom0.o_cfg, ARRITEM(dev_pnp, SOC_PNP_SRAM, dev_pnp));
+        CONNECT(rom0, 0, rom0.o_cfg, ARRITEM(dev_pnp, glob_pnp_cfg_->SOC_PNP_SRAM, dev_pnp));
         CONNECT(rom0, 0, rom0.i_xslvi, ARRITEM(axisi, glob_bus0_cfg_->CFG_BUS0_XSLV_BOOTROM, axisi));
         CONNECT(rom0, 0, rom0.o_xslvo, ARRITEM(axiso, glob_bus0_cfg_->CFG_BUS0_XSLV_BOOTROM, axiso));
     ENDNEW();
@@ -215,7 +197,7 @@ riscv_soc::riscv_soc(GenObject *parent, const char *name) :
         CONNECT(sram0, 0, sram0.i_clk, i_sys_clk);
         CONNECT(sram0, 0, sram0.i_nrst, i_sys_nrst);
         CONNECT(sram0, 0, sram0.i_mapinfo, ARRITEM(bus0_mapinfo, glob_bus0_cfg_->CFG_BUS0_XSLV_SRAM, bus0_mapinfo));
-        CONNECT(sram0, 0, sram0.o_cfg, ARRITEM(dev_pnp, SOC_PNP_SRAM, dev_pnp));
+        CONNECT(sram0, 0, sram0.o_cfg, ARRITEM(dev_pnp, glob_pnp_cfg_->SOC_PNP_SRAM, dev_pnp));
         CONNECT(sram0, 0, sram0.i_xslvi, ARRITEM(axisi, glob_bus0_cfg_->CFG_BUS0_XSLV_SRAM, axisi));
         CONNECT(sram0, 0, sram0.o_xslvo, ARRITEM(axiso, glob_bus0_cfg_->CFG_BUS0_XSLV_SRAM, axiso));
     ENDNEW();
@@ -226,7 +208,7 @@ riscv_soc::riscv_soc(GenObject *parent, const char *name) :
         CONNECT(clint0, 0, clint0.i_clk, i_sys_clk);
         CONNECT(clint0, 0, clint0.i_nrst, i_sys_nrst);
         CONNECT(clint0, 0, clint0.i_mapinfo, ARRITEM(bus0_mapinfo, glob_bus0_cfg_->CFG_BUS0_XSLV_CLINT, bus0_mapinfo));
-        CONNECT(clint0, 0, clint0.o_cfg, ARRITEM(dev_pnp, SOC_PNP_CLINT, dev_pnp));
+        CONNECT(clint0, 0, clint0.o_cfg, ARRITEM(dev_pnp, glob_pnp_cfg_->SOC_PNP_CLINT, dev_pnp));
         CONNECT(clint0, 0, clint0.i_xslvi, ARRITEM(axisi, glob_bus0_cfg_->CFG_BUS0_XSLV_CLINT, axisi));
         CONNECT(clint0, 0, clint0.o_xslvo, ARRITEM(axiso, glob_bus0_cfg_->CFG_BUS0_XSLV_CLINT, axiso));
         CONNECT(clint0, 0, clint0.o_mtimer, wb_clint_mtimer);
@@ -239,7 +221,7 @@ riscv_soc::riscv_soc(GenObject *parent, const char *name) :
         CONNECT(plic0, 0, plic0.i_clk, i_sys_clk);
         CONNECT(plic0, 0, plic0.i_nrst, i_sys_nrst);
         CONNECT(plic0, 0, plic0.i_mapinfo, ARRITEM(bus0_mapinfo, glob_bus0_cfg_->CFG_BUS0_XSLV_PLIC, bus0_mapinfo));
-        CONNECT(plic0, 0, plic0.o_cfg, ARRITEM(dev_pnp, SOC_PNP_PLIC, dev_pnp));
+        CONNECT(plic0, 0, plic0.o_cfg, ARRITEM(dev_pnp, glob_pnp_cfg_->SOC_PNP_PLIC, dev_pnp));
         CONNECT(plic0, 0, plic0.i_xslvi, ARRITEM(axisi, glob_bus0_cfg_->CFG_BUS0_XSLV_PLIC, axisi));
         CONNECT(plic0, 0, plic0.o_xslvo, ARRITEM(axiso, glob_bus0_cfg_->CFG_BUS0_XSLV_PLIC, axiso));
         CONNECT(plic0, 0, plic0.i_irq_request, wb_ext_irqs);
@@ -252,7 +234,7 @@ riscv_soc::riscv_soc(GenObject *parent, const char *name) :
         CONNECT(uart1, 0, uart1.i_clk, i_sys_clk);
         CONNECT(uart1, 0, uart1.i_nrst, i_sys_nrst);
         CONNECT(uart1, 0, uart1.i_mapinfo, ARRITEM(bus1_mapinfo, glob_bus1_cfg_->CFG_BUS1_PSLV_UART1, bus1_mapinfo));
-        CONNECT(uart1, 0, uart1.o_cfg, ARRITEM(dev_pnp, SOC_PNP_UART1, dev_pnp));
+        CONNECT(uart1, 0, uart1.o_cfg, ARRITEM(dev_pnp, glob_pnp_cfg_->SOC_PNP_UART1, dev_pnp));
         CONNECT(uart1, 0, uart1.i_apbi, ARRITEM(apbi, glob_bus1_cfg_->CFG_BUS1_PSLV_UART1, apbi));
         CONNECT(uart1, 0, uart1.o_apbo, ARRITEM(apbo, glob_bus1_cfg_->CFG_BUS1_PSLV_UART1, apbo));
         CONNECT(uart1, 0, uart1.i_rd, i_uart1_rd);
@@ -265,7 +247,7 @@ riscv_soc::riscv_soc(GenObject *parent, const char *name) :
         CONNECT(gpio0, 0, gpio0.i_clk, i_sys_clk);
         CONNECT(gpio0, 0, gpio0.i_nrst, i_sys_nrst);
         CONNECT(gpio0, 0, gpio0.i_mapinfo, ARRITEM(bus1_mapinfo, glob_bus1_cfg_->CFG_BUS1_PSLV_GPIO, bus1_mapinfo));
-        CONNECT(gpio0, 0, gpio0.o_cfg, ARRITEM(dev_pnp, SOC_PNP_GPIO, dev_pnp));
+        CONNECT(gpio0, 0, gpio0.o_cfg, ARRITEM(dev_pnp, glob_pnp_cfg_->SOC_PNP_GPIO, dev_pnp));
         CONNECT(gpio0, 0, gpio0.i_apbi, ARRITEM(apbi, glob_bus1_cfg_->CFG_BUS1_PSLV_GPIO, apbi));
         CONNECT(gpio0, 0, gpio0.o_apbo, ARRITEM(apbo, glob_bus1_cfg_->CFG_BUS1_PSLV_GPIO, apbo));
         CONNECT(gpio0, 0, gpio0.i_gpio, i_gpio);
@@ -279,7 +261,7 @@ riscv_soc::riscv_soc(GenObject *parent, const char *name) :
         CONNECT(spi0, 0, spi0.i_clk, i_sys_clk);
         CONNECT(spi0, 0, spi0.i_nrst, i_sys_nrst);
         CONNECT(spi0, 0, spi0.i_mapinfo, ARRITEM(bus1_mapinfo, glob_bus1_cfg_->CFG_BUS1_PSLV_SPI, bus1_mapinfo));
-        CONNECT(spi0, 0, spi0.o_cfg, ARRITEM(dev_pnp, SOC_PNP_SPI, dev_pnp));
+        CONNECT(spi0, 0, spi0.o_cfg, ARRITEM(dev_pnp, glob_pnp_cfg_->SOC_PNP_SPI, dev_pnp));
         CONNECT(spi0, 0, spi0.i_apbi, ARRITEM(apbi, glob_bus1_cfg_->CFG_BUS1_PSLV_SPI, apbi));
         CONNECT(spi0, 0, spi0.o_apbo, ARRITEM(apbo, glob_bus1_cfg_->CFG_BUS1_PSLV_SPI, apbo));
         CONNECT(spi0, 0, spi0.o_cs, o_spi_cs);
@@ -337,14 +319,14 @@ void riscv_soc::proc_comb() {
     TEXT("PRCI:");
     SETVAL(o_prci_apbi, ARRITEM(apbi, glob_bus1_cfg_->CFG_BUS1_PSLV_PRCI, apbi));
     SETARRITEM(apbo, glob_bus1_cfg_->CFG_BUS1_PSLV_PRCI, apbo, i_prci_apbo);
-    SETARRITEM(dev_pnp, SOC_PNP_PRCI, dev_pnp, i_prci_pdevcfg);
+    SETARRITEM(dev_pnp, glob_pnp_cfg_->SOC_PNP_PRCI, dev_pnp, i_prci_pdevcfg);
 
     TEXT();
     TEXT("DDR:");
     SETVAL(o_ddr_xmapinfo, ARRITEM(bus0_mapinfo, glob_bus0_cfg_->CFG_BUS0_XSLV_DDR, bus0_mapinfo));
-    SETARRITEM(dev_pnp, SOC_PNP_DDR_AXI, dev_pnp, i_ddr_xdevcfg);
+    SETARRITEM(dev_pnp, glob_pnp_cfg_->SOC_PNP_DDR_AXI, dev_pnp, i_ddr_xdevcfg);
     SETVAL(o_ddr_pmapinfo, ARRITEM(bus1_mapinfo, glob_bus1_cfg_->CFG_BUS1_PSLV_DDR, bus1_mapinfo));
-    SETARRITEM(dev_pnp, SOC_PNP_DDR_APB, dev_pnp, i_ddr_pdevcfg);
+    SETARRITEM(dev_pnp, glob_pnp_cfg_->SOC_PNP_DDR_APB, dev_pnp, i_ddr_pdevcfg);
     SETVAL(o_ddr_apbi, ARRITEM(apbi, glob_bus1_cfg_->CFG_BUS1_PSLV_DDR, apbi));
     SETARRITEM(apbo, glob_bus1_cfg_->CFG_BUS1_PSLV_DDR, apbo, i_ddr_apbo);
 }

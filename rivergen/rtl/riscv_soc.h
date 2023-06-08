@@ -20,6 +20,7 @@
 #include "ambalib/types_amba.h"
 #include "ambalib/types_bus0.h"
 #include "ambalib/types_bus1.h"
+#include "ambalib/types_pnp.h"
 #include "ambalib/axictrl_bus0.h"
 #include "ambalib/axi2apb_bus1.h"
 #include "misclib/apb_uart.h"
@@ -58,27 +59,7 @@ class riscv_soc : public ModuleObject {
     void proc_comb();
 
 public:
-    class soc_pnp_vector : public types_amba::dev_config_type {
-     public:
-        soc_pnp_vector(GenObject *parent, const char *name, const char *descr="")
-            : dev_config_type(parent, name, descr) {
-            type_ = std::string("soc_pnp_vector");
-            setStrDepth("SOC_PNP_TOTAL");
-            
-            registerCfgType(name);                  // will be registered if name == ""
-            if (name[0]) {
-                std::string strtype = getType();
-                SCV_get_cfg_parameter(strtype);   // to trigger dependecy array
-            }
-        }
-        virtual bool isTypedef() override { return true; }
-        virtual bool isVector() override { return true; }
-        virtual bool isSignal() override { return true; }
-        virtual std::string generate() override { return std::string("dev_config_type"); }
-    };
-
-
-public:
+    DefParamString bootfile;
     DefParamI32D sim_uart_speedup_rate;
     ParamBOOL async_reset;
     // Ports:
@@ -155,29 +136,18 @@ public:
         virtual bool isSignal() override { return true; }
     };
 
-    TextLine _map0_;
-    TextLine _pnp0_;
-    ParamI32D SOC_PNP_XCTRL0;
-    ParamI32D SOC_PNP_GROUP0;
-    ParamI32D SOC_PNP_BOOTROM;
-    ParamI32D SOC_PNP_SRAM;
-    ParamI32D SOC_PNP_DDR_AXI;
-    ParamI32D SOC_PNP_DDR_APB;
-    ParamI32D SOC_PNP_PRCI;
-    ParamI32D SOC_PNP_GPIO;
-    ParamI32D SOC_PNP_CLINT;
-    ParamI32D SOC_PNP_PLIC;
-    ParamI32D SOC_PNP_PNP;
-    ParamI32D SOC_PNP_PBRIDGE0;
-    ParamI32D SOC_PNP_DMI;
-    ParamI32D SOC_PNP_UART1;
-    ParamI32D SOC_PNP_SPI;
-    ParamI32D SOC_PNP_TOTAL;
+    TextLine _hwid0_;
+    TextLine _hwid1_;
+    TextLine _hwid2_;
+    ParamLogic SOC_HW_ID;
     TextLine _cfg0_;
-    ParamI32D SOC_UART1_LOG2_FIFOSZ;
     TextLine _cfg1_;
-    ParamI32D SOC_GPIO0_WIDTH;
+    ParamI32D SOC_UART1_LOG2_FIFOSZ;
     TextLine _cfg2_;
+    TextLine _cfg3_;
+    ParamI32D SOC_GPIO0_WIDTH;
+    TextLine _cfg4_;
+    TextLine _cfg5_;
     ParamI32D SOC_SPI0_LOG2_FIFOSZ;
     TextLine _plic0_;
     TextLine _plic1_;
@@ -185,15 +155,6 @@ public:
     ParamI32D SOC_PLIC_CONTEXT_TOTAL;
     TextLine _plic3_;
     ParamI32D SOC_PLIC_IRQ_TOTAL;
-    TextLine _hex0_;
-    TextLine _hex1_;
-    ParamString SOC_BOOTROM_FILE_HEX;
-    TextLine _hwid0_;
-    TextLine _hwid1_;
-    TextLine _hwid2_;
-    ParamLogic SOC_HW_ID;
-
-    soc_pnp_vector soc_pnp_vector_def_;
 
     axi4_master_out_type_signal acpo;
     axi4_master_in_type_signal acpi;
@@ -205,7 +166,7 @@ public:
     types_bus1::bus1_mapinfo_vector   bus1_mapinfo;
     types_bus1::bus1_apb_in_vector   apbi;
     types_bus1::bus1_apb_out_vector  apbo;
-    soc_pnp_vector dev_pnp;
+    types_pnp::soc_pnp_vector dev_pnp;
     Signal wb_clint_mtimer;
     Signal wb_clint_msip;
     Signal wb_clint_mtip;

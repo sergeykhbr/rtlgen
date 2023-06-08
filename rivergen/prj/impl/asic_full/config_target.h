@@ -46,6 +46,9 @@ class config_target : public FileObject {
     TextLine _mem0_;
     TextLine _mem1_;
     ParamI32D CFG_BOOTROM_LOG2_SIZE;
+    TextLine _hex0_;
+    TextLine _hex1_;
+    ParamString SOC_BOOTROM_FILE_HEX;
     TextLine _mem2_;
     TextLine _mem3_;
     TextLine _mem4_;

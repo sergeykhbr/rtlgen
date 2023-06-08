@@ -18,6 +18,7 @@
 
 #include "genobjects.h"
 #include "values.h"
+#include "logic.h"
 #include "utils.h"
 #include <iostream>
 
@@ -63,6 +64,14 @@ class DefParamString : public STRING {
  public:
     DefParamString(GenObject *parent, const char *name, const char *val,
                 const char *comment="") : STRING(val, name, parent, comment) {
+        id_ = ID_DEF_PARAM;
+    }
+};
+
+class DefParamLogic : public Logic {
+ public:
+    DefParamLogic(GenObject *parent, const char *name, const char *width, const char *val,
+                const char *comment="") : Logic(parent, name, width, val, comment) {
         id_ = ID_DEF_PARAM;
     }
 };
