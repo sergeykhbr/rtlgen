@@ -78,11 +78,6 @@ std::string Operation::fullname(const char *prefix, std::string name, GenObject 
         return name;
     }
     std::string read = "";
-#if 1
-    if (obj->getName() == "vb_irq_idx") {
-        bool st = true;
-    }
-#endif
     GenObject *p = obj->getParent();
     std::string curname = "";
     if (p && p->getId() == ID_ARRAY_DEF) {

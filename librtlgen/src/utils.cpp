@@ -52,7 +52,7 @@ void SCV_set_cfg_parameter(GenObject *parent,
     cfg.path = path;
     cfg.file = file;
     cfg.value = v;
-    if (parent->isLocal()) {
+    if (obj->isLocal()) {
         cfgLocalParamters_[localname_][obj->getName()] = cfg;
     } else {
         cfgParamters_[obj->getName()] = cfg;
