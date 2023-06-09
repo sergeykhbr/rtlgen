@@ -185,7 +185,7 @@ TEXT();
             SETVAL(fwdbg6, wb_req_wdata);
         ENDIF();
     ELSIF (ANDx(2, &GE(BITS(wb_req_addr, 11, 2), CONST("16", 9)),
-                   &LS(BITS(wb_req_addr, 11, 2), ADD2(CONST("16", 9), MUL2(CONST("8"), cfg_slots)))));
+                   &LS(BITS(wb_req_addr, 11, 2), ADD2(CONST("16"), MUL2(CONST("8"), cfg_slots)))));
         SETVAL(comb.vrdata, ARRITEM
             (comb.cfgmap, SUB2(TO_INT(BITS(wb_req_addr, 11, 2)), CONST("16")), comb.cfgmap));
     ENDIF();

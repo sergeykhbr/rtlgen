@@ -39,6 +39,11 @@ void FileObject::notifyAccess(std::string &file) {
         }
     }
     if (!found) {
+#if 1
+    if (name_ == "riscv_soc") {
+        bool st= true;
+    }
+#endif
         depfiles_.push_back(file);
     }
 }
@@ -394,6 +399,11 @@ void FileObject::generate_sysv() {
     out += "package " + getName() + "_pkg;\n";
     out += "\n";
 
+#if 1
+    if (getName() == "riscv_soc") {
+        bool st = true;
+    }
+#endif
     // Automatic Dependency detection
     std::list<std::string> pkglist;
     getDepList(pkglist, 0);
@@ -402,11 +412,6 @@ void FileObject::generate_sysv() {
     }
     out += "\n";
 
-#if 1
-    if (getName() == "riscv_soc") {
-        bool st = true;
-    }
-#endif
     // header
     bool skip_pkg = false;
     ModuleObject *mod;

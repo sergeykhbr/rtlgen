@@ -32,7 +32,7 @@ class apb_pnp : public ModuleObject {
      public:
         CombProcess(GenObject *parent) :
             ProcObject(parent, "comb"),
-            cfgmap(this, "cfgmap", "32", "cfg_slots"),
+            cfgmap(this, "cfgmap", "32", "MUL(8,cfg_slots)"),
             vrdata(this, "vrdata", "CFG_SYSBUS_DATA_BITS") {
         }
 
