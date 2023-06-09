@@ -26,6 +26,7 @@
 #include "misclib/apb_uart.h"
 #include "misclib/apb_gpio.h"
 #include "misclib/apb_spi.h"
+#include "misclib/apb_pnp.h"
 #include "misclib/axi_sram.h"
 #include "misclib/axi_rom.h"
 #include "misclib/plic.h"
@@ -188,6 +189,7 @@ public:
     apb_uart uart1;
     apb_gpio gpio0;
     apb_spi spi0;
+    apb_pnp pnp0;
     Workgroup group0;
     // process
     CombProcess comb;

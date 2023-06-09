@@ -118,6 +118,7 @@ riscv_soc::riscv_soc(GenObject *parent, const char *name) :
     uart1(this, "uart1"),
     gpio0(this, "gpio0"),
     spi0(this, "spi0"),
+    pnp0(this, "pnp0"),
     group0(this, "group0"),
     comb(this)
 {
@@ -270,6 +271,22 @@ riscv_soc::riscv_soc(GenObject *parent, const char *name) :
         CONNECT(spi0, 0, spi0.i_miso, i_spi_miso);
         CONNECT(spi0, 0, spi0.i_detected, i_sd_detected);
         CONNECT(spi0, 0, spi0.i_protect, i_sd_protect);
+    ENDNEW();
+
+    pnp0.cfg_slots.setObjValue(&glob_pnp_cfg_->SOC_PNP_TOTAL);
+    pnp0.hw_id.setObjValue(&SOC_HW_ID);
+    pnp0.cpu_max.setObjValue(&prj_cfg_->CFG_CPU_NUM);
+    pnp0.l2cache_ena.setObjValue(&prj_cfg_->CFG_L2CACHE_ENA);
+    pnp0.plic_irq_max.setObjValue(&SOC_PLIC_IRQ_TOTAL);
+    NEW(pnp0, pnp0.getName().c_str());
+        CONNECT(pnp0, 0, pnp0.i_clk, i_sys_clk);
+        CONNECT(pnp0, 0, pnp0.i_nrst, i_sys_nrst);
+        CONNECT(pnp0, 0, pnp0.i_mapinfo, ARRITEM(bus1_mapinfo, glob_bus1_cfg_->CFG_BUS1_PSLV_PNP, bus1_mapinfo));
+        CONNECT(pnp0, 0, pnp0.i_cfg, dev_pnp);
+        CONNECT(pnp0, 0, pnp0.o_cfg, ARRITEM(dev_pnp, glob_pnp_cfg_->SOC_PNP_PNP, dev_pnp));
+        CONNECT(pnp0, 0, pnp0.i_apbi, ARRITEM(apbi, glob_bus1_cfg_->CFG_BUS1_PSLV_PNP, apbi));
+        CONNECT(pnp0, 0, pnp0.o_apbo, ARRITEM(apbo, glob_bus1_cfg_->CFG_BUS1_PSLV_PNP, apbo));
+        CONNECT(pnp0, 0, pnp0.o_irq, w_irq_pnp);
     ENDNEW();
 
     Operation::start(&comb);

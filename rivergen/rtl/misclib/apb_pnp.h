@@ -32,19 +32,19 @@ class apb_pnp : public ModuleObject {
      public:
         CombProcess(GenObject *parent) :
             ProcObject(parent, "comb"),
-            config_map(this, "config_map", "32", "cfg_slots"),
+            cfgmap(this, "cfgmap", "32", "cfg_slots"),
             vrdata(this, "vrdata", "CFG_SYSBUS_DATA_BITS") {
         }
 
      public:
-        WireArray<Logic> config_map;
+        WireArray<Logic> cfgmap;
         Logic vrdata;
     };
 
     void proc_comb();
 
  public:
-    DefParamI32D cfg_slots;
+    TmplParamI32D cfg_slots;
     DefParamLogic hw_id;
     DefParamI32D cpu_max;
     DefParamI32D l2cache_ena;
@@ -67,12 +67,18 @@ class apb_pnp : public ModuleObject {
     Signal wb_req_wdata;
 
     RegSignal fw_id;
-    RegSignal idt;
-    RegSignal malloc_addr;
-    RegSignal malloc_size;
+    RegSignal idt_l;
+    RegSignal idt_m;
+    RegSignal malloc_addr_l;
+    RegSignal malloc_addr_m;
+    RegSignal malloc_size_l;
+    RegSignal malloc_size_m;
     RegSignal fwdbg1;
     RegSignal fwdbg2;
     RegSignal fwdbg3;
+    RegSignal fwdbg4;
+    RegSignal fwdbg5;
+    RegSignal fwdbg6;
     RegSignal irq;
     RegSignal resp_valid;
     RegSignal resp_rdata;
