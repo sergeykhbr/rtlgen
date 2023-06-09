@@ -35,6 +35,7 @@
 #include "riverlib/types_river.h"
 #include "riverlib/river_amba.h"
 #include "riverlib/workgroup.h"
+#include "techmap/cdc_axi_sync/cdc_axi_sync_tech.h"
 
 using namespace sysvc;
 
@@ -191,6 +192,7 @@ public:
     apb_spi spi0;
     apb_pnp pnp0;
     Workgroup group0;
+    cdc_axi_sync_tech u_cdc_ddr0;
     // process
     CombProcess comb;
 };

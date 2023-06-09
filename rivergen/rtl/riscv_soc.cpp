@@ -120,6 +120,7 @@ riscv_soc::riscv_soc(GenObject *parent, const char *name) :
     spi0(this, "spi0"),
     pnp0(this, "pnp0"),
     group0(this, "group0"),
+    u_cdc_ddr0(this, "u_cdc_ddr0"),
     comb(this)
 {
     Operation::start(this);
@@ -227,6 +228,17 @@ riscv_soc::riscv_soc(GenObject *parent, const char *name) :
         CONNECT(plic0, 0, plic0.o_xslvo, ARRITEM(axiso, glob_bus0_cfg_->CFG_BUS0_XSLV_PLIC, axiso));
         CONNECT(plic0, 0, plic0.i_irq_request, wb_ext_irqs);
         CONNECT(plic0, 0, plic0.o_ip, wb_plic_xeip);
+    ENDNEW();
+
+    NEW(u_cdc_ddr0, u_cdc_ddr0.getName().c_str());
+        CONNECT(u_cdc_ddr0, 0, u_cdc_ddr0.i_xslv_clk, i_sys_clk);
+        CONNECT(u_cdc_ddr0, 0, u_cdc_ddr0.i_xslv_nrst, i_sys_nrst);
+        CONNECT(u_cdc_ddr0, 0, u_cdc_ddr0.i_xslvi, ARRITEM(axisi, glob_bus0_cfg_->CFG_BUS0_XSLV_DDR, axisi));
+        CONNECT(u_cdc_ddr0, 0, u_cdc_ddr0.o_xslvo, ARRITEM(axiso, glob_bus0_cfg_->CFG_BUS0_XSLV_DDR, axiso));
+        CONNECT(u_cdc_ddr0, 0, u_cdc_ddr0.i_xmst_clk, i_ddr_clk);
+        CONNECT(u_cdc_ddr0, 0, u_cdc_ddr0.i_xmst_nrst, i_ddr_nrst);
+        CONNECT(u_cdc_ddr0, 0, u_cdc_ddr0.o_xmsto, o_ddr_xslvi);
+        CONNECT(u_cdc_ddr0, 0, u_cdc_ddr0.i_xmsti, i_ddr_xslvo);
     ENDNEW();
 
     uart1.log2_fifosz.setObjValue(&SOC_UART1_LOG2_FIFOSZ);

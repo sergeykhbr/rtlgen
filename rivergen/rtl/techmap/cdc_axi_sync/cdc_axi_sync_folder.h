@@ -1,5 +1,5 @@
 // 
-//  Copyright 2022 Sergey Khabarov, sergeykhbr@gmail.com
+//  Copyright 2023 Sergey Khabarov, sergeykhbr@gmail.com
 // 
 //  Licensed under the Apache License, Version 2.0 (the "License");
 //  you may not use this file except in compliance with the License.
@@ -17,17 +17,14 @@
 #pragma once
 
 #include <api.h>
-#include "mem/mem_folder.h"
-#include "cdc_axi_sync/cdc_axi_sync_folder.h"
+#include "cdc_axi_sync_tech.h"
 
-class techmap_folder : public FolderObject {
+class cdc_axi_sync_folder : public FolderObject {
  public:
-    techmap_folder(GenObject *parent) :
-        FolderObject(parent, "techmap"),
-        mem_folder_(this),
-        cdc_axi_sync_folder_(this) {}
+    cdc_axi_sync_folder(GenObject *parent) :
+        FolderObject(parent, "cdc_axi_sync"),
+        cdc_axi_sync_tech_file_(this) {}
 
  protected:
-    mem_folder mem_folder_;
-    cdc_axi_sync_folder cdc_axi_sync_folder_;
+    cdc_axi_sync_tech_file cdc_axi_sync_tech_file_;
 };
