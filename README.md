@@ -54,3 +54,8 @@ bus widths to properly use <i>sc_uint</i>/<i>sc_biguint</i> definitions.</b>
     > cd output_dir
     > make
     > ./bin/rivergen
+
+## Generated code examples:
+
+- [System Verilog](https://github.com/sergeykhbr/riscv_vhdl/rtl/sv)
+- [SystemC](https://github.com/sergeykhbr/riscv_vhdl/rtl/sc)
