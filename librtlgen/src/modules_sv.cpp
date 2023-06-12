@@ -205,8 +205,12 @@ std::string ModuleObject::generate_sv_mod_genparam() {
     }
 
     for (auto &p : genparam) {
-        ln = "    parameter " + p->getType();
-        ln += " " + p->getName() + " = " + p->getStrValue();
+        ln = "    parameter ";
+        if (!p->isString()) {
+            // vivado doesn't support string as parameter:
+            ln += p->getType() + " ";
+        }
+        ln += p->getName() + " = " + p->getStrValue();
 
         if (p != genparam.back()) {
             ln += ",";
