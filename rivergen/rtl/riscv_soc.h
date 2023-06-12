@@ -94,16 +94,16 @@ public:
     TextLine _prci0_;
     OutPort o_dmreset;
     OutStruct<types_amba::mapinfo_type> o_prci_pmapinfo;
-    OutStruct<types_amba::dev_config_type> i_prci_pdevcfg;
+    InStruct<types_amba::dev_config_type> i_prci_pdevcfg;
     OutStruct<types_amba::apb_in_type> o_prci_apbi;
     InStruct<types_amba::apb_out_type> i_prci_apbo;
     TextLine _ddr0_;
     OutStruct<types_amba::mapinfo_type> o_ddr_pmapinfo;
-    OutStruct<types_amba::dev_config_type> i_ddr_pdevcfg;
+    InStruct<types_amba::dev_config_type> i_ddr_pdevcfg;
     OutStruct<types_amba::apb_in_type> o_ddr_apbi;
     InStruct<types_amba::apb_out_type> i_ddr_apbo;
     OutStruct<types_amba::mapinfo_type> o_ddr_xmapinfo;
-    OutStruct<types_amba::dev_config_type> i_ddr_xdevcfg;
+    InStruct<types_amba::dev_config_type> i_ddr_xdevcfg;
     OutStruct<types_amba::axi4_slave_in_type> o_ddr_xslvi;
     InStruct<types_amba::axi4_slave_out_type> i_ddr_xslvo;
 

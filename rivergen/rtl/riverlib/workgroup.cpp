@@ -87,7 +87,6 @@ Workgroup::Workgroup(GenObject *parent, const char *name) :
     wb_ic_dport_rdata(this, "wb_ic_dport_rdata", "RISCV_ARCH"),
     wb_progbuf(this, "wb_progbuf", "MUL(32,CFG_PROGBUF_REG_TOTAL)"),
     w_flush_l2(this, "w_flush_l2", "1"),
-    wb_xmst_cfg(this, "wb_xmst_cfg"),
     // submodules:
     dmi0(this, "dmi0"),
     dport_ic0(this, "dport_ic0"),
@@ -239,10 +238,10 @@ Workgroup::Workgroup(GenObject *parent, const char *name) :
 void Workgroup::proc_comb() {
     river_cfg *cfg = glob_river_cfg_;
 
-    SETVAL(wb_xmst_cfg.descrsize, glob_types_amba_->PNP_CFG_DEV_DESCR_BYTES);
-    SETVAL(wb_xmst_cfg.descrtype, glob_types_amba_->PNP_CFG_TYPE_MASTER);
-    SETVAL(wb_xmst_cfg.vid, glob_types_amba_->VENDOR_OPTIMITECH);
-    SETVAL(wb_xmst_cfg.did, glob_types_amba_->RISCV_RIVER_WORKGROUP);
+    SETVAL(comb.vb_xmst_cfg.descrsize, glob_types_amba_->PNP_CFG_DEV_DESCR_BYTES);
+    SETVAL(comb.vb_xmst_cfg.descrtype, glob_types_amba_->PNP_CFG_TYPE_MASTER);
+    SETVAL(comb.vb_xmst_cfg.vid, glob_types_amba_->VENDOR_OPTIMITECH);
+    SETVAL(comb.vb_xmst_cfg.did, glob_types_amba_->RISCV_RIVER_WORKGROUP);
 
 TEXT();
     TEXT("Vector to signal conversion is neccessary to implement compatibility with SystemC:");
@@ -263,5 +262,5 @@ TEXT();
     SETVAL(w_flush_l2, comb.v_flush_l2);
     SETVAL(wb_halted, comb.vb_halted);
     SETVAL(wb_available, comb.vb_available);
-    SETVAL(o_xmst_cfg, wb_xmst_cfg);
+    SETVAL(o_xmst_cfg, comb.vb_xmst_cfg);
 }

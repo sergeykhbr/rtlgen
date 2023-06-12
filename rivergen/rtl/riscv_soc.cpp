@@ -189,7 +189,7 @@ riscv_soc::riscv_soc(GenObject *parent, const char *name) :
         CONNECT(rom0, 0, rom0.i_clk, i_sys_clk);
         CONNECT(rom0, 0, rom0.i_nrst, i_sys_nrst);
         CONNECT(rom0, 0, rom0.i_mapinfo, ARRITEM(bus0_mapinfo, glob_bus0_cfg_->CFG_BUS0_XSLV_BOOTROM, bus0_mapinfo));
-        CONNECT(rom0, 0, rom0.o_cfg, ARRITEM(dev_pnp, glob_pnp_cfg_->SOC_PNP_SRAM, dev_pnp));
+        CONNECT(rom0, 0, rom0.o_cfg, ARRITEM(dev_pnp, glob_pnp_cfg_->SOC_PNP_BOOTROM, dev_pnp));
         CONNECT(rom0, 0, rom0.i_xslvi, ARRITEM(axisi, glob_bus0_cfg_->CFG_BUS0_XSLV_BOOTROM, axisi));
         CONNECT(rom0, 0, rom0.o_xslvo, ARRITEM(axiso, glob_bus0_cfg_->CFG_BUS0_XSLV_BOOTROM, axiso));
     ENDNEW();
