@@ -174,13 +174,13 @@ dmidebug::dmidebug(GenObject *parent, const char *name) :
 
 void dmidebug::proc_comb() {
     river_cfg *cfg = glob_river_cfg_;
-    types_amba *amba = glob_types_amba_;
-    SETVAL(comb.vcfg.descrsize, amba->PNP_CFG_DEV_DESCR_BYTES);
-    SETVAL(comb.vcfg.descrtype, amba->PNP_CFG_TYPE_SLAVE);
+    types_pnp *pnp = glob_pnp_cfg_;
+    SETVAL(comb.vcfg.descrsize, pnp->PNP_CFG_DEV_DESCR_BYTES);
+    SETVAL(comb.vcfg.descrtype, pnp->PNP_CFG_TYPE_SLAVE);
     SETVAL(comb.vcfg.addr_start, i_mapinfo.addr_start);
     SETVAL(comb.vcfg.addr_end, i_mapinfo.addr_end);
-    SETVAL(comb.vcfg.vid, amba->VENDOR_OPTIMITECH);
-    SETVAL(comb.vcfg.did, amba->OPTIMITECH_RIVER_DMI);
+    SETVAL(comb.vcfg.vid, pnp->VENDOR_OPTIMITECH);
+    SETVAL(comb.vcfg.did, pnp->OPTIMITECH_RIVER_DMI);
 
 TEXT();
     SETVAL(comb.vb_hartselnext, BITS(wdata, DEC(ADD2(CONST("16"), cfg->CFG_LOG2_CPU_MAX)), CONST("16")));

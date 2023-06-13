@@ -17,6 +17,7 @@
 #pragma once
 
 #include <api.h>
+#include "../../ambalib/types_pnp.h"
 #include "../river_cfg.h"
 #include "../types_river.h"
 #include "jtagcdc.h"
@@ -47,7 +48,7 @@ class dmidebug : public ModuleObject {
             t_idx("0", "t_idx", this) {
         }
      public:
-        types_amba::dev_config_type vcfg;
+        types_pnp::dev_config_type vcfg;
         types_amba::apb_out_type vapbo;
         Logic vb_req_type;
         Logic vb_resp_data;
@@ -76,7 +77,7 @@ public:
     OutPort o_tdo;
     TextLine _bus0_;
     InStruct<types_amba::mapinfo_type> i_mapinfo;
-    OutStruct<types_amba::dev_config_type> o_cfg;
+    OutStruct<types_pnp::dev_config_type> o_cfg;
     InStruct<types_amba::apb_in_type> i_apbi;
     OutStruct<types_amba::apb_out_type> o_apbo;
     TextLine _dmi0_;

@@ -18,6 +18,7 @@
 
 #include <api.h>
 #include "types_amba.h"
+#include "types_pnp.h"
 #include "axi_slv.h"
 #include "types_bus0.h"
 
@@ -89,7 +90,7 @@ class axictrl_bus0 : public ModuleObject {
     // io:
     InPort i_clk;
     InPort i_nrst;
-    OutStruct<types_amba::dev_config_type> o_cfg;
+    OutStruct<types_pnp::dev_config_type> o_cfg;
     InStruct<types_bus0::bus0_xmst_out_vector> i_xmsto;
     OutStruct<types_bus0::bus0_xmst_in_vector> o_xmsti;
     InStruct<types_bus0::bus0_xslv_out_vector> i_xslvo;

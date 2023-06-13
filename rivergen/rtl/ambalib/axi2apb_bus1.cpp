@@ -61,8 +61,8 @@ axi2apb_bus1::axi2apb_bus1(GenObject *parent, const char *name) :
     comb(this)
 {
     Operation::start(this);
-    axi0.vid.setObjValue(&glob_types_amba_->VENDOR_OPTIMITECH);
-    axi0.did.setObjValue(&glob_types_amba_->OPTIMITECH_AXI2APB_BRIDGE);
+    axi0.vid.setObjValue(&glob_pnp_cfg_->VENDOR_OPTIMITECH);
+    axi0.did.setObjValue(&glob_pnp_cfg_->OPTIMITECH_AXI2APB_BRIDGE);
     NEW(axi0, axi0.getName().c_str());
         CONNECT(axi0, 0, axi0.i_clk, i_clk);
         CONNECT(axi0, 0, axi0.i_nrst, i_nrst);

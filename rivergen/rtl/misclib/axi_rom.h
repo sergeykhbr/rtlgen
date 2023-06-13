@@ -18,6 +18,7 @@
 
 #include <api.h>
 #include "../ambalib/types_amba.h"
+#include "../ambalib/types_pnp.h"
 #include "../ambalib/axi_slv.h"
 #include "../techmap/mem/rom_tech.h"
 
@@ -45,7 +46,7 @@ class axi_rom : public ModuleObject {
     InPort i_clk;
     InPort i_nrst;
     InStruct<types_amba::mapinfo_type> i_mapinfo;
-    OutStruct<types_amba::dev_config_type> o_cfg;
+    OutStruct<types_pnp::dev_config_type> o_cfg;
     InStruct<types_amba::axi4_slave_in_type> i_xslvi;
     OutStruct<types_amba::axi4_slave_out_type> o_xslvo;
 

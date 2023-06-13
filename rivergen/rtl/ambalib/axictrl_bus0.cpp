@@ -55,8 +55,8 @@ axictrl_bus0::axictrl_bus0(GenObject *parent, const char *name) :
     comb(this)
 {
     Operation::start(this);
-    xdef0.vid.setObjValue(&glob_types_amba_->VENDOR_OPTIMITECH);
-    xdef0.did.setObjValue(&glob_types_amba_->OPTIMITECH_AXI_INTERCONNECT);
+    xdef0.vid.setObjValue(&glob_pnp_cfg_->VENDOR_OPTIMITECH);
+    xdef0.did.setObjValue(&glob_pnp_cfg_->OPTIMITECH_AXI_INTERCONNECT);
     NEW(xdef0, xdef0.getName().c_str());
         CONNECT(xdef0, 0, xdef0.i_clk, i_clk);
         CONNECT(xdef0, 0, xdef0.i_nrst, i_nrst);

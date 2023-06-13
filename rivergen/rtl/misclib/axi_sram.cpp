@@ -46,8 +46,8 @@ axi_sram::axi_sram(GenObject *parent, const char *name) :
 {
     Operation::start(this);
 
-    xslv0.vid.setObjValue(&glob_types_amba_->VENDOR_OPTIMITECH);
-    xslv0.did.setObjValue(&glob_types_amba_->OPTIMITECH_SRAM);
+    xslv0.vid.setObjValue(&glob_pnp_cfg_->VENDOR_OPTIMITECH);
+    xslv0.did.setObjValue(&glob_pnp_cfg_->OPTIMITECH_SRAM);
     NEW(xslv0, xslv0.getName().c_str());
         CONNECT(xslv0, 0, xslv0.i_clk, i_clk);
         CONNECT(xslv0, 0, xslv0.i_nrst, i_nrst);

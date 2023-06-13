@@ -547,7 +547,9 @@ std::string StructObject::generate() {
             }
             ln += "]";
         }
-        ln += ";";
+        if (p->getId() != ID_COMMENT) {
+            ln += ";";
+        }
         if (p->getComment().size()) {
             while (ln.size() < 60) {
                 ln += " ";

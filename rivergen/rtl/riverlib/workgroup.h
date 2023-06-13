@@ -20,6 +20,7 @@
 #include "river_cfg.h"
 #include "types_river.h"
 #include "../ambalib/types_amba.h"
+#include "../ambalib/types_pnp.h"
 #include "dmi/ic_dport.h"
 #include "dmi/dmidebug.h"
 #include "ic_axi4_to_l1.h"
@@ -49,7 +50,7 @@ class Workgroup : public ModuleObject {
             vb_irq(this, "vb_irq", "IRQ_TOTAL", "CFG_CPU_MAX") {
         }
      public:
-        types_amba::dev_config_type vb_xmst_cfg;
+        types_pnp::dev_config_type vb_xmst_cfg;
         Logic v_flush_l2;
         Logic vb_halted;
         Logic vb_available;
@@ -111,12 +112,12 @@ public:
     InStruct<types_amba::axi4_master_out_type> i_acpo;
     OutStruct<types_amba::axi4_master_in_type> o_acpi;
     TextLine _port1_;
-    OutStruct<types_amba::dev_config_type> o_xmst_cfg;
+    OutStruct<types_pnp::dev_config_type> o_xmst_cfg;
     InStruct<types_amba::axi4_master_in_type> i_msti;
     OutStruct<types_amba::axi4_master_out_type> o_msto;
     TextLine _apb0_;
     InStruct<types_amba::mapinfo_type> i_dmi_mapinfo;
-    OutStruct<types_amba::dev_config_type> o_dmi_cfg;
+    OutStruct<types_pnp::dev_config_type> o_dmi_cfg;
     InStruct<types_amba::apb_in_type> i_dmi_apbi;
     OutStruct<types_amba::apb_out_type> o_dmi_apbo;
     OutPort o_dmreset;

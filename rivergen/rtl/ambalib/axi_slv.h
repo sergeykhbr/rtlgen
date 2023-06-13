@@ -18,6 +18,7 @@
 
 #include <api.h>
 #include "types_amba.h"
+#include "types_pnp.h"
 
 using namespace sysvc;
 
@@ -38,7 +39,7 @@ class axi_slv : public ModuleObject {
      public:
         Logic vb_req_addr_next;
         Logic v_req_last;
-        types_amba::dev_config_type vcfg;
+        types_pnp::dev_config_type vcfg;
         types_amba::axi4_slave_out_type vxslvo;
     };
 
@@ -51,7 +52,7 @@ class axi_slv : public ModuleObject {
     InPort i_clk;
     InPort i_nrst;
     InStruct<types_amba::mapinfo_type> i_mapinfo;
-    OutStruct<types_amba::dev_config_type> o_cfg;
+    OutStruct<types_pnp::dev_config_type> o_cfg;
     InStruct<types_amba::axi4_slave_in_type> i_xslvi;
     OutStruct<types_amba::axi4_slave_out_type> o_xslvo;
     OutPort o_req_valid;

@@ -59,43 +59,6 @@ class types_amba : public FileObject {
         UI64H addr_end;
     };
 
-    class dev_config_type : public StructObject {
-     public:
-        dev_config_type(GenObject* parent, const char* name = "", const char* comment = "")
-            : StructObject(parent, "dev_config_type", name, comment),
-            _0_(this, "Descriptor size in bytes."),
-            descrsize("8", "descrsize", "PNP_CFG_DEV_DESCR_BYTES", this),
-            _1_(this, "Descriptor type."),
-            descrtype("2", "descrtype", "PNP_CFG_TYPE_SLAVE", this),
-            _2_(this, "Base Address."),
-            addr_start("64", "addr_start", "0", this),
-            _3_(this, "End of the base address."),
-            addr_end("64", "addr_end", "0", this),
-            _4_(this, "Vendor ID."),
-            vid("16", "vid", "VENDOR_GNSSSENSOR", this),
-            _5_(this, "Device ID."),
-            did("16", "did", "SLV_DID_EMPTY", this) {
-            setZeroValue("dev_config_none");
-            registerCfgType(name);
-            std::string strtype = getType();
-            SCV_get_cfg_parameter(strtype);    // to trigger dependecy array
-        }
-
-    public:
-        TextLine _0_;
-        Logic descrsize;
-        TextLine _1_;
-        Logic descrtype;
-        TextLine _2_;
-        Logic addr_start;
-        TextLine _3_;
-        Logic addr_end;
-        TextLine _4_;
-        Logic vid;
-        TextLine _5_;
-        Logic did;
-    };
-
     class axi4_metadata_type : public StructObject {
      public:
         axi4_metadata_type(GenObject* parent, const char* name = "", const char* comment = "")
@@ -423,83 +386,12 @@ class types_amba : public FileObject {
     TextLine _cfgbus0_;
     ParamI32D CFG_SYSBUS_DATA_BYTES;
     ParamI32D CFG_SYSBUS_DATA_BITS;
-    TextLine _vid0_;
-    TextLine _vid1_;
-    ParamLogic VENDOR_GNSSSENSOR;
-    ParamLogic VENDOR_OPTIMITECH;
-    TextLine _didmst0_;
-    TextLine _didmst1_;
-    TextLine _didmst2_;
-    ParamLogic MST_DID_EMPTY;
-    TextLine _didmst3_;
-    ParamLogic GAISLER_ETH_MAC_MASTER;
-    TextLine _didmst4_;
-    ParamLogic GAISLER_ETH_EDCL_MASTER;
-    TextLine _didmst5_;
-    ParamLogic RISCV_RIVER_CPU;
-    TextLine _didmst6_;
-    ParamLogic RISCV_RIVER_WORKGROUP;
-    TextLine _didmst7_;
-    ParamLogic GNSSSENSOR_UART_TAP;
-    TextLine _didmst8_;
-    ParamLogic OPTIMITECH_JTAG_SBA;
-    TextLine _didslv0_;
-    TextLine _didslv1_;
-    TextLine _didslv2_;
-    ParamLogic SLV_DID_EMPTY;
-    TextLine _didslv3_;
-    ParamLogic OPTIMITECH_ROM;
-    TextLine _didslv4_;
-    ParamLogic OPTIMITECH_SRAM;
-    TextLine _didslv5_;
-    ParamLogic OPTIMITECH_PNP;
-    TextLine _didslv6_;
-    ParamLogic OPTIMITECH_SPI_FLASH;
-    TextLine _didslv7_;
-    ParamLogic OPTIMITECH_GPIO;
-    TextLine _didslv8_;
-    ParamLogic OPTIMITECH_UART;
-    TextLine _didslv9_;
-    ParamLogic OPTIMITECH_CLINT;
-    TextLine _didslv10_;
-    ParamLogic OPTIMITECH_PLIC;
-    TextLine _didslv11_;
-    ParamLogic OPTIMITECH_AXI2APB_BRIDGE;
-    TextLine _didslv12_;
-    ParamLogic OPTIMITECH_AXI_INTERCONNECT;
-    TextLine _didslv13_;
-    ParamLogic OPTIMITECH_PRCI;
-    TextLine _didslv14_;
-    ParamLogic OPTIMITECH_DDRCTRL;
-    TextLine _didslv15_;
-    ParamLogic OPTIMITECH_SPI;
-    TextLine _didslv16_;
-    ParamLogic OPTIMITECH_RIVER_DMI;
-    TextLine _pnpcfg0_;
-    TextLine _pnpcfg1_;
-    TextLine _pnpcfg2_;
-    ParamLogic PNP_CFG_TYPE_INVALID;
-    TextLine _pnpcfg3_;
-    ParamLogic PNP_CFG_TYPE_MASTER;
-    TextLine _pnpcfg4_;
-    ParamLogic PNP_CFG_TYPE_SLAVE;
-    TextLine _pnpcfg5_;
-    TextLine _pnpcfg6_;
-    ParamLogic PNP_CFG_DEV_DESCR_BYTES;
     TextLine _map0_;
     TextLine _map1_;
     mapinfo_type mapinfo_typedef_;
     TextLine _map3_;
     TextLine _map4_;
     mapinfo_type mapinfo_none;
-    TextLine _xslvcfg0_;
-    TextLine _xslvcfg1_;
-    TextLine _xslvcfg2_;
-    TextLine _xslvcfg3_;
-    dev_config_type dev_config_type_def_;
-    TextLine _xslvcfg4_;
-    TextLine _xslvcfg5_;
-    dev_config_type dev_config_none;
     TextLine _xsize0_;
     TextLine _xsize1_;
     ParamI32D XSIZE_TOTAL;

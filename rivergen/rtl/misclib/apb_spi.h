@@ -18,6 +18,7 @@
 
 #include <api.h>
 #include "../ambalib/types_amba.h"
+#include "../ambalib/types_pnp.h"
 #include "../ambalib/apb_slv.h"
 #include "sfifo.h"
 
@@ -69,7 +70,7 @@ class apb_spi : public ModuleObject {
     InPort i_clk;
     InPort i_nrst;
     InStruct<types_amba::mapinfo_type> i_mapinfo;
-    OutStruct<types_amba::dev_config_type> o_cfg;
+    OutStruct<types_pnp::dev_config_type> o_cfg;
     InStruct<types_amba::apb_in_type> i_apbi;
     OutStruct<types_amba::apb_out_type> o_apbo;
     OutPort o_cs;

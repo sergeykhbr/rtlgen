@@ -18,6 +18,7 @@
 
 #include <api.h>
 #include "types_amba.h"
+#include "types_pnp.h"
 #include "axi_slv.h"
 #include "types_bus1.h"
 
@@ -49,7 +50,7 @@ class axi2apb_bus1 : public ModuleObject {
     InPort i_clk;
     InPort i_nrst;
     InStruct<types_amba::mapinfo_type> i_mapinfo;
-    OutStruct<types_amba::dev_config_type> o_cfg;
+    OutStruct<types_pnp::dev_config_type> o_cfg;
     InStruct<types_amba::axi4_slave_in_type> i_xslvi;
     OutStruct<types_amba::axi4_slave_out_type> o_xslvo;
     InStruct<types_bus1::bus1_apb_out_vector> i_apbo;

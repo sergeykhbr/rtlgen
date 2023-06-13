@@ -17,7 +17,6 @@
 #pragma once
 
 #include <api.h>
-#include "types_amba.h"
 
 using namespace sysvc;
 
@@ -25,7 +24,44 @@ class types_pnp : public FileObject {
  public:
     types_pnp(GenObject *parent);
 
-    class soc_pnp_vector : public types_amba::dev_config_type {
+    class dev_config_type : public StructObject {
+     public:
+        dev_config_type(GenObject* parent, const char* name = "", const char* comment = "")
+            : StructObject(parent, "dev_config_type", name, comment),
+            _0_(this, "Descriptor size in bytes."),
+            descrsize("8", "descrsize", "PNP_CFG_DEV_DESCR_BYTES", this),
+            _1_(this, "Descriptor type."),
+            descrtype("2", "descrtype", "PNP_CFG_TYPE_SLAVE", this),
+            _2_(this, "Base Address."),
+            addr_start("64", "addr_start", "0", this),
+            _3_(this, "End of the base address."),
+            addr_end("64", "addr_end", "0", this),
+            _4_(this, "Vendor ID."),
+            vid("16", "vid", "VENDOR_GNSSSENSOR", this),
+            _5_(this, "Device ID."),
+            did("16", "did", "SLV_DID_EMPTY", this) {
+            setZeroValue("dev_config_none");
+            registerCfgType(name);
+            std::string strtype = getType();
+            SCV_get_cfg_parameter(strtype);    // to trigger dependecy array
+        }
+
+    public:
+        TextLine _0_;
+        Logic descrsize;
+        TextLine _1_;
+        Logic descrtype;
+        TextLine _2_;
+        Logic addr_start;
+        TextLine _3_;
+        Logic addr_end;
+        TextLine _4_;
+        Logic vid;
+        TextLine _5_;
+        Logic did;
+    };
+
+    class soc_pnp_vector : public dev_config_type {
      public:
         soc_pnp_vector(GenObject *parent, const char *name, const char *descr="")
             : dev_config_type(parent, name, descr) {
@@ -46,6 +82,64 @@ class types_pnp : public FileObject {
 
 
  public:
+    TextLine _vid1_;
+    ParamLogic VENDOR_GNSSSENSOR;
+    ParamLogic VENDOR_OPTIMITECH;
+    TextLine _didmst0_;
+    TextLine _didmst1_;
+    TextLine _didmst2_;
+    ParamLogic MST_DID_EMPTY;
+    TextLine _didmst5_;
+    ParamLogic RISCV_RIVER_CPU;
+    TextLine _didmst6_;
+    ParamLogic RISCV_RIVER_WORKGROUP;
+    TextLine _didmst7_;
+    ParamLogic GNSSSENSOR_UART_TAP;
+    TextLine _didmst8_;
+    ParamLogic OPTIMITECH_JTAG_SBA;
+    TextLine _didslv0_;
+    TextLine _didslv1_;
+    TextLine _didslv2_;
+    ParamLogic SLV_DID_EMPTY;
+    TextLine _didslv3_;
+    ParamLogic OPTIMITECH_ROM;
+    TextLine _didslv4_;
+    ParamLogic OPTIMITECH_SRAM;
+    TextLine _didslv5_;
+    ParamLogic OPTIMITECH_PNP;
+    TextLine _didslv6_;
+    ParamLogic OPTIMITECH_SPI_FLASH;
+    TextLine _didslv7_;
+    ParamLogic OPTIMITECH_GPIO;
+    TextLine _didslv8_;
+    ParamLogic OPTIMITECH_UART;
+    TextLine _didslv9_;
+    ParamLogic OPTIMITECH_CLINT;
+    TextLine _didslv10_;
+    ParamLogic OPTIMITECH_PLIC;
+    TextLine _didslv11_;
+    ParamLogic OPTIMITECH_AXI2APB_BRIDGE;
+    TextLine _didslv12_;
+    ParamLogic OPTIMITECH_AXI_INTERCONNECT;
+    TextLine _didslv13_;
+    ParamLogic OPTIMITECH_PRCI;
+    TextLine _didslv14_;
+    ParamLogic OPTIMITECH_DDRCTRL;
+    TextLine _didslv15_;
+    ParamLogic OPTIMITECH_SPI;
+    TextLine _didslv16_;
+    ParamLogic OPTIMITECH_RIVER_DMI;
+    TextLine _pnpcfg0_;
+    TextLine _pnpcfg1_;
+    TextLine _pnpcfg2_;
+    ParamLogic PNP_CFG_TYPE_INVALID;
+    TextLine _pnpcfg3_;
+    ParamLogic PNP_CFG_TYPE_MASTER;
+    TextLine _pnpcfg4_;
+    ParamLogic PNP_CFG_TYPE_SLAVE;
+    TextLine _pnpcfg5_;
+    TextLine _pnpcfg6_;
+    ParamLogic PNP_CFG_DEV_DESCR_BYTES;
     TextLine _pnp0_;
     TextLine _pnp1_;
     ParamI32D SOC_PNP_XCTRL0;
@@ -65,6 +159,14 @@ class types_pnp : public FileObject {
     ParamI32D SOC_PNP_SPI;
     ParamI32D SOC_PNP_TOTAL;
     TextLine _pnp2_;
+    TextLine _pnp3_;
+    TextLine _pnp4_;
+    TextLine _pnp5_;
+    dev_config_type dev_config_type_def_;
+    TextLine _pnp6_;
+    TextLine _pnp7_;
+    dev_config_type dev_config_none;
+    TextLine _pnp8_;
     soc_pnp_vector soc_pnp_vector_def_;
     TextLine _n_;
 };

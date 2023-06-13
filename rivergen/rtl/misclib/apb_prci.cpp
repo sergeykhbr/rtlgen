@@ -51,8 +51,8 @@ apb_prci::apb_prci(GenObject *parent, const char *name) :
 {
     Operation::start(this);
 
-    pslv0.vid.setObjValue(&glob_types_amba_->VENDOR_OPTIMITECH);
-    pslv0.did.setObjValue(&glob_types_amba_->OPTIMITECH_PRCI);
+    pslv0.vid.setObjValue(&glob_pnp_cfg_->VENDOR_OPTIMITECH);
+    pslv0.did.setObjValue(&glob_pnp_cfg_->OPTIMITECH_PRCI);
     NEW(pslv0, pslv0.getName().c_str());
         CONNECT(pslv0, 0, pslv0.i_clk, i_clk);
         CONNECT(pslv0, 0, pslv0.i_nrst, sys_nrst);

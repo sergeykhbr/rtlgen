@@ -54,7 +54,7 @@ class apb_pnp : public ModuleObject {
     InPort i_nrst;
     InStruct<types_amba::mapinfo_type> i_mapinfo;
     InStruct<types_pnp::soc_pnp_vector> i_cfg;
-    OutStruct<types_amba::dev_config_type> o_cfg;
+    OutStruct<types_pnp::dev_config_type> o_cfg;
     InStruct<types_amba::apb_in_type> i_apbi;
     OutStruct<types_amba::apb_out_type> o_apbo;
     OutPort o_irq;
