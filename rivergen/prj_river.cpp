@@ -19,6 +19,7 @@
 RiverProject::RiverProject(const char *rootpath) :
     ProjectObject(rootpath, "River v3.0 CPU generator"),
     prj_(this),
-    rtl_(this)
+    rtl_(this),
+    asic_top_file_(getEntryByName("prj")->getEntryByName("impl")->getEntryByName("asic"))
 {
 }

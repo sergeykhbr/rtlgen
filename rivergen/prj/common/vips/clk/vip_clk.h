@@ -17,19 +17,39 @@
 #pragma once
 
 #include <api.h>
-#include "asic/asic_folder.h"
-#include "asic_sim/asic_sim_folder.h"
 
-class impl_folder : public FolderObject {
-  public:
-    impl_folder(GenObject *parent) :
-        FolderObject(parent, "impl"),
-        asic_folder_(this),
-        asic_sim_folder_(this) {}
+using namespace sysvc;
+
+class vip_clk : public ModuleObject {
+ public:
+    vip_clk(GenObject *parent, const char *name);
 
  protected:
-    // subfolders:
-    asic_folder asic_folder_;
-    asic_sim_folder asic_sim_folder_;
-    // files
+    class CombProcess : public ProcObject {
+     public:
+        CombProcess(GenObject *parent) :
+            ProcObject(parent, "comb") {
+        }
+
+     public:
+    };
+
+    void proc_comb();
+
+ public:
+    DefParamI32D half_period;
+    // io:
+    OutPort o_clk;
+    CombProcess comb;
 };
+
+class vip_clk_file : public FileObject {
+ public:
+    vip_clk_file(GenObject *parent) :
+        FileObject(parent, "vip_clk"),
+        vip_clk_(this, "") {}
+
+ private:
+    vip_clk vip_clk_;
+};
+

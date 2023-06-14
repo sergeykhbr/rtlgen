@@ -183,18 +183,18 @@ std::string ModuleObject::generate_sysc_h() {
     for (auto &p: entries_) {
         if (!p->isInput() && !p->isOutput()) {
             if (p->getId() == ID_COMMENT) {
-                text = "    " + p->generate();
-            } else {
-                text = "";
+                text = Operation::addspaces() + p->generate();
             }
             continue;
         }
-        ln = "";
-        ln += "    ";
+        ln = text;
+        text = "";
         if (p->isVector()) {
             ln += "sc_vector<";
         }
-        if (p->isInput()) {
+        if (p->isInput() && p->isOutput()) {
+            ln += "sc_inout<";
+        } else if (p->isInput()) {
             ln += "sc_in<";
         } else {
             ln += "sc_out<";

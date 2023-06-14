@@ -44,7 +44,6 @@ class riscv_soc : public ModuleObject {
     riscv_soc(GenObject *parent, const char *name);
 
     virtual GenObject *getResetPort() override { return &i_sys_nrst; }
-    virtual bool isTop() override { return true; }
 
     class CombProcess : public ProcObject {
      public:
@@ -108,36 +107,6 @@ public:
     InStruct<types_amba::axi4_slave_out_type> i_ddr_xslvo;
 
     // Param
-
-    // Signals:
-    class axi4_master_out_type_signal : public types_amba::axi4_master_out_type {
-     public:
-        axi4_master_out_type_signal(GenObject* parent, const char *name, const char *comment="")
-            : types_amba::axi4_master_out_type(parent, name, comment) {}
-        virtual bool isSignal() override { return true; }
-    };
-
-    class axi4_master_in_type_signal : public types_amba::axi4_master_in_type {
-     public:
-        axi4_master_in_type_signal(GenObject* parent, const char *name, const char *comment="")
-            : types_amba::axi4_master_in_type(parent, name, comment) {}
-        virtual bool isSignal() override { return true; }
-    };
-
-    class apb_in_type_signal : public types_amba::apb_in_type {
-     public:
-        apb_in_type_signal(GenObject* parent, const char *name, const char *comment="")
-            : types_amba::apb_in_type(parent, name, comment) {}
-        virtual bool isSignal() override { return true; }
-    };
-
-    class apb_out_type_signal : public types_amba::apb_out_type {
-     public:
-        apb_out_type_signal(GenObject* parent, const char *name, const char *comment="")
-            : types_amba::apb_out_type(parent, name, comment) {}
-        virtual bool isSignal() override { return true; }
-    };
-
     TextLine _hwid0_;
     TextLine _hwid1_;
     TextLine _hwid2_;
@@ -158,8 +127,8 @@ public:
     TextLine _plic3_;
     ParamI32D SOC_PLIC_IRQ_TOTAL;
 
-    axi4_master_out_type_signal acpo;
-    axi4_master_in_type_signal acpi;
+    types_amba::axi4_master_out_type_signal acpo;
+    types_amba::axi4_master_in_type_signal acpi;
     types_bus0::bus0_mapinfo_vector   bus0_mapinfo;
     types_bus0::bus0_xmst_in_vector   aximi;
     types_bus0::bus0_xmst_out_vector  aximo;

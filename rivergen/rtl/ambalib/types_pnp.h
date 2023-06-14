@@ -61,6 +61,15 @@ class types_pnp : public FileObject {
         Logic did;
     };
 
+    // SystemC signals representation (without definition):
+    class dev_config_type_signal : public dev_config_type {
+     public:
+        dev_config_type_signal(GenObject* parent, const char *name, const char *comment="")
+            : dev_config_type(parent, name, comment) {}
+        virtual bool isSignal() override { return true; }
+    };
+
+
     class soc_pnp_vector : public dev_config_type {
      public:
         soc_pnp_vector(GenObject *parent, const char *name, const char *descr="")

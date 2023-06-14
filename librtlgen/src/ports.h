@@ -66,6 +66,22 @@ class OutPort : public Logic {
     virtual bool isOutput() override { return true; }
 };
 
+class IoPort : public Logic {
+ public:
+    IoPort(GenObject *parent,
+           const char *name,
+           const char *width="1",
+           const char *comment="");
+
+    IoPort(GenObject *parent,
+           const char *name,
+           GenValue *width,
+           const char *comment="");
+
+    virtual bool isInput() override { return true; }
+    virtual bool isOutput() override { return true; }
+};
+
 
 template<class T>
 class IoStruct : public T {

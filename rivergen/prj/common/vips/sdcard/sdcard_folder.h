@@ -17,19 +17,16 @@
 #pragma once
 
 #include <api.h>
-#include "asic/asic_folder.h"
-#include "asic_sim/asic_sim_folder.h"
+#include "vip_sdcard_top.h"
 
-class impl_folder : public FolderObject {
+class sdcard_folder : public FolderObject {
   public:
-    impl_folder(GenObject *parent) :
-        FolderObject(parent, "impl"),
-        asic_folder_(this),
-        asic_sim_folder_(this) {}
+    sdcard_folder(GenObject *parent) :
+        FolderObject(parent, "sdcard"),
+        vip_sdcard_top_file_(this) {}
 
  protected:
     // subfolders:
-    asic_folder asic_folder_;
-    asic_sim_folder asic_sim_folder_;
     // files
+    vip_sdcard_top_file vip_sdcard_top_file_;
 };

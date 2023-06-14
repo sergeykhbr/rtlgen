@@ -19,6 +19,7 @@
 #include <api.h>
 #include "prj/prj_folder.h"
 #include "rtl/rtl_folder.h"
+#include "prj/impl/asic/asic_top.h"   // top level must be instantiated after rtl
 
 using namespace sysvc;
 
@@ -29,6 +30,7 @@ class RiverProject : public ProjectObject {
  protected:
     prj_folder prj_;
     rtl_folder rtl_;
+    asic_top_file asic_top_file_;
 };
 
 

@@ -17,19 +17,13 @@
 #pragma once
 
 #include <api.h>
-#include "asic/asic_folder.h"
-#include "asic_sim/asic_sim_folder.h"
 
-class impl_folder : public FolderObject {
+class asic_sim_folder : public FolderObject {
   public:
-    impl_folder(GenObject *parent) :
-        FolderObject(parent, "impl"),
-        asic_folder_(this),
-        asic_sim_folder_(this) {}
+    asic_sim_folder(GenObject *parent) :
+        FolderObject(parent, "asic_sim") {}
 
  protected:
     // subfolders:
-    asic_folder asic_folder_;
-    asic_sim_folder asic_sim_folder_;
     // files
 };

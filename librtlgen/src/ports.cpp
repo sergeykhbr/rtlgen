@@ -39,6 +39,14 @@ OutPort::OutPort(GenObject *parent, const char *name, GenValue *width,
     const char *comment) : Logic(width, name, "0", parent, comment) {
 }
 
+IoPort::IoPort(GenObject *parent, const char *name, const char *width,
+    const char *comment) : Logic(width, name, "", parent, comment) {
+}
+
+IoPort::IoPort(GenObject *parent, const char *name, GenValue *width, 
+    const char *comment) : Logic(width, name, "", parent, comment) {
+}
+
 
 /*std::string InPort::getType() {
     std::string out = "";

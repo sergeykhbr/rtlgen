@@ -1,5 +1,5 @@
 // 
-//  Copyright 2022 Sergey Khabarov, sergeykhbr@gmail.com
+//  Copyright 2023 Sergey Khabarov, sergeykhbr@gmail.com
 // 
 //  Licensed under the Apache License, Version 2.0 (the "License");
 //  you may not use this file except in compliance with the License.
@@ -17,17 +17,19 @@
 #pragma once
 
 #include <api.h>
-#include "config_target.h"
+#include "sdcard/sdcard_folder.h"
+#include "uart/uart_folder.h"
 
-
-class asic_full_folder : public FolderObject {
+class vips_folder : public FolderObject {
   public:
-    asic_full_folder(GenObject *parent) :
-        FolderObject(parent, "asic_full"),
-        config_target_(this) {}
+    vips_folder(GenObject *parent) :
+        FolderObject(parent, "vips"),
+        sdcard_folder_(this),
+        uart_folder_(this) {}
 
  protected:
     // subfolders:
+    sdcard_folder sdcard_folder_;
+    uart_folder uart_folder_;
     // files
-    config_target config_target_;
 };

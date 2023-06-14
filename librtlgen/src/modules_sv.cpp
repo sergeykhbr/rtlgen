@@ -639,19 +639,16 @@ std::string ModuleObject::generate_sv_mod() {
     for (auto &p: entries_) {
         if (!p->isInput() && !p->isOutput()) {
             if (p->getId() == ID_COMMENT) {
-                text += "    " + p->generate();
-            } else {
-                text = "";
+                text += Operation::addspaces() + p->generate();
             }
             continue;
         }
-        if (text.size()) {
-            ret += text;
-            text = "";
-        }
-        ln = "";
-        ln += "    ";
-        if (p->isInput()) {
+        ret += text;
+        text = "";
+        ln = Operation::addspaces();
+        if (p->isInput() && p->isOutput()) {
+            ln += "inout ";
+        } else if (p->isInput()) {
             ln += "input ";
         } else {
             ln += "output ";

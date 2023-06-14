@@ -1,5 +1,5 @@
 // 
-//  Copyright 2023 Sergey Khabarov, sergeykhbr@gmail.com
+//  Copyright 2022 Sergey Khabarov, sergeykhbr@gmail.com
 // 
 //  Licensed under the Apache License, Version 2.0 (the "License");
 //  you may not use this file except in compliance with the License.
@@ -17,19 +17,17 @@
 #pragma once
 
 #include <api.h>
-#include "asic/asic_folder.h"
-#include "asic_sim/asic_sim_folder.h"
+#include "vips/vips_folder.h"
 
-class impl_folder : public FolderObject {
+
+class common_folder : public FolderObject {
   public:
-    impl_folder(GenObject *parent) :
-        FolderObject(parent, "impl"),
-        asic_folder_(this),
-        asic_sim_folder_(this) {}
+    common_folder(GenObject *parent) :
+        FolderObject(parent, "common"),
+        vips_folder_(this) {}
 
  protected:
     // subfolders:
-    asic_folder asic_folder_;
-    asic_sim_folder asic_sim_folder_;
+    vips_folder vips_folder_;
     // files
 };

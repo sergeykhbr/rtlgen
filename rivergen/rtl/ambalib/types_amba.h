@@ -59,6 +59,15 @@ class types_amba : public FileObject {
         UI64H addr_end;
     };
 
+    // SystemC signals representation (without definition):
+    class mapinfo_type_signal : public mapinfo_type {
+     public:
+        mapinfo_type_signal(GenObject* parent, const char *name, const char *comment="")
+            : mapinfo_type(parent, name, comment) {}
+        virtual bool isSignal() override { return true; }
+    };
+
+
     class axi4_metadata_type : public StructObject {
      public:
         axi4_metadata_type(GenObject* parent, const char* name = "", const char* comment = "")
@@ -211,6 +220,15 @@ class types_amba : public FileObject {
         Logic r_ready;
     };
 
+    // SystemC signals representation (without definition):
+    class axi4_master_out_type_signal : public axi4_master_out_type {
+     public:
+        axi4_master_out_type_signal(GenObject* parent, const char *name, const char *comment="")
+            : axi4_master_out_type(parent, name, comment) {}
+        virtual bool isSignal() override { return true; }
+    };
+
+
     class axi4_master_in_type : public StructObject {
      public:
         axi4_master_in_type(GenObject* parent, const char* name = "", const char* comment = "")
@@ -249,6 +267,15 @@ class types_amba : public FileObject {
         Logic r_id;
         Logic r_user;
     };
+
+    // SystemC signals representation (without definition):
+    class axi4_master_in_type_signal : public axi4_master_in_type {
+     public:
+        axi4_master_in_type_signal(GenObject* parent, const char *name, const char *comment="")
+            : axi4_master_in_type(parent, name, comment) {}
+        virtual bool isSignal() override { return true; }
+    };
+
 
     class axi4_slave_in_type : public StructObject {
      public:
@@ -293,6 +320,15 @@ class types_amba : public FileObject {
         Logic r_ready;
     };
 
+    // SystemC signals representation (without definition):
+    class axi4_slave_in_type_signal : public axi4_slave_in_type {
+     public:
+        axi4_slave_in_type_signal(GenObject* parent, const char *name, const char *comment="")
+            : axi4_slave_in_type(parent, name, comment) {}
+        virtual bool isSignal() override { return true; }
+    };
+
+
     class axi4_slave_out_type : public StructObject {
      public:
         axi4_slave_out_type(GenObject* parent, const char* name = "", const char* comment = "")
@@ -332,6 +368,14 @@ class types_amba : public FileObject {
         Logic r_user;
     };
 
+    // SystemC signals representation (without definition):
+    class axi4_slave_out_type_signal : public axi4_slave_out_type {
+     public:
+        axi4_slave_out_type_signal(GenObject* parent, const char *name, const char *comment="")
+            : axi4_slave_out_type(parent, name, comment) {}
+        virtual bool isSignal() override { return true; }
+    };
+
     class apb_in_type : public StructObject {
      public:
         apb_in_type(GenObject* parent, const char* name = "", const char* comment = "")
@@ -359,6 +403,15 @@ class types_amba : public FileObject {
         Logic pstrb;
     };
 
+    // SystemC signals representation (without definition):
+    class apb_in_type_signal : public apb_in_type {
+     public:
+        apb_in_type_signal(GenObject* parent, const char *name, const char *comment="")
+            : apb_in_type(parent, name, comment) {}
+        virtual bool isSignal() override { return true; }
+    };
+
+
     class apb_out_type : public StructObject {
      public:
         apb_out_type(GenObject* parent, const char* name = "", const char* comment = "")
@@ -376,6 +429,14 @@ class types_amba : public FileObject {
         Logic pready;
         Logic prdata;
         Logic pslverr;
+    };
+
+    // SystemC signals representation (without definition):
+    class apb_out_type_signal : public apb_out_type {
+     public:
+        apb_out_type_signal(GenObject* parent, const char *name, const char *comment="")
+            : apb_out_type(parent, name, comment) {}
+        virtual bool isSignal() override { return true; }
     };
 
  public:

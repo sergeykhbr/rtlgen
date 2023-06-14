@@ -15,7 +15,7 @@
 // 
 
 #include "riscv_soc.h"
-#include "../prj/impl/asic_full/config_target.h"
+#include "../prj/impl/asic/config_target.h"
 
 riscv_soc::riscv_soc(GenObject *parent, const char *name) :
     ModuleObject(parent, "riscv_soc", name),

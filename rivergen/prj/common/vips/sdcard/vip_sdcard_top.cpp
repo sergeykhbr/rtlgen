@@ -14,22 +14,26 @@
 //  limitations under the License.
 // 
 
-#pragma once
+#include "vip_sdcard_top.h"
 
-#include <api.h>
-#include "asic/asic_folder.h"
-#include "asic_sim/asic_sim_folder.h"
+vip_sdcard_top::vip_sdcard_top(GenObject *parent, const char *name) :
+    ModuleObject(parent, "vip_sdcard_top", name),
+    half_period(this, "half_period", "1"),
+    i_rstn(this, "i_rstn", "1"),
+    i_rx(this, "i_rx", "1"),
+    // params
+    // signals
+    w_clk(this, "w_clk", "1"),
+    wb_rdata(this, "wb_rdata", "8"),
+    // registers
+    //
+    comb(this)
+{
+    Operation::start(this);
 
-class impl_folder : public FolderObject {
-  public:
-    impl_folder(GenObject *parent) :
-        FolderObject(parent, "impl"),
-        asic_folder_(this),
-        asic_sim_folder_(this) {}
+    Operation::start(&comb);
+    proc_comb();
+}
 
- protected:
-    // subfolders:
-    asic_folder asic_folder_;
-    asic_sim_folder asic_sim_folder_;
-    // files
-};
+void vip_sdcard_top::proc_comb() {
+}

@@ -14,22 +14,20 @@
 //  limitations under the License.
 // 
 
-#pragma once
+#include "vip_clk.h"
 
-#include <api.h>
-#include "asic/asic_folder.h"
-#include "asic_sim/asic_sim_folder.h"
+vip_clk::vip_clk(GenObject *parent, const char *name) :
+    ModuleObject(parent, "vip_clk", name),
+    half_period(this, "half_period", "1"),
+    o_clk(this, "o_clk", "1"),
+    //
+    comb(this)
+{
+    Operation::start(this);
 
-class impl_folder : public FolderObject {
-  public:
-    impl_folder(GenObject *parent) :
-        FolderObject(parent, "impl"),
-        asic_folder_(this),
-        asic_sim_folder_(this) {}
+    Operation::start(&comb);
+    proc_comb();
+}
 
- protected:
-    // subfolders:
-    asic_folder asic_folder_;
-    asic_sim_folder asic_sim_folder_;
-    // files
-};
+void vip_clk::proc_comb() {
+}

@@ -17,19 +17,19 @@
 #pragma once
 
 #include <api.h>
-#include "asic/asic_folder.h"
-#include "asic_sim/asic_sim_folder.h"
+#include "vip_uart_receiver.h"
+#include "vip_uart_top.h"
 
-class impl_folder : public FolderObject {
+class uart_folder : public FolderObject {
   public:
-    impl_folder(GenObject *parent) :
-        FolderObject(parent, "impl"),
-        asic_folder_(this),
-        asic_sim_folder_(this) {}
+    uart_folder(GenObject *parent) :
+        FolderObject(parent, "uart"),
+        vip_uart_receiver_file_(this),
+        vip_uart_top_file_(this) {}
 
  protected:
     // subfolders:
-    asic_folder asic_folder_;
-    asic_sim_folder asic_sim_folder_;
     // files
+    vip_uart_receiver_file vip_uart_receiver_file_;
+    vip_uart_top_file vip_uart_top_file_;
 };

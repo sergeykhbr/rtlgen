@@ -17,17 +17,19 @@
 #pragma once
 
 #include <api.h>
+#include "common/common_folder.h"
 #include "impl/impl_folder.h"
-
 
 class prj_folder : public FolderObject {
   public:
     prj_folder(GenObject *parent) :
         FolderObject(parent, "prj"),
-        impl(this) {}
+        common_folder_(this),
+        impl_folder_(this) {}
 
  protected:
     // subfolders:
-    impl_folder impl;
+    common_folder common_folder_;
+    impl_folder impl_folder_;
     // files
 };
