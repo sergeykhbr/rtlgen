@@ -38,12 +38,15 @@ class vip_uart_top : public ModuleObject {
     void proc_comb();
 
  public:
-    DefParamI32D half_period;
+    DefParamTIMENS half_period;
+    DefParamI32D scaler;
     // io:
-    InPort i_rstn;
+    InPort i_nrst;
     InPort i_rx;
 
     Signal w_clk;
+    Signal w_rdy;
+    Signal w_rdy_clr;
     Signal wb_rdata;
 
     vip_clk clk0;

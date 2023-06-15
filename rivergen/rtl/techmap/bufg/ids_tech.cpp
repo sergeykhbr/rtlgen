@@ -14,25 +14,23 @@
 //  limitations under the License.
 // 
 
-#pragma once
+#include "ids_tech.h"
 
-#include <api.h>
-#include "clk/clk_folder.h"
-#include "sdcard/sdcard_folder.h"
-#include "uart/uart_folder.h"
+ids_tech::ids_tech(GenObject *parent, const char *name) :
+    ModuleObject(parent, "ids_tech", name),
+    i_clk_p(this, "i_clk_p", "1"),
+    i_clk_n(this, "i_clk_n", "1"),
+    o_clk(this, "o_clk", "1"),
+    // process
+    comb(this)
+{
+    Operation::start(this);
 
-class vips_folder : public FolderObject {
-  public:
-    vips_folder(GenObject *parent) :
-        FolderObject(parent, "vips"),
-        clk_folder_(this),
-        sdcard_folder_(this),
-        uart_folder_(this) {}
+    Operation::start(&comb);
+    proc_comb();
+}
 
- protected:
-    // subfolders:
-    clk_folder clk_folder_;
-    sdcard_folder sdcard_folder_;
-    uart_folder uart_folder_;
-    // files
-};
+void ids_tech::proc_comb() {
+    SETVAL(o_clk, i_clk_p);
+}
+

@@ -19,6 +19,8 @@
 #include <api.h>
 #include "../../../rtl/ambalib/types_amba.h"
 #include "../../../rtl/ambalib/types_pnp.h"
+#include "../../../rtl/techmap/bufg/ids_tech.h"
+#include "../../../rtl/techmap/pll/SysPLL_tech.h"
 #include "../../../rtl/riscv_soc.h"
 #include "../../../rtl/misclib/apb_prci.h"
 
@@ -107,6 +109,8 @@ public:
     types_amba::apb_out_type_signal prci_apbo;
 
     // Sub-module instances:
+    ids_tech iclk0;
+    SysPLL_tech pll0;
     apb_prci prci0;
     riscv_soc soc0;
     // process

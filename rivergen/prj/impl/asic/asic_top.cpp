@@ -77,6 +77,8 @@ asic_top::asic_top(GenObject *parent, const char *name) :
     prci_apbi(this, "prci_apbi"),
     prci_apbo(this, "prci_apbo"),
     // submodules:
+    iclk0(this, "iclk0"),
+    pll0(this, "pll0"),
     prci0(this, "prci0"),
     soc0(this, "soc0"),
     comb(this)
@@ -84,6 +86,20 @@ asic_top::asic_top(GenObject *parent, const char *name) :
     Operation::start(this);
 
     // Create and connet Sub-modules:
+    NEW(iclk0, iclk0.getName().c_str());
+        CONNECT(iclk0, 0, iclk0.i_clk_p, i_sclk_p);
+        CONNECT(iclk0, 0, iclk0.i_clk_n, i_sclk_n);
+        CONNECT(iclk0, 0, iclk0.o_clk, ib_clk_tcxo);
+    ENDNEW();
+
+    NEW(pll0, pll0.getName().c_str());
+        CONNECT(pll0, 0, pll0.i_reset, i_rst);
+        CONNECT(pll0, 0, pll0.i_clk_tcxo, ib_clk_tcxo);
+        CONNECT(pll0, 0, pll0.o_clk_sys, w_sys_clk);
+        CONNECT(pll0, 0, pll0.o_clk_ddr, w_ddr_clk);
+        CONNECT(pll0, 0, pll0.o_locked, w_pll_lock);
+    ENDNEW();
+
     NEW(prci0, prci0.getName().c_str());
         CONNECT(prci0, 0, prci0.i_clk, ib_clk_tcxo);
         CONNECT(prci0, 0, prci0.i_pwrreset, i_rst);
@@ -116,6 +132,7 @@ asic_top::asic_top(GenObject *parent, const char *name) :
         CONNECT(soc0, 0, soc0.i_jtag_tms, i_jtag_tms);
         CONNECT(soc0, 0, soc0.i_jtag_tdi, i_jtag_tdi);
         CONNECT(soc0, 0, soc0.o_jtag_tdo, o_jtag_tdo);
+        CONNECT(soc0, 0, soc0.o_jtag_vref, o_jtag_vref);
         CONNECT(soc0, 0, soc0.i_uart1_rd, i_uart1_rd);
         CONNECT(soc0, 0, soc0.o_uart1_td, o_uart1_td);
         CONNECT(soc0, 0, soc0.o_spi_cs, o_spi_cs);

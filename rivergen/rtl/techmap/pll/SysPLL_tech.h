@@ -20,9 +20,12 @@
 
 using namespace sysvc;
 
-class vip_clk : public ModuleObject {
+class SysPLL_tech : public ModuleObject {
  public:
-    vip_clk(GenObject *parent, const char *name);
+    SysPLL_tech(GenObject *parent, const char *name);
+
+    virtual GenObject *getResetPort() override { return &i_reset; }
+    virtual bool getResetActive() override { return true; }
 
  protected:
     class CombProcess : public ProcObject {
@@ -37,19 +40,24 @@ class vip_clk : public ModuleObject {
     void proc_comb();
 
  public:
-    DefParamTIMENS half_period;
     // io:
-    OutPort o_clk;
+    InPort i_reset;
+    InPort i_clk_tcxo;
+    OutPort o_clk_sys;
+    OutPort o_clk_ddr;
+    OutPort o_locked;
+
+ private:
     CombProcess comb;
 };
 
-class vip_clk_file : public FileObject {
+class SysPLL_tech_file : public FileObject {
  public:
-    vip_clk_file(GenObject *parent) :
-        FileObject(parent, "vip_clk"),
-        vip_clk_(this, "") {}
+    SysPLL_tech_file(GenObject *parent) :
+        FileObject(parent, "SysPLL_tech"),
+        SysPLL_tech_(this, "") {}
 
  private:
-    vip_clk vip_clk_;
+    SysPLL_tech SysPLL_tech_;
 };
 

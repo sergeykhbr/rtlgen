@@ -17,39 +17,14 @@
 #pragma once
 
 #include <api.h>
+#include "ids_tech.h"
 
-using namespace sysvc;
-
-class vip_clk : public ModuleObject {
+class bufg_folder : public FolderObject {
  public:
-    vip_clk(GenObject *parent, const char *name);
+    bufg_folder(GenObject *parent) :
+        FolderObject(parent, "bufg"),
+        ids_tech_file_(this) {}
 
  protected:
-    class CombProcess : public ProcObject {
-     public:
-        CombProcess(GenObject *parent) :
-            ProcObject(parent, "comb") {
-        }
-
-     public:
-    };
-
-    void proc_comb();
-
- public:
-    DefParamTIMENS half_period;
-    // io:
-    OutPort o_clk;
-    CombProcess comb;
+    ids_tech_file ids_tech_file_;
 };
-
-class vip_clk_file : public FileObject {
- public:
-    vip_clk_file(GenObject *parent) :
-        FileObject(parent, "vip_clk"),
-        vip_clk_(this, "") {}
-
- private:
-    vip_clk vip_clk_;
-};
-

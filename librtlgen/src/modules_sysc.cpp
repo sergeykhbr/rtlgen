@@ -178,17 +178,19 @@ std::string ModuleObject::generate_sysc_h() {
     tcnt = 0;
     out += "SC_MODULE(" + getType() + ") {\n";
     out += " public:\n";
+    Operation::set_space(Operation::get_space() + 1);
 
     // Input/Output signal declaration
     for (auto &p: entries_) {
         if (!p->isInput() && !p->isOutput()) {
             if (p->getId() == ID_COMMENT) {
-                text = Operation::addspaces() + p->generate();
+                text += Operation::addspaces() + p->generate();
             }
             continue;
         }
-        ln = text;
+        out += text;
         text = "";
+        ln = Operation::addspaces();
         if (p->isVector()) {
             ln += "sc_vector<";
         }
@@ -234,26 +236,26 @@ std::string ModuleObject::generate_sysc_h() {
         if (p->getName() == "registers") {
             continue;
         }
-        out += "    void " + p->getName() + "();\n";
+        out += Operation::addspaces() + "void " + p->getName() + "();\n";
         hasProcess = true;
     }
     if (isRegProcess()) {
-        out += "    void registers();\n";
+        out += Operation::addspaces() + "void registers();\n";
         hasProcess = true;
     }
     if (isNRegProcess()) {
-        out += "    void nregisters();\n";
+        out += Operation::addspaces() + "void nregisters();\n";
         hasProcess = true;
     }
     if (hasProcess) {
         out += "\n";
-        out += "    SC_HAS_PROCESS(" + getType() + ");\n";
+        out += Operation::addspaces() + "SC_HAS_PROCESS(" + getType() + ");\n";
     }
 
 
     out += "\n";
     // Constructor declaration:
-    std::string space1 = "    " + getType() + "(";
+    std::string space1 = Operation::addspaces() + getType() + "(";
     out += space1 + "sc_module_name name";
     if (getAsyncReset() && getEntryByName("async_reset") == 0) {
         ln = "";
@@ -279,13 +281,14 @@ std::string ModuleObject::generate_sysc_h() {
     out += ");\n";
     // Destructor declaration
     if (isSubModules()) {
-        out += "    virtual ~" + getType() + "();\n";
+        out += Operation::addspaces() + "virtual ~" + getType() + "();\n";
     }
     out += "\n";
 
     // VCD generator
     if (isVcd()) {
-        out += "    void generateVCD(sc_trace_file *i_vcd, sc_trace_file *o_vcd);\n";
+        out += Operation::addspaces()
+            + "void generateVCD(sc_trace_file *i_vcd, sc_trace_file *o_vcd);\n";
     }
 
     out += "\n";
@@ -294,16 +297,16 @@ std::string ModuleObject::generate_sysc_h() {
     // Generic parameter local storage:
     tcnt = 0;
     if (getAsyncReset() && getEntryByName("async_reset") == 0) {
-        out += "    " + (new Logic())->getType() + " async_reset_;\n";
+        out += Operation::addspaces() + (new Logic())->getType() + " async_reset_;\n";
         tcnt++;
     }
     for (auto &p: entries_) {
         if (p->getId() == ID_DEF_PARAM){
-            out += "    " + p->getType() + " " + p->getName() + "_;\n";
+            out += Operation::addspaces() + p->getType() + " " + p->getName() + "_;\n";
             tcnt++;
         } else if (p->getId() == ID_PARAM && p->isGenericDep() && tmpllist.size() == 0) {
             // No underscore symbol
-            out += "    " + p->getType() + " " + p->getName() + ";\n";
+            out += Operation::addspaces() + p->getType() + " " + p->getName() + ";\n";
             tcnt++;
         }
     }
@@ -344,7 +347,7 @@ std::string ModuleObject::generate_sysc_h() {
             continue;
         }
         tcnt++;
-        ln = "    " + p->getType();
+        ln = Operation::addspaces() + p->getType();
         ln += " " + p->getName();
         out += ln + "(";
         tcnt = 0;
@@ -385,7 +388,7 @@ std::string ModuleObject::generate_sysc_h() {
                 && p->getId() != ID_ARRAY_DEF
                 && p->getId() != ID_VECTOR)) {
             if (p->getId() == ID_COMMENT) {
-                text += "    " + p->generate();
+                text += Operation::addspaces() + p->generate();
             } else {
                 text = "";
             }
@@ -401,7 +404,7 @@ std::string ModuleObject::generate_sysc_h() {
             out += text;
             text = "";
         }
-        ln = "    ";
+        ln = Operation::addspaces();
         if (!p->isTypedef()) {
             if (p->isVector()) {
                 ln += "sc_vector<";
@@ -437,7 +440,7 @@ std::string ModuleObject::generate_sysc_h() {
         if (p->getId() != ID_FILEVALUE) {
             continue;
         }
-        out += "    FILE *" + p->getName() + ";\n";
+        out += Operation::addspaces() + "FILE *" + p->getName() + ";\n";
         tcnt++;
     }
     if (tcnt) {
@@ -448,13 +451,13 @@ std::string ModuleObject::generate_sysc_h() {
     // Sub-module list
     for (auto &p: entries_) {
         if (p->getId() == ID_MODULE_INST) {
-            out += "    " + p->getType();
+            out += Operation::addspaces() + p->getType();
             out += generate_sysc_template_param(p);
             out += " *" + p->getName() + ";\n";
             tcnt ++;
         } else if (p->getId() == ID_ARRAY_DEF) {
             if (p->getItem()->getId() == ID_MODULE_INST) {
-                out += "    " + p->getType();
+                out += Operation::addspaces() + p->getType();
                 out += generate_sysc_template_param(p->getItem());
                 out += " *" + p->getName();
                 out += "[" + p->getStrDepth() + "];\n";
@@ -467,7 +470,7 @@ std::string ModuleObject::generate_sysc_h() {
         tcnt = 0;
     }
 
-
+    Operation::set_space(Operation::get_space() - 1);
     out += 
         "};\n"
         "\n";

@@ -27,34 +27,33 @@ class vip_uart_receiver : public ModuleObject {
     class CombProcess : public ProcObject {
      public:
         CombProcess(GenObject *parent) :
-            ProcObject(parent, "comb"),
-            vb_rdata(this, "vb_rdata", "32") {
+            ProcObject(parent, "comb") {
         }
 
      public:
-        Logic vb_rdata;
     };
 
     void proc_comb();
 
  public:
+    DefParamI32D scaler;
+    ParamI32D scaler_max;
+    ParamI32D scaler_mid;
     // io:
+    InPort i_nrst;
     InPort i_clk;
-    InPort i_clken;
     InPort i_rx;
     OutPort o_rdy;
     InPort i_rdy_clr;
     OutPort o_data;
-    InPort i_scaler;
 
     ParamLogic startbit;
     ParamLogic data;
     ParamLogic stopbit;
 
-    Signal wb_sample_max;
-    Signal wb_sample_mid;
-
     RegSignal state;
+    RegSignal rdy;
+    RegSignal rdata;
     RegSignal sample;
     RegSignal bitpos;
     RegSignal scratch;

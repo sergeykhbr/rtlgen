@@ -628,6 +628,7 @@ std::string ModuleObject::generate_sv_mod() {
 
     // In/Out ports
     ret += "(\n";
+    Operation::set_space(Operation::get_space() + 1);
     int port_cnt = 0;
     for (auto &p: entries_) {
         if (p->isInput() || p->isOutput()) {
@@ -676,6 +677,7 @@ std::string ModuleObject::generate_sv_mod() {
         }
         ret += ln + "\n";
     }
+    Operation::set_space(Operation::get_space() - 1);
     ret += ");\n";
     ret += "\n";
 

@@ -33,7 +33,7 @@ class axi2apb_bus1 : public ModuleObject {
         CombProcess(GenObject *parent) :
             ProcObject(parent, "comb"),
             iselidx("0", "iselidx", this),
-            vapbi(this, "", "vapbi", "CFG_BUS1_PSLV_TOTAL"),
+            vapbi(this, "", "vapbi", "ADD(CFG_BUS1_PSLV_TOTAL,1)"),
             vapbo(this, "", "vapbo", "ADD(CFG_BUS1_PSLV_TOTAL,1)") {
         }
 

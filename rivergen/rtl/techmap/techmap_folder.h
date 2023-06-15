@@ -17,17 +17,23 @@
 #pragma once
 
 #include <api.h>
+#include "bufg/bufg_folder.h"
 #include "mem/mem_folder.h"
+#include "pll/pll_folder.h"
 #include "cdc_axi_sync/cdc_axi_sync_folder.h"
 
 class techmap_folder : public FolderObject {
  public:
     techmap_folder(GenObject *parent) :
         FolderObject(parent, "techmap"),
+        bufg_folder_(this),
         mem_folder_(this),
+        pll_folder_(this),
         cdc_axi_sync_folder_(this) {}
 
  protected:
+    bufg_folder bufg_folder_;
     mem_folder mem_folder_;
+    pll_folder pll_folder_;
     cdc_axi_sync_folder cdc_axi_sync_folder_;
 };

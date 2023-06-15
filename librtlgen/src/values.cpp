@@ -136,6 +136,15 @@ std::string UI64H::getType() {
     return ret;
 }
 
+std::string TIMENS::getType() {
+    std::string ret = "";
+    if (SCV_is_sysc()) {
+        ret = std::string("double");
+    } else if (SCV_is_sv()) {
+        ret = std::string("double");
+    }
+    return ret;
+}
 
 }  // namespace sysvc
 

@@ -20,9 +20,9 @@
 
 using namespace sysvc;
 
-class vip_clk : public ModuleObject {
+class ids_tech : public ModuleObject {
  public:
-    vip_clk(GenObject *parent, const char *name);
+    ids_tech(GenObject *parent, const char *name);
 
  protected:
     class CombProcess : public ProcObject {
@@ -37,19 +37,22 @@ class vip_clk : public ModuleObject {
     void proc_comb();
 
  public:
-    DefParamTIMENS half_period;
     // io:
+    InPort i_clk_p;
+    InPort i_clk_n;
     OutPort o_clk;
+
+ private:
     CombProcess comb;
 };
 
-class vip_clk_file : public FileObject {
+class ids_tech_file : public FileObject {
  public:
-    vip_clk_file(GenObject *parent) :
-        FileObject(parent, "vip_clk"),
-        vip_clk_(this, "") {}
+    ids_tech_file(GenObject *parent) :
+        FileObject(parent, "ids_tech"),
+        ids_tech_(this, "") {}
 
  private:
-    vip_clk vip_clk_;
+    ids_tech ids_tech_;
 };
 

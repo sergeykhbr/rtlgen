@@ -17,39 +17,14 @@
 #pragma once
 
 #include <api.h>
+#include "SysPLL_tech.h"
 
-using namespace sysvc;
-
-class vip_clk : public ModuleObject {
+class pll_folder : public FolderObject {
  public:
-    vip_clk(GenObject *parent, const char *name);
+    pll_folder(GenObject *parent) :
+        FolderObject(parent, "pll"),
+        SysPLL_tech_file_(this) {}
 
  protected:
-    class CombProcess : public ProcObject {
-     public:
-        CombProcess(GenObject *parent) :
-            ProcObject(parent, "comb") {
-        }
-
-     public:
-    };
-
-    void proc_comb();
-
- public:
-    DefParamTIMENS half_period;
-    // io:
-    OutPort o_clk;
-    CombProcess comb;
+    SysPLL_tech_file SysPLL_tech_file_;
 };
-
-class vip_clk_file : public FileObject {
- public:
-    vip_clk_file(GenObject *parent) :
-        FileObject(parent, "vip_clk"),
-        vip_clk_(this, "") {}
-
- private:
-    vip_clk vip_clk_;
-};
-
