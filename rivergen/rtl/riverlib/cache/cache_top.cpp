@@ -258,14 +258,12 @@ void CacheTop::proc_comb() {
     SETVAL(comb.v_queue_we, OR2(i.req_mem_valid, d.req_mem_valid));
 
 TEXT();
-    SETVAL(comb.ctrl_path_id, CTRL_PATH);
     SETVAL(comb.vb_ctrl_bus, CCx(4, &comb.ctrl_path_id,
                                     &i.req_mem_type,
                                     &i.req_mem_size,
                                     &i.req_mem_addr));
 
 TEXT();
-    SETVAL(comb.data_path_id, DATA_PATH);
     SETVAL(comb.vb_data_bus, CCx(4, &comb.data_path_id,
                                     &d.req_mem_type,
                                     &d.req_mem_size,
