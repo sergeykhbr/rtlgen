@@ -37,12 +37,12 @@ rom_inferred_2x32::rom_inferred_2x32(GenObject *parent,
     Operation::start(this);
     INITIAL();
         DECLARE_TSTR();
-        SETSTRF(hexname0, "%s_lo.log", 1, &filename);
-        READMEMH(filename, mem0);
+        SETSTRF(hexname0, "%s_lo.hex", 1, &filename);
+        READMEMH(hexname0, mem0);
 
         TEXT();
-        SETSTRF(hexname1, "%s_hi.log", 1, &filename);
-        READMEMH(filename, mem1);
+        SETSTRF(hexname1, "%s_hi.hex", 1, &filename);
+        READMEMH(hexname1, mem1);
     ENDINITIAL();
 
     mem0.disableReset();

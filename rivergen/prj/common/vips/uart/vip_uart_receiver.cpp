@@ -60,7 +60,7 @@ TEXT();
         TEXT("Start counting from the first low sample, once we've");
         TEXT("sampled a full bit, start collecting data bits.");
         TEXT("");
-        IF (OR2(NZ(i_rx), NZ(sample)));
+        IF (OR2(EZ(i_rx), NZ(sample)));
             SETVAL(sample, INC(sample));
         ENDIF();
 
