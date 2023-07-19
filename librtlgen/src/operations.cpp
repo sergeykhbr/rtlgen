@@ -93,7 +93,11 @@ std::string Operation::fullname(const char *prefix, std::string name, GenObject 
         curname = "";
         curname = fullname("r", curname, obj->getSelector());
         curname = "[" + curname + "]";
-        curname = obj->getName() + curname;
+        if ((obj->isInput() && !obj->isVector()) && SCV_is_sysc()) {
+            curname = obj->getName() + ".read()" + curname;
+        } else {
+            curname = obj->getName() + curname;
+        }
         if (name.size()) {
             curname += ".";
         }
