@@ -55,6 +55,7 @@ class ModuleObject : public GenObject {
     std::string generate_sv_mod_param_strings();
     std::string generate_sv_mod_func(GenObject *func);
     std::string generate_sv_mod_signals();
+    std::string generate_sv_mod_clock(GenObject *proc);
     std::string generate_sv_mod_proc(GenObject *proc);
     std::string generate_sv_mod_proc_nullify(GenObject *obj, std::string prefix, std::string i);
     std::string generate_sv_mod_proc_registers();

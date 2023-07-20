@@ -384,6 +384,7 @@ std::string ModuleObject::generate_sysc_h() {
         if (p->isReg() || p->isNReg()
             || (!p->isSignal()
                 && p->getId() != ID_VALUE
+                && p->getId() != ID_CLOCK
                 && p->getId() != ID_STRUCT_INST
                 && p->getId() != ID_ARRAY_DEF
                 && p->getId() != ID_VECTOR)) {
@@ -597,6 +598,9 @@ std::string ModuleObject::generate_sysc_sensitivity(std::string prefix,
         } else {
             ret += "sensitive << " + name + ";\n";
         }
+    } else if  (obj->getId() == ID_CLOCK) {
+        ret += Operation::addspaces();
+        ret += "sensitive << " + obj->getName() + ";\n";
     } else if (obj->getId() == ID_ARRAY_DEF
         && (obj->getItem()->getId() != ID_VALUE || obj->getItem()->isSignal())) {
         // ignore value (not signals) declared in module scope
@@ -880,7 +884,17 @@ std::string ModuleObject::generate_sysc_constructor() {
         }
         ret += ")";
     }
-    // Signal Vectors also should be initialized
+    // Clock generators
+    for (auto &p: getEntries()) {
+        if (p->getId() != ID_CLOCK) {
+            continue;
+        }
+        ret += ",\n    " + p->getName() + "(\"" + p->getName() + "\"";
+        ret += ", " + p->getItem()->getStrValue();
+        ret += ", SC_SEC";
+        ret += ")";
+    }
+    // Signal Vectors (simple signals not initialized) also should be initialized
     for (auto &p: getEntries()) {
         if (p->isInput() || p->isOutput()) {
             continue;

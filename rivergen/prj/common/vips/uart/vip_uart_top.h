@@ -38,8 +38,9 @@ class vip_uart_top : public ModuleObject {
     void proc_comb();
 
  public:
-    DefParamTIMENS half_period;
+    DefParamI32D baudrate;
     DefParamI32D scaler;
+    ParamTIMESEC pll_period;
     // io:
     InPort i_nrst;
     InPort i_rx;

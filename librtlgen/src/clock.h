@@ -14,23 +14,23 @@
 //  limitations under the License.
 // 
 
-#include "vip_clk.h"
+#pragma once
 
-vip_clk::vip_clk(GenObject *parent, const char *name) :
-    ModuleObject(parent, "vip_clk", name),
-    period(this, "period", "1.0"),
-    half_period(this, "half_period", "DIV(period,2)"),
-    pll(this, "pll", "period"),
-    o_clk(this, "o_clk", "1"),
-    //
-    comb(this)
-{
-    Operation::start(this);
+#include "genobjects.h"
+#include "values.h"
+#include <iostream>
 
-    Operation::start(&comb);
-    proc_comb();
-}
+namespace sysvc {
 
-void vip_clk::proc_comb() {
-    SETVAL(o_clk, pll);
-}
+class Clock : public GenValue {
+ public:
+    Clock(GenObject *parent,
+          const char *name,
+          const char *period="",
+          const char *comment="");
+
+    virtual std::string getType();
+};
+
+
+}  // namespace sysvc

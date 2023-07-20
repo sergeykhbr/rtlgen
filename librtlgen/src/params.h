@@ -156,6 +156,20 @@ class ParamLogic : public Logic,
     }
 };
 
+class ParamTIMESEC : public TIMESEC,
+                     public ParamGeneric {
+ public:
+    ParamTIMESEC(GenObject *parent, const char *name,
+                   const char *val, const char *comment="")
+        : TIMESEC(val, name, parent, comment),
+        ParamGeneric(static_cast<GenValue *>(this)) {
+            id_ = ID_PARAM;
+        }
+    virtual std::string generate() override {
+        return genparam(static_cast<GenValue *>(this));
+    }
+};
+
 class TmplParamLogic : public ParamLogic {
  public:
     TmplParamLogic(GenObject *parent, const char *width, const char *name,
@@ -167,6 +181,5 @@ class TmplParamLogic : public ParamLogic {
         return genparam(static_cast<GenValue *>(this));
     }
 };
-
 
 }  // namespace sysvc

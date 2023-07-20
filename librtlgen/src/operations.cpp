@@ -887,6 +887,7 @@ std::string SETVAL_gen(GenObject **args) {
     if (args[2]->getId() == ID_CONST) {
         ret += args[2]->getStrValue();
     } else if (args[2]->getId() == ID_VALUE
+            || args[2]->getId() == ID_CLOCK
             || args[2]->getId() == ID_PARAM
             || args[2]->getId() == ID_DEF_PARAM
             || args[2]->getId() == ID_TMPL_PARAM

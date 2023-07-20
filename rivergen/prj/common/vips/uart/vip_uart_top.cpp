@@ -18,8 +18,9 @@
 
 vip_uart_top::vip_uart_top(GenObject *parent, const char *name) :
     ModuleObject(parent, "vip_uart_top", name),
-    half_period(this, "half_period", "1"),
+    baudrate(this, "baudrate", "115200"),
     scaler(this, "scaler", "8"),
+    pll_period(this, "pll_period", "DIV(1.0,MUL(MUL(2,scaler),baudrate))"),
     i_nrst(this, "i_nrst", "1"),
     i_rx(this, "i_rx", "1"),
     // params
@@ -37,7 +38,7 @@ vip_uart_top::vip_uart_top(GenObject *parent, const char *name) :
     Operation::start(this);
 
     // Create and connet Sub-modules:
-    clk0.half_period.setObjValue(&half_period);
+    clk0.period.setObjValue(&pll_period);
     NEW(clk0, clk0.getName().c_str());
         CONNECT(clk0, 0, clk0.o_clk, w_clk);
     ENDNEW();

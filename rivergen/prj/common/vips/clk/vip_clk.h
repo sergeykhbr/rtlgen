@@ -37,7 +37,10 @@ class vip_clk : public ModuleObject {
     void proc_comb();
 
  public:
-    DefParamTIMENS half_period;
+    DefParamTIMESEC period;
+    ParamTIMESEC half_period;
+
+    Clock pll;
     // io:
     OutPort o_clk;
     CombProcess comb;

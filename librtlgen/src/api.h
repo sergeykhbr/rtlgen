@@ -36,6 +36,7 @@
 #include "regs.h"
 #include "structs.h"
 #include "array.h"
+#include "clock.h"
 
 namespace sysvc {
 

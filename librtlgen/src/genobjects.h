@@ -43,7 +43,8 @@ enum EIdType {
     ID_COMMENT = (1<<21),
     ID_EMPTYLINE = (1<<22),
     ID_OPERATION = (1<<23),
-    ID_FILEVALUE = (1<<24)
+    ID_FILEVALUE = (1<<24),
+    ID_CLOCK = (1<<25)
 };
 
 enum EGenerateType {
@@ -83,6 +84,7 @@ class GenObject {
     virtual std::string getComment() { return comment_; }
     virtual std::string getType() { return type_; }
     virtual bool isString() { return false; }
+    virtual bool isFloat() { return false; }
     virtual bool isTypedef() { return false; }
     virtual bool isSignal() { return false; }
     virtual bool isBigSC() { return false; }    // Use sc_biguint in systemc always
@@ -97,6 +99,7 @@ class GenObject {
     virtual bool isInitable() { return false; } // Generate structure constructor with arguemnts to initialize all class variables
 
     virtual uint64_t getValue();
+    virtual double getFloatValue();
     virtual std::string getStrValue();
     virtual void setStrValue(const char *val);
     virtual void setValue(uint64_t val);        // used for operation

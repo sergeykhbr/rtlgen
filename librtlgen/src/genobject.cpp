@@ -178,6 +178,16 @@ uint64_t GenObject::getValue() {
     }
 }
 
+double GenObject::getFloatValue() {
+    if (objValue_) {
+        return objValue_->getFloatValue();
+    } else {
+        size_t tpos = 0;
+        uint64_t t = parse_to_u64(strValue_.c_str(), tpos);
+        return *reinterpret_cast<double *>(&t);
+    }
+}
+
 int GenObject::getWidth() {
     if (objWidth_) {
         return static_cast<int>(objWidth_->getValue());
@@ -295,8 +305,12 @@ uint64_t GenObject::parse_to_u64(const char *val, size_t &pos) {
     char buf[64] = "";
     size_t cnt = 0;
     std::string m = "";
+    bool is_float = false;
     // Check macro:
     while (val[pos] && val[pos] != ',' && val[pos] != '(' && val[pos] != ')') {
+        if (val[pos] == '.') {
+            is_float = true;
+        }
         buf[cnt++] = val[pos];
         buf[cnt] = '\0';
         pos++;
@@ -306,7 +320,11 @@ uint64_t GenObject::parse_to_u64(const char *val, size_t &pos) {
         ret = 0;
         return ret;
     }
-    if (buf[0] >= '0' && buf[0] <= '9') {
+    if (is_float) {
+        double dt = strtod(buf, 0);
+        ret = *reinterpret_cast<uint64_t *>(&dt);
+        return ret;
+    } else if (buf[0] >= '0' && buf[0] <= '9') {
         int base = buf[1] == 'x' ? 16: 10;
         ret = strtoll(buf, 0, base);
         return ret;

@@ -289,6 +289,7 @@ std::string ModuleObject::generate_sv_mod_signals() {
         if (p->isReg() || p->isNReg()
             || (!p->isSignal()
                 && p->getId() != ID_VALUE
+                && p->getId() != ID_CLOCK
                 && p->getId() != ID_STRUCT_INST
                 && p->getId() != ID_ARRAY_DEF
                 && p->getId() != ID_VECTOR)) {
@@ -391,6 +392,22 @@ std::string ModuleObject::generate_sv_mod_proc_nullify(GenObject *obj,
         Operation::set_space(Operation::get_space() - 1);
         ret += Operation::addspaces() + "end\n";
     }
+    return ret;
+}
+
+std::string ModuleObject::generate_sv_mod_clock(GenObject *p) {
+    std::string ret = "";
+
+    ret += Operation::addspaces() + "always begin\n";
+    Operation::set_space(Operation::get_space() + 1);
+
+    ret += Operation::addspaces() + "#(0.5 * ";
+    ret += p->getStrValue() + ") ";
+    ret += p->getName() + " = ~" + p->getName() + ";\n";
+
+    Operation::set_space(Operation::get_space() - 1);
+    ret += Operation::addspaces() + "end\n";
+    ret += "\n";
     return ret;
 }
 
@@ -729,6 +746,13 @@ std::string ModuleObject::generate_sv_mod() {
         ret += "\n";
     }
 
+    // Clock process
+    for (auto &p: entries_) {
+        if (p->getId() != ID_CLOCK) {
+            continue;
+        }
+        ret += generate_sv_mod_clock(p);
+    }
 
     // Process
     for (auto &p: entries_) {

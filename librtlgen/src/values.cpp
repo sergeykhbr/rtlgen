@@ -47,7 +47,9 @@ std::string GenValue::getStrValue() {
         char tstr[64];
         int w = getWidth();
         uint64_t v = getValue();
-        if (w == 1) {
+        if (isFloat()) {
+            RISCV_sprintf(tstr, sizeof(tstr), "%.f", getFloatValue());
+        } else if (w == 1) {
             RISCV_sprintf(tstr, sizeof(tstr), "1'b%" RV_PRI64 "x", v);
         } else if (strValue_.c_str()[1] == 'x') {
             if (w == 32) {
@@ -136,12 +138,12 @@ std::string UI64H::getType() {
     return ret;
 }
 
-std::string TIMENS::getType() {
+std::string TIMESEC::getType() {
     std::string ret = "";
     if (SCV_is_sysc()) {
         ret = std::string("double");
     } else if (SCV_is_sv()) {
-        ret = std::string("double");
+        ret = std::string("realtime");
     }
     return ret;
 }

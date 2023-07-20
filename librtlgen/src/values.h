@@ -107,13 +107,14 @@ class UI64H : public GenValue {
     virtual std::string getType();
 };
 
-class TIMENS : public GenValue {
+class TIMESEC : public GenValue {
  public:
-    TIMENS(const char *val, const char *name="",
+    TIMESEC(const char *val, const char *name="",
         GenObject *parent=0, const char *comment=""):
         GenValue("64", val, name, parent, comment) {}
 
     virtual std::string getType();
+    virtual bool isFloat() { return true; }
 };
 
 class GenVar : public I32D {

@@ -60,10 +60,10 @@ class DefParamUI64H : public UI64H {
     }
 };
 
-class DefParamTIMENS : public TIMENS {
+class DefParamTIMESEC : public TIMESEC {
  public:
-    DefParamTIMENS(GenObject *parent, const char *name, const char *val,
-                const char *comment="") : TIMENS(val, name, parent, comment) {
+    DefParamTIMESEC(GenObject *parent, const char *name, const char *val,
+                const char *comment="") : TIMESEC(val, name, parent, comment) {
         id_ = ID_DEF_PARAM;
         SCV_set_cfg_parameter(parent, this, getValue());
     }
