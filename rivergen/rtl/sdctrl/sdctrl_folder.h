@@ -1,5 +1,5 @@
 // 
-//  Copyright 2023 Sergey Khabarov, sergeykhbr@gmail.com
+//  Copyright 2022 Sergey Khabarov, sergeykhbr@gmail.com
 // 
 //  Licensed under the Apache License, Version 2.0 (the "License");
 //  you may not use this file except in compliance with the License.
@@ -17,17 +17,16 @@
 #pragma once
 
 #include <api.h>
-#include "ids_tech.h"
-#include "iobuf_tech.h"
+#include "sdctrl.h"
 
-class bufg_folder : public FolderObject {
+class sdctrl_folder : public FolderObject {
  public:
-    bufg_folder(GenObject *parent) :
-        FolderObject(parent, "bufg"),
-        ids_tech_file_(this),
-        iobuf_tech_file_(this) {}
+    sdctrl_folder(GenObject *parent) :
+        FolderObject(parent, "sdctrl"),
+        sdctrl_file_(this) {}
 
  protected:
-    ids_tech_file ids_tech_file_;
-    iobuf_tech_file iobuf_tech_file_;
+    // subfolders:
+    // files
+    sdctrl_file sdctrl_file_;
 };

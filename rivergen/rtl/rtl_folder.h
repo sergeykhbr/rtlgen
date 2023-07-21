@@ -21,6 +21,7 @@
 #include "techmap/techmap_folder.h"
 #include "riverlib/riverlib_folder.h"
 #include "misclib/misclib_folder.h"
+#include "sdctrl/sdctrl_folder.h"
 #include "riscv_soc.h"
 
 
@@ -28,18 +29,20 @@ class rtl_folder : public FolderObject {
   public:
     rtl_folder(GenObject *parent) :
         FolderObject(parent, "rtl"),
-        ambalib(this),
-        techmap(this),
-        riverlib(this),
-        misclib(this),
+        ambalib_folder_(this),
+        techmap_folder_(this),
+        riverlib_folder_(this),
+        misclib_folder_(this),
+        sdctrl_folder_(this),
         riscv_soc_file_(this) {}
 
  protected:
     // subfolders:
-    ambalib_folder ambalib;
-    techmap_folder techmap;
-    riverlib_folder riverlib;
-    misclib_folder misclib;
+    ambalib_folder ambalib_folder_;
+    techmap_folder techmap_folder_;
+    riverlib_folder riverlib_folder_;
+    misclib_folder misclib_folder_;
+    sdctrl_folder sdctrl_folder_;
     // files
     riscv_soc_file riscv_soc_file_;
 };

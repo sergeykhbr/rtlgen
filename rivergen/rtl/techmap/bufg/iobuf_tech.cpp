@@ -14,22 +14,15 @@
 //  limitations under the License.
 // 
 
-#include "vip_sdcard_top.h"
+#include "iobuf_tech.h"
 
-vip_sdcard_top::vip_sdcard_top(GenObject *parent, const char *name) :
-    ModuleObject(parent, "vip_sdcard_top", name),
-    i_sclk(this, "i_sclk", "1"),
-    io_cmd(this, "io_cmd", "1"),
-    io_dat0(this, "io_dat0", "1"),
-    io_dat1(this, "io_dat1", "1"),
-    io_dat2(this, "io_dat2", "1"),
-    io_cd_dat3(this, "io_cd_dat3", "1"),
-    // params
-    // signals
-    w_clk(this, "w_clk", "1"),
-    wb_rdata(this, "wb_rdata", "8"),
-    // registers
-    //
+iobuf_tech::iobuf_tech(GenObject *parent, const char *name) :
+    ModuleObject(parent, "iobuf_tech", name),
+    io(this, "io", "1", "bi-drectional port"),
+    o(this, "o", "1", "Output signal is valid when t=0"),
+    i(this, "i", "1", "Input signal is valid when t=1"),
+    t(this, "t", "1", "Direction bit: 0=output; 1=input"),
+    // process
     comb(this)
 {
     Operation::start(this);
@@ -38,5 +31,15 @@ vip_sdcard_top::vip_sdcard_top(GenObject *parent, const char *name) :
     proc_comb();
 }
 
-void vip_sdcard_top::proc_comb() {
+void iobuf_tech::proc_comb() {
+    IF (NZ(t));
+        TEXT("IO as input:");
+        SETVAL(comb.v_o, io);
+        SETVAL(comb.v_io, CONST("0", 1), "assign Z-state here");
+    ELSE();
+        TEXT("IO as output:");
+        SETVAL(comb.v_o, CONST("0", 1));
+        SETVAL(comb.v_io, i);
+    ENDIF();
 }
+

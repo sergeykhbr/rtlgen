@@ -20,6 +20,7 @@
 #include "../../../rtl/ambalib/types_amba.h"
 #include "../../../rtl/ambalib/types_pnp.h"
 #include "../../../rtl/techmap/bufg/ids_tech.h"
+#include "../../../rtl/techmap/bufg/iobuf_tech.h"
 #include "../../../rtl/techmap/pll/SysPLL_tech.h"
 #include "../../../rtl/riscv_soc.h"
 #include "../../../rtl/misclib/apb_prci.h"
@@ -44,6 +45,20 @@ class asic_top : public ModuleObject {
 
     void proc_comb();
 
+    /*class gpio_signal_vector : public Signal {
+     public:
+        gpio_signal_vector(GenObject *parent, const char *name) :
+            Signal(parent, name, "1") {
+            type_ = std::string("gpio_signal_vector");
+            strDepth_ = std::string("12");
+        }
+        virtual bool isTypedef() override { return true; }
+        virtual bool isVector() override { return true; }
+        virtual std::string getType() override { return type_; }
+        virtual std::string generate() override { return Signal::getType(); }
+    };*/
+
+
 public:
     DefParamString bootfile;
     DefParamI32D sim_uart_speedup_rate;
@@ -65,21 +80,39 @@ public:
     TextLine _uart1_;
     InPort i_uart1_rd;
     OutPort o_uart1_td;
-    TextLine _spi0_;
-    OutPort o_spi_cs;
-    OutPort o_spi_sclk;
-    OutPort o_spi_mosi;
-    InPort i_spi_miso;
+    TextLine _sdctrl0_;
+    OutPort o_sd_sclk;
+    IoPort io_sd_cmd;           // CMD IO Command/Resonse; Data output in SPI mode
+    IoPort io_sd_dat0;          // Data0 IO; Data input in SPI mode
+    IoPort io_sd_dat1;
+    IoPort io_sd_dat2;
+    IoPort io_sd_cd_dat3;       // CD/DAT3 IO CardDetect/Data Line 3; CS output in SPI mode
     InPort i_sd_detected;
     InPort i_sd_protect;
 
     // Param
+    //gpio_signal_vector gpio_signal_vector_def_;
 
     // Signals:
     Signal ib_clk_tcxo;
     Signal ib_gpio_ipins;
     Signal ob_gpio_opins;
     Signal ob_gpio_direction;
+    Signal ib_sd_cmd;
+    Signal ob_sd_cmd;
+    Signal ob_sd_cmd_direction;
+    Signal ib_sd_dat0;
+    Signal ob_sd_dat0;
+    Signal ob_sd_dat0_direction;
+    Signal ib_sd_dat1;
+    Signal ob_sd_dat1;
+    Signal ob_sd_dat1_direction;
+    Signal ib_sd_dat2;
+    Signal ob_sd_dat2;
+    Signal ob_sd_dat2_direction;
+    Signal ib_sd_cd_dat3;
+    Signal ob_sd_cd_dat3;
+    Signal ob_sd_cd_dat3_direction;
 
     Signal w_sys_rst;
     Signal w_sys_nrst;
@@ -110,6 +143,11 @@ public:
 
     // Sub-module instances:
     ids_tech iclk0;
+    iobuf_tech iosdcmd0;
+    iobuf_tech iosddat0;
+    iobuf_tech iosddat1;
+    iobuf_tech iosddat2;
+    iobuf_tech iosddat3;
     SysPLL_tech pll0;
     apb_prci prci0;
     riscv_soc soc0;

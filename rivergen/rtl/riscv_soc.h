@@ -25,12 +25,12 @@
 #include "ambalib/axi2apb_bus1.h"
 #include "misclib/apb_uart.h"
 #include "misclib/apb_gpio.h"
-#include "misclib/apb_spi.h"
 #include "misclib/apb_pnp.h"
 #include "misclib/axi_sram.h"
 #include "misclib/axi_rom.h"
 #include "misclib/plic.h"
 #include "misclib/clint.h"
+#include "sdctrl/sdctrl.h"
 #include "riverlib/river_cfg.h"
 #include "riverlib/types_river.h"
 #include "riverlib/river_amba.h"
@@ -83,11 +83,23 @@ public:
     TextLine _uart1_;
     InPort i_uart1_rd;
     OutPort o_uart1_td;
-    TextLine _spi0_;
-    OutPort o_spi_cs;
-    OutPort o_spi_sclk;
-    OutPort o_spi_mosi;
-    InPort i_spi_miso;
+    TextLine _sdctrl0_;
+    OutPort o_sd_sclk;
+    InPort i_sd_cmd;
+    OutPort o_sd_cmd;
+    OutPort o_sd_cmd_dir;
+    InPort i_sd_dat0;
+    OutPort o_sd_dat0;
+    OutPort o_sd_dat0_dir;
+    InPort i_sd_dat1;
+    OutPort o_sd_dat1;
+    OutPort o_sd_dat1_dir;
+    InPort i_sd_dat2;
+    OutPort o_sd_dat2;
+    OutPort o_sd_dat2_dir;
+    InPort i_sd_cd_dat3;
+    OutPort o_sd_cd_dat3;
+    OutPort o_sd_cd_dat3_dir;
     InPort i_sd_detected;
     InPort i_sd_protect;
     TextLine _prci0_;
@@ -158,7 +170,7 @@ public:
     plic plic0;
     apb_uart uart1;
     apb_gpio gpio0;
-    apb_spi spi0;
+    sdctrl sdctrl0;
     apb_pnp pnp0;
     Workgroup group0;
     cdc_axi_sync_tech u_cdc_ddr0;

@@ -44,11 +44,23 @@ riscv_soc::riscv_soc(GenObject *parent, const char *name) :
     _uart1_(this, "UART1 signals"),
     i_uart1_rd(this, "i_uart1_rd", "1"),
     o_uart1_td(this, "o_uart1_td", "1"),
-    _spi0_(this, "SPI SD-card signals:"),
-    o_spi_cs(this, "o_spi_cs", "1"),
-    o_spi_sclk(this, "o_spi_sclk", "1"),
-    o_spi_mosi(this, "o_spi_mosi", "1", "SPI: Master Output Slave Input"),
-    i_spi_miso(this, "i_spi_miso", "1", "SPI: Master Input Slave Output"),
+    _sdctrl0_(this, "SD-card signals:"),
+    o_sd_sclk(this, "o_sd_sclk", "1", "Clock up to 50 MHz"),
+    i_sd_cmd(this, "i_sd_cmd", "1", "Command response;"),
+    o_sd_cmd(this, "o_sd_cmd", "1", "Command request; DO in SPI mode"),
+    o_sd_cmd_dir(this, "o_sd_cmd_dir", "1", "Direction bit: 1=input; 0=output"),
+    i_sd_dat0(this, "i_sd_dat0", "1", "Data Line[0] input; DI in SPI mode"),
+    o_sd_dat0(this, "o_sd_dat0", "1", "Data Line[0] output"),
+    o_sd_dat0_dir(this, "o_sd_dat0_dir", "1", "Direction bit: 1=input; 0=output"),
+    i_sd_dat1(this, "i_sd_dat1", "1", "Data Line[1] input"),
+    o_sd_dat1(this, "o_sd_dat1", "1", "Data Line[1] output"),
+    o_sd_dat1_dir(this, "o_sd_dat1_dir", "1", "Direction bit: 1=input; 0=output"),
+    i_sd_dat2(this, "i_sd_dat2", "1", "Data Line[2] input"),
+    o_sd_dat2(this, "o_sd_dat2", "1", "Data Line[2] output"),
+    o_sd_dat2_dir(this, "o_sd_dat2_dir", "1", "Direction bit: 1=input; 0=output"),
+    i_sd_cd_dat3(this, "i_sd_cd_dat3", "1", "Card Detect / Data Line[3] input"),
+    o_sd_cd_dat3(this, "o_sd_cd_dat3", "1", "Card Detect / Data Line[3] output; CS output in SPI mode"),
+    o_sd_cd_dat3_dir(this, "o_sd_cd_dat3_dir", "1", "Direction bit: 1=input; 0=output"),
     i_sd_detected(this, "i_sd_detected", "1", "SD-card detected"),
     i_sd_protect(this, "i_sd_protect", "1", "SD-card write protect"),
     _prci0_(this, "PLL and Reset interfaces:"),
@@ -117,7 +129,7 @@ riscv_soc::riscv_soc(GenObject *parent, const char *name) :
     plic0(this, "plic0"),
     uart1(this, "uart1"),
     gpio0(this, "gpio0"),
-    spi0(this, "spi0"),
+    sdctrl0(this, "sdctrl0"),
     pnp0(this, "pnp0"),
     group0(this, "group0"),
     u_cdc_ddr0(this, "u_cdc_ddr0"),
@@ -269,20 +281,32 @@ riscv_soc::riscv_soc(GenObject *parent, const char *name) :
         CONNECT(gpio0, 0, gpio0.o_irq, wb_irq_gpio);
     ENDNEW();
 
-    spi0.log2_fifosz.setObjValue(&SOC_SPI0_LOG2_FIFOSZ);
-    NEW(spi0, spi0.getName().c_str());
-        CONNECT(spi0, 0, spi0.i_clk, i_sys_clk);
-        CONNECT(spi0, 0, spi0.i_nrst, i_sys_nrst);
-        CONNECT(spi0, 0, spi0.i_mapinfo, ARRITEM(bus1_mapinfo, glob_bus1_cfg_->CFG_BUS1_PSLV_SPI, bus1_mapinfo));
-        CONNECT(spi0, 0, spi0.o_cfg, ARRITEM(dev_pnp, glob_pnp_cfg_->SOC_PNP_SPI, dev_pnp));
-        CONNECT(spi0, 0, spi0.i_apbi, ARRITEM(apbi, glob_bus1_cfg_->CFG_BUS1_PSLV_SPI, apbi));
-        CONNECT(spi0, 0, spi0.o_apbo, ARRITEM(apbo, glob_bus1_cfg_->CFG_BUS1_PSLV_SPI, apbo));
-        CONNECT(spi0, 0, spi0.o_cs, o_spi_cs);
-        CONNECT(spi0, 0, spi0.o_sclk, o_spi_sclk);
-        CONNECT(spi0, 0, spi0.o_mosi, o_spi_mosi);
-        CONNECT(spi0, 0, spi0.i_miso, i_spi_miso);
-        CONNECT(spi0, 0, spi0.i_detected, i_sd_detected);
-        CONNECT(spi0, 0, spi0.i_protect, i_sd_protect);
+    sdctrl0.log2_fifosz.setObjValue(&SOC_SPI0_LOG2_FIFOSZ);
+    NEW(sdctrl0, sdctrl0.getName().c_str());
+        CONNECT(sdctrl0, 0, sdctrl0.i_clk, i_sys_clk);
+        CONNECT(sdctrl0, 0, sdctrl0.i_nrst, i_sys_nrst);
+        CONNECT(sdctrl0, 0, sdctrl0.i_mapinfo, ARRITEM(bus1_mapinfo, glob_bus1_cfg_->CFG_BUS1_PSLV_SPI, bus1_mapinfo));
+        CONNECT(sdctrl0, 0, sdctrl0.o_cfg, ARRITEM(dev_pnp, glob_pnp_cfg_->SOC_PNP_SPI, dev_pnp));
+        CONNECT(sdctrl0, 0, sdctrl0.i_apbi, ARRITEM(apbi, glob_bus1_cfg_->CFG_BUS1_PSLV_SPI, apbi));
+        CONNECT(sdctrl0, 0, sdctrl0.o_apbo, ARRITEM(apbo, glob_bus1_cfg_->CFG_BUS1_PSLV_SPI, apbo));
+        CONNECT(sdctrl0, 0, sdctrl0.o_sclk, o_sd_sclk);
+        CONNECT(sdctrl0, 0, sdctrl0.i_cmd, i_sd_cmd);
+        CONNECT(sdctrl0, 0, sdctrl0.o_cmd, o_sd_cmd);
+        CONNECT(sdctrl0, 0, sdctrl0.o_cmd_dir, o_sd_cmd_dir);
+        CONNECT(sdctrl0, 0, sdctrl0.i_dat0, i_sd_dat0);
+        CONNECT(sdctrl0, 0, sdctrl0.o_dat0, o_sd_dat0);
+        CONNECT(sdctrl0, 0, sdctrl0.o_dat0_dir, o_sd_dat0_dir);
+        CONNECT(sdctrl0, 0, sdctrl0.i_dat1, i_sd_dat1);
+        CONNECT(sdctrl0, 0, sdctrl0.o_dat1, o_sd_dat1);
+        CONNECT(sdctrl0, 0, sdctrl0.o_dat1_dir, o_sd_dat1_dir);
+        CONNECT(sdctrl0, 0, sdctrl0.i_dat2, i_sd_dat2);
+        CONNECT(sdctrl0, 0, sdctrl0.o_dat2, o_sd_dat2);
+        CONNECT(sdctrl0, 0, sdctrl0.o_dat2_dir, o_sd_dat2_dir);
+        CONNECT(sdctrl0, 0, sdctrl0.i_cd_dat3, i_sd_cd_dat3);
+        CONNECT(sdctrl0, 0, sdctrl0.o_cd_dat3, o_sd_cd_dat3);
+        CONNECT(sdctrl0, 0, sdctrl0.o_cd_dat3_dir, o_sd_cd_dat3_dir);
+        CONNECT(sdctrl0, 0, sdctrl0.i_detected, i_sd_detected);
+        CONNECT(sdctrl0, 0, sdctrl0.i_protect, i_sd_protect);
     ENDNEW();
 
     pnp0.cfg_slots.setObjValue(&glob_pnp_cfg_->SOC_PNP_TOTAL);

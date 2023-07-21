@@ -41,19 +41,37 @@ asic_top::asic_top(GenObject *parent, const char *name) :
     _uart1_(this, "UART1 signals"),
     i_uart1_rd(this, "i_uart1_rd", "1"),
     o_uart1_td(this, "o_uart1_td", "1"),
-    _spi0_(this, "SPI SD-card signals:"),
-    o_spi_cs(this, "o_spi_cs", "1"),
-    o_spi_sclk(this, "o_spi_sclk", "1"),
-    o_spi_mosi(this, "o_spi_mosi", "1", "SPI: Master Output Slave Input"),
-    i_spi_miso(this, "i_spi_miso", "1", "SPI: Master Input Slave Output"),
+    _sdctrl0_(this, "SD-card signals:"),
+    o_sd_sclk(this, "o_sd_sclk", "1"),
+    io_sd_cmd(this, "io_sd_cmd", "1", "CMD IO Command/Resonse; Data output in SPI mode"),
+    io_sd_dat0(this, "io_sd_dat0", "1", "Data[0] IO; Data input in SPI mode"),
+    io_sd_dat1(this, "io_sd_dat1", "1"),
+    io_sd_dat2(this, "io_sd_dat2", "1"),
+    io_sd_cd_dat3(this, "io_sd_cd_dat3", "1", "CD/DAT3 IO CardDetect/Data[3]; CS output in SPI mode"),
     i_sd_detected(this, "i_sd_detected", "1", "SD-card detected"),
     i_sd_protect(this, "i_sd_protect", "1", "SD-card write protect"),
     // param
+    //gpio_signal_vector_def_(this, ""),
     // Singals:
     ib_clk_tcxo(this, "ib_clk_tcxo", "1"),
     ib_gpio_ipins(this, "ib_gpio_ipins", "12"),
     ob_gpio_opins(this, "ob_gpio_opins", "12"),
     ob_gpio_direction(this, "ob_gpio_direction", "12"),
+    ib_sd_cmd(this, "ib_sd_cmd", "1"),
+    ob_sd_cmd(this, "ob_sd_cmd", "1"),
+    ob_sd_cmd_direction(this, "ob_sd_cmd_direction", "1"),
+    ib_sd_dat0(this, "ib_sd_dat0", "1"),
+    ob_sd_dat0(this, "ob_sd_dat0", "1"),
+    ob_sd_dat0_direction(this, "ob_sd_dat0_direction", "1"),
+    ib_sd_dat1(this, "ib_sd_dat1", "1"),
+    ob_sd_dat1(this, "ob_sd_dat1", "1"),
+    ob_sd_dat1_direction(this, "ob_sd_dat1_direction", "1"),
+    ib_sd_dat2(this, "ib_sd_dat2", "1"),
+    ob_sd_dat2(this, "ob_sd_dat2", "1"),
+    ob_sd_dat2_direction(this, "ob_sd_dat2_direction", "1"),
+    ib_sd_cd_dat3(this, "ib_sd_cd_dat3", "1"),
+    ob_sd_cd_dat3(this, "ob_sd_cd_dat3", "1"),
+    ob_sd_cd_dat3_direction(this, "ob_sd_cd_dat3_direction", "1"),
     w_sys_rst(this, "w_sys_rst", "1"),
     w_sys_nrst(this, "w_sys_nrst", "1"),
     w_dbg_nrst(this, "w_dbg_nrst", "1"),
@@ -78,6 +96,11 @@ asic_top::asic_top(GenObject *parent, const char *name) :
     prci_apbo(this, "prci_apbo"),
     // submodules:
     iclk0(this, "iclk0"),
+    iosdcmd0(this, "iosdcmd0"),
+    iosddat0(this, "iosddat0"),
+    iosddat1(this, "iosddat1"),
+    iosddat2(this, "iosddat2"),
+    iosddat3(this, "iosddat3"),
     pll0(this, "pll0"),
     prci0(this, "prci0"),
     soc0(this, "soc0"),
@@ -90,6 +113,41 @@ asic_top::asic_top(GenObject *parent, const char *name) :
         CONNECT(iclk0, 0, iclk0.i_clk_p, i_sclk_p);
         CONNECT(iclk0, 0, iclk0.i_clk_n, i_sclk_n);
         CONNECT(iclk0, 0, iclk0.o_clk, ib_clk_tcxo);
+    ENDNEW();
+
+    NEW(iosdcmd0, iosdcmd0.getName().c_str());
+        CONNECT(iosdcmd0, 0, iosdcmd0.io, io_sd_cmd);
+        CONNECT(iosdcmd0, 0, iosdcmd0.o, ib_sd_cmd);
+        CONNECT(iosdcmd0, 0, iosdcmd0.i, ob_sd_cmd);
+        CONNECT(iosdcmd0, 0, iosdcmd0.t, ob_sd_cmd_direction);
+    ENDNEW();
+
+    NEW(iosddat0, iosddat0.getName().c_str());
+        CONNECT(iosddat0, 0, iosddat0.io, io_sd_dat0);
+        CONNECT(iosddat0, 0, iosddat0.o, ib_sd_dat0);
+        CONNECT(iosddat0, 0, iosddat0.i, ob_sd_dat0);
+        CONNECT(iosddat0, 0, iosddat0.t, ob_sd_dat0_direction);
+    ENDNEW();
+
+    NEW(iosddat1, iosddat1.getName().c_str());
+        CONNECT(iosddat1, 0, iosddat1.io, io_sd_dat1);
+        CONNECT(iosddat1, 0, iosddat1.o, ib_sd_dat1);
+        CONNECT(iosddat1, 0, iosddat1.i, ob_sd_dat1);
+        CONNECT(iosddat1, 0, iosddat1.t, ob_sd_dat1_direction);
+    ENDNEW();
+
+    NEW(iosddat2, iosddat2.getName().c_str());
+        CONNECT(iosddat2, 0, iosddat2.io, io_sd_dat2);
+        CONNECT(iosddat2, 0, iosddat2.o, ib_sd_dat2);
+        CONNECT(iosddat2, 0, iosddat2.i, ob_sd_dat2);
+        CONNECT(iosddat2, 0, iosddat2.t, ob_sd_dat2_direction);
+    ENDNEW();
+
+    NEW(iosddat3, iosddat3.getName().c_str());
+        CONNECT(iosddat3, 0, iosddat3.io, io_sd_cd_dat3);
+        CONNECT(iosddat3, 0, iosddat3.o, ib_sd_cd_dat3);
+        CONNECT(iosddat3, 0, iosddat3.i, ob_sd_cd_dat3);
+        CONNECT(iosddat3, 0, iosddat3.t, ob_sd_cd_dat3_direction);
     ENDNEW();
 
     NEW(pll0, pll0.getName().c_str());
@@ -135,10 +193,22 @@ asic_top::asic_top(GenObject *parent, const char *name) :
         CONNECT(soc0, 0, soc0.o_jtag_vref, o_jtag_vref);
         CONNECT(soc0, 0, soc0.i_uart1_rd, i_uart1_rd);
         CONNECT(soc0, 0, soc0.o_uart1_td, o_uart1_td);
-        CONNECT(soc0, 0, soc0.o_spi_cs, o_spi_cs);
-        CONNECT(soc0, 0, soc0.o_spi_sclk, o_spi_sclk);
-        CONNECT(soc0, 0, soc0.o_spi_mosi, o_spi_mosi);
-        CONNECT(soc0, 0, soc0.i_spi_miso, i_spi_miso);
+        CONNECT(soc0, 0, soc0.o_sd_sclk, o_sd_sclk);
+        CONNECT(soc0, 0, soc0.i_sd_cmd, ib_sd_cmd);
+        CONNECT(soc0, 0, soc0.o_sd_cmd, ob_sd_cmd);
+        CONNECT(soc0, 0, soc0.o_sd_cmd_dir, ob_sd_cmd_direction);
+        CONNECT(soc0, 0, soc0.i_sd_dat0, ib_sd_dat0);
+        CONNECT(soc0, 0, soc0.o_sd_dat0, ob_sd_dat0);
+        CONNECT(soc0, 0, soc0.o_sd_dat0_dir, ob_sd_dat0_direction);
+        CONNECT(soc0, 0, soc0.i_sd_dat1, ib_sd_dat1);
+        CONNECT(soc0, 0, soc0.o_sd_dat1, ob_sd_dat1);
+        CONNECT(soc0, 0, soc0.o_sd_dat1_dir, ob_sd_dat1_direction);
+        CONNECT(soc0, 0, soc0.i_sd_dat2, ib_sd_dat2);
+        CONNECT(soc0, 0, soc0.o_sd_dat2, ob_sd_dat2);
+        CONNECT(soc0, 0, soc0.o_sd_dat2_dir, ob_sd_dat2_direction);
+        CONNECT(soc0, 0, soc0.i_sd_cd_dat3, ib_sd_cd_dat3);
+        CONNECT(soc0, 0, soc0.o_sd_cd_dat3, ob_sd_cd_dat3);
+        CONNECT(soc0, 0, soc0.o_sd_cd_dat3_dir, ob_sd_cd_dat3_direction);
         CONNECT(soc0, 0, soc0.i_sd_detected, i_sd_detected);
         CONNECT(soc0, 0, soc0.i_sd_protect, i_sd_protect);
         CONNECT(soc0, 0, soc0.o_dmreset, w_dmreset);

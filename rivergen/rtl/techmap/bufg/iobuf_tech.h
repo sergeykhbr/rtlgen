@@ -20,45 +20,44 @@
 
 using namespace sysvc;
 
-class vip_sdcard_top : public ModuleObject {
+class iobuf_tech : public ModuleObject {
  public:
-    vip_sdcard_top(GenObject *parent, const char *name);
+    iobuf_tech(GenObject *parent, const char *name);
 
+ protected:
     class CombProcess : public ProcObject {
      public:
         CombProcess(GenObject *parent) :
-            ProcObject(parent, "comb") {
+            ProcObject(parent, "comb"),
+            v_io(this, "v_io", "1"),
+            v_o(this, "v_o", "1") {
         }
 
      public:
+        Logic v_io;
+        Logic v_o;
     };
 
     void proc_comb();
 
  public:
     // io:
-    InPort i_sclk;
-    IoPort io_cmd;           // CMD IO Command/Resonse; Data output in SPI mode
-    IoPort io_dat0;          // Data0 IO; Data input in SPI mode
-    IoPort io_dat1;
-    IoPort io_dat2;
-    IoPort io_cd_dat3;       // CD/DAT3 IO CardDetect/Data Line 3; CS output in SPI mode
+    IoPort io;
+    OutPort o;
+    InPort i;
+    InPort t;
 
-    // param
-
-    Signal w_clk;
-    Signal wb_rdata;
-
+ private:
     CombProcess comb;
 };
 
-class vip_sdcard_top_file : public FileObject {
+class iobuf_tech_file : public FileObject {
  public:
-    vip_sdcard_top_file(GenObject *parent) :
-        FileObject(parent, "vip_sdcard_top"),
-        vip_sdcard_top_(this, "") {}
+    iobuf_tech_file(GenObject *parent) :
+        FileObject(parent, "iobuf_tech"),
+        iobuf_tech_(this, "") {}
 
  private:
-    vip_sdcard_top vip_sdcard_top_;
+    iobuf_tech iobuf_tech_;
 };
 
