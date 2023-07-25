@@ -442,7 +442,7 @@ TEXT();
     SETVAL(o_cd_dat3, INV(cs));
 
     TEXT("Direction bits:");
-    SETZERO(o_cmd);
+    SETZERO(o_cmd_dir);
     SETONE(o_dat0_dir);
     SETONE(o_dat1_dir);
     SETONE(o_dat2_dir);

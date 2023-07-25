@@ -38,7 +38,11 @@ std::string ParamGeneric::genparam(GenValue *p) {
     } else {
         ret += "const ";
     }
-    ret += p->getType() + " ";
+    if (SCV_is_sv() && p->isString()) {
+        // Vivado doesn't support string parameters
+    } else {
+        ret += p->getType() + " ";
+    }
     ret += p->getName() + " = ";
     ret += p->getStrValue() + ";";
 

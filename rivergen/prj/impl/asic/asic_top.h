@@ -60,7 +60,6 @@ class asic_top : public ModuleObject {
 
 
 public:
-    DefParamString bootfile;
     DefParamI32D sim_uart_speedup_rate;
     ParamBOOL async_reset;
     // Ports:

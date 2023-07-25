@@ -42,7 +42,12 @@ std::string ModuleObject::generate_sv_pkg_localparam() {
         } else if (p->getId() != ID_PARAM || !p->isLocal() || p->isGenericDep()) {
             // do nothing
         } else {
-            ln = "localparam " + p->getType() + " " + p->getName();
+            if (p->isString()) {
+                // Vivado doesn't support string parameters
+                ln = "localparam " + p->getName();
+            } else {
+                ln = "localparam " + p->getType() + " " + p->getName();
+            }
             ln += " = " + p->getStrValue() + ";";
             if (p->getComment().size()) {
                 while (ln.size() < 60) {
@@ -237,7 +242,12 @@ std::string ModuleObject::generate_sv_mod_param_strings() {
         if (!p->isLocal() || !p->isGenericDep()) {
             continue;
         }
-        ret += "localparam " + p->getType() + " " + p->getName();
+        if (p->isString()) {
+            // Vivado doesn't support string parameters
+            ret += "localparam " + p->getName();
+        } else {
+            ret += "localparam " + p->getType() + " " + p->getName();
+        }
         ret += " = " + p->getStrValue() + ";\n";
 
         tcnt++;

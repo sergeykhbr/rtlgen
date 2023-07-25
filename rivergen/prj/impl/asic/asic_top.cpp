@@ -20,7 +20,6 @@
 asic_top::asic_top(GenObject *parent, const char *name) :
     ModuleObject(parent, "asic_top", name),
     // simulation parameters
-    bootfile(this, "bootfile", "", "Project relative HEX-file name to init boot ROM without .hex extension"),
     sim_uart_speedup_rate(this, "sim_uart_speedup_rate", "0", "simulation UART speed-up: 0=no speed up, 1=2x, 2=4x, etc"),
     // Generic parameters
     async_reset(this, "async_reset", "CFG_ASYNC_RESET"),
@@ -174,7 +173,7 @@ asic_top::asic_top(GenObject *parent, const char *name) :
     ENDNEW();
 
 
-    soc0.bootfile.setObjValue(&bootfile);
+    soc0.bootfile.setObjValue(&prj_cfg_->CFG_BOOTROM_FILE_HEX);
     soc0.sim_uart_speedup_rate.setObjValue(&sim_uart_speedup_rate);
     NEW(soc0, soc0.getName().c_str());
         CONNECT(soc0, 0, soc0.i_sys_nrst, w_sys_nrst);
