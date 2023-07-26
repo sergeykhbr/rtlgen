@@ -35,16 +35,6 @@ class asic_top : public ModuleObject {
     virtual bool getResetActive() override { return true; }
     virtual bool isTop() override { return true; }
 
-    class CombProcess : public ProcObject {
-     public:
-        CombProcess(GenObject* parent)
-            : ProcObject(parent, "comb") {
-        }
-     public:
-    };
-
-    void proc_comb();
-
     /*class gpio_signal_vector : public Signal {
      public:
         gpio_signal_vector(GenObject *parent, const char *name) :
@@ -151,7 +141,6 @@ public:
     apb_prci prci0;
     riscv_soc soc0;
     // process
-    CombProcess comb;
 };
 
 class asic_top_file : public FileObject {

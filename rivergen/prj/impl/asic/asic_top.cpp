@@ -102,8 +102,7 @@ asic_top::asic_top(GenObject *parent, const char *name) :
     iosddat3(this, "iosddat3"),
     pll0(this, "pll0"),
     prci0(this, "prci0"),
-    soc0(this, "soc0"),
-    comb(this)
+    soc0(this, "soc0")
 {
     Operation::start(this);
 
@@ -173,6 +172,16 @@ asic_top::asic_top(GenObject *parent, const char *name) :
     ENDNEW();
 
 
+    soc0.cpu_num.setObjValue(&prj_cfg_->CFG_CPU_NUM);
+    soc0.l2cache_ena.setObjValue(&prj_cfg_->CFG_L2CACHE_ENA);
+    soc0.ilog2_nways.setObjValue(&prj_cfg_->CFG_ILOG2_NWAYS);
+    soc0.ilog2_lines_per_way.setObjValue(&prj_cfg_->CFG_ILOG2_LINES_PER_WAY);
+    soc0.dlog2_nways.setObjValue(&prj_cfg_->CFG_DLOG2_NWAYS);
+    soc0.dlog2_lines_per_way.setObjValue(&prj_cfg_->CFG_DLOG2_LINES_PER_WAY);
+    soc0.l2log2_nways.setObjValue(&prj_cfg_->CFG_L2_LOG2_NWAYS);
+    soc0.l2log2_lines_per_way.setObjValue(&prj_cfg_->CFG_L2_LOG2_LINES_PER_WAY);
+    soc0.bootrom_log2_size.setObjValue(&prj_cfg_->CFG_BOOTROM_LOG2_SIZE);
+    soc0.sram_log2_size.setObjValue(&prj_cfg_->CFG_SRAM_LOG2_SIZE);
     soc0.bootfile.setObjValue(&prj_cfg_->CFG_BOOTROM_FILE_HEX);
     soc0.sim_uart_speedup_rate.setObjValue(&sim_uart_speedup_rate);
     NEW(soc0, soc0.getName().c_str());
@@ -224,10 +233,5 @@ asic_top::asic_top(GenObject *parent, const char *name) :
         CONNECT(soc0, 0, soc0.o_ddr_xslvi, ddr_xslvi);
         CONNECT(soc0, 0, soc0.i_ddr_xslvo, ddr_xslvo);
     ENDNEW();
-
-    Operation::start(&comb);
-    proc_comb();
 }
 
-void asic_top::proc_comb() {
-}
