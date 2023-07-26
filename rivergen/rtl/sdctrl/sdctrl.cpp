@@ -22,9 +22,13 @@ sdctrl::sdctrl(GenObject *parent, const char *name) :
     fifo_dbits(this, "fifo_dbits", "8"),
     i_clk(this, "i_clk", "1", "CPU clock"),
     i_nrst(this, "i_nrst", "1", "Reset: active LOW"),
-    i_mapinfo(this, "i_mapinfo", "interconnect slot information"),
-    o_cfg(this, "o_cfg", "Device descriptor"),
-    i_apbi(this, "i_apbi", "APB  Slave to Bridge interface"),
+    i_xmapinfo(this, "i_xmapinfo", "APB interconnect slot information"),
+    o_xcfg(this, "o_xcfg", "APB Device descriptor"),
+    i_xslvi(this, "i_xslvi", "AXI input interface to access SD-card memory"),
+    o_xslvo(this, "o_xslvo", "AXI output interface to access SD-card memory"),
+    i_pmapinfo(this, "i_pmapinfo", "APB interconnect slot information"),
+    o_pcfg(this, "o_pcfg", "APB sd-controller configuration registers descriptor"),
+    i_apbi(this, "i_apbi", "APB Slave to Bridge interface"),
     o_apbo(this, "o_apbo", "APB Bridge to Slave interface"),
     o_sclk(this, "o_sclk", "1", "Clock up to 50 MHz"),
     i_cmd(this, "i_cmd", "1", "Command response;"),
@@ -53,10 +57,21 @@ sdctrl::sdctrl(GenObject *parent, const char *name) :
     recv_sync(this, "3", "recv_sync", "4"),
     ending(this, "3", "ending", "5"),
     // signals
-    w_req_valid(this, "w_req_valid", "1"),
-    wb_req_addr(this, "wb_req_addr", "32"),
-    w_req_write(this, "w_req_write", "1"),
-    wb_req_wdata(this, "wb_req_wdata", "32"),
+    w_preq_valid(this, "w_preq_valid", "1"),
+    wb_preq_addr(this, "wb_preq_addr", "32"),
+    w_preq_write(this, "w_preq_write", "1"),
+    wb_preq_wdata(this, "wb_preq_wdata", "32"),
+    w_mem_req_valid(this, "w_mem_req_valid", "1"),
+    wb_mem_req_addr(this, "wb_mem_req_addr", "CFG_SYSBUS_ADDR_BITS"),
+    wb_mem_req_size(this, "wb_mem_req_size", "8"),
+    w_mem_req_write(this, "w_mem_req_write", "1"),
+    wb_mem_req_wdata(this, "wb_mem_req_wdata", "CFG_SYSBUS_DATA_BITS"),
+    wb_mem_req_wstrb(this, "wb_mem_req_wstrb", "CFG_SYSBUS_DATA_BYTES"),
+    w_mem_req_last(this, "w_mem_req_last", "1"),
+    w_mem_req_ready(this, "w_mem_req_ready", "1"),
+    w_mem_resp_valid(this, "w_mem_resp_valid", "1"),
+    wb_mem_resp_rdata(this, "wb_mem_resp_rdata", "CFG_SYSBUS_DATA_BITS"),
+    wb_mem_resp_err(this, "wb_mem_resp_err", "1"),
     _rx0_(this, "Rx FIFO signals:"),
     w_rxfifo_we(this, "w_rxfifo_we", "1"),
     wb_rxfifo_wdata(this, "wb_rxfifo_wdata", "8"),
@@ -92,34 +107,58 @@ sdctrl::sdctrl(GenObject *parent, const char *name) :
     spi_resp(this, "spi_resp", "8"),
     txmark(this, "txmark", "log2_fifosz"),
     rxmark(this, "rxmark", "log2_fifosz"),
-    resp_valid(this, "resp_valid", "1"),
-    resp_rdata(this, "resp_rdata", "32"),
-    resp_err(this, "resp_err", "1"),
+    presp_valid(this, "presp_valid", "1"),
+    presp_rdata(this, "presp_rdata", "32"),
+    presp_err(this, "presp_err", "1"),
     //
     comb(this),
     pslv0(this, "pslv0"),
+    xslv0(this, "xslv0"),
     rxfifo(this, "rxfifo"),
     txfifo(this, "txfifo")
 {
     Operation::start(this);
 
     pslv0.vid.setObjValue(&glob_pnp_cfg_->VENDOR_OPTIMITECH);
-    pslv0.did.setObjValue(&glob_pnp_cfg_->OPTIMITECH_SPI);
+    pslv0.did.setObjValue(&glob_pnp_cfg_->OPTIMITECH_SDCTRL_REG);
     NEW(pslv0, pslv0.getName().c_str());
         CONNECT(pslv0, 0, pslv0.i_clk, i_clk);
         CONNECT(pslv0, 0, pslv0.i_nrst, i_nrst);
-        CONNECT(pslv0, 0, pslv0.i_mapinfo, i_mapinfo);
-        CONNECT(pslv0, 0, pslv0.o_cfg, o_cfg);
+        CONNECT(pslv0, 0, pslv0.i_mapinfo, i_pmapinfo);
+        CONNECT(pslv0, 0, pslv0.o_cfg, o_pcfg);
         CONNECT(pslv0, 0, pslv0.i_apbi, i_apbi);
         CONNECT(pslv0, 0, pslv0.o_apbo, o_apbo);
-        CONNECT(pslv0, 0, pslv0.o_req_valid, w_req_valid);
-        CONNECT(pslv0, 0, pslv0.o_req_addr, wb_req_addr);
-        CONNECT(pslv0, 0, pslv0.o_req_write, w_req_write);
-        CONNECT(pslv0, 0, pslv0.o_req_wdata, wb_req_wdata);
-        CONNECT(pslv0, 0, pslv0.i_resp_valid, resp_valid);
-        CONNECT(pslv0, 0, pslv0.i_resp_rdata, resp_rdata);
-        CONNECT(pslv0, 0, pslv0.i_resp_err, resp_err);
+        CONNECT(pslv0, 0, pslv0.o_req_valid, w_preq_valid);
+        CONNECT(pslv0, 0, pslv0.o_req_addr, wb_preq_addr);
+        CONNECT(pslv0, 0, pslv0.o_req_write, w_preq_write);
+        CONNECT(pslv0, 0, pslv0.o_req_wdata, wb_preq_wdata);
+        CONNECT(pslv0, 0, pslv0.i_resp_valid, presp_valid);
+        CONNECT(pslv0, 0, pslv0.i_resp_rdata, presp_rdata);
+        CONNECT(pslv0, 0, pslv0.i_resp_err, presp_err);
     ENDNEW();
+
+    xslv0.vid.setObjValue(&glob_pnp_cfg_->VENDOR_OPTIMITECH);
+    xslv0.did.setObjValue(&glob_pnp_cfg_->OPTIMITECH_SDCTRL_MEM);
+    NEW(xslv0, xslv0.getName().c_str());
+        CONNECT(xslv0, 0, xslv0.i_clk, i_clk);
+        CONNECT(xslv0, 0, xslv0.i_nrst, i_nrst);
+        CONNECT(xslv0, 0, xslv0.i_mapinfo, i_xmapinfo);
+        CONNECT(xslv0, 0, xslv0.o_cfg, o_xcfg);
+        CONNECT(xslv0, 0, xslv0.i_xslvi, i_xslvi);
+        CONNECT(xslv0, 0, xslv0.o_xslvo, o_xslvo);
+        CONNECT(xslv0, 0, xslv0.o_req_valid, w_mem_req_valid);
+        CONNECT(xslv0, 0, xslv0.o_req_addr, wb_mem_req_addr);
+        CONNECT(xslv0, 0, xslv0.o_req_size, wb_mem_req_size);
+        CONNECT(xslv0, 0, xslv0.o_req_write, w_mem_req_write);
+        CONNECT(xslv0, 0, xslv0.o_req_wdata, wb_mem_req_wdata);
+        CONNECT(xslv0, 0, xslv0.o_req_wstrb, wb_mem_req_wstrb);
+        CONNECT(xslv0, 0, xslv0.o_req_last, w_mem_req_last);
+        CONNECT(xslv0, 0, xslv0.i_req_ready, w_mem_req_ready);
+        CONNECT(xslv0, 0, xslv0.i_resp_valid, w_mem_resp_valid);
+        CONNECT(xslv0, 0, xslv0.i_resp_rdata, wb_mem_resp_rdata);
+        CONNECT(xslv0, 0, xslv0.i_resp_err, wb_mem_resp_err);
+    ENDNEW();
+
 
     rxfifo.dbits.setObjValue(&fifo_dbits);
     rxfifo.log2_depth.setObjValue(&log2_fifosz);
@@ -338,18 +377,18 @@ TEXT();
 
 TEXT();
     TEXT("Registers access:");
-    SWITCH (BITS(wb_req_addr, 11, 2));
+    SWITCH (BITS(wb_preq_addr, 11, 2));
     CASE (CONST("0x0", 10), "0x00: sckdiv");
         SETVAL(comb.vb_rdata, scaler);
-        IF (AND2(NZ(w_req_valid), NZ(w_req_write)));
-            SETVAL(scaler, BITS(wb_req_wdata, 30, 0));
+        IF (AND2(NZ(w_preq_valid), NZ(w_preq_write)));
+            SETVAL(scaler, BITS(wb_preq_wdata, 30, 0));
             SETZERO(scaler_cnt);
         ENDIF();
         ENDCASE();
     CASE (CONST("0x2", 10), "0x08: reserved (watchdog)");
         SETBITS(comb.vb_rdata, 15, 0, wdog);
-        IF (AND2(NZ(w_req_valid), NZ(w_req_write)));
-            SETVAL(wdog, BITS(wb_req_wdata, 15, 0));
+        IF (AND2(NZ(w_preq_valid), NZ(w_preq_write)));
+            SETVAL(wdog, BITS(wb_preq_wdata, 15, 0));
         ENDIF();
         ENDCASE();
     CASE (CONST("0x11", 10), "0x44: reserved 4 (txctrl)");
@@ -362,28 +401,28 @@ TEXT();
         SETBIT(comb.vb_rdata, 9, rx_synced, "[9] rx_ena=1 and start bit received");
         SETBIT(comb.vb_rdata, 10, rx_data_block, "[10] rx_data_block=1 receive certain template byte");
         SETBITS(comb.vb_rdata, 31, 16, ena_byte_cnt, "[31:16] Number of bytes to transmit");
-        IF (AND2(NZ(w_req_valid), NZ(w_req_write)));
-            SETVAL(generate_crc, BIT(wb_req_wdata, 7));
-            SETVAL(rx_ena, BIT(wb_req_wdata, 8));
-            SETVAL(rx_synced, BIT(wb_req_wdata, 9));
-            SETVAL(rx_data_block, BIT(wb_req_wdata, 10));
-            SETVAL(ena_byte_cnt, BITS(wb_req_wdata, 31, 16));
+        IF (AND2(NZ(w_preq_valid), NZ(w_preq_write)));
+            SETVAL(generate_crc, BIT(wb_preq_wdata, 7));
+            SETVAL(rx_ena, BIT(wb_preq_wdata, 8));
+            SETVAL(rx_synced, BIT(wb_preq_wdata, 9));
+            SETVAL(rx_data_block, BIT(wb_preq_wdata, 10));
+            SETVAL(ena_byte_cnt, BITS(wb_preq_wdata, 31, 16));
         ENDIF();
         ENDCASE();
     CASE (CONST("0x12", 10), "0x48: Tx FIFO Data");
         SETBIT(comb.vb_rdata, 31, AND_REDUCE(wb_txfifo_count));
-        IF (NZ(w_req_valid));
-            IF (NZ(w_req_write));
+        IF (NZ(w_preq_valid));
+            IF (NZ(w_preq_write));
                 SETVAL(comb.v_txfifo_we, CONST("1", 1));
-                SETVAL(comb.vb_txfifo_wdata, BITS(wb_req_wdata, 7, 0));
+                SETVAL(comb.vb_txfifo_wdata, BITS(wb_preq_wdata, 7, 0));
             ENDIF();
         ENDIF();
         ENDCASE();
     CASE (CONST("0x13", 10), "0x4C: Rx FIFO Data");
         SETBITS(comb.vb_rdata, 7, 0, wb_rxfifo_rdata); 
         SETBIT(comb.vb_rdata, 31, INV(OR_REDUCE(wb_rxfifo_count)));
-        IF (NZ(w_req_valid));
-            IF (NZ(w_req_write));
+        IF (NZ(w_preq_valid));
+            IF (NZ(w_preq_write));
                 TEXT("do nothing:");
             ELSE();
                 SETVAL(comb.v_rxfifo_re, CONST("1", 1));
@@ -392,25 +431,25 @@ TEXT();
         ENDCASE();
     CASE (CONST("0x14", 10), "0x50: Tx FIFO Watermark");
         SETBITS(comb.vb_rdata, DEC(log2_fifosz), CONST("0"), txmark);
-        IF (NZ(w_req_valid));
-            IF (NZ(w_req_write));
-                SETVAL(txmark, BITS(wb_req_wdata, DEC(log2_fifosz), CONST("0")));
+        IF (NZ(w_preq_valid));
+            IF (NZ(w_preq_write));
+                SETVAL(txmark, BITS(wb_preq_wdata, DEC(log2_fifosz), CONST("0")));
             ENDIF();
         ENDIF();
         ENDCASE();
     CASE (CONST("0x15", 10), "0x54: Rx FIFO Watermark");
         SETBITS(comb.vb_rdata, DEC(log2_fifosz), CONST("0"), rxmark);
-        IF (NZ(w_req_valid));
-            IF (NZ(w_req_write));
-                SETVAL(rxmark, BITS(wb_req_wdata, DEC(log2_fifosz), CONST("0")));
+        IF (NZ(w_preq_valid));
+            IF (NZ(w_preq_write));
+                SETVAL(rxmark, BITS(wb_preq_wdata, DEC(log2_fifosz), CONST("0")));
             ENDIF();
         ENDIF();
         ENDCASE();
     CASE (CONST("0x16", 10), "0x58: CRC16 value (reserved FU740)");
         SETBITS(comb.vb_rdata, 15, 0, crc16);
-        IF (NZ(w_req_valid));
-            IF (NZ(w_req_write));
-                SETVAL(crc16, BITS(wb_req_wdata, 15, 0));
+        IF (NZ(w_preq_valid));
+            IF (NZ(w_preq_write));
+                SETVAL(crc16, BITS(wb_preq_wdata, 15, 0));
             ENDIF();
         ENDIF();
         ENDCASE();
@@ -429,9 +468,9 @@ TEXT();
     SETVAL(w_txfifo_re, comb.v_txfifo_re);
 
 TEXT();
-    SETVAL(resp_valid, w_req_valid);
-    SETVAL(resp_rdata, comb.vb_rdata);
-    SETZERO(resp_err);
+    SETVAL(presp_valid, w_preq_valid);
+    SETVAL(presp_rdata, comb.vb_rdata);
+    SETZERO(presp_err);
 
 TEXT();
     SYNC_RESET(*this);
@@ -447,4 +486,10 @@ TEXT();
     SETONE(o_dat1_dir);
     SETONE(o_dat2_dir);
     SETZERO(o_cd_dat3_dir);
+    TEXT("Memory request:");
+    SETONE(w_mem_req_ready);
+    SETONE(w_mem_resp_valid);
+    SETVAL(wb_mem_resp_rdata, ALLONES());
+    SETZERO(wb_mem_resp_err);
+
 }

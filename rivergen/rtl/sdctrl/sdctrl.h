@@ -70,8 +70,12 @@ class sdctrl : public ModuleObject {
     // io:
     InPort i_clk;
     InPort i_nrst;
-    InStruct<types_amba::mapinfo_type> i_mapinfo;
-    OutStruct<types_pnp::dev_config_type> o_cfg;
+    InStruct<types_amba::mapinfo_type> i_xmapinfo;
+    OutStruct<types_pnp::dev_config_type> o_xcfg;
+    InStruct<types_amba::axi4_slave_in_type> i_xslvi;
+    OutStruct<types_amba::axi4_slave_out_type> o_xslvo;
+    InStruct<types_amba::mapinfo_type> i_pmapinfo;
+    OutStruct<types_pnp::dev_config_type> o_pcfg;
     InStruct<types_amba::apb_in_type> i_apbi;
     OutStruct<types_amba::apb_out_type> o_apbo;
     OutPort o_sclk;
@@ -101,10 +105,21 @@ class sdctrl : public ModuleObject {
     ParamLogic recv_sync;
     ParamLogic ending;
 
-    Signal w_req_valid;
-    Signal wb_req_addr;
-    Signal w_req_write;
-    Signal wb_req_wdata;
+    Signal w_preq_valid;
+    Signal wb_preq_addr;
+    Signal w_preq_write;
+    Signal wb_preq_wdata;
+    Signal w_mem_req_valid;
+    Signal wb_mem_req_addr;
+    Signal wb_mem_req_size;
+    Signal w_mem_req_write;
+    Signal wb_mem_req_wdata;
+    Signal wb_mem_req_wstrb;
+    Signal w_mem_req_last;
+    Signal w_mem_req_ready;
+    Signal w_mem_resp_valid;
+    Signal wb_mem_resp_rdata;
+    Signal wb_mem_resp_err;
 
     TextLine _rx0_;
     Signal w_rxfifo_we;
@@ -144,13 +159,14 @@ class sdctrl : public ModuleObject {
     RegSignal spi_resp;
     RegSignal txmark;
     RegSignal rxmark;
-    RegSignal resp_valid;
-    RegSignal resp_rdata;
-    RegSignal resp_err;
+    RegSignal presp_valid;
+    RegSignal presp_rdata;
+    RegSignal presp_err;
 
     CombProcess comb;
 
     apb_slv pslv0;
+    axi_slv xslv0;
     sfifo rxfifo;
     sfifo txfifo;
 };

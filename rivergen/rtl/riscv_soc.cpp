@@ -285,10 +285,14 @@ riscv_soc::riscv_soc(GenObject *parent, const char *name) :
     NEW(sdctrl0, sdctrl0.getName().c_str());
         CONNECT(sdctrl0, 0, sdctrl0.i_clk, i_sys_clk);
         CONNECT(sdctrl0, 0, sdctrl0.i_nrst, i_sys_nrst);
-        CONNECT(sdctrl0, 0, sdctrl0.i_mapinfo, ARRITEM(bus1_mapinfo, glob_bus1_cfg_->CFG_BUS1_PSLV_SPI, bus1_mapinfo));
-        CONNECT(sdctrl0, 0, sdctrl0.o_cfg, ARRITEM(dev_pnp, glob_pnp_cfg_->SOC_PNP_SPI, dev_pnp));
-        CONNECT(sdctrl0, 0, sdctrl0.i_apbi, ARRITEM(apbi, glob_bus1_cfg_->CFG_BUS1_PSLV_SPI, apbi));
-        CONNECT(sdctrl0, 0, sdctrl0.o_apbo, ARRITEM(apbo, glob_bus1_cfg_->CFG_BUS1_PSLV_SPI, apbo));
+        CONNECT(sdctrl0, 0, sdctrl0.i_xmapinfo, ARRITEM(bus0_mapinfo, glob_bus0_cfg_->CFG_BUS0_XSLV_SDCTRL_MEM, bus0_mapinfo));
+        CONNECT(sdctrl0, 0, sdctrl0.o_xcfg, ARRITEM(dev_pnp, glob_pnp_cfg_->SOC_PNP_SDCTRL_MEM, dev_pnp));
+        CONNECT(sdctrl0, 0, sdctrl0.i_xslvi, ARRITEM(axisi, glob_bus0_cfg_->CFG_BUS0_XSLV_SDCTRL_MEM, axisi));
+        CONNECT(sdctrl0, 0, sdctrl0.o_xslvo, ARRITEM(axiso, glob_bus0_cfg_->CFG_BUS0_XSLV_SDCTRL_MEM, axiso));
+        CONNECT(sdctrl0, 0, sdctrl0.i_pmapinfo, ARRITEM(bus1_mapinfo, glob_bus1_cfg_->CFG_BUS1_PSLV_SDCTRL_REG, bus1_mapinfo));
+        CONNECT(sdctrl0, 0, sdctrl0.o_pcfg, ARRITEM(dev_pnp, glob_pnp_cfg_->SOC_PNP_SDCTRL_REG, dev_pnp));
+        CONNECT(sdctrl0, 0, sdctrl0.i_apbi, ARRITEM(apbi, glob_bus1_cfg_->CFG_BUS1_PSLV_SDCTRL_REG, apbi));
+        CONNECT(sdctrl0, 0, sdctrl0.o_apbo, ARRITEM(apbo, glob_bus1_cfg_->CFG_BUS1_PSLV_SDCTRL_REG, apbo));
         CONNECT(sdctrl0, 0, sdctrl0.o_sclk, o_sd_sclk);
         CONNECT(sdctrl0, 0, sdctrl0.i_cmd, i_sd_cmd);
         CONNECT(sdctrl0, 0, sdctrl0.o_cmd, o_sd_cmd);

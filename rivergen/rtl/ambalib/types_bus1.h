@@ -152,7 +152,7 @@ class types_bus1 : public FileObject {
     TextLine _pslv7_;
     ParamI32D CFG_BUS1_PSLV_DMI;
     TextLine _pslv8_;
-    ParamI32D CFG_BUS1_PSLV_SPI;
+    ParamI32D CFG_BUS1_PSLV_SDCTRL_REG;
     TextLine _pslv9_;
     ParamI32D CFG_BUS1_PSLV_GPIO;
     TextLine _pslv10_;

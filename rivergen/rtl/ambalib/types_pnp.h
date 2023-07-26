@@ -135,8 +135,10 @@ class types_pnp : public FileObject {
     TextLine _didslv14_;
     ParamLogic OPTIMITECH_DDRCTRL;
     TextLine _didslv15_;
-    ParamLogic OPTIMITECH_SPI;
+    ParamLogic OPTIMITECH_SDCTRL_REG;
     TextLine _didslv16_;
+    ParamLogic OPTIMITECH_SDCTRL_MEM;
+    TextLine _didslv17_;
     ParamLogic OPTIMITECH_RIVER_DMI;
     TextLine _pnpcfg0_;
     TextLine _pnpcfg1_;
@@ -165,7 +167,8 @@ class types_pnp : public FileObject {
     ParamI32D SOC_PNP_PBRIDGE0;
     ParamI32D SOC_PNP_DMI;
     ParamI32D SOC_PNP_UART1;
-    ParamI32D SOC_PNP_SPI;
+    ParamI32D SOC_PNP_SDCTRL_REG;
+    ParamI32D SOC_PNP_SDCTRL_MEM;
     ParamI32D SOC_PNP_TOTAL;
     TextLine _pnp2_;
     TextLine _pnp3_;

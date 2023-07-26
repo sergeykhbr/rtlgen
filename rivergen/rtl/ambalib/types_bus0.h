@@ -130,7 +130,8 @@ class types_bus0 : public FileObject {
             sram(this, "sram", "2, sram, 2MB"),
             plic(this, "plic", "3, plic"),
             bus1(this, "bus1", "4, APB bridge: uart1"),
-            ddr(this, "ddr", "5, ddr, 512 MB") {
+            ddr(this, "ddr", "5, ddr, 512 MB"),
+            sdctrl(this, "sdctrl", "6, sdctrl, 32 GB") {
             bootrom.addr_start.setStrValue("0x0000000010000");
             bootrom.addr_end.setStrValue(  "0x0000000020000");
 
@@ -148,6 +149,9 @@ class types_bus0 : public FileObject {
 
             ddr.addr_start.setStrValue(  "0x0000080000000");
             ddr.addr_end.setStrValue(    "0x00000C0000000");
+
+            sdctrl.addr_start.setStrValue("0x0000800000000");
+            sdctrl.addr_end.setStrValue(  "0x0001000000000");
         }
         virtual GenObject *getItem(int idx) override {
             GenObject *ret = this;
@@ -158,7 +162,8 @@ class types_bus0 : public FileObject {
             case 3: ret = &plic; break;
             case 4: ret = &bus1; break;
             case 5: ret = &ddr; break;
-            default: ret = &ddr;
+            case 6: ret = &sdctrl; break;
+            default: ret = &sdctrl;
             }
             return ret;
         }
@@ -169,6 +174,7 @@ class types_bus0 : public FileObject {
         mapinfo_type plic;
         mapinfo_type bus1;
         mapinfo_type ddr;
+        mapinfo_type sdctrl;
     };
 
 
@@ -206,8 +212,10 @@ class types_bus0 : public FileObject {
     TextLine _xslv12_;
     ParamI32D CFG_BUS0_XSLV_DDR;
     TextLine _xslv13_;
-    ParamI32D CFG_BUS0_XSLV_TOTAL;
+    ParamI32D CFG_BUS0_XSLV_SDCTRL_MEM;
     TextLine _xslv14_;
+    ParamI32D CFG_BUS0_XSLV_TOTAL;
+    TextLine _xslv15_;
     ParamI32D CFG_BUS0_XSLV_LOG2_TOTAL;
     TextLine _vec0_;
     bus0_xmst_in_vector bus0_xmst_in_vector_def_;
