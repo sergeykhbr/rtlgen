@@ -49,6 +49,17 @@ sdctrl::sdctrl(GenObject *parent, const char *name) :
     i_detected(this, "i_detected", "1"),
     i_protect(this, "i_protect", "1"),
     // params
+    _sdstate0_(this, "SD-card global state:"),
+    SDSTATE_RESET(this, "2", "SDSTATE_RESET", "0"),
+    _initstate0_(this, "SD-card initalization state:"),
+    INITSTATE_CMD0(this, "3", "INITSTATE_CMD0", "0"),
+    INITSTATE_CMD8(this, "3", "INITSTATE_CMD8", "1"),
+    INITSTATE_CMD41(this, "3", "INITSTATE_CMD41", "2"),
+    INITSTATE_CMD11(this, "3", "INITSTATE_CMD11", "3"),
+    INITSTATE_CMD2(this, "3", "INITSTATE_CMD2", "4"),
+    INITSTATE_CMD3(this, "3", "INITSTATE_CMD3", "5"),
+    INITSTATE_ERROR(this, "3", "INITSTATE_ERROR", "6"),
+    INITSTATE_DONE(this, "3", "INITSTATE_DONE", "7"),
     _state0_(this, "SPI states"),
     idle(this, "3", "idle", "0"),
     wait_edge(this, "3", "wait_edge", "1"),
@@ -95,6 +106,8 @@ sdctrl::sdctrl(GenObject *parent, const char *name) :
     rx_data_block(this, "rx_data_block", "1", "0", "Wait 0xFE start data block marker"),
     level(this, "level", "1", "1"),
     cs(this, "cs", "1"),
+    sdstate(this, "sdstate", "2", "CMDSTATE_RESET"),
+    initstate(this, "initstate", "3", "INITSTATE_CMD0"),
     state(this, "state", "3", "idle"),
     ena_byte_cnt(this, "ena_byte_cnt", "16"),
     bit_cnt(this, "bit_cnt", "3"),
@@ -217,6 +230,35 @@ void sdctrl::proc_comb() {
     SETBIT(comb.vb_crc16, 2, BIT(crc16, 1));
     SETBIT(comb.vb_crc16, 1, BIT(crc16, 0));
     SETBIT(comb.vb_crc16, 0, comb.v_inv16);
+
+TEXT();
+    TEXT("Registers access:");
+    SWITCH (sdstate);
+    CASE (SDSTATE_RESET);
+        SWITCH (initstate);
+        CASE (INITSTATE_CMD0);
+            ENDCASE();
+        CASE (INITSTATE_CMD8);
+            ENDCASE();
+        CASE (INITSTATE_CMD41);
+            ENDCASE();
+        CASE (INITSTATE_CMD11);
+            ENDCASE();
+        CASE (INITSTATE_CMD2);
+            ENDCASE();
+        CASE (INITSTATE_CMD3);
+            ENDCASE();
+        CASE (INITSTATE_ERROR);
+            ENDCASE();
+        CASE (INITSTATE_DONE);
+            ENDCASE();
+        CASEDEF();
+            ENDCASE();
+        ENDSWITCH();
+        ENDCASE();
+    CASEDEF();
+        ENDCASE();
+    ENDSWITCH();
 
 
 TEXT();

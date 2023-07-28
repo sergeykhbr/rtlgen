@@ -97,6 +97,17 @@ class sdctrl : public ModuleObject {
     InPort i_detected;
     InPort i_protect;
     
+    TextLine _sdstate0_;
+    ParamLogic SDSTATE_RESET;
+    TextLine _initstate0_;
+    ParamLogic INITSTATE_CMD0;
+    ParamLogic INITSTATE_CMD8;
+    ParamLogic INITSTATE_CMD41;
+    ParamLogic INITSTATE_CMD11;
+    ParamLogic INITSTATE_CMD2;
+    ParamLogic INITSTATE_CMD3;
+    ParamLogic INITSTATE_ERROR;
+    ParamLogic INITSTATE_DONE;
     TextLine _state0_;
     ParamLogic idle;
     ParamLogic wait_edge;
@@ -146,7 +157,8 @@ class sdctrl : public ModuleObject {
     RegSignal level;
     RegSignal cs;
 
-
+    RegSignal sdstate;
+    RegSignal initstate;
     RegSignal state;
     RegSignal shiftreg;
     RegSignal ena_byte_cnt;

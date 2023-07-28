@@ -28,13 +28,25 @@ class sdctrl_crc16 : public ModuleObject {
      public:
         CombProcess(GenObject *parent) :
             ProcObject(parent, "comb"),
-            v_inv16(this, "v_inv16", "1"),
-            vb_crc16(this, "vb_crc16", "16") {
+            v_inv16_3(this, "v_inv16_3", "1"),
+            vb_crc16_3(this, "vb_crc16_3", "16"),
+            v_inv16_2(this, "v_inv16_2", "1"),
+            vb_crc16_2(this, "vb_crc16_2", "16"),
+            v_inv16_1(this, "v_inv16_1", "1"),
+            vb_crc16_1(this, "vb_crc16_1", "16"),
+            v_inv16_0(this, "v_inv16_0", "1"),
+            vb_crc16_0(this, "vb_crc16_0", "16") {
         }
 
      public:
-        Logic v_inv16;
-        Logic vb_crc16;
+        Logic v_inv16_3;
+        Logic vb_crc16_3;
+        Logic v_inv16_2;
+        Logic vb_crc16_2;
+        Logic v_inv16_1;
+        Logic vb_crc16_1;
+        Logic v_inv16_0;
+        Logic vb_crc16_0;
     };
 
     void proc_comb();
