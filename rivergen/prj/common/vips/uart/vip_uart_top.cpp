@@ -29,11 +29,13 @@ vip_uart_top::vip_uart_top(GenObject *parent, const char *name) :
     w_rdy(this, "w_rdy", "1"),
     w_rdy_clr(this, "w_rdy_clr", "1"),
     wb_rdata(this, "wb_rdata", "8"),
+    outstr("", "outstr", this),
     // registers
     //
     clk0(this, "clk0"),
     rx0(this, "rx0"),
-    comb(this)
+    comb(this),
+    reg(this)
 {
     Operation::start(this);
 
@@ -55,17 +57,30 @@ vip_uart_top::vip_uart_top(GenObject *parent, const char *name) :
 
     Operation::start(&comb);
     proc_comb();
+
+    Operation::start(&reg);
+    proc_reg();
 }
 
 void vip_uart_top::proc_comb() {
+    SETVAL(w_rdy_clr, w_rdy);
+}
+
+void vip_uart_top::proc_reg() {
     IF (NZ(w_rdy));
         IF (EQ(wb_rdata, CONST("0x0A", 8)));
-            TEXT("End of line");
+            TEXT("RISCV_printf(0, LOG_INFO, \"%s\", outstr.c_str());");
+            SETSTR(outstr, "");
+        ELSIF(EQ(wb_rdata, CONST("0x0D", 8)));
+            IF (NE(outstr, *new STRING("", "")));
+                TEXT("RISCV_printf(0, LOG_INFO, \"%s\", outstr.c_str());");
+                SETSTR(outstr, "");
+            ENDIF();
         ELSE();
             TEXT("Add symbol to string");
+            TEXT("char tstr[2] = {0};");
+            TEXT("tstr[0] = static_cast<char>(wb_rdata.read().to_uint());");
+            TEXT("outstr += tstr;");
         ENDIF();
     ENDIF();
-
-    TEXT();
-    SETVAL(w_rdy_clr, w_rdy);
 }

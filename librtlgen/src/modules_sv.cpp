@@ -174,10 +174,10 @@ std::string ModuleObject::generate_sv_pkg_struct() {
     }
     // Register structure definition
     bool twodim = false;        // if 2-dimensional register array, then do not use reset function
-    if (isRegProcess() && isCombProcess()) {
+    if (isRegs() && isCombProcess()) {
         ret += generate_sv_pkg_reg_struct(false);
     }
-    if (isNRegProcess() && isCombProcess()) {
+    if (isNRegs() && isCombProcess()) {
         ret += generate_sv_pkg_reg_struct(true);
     }
     return ret;
@@ -342,11 +342,11 @@ std::string ModuleObject::generate_sv_mod_signals() {
         tcnt++;
     }
 
-    if (isRegProcess() && isCombProcess()) {
+    if (isRegs() && isCombProcess()) {
         ret += getType() + "_registers r, rin;\n";
         tcnt++;
     }
-    if (isNRegProcess() && isCombProcess()) {
+    if (isNRegs() && isCombProcess()) {
         ret += getType() + "_nregisters nr, nrin;\n";
         tcnt++;
     }
@@ -434,10 +434,10 @@ std::string ModuleObject::generate_sv_mod_proc(GenObject *proc) {
     
     // process variables declaration
     tcnt = 0;
-    if (isRegProcess()) {
+    if (isRegs()) {
         ret += Operation::addspaces() + getType() + "_registers v;\n";
     }
-    if (isNRegProcess()) {
+    if (isNRegs()) {
         ret += Operation::addspaces() + getType() + "_nregisters nv;\n";
     }
 
@@ -480,12 +480,12 @@ std::string ModuleObject::generate_sv_mod_proc(GenObject *proc) {
         ret += "\n";
     }
 
-    if (isRegProcess()) {
+    if (isRegs()) {
         Operation::set_space(1);
         ret += Operation::copyreg("v", "r", this);
         tcnt++;
     }
-    if (isNRegProcess()) {
+    if (isNRegs()) {
         Operation::set_space(1);
         ret += Operation::copyreg("nv", "nr", this);
         tcnt++;
@@ -506,11 +506,11 @@ std::string ModuleObject::generate_sv_mod_proc(GenObject *proc) {
         ret += e->generate();
     }
 
-    if (isRegProcess()) {
+    if (isRegs()) {
         ret += "\n";
         ret += Operation::copyreg("rin", "v", this);
     }
-    if (isNRegProcess()) {
+    if (isNRegs()) {
         ret += Operation::copyreg("nrin", "nv", this);
     }
     if (proc->isGenerate() == false) {
@@ -526,14 +526,17 @@ std::string ModuleObject::generate_sv_mod_always_ff_rst(bool clkpos) {
     std::string src = "rin";
     std::string dst = "r";
     std::string blkname = ": rg_proc";  // to minimiz differences. Could be removed later
+    bool isregs;
     out += Operation::addspaces() + "always_ff @(";
     if (clkpos) {
         out += "posedge ";
+        isregs = isRegs();
     } else {
         out += "negedge ";
         src = "nrin";
         dst = "nr";
         blkname = "";
+        isregs = isNRegs();
     }
     out += getClockPort()->getName();
     if (getResetPort()) {
@@ -547,7 +550,7 @@ std::string ModuleObject::generate_sv_mod_always_ff_rst(bool clkpos) {
     }
     out += ") begin" + blkname + "\n";
     Operation::set_space(Operation::get_space() + 1);
-    if (isCombProcess()) {
+    if (isCombProcess() &&  isregs) {
         if (getResetPort()) {
             out += Operation::reset(dst.c_str(), 0, this, xrst);
             out += " else begin\n";
@@ -614,7 +617,7 @@ std::string ModuleObject::generate_sv_mod_proc_registers() {
     if (getAsyncReset() || getResetPort() == 0) {
         out += Operation::addspaces() + "always_ff @(posedge i_clk) begin: rg_proc\n";
         Operation::set_space(Operation::get_space() + 1);
-        if (isCombProcess()) {
+        if (isRegs() && isCombProcess()) {
             out += Operation::copyreg("r", "rin", this);
         }
         out += generate_sv_mod_always_ops();   // additional operation on posedge clock events
@@ -668,6 +671,8 @@ std::string ModuleObject::generate_sv_mod() {
         if (!p->isInput() && !p->isOutput()) {
             if (p->getId() == ID_COMMENT) {
                 text += Operation::addspaces() + p->generate();
+            } else {
+                text = "";
             }
             continue;
         }

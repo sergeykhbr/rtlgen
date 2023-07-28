@@ -26,6 +26,8 @@ class vip_uart_top : public ModuleObject {
  public:
     vip_uart_top(GenObject *parent, const char *name);
 
+    virtual GenObject *getClockPort() override { return &w_clk; }
+
     class CombProcess : public ProcObject {
      public:
         CombProcess(GenObject *parent) :
@@ -35,6 +37,14 @@ class vip_uart_top : public ModuleObject {
      public:
     };
 
+    class RegistersProcess : public ProcObject {
+     public:
+        RegistersProcess(GenObject *parent) : ProcObject(parent, "registers") {
+        }
+    public:
+    };
+
+    void proc_reg();
     void proc_comb();
 
  public:
@@ -49,11 +59,13 @@ class vip_uart_top : public ModuleObject {
     Signal w_rdy;
     Signal w_rdy_clr;
     Signal wb_rdata;
+    STRING outstr;
 
     vip_clk clk0;
     vip_uart_receiver rx0;
 
     CombProcess comb;
+    RegistersProcess reg;
 };
 
 class vip_uart_top_file : public FileObject {

@@ -51,7 +51,36 @@ class asic_top : public ModuleObject {
 
 public:
     DefParamI32D sim_uart_speedup_rate;
+
     ParamBOOL async_reset;
+    TextLine _prj0_;
+    TextLine _prj1_;
+    TextLine _prj2_;
+    ParamI32D CFG_CPU_NUM;
+    TextLine _cache0_;
+    TextLine _cache1_;
+    TextLine _cache2_;
+    ParamI32D CFG_ILOG2_LINES_PER_WAY;
+    ParamI32D CFG_ILOG2_NWAYS;
+    TextLine _cache3_;
+    ParamI32D CFG_DLOG2_LINES_PER_WAY;
+    ParamI32D CFG_DLOG2_NWAYS;
+    TextLine _cache4_;
+    TextLine _cache5_;
+    ParamI32D CFG_L2CACHE_ENA;
+    ParamI32D CFG_L2_LOG2_NWAYS;
+    ParamI32D CFG_L2_LOG2_LINES_PER_WAY;
+    TextLine _mem0_;
+    TextLine _mem1_;
+    ParamI32D CFG_BOOTROM_LOG2_SIZE;
+    TextLine _hex0_;
+    TextLine _hex1_;
+    ParamString CFG_BOOTROM_FILE_HEX;
+    TextLine _mem2_;
+    TextLine _mem3_;
+    TextLine _mem4_;
+    TextLine _mem5_;
+    ParamI32D CFG_SRAM_LOG2_SIZE;
     // Ports:
     InPort i_rst;
     TextLine _clk0_;

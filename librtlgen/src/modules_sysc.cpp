@@ -134,10 +134,10 @@ std::string ModuleObject::generate_sysc_h_struct() {
         tcnt = 0;
     }
     // Register structure definition
-    if (isRegProcess() && isCombProcess()) {
+    if (isRegs() && isCombProcess()) {
         out += generate_sysc_h_reg_struct(false);
     }
-    if (isNRegProcess() && isCombProcess()) {
+    if (isNRegs() && isCombProcess()) {
         out += generate_sysc_h_reg_struct(true);
     }
     return out;
@@ -185,6 +185,8 @@ std::string ModuleObject::generate_sysc_h() {
         if (!p->isInput() && !p->isOutput()) {
             if (p->getId() == ID_COMMENT) {
                 text += Operation::addspaces() + p->generate();
+            } else {
+                text = "";
             }
             continue;
         }
@@ -488,30 +490,35 @@ std::string ModuleObject::generate_sysc_proc_registers(bool clkpos) {
     std::string xrst = "";
     std::string src = "v";
     std::string dst = "r";
+    bool isregs;
 
     out += generate_sysc_template_f_name();
     if (clkpos) {
         out += "::registers() {\n";
+        isregs = isRegs();
     } else {
         out += "::nregisters() {\n";
         src = "nv";
         dst = "nr";
+        isregs = isNRegs();
     }
     Operation::set_space(Operation::get_space() + 1);
-    if (getResetPort()) {
-        if (isCombProcess()) {
-            out += Operation::reset(dst.c_str(), 0, this, xrst);
+    if (isregs) {
+        if (getResetPort()) {
+            if (isCombProcess()) {
+                out += Operation::reset(dst.c_str(), 0, this, xrst);
+            }
+            out += " else {\n";
+            Operation::set_space(Operation::get_space() + 1);
         }
-        out += " else {\n";
-        Operation::set_space(Operation::get_space() + 1);
-    }
-    if (isCombProcess()) {
-        out += Operation::copyreg(dst.c_str(), src.c_str(), this);
-    }
-    if (getResetPort()) {
-        Operation::set_space(Operation::get_space() - 1);
-        out += Operation::addspaces();
-        out += "}\n";
+        if (isCombProcess()) {
+            out += Operation::copyreg(dst.c_str(), src.c_str(), this);
+        }
+        if (getResetPort()) {
+            Operation::set_space(Operation::get_space() - 1);
+            out += Operation::addspaces();
+            out += "}\n";
+        }
     }
     for (auto &e: getEntries()) {
         if (e->getId() != ID_PROCESS
@@ -955,7 +962,11 @@ std::string ModuleObject::generate_sysc_constructor() {
         if (getResetPort()) {
             ret += "    sensitive << " + getResetPort()->getName() + ";\n";
         }
-        ret += "    sensitive << " + getClockPort()->getName() + ".pos();\n";
+        if (getClockPort()->isInput()) {
+            ret += "    sensitive << " + getClockPort()->getName() + ".pos();\n";
+        } else {
+            ret += "    sensitive << " + getClockPort()->getName() + ".posedge_event();\n";
+        }
     }
 
     if (isNRegProcess()) {
@@ -964,7 +975,11 @@ std::string ModuleObject::generate_sysc_constructor() {
         if (getResetPort()) {
             ret += "    sensitive << " + getResetPort()->getName() + ";\n";
         }
-        ret += "    sensitive << " + getClockPort()->getName() + ".neg();\n";
+        if (getClockPort()->isInput()) {
+            ret += "    sensitive << " + getClockPort()->getName() + ".neg();\n";
+        } else {
+            ret += "    sensitive << " + getClockPort()->getName() + ".negedge_event();\n";
+        }
     }
     ret += "}\n";
     ret += "\n";
@@ -1040,7 +1055,7 @@ std::string ModuleObject::generate_sysc_vcd() {
     ret += generate_sysc_template_f_name();
     ret += "::generateVCD(sc_trace_file *i_vcd, sc_trace_file *o_vcd) {\n";
     Operation::set_space(Operation::get_space() + 1);
-    if (isRegProcess() && isCombProcess()) {
+    if (isRegs() && isCombProcess()) {
         ret += Operation::addspaces() + "std::string pn(name());\n";
     }
     ret += Operation::addspaces() + "if (o_vcd) {\n";
@@ -1241,11 +1256,11 @@ std::string ModuleObject::generate_sysc_proc(GenObject *proc) {
         ret += "\n";
     }
 
-    if (isRegProcess()) {
+    if (isRegs()) {
         ret += Operation::copyreg("v", "r", this);
         tcnt++;
     }
-    if (isNRegProcess()) {
+    if (isNRegs()) {
         ret += Operation::copyreg("nv", "nr", this);
         tcnt++;
     }
