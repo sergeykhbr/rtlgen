@@ -615,7 +615,9 @@ std::string ModuleObject::generate_sv_mod_proc_registers() {
     }
 
     if (getAsyncReset() || getResetPort() == 0) {
-        out += Operation::addspaces() + "always_ff @(posedge i_clk) begin: rg_proc\n";
+        out += Operation::addspaces() + "always_ff @(posedge ";
+        out += getClockPort()->getName();
+        out += ") begin: rg_proc\n";
         Operation::set_space(Operation::get_space() + 1);
         if (isRegs() && isCombProcess()) {
             out += Operation::copyreg("r", "rin", this);

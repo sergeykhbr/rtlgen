@@ -18,6 +18,7 @@
 
 #include <api.h>
 #include "vip_uart_receiver.h"
+#include "vip_uart_transmitter.h"
 #include "vip_uart_top.h"
 
 class uart_folder : public FolderObject {
@@ -25,11 +26,13 @@ class uart_folder : public FolderObject {
     uart_folder(GenObject *parent) :
         FolderObject(parent, "uart"),
         vip_uart_receiver_file_(this),
+        vip_uart_transmitter_file_(this),
         vip_uart_top_file_(this) {}
 
  protected:
     // subfolders:
     // files
     vip_uart_receiver_file vip_uart_receiver_file_;
+    vip_uart_transmitter_file vip_uart_transmitter_file_;
     vip_uart_top_file vip_uart_top_file_;
 };

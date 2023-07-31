@@ -19,6 +19,7 @@
 #include <api.h>
 #include "../clk/vip_clk.h"
 #include "vip_uart_receiver.h"
+#include "vip_uart_transmitter.h"
 
 using namespace sysvc;
 
@@ -66,21 +67,26 @@ class vip_uart_top : public ModuleObject {
     DefParamI32D scaler;
     DefParamString logpath;
     ParamTIMESEC pll_period;
+    ParamLogic EOF_0x0D;
     // io:
     InPort i_nrst;
     InPort i_rx;
+    OutPort o_tx;
 
     Signal w_clk;
-    Signal w_rdy;
-    Signal w_rdy_clr;
+    Signal w_rx_rdy;
+    Signal w_rx_rdy_clr;
+    Signal w_tx_full;
     Signal wb_rdata;
     STRING rdatastr;
     STRING outstr;
     STRING outfilename;  // formatted with instnum
     FileValue fl;
+    FileValue fl_tmp;
 
     vip_clk clk0;
     vip_uart_receiver rx0;
+    vip_uart_transmitter tx0;
 
     FunctionU8ToString U8ToString;
     CombProcess comb;
