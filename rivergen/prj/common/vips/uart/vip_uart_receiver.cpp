@@ -31,14 +31,17 @@ vip_uart_receiver::vip_uart_receiver(GenObject *parent, const char *name) :
     startbit(this, "2", "startbit", "0"),
     data(this, "2", "data", "1"),
     stopbit(this, "2", "stopbit", "2"),
+    dummy(this, "2", "dummy", "3"),
     // signals
     // registers
+    rx(this, "rx", "1"),
     state(this, "state", "2", "startbit"),
     rdy(this, "rdy", "1"),
     rdata(this, "rdata", "8"),
     sample(this, "sample", "32"),
     bitpos(this, "bitpos", "4"),
     scratch(this, "scratch", "8"),
+    rx_err(this, "rx_err", "1"),
     //
     comb(this)
 {
@@ -49,6 +52,9 @@ vip_uart_receiver::vip_uart_receiver(GenObject *parent, const char *name) :
 }
 
 void vip_uart_receiver::proc_comb() {
+    SETVAL(rx, i_rx);
+    SETVAL(comb.v_rx_pos, AND2(INV(rx), i_rx));
+    SETVAL(comb.v_rx_neg, AND2(rx, INV(i_rx)));
     IF (NZ(i_rdy_clr));
         SETZERO(rdy);
     ENDIF();
@@ -65,17 +71,22 @@ TEXT();
         ENDIF();
 
         TEXT();
-        IF(EQ(sample, scaler_max));
+        IF(OR2(EQ(sample, scaler_max), NZ(comb.v_rx_pos)));
             SETVAL(state, data);
             SETZERO(bitpos);
             SETZERO(sample);
             SETZERO(scratch);
+            SETZERO(rx_err);
         ENDIF();
         ENDCASE();
 
     CASE(data);
-        IF (EQ(sample, scaler_max));
+        IF (ORx(2, &EQ(sample, scaler_max),
+                   &AND2(GT(sample, scaler_mid), OR2(NZ(comb.v_rx_neg), NZ(comb.v_rx_pos)))));
             SETZERO(sample);
+            IF (EQ(bitpos, CONST("8", 8)));
+                SETVAL(state, stopbit);
+            ENDIF();
         ELSE();
             SETVAL(sample, INC(sample));
         ENDIF();
@@ -85,22 +96,30 @@ TEXT();
             SETVAL(scratch, CC2(i_rx, BITS(scratch, 7, 1)));
             SETVAL(bitpos, INC(bitpos));
         ENDIF();
-        IF (AND2(EQ(bitpos, CONST("8", 8)), EQ(sample, scaler_mid)));
-            SETVAL(state, stopbit);
-        ENDIF();
         ENDCASE();
 
     CASE(stopbit);
-		TEXT("");
-		TEXT("Our baud clock may not be running at exactly the");
-		TEXT("same rate as the transmitter.  If we thing that");
-		TEXT("we're at least half way into the stop bit, allow");
-		TEXT("transition into handling the next start bit.");
-		TEXT("");
-        IF(OR2(EQ(sample, scaler_max), AND2(GE(sample, scaler_mid), NZ(i_rx))));
-            SETVAL(state, startbit);
+        IF(EQ(sample, scaler_mid));
             SETVAL(rdata, scratch);
             SETONE(rdy);
+            IF (EZ(i_rx));
+                SETONE(rx_err);
+            ELSE();
+            ENDIF();
+        ENDIF();
+        IF (EQ(sample, scaler_max));
+            SETVAL(state, dummy);
+            SETZERO(sample);
+        ELSE();
+            SETVAL(sample, INC(sample));
+        ENDIF();
+        ENDCASE();
+
+    CASE(dummy);
+        TEXT("Idle state in UART generates additional byte and it works");
+        TEXT("even if rx=0 on real device:");
+        IF(GE(sample, scaler_mid));
+            SETVAL(state, startbit);
             SETZERO(sample);
         ELSE();
             SETVAL(sample, INC(sample));

@@ -28,6 +28,19 @@ class vip_uart_top : public ModuleObject {
 
     virtual GenObject *getClockPort() override { return &w_clk; }
 
+    class FunctionU8ToString : public FunctionObject {
+     public:
+        FunctionU8ToString(GenObject *parent);
+        virtual std::string getType() override { return ostr.getType(); }
+        virtual void getArgsList(std::list<GenObject *> &args) {
+            args.push_back(&symb);
+        }
+        virtual GenObject *getpReturn() { return &ostr; }
+     protected:
+        Logic symb;
+        STRING ostr;
+    };
+
     class CombProcess : public ProcObject {
      public:
         CombProcess(GenObject *parent) :
@@ -48,8 +61,10 @@ class vip_uart_top : public ModuleObject {
     void proc_comb();
 
  public:
+    DefParamI32D instnum;
     DefParamI32D baudrate;
     DefParamI32D scaler;
+    DefParamString logpath;
     ParamTIMESEC pll_period;
     // io:
     InPort i_nrst;
@@ -59,11 +74,15 @@ class vip_uart_top : public ModuleObject {
     Signal w_rdy;
     Signal w_rdy_clr;
     Signal wb_rdata;
+    STRING rdatastr;
     STRING outstr;
+    STRING outfilename;  // formatted with instnum
+    FileValue fl;
 
     vip_clk clk0;
     vip_uart_receiver rx0;
 
+    FunctionU8ToString U8ToString;
     CombProcess comb;
     RegistersProcess reg;
 };

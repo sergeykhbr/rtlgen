@@ -220,6 +220,7 @@ TEXT();
         CASE (stopbit);
             IF (EZ(tx_stop_cnt));
                 SETVAL(tx_state, idle);
+                SETVAL(tx_shift, ALLONES());
             ELSE();
                 SETZERO(tx_stop_cnt);
             ENDIF();
@@ -229,7 +230,7 @@ TEXT();
         ENDSWITCH();
         
         TEXT();
-        IF (NE(tx_state, idle));
+        IF (AND2(NE(tx_state, idle), NE(tx_state, stopbit)));
             SETVAL(tx_frame_cnt, INC(tx_frame_cnt));
             SETVAL(tx_shift, CC2(CONST("1", 1), BITS(tx_shift, 10, 1)));
         ENDIF();

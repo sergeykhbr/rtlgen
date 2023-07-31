@@ -116,6 +116,7 @@ Operation &SETVAL(GenObject &a, GenObject &b, const char *comment="");
 Operation &SETSTR(GenObject &a, const char *str, const char *comment="");
 Operation &SETSTRF(GenObject &a, const char *fmt, size_t cnt, ...);
 Operation &ADDSTRF(GenObject &a, const char *fmt, size_t cnt, ...);
+Operation &ADDSTRU8(GenObject &strout, GenObject &val);
 Operation &TO_INT(GenObject &a, const char *comment="");
 Operation &TO_U32(GenObject &a, const char *comment="");
 Operation &TO_U64(GenObject &a, const char *comment="");
@@ -214,7 +215,9 @@ void CALLF(GenObject *ret, GenObject &a, size_t argcnt, ...);
 // write string into file
 void FOPEN(GenObject &f, GenObject &str);
 void FWRITE(GenObject &f, GenObject &str);
+void FFLUSH(GenObject &f);
 void READMEMH(GenObject &fname, GenObject &mem);
+void DISPLAYSTR(GenObject &str);
 
 // Create new module
 void NEW(GenObject &m, const char *name, GenObject *idx=0, const char *comment="");

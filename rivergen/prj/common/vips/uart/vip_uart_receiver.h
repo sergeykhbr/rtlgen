@@ -27,10 +27,14 @@ class vip_uart_receiver : public ModuleObject {
     class CombProcess : public ProcObject {
      public:
         CombProcess(GenObject *parent) :
-            ProcObject(parent, "comb") {
+            ProcObject(parent, "comb"),
+            v_rx_pos(this, "v_rx_pos", "1"),
+            v_rx_neg(this, "v_rx_neg", "1") {
         }
 
      public:
+        Logic v_rx_pos;
+        Logic v_rx_neg;
     };
 
     void proc_comb();
@@ -50,13 +54,16 @@ class vip_uart_receiver : public ModuleObject {
     ParamLogic startbit;
     ParamLogic data;
     ParamLogic stopbit;
+    ParamLogic dummy;
 
+    RegSignal rx;
     RegSignal state;
     RegSignal rdy;
     RegSignal rdata;
     RegSignal sample;
     RegSignal bitpos;
     RegSignal scratch;
+    RegSignal rx_err;
 
     CombProcess comb;
 };

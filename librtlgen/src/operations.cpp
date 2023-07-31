@@ -1014,6 +1014,34 @@ Operation &ADDSTRF(GenObject &a, const char *fmt, size_t cnt, ...) {
     return *p;
 }
 
+// ADDSTRU8
+std::string ADDSTRU8_gen(GenObject **args) {
+    std::string ret = "";
+    if (SCV_is_sysc()) {
+        ret += Operation::addspaces() + "tstr[0] = static_cast<char>(";
+        ret += Operation::obj2varname(args[2], "r", true) + ".to_uint());\n";
+        ret += Operation::addspaces() + "tstr[1] = 0;\n";
+        ret += Operation::addspaces() + Operation::obj2varname(args[1]);
+        ret += " = tstr;\n";
+    } else {
+        ret += Operation::addspaces();
+        ret += Operation::obj2varname(args[1]) + " = {";
+        ret += Operation::obj2varname(args[1]);
+        ret += ", ";
+        ret += Operation::obj2varname(args[2]);
+        ret += "};\n";
+    }
+    return ret;
+}
+
+Operation &ADDSTRU8(GenObject &strout, GenObject &val) {
+    Operation *p = new Operation("");
+    p->igen_ = ADDSTRU8_gen;
+    p->add_arg(p);  // 0
+    p->add_arg(&strout); // 1
+    p->add_arg(&val); // 2
+    return *p;
+}
 
 // BIG_TO_U64: explicit conersion of biguint to uint64 (sysc only)
 std::string BIG_TO_U64_gen(GenObject **args) {
@@ -3022,7 +3050,7 @@ std::string FOPEN_gen(GenObject **args) {
         }
         ret += ", \"wb\");\n";
     } else {
-        ret += " = $fopen(" + Operation::obj2varname(args[2]) + ", \"w\");\n";
+        ret += " = $fopen(" + Operation::obj2varname(args[2]) + ", \"wb\");\n";
         ret += Operation::addspaces() + "assert (" + Operation::obj2varname(args[1]) + ")\n";
         ret += Operation::addspaces() + "else begin\n";
         ret += Operation::addspaces() + "    $warning(\"Cannot open log-file\");\n";
@@ -3066,6 +3094,25 @@ void FWRITE(GenObject &f, GenObject &str) {
     p->add_arg(&str);
 }
 
+// FFLUSH
+std::string FFLUSH_gen(GenObject **args) {
+    std::string ret = Operation::addspaces();
+    if (SCV_is_sv()) {
+        ret += "$";
+    }
+    ret += "fflush(";
+    ret += Operation::obj2varname(args[1]);
+    ret += ");\n";
+    return ret;
+}
+
+void FFLUSH(GenObject &f) {
+    Operation *p = new Operation("");
+    p->igen_ = FFLUSH_gen;
+    p->add_arg(p);
+    p->add_arg(&f);
+}
+
 // READMEMH
 std::string READMEMH_gen(GenObject **args) {
     std::string ret = Operation::addspaces();
@@ -3089,6 +3136,28 @@ void READMEMH(GenObject &fname, GenObject &mem) {
     p->add_arg(&fname);
     p->add_arg(&mem);
     mem.getParentFile()->setSvApiUsed();
+}
+
+// DISPLAYSTR
+std::string DISPLAYSTR_gen(GenObject **args) {
+    std::string ret = Operation::addspaces();
+    if (SCV_is_sysc()) {
+        ret += "SV_display(";
+        ret += Operation::obj2varname(args[1]) + ".c_str()";
+    } else {
+        ret += "$display(\"%s\", ";
+        ret += Operation::obj2varname(args[1]);
+    }
+    ret += ");\n";
+    return ret;
+}
+
+void DISPLAYSTR(GenObject &str) {
+    Operation *p = new Operation("");
+    p->igen_ = DISPLAYSTR_gen;
+    p->add_arg(p);
+    p->add_arg(&str);
+    str.getParentFile()->setSvApiUsed();
 }
 
 // NEW module instance

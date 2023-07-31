@@ -106,7 +106,7 @@ sdctrl::sdctrl(GenObject *parent, const char *name) :
     rx_data_block(this, "rx_data_block", "1", "0", "Wait 0xFE start data block marker"),
     level(this, "level", "1", "1"),
     cs(this, "cs", "1"),
-    sdstate(this, "sdstate", "2", "CMDSTATE_RESET"),
+    sdstate(this, "sdstate", "2", "SDSTATE_RESET"),
     initstate(this, "initstate", "3", "INITSTATE_CMD0"),
     state(this, "state", "3", "idle"),
     ena_byte_cnt(this, "ena_byte_cnt", "16"),

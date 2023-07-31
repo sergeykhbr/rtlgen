@@ -18,8 +18,10 @@
 
 vip_uart_top::vip_uart_top(GenObject *parent, const char *name) :
     ModuleObject(parent, "vip_uart_top", name),
+    instnum(this, "instnum", "0"),
     baudrate(this, "baudrate", "115200"),
     scaler(this, "scaler", "8"),
+    logpath(this, "logpath", "uart"),
     pll_period(this, "pll_period", "DIV(1.0,MUL(MUL(2,scaler),baudrate))"),
     i_nrst(this, "i_nrst", "1"),
     i_rx(this, "i_rx", "1"),
@@ -29,15 +31,25 @@ vip_uart_top::vip_uart_top(GenObject *parent, const char *name) :
     w_rdy(this, "w_rdy", "1"),
     w_rdy_clr(this, "w_rdy_clr", "1"),
     wb_rdata(this, "wb_rdata", "8"),
+    rdatastr("", "rdatastr", this),
     outstr("", "outstr", this),
+    outfilename("", "outfilename", this, "formatted string name with instnum"),
+    fl("", "fl", this),
     // registers
     //
     clk0(this, "clk0"),
     rx0(this, "rx0"),
+    U8ToString(this),
     comb(this),
     reg(this)
 {
     Operation::start(this);
+    INITIAL();
+        DECLARE_TSTR();
+        SETSTRF(outfilename, "%s%d.log", 2, &logpath, &instnum);
+        FOPEN(fl, outfilename);
+    ENDINITIAL();
+
 
     // Create and connet Sub-modules:
     clk0.period.setObjValue(&pll_period);
@@ -62,6 +74,13 @@ vip_uart_top::vip_uart_top(GenObject *parent, const char *name) :
     proc_reg();
 }
 
+vip_uart_top::FunctionU8ToString::FunctionU8ToString(GenObject *parent)
+    : FunctionObject(parent, "U8ToString"),
+    symb(this, "symb", "8"),
+    ostr("", "ostr", this) {
+    ADDSTRU8(ostr, symb);
+}
+
 void vip_uart_top::proc_comb() {
     SETVAL(w_rdy_clr, w_rdy);
 }
@@ -69,18 +88,21 @@ void vip_uart_top::proc_comb() {
 void vip_uart_top::proc_reg() {
     IF (NZ(w_rdy));
         IF (EQ(wb_rdata, CONST("0x0A", 8)));
-            TEXT("RISCV_printf(0, LOG_INFO, \"%s\", outstr.c_str());");
+            DISPLAYSTR(outstr);
+            FWRITE(fl, outstr);
+            FFLUSH(fl);
             SETSTR(outstr, "");
         ELSIF(EQ(wb_rdata, CONST("0x0D", 8)));
             IF (NE(outstr, *new STRING("", "")));
-                TEXT("RISCV_printf(0, LOG_INFO, \"%s\", outstr.c_str());");
+                DISPLAYSTR(outstr);
+                FWRITE(fl, outstr);
+                FFLUSH(fl);
                 SETSTR(outstr, "");
             ENDIF();
         ELSE();
             TEXT("Add symbol to string");
-            TEXT("char tstr[2] = {0};");
-            TEXT("tstr[0] = static_cast<char>(wb_rdata.read().to_uint());");
-            TEXT("outstr += tstr;");
+            CALLF(&rdatastr, U8ToString, 1, &wb_rdata);
+            INCVAL(outstr, rdatastr);
         ENDIF();
     ENDIF();
 }
