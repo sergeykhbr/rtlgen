@@ -116,7 +116,7 @@ Operation &SETVAL(GenObject &a, GenObject &b, const char *comment="");
 Operation &SETSTR(GenObject &a, const char *str, const char *comment="");
 Operation &SETSTRF(GenObject &a, const char *fmt, size_t cnt, ...);
 Operation &ADDSTRF(GenObject &a, const char *fmt, size_t cnt, ...);
-Operation &ADDSTRU8(GenObject &strout, GenObject &val);
+Operation &ADDSTRU8(GenObject &strout, GenObject &strin, GenObject &val);
 Operation &TO_INT(GenObject &a, const char *comment="");
 Operation &TO_U32(GenObject &a, const char *comment="");
 Operation &TO_U64(GenObject &a, const char *comment="");

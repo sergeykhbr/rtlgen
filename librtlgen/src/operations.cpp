@@ -619,6 +619,9 @@ GenObject &CONST(const char *val, int width) {
 // SETZERO
 std::string SETZERO_gen(GenObject **args) {
     std::string ret = Operation::addspaces();
+    if (SCV_is_sysc() && args[1]->getId() == ID_CLOCK) {
+        ret += "// ";   // do not clear clock module
+    }
     ret += Operation::obj2varname(args[1], "v");
     if (SCV_is_sysc()) {
         ret += " = 0";
@@ -884,6 +887,9 @@ Operation &SETBITSW(GenObject &a, GenObject &start, GenObject &width, GenObject 
 std::string SETVAL_gen(GenObject **args) {
     std::string ret = Operation::addspaces();
     ret += Operation::obj2varname(args[1], "v") + " = ";
+    if (SCV_is_sv() && args[2]->isString()) {
+        ret += "{";
+    }
     if (args[2]->getId() == ID_CONST) {
         ret += args[2]->getStrValue();
     } else if (args[2]->getId() == ID_VALUE
@@ -896,6 +902,9 @@ std::string SETVAL_gen(GenObject **args) {
         ret += Operation::obj2varname(args[2]);
     } else {
         ret += args[2]->generate();
+    }
+    if (SCV_is_sv() && args[2]->isString()) {
+        ret += "}";
     }
     ret += ";";
     ret += Operation::addtext(args[0], ret.size());
@@ -1018,28 +1027,30 @@ Operation &ADDSTRF(GenObject &a, const char *fmt, size_t cnt, ...) {
 std::string ADDSTRU8_gen(GenObject **args) {
     std::string ret = "";
     if (SCV_is_sysc()) {
-        ret += Operation::addspaces() + "tstr[0] = static_cast<char>(";
-        ret += Operation::obj2varname(args[2], "r", true) + ".to_uint());\n";
-        ret += Operation::addspaces() + "tstr[1] = 0;\n";
+        ret += Operation::addspaces() + "int tsz = RISCV_sprintf(tstr, sizeof(tstr), \"%s\", ";
+        ret += Operation::obj2varname(args[2]) + ".c_str());\n";
+        ret += Operation::addspaces() + "tstr[tsz++] = static_cast<char>(";
+        ret += Operation::obj2varname(args[3], "r", true) + ".to_uint());\n";
+        ret += Operation::addspaces() + "tstr[tsz] = 0;\n";
         ret += Operation::addspaces() + Operation::obj2varname(args[1]);
         ret += " = tstr;\n";
     } else {
         ret += Operation::addspaces();
         ret += Operation::obj2varname(args[1]) + " = {";
-        ret += Operation::obj2varname(args[1]);
-        ret += ", ";
-        ret += Operation::obj2varname(args[2]);
+        ret += Operation::obj2varname(args[2]) + ", ";
+        ret += Operation::obj2varname(args[3]);
         ret += "};\n";
     }
     return ret;
 }
 
-Operation &ADDSTRU8(GenObject &strout, GenObject &val) {
+Operation &ADDSTRU8(GenObject &strout, GenObject &strin, GenObject &val) {
     Operation *p = new Operation("");
     p->igen_ = ADDSTRU8_gen;
     p->add_arg(p);  // 0
     p->add_arg(&strout); // 1
-    p->add_arg(&val); // 2
+    p->add_arg(&strin); // 2
+    p->add_arg(&val); // 3
     return *p;
 }
 

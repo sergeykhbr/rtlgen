@@ -412,6 +412,7 @@ std::string ModuleObject::generate_sv_mod_clock(GenObject *p) {
     Operation::set_space(Operation::get_space() + 1);
 
     ret += Operation::addspaces() + "#(0.5 * ";
+    ret += "1000000000 * ";     // timescale default 1ns/10ps
     ret += p->getStrValue() + ") ";
     ret += p->getName() + " = ~" + p->getName() + ";\n";
 

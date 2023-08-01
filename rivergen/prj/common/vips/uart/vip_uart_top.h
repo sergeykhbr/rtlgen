@@ -34,10 +34,12 @@ class vip_uart_top : public ModuleObject {
         FunctionU8ToString(GenObject *parent);
         virtual std::string getType() override { return ostr.getType(); }
         virtual void getArgsList(std::list<GenObject *> &args) {
+            args.push_back(&istr);
             args.push_back(&symb);
         }
         virtual GenObject *getpReturn() { return &ostr; }
      protected:
+        STRING istr; 
         Logic symb;
         STRING ostr;
     };
@@ -78,11 +80,13 @@ class vip_uart_top : public ModuleObject {
     Signal w_rx_rdy_clr;
     Signal w_tx_full;
     Signal wb_rdata;
-    STRING rdatastr;
+    Signal wb_rdataz;
     STRING outstr;
+    STRING outstrtmp;
     STRING outfilename;  // formatted with instnum
     FileValue fl;
     FileValue fl_tmp;
+    RegSignal initdone;
 
     vip_clk clk0;
     vip_uart_receiver rx0;

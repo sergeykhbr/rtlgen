@@ -19,13 +19,15 @@
 vip_clk::vip_clk(GenObject *parent, const char *name) :
     ModuleObject(parent, "vip_clk", name),
     period(this, "period", "1.0"),
-    half_period(this, "half_period", "DIV(period,2)"),
     pll(this, "pll", "period"),
     o_clk(this, "o_clk", "1"),
     //
     comb(this)
 {
     Operation::start(this);
+    INITIAL();
+        SETZERO(pll);
+    ENDINITIAL();
 
     Operation::start(&comb);
     proc_comb();

@@ -38,7 +38,6 @@ class vip_clk : public ModuleObject {
 
  public:
     DefParamTIMESEC period;
-    ParamTIMESEC half_period;
 
     Clock pll;
     // io:

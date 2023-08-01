@@ -34,11 +34,13 @@ vip_uart_top::vip_uart_top(GenObject *parent, const char *name) :
     w_rx_rdy_clr(this, "w_rx_rdy_clr", "1"),
     w_tx_full(this, "w_tx_full", "1"),
     wb_rdata(this, "wb_rdata", "8"),
-    rdatastr("", "rdatastr", this),
+    wb_rdataz(this, "wb_rdataz", "8"),
     outstr("", "outstr", this),
+    outstrtmp("", "outstrtmp", this),
     outfilename("", "outfilename", this, "formatted string name with instnum"),
     fl("", "fl", this),
     fl_tmp("", "fl_tmp", this),
+    initdone(this, "initdone", "2"),
     // registers
     //
     clk0(this, "clk0"),
@@ -96,47 +98,56 @@ vip_uart_top::vip_uart_top(GenObject *parent, const char *name) :
 
 vip_uart_top::FunctionU8ToString::FunctionU8ToString(GenObject *parent)
     : FunctionObject(parent, "U8ToString"),
+    istr("", "istr", this),
     symb(this, "symb", "8"),
     ostr("", "ostr", this) {
-    ADDSTRU8(ostr, symb);
+    ADDSTRU8(ostr, istr, symb);
 }
 
 void vip_uart_top::proc_comb() {
     SETVAL(w_rx_rdy_clr, w_rx_rdy);
+    SETVAL(initdone, CC2(BIT(initdone, 0), CONST("1", 1)));
+
+TEXT();
+    SYNC_RESET(*this);
 }
 
 void vip_uart_top::proc_reg() {
-    IF (NZ(w_rx_rdy));
-        IF (EQ(wb_rdata, CONST("0x0A", 8)));
-            TEXT("Use 0x0d as a new symbol in fl_tmp file:");
-            CALLF(&rdatastr, U8ToString, 1, &EOF_0x0D);
-            FWRITE(fl_tmp, rdatastr);  // end of line first
-            FWRITE(fl_tmp, outstr);
-            FFLUSH(fl_tmp);
+    IF (EZ(BIT(initdone, 1)));
+        SETSTR(outstrtmp, "");
+        CALLF(&outstrtmp, U8ToString, 2, &outstrtmp, &EOF_0x0D);
+    ENDIF();
 
-            TEXT();
+TEXT();
+    IF (NZ(w_rx_rdy));
+        IF (AND2(EQ(wb_rdata, CONST("0x0A", 8)), NE(wb_rdataz, CONST("0x0D", 8))));
+            TEXT("Create CR LF (0xd 0xa) instead of 0x0a:");
+            CALLF(&outstr, U8ToString, 2, &outstr, &EOF_0x0D);
+        ENDIF();
+        TEXT("Add symbol to string:");
+        CALLF(&outstr, U8ToString, 2, &outstr, &wb_rdata);
+        CALLF(&outstrtmp, U8ToString, 2, &outstrtmp, &wb_rdata);
+
+TEXT();
+        IF (EQ(wb_rdata, CONST("0x0A", 8)));
+            TEXT("Output simple string:");
             DISPLAYSTR(outstr);
             FWRITE(fl, outstr);
             FFLUSH(fl);
-            SETSTR(outstr, "");
-        ELSIF(EQ(wb_rdata, CONST("0x0D", 8)));
-            IF (NE(outstr, *new STRING("", "")));
-                DISPLAYSTR(outstr);
-                FWRITE(fl, outstr);
-                FFLUSH(fl);
-                SETSTR(outstr, "");
-            ENDIF();
-        ELSE();
-            TEXT("Add symbol to string");
-            CALLF(&rdatastr, U8ToString, 1, &wb_rdata);
-            INCVAL(outstr, rdatastr);
-            
-            TEXT();
-            TEXT("Output string with the line ending symbol 0x0D first:");
-            CALLF(&rdatastr, U8ToString, 1, &EOF_0x0D);
-            FWRITE(fl_tmp, rdatastr);  // end of line first
-            FWRITE(fl_tmp, outstr);
-            FFLUSH(fl_tmp);
         ENDIF();
+
+TEXT();
+        TEXT("Output string with the line ending symbol 0x0D first:");
+        FWRITE(fl_tmp, outstrtmp);
+        FFLUSH(fl_tmp);
+
+TEXT();
+        TEXT("End-of-line");
+        IF (EQ(wb_rdata, CONST("0x0A", 8)));
+            SETSTR(outstr, "");
+            SETSTR(outstrtmp, "");
+            CALLF(&outstrtmp, U8ToString, 2, &outstrtmp, &EOF_0x0D);
+        ENDIF();
+        SETVAL(wb_rdataz, wb_rdata);
     ENDIF();
 }
