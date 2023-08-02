@@ -34,11 +34,12 @@ sdctrl_regs::sdctrl_regs(GenObject *parent, const char *name) :
     w_req_write(this, "w_req_write", "1"),
     wb_req_wdata(this, "wb_req_wdata", "32"),
     // registers
+    sclk_ena(this, "sclk_ena", "1"),
     scaler(this, "scaler", "32"),
     scaler_cnt(this, "scaler_cnt", "32"),
     wdog(this, "wdog", "16"),
     wdog_cnt(this, "wdog_cnt", "16"),
-    level(this, "level", "1", "1"),
+    level(this, "level", "1"),
     resp_valid(this, "resp_valid", "1"),
     resp_rdata(this, "resp_rdata", "32"),
     resp_err(this, "resp_err", "1"),
@@ -72,12 +73,12 @@ sdctrl_regs::sdctrl_regs(GenObject *parent, const char *name) :
 
 void sdctrl_regs::proc_comb() {
     TEXT("system bus clock scaler to baudrate:");
-    IF (NZ(scaler));
-        IF (EQ(scaler_cnt, DEC(scaler)));
+    IF (NZ(sclk_ena));
+        IF (EQ(scaler_cnt, scaler));
             SETZERO(scaler_cnt);
             SETVAL(level, INV(level));
             SETVAL(comb.v_posedge, INV(level));
-            SETVAL(comb.v_negedge, (level));
+            SETVAL(comb.v_negedge, level);
         ELSE();
             SETVAL(scaler_cnt, INC(scaler_cnt));
         ENDIF();
@@ -90,6 +91,12 @@ void sdctrl_regs::proc_comb() {
         IF (AND2(NZ(w_req_valid), NZ(w_req_write)));
             SETVAL(scaler, BITS(wb_req_wdata, 30, 0));
             SETZERO(scaler_cnt);
+        ENDIF();
+        ENDCASE();
+    CASE (CONST("0x1", 10), "0x04: Global Control register");
+        SETBIT(comb.vb_rdata, 0, sclk_ena);
+        IF (AND2(NZ(w_req_valid), NZ(w_req_write)));
+            SETVAL(sclk_ena, BIT(wb_req_wdata, 0));
         ENDIF();
         ENDCASE();
     CASE (CONST("0x2", 10), "0x08: reserved (watchdog)");

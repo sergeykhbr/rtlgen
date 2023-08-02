@@ -61,6 +61,7 @@ class sdctrl_regs : public ModuleObject {
     Signal w_req_write;
     Signal wb_req_wdata;
 
+    RegSignal sclk_ena;
     RegSignal scaler;
     RegSignal scaler_cnt;
     RegSignal wdog;

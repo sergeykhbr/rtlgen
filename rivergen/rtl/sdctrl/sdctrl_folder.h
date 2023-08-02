@@ -17,25 +17,31 @@
 #pragma once
 
 #include <api.h>
+#include "sdctrl_cfg.h"
 #include "sdctrl_regs.h"
 #include "sdctrl_crc7.h"
 #include "sdctrl_crc16.h"
+#include "sdctrl_cmd_transmitter.h"
 #include "sdctrl.h"
 
 class sdctrl_folder : public FolderObject {
  public:
     sdctrl_folder(GenObject *parent) :
         FolderObject(parent, "sdctrl"),
+        sdctrl_cfg_(this),
         sdctrl_regs_file_(this),
         sdctrl_crc7_file_(this),
         sdctrl_crc16_file_(this),
+        sdctrl_cmd_transmitter_file_(this),
         sdctrl_file_(this) {}
 
  protected:
     // subfolders:
     // files
+    sdctrl_cfg sdctrl_cfg_;
     sdctrl_regs_file sdctrl_regs_file_;
     sdctrl_crc7_file sdctrl_crc7_file_;
     sdctrl_crc16_file sdctrl_crc16_file_;
+    sdctrl_cmd_transmitter_file sdctrl_cmd_transmitter_file_;
     sdctrl_file sdctrl_file_;
 };

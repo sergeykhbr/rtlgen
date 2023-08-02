@@ -59,5 +59,5 @@ TEXT();
     SYNC_RESET(*this);
 
 TEXT();
-    SETVAL(o_crc7, crc7);
+    SETVAL(o_crc7, comb.vb_crc7);
 }

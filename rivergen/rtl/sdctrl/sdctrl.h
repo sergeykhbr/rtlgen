@@ -20,8 +20,11 @@
 #include "../ambalib/types_amba.h"
 #include "../ambalib/types_pnp.h"
 #include "../ambalib/axi_slv.h"
-#include "../ambalib/apb_slv.h"
-#include "../misclib/sfifo.h"
+#include "sdctrl_cfg.h"
+#include "sdctrl_regs.h"
+#include "sdctrl_crc7.h"
+#include "sdctrl_crc16.h"
+#include "sdctrl_cmd_transmitter.h"
 
 using namespace sysvc;
 
@@ -33,39 +36,17 @@ class sdctrl : public ModuleObject {
      public:
         CombProcess(GenObject *parent) :
             ProcObject(parent, "comb"),
-            v_posedge(this, "v_posedge", "1"),
-            v_negedge(this, "v_negedge", "1"),
-            v_txfifo_re(this, "v_txfifo_re", "1"),
-            v_txfifo_we(this, "v_txfifo_we", "1"),
-            vb_txfifo_wdata(this, "vb_txfifo_wdata", "8"),
-            v_rxfifo_re(this, "v_rxfifo_re", "1"),
-            v_inv7(this, "v_inv7", "1"),
-            vb_crc7(this, "vb_crc7", "7"),
-            v_inv16(this, "v_inv16", "1"),
-            vb_crc16(this, "vb_crc16", "16"),
-            vb_rdata(this, "vb_rdata", "32"),
-            vb_shiftreg_next(this, "vb_shiftreg_next", "8") {
+            v_crc16_next(this, "v_crc16_next", "1") {
         }
 
      public:
-        Logic v_posedge;
-        Logic v_negedge;
-        Logic v_txfifo_re;
-        Logic v_txfifo_we;
-        Logic vb_txfifo_wdata;
-        Logic v_rxfifo_re;
-        Logic v_inv7;
-        Logic vb_crc7;
-        Logic v_inv16;
-        Logic vb_crc16;
-        Logic vb_rdata;
-        Logic vb_shiftreg_next;
+        Logic v_crc16_next;
     };
 
     void proc_comb();
 
  public:
-    TmplParamI32D log2_fifosz;
+    ParamI32D log2_fifosz;
     ParamI32D fifo_dbits;
     // io:
     InPort i_clk;
@@ -101,6 +82,7 @@ class sdctrl : public ModuleObject {
     ParamLogic SDSTATE_RESET;
     TextLine _initstate0_;
     ParamLogic INITSTATE_CMD0;
+    ParamLogic INITSTATE_CMD0_RESP;
     ParamLogic INITSTATE_CMD8;
     ParamLogic INITSTATE_CMD41;
     ParamLogic INITSTATE_CMD11;
@@ -108,18 +90,10 @@ class sdctrl : public ModuleObject {
     ParamLogic INITSTATE_CMD3;
     ParamLogic INITSTATE_ERROR;
     ParamLogic INITSTATE_DONE;
-    TextLine _state0_;
-    ParamLogic idle;
-    ParamLogic wait_edge;
-    ParamLogic send_data;
-    ParamLogic recv_data;
-    ParamLogic recv_sync;
-    ParamLogic ending;
 
-    Signal w_preq_valid;
-    Signal wb_preq_addr;
-    Signal w_preq_write;
-    Signal wb_preq_wdata;
+    Signal w_regs_sck_posedge;
+    Signal w_regs_sck_negedge;
+    Signal w_regs_clear_cmderr;
     Signal w_mem_req_valid;
     Signal wb_mem_req_addr;
     Signal wb_mem_req_size;
@@ -132,55 +106,43 @@ class sdctrl : public ModuleObject {
     Signal wb_mem_resp_rdata;
     Signal wb_mem_resp_err;
 
-    TextLine _rx0_;
-    Signal w_rxfifo_we;
-    Signal wb_rxfifo_wdata;
-    Signal w_rxfifo_re;
-    Signal wb_rxfifo_rdata;
-    Signal wb_rxfifo_count;
+    Signal w_cmd_req_ready;
+    Signal w_cmd_resp_valid;
+    Signal wb_cmd_resp_r1;
+    Signal wb_cmd_resp_r3r6;
+    Signal w_cmd_resp_ready;
+    Signal wb_cmdstate;
+    Signal wb_cmderr;
+    
+    Signal w_crc7_clear;
+    Signal w_crc7_next;
+    Signal w_crc7_dat;
+    Signal wb_crc7;
+    Signal w_crc16_next;
+    Signal wb_crc16_dat;
+    Signal wb_crc16;
 
-    TextLine _tx0_;
-    Signal w_txfifo_we;
-    Signal wb_txfifo_wdata;
-    Signal w_txfifo_re;
-    Signal wb_txfifo_rdata;
-    Signal wb_txfifo_count;
+    RegSignal cmd_req_ena;
+    RegSignal cmd_req_type;
+    RegSignal cmd_req_arg;
+    RegSignal cmd_req_resp;
+    RegSignal cmd_resp_r1;
+    RegSignal cmd_resp_r3r6;
 
-    RegSignal scaler;
-    RegSignal scaler_cnt;
-    RegSignal wdog;
-    RegSignal wdog_cnt;
-    RegSignal generate_crc;
-    RegSignal rx_ena;
-    RegSignal rx_synced;
-    RegSignal rx_data_block;    // wait 0xFE marker
-    RegSignal level;
-    RegSignal cs;
+    RegSignal crc16_clear;
+    RegSignal dat;
+    RegSignal dat_dir;
 
     RegSignal sdstate;
     RegSignal initstate;
-    RegSignal state;
-    RegSignal shiftreg;
-    RegSignal ena_byte_cnt;
-    RegSignal bit_cnt;
-    RegSignal tx_val;
-    RegSignal rx_val;
-    RegSignal rx_ready;
-    RegSignal crc7;
-    RegSignal crc16;
-    RegSignal spi_resp;
-    RegSignal txmark;
-    RegSignal rxmark;
-    RegSignal presp_valid;
-    RegSignal presp_rdata;
-    RegSignal presp_err;
 
     CombProcess comb;
 
-    apb_slv pslv0;
     axi_slv xslv0;
-    sfifo rxfifo;
-    sfifo txfifo;
+    sdctrl_regs regs0;
+    sdctrl_crc7 crccmd0;
+    sdctrl_crc16 crcdat0;
+    sdctrl_cmd_transmitter cmdtrx0;
 };
 
 class sdctrl_file : public FileObject {
