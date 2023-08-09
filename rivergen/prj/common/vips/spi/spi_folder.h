@@ -17,25 +17,19 @@
 #pragma once
 
 #include <api.h>
-#include "clk/clk_folder.h"
-#include "sdcard/sdcard_folder.h"
-#include "uart/uart_folder.h"
-#include "spi/spi_folder.h"
+#include "vip_spi_transmitter.h"
+#include "vip_spi_top.h"
 
-class vips_folder : public FolderObject {
+class spi_folder : public FolderObject {
   public:
-    vips_folder(GenObject *parent) :
-        FolderObject(parent, "vips"),
-        clk_folder_(this),
-        sdcard_folder_(this),
-        uart_folder_(this),
-        spi_folder_(this) {}
+    spi_folder(GenObject *parent) :
+        FolderObject(parent, "spi"),
+        vip_spi_transmitter_file_(this),
+        vip_spi_top_file_(this) {}
 
  protected:
     // subfolders:
-    clk_folder clk_folder_;
-    sdcard_folder sdcard_folder_;
-    uart_folder uart_folder_;
-    spi_folder spi_folder_;
     // files
+    vip_spi_transmitter_file vip_spi_transmitter_file_;
+    vip_spi_top_file vip_spi_top_file_;
 };
