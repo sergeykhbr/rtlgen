@@ -23,6 +23,8 @@
 
 using namespace sysvc;
 
+#define FROST3
+
 class vip_uart_top : public ModuleObject {
  public:
     vip_uart_top(GenObject *parent, const char *name);
@@ -74,18 +76,24 @@ class vip_uart_top : public ModuleObject {
     InPort i_nrst;
     InPort i_rx;
     OutPort o_tx;
+    InPort i_loopback_ena;
 
     Signal w_clk;
     Signal w_rx_rdy;
     Signal w_rx_rdy_clr;
+    Signal w_tx_we;
     Signal w_tx_full;
     Signal wb_rdata;
     Signal wb_rdataz;
     STRING outstr;
+#ifndef FROST3
     STRING outstrtmp;
+#endif
     STRING outfilename;  // formatted with instnum
     FileValue fl;
+#ifndef FROST3
     FileValue fl_tmp;
+#endif
     RegSignal initdone;
 
     vip_clk clk0;

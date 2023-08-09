@@ -32,11 +32,13 @@ class vip_spi_top : public ModuleObject {
      public:
         CombProcess(GenObject *parent) :
             ProcObject(parent, "comb"),
-            rdata(this, "rdata" ,"32") {
+            rdata(this, "rdata" ,"32"),
+            vb_gpio_in(this, "vb_gpio_in", "16") {
         }
 
      public:
         Logic rdata;
+        Logic vb_gpio_in;
     };
 
     void proc_comb();
@@ -52,6 +54,8 @@ class vip_spi_top : public ModuleObject {
     InPort i_sclk;
     InPort i_mosi;
     OutPort o_miso;
+    OutPort o_vip_uart_loopback_ena;
+    IoPort io_vip_gpio;
 
     Signal w_clk;
     Signal w_req_valid;
@@ -66,6 +70,12 @@ class vip_spi_top : public ModuleObject {
     RegSignal resp_valid;
     RegSignal resp_rdata;
     RegSignal scratch0;
+    RegSignal scratch1;
+    RegSignal scratch2;
+    RegSignal uart_loopback;
+    RegSignal gpio_in;
+    RegSignal gpio_out;
+    RegSignal gpio_dir;
 
     vip_clk clk0;
     vip_spi_transmitter tx0;

@@ -87,7 +87,7 @@ TEXT();
 
         CASE(data);
             IF (EQ(bitpos, CONST("7", 4)));
-                SETVAL(state, stopbit);
+                SETVAL(state, idle, "No dummy bit at the end");
                 SETVAL(shiftreg, ALLONES());
             ELSE();
                 SETVAL(shiftreg, CC2(CONST("1", 1), BITS(shiftreg, 8, 1)));

@@ -215,6 +215,7 @@ void CALLF(GenObject *ret, GenObject &a, size_t argcnt, ...);
 // write string into file
 void FOPEN(GenObject &f, GenObject &str);
 void FWRITE(GenObject &f, GenObject &str);
+void FWRITECHAR(GenObject &f, GenObject &str);
 void FFLUSH(GenObject &f);
 void READMEMH(GenObject &fname, GenObject &mem);
 void DISPLAYSTR(GenObject &str);

@@ -3105,6 +3105,31 @@ void FWRITE(GenObject &f, GenObject &str) {
     p->add_arg(&str);
 }
 
+// FWRITE
+std::string FWRITECHAR_gen(GenObject **args) {
+    std::string ret = Operation::addspaces();
+    if (SCV_is_sysc()) {
+        ret += "fwrite(";
+        ret += Operation::obj2varname(args[2]) + "to_uint(), 1, 1, ";
+        ret += Operation::obj2varname(args[1]);
+    } else {
+        ret += "$fwrite(";
+        ret += Operation::obj2varname(args[1]);
+        ret += ", \"%c\", ";
+        ret += Operation::obj2varname(args[2]);
+    }
+    ret += ");\n";
+    return ret;
+}
+
+void FWRITECHAR(GenObject &f, GenObject &str) {
+    Operation *p = new Operation("");
+    p->igen_ = FWRITECHAR_gen;
+    p->add_arg(p);
+    p->add_arg(&f);
+    p->add_arg(&str);
+}
+
 // FFLUSH
 std::string FFLUSH_gen(GenObject **args) {
     std::string ret = Operation::addspaces();

@@ -27,6 +27,8 @@ vip_spi_top::vip_spi_top(GenObject *parent, const char *name) :
     i_sclk(this, "i_sclk", "1"),
     i_mosi(this, "i_mosi", "1"),
     o_miso(this, "o_miso", "1"),
+    o_vip_uart_loopback_ena(this, "o_vip_uart_loopback_ena", "1"),
+    io_vip_gpio(this, "io_vip_gpio", "16"),
     // params
     // signals
     w_clk(this, "w_clk", "1"),
@@ -42,6 +44,12 @@ vip_spi_top::vip_spi_top(GenObject *parent, const char *name) :
     resp_valid(this, "resp_valid", "1"),
     resp_rdata(this, "resp_rdata", "32"),
     scratch0(this, "scratch0", "32"),
+    scratch1(this, "scratch1", "32"),
+    scratch2(this, "scratch2", "32"),
+    uart_loopback(this, "uart_loopback", "32"),
+    gpio_in(this, "gpio_in", "16"),
+    gpio_out(this, "gpio_out", "16"),
+    gpio_dir(this, "gpio_dir", "16"),
     //
     clk0(this, "clk0"),
     tx0(this, "tx0"),
@@ -98,6 +106,27 @@ TEXT();
             SETVAL(scratch0, wb_req_wdata);
         ENDIF();
         ENDCASE();
+    CASE (CONST("0x2", 6), "[0x08] scratch1");
+        SETVAL(comb.rdata, scratch0);
+        IF (AND2(NZ(w_req_valid), NZ(w_req_write)));
+            SETVAL(scratch1, wb_req_wdata);
+        ENDIF();
+        ENDCASE();
+    CASE (CONST("0x3", 6), "[0x0C] scratch2");
+        SETVAL(comb.rdata, scratch0);
+        IF (AND2(NZ(w_req_valid), NZ(w_req_write)));
+            SETVAL(scratch2, wb_req_wdata);
+        ENDIF();
+        ENDCASE();
+    CASE (CONST("0x4", 6), "[0x10] uart control");
+        SETBIT(comb.rdata, 0, uart_loopback);
+        IF (AND2(NZ(w_req_valid), NZ(w_req_write)));
+            SETVAL(uart_loopback, BIT(wb_req_wdata, 0));
+        ENDIF();
+        ENDCASE();
+    CASE (CONST("0x5", 6), "[0x15] gpio in");
+        SETBITS(comb.rdata, 15, 0, comb.vb_gpio_in);
+        ENDCASE();
     CASEDEF();
         ENDCASE();
     ENDSWITCH();
@@ -110,4 +139,5 @@ TEXT();
     SETONE(w_req_ready);
     SETVAL(w_resp_valid, resp_valid);
     SETVAL(wb_resp_rdata, resp_rdata);
+    SETVAL(o_vip_uart_loopback_ena, uart_loopback);
 }

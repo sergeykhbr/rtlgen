@@ -108,7 +108,7 @@ TEXT();
             ENDIF();
         ENDIF();
         IF (EQ(sample, scaler_max));
-            SETVAL(state, dummy);
+            SETVAL(state, startbit, "dummy bit disabled");
             SETZERO(sample);
         ELSE();
             SETVAL(sample, INC(sample));
