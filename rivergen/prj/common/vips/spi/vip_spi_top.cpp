@@ -40,14 +40,14 @@ vip_spi_top::vip_spi_top(GenObject *parent, const char *name) :
     w_resp_valid(this, "w_resp_valid", "1"),
     wb_resp_rdata(this, "wb_resp_rdata", "32"),
     w_resp_ready(this, "w_resp_ready", "1"),
+    wb_gpio_in(this, "wb_gpio_in", "16"),
     // registers
     resp_valid(this, "resp_valid", "1"),
     resp_rdata(this, "resp_rdata", "32"),
     scratch0(this, "scratch0", "32"),
     scratch1(this, "scratch1", "32"),
     scratch2(this, "scratch2", "32"),
-    uart_loopback(this, "uart_loopback", "32"),
-    gpio_in(this, "gpio_in", "16"),
+    uart_loopback(this, "uart_loopback", "1"),
     gpio_out(this, "gpio_out", "16"),
     gpio_dir(this, "gpio_dir", "16"),
     //
@@ -107,13 +107,13 @@ TEXT();
         ENDIF();
         ENDCASE();
     CASE (CONST("0x2", 6), "[0x08] scratch1");
-        SETVAL(comb.rdata, scratch0);
+        SETVAL(comb.rdata, scratch1);
         IF (AND2(NZ(w_req_valid), NZ(w_req_write)));
             SETVAL(scratch1, wb_req_wdata);
         ENDIF();
         ENDCASE();
     CASE (CONST("0x3", 6), "[0x0C] scratch2");
-        SETVAL(comb.rdata, scratch0);
+        SETVAL(comb.rdata, scratch2);
         IF (AND2(NZ(w_req_valid), NZ(w_req_write)));
             SETVAL(scratch2, wb_req_wdata);
         ENDIF();
@@ -124,8 +124,17 @@ TEXT();
             SETVAL(uart_loopback, BIT(wb_req_wdata, 0));
         ENDIF();
         ENDCASE();
-    CASE (CONST("0x5", 6), "[0x15] gpio in");
-        SETBITS(comb.rdata, 15, 0, comb.vb_gpio_in);
+    CASE (CONST("0x5", 6), "[0x14] gpio in");
+        SETBITS(comb.rdata, 15, 0, wb_gpio_in);
+        IF (AND2(NZ(w_req_valid), NZ(w_req_write)));
+            SETVAL(gpio_out, BITS(wb_req_wdata, 15, 0));
+        ENDIF();
+        ENDCASE();
+    CASE (CONST("0x6", 6), "[0x18] gpio direction");
+        SETBITS(comb.rdata, 15, 0, gpio_dir);
+        IF (AND2(NZ(w_req_valid), NZ(w_req_write)));
+            SETVAL(gpio_dir, BITS(wb_req_wdata, 15, 0));
+        ENDIF();
         ENDCASE();
     CASEDEF();
         ENDCASE();
