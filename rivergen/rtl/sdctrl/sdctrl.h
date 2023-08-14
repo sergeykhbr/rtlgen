@@ -94,6 +94,7 @@ class sdctrl : public ModuleObject {
     Signal w_regs_sck_posedge;
     Signal w_regs_sck_negedge;
     Signal w_regs_clear_cmderr;
+    Signal wb_regs_watchdog;
     Signal w_mem_req_valid;
     Signal wb_mem_req_addr;
     Signal wb_mem_req_size;
@@ -108,8 +109,10 @@ class sdctrl : public ModuleObject {
 
     Signal w_cmd_req_ready;
     Signal w_cmd_resp_valid;
-    Signal wb_cmd_resp_r1;
-    Signal wb_cmd_resp_r3r6;
+    Signal wb_cmd_resp_cmd;
+    Signal wb_cmd_resp_reg;
+    Signal wb_cmd_resp_crc7_rx;
+    Signal wb_cmd_resp_crc7_calc;
     Signal w_cmd_resp_ready;
     Signal wb_cmdstate;
     Signal wb_cmderr;
@@ -123,11 +126,11 @@ class sdctrl : public ModuleObject {
     Signal wb_crc16;
 
     RegSignal cmd_req_ena;
-    RegSignal cmd_req_type;
+    RegSignal cmd_req_cmd;
     RegSignal cmd_req_arg;
-    RegSignal cmd_req_resp;
-    RegSignal cmd_resp_r1;
-    RegSignal cmd_resp_r3r6;
+    RegSignal cmd_req_rn;
+    RegSignal cmd_resp_cmd;
+    RegSignal cmd_resp_reg;
 
     RegSignal crc16_clear;
     RegSignal dat;

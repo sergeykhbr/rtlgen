@@ -65,6 +65,7 @@ sdctrl::sdctrl(GenObject *parent, const char *name) :
     w_regs_sck_posedge(this, "w_regs_sck_posedge", "1"),
     w_regs_sck_negedge(this, "w_regs_sck", "1"),
     w_regs_clear_cmderr(this, "w_regs_clear_cmderr", "1"),
+    wb_regs_watchdog(this, "wb_regs_watchdog", "16"),
     w_mem_req_valid(this, "w_mem_req_valid", "1"),
     wb_mem_req_addr(this, "wb_mem_req_addr", "CFG_SYSBUS_ADDR_BITS"),
     wb_mem_req_size(this, "wb_mem_req_size", "8"),
@@ -78,8 +79,10 @@ sdctrl::sdctrl(GenObject *parent, const char *name) :
     wb_mem_resp_err(this, "wb_mem_resp_err", "1"),
     w_cmd_req_ready(this, "w_cmd_req_ready", "1"),
     w_cmd_resp_valid(this, "w_cmd_resp_valid", "1"),
-    wb_cmd_resp_r1(this, "wb_cmd_resp_r1", "8"),
-    wb_cmd_resp_r3r6(this, "wb_cmd_resp_r3r6", "32"),
+    wb_cmd_resp_cmd(this, "wb_cmd_resp_cmd", "6"),
+    wb_cmd_resp_reg(this, "wb_cmd_resp_reg", "32"),
+    wb_cmd_resp_crc7_rx(this, "wb_cmd_resp_crc7_rx", "7"),
+    wb_cmd_resp_crc7_calc(this, "wb_cmd_resp_crc7_calc", "7"),
     w_cmd_resp_ready(this, "w_cmd_resp_ready", "1"),
     wb_cmdstate(this, "wb_cmdstate", "4"),
     wb_cmderr(this, "wb_cmderr", "4"),
@@ -92,11 +95,11 @@ sdctrl::sdctrl(GenObject *parent, const char *name) :
     wb_crc16(this, "wb_crc16", "16"),
     // registers
     cmd_req_ena(this, "cmd_req_ena", "1"),
-    cmd_req_type(this, "cmd_req_type", "6"),
+    cmd_req_cmd(this, "cmd_req_cmd", "6"),
     cmd_req_arg(this, "cmd_req_arg", "32"),
-    cmd_req_resp(this, "cmd_req_resp", "3"),
-    cmd_resp_r1(this, "cmd_resp_r1", "8"),
-    cmd_resp_r3r6(this, "cmd_resp_r3r6", "32"),
+    cmd_req_rn(this, "cmd_req_rn", "3"),
+    cmd_resp_cmd(this, "cmd_resp_r1", "6"),
+    cmd_resp_reg(this, "cmd_resp_reg", "32"),
     crc16_clear(this, "crc16_clear", "1", "1"),
     dat(this, "dat", "4", "-1"),
     dat_dir(this, "dat_dir", "1", "DIR_INPUT"),
@@ -144,6 +147,17 @@ sdctrl::sdctrl(GenObject *parent, const char *name) :
         CONNECT(regs0, 0, regs0.o_sck, o_sclk);
         CONNECT(regs0, 0, regs0.o_sck_posedge, w_regs_sck_posedge);
         CONNECT(regs0, 0, regs0.o_sck_negedge, w_regs_sck_negedge);
+        CONNECT(regs0, 0, regs0.o_watchdog, wb_regs_watchdog);
+        CONNECT(regs0, 0, regs0.o_clear_cmderr, w_regs_clear_cmderr);
+        CONNECT(regs0, 0, regs0.i_cmd_state, wb_cmdstate);
+        CONNECT(regs0, 0, regs0.i_cmd_err, wb_cmderr);
+        CONNECT(regs0, 0, regs0.i_cmd_req_valid, cmd_req_ena);
+        CONNECT(regs0, 0, regs0.i_cmd_req_cmd, cmd_req_cmd);
+        CONNECT(regs0, 0, regs0.i_cmd_resp_valid, w_cmd_resp_valid);
+        CONNECT(regs0, 0, regs0.i_cmd_resp_cmd, wb_cmd_resp_cmd);
+        CONNECT(regs0, 0, regs0.i_cmd_resp_reg, wb_cmd_resp_reg);
+        CONNECT(regs0, 0, regs0.i_cmd_resp_crc7_rx, wb_cmd_resp_crc7_rx);
+        CONNECT(regs0, 0, regs0.i_cmd_resp_crc7_calc, wb_cmd_resp_crc7_calc);
     ENDNEW();
 
     NEW(crccmd0, crccmd0.getName().c_str());
@@ -172,18 +186,21 @@ sdctrl::sdctrl(GenObject *parent, const char *name) :
         CONNECT(cmdtrx0, 0, cmdtrx0.i_cmd, i_cmd);
         CONNECT(cmdtrx0, 0, cmdtrx0.o_cmd, o_cmd);
         CONNECT(cmdtrx0, 0, cmdtrx0.o_cmd_dir, o_cmd_dir);
+        CONNECT(cmdtrx0, 0, cmdtrx0.i_watchdog, wb_regs_watchdog);
         CONNECT(cmdtrx0, 0, cmdtrx0.i_req_valid, cmd_req_ena);
-        CONNECT(cmdtrx0, 0, cmdtrx0.i_req_type, cmd_req_type);
+        CONNECT(cmdtrx0, 0, cmdtrx0.i_req_cmd, cmd_req_cmd);
         CONNECT(cmdtrx0, 0, cmdtrx0.i_req_arg, cmd_req_arg);
-        CONNECT(cmdtrx0, 0, cmdtrx0.i_req_resp, cmd_req_resp);
+        CONNECT(cmdtrx0, 0, cmdtrx0.i_req_rn, cmd_req_rn);
         CONNECT(cmdtrx0, 0, cmdtrx0.o_req_ready, w_cmd_req_ready);
         CONNECT(cmdtrx0, 0, cmdtrx0.i_crc7, wb_crc7);
         CONNECT(cmdtrx0, 0, cmdtrx0.o_crc7_clear, w_crc7_clear);
         CONNECT(cmdtrx0, 0, cmdtrx0.o_crc7_next, w_crc7_next);
         CONNECT(cmdtrx0, 0, cmdtrx0.o_crc7_dat, w_crc7_dat);
         CONNECT(cmdtrx0, 0, cmdtrx0.o_resp_valid, w_cmd_resp_valid);
-        CONNECT(cmdtrx0, 0, cmdtrx0.o_resp_r1, wb_cmd_resp_r1);
-        CONNECT(cmdtrx0, 0, cmdtrx0.o_resp_r3r6, wb_cmd_resp_r3r6);
+        CONNECT(cmdtrx0, 0, cmdtrx0.o_resp_cmd, wb_cmd_resp_cmd);
+        CONNECT(cmdtrx0, 0, cmdtrx0.o_resp_reg, wb_cmd_resp_reg);
+        CONNECT(cmdtrx0, 0, cmdtrx0.o_resp_crc7_rx, wb_cmd_resp_crc7_rx);
+        CONNECT(cmdtrx0, 0, cmdtrx0.o_resp_crc7_calc, wb_cmd_resp_crc7_calc);
         CONNECT(cmdtrx0, 0, cmdtrx0.i_resp_ready, w_cmd_resp_ready);
         CONNECT(cmdtrx0, 0, cmdtrx0.i_clear_cmderr, w_regs_clear_cmderr);
         CONNECT(cmdtrx0, 0, cmdtrx0.o_cmdstate, wb_cmdstate);
@@ -202,15 +219,15 @@ TEXT();
         SWITCH (initstate);
         CASE (INITSTATE_CMD0);
             SETONE(cmd_req_ena);
-            SETVAL(cmd_req_type, sdctrl_cfg_->CMD0);
+            SETVAL(cmd_req_cmd, sdctrl_cfg_->CMD0);
             SETVAL(cmd_req_arg, CONST("0", 32));
-            SETVAL(cmd_req_resp, sdctrl_cfg_->R1);
+            SETVAL(cmd_req_rn, sdctrl_cfg_->R1);
             SETVAL(initstate, INC(initstate));
             ENDCASE();
         CASE (INITSTATE_CMD0_RESP);
             IF (NZ(w_cmd_resp_valid));
-                SETVAL(cmd_resp_r1, wb_cmd_resp_r1);
-                SETVAL(cmd_resp_r3r6, wb_cmd_resp_r3r6);
+                SETVAL(cmd_resp_cmd, wb_cmd_resp_cmd);
+                SETVAL(cmd_resp_reg, wb_cmd_resp_reg);
                 SETVAL(initstate, INC(initstate));
             ENDIF();
             ENDCASE();

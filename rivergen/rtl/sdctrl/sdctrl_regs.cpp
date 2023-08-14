@@ -27,6 +27,18 @@ sdctrl_regs::sdctrl_regs(GenObject *parent, const char *name) :
     o_sck(this, "o_sck", "1", "SD-card clock usually upto 50 MHz"),
     o_sck_posedge(this, "o_sck_posedge", "1", "Strob just before positive edge"),
     o_sck_negedge(this, "o_sck_negedge", "1", "Strob just before negative edge"),
+    o_watchdog(this, "o_watchdog", "16", "Number of sclk to detect no response"),
+    o_clear_cmderr(this, "o_clear_cmderr", "1", "Clear cmderr from FW"),
+    _cmd0_(this, "Debug command state machine"),
+    i_cmd_state(this, "i_cmd_state", "4"),
+    i_cmd_err(this, "i_cmd_err", "4"),
+    i_cmd_req_valid(this, "i_cmd_req_valid", "1"),
+    i_cmd_req_cmd(this, "i_cmd_req_cmd", "6"),
+    i_cmd_resp_valid(this, "i_cmd_resp_valid", "1"),
+    i_cmd_resp_cmd(this, "i_cmd_resp_cmd", "6"),
+    i_cmd_resp_reg(this, "i_cmd_resp_reg", "32"),
+    i_cmd_resp_crc7_rx(this, "i_cmd_resp_crc7_rx", "7"),
+    i_cmd_resp_crc7_calc(this, "i_cmd_resp_crc7_calc", "7"),
     // params
     // signals
     w_req_valid(this, "w_req_valid", "1"),
@@ -35,14 +47,20 @@ sdctrl_regs::sdctrl_regs(GenObject *parent, const char *name) :
     wb_req_wdata(this, "wb_req_wdata", "32"),
     // registers
     sclk_ena(this, "sclk_ena", "1"),
+    clear_cmderr(this, "clear_cmderr", "1"),
     scaler(this, "scaler", "32"),
     scaler_cnt(this, "scaler_cnt", "32"),
-    wdog(this, "wdog", "16"),
+    wdog(this, "wdog", "16", "0x0FFF"),
     wdog_cnt(this, "wdog_cnt", "16"),
     level(this, "level", "1"),
     resp_valid(this, "resp_valid", "1"),
     resp_rdata(this, "resp_rdata", "32"),
     resp_err(this, "resp_err", "1"),
+    last_req_cmd(this, "last_req_cmd", "6", "-1"),
+    last_resp_cmd(this, "last_resp_cmd", "6"),
+    last_resp_crc7_rx(this, "last_resp_crc7_rx", "7"),
+    last_resp_crc7_calc(this, "last_resp_crc7_calc", "7"),
+    last_resp_reg(this, "last_resp_reg", "32"),
     //
     comb(this),
     pslv0(this, "pslv0")
@@ -72,6 +90,18 @@ sdctrl_regs::sdctrl_regs(GenObject *parent, const char *name) :
 }
 
 void sdctrl_regs::proc_comb() {
+    SETZERO(clear_cmderr);
+    IF (NZ(i_cmd_req_valid));
+        SETVAL(last_req_cmd, i_cmd_req_cmd);
+    ENDIF();
+    IF (NZ(i_cmd_resp_valid));
+        SETVAL(last_resp_cmd, i_cmd_resp_cmd);
+        SETVAL(last_resp_crc7_rx, i_cmd_resp_crc7_rx);
+        SETVAL(last_resp_crc7_calc, i_cmd_resp_crc7_calc);
+        SETVAL(last_resp_reg, i_cmd_resp_reg);
+    ENDIF();
+
+TEXT();
     TEXT("system bus clock scaler to baudrate:");
     IF (NZ(sclk_ena));
         IF (EQ(scaler_cnt, scaler));
@@ -86,24 +116,38 @@ void sdctrl_regs::proc_comb() {
 
     TEXT("Registers access:");
     SWITCH (BITS(wb_req_addr, 11, 2));
-    CASE (CONST("0x0", 10), "0x00: sckdiv");
+    CASE (CONST("0x0", 10), "{0x00, 'RW', 'sckdiv', 'Clock Divivder'}");
         SETVAL(comb.vb_rdata, scaler);
         IF (AND2(NZ(w_req_valid), NZ(w_req_write)));
             SETVAL(scaler, BITS(wb_req_wdata, 30, 0));
             SETZERO(scaler_cnt);
         ENDIF();
         ENDCASE();
-    CASE (CONST("0x1", 10), "0x04: Global Control register");
+    CASE (CONST("0x1", 10), "{0x04, 'RW', 'control', 'Global Control register'}");
         SETBIT(comb.vb_rdata, 0, sclk_ena);
         IF (AND2(NZ(w_req_valid), NZ(w_req_write)));
             SETVAL(sclk_ena, BIT(wb_req_wdata, 0));
+            SETVAL(clear_cmderr, BIT(wb_req_wdata, 1));
         ENDIF();
         ENDCASE();
-    CASE (CONST("0x2", 10), "0x08: reserved (watchdog)");
+    CASE (CONST("0x2", 10), "{0x08, 'RW', 'watchdog', 'Watchdog'}");
         SETBITS(comb.vb_rdata, 15, 0, wdog);
         IF (AND2(NZ(w_req_valid), NZ(w_req_write)));
             SETVAL(wdog, BITS(wb_req_wdata, 15, 0));
         ENDIF();
+        ENDCASE();
+    CASE (CONST("0x4", 10), "{0x10, 'RO', 'cmd_status', 'CMD state machine status'}");
+        SETBITS(comb.vb_rdata, 3, 0, i_cmd_err);
+        SETBITS(comb.vb_rdata, 7, 4, i_cmd_state);
+        ENDCASE();
+    CASE (CONST("0x5", 10), "{0x14, 'RO', 'last_cmd_response', 'Last CMD response data'}");
+        SETBITS(comb.vb_rdata, 5, 0, last_req_cmd);
+        SETBITS(comb.vb_rdata, 13, 8, last_resp_cmd);
+        SETBITS(comb.vb_rdata, 22, 16, last_resp_crc7_rx);
+        SETBITS(comb.vb_rdata, 30, 24, last_resp_crc7_calc);
+        ENDCASE();
+    CASE (CONST("0x6", 10), "{0x18, 'RO', 'last_cmd_resp_arg'}");
+        SETVAL(comb.vb_rdata, last_resp_reg);
         ENDCASE();
     CASE (CONST("0x11", 10), "0x44: reserved 4 (txctrl)");
         ENDCASE();
@@ -132,4 +176,6 @@ TEXT();
     SETVAL(o_sck, level);
     SETVAL(o_sck_posedge, comb.v_posedge);
     SETVAL(o_sck_negedge, comb.v_negedge);
+    SETVAL(o_watchdog, wdog);
+    SETVAL(o_clear_cmderr, clear_cmderr);
 }

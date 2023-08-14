@@ -55,6 +55,18 @@ class sdctrl_regs : public ModuleObject {
     OutPort o_sck;
     OutPort o_sck_posedge;
     OutPort o_sck_negedge;
+    OutPort o_watchdog;
+    OutPort o_clear_cmderr;
+    TextLine _cmd0_;
+    InPort i_cmd_state;
+    InPort i_cmd_err;
+    InPort i_cmd_req_valid;
+    InPort i_cmd_req_cmd;
+    InPort i_cmd_resp_valid;
+    InPort i_cmd_resp_cmd;
+    InPort i_cmd_resp_reg;
+    InPort i_cmd_resp_crc7_rx;
+    InPort i_cmd_resp_crc7_calc;
     
     Signal w_req_valid;
     Signal wb_req_addr;
@@ -62,15 +74,20 @@ class sdctrl_regs : public ModuleObject {
     Signal wb_req_wdata;
 
     RegSignal sclk_ena;
+    RegSignal clear_cmderr;
     RegSignal scaler;
     RegSignal scaler_cnt;
     RegSignal wdog;
     RegSignal wdog_cnt;
     RegSignal level;
-
     RegSignal resp_valid;
     RegSignal resp_rdata;
     RegSignal resp_err;
+    RegSignal last_req_cmd;
+    RegSignal last_resp_cmd;
+    RegSignal last_resp_crc7_rx;
+    RegSignal last_resp_crc7_calc;
+    RegSignal last_resp_reg;
 
     CombProcess comb;
 

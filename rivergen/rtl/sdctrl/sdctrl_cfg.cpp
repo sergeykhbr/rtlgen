@@ -26,13 +26,16 @@ sdctrl_cfg::sdctrl_cfg(GenObject *parent) :
     _cmd2_(this, ""),
     R1(this, "3", "R1", "1"),
     R2(this, "3", "R2", "2"),
+    R3(this, "3", "R3", "3"),
+    R6(this, "3", "R6", "6"),
     _cmd3_(this, ""),
     DIR_OUTPUT(this, "1", "DIR_OUTPUT", "0"),
     DIR_INPUT(this, "1", "DIR_INPUT", "1"),
     _err0_(this, ""),
     CMDERR_NONE(this, "4", "CMDERR_NONE", "0"),
     CMDERR_NO_RESPONSE(this, "4", "CMDERR_NO_RESPONSE", "1"),
-    CMDERR_WRONG_RESPONSE(this, "4", "CMDERR_WRONG_RESPONSE", "2"),
+    CMDERR_WRONG_RESP_STARTBIT(this, "4", "CMDERR_WRONG_RESP_STARTBIT", "2"),
+    CMDERR_WRONG_RESP_STOPBIT(this, "4", "CMDERR_WRONG_RESP_STOPBIT", "3"),
 
     _n_(this)
 {

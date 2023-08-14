@@ -31,13 +31,16 @@ class sdctrl_cfg : public FileObject {
     TextLine _cmd2_;
     ParamLogic R1;
     ParamLogic R2;
+    ParamLogic R3;
+    ParamLogic R6;
     TextLine _cmd3_;
     ParamLogic DIR_OUTPUT;
     ParamLogic DIR_INPUT;
     TextLine _err0_;
     ParamLogic CMDERR_NONE;
     ParamLogic CMDERR_NO_RESPONSE;
-    ParamLogic CMDERR_WRONG_RESPONSE;
+    ParamLogic CMDERR_WRONG_RESP_STARTBIT;
+    ParamLogic CMDERR_WRONG_RESP_STOPBIT;
     TextLine _n_;
 };
 

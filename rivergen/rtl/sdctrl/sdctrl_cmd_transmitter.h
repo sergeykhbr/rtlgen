@@ -54,18 +54,21 @@ class sdctrl_cmd_transmitter : public ModuleObject {
     InPort i_cmd;           // CMD IO Command/Resonse; Data output in SPI mode
     OutPort o_cmd;
     OutPort o_cmd_dir;
+    InPort i_watchdog;
     InPort i_req_valid;
-    InPort i_req_type;
+    InPort i_req_cmd;
     InPort i_req_arg;
-    InPort i_req_resp;
+    InPort i_req_rn;
     OutPort o_req_ready;
     InPort i_crc7;
     OutPort o_crc7_clear;
     OutPort o_crc7_next;
     OutPort o_crc7_dat;
     OutPort o_resp_valid;
-    OutPort o_resp_r1;
-    OutPort o_resp_r3r6;
+    OutPort o_resp_cmd;
+    OutPort o_resp_reg;
+    OutPort o_resp_crc7_rx;
+    OutPort o_resp_crc7_calc;
     InPort i_resp_ready;
     InPort i_clear_cmderr;
     OutPort o_cmdstate;
@@ -78,20 +81,30 @@ class sdctrl_cmd_transmitter : public ModuleObject {
     ParamLogic CMDSTATE_REQ_STOPBIT;
     ParamLogic CMDSTATE_RESP_WAIT;
     ParamLogic CMDSTATE_RESP_TRANSBIT;
-    ParamLogic CMDSTATE_RESP_CONTENT;
+    ParamLogic CMDSTATE_RESP_CMD_MIRROR;
+    ParamLogic CMDSTATE_RESP_R1;
+    ParamLogic CMDSTATE_RESP_REG;
+    ParamLogic CMDSTATE_RESP_CID_CSD;
     ParamLogic CMDSTATE_RESP_CRC7;
     ParamLogic CMDSTATE_RESP_STOPBIT;
 
-    RegSignal cmd_req_type;
-    RegSignal cmd_req_resp;
-    RegSignal cmd_resp_ena;
-    RegSignal cmd_resp_arg;
+    RegSignal req_cmd;
+    RegSignal req_rn;
+    RegSignal resp_valid;
+    RegSignal resp_cmd;
+    RegSignal resp_reg;
 
     RegSignal cmdshift;
+    RegSignal cmdmirror;
+    RegSignal regshift;
+    RegSignal cidshift;
+    RegSignal crc_calc;
+    RegSignal crc_rx;
     RegSignal cmdbitcnt;
     RegSignal crc7_clear;
     RegSignal cmdstate;
     RegSignal cmderr;
+    RegSignal watchdog;
 
     CombProcess comb;
 };
