@@ -41,5 +41,7 @@ void iobuf_tech::proc_comb() {
         SETVAL(comb.v_o, CONST("0", 1));
         SETVAL(comb.v_io, i);
     ENDIF();
+    SETVAL(o, comb.v_o);
+    SETVAL(io, comb.v_io);
 }
 

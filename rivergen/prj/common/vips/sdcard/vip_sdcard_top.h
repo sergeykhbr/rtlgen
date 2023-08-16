@@ -17,6 +17,7 @@
 #pragma once
 
 #include <api.h>
+#include "../../../../rtl/techmap/bufg/iobuf_tech.h"
 
 using namespace sysvc;
 
@@ -24,13 +25,17 @@ class vip_sdcard_top : public ModuleObject {
  public:
     vip_sdcard_top(GenObject *parent, const char *name);
 
+    virtual GenObject *getClockPort() override { return &i_sclk; }
+
     class CombProcess : public ProcObject {
      public:
         CombProcess(GenObject *parent) :
-            ProcObject(parent, "comb") {
+            ProcObject(parent, "comb"),
+            vb_cmd_txshift(this, "vb_cmd_txshift", "48") {
         }
 
      public:
+        Logic vb_cmd_txshift;
     };
 
     void proc_comb();
@@ -45,11 +50,27 @@ class vip_sdcard_top : public ModuleObject {
     IoPort io_cd_dat3;       // CD/DAT3 IO CardDetect/Data Line 3; CS output in SPI mode
 
     // param
-
+    TextLine _cmdstate0_;
+    ParamLogic CMDSTATE_IDLE;
+    ParamLogic CMDSTATE_REQ_ARG;
+    ParamLogic CMDSTATE_REQ_CRC7;
+    ParamLogic CMDSTATE_WAIT_RESP;
+    ParamLogic CMDSTATE_RESP;
+    // signals
     Signal w_clk;
     Signal wb_rdata;
+    Signal w_cmd_in;
+    Signal w_cmd_out;
+
+    RegSignal cmd_dir;
+    RegSignal cmd_rxshift;
+    RegSignal cmd_txshift;
+    RegSignal cmd_state;
+    RegSignal bitcnt;
 
     CombProcess comb;
+
+    iobuf_tech iobufcmd0;
 };
 
 class vip_sdcard_top_file : public FileObject {
