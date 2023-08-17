@@ -545,7 +545,7 @@ std::string ModuleObject::generate_sysc_sensitivity(std::string prefix,
     if (obj->getId() == ID_STRUCT_DEF
         || obj->getId() == ID_MODULE_INST
         || obj->getId() == ID_PROCESS
-        || obj->isOutput()) {
+        || (obj->isOutput() && !obj->isInput())) {
         return ret;
     }
     if (obj->getId() == ID_ARRAY_DEF) {
@@ -578,7 +578,6 @@ std::string ModuleObject::generate_sysc_sensitivity(std::string prefix,
             name = "n" + prefix + name;
         }
     }
-
     if (obj->isInput() && obj->getName() != "i_clk") {
         ret += Operation::addspaces();
         if (obj->isVector() || obj->getItem()->getId() == ID_VECTOR) {

@@ -34,14 +34,12 @@ iobuf_tech::iobuf_tech(GenObject *parent, const char *name) :
 void iobuf_tech::proc_comb() {
     IF (NZ(t));
         TEXT("IO as input:");
-        SETVAL(comb.v_o, io);
-        SETVAL(comb.v_io, CONST("0", 1), "assign Z-state here");
+        SETVAL(o, io);
+        SETZ(io);
     ELSE();
         TEXT("IO as output:");
-        SETVAL(comb.v_o, CONST("0", 1));
-        SETVAL(comb.v_io, i);
+        SETVAL(o, CONST("0", 1));
+        SETVAL(io, i);
     ENDIF();
-    SETVAL(o, comb.v_o);
-    SETVAL(io, comb.v_io);
 }
 

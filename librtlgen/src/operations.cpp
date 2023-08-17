@@ -921,6 +921,30 @@ Operation &SETVAL(GenObject &a, GenObject &b, const char *comment) {
     return *p;
 }
 
+// SETZ
+std::string SETZ_gen(GenObject **args) {
+    std::string ret = Operation::addspaces();
+
+    if (SCV_is_sysc()) {
+        // No systemc assigning Z    
+        ret += "// ";
+    }
+    ret += Operation::obj2varname(args[1], "v");
+    ret += " = 1'bz;";
+    ret += Operation::addtext(args[0], ret.size());
+    ret += "\n";
+    return ret;
+}
+
+Operation &SETZ(GenObject &a, const char *comment) {
+    Operation *p = new Operation(comment);
+    p->igen_ = SETZ_gen;
+    p->add_arg(p);
+    p->add_arg(&a);
+    return *p;
+}
+
+
 // SETSTR
 Operation &SETSTR(GenObject &a, const char *str, const char *comment) {
     Operation *p = new Operation(comment);

@@ -28,14 +28,10 @@ class iobuf_tech : public ModuleObject {
     class CombProcess : public ProcObject {
      public:
         CombProcess(GenObject *parent) :
-            ProcObject(parent, "comb"),
-            v_io(this, "v_io", "1"),
-            v_o(this, "v_o", "1") {
+            ProcObject(parent, "comb") {
         }
 
      public:
-        Logic v_io;
-        Logic v_o;
     };
 
     void proc_comb();

@@ -42,6 +42,7 @@ class vip_sdcard_top : public ModuleObject {
 
  public:
     // io:
+    InPort i_nrst;           // to avoid xxx after start
     InPort i_sclk;
     IoPort io_cmd;           // CMD IO Command/Resonse; Data output in SPI mode
     IoPort io_dat0;          // Data0 IO; Data input in SPI mode
@@ -54,6 +55,7 @@ class vip_sdcard_top : public ModuleObject {
     ParamLogic CMDSTATE_IDLE;
     ParamLogic CMDSTATE_REQ_ARG;
     ParamLogic CMDSTATE_REQ_CRC7;
+    ParamLogic CMDSTATE_REQ_STOPBIT;
     ParamLogic CMDSTATE_WAIT_RESP;
     ParamLogic CMDSTATE_RESP;
     // signals

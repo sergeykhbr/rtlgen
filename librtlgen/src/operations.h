@@ -113,6 +113,7 @@ Operation &SETBITS(GenObject &a, GenObject &h, GenObject &l, GenObject &val, con
 Operation &SETBITS(GenObject &a, int h, int l, GenObject &val, const char *comment="");
 Operation &SETBITSW(GenObject &a, GenObject &start, GenObject &width, GenObject &val, const char *comment="");
 Operation &SETVAL(GenObject &a, GenObject &b, const char *comment="");
+Operation &SETZ(GenObject &a, const char *comment="");
 Operation &SETSTR(GenObject &a, const char *str, const char *comment="");
 Operation &SETSTRF(GenObject &a, const char *fmt, size_t cnt, ...);
 Operation &ADDSTRF(GenObject &a, const char *fmt, size_t cnt, ...);
