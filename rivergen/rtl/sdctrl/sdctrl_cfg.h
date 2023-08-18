@@ -28,6 +28,7 @@ class sdctrl_cfg : public FileObject {
     TextLine _cmd0_;
     TextLine _cmd1_;
     ParamLogic CMD0;
+    ParamLogic CMD8;
     TextLine _cmd2_;
     ParamLogic R1;
     ParamLogic R2;

@@ -79,15 +79,23 @@ class sdctrl : public ModuleObject {
     InPort i_protect;
     
     TextLine _sdstate0_;
-    ParamLogic SDSTATE_RESET;
+    ParamLogic SDSTATE_IDLE;
+    ParamLogic SDSTATE_READY;
+    ParamLogic SDSTATE_IDENT;
+    ParamLogic SDSTATE_STBY;
+    ParamLogic SDSTATE_TRAN;
+    ParamLogic SDSTATE_DATA;
+    ParamLogic SDSTATE_RCV;
+    ParamLogic SDSTATE_PRG;
+    ParamLogic SDSTATE_DIS;
     TextLine _initstate0_;
     ParamLogic INITSTATE_CMD0;
-    ParamLogic INITSTATE_CMD0_RESP;
     ParamLogic INITSTATE_CMD8;
-    ParamLogic INITSTATE_CMD41;
+    ParamLogic INITSTATE_ACMD41;
     ParamLogic INITSTATE_CMD11;
     ParamLogic INITSTATE_CMD2;
     ParamLogic INITSTATE_CMD3;
+    ParamLogic INITSTATE_WAIT_RESP;
     ParamLogic INITSTATE_ERROR;
     ParamLogic INITSTATE_DONE;
 
@@ -95,6 +103,10 @@ class sdctrl : public ModuleObject {
     Signal w_regs_sck_negedge;
     Signal w_regs_clear_cmderr;
     Signal wb_regs_watchdog;
+    Signal w_regs_pcie_12V_support;
+    Signal w_regs_pcie_available;
+    Signal wb_regs_voltage_supply;
+    Signal wb_regs_check_pattern;
     Signal w_mem_req_valid;
     Signal wb_mem_req_addr;
     Signal wb_mem_req_size;
@@ -138,6 +150,7 @@ class sdctrl : public ModuleObject {
 
     RegSignal sdstate;
     RegSignal initstate;
+    RegSignal initstate_next;
 
     CombProcess comb;
 

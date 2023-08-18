@@ -29,6 +29,11 @@ sdctrl_regs::sdctrl_regs(GenObject *parent, const char *name) :
     o_sck_negedge(this, "o_sck_negedge", "1", "Strob just before negative edge"),
     o_watchdog(this, "o_watchdog", "16", "Number of sclk to detect no response"),
     o_clear_cmderr(this, "o_clear_cmderr", "1", "Clear cmderr from FW"),
+    _cfg0_(this, "Configuration parameters:"),
+    o_pcie_12V_support(this, "o_pcie_12V_support", "1", "0b: not asking 1.2V support"),
+    o_pcie_available(this, "o_pcie_available", "1", "0b: not asking PCIe availability"),
+    o_voltage_supply(this, "o_voltage_supply", "4", "0=not defined; 1=2.7-3.6V; 2=reserved for Low Voltage Range"),
+    o_check_pattern(this, "o_check_pattern", "8", "Check pattern in CMD8 request"),
     _cmd0_(this, "Debug command state machine"),
     i_cmd_state(this, "i_cmd_state", "4"),
     i_cmd_err(this, "i_cmd_err", "4"),
@@ -61,6 +66,10 @@ sdctrl_regs::sdctrl_regs(GenObject *parent, const char *name) :
     last_resp_crc7_rx(this, "last_resp_crc7_rx", "7"),
     last_resp_crc7_calc(this, "last_resp_crc7_calc", "7"),
     last_resp_reg(this, "last_resp_reg", "32"),
+    pcie_12V_support(this, "pcie_12V_support", "1", "00"),
+    pcie_available(this, "pcie_available", "1", "0"),
+    voltage_supply(this, "voltage_supply", "4", "0x1"),
+    check_pattern(this, "check_pattern", "8", "0x55"),
     //
     comb(this),
     pslv0(this, "pslv0")
@@ -149,6 +158,18 @@ TEXT();
     CASE (CONST("0x6", 10), "{0x18, 'RO', 'last_cmd_resp_arg'}");
         SETVAL(comb.vb_rdata, last_resp_reg);
         ENDCASE();
+    CASE (CONST("0x8", 10), "{0x20, 'RW', 'interface_condition', 'CMD8 parameters'}");
+        SETBITS(comb.vb_rdata, 7, 0, check_pattern);
+        SETBITS(comb.vb_rdata, 11, 8, voltage_supply);
+        SETBIT(comb.vb_rdata, 12, pcie_available);
+        SETBIT(comb.vb_rdata, 13, pcie_12V_support);
+        IF (AND2(NZ(w_req_valid), NZ(w_req_write)));
+            SETVAL(check_pattern, BITS(wb_req_wdata, 7, 0));
+            SETVAL(voltage_supply, BITS(wb_req_wdata, 11, 8));
+            SETVAL(pcie_available, BIT(wb_req_wdata, 12));
+            SETVAL(pcie_12V_support, BIT(wb_req_wdata, 13));
+        ENDIF();
+        ENDCASE();
     CASE (CONST("0x11", 10), "0x44: reserved 4 (txctrl)");
         ENDCASE();
     CASE (CONST("0x12", 10), "0x48: Tx FIFO Data");
@@ -171,6 +192,12 @@ TEXT();
 
 TEXT();
     SYNC_RESET(*this);
+
+TEXT();
+    SETVAL(o_pcie_12V_support, pcie_12V_support);
+    SETVAL(o_pcie_available, pcie_available);
+    SETVAL(o_voltage_supply, voltage_supply);
+    SETVAL(o_check_pattern, check_pattern);
 
 TEXT();
     SETVAL(o_sck, level);

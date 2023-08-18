@@ -49,16 +49,24 @@ sdctrl::sdctrl(GenObject *parent, const char *name) :
     i_detected(this, "i_detected", "1"),
     i_protect(this, "i_protect", "1"),
     // params
-    _sdstate0_(this, "SD-card global state:"),
-    SDSTATE_RESET(this, "2", "SDSTATE_RESET", "0"),
+    _sdstate0_(this, "SD-card states see Card Status[12:9] CURRENT_STATE on page 145:"),
+    SDSTATE_IDLE(this, "4", "SDSTATE_IDLE", "0"),
+    SDSTATE_READY(this, "4", "SDSTATE_READY", "1"),
+    SDSTATE_IDENT(this, "4", "SDSTATE_IDENT", "2"),
+    SDSTATE_STBY(this, "4", "SDSTATE_STBY", "3"),
+    SDSTATE_TRAN(this, "4", "SDSTATE_TRAN", "4"),
+    SDSTATE_DATA(this, "4", "SDSTATE_DATA", "5"),
+    SDSTATE_RCV(this, "4", "SDSTATE_RCV", "6"),
+    SDSTATE_PRG(this, "4", "SDSTATE_PRG", "7"),
+    SDSTATE_DIS(this, "4", "SDSTATE_DIS", "8"),
     _initstate0_(this, "SD-card initalization state:"),
     INITSTATE_CMD0(this, "4", "INITSTATE_CMD0", "0"),
-    INITSTATE_CMD0_RESP(this, "4", "INITSTATE_CMD0_RESP", "1"),
-    INITSTATE_CMD8(this, "4", "INITSTATE_CMD8", "2"),
-    INITSTATE_CMD41(this, "4", "INITSTATE_CMD41", "3"),
-    INITSTATE_CMD11(this, "4", "INITSTATE_CMD11", "4"),
-    INITSTATE_CMD2(this, "4", "INITSTATE_CMD2", "5"),
-    INITSTATE_CMD3(this, "4", "INITSTATE_CMD3", "6"),
+    INITSTATE_CMD8(this, "4", "INITSTATE_CMD8", "1"),
+    INITSTATE_ACMD41(this, "4", "INITSTATE_ACMD41", "2"),
+    INITSTATE_CMD11(this, "4", "INITSTATE_CMD11", "3"),
+    INITSTATE_CMD2(this, "4", "INITSTATE_CMD2", "4"),
+    INITSTATE_CMD3(this, "4", "INITSTATE_CMD3", "5"),
+    INITSTATE_WAIT_RESP(this, "4", "INITSTATE_WAIT_RESP", "6"),
     INITSTATE_ERROR(this, "4", "INITSTATE_ERROR", "7"),
     INITSTATE_DONE(this, "4", "INITSTATE_DONE", "8"),
     // signals
@@ -66,6 +74,10 @@ sdctrl::sdctrl(GenObject *parent, const char *name) :
     w_regs_sck_negedge(this, "w_regs_sck", "1"),
     w_regs_clear_cmderr(this, "w_regs_clear_cmderr", "1"),
     wb_regs_watchdog(this, "wb_regs_watchdog", "16"),
+    w_regs_pcie_12V_support(this, "w_regs_pcie_12V_support", "1"),
+    w_regs_pcie_available(this, "w_regs_pcie_available", "1"),
+    wb_regs_voltage_supply(this, "wb_regs_voltage_supply", "4"),
+    wb_regs_check_pattern(this, "wb_regs_check_pattern", "8"),
     w_mem_req_valid(this, "w_mem_req_valid", "1"),
     wb_mem_req_addr(this, "wb_mem_req_addr", "CFG_SYSBUS_ADDR_BITS"),
     wb_mem_req_size(this, "wb_mem_req_size", "8"),
@@ -103,8 +115,9 @@ sdctrl::sdctrl(GenObject *parent, const char *name) :
     crc16_clear(this, "crc16_clear", "1", "1"),
     dat(this, "dat", "4", "-1"),
     dat_dir(this, "dat_dir", "1", "DIR_INPUT"),
-    sdstate(this, "sdstate", "2", "SDSTATE_RESET"),
+    sdstate(this, "sdstate", "4", "SDSTATE_IDLE"),
     initstate(this, "initstate", "4", "INITSTATE_CMD0"),
+    initstate_next(this, "initstate_next", "4", "INITSTATE_CMD0"),
     //
     comb(this),
     xslv0(this, "xslv0"),
@@ -149,6 +162,10 @@ sdctrl::sdctrl(GenObject *parent, const char *name) :
         CONNECT(regs0, 0, regs0.o_sck_negedge, w_regs_sck_negedge);
         CONNECT(regs0, 0, regs0.o_watchdog, wb_regs_watchdog);
         CONNECT(regs0, 0, regs0.o_clear_cmderr, w_regs_clear_cmderr);
+        CONNECT(regs0, 0, regs0.o_pcie_12V_support, w_regs_pcie_12V_support);
+        CONNECT(regs0, 0, regs0.o_pcie_available, w_regs_pcie_available);
+        CONNECT(regs0, 0, regs0.o_voltage_supply, wb_regs_voltage_supply);
+        CONNECT(regs0, 0, regs0.o_check_pattern, wb_regs_check_pattern);
         CONNECT(regs0, 0, regs0.i_cmd_state, wb_cmdstate);
         CONNECT(regs0, 0, regs0.i_cmd_err, wb_cmderr);
         CONNECT(regs0, 0, regs0.i_cmd_req_valid, cmd_req_ena);
@@ -215,31 +232,53 @@ void sdctrl::proc_comb() {
 TEXT();
     TEXT("SD-card global state:");
     SWITCH (sdstate);
-    CASE (SDSTATE_RESET);
+    CASE (SDSTATE_IDLE);
         SWITCH (initstate);
         CASE (INITSTATE_CMD0);
             SETONE(cmd_req_ena);
             SETVAL(cmd_req_cmd, sdctrl_cfg_->CMD0);
             SETVAL(cmd_req_arg, CONST("0", 32));
             SETVAL(cmd_req_rn, sdctrl_cfg_->R1);
-            SETVAL(initstate, INC(initstate));
-            ENDCASE();
-        CASE (INITSTATE_CMD0_RESP);
-            IF (NZ(w_cmd_resp_valid));
-                SETVAL(cmd_resp_cmd, wb_cmd_resp_cmd);
-                SETVAL(cmd_resp_reg, wb_cmd_resp_reg);
-                SETVAL(initstate, INC(initstate));
-            ENDIF();
+            SETVAL(initstate, INITSTATE_WAIT_RESP);
+            SETVAL(initstate_next, INITSTATE_CMD8);
             ENDCASE();
         CASE (INITSTATE_CMD8);
+            TEXT("See page 113. 4.3.13 Send Interface Condition Command");
+            TEXT("  [39:22] reserved 00000h");
+            TEXT("  [21]    PCIe 1.2V support 0");
+            TEXT("  [20]    PCIe availability 0");
+            TEXT("  [19:16] Voltage Supply (VHS) 0001b: 2.7-3.6V");
+            TEXT("  [15:8]  Check Pattern 55h");
+            SETONE(cmd_req_ena);
+            SETVAL(cmd_req_cmd, sdctrl_cfg_->CMD8);
+            SETVAL(cmd_req_arg, CCx(5, &CONST("0", 18),
+                                       &w_regs_pcie_12V_support,
+                                       &w_regs_pcie_available,
+                                       &wb_regs_voltage_supply,
+                                       &wb_regs_check_pattern));
+            SETVAL(cmd_req_rn, sdctrl_cfg_->R1);
+            IF (EQ(wb_cmderr, sdctrl_cfg_->CMDERR_NONE));
+                TEXT("See page 143. 4.10.1 Card Status response on CMD0");
+                SETVAL(initstate, INITSTATE_WAIT_RESP);
+                SETVAL(initstate_next, INITSTATE_ACMD41);
+            ELSE ();
+                SETVAL(initstate, INITSTATE_ERROR);
+            ENDIF();
             ENDCASE();
-        CASE (INITSTATE_CMD41);
+        CASE (INITSTATE_ACMD41);
             ENDCASE();
         CASE (INITSTATE_CMD11);
             ENDCASE();
         CASE (INITSTATE_CMD2);
             ENDCASE();
         CASE (INITSTATE_CMD3);
+            ENDCASE();
+        CASE (INITSTATE_WAIT_RESP);
+            IF (NZ(w_cmd_resp_valid));
+                SETVAL(cmd_resp_cmd, wb_cmd_resp_cmd);
+                SETVAL(cmd_resp_reg, wb_cmd_resp_reg);
+                SETVAL(initstate, initstate_next);
+            ENDIF();
             ENDCASE();
         CASE (INITSTATE_ERROR);
             ENDCASE();

@@ -57,6 +57,11 @@ class sdctrl_regs : public ModuleObject {
     OutPort o_sck_negedge;
     OutPort o_watchdog;
     OutPort o_clear_cmderr;
+    TextLine _cfg0_;
+    OutPort o_pcie_12V_support;
+    OutPort o_pcie_available;
+    OutPort o_voltage_supply;
+    OutPort o_check_pattern;
     TextLine _cmd0_;
     InPort i_cmd_state;
     InPort i_cmd_err;
@@ -88,6 +93,10 @@ class sdctrl_regs : public ModuleObject {
     RegSignal last_resp_crc7_rx;
     RegSignal last_resp_crc7_calc;
     RegSignal last_resp_reg;
+    RegSignal pcie_12V_support;
+    RegSignal pcie_available;
+    RegSignal voltage_supply;
+    RegSignal check_pattern;
 
     CombProcess comb;
 
