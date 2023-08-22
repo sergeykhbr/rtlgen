@@ -79,6 +79,7 @@ class sdctrl : public ModuleObject {
     InPort i_protect;
     
     TextLine _sdstate0_;
+    ParamLogic SDSTATE_PRE_INIT;
     ParamLogic SDSTATE_IDLE;
     ParamLogic SDSTATE_READY;
     ParamLogic SDSTATE_IDENT;
@@ -137,6 +138,7 @@ class sdctrl : public ModuleObject {
     Signal wb_crc16_dat;
     Signal wb_crc16;
 
+    RegSignal clkcnt;
     RegSignal cmd_req_ena;
     RegSignal cmd_req_cmd;
     RegSignal cmd_req_arg;

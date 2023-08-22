@@ -1,5 +1,5 @@
 // 
-//  Copyright 2022 Sergey Khabarov, sergeykhbr@gmail.com
+//  Copyright 2023 Sergey Khabarov, sergeykhbr@gmail.com
 // 
 //  Licensed under the Apache License, Version 2.0 (the "License");
 //  you may not use this file except in compliance with the License.
@@ -14,10 +14,10 @@
 //  limitations under the License.
 // 
 
-#include "sdctrl_crc7.h"
+#include "vip_sdcard_crc7.h"
 
-sdctrl_crc7::sdctrl_crc7(GenObject *parent, const char *name) :
-    ModuleObject(parent, "sdctrl_crc7", name),
+vip_sdcard_crc7::vip_sdcard_crc7(GenObject *parent, const char *name) :
+    ModuleObject(parent, "vip_sdcard_crc7", name),
     i_clk(this, "i_clk", "1", "CPU clock"),
     i_nrst(this, "i_nrst", "1", "Reset: active LOW"),
     i_clear(this, "i_clear", "1", "Clear CRC register;"),
@@ -37,8 +37,8 @@ sdctrl_crc7::sdctrl_crc7(GenObject *parent, const char *name) :
     proc_comb();
 }
 
-void sdctrl_crc7::proc_comb() {
-    TEXT("CRC7 = x^7 + x^3 + 1 (page 116)");
+void vip_sdcard_crc7::proc_comb() {
+    TEXT("CRC7 = x^7 + x^3 + 1");
     TEXT("CMD0 -> 01 000000 0000..000000000000000000000000 1001010 1 -> 0x4A (0x95)");
     TEXT("CMD17-> 01 010001 0000..000000000000000000000000 0101010 1 -> 0x2A (0x55)");
     TEXT("CMD17<- 00 010001 0000..000000000010010000000000 0110011 1 -> 0x33 (0x67)");

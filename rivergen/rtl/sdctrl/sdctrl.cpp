@@ -50,15 +50,16 @@ sdctrl::sdctrl(GenObject *parent, const char *name) :
     i_protect(this, "i_protect", "1"),
     // params
     _sdstate0_(this, "SD-card states see Card Status[12:9] CURRENT_STATE on page 145:"),
-    SDSTATE_IDLE(this, "4", "SDSTATE_IDLE", "0"),
-    SDSTATE_READY(this, "4", "SDSTATE_READY", "1"),
-    SDSTATE_IDENT(this, "4", "SDSTATE_IDENT", "2"),
-    SDSTATE_STBY(this, "4", "SDSTATE_STBY", "3"),
-    SDSTATE_TRAN(this, "4", "SDSTATE_TRAN", "4"),
-    SDSTATE_DATA(this, "4", "SDSTATE_DATA", "5"),
-    SDSTATE_RCV(this, "4", "SDSTATE_RCV", "6"),
-    SDSTATE_PRG(this, "4", "SDSTATE_PRG", "7"),
-    SDSTATE_DIS(this, "4", "SDSTATE_DIS", "8"),
+    SDSTATE_PRE_INIT(this, "4", "SDSTATE_PRE_INIT", "0"),
+    SDSTATE_IDLE(this, "4", "SDSTATE_IDLE", "1"),
+    SDSTATE_READY(this, "4", "SDSTATE_READY", "2"),
+    SDSTATE_IDENT(this, "4", "SDSTATE_IDENT", "3"),
+    SDSTATE_STBY(this, "4", "SDSTATE_STBY", "4"),
+    SDSTATE_TRAN(this, "4", "SDSTATE_TRAN", "5"),
+    SDSTATE_DATA(this, "4", "SDSTATE_DATA", "6"),
+    SDSTATE_RCV(this, "4", "SDSTATE_RCV", "7"),
+    SDSTATE_PRG(this, "4", "SDSTATE_PRG", "8"),
+    SDSTATE_DIS(this, "4", "SDSTATE_DIS", "9"),
     _initstate0_(this, "SD-card initalization state:"),
     INITSTATE_CMD0(this, "4", "INITSTATE_CMD0", "0"),
     INITSTATE_CMD8(this, "4", "INITSTATE_CMD8", "1"),
@@ -106,6 +107,7 @@ sdctrl::sdctrl(GenObject *parent, const char *name) :
     wb_crc16_dat(this, "wb_crc16_dat", "4"),
     wb_crc16(this, "wb_crc16", "16"),
     // registers
+    clkcnt(this, "clkcnt", "7"),
     cmd_req_ena(this, "cmd_req_ena", "1"),
     cmd_req_cmd(this, "cmd_req_cmd", "6"),
     cmd_req_arg(this, "cmd_req_arg", "32"),
@@ -115,7 +117,7 @@ sdctrl::sdctrl(GenObject *parent, const char *name) :
     crc16_clear(this, "crc16_clear", "1", "1"),
     dat(this, "dat", "4", "-1"),
     dat_dir(this, "dat_dir", "1", "DIR_INPUT"),
-    sdstate(this, "sdstate", "4", "SDSTATE_IDLE"),
+    sdstate(this, "sdstate", "4", "SDSTATE_PRE_INIT"),
     initstate(this, "initstate", "4", "INITSTATE_CMD0"),
     initstate_next(this, "initstate_next", "4", "INITSTATE_CMD0"),
     //
@@ -232,6 +234,18 @@ void sdctrl::proc_comb() {
 TEXT();
     TEXT("SD-card global state:");
     SWITCH (sdstate);
+    CASE (SDSTATE_PRE_INIT);
+        TEXT("Page 222, Fig.4-96 State Diagram (Pre-Init mode)");
+        TEXT("1. No commands were sent to the card after POW (except CMD0):");
+        TEXT("    CMD line held High for at least 1 ms, then SDCLK supplied");
+        TEXT("    at least 74 clocks with keeping CMD line High");
+        IF (NZ(w_regs_sck_posedge));
+            SETVAL(clkcnt, INC(clkcnt));
+        ENDIF();
+        IF (GE(clkcnt, CONST("75", 7)));
+            SETVAL(sdstate, SDSTATE_IDLE);
+        ENDIF();
+        ENDCASE();
     CASE (SDSTATE_IDLE);
         SWITCH (initstate);
         CASE (INITSTATE_CMD0);
