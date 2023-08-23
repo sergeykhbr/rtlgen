@@ -50,26 +50,28 @@ sdctrl::sdctrl(GenObject *parent, const char *name) :
     i_protect(this, "i_protect", "1"),
     // params
     _sdstate0_(this, "SD-card states see Card Status[12:9] CURRENT_STATE on page 145:"),
-    SDSTATE_PRE_INIT(this, "4", "SDSTATE_PRE_INIT", "0"),
-    SDSTATE_IDLE(this, "4", "SDSTATE_IDLE", "1"),
-    SDSTATE_READY(this, "4", "SDSTATE_READY", "2"),
-    SDSTATE_IDENT(this, "4", "SDSTATE_IDENT", "3"),
-    SDSTATE_STBY(this, "4", "SDSTATE_STBY", "4"),
-    SDSTATE_TRAN(this, "4", "SDSTATE_TRAN", "5"),
-    SDSTATE_DATA(this, "4", "SDSTATE_DATA", "6"),
-    SDSTATE_RCV(this, "4", "SDSTATE_RCV", "7"),
-    SDSTATE_PRG(this, "4", "SDSTATE_PRG", "8"),
-    SDSTATE_DIS(this, "4", "SDSTATE_DIS", "9"),
+    SDSTATE_PRE_INIT(this, "4", "SDSTATE_PRE_INIT", "0xF"),
+    SDSTATE_IDLE(this, "4", "SDSTATE_IDLE", "0"),
+    SDSTATE_READY(this, "4", "SDSTATE_READY", "1"),
+    SDSTATE_IDENT(this, "4", "SDSTATE_IDENT", "2"),
+    SDSTATE_STBY(this, "4", "SDSTATE_STBY", "3"),
+    SDSTATE_TRAN(this, "4", "SDSTATE_TRAN", "4"),
+    SDSTATE_DATA(this, "4", "SDSTATE_DATA", "5"),
+    SDSTATE_RCV(this, "4", "SDSTATE_RCV", "6"),
+    SDSTATE_PRG(this, "4", "SDSTATE_PRG", "7"),
+    SDSTATE_DIS(this, "4", "SDSTATE_DIS", "8"),
     _initstate0_(this, "SD-card initalization state:"),
     INITSTATE_CMD0(this, "4", "INITSTATE_CMD0", "0"),
     INITSTATE_CMD8(this, "4", "INITSTATE_CMD8", "1"),
-    INITSTATE_ACMD41(this, "4", "INITSTATE_ACMD41", "2"),
-    INITSTATE_CMD11(this, "4", "INITSTATE_CMD11", "3"),
-    INITSTATE_CMD2(this, "4", "INITSTATE_CMD2", "4"),
-    INITSTATE_CMD3(this, "4", "INITSTATE_CMD3", "5"),
-    INITSTATE_WAIT_RESP(this, "4", "INITSTATE_WAIT_RESP", "6"),
-    INITSTATE_ERROR(this, "4", "INITSTATE_ERROR", "7"),
-    INITSTATE_DONE(this, "4", "INITSTATE_DONE", "8"),
+    INITSTATE_CMD55_ACMD41(this, "4", "INITSTATE_CMD55_ACMD41", "2"),
+    INITSTATE_ACMD41(this, "4", "INITSTATE_ACMD41", "3"),
+    INITSTATE_CARD_IDENTIFICATION(this, "4", "INITSTATE_CARD_IDENTIFICATION", "4"),
+    INITSTATE_CMD11(this, "4", "INITSTATE_CMD11", "5"),
+    INITSTATE_CMD2(this, "4", "INITSTATE_CMD2", "6"),
+    INITSTATE_CMD3(this, "4", "INITSTATE_CMD3", "7"),
+    INITSTATE_WAIT_RESP(this, "4", "INITSTATE_WAIT_RESP", "8"),
+    INITSTATE_ERROR(this, "4", "INITSTATE_ERROR", "9"),
+    INITSTATE_DONE(this, "4", "INITSTATE_DONE", "10"),
     // signals
     w_regs_sck_posedge(this, "w_regs_sck_posedge", "1"),
     w_regs_sck_negedge(this, "w_regs_sck", "1"),
@@ -99,6 +101,7 @@ sdctrl::sdctrl(GenObject *parent, const char *name) :
     w_cmd_resp_ready(this, "w_cmd_resp_ready", "1"),
     wb_cmdstate(this, "wb_cmdstate", "4"),
     wb_cmderr(this, "wb_cmderr", "4"),
+    w_clear_cmderr(this, "w_clear_cmderr", "1"),
     w_crc7_clear(this, "w_crc7_clear", "1"),
     w_crc7_next(this, "w_crc7_next", "1"),
     w_crc7_dat(this, "w_crc7_dat", "1"),
@@ -120,6 +123,9 @@ sdctrl::sdctrl(GenObject *parent, const char *name) :
     sdstate(this, "sdstate", "4", "SDSTATE_PRE_INIT"),
     initstate(this, "initstate", "4", "INITSTATE_CMD0"),
     initstate_next(this, "initstate_next", "4", "INITSTATE_CMD0"),
+    sdtype(this, "sdtype", "3", "SDCARD_UNKNOWN"),
+    ident_done(this, "ident_done", "1"),
+    hcs(this, "hcs", "1", "1"),
     //
     comb(this),
     xslv0(this, "xslv0"),
@@ -221,7 +227,7 @@ sdctrl::sdctrl(GenObject *parent, const char *name) :
         CONNECT(cmdtrx0, 0, cmdtrx0.o_resp_crc7_rx, wb_cmd_resp_crc7_rx);
         CONNECT(cmdtrx0, 0, cmdtrx0.o_resp_crc7_calc, wb_cmd_resp_crc7_calc);
         CONNECT(cmdtrx0, 0, cmdtrx0.i_resp_ready, w_cmd_resp_ready);
-        CONNECT(cmdtrx0, 0, cmdtrx0.i_clear_cmderr, w_regs_clear_cmderr);
+        CONNECT(cmdtrx0, 0, cmdtrx0.i_clear_cmderr, w_clear_cmderr);
         CONNECT(cmdtrx0, 0, cmdtrx0.o_cmdstate, wb_cmdstate);
         CONNECT(cmdtrx0, 0, cmdtrx0.o_cmderr, wb_cmderr);
     ENDNEW();
@@ -249,6 +255,10 @@ TEXT();
     CASE (SDSTATE_IDLE);
         SWITCH (initstate);
         CASE (INITSTATE_CMD0);
+            TEXT("Start identification at 400 kHz:");
+            SETVAL(sdtype, sdctrl_cfg_->SDCARD_UNKNOWN);
+            SETONE(hcs);
+            SETZERO(ident_done);
             SETONE(cmd_req_ena);
             SETVAL(cmd_req_cmd, sdctrl_cfg_->CMD0);
             SETVAL(cmd_req_arg, CONST("0", 32));
@@ -270,16 +280,66 @@ TEXT();
                                        &w_regs_pcie_available,
                                        &wb_regs_voltage_supply,
                                        &wb_regs_check_pattern));
-            SETVAL(cmd_req_rn, sdctrl_cfg_->R1);
+            SETVAL(cmd_req_rn, sdctrl_cfg_->R7);
             IF (EQ(wb_cmderr, sdctrl_cfg_->CMDERR_NONE));
                 TEXT("See page 143. 4.10.1 Card Status response on CMD0");
                 SETVAL(initstate, INITSTATE_WAIT_RESP);
-                SETVAL(initstate_next, INITSTATE_ACMD41);
+                SETVAL(initstate_next, INITSTATE_CMD55_ACMD41);
             ELSE ();
                 SETVAL(initstate, INITSTATE_ERROR);
             ENDIF();
             ENDCASE();
+        CASE (INITSTATE_CMD55_ACMD41);
+            TEXT("Page 64: APP_CMD (CMD55) shall always precede ACMD41.");
+            TEXT("  [31:16] RCA (should be set 0)");
+            TEXT("  [15:0] stuff bits");
+            SETONE(cmd_req_ena);
+            SETVAL(cmd_req_cmd, sdctrl_cfg_->CMD55);
+            SETZERO(cmd_req_arg);
+            SETVAL(cmd_req_rn, sdctrl_cfg_->R1);
+            IF (EQ(wb_cmderr, sdctrl_cfg_->CMDERR_NONE));
+                TEXT("SD-card Ver2.00 or later with valid voltage settings");
+                SETVAL(initstate, INITSTATE_WAIT_RESP);
+                SETVAL(initstate_next, INITSTATE_ACMD41);
+                SETVAL(sdtype, sdctrl_cfg_->SDCARD_VER2X_HC);
+            ELSIF(EQ(wb_cmderr, sdctrl_cfg_->CMDERR_NO_RESPONSE));
+                TEXT("SD-card Ver2.00 with invalid voltage settings or Ver1.X or not SD-card");
+                SETVAL(initstate, INITSTATE_WAIT_RESP);
+                SETVAL(initstate_next, INITSTATE_ACMD41);
+                SETZERO(hcs, "Standard Capacity only");
+                SETVAL(sdtype, sdctrl_cfg_->SDCARD_VER1X);
+            ELSE();
+                TEXT("Unusable card");
+                SETVAL(initstate, INITSTATE_ERROR);
+                SETVAL(sdtype, sdctrl_cfg_->SDCARD_UNUSABLE);
+            ENDIF();
+            ENDCASE();
         CASE (INITSTATE_ACMD41);
+            TEXT("Page 131: SD_SEND_OP_COND. SD state:");
+            TEXT("    idle => ready  on success");
+            TEXT("    idle => idle   is busy");
+            TEXT("    idle => ina    on OCR check failt. Inactive State (query mode)");
+            TEXT("  [31] reserved bit");
+            TEXT("  [30] HCS (high capacity support)");
+            TEXT("  [29] reserved for eSD");
+            TEXT("  [28] XPC (maximum power in default speed)");
+            TEXT("  [27:25] reserved bits");
+            TEXT("  [24] S18R Send request to switch to 1.8V");
+            TEXT("  [23:20] VDD voltage window (OCR[23:0])");
+            SETONE(cmd_req_ena);
+            SETVAL(cmd_req_cmd, sdctrl_cfg_->CMD55);
+            SETZERO(cmd_req_arg);
+            SETVAL(cmd_req_rn, sdctrl_cfg_->R3);
+            IF (EQ(wb_cmderr, sdctrl_cfg_->CMDERR_NONE));
+                TEXT("CMD55 response");
+                SETVAL(initstate, INITSTATE_ERROR);
+                SETVAL(sdtype, sdctrl_cfg_->SDCARD_UNUSABLE);
+            ELSE();
+                SETVAL(initstate, INITSTATE_WAIT_RESP);
+                SETVAL(initstate_next, INITSTATE_CARD_IDENTIFICATION);
+            ENDIF();
+            ENDCASE();
+        CASE (INITSTATE_CARD_IDENTIFICATION);
             ENDCASE();
         CASE (INITSTATE_CMD11);
             ENDCASE();
@@ -335,5 +395,5 @@ TEXT();
     SETONE(w_mem_resp_valid);
     SETVAL(wb_mem_resp_rdata, ALLONES());
     SETZERO(wb_mem_resp_err);
-
+    SETVAL(w_clear_cmderr, w_regs_clear_cmderr);
 }

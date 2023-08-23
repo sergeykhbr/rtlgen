@@ -92,7 +92,9 @@ class sdctrl : public ModuleObject {
     TextLine _initstate0_;
     ParamLogic INITSTATE_CMD0;
     ParamLogic INITSTATE_CMD8;
+    ParamLogic INITSTATE_CMD55_ACMD41;
     ParamLogic INITSTATE_ACMD41;
+    ParamLogic INITSTATE_CARD_IDENTIFICATION;
     ParamLogic INITSTATE_CMD11;
     ParamLogic INITSTATE_CMD2;
     ParamLogic INITSTATE_CMD3;
@@ -129,6 +131,7 @@ class sdctrl : public ModuleObject {
     Signal w_cmd_resp_ready;
     Signal wb_cmdstate;
     Signal wb_cmderr;
+    Signal w_clear_cmderr;
     
     Signal w_crc7_clear;
     Signal w_crc7_next;
@@ -153,6 +156,9 @@ class sdctrl : public ModuleObject {
     RegSignal sdstate;
     RegSignal initstate;
     RegSignal initstate_next;
+    RegSignal sdtype;
+    RegSignal ident_done;
+    RegSignal hcs;
 
     CombProcess comb;
 
