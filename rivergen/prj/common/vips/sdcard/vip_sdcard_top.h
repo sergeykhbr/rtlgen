@@ -59,9 +59,11 @@ class vip_sdcard_top : public ModuleObject {
 
     // param
     TextLine _cfg0_;
+    ParamI32D CFG_SDCARD_POWERUP_DONE_DELAY;
     ParamLogic CFG_SDCARD_VHS;
     ParamLogic CFG_SDCARD_PCIE_1_2V;
     ParamLogic CFG_SDCARD_PCIE_AVAIL;
+    ParamLogic CFG_SDCARD_VDD_VOLTAGE_WINDOW;
     TextLine _cmdstate0_;
     TextLine _cmdstate1_;
     ParamLogic CMDSTATE_IDLE;
@@ -88,6 +90,8 @@ class vip_sdcard_top : public ModuleObject {
     RegSignal cmd_txshift;
     RegSignal cmd_state;
     RegSignal bitcnt;
+    RegSignal powerup_cnt;
+    RegSignal powerup_done;
 
     CombProcess comb;
 

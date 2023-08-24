@@ -27,9 +27,11 @@ vip_sdcard_top::vip_sdcard_top(GenObject *parent, const char *name) :
     io_cd_dat3(this, "io_cd_dat3", "1"),
     // params
     _cfg0_(this, "Generic config parameters"),
+    CFG_SDCARD_POWERUP_DONE_DELAY(this, "CFG_SDCARD_POWERUP_DONE_DELAY", "700", "Delay of busy bits in ACMD41 response"),
     CFG_SDCARD_VHS(this, "4", "CFG_SDCARD_VHS", "0x1", "CMD8 Voltage supply mask"),
     CFG_SDCARD_PCIE_1_2V(this, "1", "CFG_SDCARD_PCIE_1_2V", "0"),
     CFG_SDCARD_PCIE_AVAIL(this, "1", "CFG_SDCARD_PCIE_AVAIL", "0"),
+    CFG_SDCARD_VDD_VOLTAGE_WINDOW(this, "24", "CFG_SDCARD_VDD_VOLTAGE_WINDOW", "0xff8000"),
     _cmdstate0_(this, ""),
     _cmdstate1_(this, "Receiver CMD state:"),
     CMDSTATE_IDLE(this, "4", "CMDSTATE_IDLE", "0"),
@@ -56,6 +58,8 @@ vip_sdcard_top::vip_sdcard_top(GenObject *parent, const char *name) :
     cmd_txshift(this, "cmd_txshift", "48", "-1"),
     cmd_state(this, "cmd_state", "4", "CMDSTATE_IDLE"),
     bitcnt(this, "bitcnt", "6"),
+    powerup_cnt(this, "powerup_cnt", "32"),
+    powerup_done(this, "powerup_done", "1"),
     //
     comb(this),
     iobufcmd0(this, "iobufcmd0"),
@@ -84,7 +88,12 @@ vip_sdcard_top::vip_sdcard_top(GenObject *parent, const char *name) :
 
 void vip_sdcard_top::proc_comb() {
     SETVAL(comb.vb_cmd_txshift, CC2(BITS(cmd_txshift, 46, 0), CONST("1", 1)));
-    SETVAL(comb.v_crc7_in, w_cmd_in);;
+    SETVAL(comb.v_crc7_in, w_cmd_in);
+    IF (AND2(EZ(powerup_done), LS(powerup_cnt, CFG_SDCARD_POWERUP_DONE_DELAY)));
+        SETVAL(powerup_cnt, INC(powerup_cnt));
+    ELSE();
+        SETONE(powerup_done);
+    ENDIF();
 
 TEXT();
     SWITCH(cmd_state);
@@ -163,11 +172,19 @@ TEXT();
                         AND2_L(BITS(cmd_rxshift, 19, 16), CFG_SDCARD_VHS));
                 SETBITS(comb.vb_cmd_txshift, 15, 8, BITS(cmd_rxshift, 15, 8));
                 ENDCASE();
+            CASE(CONST("55", 6), "CMD55: APP_CMD. ");
+                SETBITS(comb.vb_cmd_txshift, 39, 8, ALLZEROS());
+                ENDCASE();
             CASE(CONST("41", 6), "ACMD41: SD_SEND_OP_COND. Send host capacity info");
-                TEXT("[31] HCS (OCR[30]) Host Capacity");
-                TEXT("[28] XPC");
-                TEXT("[24] S18R");
-                TEXT("[23:0] VDD Voltage Window (OCR[23:0])");
+                TEXT("[39] BUSY, active LOW");
+                TEXT("[38] HCS (OCR[30]) Host Capacity");
+                TEXT("[36] XPC");
+                TEXT("[32] S18R");
+                TEXT("[31:8] VDD Voltage Window (OCR[23:0])");
+                SETBITS(comb.vb_cmd_txshift, 45, 40, ALLONES());
+                SETBIT(comb.vb_cmd_txshift, 39, powerup_done);
+                SETBITS(comb.vb_cmd_txshift, 31, 8,
+                    AND2_L(BITS(cmd_rxshift, 31, 8), CFG_SDCARD_VDD_VOLTAGE_WINDOW));
                 ENDCASE();
             CASEDEF();    
                 SETBITS(comb.vb_cmd_txshift, 39, 8, CONST("0", 32));

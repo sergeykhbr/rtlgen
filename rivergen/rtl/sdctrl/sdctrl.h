@@ -36,11 +36,17 @@ class sdctrl : public ModuleObject {
      public:
         CombProcess(GenObject *parent) :
             ProcObject(parent, "comb"),
-            v_crc16_next(this, "v_crc16_next", "1") {
+            v_crc16_next(this, "v_crc16_next", "1"),
+            vb_cmd_req_arg(this, "vb_cmd_req_arg", "32"),
+            v_cmd_resp_ready(this, "v_cmd_resp_ready", "1"),
+            v_clear_cmderr(this, "v_clear_cmderr", "1") {
         }
 
      public:
         Logic v_crc16_next;
+        Logic vb_cmd_req_arg;
+        Logic v_cmd_resp_ready;
+        Logic v_clear_cmderr;
     };
 
     void proc_comb();
@@ -89,18 +95,20 @@ class sdctrl : public ModuleObject {
     ParamLogic SDSTATE_RCV;
     ParamLogic SDSTATE_PRG;
     ParamLogic SDSTATE_DIS;
-    TextLine _initstate0_;
-    ParamLogic INITSTATE_CMD0;
-    ParamLogic INITSTATE_CMD8;
-    ParamLogic INITSTATE_CMD55_ACMD41;
-    ParamLogic INITSTATE_ACMD41;
-    ParamLogic INITSTATE_CARD_IDENTIFICATION;
-    ParamLogic INITSTATE_CMD11;
-    ParamLogic INITSTATE_CMD2;
-    ParamLogic INITSTATE_CMD3;
-    ParamLogic INITSTATE_WAIT_RESP;
-    ParamLogic INITSTATE_ERROR;
-    ParamLogic INITSTATE_DONE;
+    ParamLogic SDSTATE_INA;
+    TextLine _idlestate0_;
+    ParamLogic IDLESTATE_CMD0;
+    ParamLogic IDLESTATE_CMD8;
+    ParamLogic IDLESTATE_CMD55;
+    ParamLogic IDLESTATE_ACMD41;
+    ParamLogic IDLESTATE_CARD_IDENTIFICATION;
+    TextLine _readystate0_;
+    ParamLogic READYSTATE_CMD11;
+    ParamLogic READYSTATE_CMD2;
+    ParamLogic READYSTATE_CHECK_CID;
+    TextLine _identstate0_;
+    ParamLogic IDENTSTATE_CMD3;
+    ParamLogic IDENTSTATE_CHECK_RCA;
 
     Signal w_regs_sck_posedge;
     Signal w_regs_sck_negedge;
@@ -129,9 +137,10 @@ class sdctrl : public ModuleObject {
     Signal wb_cmd_resp_crc7_rx;
     Signal wb_cmd_resp_crc7_calc;
     Signal w_cmd_resp_ready;
-    Signal wb_cmdstate;
-    Signal wb_cmderr;
+    Signal wb_trx_cmdstate;
+    Signal wb_trx_cmderr;
     Signal w_clear_cmderr;
+    Signal w_400kHz_ena;
     
     Signal w_crc7_clear;
     Signal w_crc7_next;
@@ -142,7 +151,7 @@ class sdctrl : public ModuleObject {
     Signal wb_crc16;
 
     RegSignal clkcnt;
-    RegSignal cmd_req_ena;
+    RegSignal cmd_req_valid;
     RegSignal cmd_req_cmd;
     RegSignal cmd_req_arg;
     RegSignal cmd_req_rn;
@@ -154,11 +163,15 @@ class sdctrl : public ModuleObject {
     RegSignal dat_dir;
 
     RegSignal sdstate;
-    RegSignal initstate;
-    RegSignal initstate_next;
+    RegSignal idlestate;
+    RegSignal readystate;
+    RegSignal identstate;
+    RegSignal wait_cmd_resp;
     RegSignal sdtype;
-    RegSignal ident_done;
-    RegSignal hcs;
+    RegSignal HCS;
+    RegSignal S18;
+    RegSignal RCA;
+    RegSignal OCR_VoltageWindow;
 
     CombProcess comb;
 

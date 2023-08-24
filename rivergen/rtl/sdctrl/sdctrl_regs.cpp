@@ -34,6 +34,9 @@ sdctrl_regs::sdctrl_regs(GenObject *parent, const char *name) :
     o_pcie_available(this, "o_pcie_available", "1", "0b: not asking PCIe availability"),
     o_voltage_supply(this, "o_voltage_supply", "4", "0=not defined; 1=2.7-3.6V; 2=reserved for Low Voltage Range"),
     o_check_pattern(this, "o_check_pattern", "8", "Check pattern in CMD8 request"),
+    i_400khz_ena(this, "i_400khz_ena", "1", "Default frequency enabled in identification mode"),
+    i_sdtype(this, "i_sdtype", "3", "Ver1X or Ver2X standard or Ver2X high/extended capacity"),
+    i_sdstate(this, "i_sdstate", "4", "Card state:0=idle;1=ready;2=ident;3=stby,... see spec"),
     _cmd0_(this, "Debug command state machine"),
     i_cmd_state(this, "i_cmd_state", "4"),
     i_cmd_err(this, "i_cmd_err", "4"),
@@ -53,7 +56,8 @@ sdctrl_regs::sdctrl_regs(GenObject *parent, const char *name) :
     // registers
     sclk_ena(this, "sclk_ena", "1"),
     clear_cmderr(this, "clear_cmderr", "1"),
-    scaler(this, "scaler", "32"),
+    scaler_400khz(this, "scaler_400khz", "24"),
+    scaler_data(this, "scaler_data", "8"),
     scaler_cnt(this, "scaler_cnt", "32"),
     wdog(this, "wdog", "16", "0x0FFF"),
     wdog_cnt(this, "wdog_cnt", "16"),
@@ -113,7 +117,8 @@ void sdctrl_regs::proc_comb() {
 TEXT();
     TEXT("system bus clock scaler to baudrate:");
     IF (NZ(sclk_ena));
-        IF (EQ(scaler_cnt, scaler));
+        IF (ORx(2, &AND2(NZ(i_400khz_ena), EQ(scaler_cnt, scaler_400khz)),
+                   &AND2(EZ(i_400khz_ena), EQ(scaler_cnt, scaler_data))));
             SETZERO(scaler_cnt);
             SETVAL(level, INV(level));
             SETVAL(comb.v_posedge, INV(level));
@@ -126,9 +131,10 @@ TEXT();
     TEXT("Registers access:");
     SWITCH (BITS(wb_req_addr, 11, 2));
     CASE (CONST("0x0", 10), "{0x00, 'RW', 'sckdiv', 'Clock Divivder'}");
-        SETVAL(comb.vb_rdata, scaler);
+        SETVAL(comb.vb_rdata, CC2(scaler_data, scaler_400khz));
         IF (AND2(NZ(w_req_valid), NZ(w_req_write)));
-            SETVAL(scaler, BITS(wb_req_wdata, 30, 0));
+            SETVAL(scaler_data, BITS(wb_req_wdata, 31, 24));
+            SETVAL(scaler_400khz, BITS(wb_req_wdata, 23, 0));
             SETZERO(scaler_cnt);
         ENDIF();
         ENDCASE();
@@ -145,9 +151,11 @@ TEXT();
             SETVAL(wdog, BITS(wb_req_wdata, 15, 0));
         ENDIF();
         ENDCASE();
-    CASE (CONST("0x4", 10), "{0x10, 'RO', 'cmd_status', 'CMD state machine status'}");
-        SETBITS(comb.vb_rdata, 3, 0, i_cmd_err);
-        SETBITS(comb.vb_rdata, 7, 4, i_cmd_state);
+    CASE (CONST("0x4", 10), "{0x10, 'RO', 'status', 'state machines status'}");
+        SETBITS(comb.vb_rdata, 3, 0, i_cmd_err, "cmd transmitter error flag");
+        SETBITS(comb.vb_rdata, 7, 4, i_cmd_state, "cmd transmitter state");
+        SETBITS(comb.vb_rdata, 11, 8, i_sdstate, "card state"),
+        SETBITS(comb.vb_rdata, 14, 12, i_sdtype, "detected card type");
         ENDCASE();
     CASE (CONST("0x5", 10), "{0x14, 'RO', 'last_cmd_response', 'Last CMD response data'}");
         SETBITS(comb.vb_rdata, 5, 0, last_req_cmd);

@@ -62,6 +62,9 @@ class sdctrl_regs : public ModuleObject {
     OutPort o_pcie_available;
     OutPort o_voltage_supply;
     OutPort o_check_pattern;
+    InPort i_400khz_ena;
+    InPort i_sdtype;
+    InPort i_sdstate;
     TextLine _cmd0_;
     InPort i_cmd_state;
     InPort i_cmd_err;
@@ -80,7 +83,8 @@ class sdctrl_regs : public ModuleObject {
 
     RegSignal sclk_ena;
     RegSignal clear_cmderr;
-    RegSignal scaler;
+    RegSignal scaler_400khz;
+    RegSignal scaler_data;
     RegSignal scaler_cnt;
     RegSignal wdog;
     RegSignal wdog_cnt;
