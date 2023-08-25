@@ -28,13 +28,14 @@ jobs:
             - name: Zip build
               working-directory: ${{ runner.temp }}
               run:  |
-                    7z a rivergen.zip ${{runner.temp}}\build\* -r
+                    7z a sv.zip .\_sv_generated\* -r
+                    7z a sc.zip .\_sysc_generated\* -r
 
             - name: Save build artifact
               uses: actions/upload-artifact@master
               with:
                 name: ${{env.ARTIFACT}}
-                path: ${{runner.temp}}\${{env.ARTIFACT}}
+                path: .\${{env.ARTIFACT}}
 
     mac-gcc:
         name: macOS GCC
