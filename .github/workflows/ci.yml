@@ -17,3 +17,11 @@ jobs:
             - run: /bin/bash .ci/build-project.sh
             - run: ./build/bin/rivergen
 
+    windows-msvc:
+        name: Windows MSVC
+        runs-on: windows-latest
+        steps:
+            - uses: actions/checkout@v3
+            - run: .ci\install-vcpkg.ps1
+            - run: .ci\build-project.ps1
+            - run: .\build\bin\Debug\rivergen.exe
