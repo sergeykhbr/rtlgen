@@ -1,6 +1,9 @@
 name: CI
 on: [push]
 
+env:
+  ARTIFACT: generated.zip
+
 jobs:
     linux-gcc:
         name: Linux GCC
@@ -27,7 +30,7 @@ jobs:
             - run: .\build\bin\Debug\rivergen.exe
             - name: Zip build
               run:  |
-                    7z a ${{runner.temp}}\sv.zip .\_sv_generated\* -r
+                    7z a ${{runner.temp}}\${{env.ARTIFACT}} .\_*_generated -r
 
             - name: Save build artifact
               uses: actions/upload-artifact@master
