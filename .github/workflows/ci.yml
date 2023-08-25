@@ -27,14 +27,13 @@ jobs:
             - run: .\build\bin\Debug\rivergen.exe
             - name: Zip build
               run:  |
-                    7z a sv.zip .\_sv_generated\* -r
-                    7z a sc.zip .\_sysc_generated\* -r
+                    7z a ${{runner.temp}}\sv.zip .\_sv_generated\* -r
 
             - name: Save build artifact
               uses: actions/upload-artifact@master
               with:
                 name: ${{env.ARTIFACT}}
-                path: .\${{env.ARTIFACT}}
+                path: ${{runner.temp}}\${{env.ARTIFACT}}
 
     mac-gcc:
         name: macOS GCC
