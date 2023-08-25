@@ -6,11 +6,11 @@
 
 ## Main Idea
 
-  River CPU and peripheries libraries have different implementation versions
-on both RTL languages VHDL and System Verilog. I am using 
-SystemC implementation as the main reference model. To support consistence 
-of all these implementations with the reference SystemC I am goind to use
-this RTL generator.
+  River CPU and peripheries libraries have different RTL implementation versions:
+System Verilog and VHDL (see [riscv_vhdl](https://github.com/sergeykhbr/riscv_vhdl)
+project). It is quite compilcate to maintain the precise SystemC that matches
+to these RTL implementations. To support consistency of all these implementations
+(SystemC, SystemVerilog and VHLD) this generator is used. 
 
 ## Code generator features:
 
@@ -28,7 +28,7 @@ which are used to describe any RTL model: project, file, parameter,
 module, port, signal etc.
 - <b>rivergen</b> RTL project implements River CPU using <i>librtlgen</i> generic classes.
 
-## Example System Verilog:
+## Generated Example System Verilog:
 
     // Code commentary
     localparam int CFG_PARAM1 = 128;
@@ -37,7 +37,7 @@ module, port, signal etc.
     logic [CFG_PARAM1-1:0] A;
     logic [CFG_PARAM1-CFG_PARAM2-1:0] B;
 
-## Example SystemC:
+## Generated Example SystemC:
 
     // Code commentary
     static const int CFG_PARAM1 = 128;

@@ -25,3 +25,25 @@ jobs:
             - run: .ci\install-vcpkg.ps1
             - run: .ci\build-project.ps1
             - run: .\build\bin\Debug\rivergen.exe
+
+    mac-apple-clang:
+        name: macOS AppleClang
+        runs-on: macos-latest
+        steps:
+            - uses: actions/checkout@v3
+            - run: /bin/bash .ci/install-vcpkg.sh
+            - run: /bin/bash .ci/build-project.sh
+            - run: ./build/bin/rivergen
+
+    mac-gcc:
+        name: macOS GCC
+        runs-on: macos-latest
+        env:
+            CC: gcc-12
+            CXX: g++-12
+        steps:
+            - uses: actions/checkout@v3
+            - run: brew install gcc@12
+            - run: /bin/bash .ci/install-vcpkg.sh
+            - run: /bin/bash .ci/build-project.sh
+            - run: ./build/bin/rivergen
