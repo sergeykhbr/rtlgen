@@ -26,9 +26,9 @@ jobs:
             - run: .ci\build-project.ps1
             - run: .\build\bin\Debug\rivergen.exe
             - name: Zip build
-              working-directory: ${{ runner.temp }}
               run:  |
-                    7z a sv.zip .\build\* -r
+                    7z a sv.zip .\_sv_generated\* -r
+                    7z a sc.zip .\_sysc_generated\* -r
 
             - name: Save build artifact
               uses: actions/upload-artifact@master
