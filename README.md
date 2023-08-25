@@ -1,5 +1,7 @@
 # RTL generator
 
+[![CI](https://github.com/sergeykhbr/rtlgen/workflows/CI/badge.svg)](https://github.com/sergeykhbr/rtlgen/actions)
+
   Generator of SystemC, VHDL and SystemVerilog projects.
 
 ## Main Idea
