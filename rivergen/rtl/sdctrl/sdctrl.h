@@ -151,6 +151,7 @@ class sdctrl : public ModuleObject {
     Signal wb_crc16;
 
     RegSignal clkcnt;
+    RegSignal cmd_set_low;
     RegSignal cmd_req_valid;
     RegSignal cmd_req_cmd;
     RegSignal cmd_req_arg;

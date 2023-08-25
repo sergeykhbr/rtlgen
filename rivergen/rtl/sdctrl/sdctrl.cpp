@@ -114,6 +114,7 @@ sdctrl::sdctrl(GenObject *parent, const char *name) :
     wb_crc16(this, "wb_crc16", "16"),
     // registers
     clkcnt(this, "clkcnt", "7"),
+    cmd_set_low(this, "cmd_set_low", "1"),
     cmd_req_valid(this, "cmd_req_valid", "1"),
     cmd_req_cmd(this, "cmd_req_cmd", "6"),
     cmd_req_arg(this, "cmd_req_arg", "32"),
@@ -122,7 +123,7 @@ sdctrl::sdctrl(GenObject *parent, const char *name) :
     cmd_resp_reg(this, "cmd_resp_reg", "32"),
     crc16_clear(this, "crc16_clear", "1", "1"),
     dat(this, "dat", "4", "-1"),
-    dat_dir(this, "dat_dir", "1", "DIR_INPUT"),
+    dat_dir(this, "dat_dir", "1", "DIR_OUTPUT"),
     sdstate(this, "sdstate", "4", "SDSTATE_PRE_INIT"),
     idlestate(this, "initstate", "3", "IDLESTATE_CMD0"),
     readystate(this, "readystate", "2", "READYSTATE_CMD11"),
@@ -222,6 +223,7 @@ sdctrl::sdctrl(GenObject *parent, const char *name) :
         CONNECT(cmdtrx0, 0, cmdtrx0.o_cmd, o_cmd);
         CONNECT(cmdtrx0, 0, cmdtrx0.o_cmd_dir, o_cmd_dir);
         CONNECT(cmdtrx0, 0, cmdtrx0.i_watchdog, wb_regs_watchdog);
+        CONNECT(cmdtrx0, 0, cmdtrx0.i_cmd_set_low, cmd_set_low);
         CONNECT(cmdtrx0, 0, cmdtrx0.i_req_valid, cmd_req_valid);
         CONNECT(cmdtrx0, 0, cmdtrx0.i_req_cmd, cmd_req_cmd);
         CONNECT(cmdtrx0, 0, cmdtrx0.i_req_arg, cmd_req_arg);
@@ -302,13 +304,18 @@ TEXT();
         CASE (SDSTATE_PRE_INIT);
             TEXT("Page 222, Fig.4-96 State Diagram (Pre-Init mode)");
             TEXT("1. No commands were sent to the card after POW (except CMD0):");
-            TEXT("    CMD line held High for at least 1 ms, then SDCLK supplied");
+            TEXT("    CMD line held High for at least 1 ms (by SW), then SDCLK supplied");
             TEXT("    at least 74 clocks with keeping CMD line High");
+            TEXT("2. CMD High to Low transition && CMD=Low < 74 clocks then go idle,");
+            TEXT("    if Low >= 74 clocks then Fast boot in CV-mode");
             IF (NZ(w_regs_sck_posedge));
                 SETVAL(clkcnt, INC(clkcnt));
             ENDIF();
-            IF (GE(clkcnt, CONST("75", 7)));
+            IF (GE(clkcnt, CONST("73", 7)));
                 SETVAL(sdstate, SDSTATE_IDLE);
+                SETZERO(cmd_set_low);
+            ELSIF (GT(clkcnt, CONST("2", 7)));
+                SETONE(cmd_set_low);
             ENDIF();
             ENDCASE();
         CASE (SDSTATE_IDLE);

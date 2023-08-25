@@ -55,6 +55,7 @@ class sdctrl_cmd_transmitter : public ModuleObject {
     OutPort o_cmd;
     OutPort o_cmd_dir;
     InPort i_watchdog;
+    InPort i_cmd_set_low;
     InPort i_req_valid;
     InPort i_req_cmd;
     InPort i_req_arg;

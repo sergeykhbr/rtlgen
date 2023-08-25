@@ -27,6 +27,7 @@ sdctrl_cmd_transmitter::sdctrl_cmd_transmitter(GenObject *parent, const char *na
     o_cmd(this, "o_cmd", "1"),
     o_cmd_dir(this, "o_cmd_dir", "1"),
     i_watchdog(this, "i_watchdog", "16", "Max number of sclk to receive start bit"),
+    i_cmd_set_low(this, "i_cmd_set_low", "1", "Set forcibly o_cmd output to LOW"),
     i_req_valid(this, "i_req_valid", "1"),
     i_req_cmd(this, "i_req_cmd", "6"),
     i_req_arg(this, "i_req_arg", "32"),
@@ -100,7 +101,12 @@ TEXT();
     IF (NZ(i_sclk_negedge));
         TEXT("CMD Request:");
         IF (EQ(cmdstate, CMDSTATE_IDLE));
-            SETVAL(comb.vb_cmdshift, ALLONES());
+            IF (NZ(i_cmd_set_low));
+                TEXT("Used during p-init state (power-up)");
+                SETZERO(comb.vb_cmdshift);
+            ELSE();
+                SETVAL(comb.vb_cmdshift, ALLONES());
+            ENDIF();
             SETONE(crc7_clear);
             SETONE(comb.v_req_ready);
             IF (NE(cmderr, sdctrl_cfg_->CMDERR_NONE));
