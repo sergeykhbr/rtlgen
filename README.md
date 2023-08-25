@@ -10,17 +10,19 @@ SystemC implementation as the main reference model. To support consistence
 of all these implementations with the reference SystemC I am goind to use
 this RTL generator.
 
-## Code generator requirements:
+## Code generator features:
 
 - Preserve project structure and files
 - Support commentaries in the same way as in the current manual implementation
 - Dynamically track global and local configuration parameters to compute their values
 - Preserve text names of configuration parameters in the signal bus declarations
+- Automatically detect unconnected IO-ports
+- Avoid and fixing latches instead of FFs.
 
 ## Code structure
 
 - <b>librtlgen</b> library that implements API with the generic C++ classes 
-that should be used to describe any RTL model: project, file, parameter, 
+which are used to describe any RTL model: project, file, parameter, 
 module, port, signal etc.
 - <b>rivergen</b> RTL project implements River CPU using <i>librtlgen</i> generic classes.
 
@@ -42,7 +44,7 @@ module, port, signal etc.
     sc_biguint<CFG_PARAM1> A;
     sc_uint<CFG_PARAM1-CFG_PARAM2> B;
 
-<b>Generator should preserve parameters names and automatically calculates
+<b>Generator preserves all parameter names and automatically calculates
 bus widths to properly use <i>sc_uint</i>/<i>sc_biguint</i> definitions.</b>
 
 <b>Windows:</b> Use CMake and generate MS Visual Studio project.
