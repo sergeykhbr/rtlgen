@@ -26,15 +26,6 @@ jobs:
             - run: .ci\build-project.ps1
             - run: .\build\bin\Debug\rivergen.exe
 
-    mac-apple-clang:
-        name: macOS AppleClang
-        runs-on: macos-latest
-        steps:
-            - uses: actions/checkout@v3
-            - run: /bin/bash .ci/install-vcpkg.sh
-            - run: /bin/bash .ci/build-project.sh
-            - run: ./build/bin/rivergen
-
     mac-gcc:
         name: macOS GCC
         runs-on: macos-latest
