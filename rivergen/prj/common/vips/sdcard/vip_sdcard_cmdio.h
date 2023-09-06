@@ -18,16 +18,13 @@
 
 #include <api.h>
 #include "../../../../rtl/techmap/bufg/iobuf_tech.h"
-#include "vip_sdcard_cmdio.h"
-#include "vip_sdcard_ctrl.h"
+#include "vip_sdcard_crc7.h"
 
 using namespace sysvc;
 
-class vip_sdcard_top : public ModuleObject {
+class vip_sdcard_cmdio : public ModuleObject {
  public:
-    vip_sdcard_top(GenObject *parent, const char *name);
-
-    virtual GenObject *getClockPort() override { return &i_sclk; }
+    vip_sdcard_cmdio(GenObject *parent, const char *name);
 
     class CombProcess : public ProcObject {
      public:
@@ -51,48 +48,60 @@ class vip_sdcard_top : public ModuleObject {
  public:
     // io:
     InPort i_nrst;           // to avoid xxx after start
-    InPort i_sclk;
-    IoPort io_cmd;           // CMD IO Command/Resonse; Data output in SPI mode
-    IoPort io_dat0;          // Data0 IO; Data input in SPI mode
-    IoPort io_dat1;
-    IoPort io_dat2;
-    IoPort io_cd_dat3;       // CD/DAT3 IO CardDetect/Data Line 3; CS output in SPI mode
+    InPort i_clk;
+    InPort i_cmd;
+    OutPort o_cmd;
+    OutPort o_cmd_dir;
+    OutPort o_cmd_req_valid;
+    OutPort o_cmd_req_cmd;
+    OutPort o_cmd_req_data;
+    InPort i_cmd_req_ready;
+    InPort i_cmd_resp_valid;
+    InPort i_cmd_resp_data32;
+    OutPort o_cmd_resp_ready;
 
     // param
-    TextLine _cfg0_;
-    ParamI32D CFG_SDCARD_POWERUP_DONE_DELAY;
-    ParamLogic CFG_SDCARD_VHS;
-    ParamLogic CFG_SDCARD_PCIE_1_2V;
-    ParamLogic CFG_SDCARD_PCIE_AVAIL;
-    ParamLogic CFG_SDCARD_VDD_VOLTAGE_WINDOW;
+    TextLine _cmdstate0_;
+    TextLine _cmdstate1_;
+    ParamLogic CMDSTATE_IDLE;
+    ParamLogic CMDSTATE_REQ_STARTBIT;
+    ParamLogic CMDSTATE_REQ_CMD;
+    ParamLogic CMDSTATE_REQ_ARG;
+    ParamLogic CMDSTATE_REQ_CRC7;
+    ParamLogic CMDSTATE_REQ_STOPBIT;
+    ParamLogic CMDSTATE_REQ_VALID;
+    ParamLogic CMDSTATE_WAIT_RESP;
+    ParamLogic CMDSTATE_RESP;
+    ParamLogic CMDSTATE_RESP_CRC7;
     // signals
-    Signal w_clk;
-    Signal wb_rdata;
-    Signal w_cmd_in;
     Signal w_cmd_out;
-    Signal w_cmd_dir;
-    Signal w_cmd_req_valid;
-    Signal wb_cmd_req_cmd;
-    Signal wb_cmd_req_data;
-    Signal w_cmd_req_ready;
-    Signal w_cmd_resp_valid;
-    Signal wb_cmd_resp_data32;
-    Signal w_cmd_resp_ready;
+    Signal w_crc7_clear;
+    Signal w_crc7_next;
+    Signal w_crc7_dat;
+    Signal wb_crc7;
 
+    RegSignal cmdz;
+    RegSignal cmd_dir;
+    RegSignal cmd_rxshift;
+    RegSignal cmd_txshift;
+    RegSignal cmd_state;
+    RegSignal bitcnt;
+    RegSignal cmd_req_valid;
+    RegSignal cmd_req_cmd;
+    RegSignal cmd_req_data;
+    RegSignal cmd_resp_ready;
 
     CombProcess comb;
-    iobuf_tech iobufcmd0;
-    vip_sdcard_cmdio cmdio0;
-    vip_sdcard_ctrl ctrl0;
+    vip_sdcard_crc7 crccmd0;
 };
 
-class vip_sdcard_top_file : public FileObject {
+class vip_sdcard_cmdio_file : public FileObject {
  public:
-    vip_sdcard_top_file(GenObject *parent) :
-        FileObject(parent, "vip_sdcard_top"),
-        vip_sdcard_top_(this, "") {}
+    vip_sdcard_cmdio_file(GenObject *parent) :
+        FileObject(parent, "vip_sdcard_cmdio"),
+        vip_sdcard_cmdio_(this, "") {}
 
  private:
-    vip_sdcard_top vip_sdcard_top_;
+    vip_sdcard_cmdio vip_sdcard_cmdio_;
 };
 

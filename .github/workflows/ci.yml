@@ -38,15 +38,3 @@ jobs:
                 name: ${{env.ARTIFACT}}
                 path: ${{runner.temp}}\${{env.ARTIFACT}}
 
-    mac-gcc:
-        name: macOS GCC
-        runs-on: macos-latest
-        env:
-            CC: gcc-12
-            CXX: g++-12
-        steps:
-            - uses: actions/checkout@v3
-            - run: brew install gcc@12
-            - run: /bin/bash .ci/install-vcpkg.sh
-            - run: /bin/bash .ci/build-project.sh
-            - run: ./build/bin/rivergen

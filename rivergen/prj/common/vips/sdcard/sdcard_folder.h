@@ -18,6 +18,8 @@
 
 #include <api.h>
 #include "vip_sdcard_crc7.h"
+#include "vip_sdcard_cmdio.h"
+#include "vip_sdcard_ctrl.h"
 #include "vip_sdcard_top.h"
 
 class sdcard_folder : public FolderObject {
@@ -25,11 +27,15 @@ class sdcard_folder : public FolderObject {
     sdcard_folder(GenObject *parent) :
         FolderObject(parent, "sdcard"),
         vip_sdcard_crc7_file_(this),
+        vip_sdcard_cmdio_file_(this),
+        vip_sdcard_ctrl_file_(this),
         vip_sdcard_top_file_(this) {}
 
  protected:
     // subfolders:
     // files
     vip_sdcard_crc7_file vip_sdcard_crc7_file_;
+    vip_sdcard_cmdio_file vip_sdcard_cmdio_file_;
+    vip_sdcard_ctrl_file vip_sdcard_ctrl_file_;
     vip_sdcard_top_file vip_sdcard_top_file_;
 };
