@@ -63,8 +63,8 @@ class vip_sdcard_cmdio : public ModuleObject {
     // param
     TextLine _cmdstate0_;
     TextLine _cmdstate1_;
-    ParamLogic CMDSTATE_IDLE;
     ParamLogic CMDSTATE_REQ_STARTBIT;
+    ParamLogic CMDSTATE_REQ_TXBIT;
     ParamLogic CMDSTATE_REQ_CMD;
     ParamLogic CMDSTATE_REQ_ARG;
     ParamLogic CMDSTATE_REQ_CRC7;
@@ -73,6 +73,8 @@ class vip_sdcard_cmdio : public ModuleObject {
     ParamLogic CMDSTATE_WAIT_RESP;
     ParamLogic CMDSTATE_RESP;
     ParamLogic CMDSTATE_RESP_CRC7;
+    ParamLogic CMDSTATE_RESP_STOPBIT;
+    ParamLogic CMDSTATE_INIT;
     // signals
     Signal w_cmd_out;
     Signal w_crc7_clear;
@@ -80,12 +82,16 @@ class vip_sdcard_cmdio : public ModuleObject {
     Signal w_crc7_dat;
     Signal wb_crc7;
 
+    RegSignal clkcnt;
     RegSignal cmdz;
     RegSignal cmd_dir;
     RegSignal cmd_rxshift;
     RegSignal cmd_txshift;
     RegSignal cmd_state;
     RegSignal bitcnt;
+    RegSignal txbit;
+    RegSignal crc_calc;
+    RegSignal crc_rx;
     RegSignal cmd_req_valid;
     RegSignal cmd_req_cmd;
     RegSignal cmd_req_data;

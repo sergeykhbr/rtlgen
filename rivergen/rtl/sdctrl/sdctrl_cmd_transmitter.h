@@ -88,6 +88,7 @@ class sdctrl_cmd_transmitter : public ModuleObject {
     ParamLogic CMDSTATE_RESP_CID_CSD;
     ParamLogic CMDSTATE_RESP_CRC7;
     ParamLogic CMDSTATE_RESP_STOPBIT;
+    ParamLogic CMDSTATE_PAUSE;
 
     RegSignal req_cmd;
     RegSignal req_rn;

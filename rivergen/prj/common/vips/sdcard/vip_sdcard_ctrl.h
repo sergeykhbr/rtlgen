@@ -60,7 +60,6 @@ class vip_sdcard_ctrl : public ModuleObject {
     // param
     TextLine _sdstate0_;
     TextLine _sdstate1_;
-    ParamLogic SDSTATE_PRE_INIT;
     ParamLogic SDSTATE_IDLE;
     ParamLogic SDSTATE_READY;
     ParamLogic SDSTATE_IDENT;

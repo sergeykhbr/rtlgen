@@ -32,8 +32,8 @@ vip_sdcard_cmdio::vip_sdcard_cmdio(GenObject *parent, const char *name) :
     o_cmd_resp_ready(this, "o_cmd_resp_ready", "1"),
     _cmdstate0_(this, ""),
     _cmdstate1_(this, "Receiver CMD state:"),
-    CMDSTATE_IDLE(this, "4", "CMDSTATE_IDLE", "0"),
-    CMDSTATE_REQ_STARTBIT(this, "4", "CMDSTATE_REQ_STARTBIT", "1"),
+    CMDSTATE_REQ_STARTBIT(this, "4", "CMDSTATE_REQ_STARTBIT", "0"),
+    CMDSTATE_REQ_TXBIT(this, "4", "CMDSTATE_REQ_TXBIT", "1"),
     CMDSTATE_REQ_CMD(this, "4", "CMDSTATE_REQ_CMD", "2"),
     CMDSTATE_REQ_ARG(this, "4", "CMDSTATE_REQ_ARG", "3"),
     CMDSTATE_REQ_CRC7(this, "4", "CMDSTATE_REQ_CRC7", "4"),
@@ -42,6 +42,8 @@ vip_sdcard_cmdio::vip_sdcard_cmdio(GenObject *parent, const char *name) :
     CMDSTATE_WAIT_RESP(this, "4", "CMDSTATE_WAIT_RESP", "7"),
     CMDSTATE_RESP(this, "4", "CMDSTATE_RESP", "8"),
     CMDSTATE_RESP_CRC7(this, "4", "CMDSTATE_RESP_CRC7", "9"),
+    CMDSTATE_RESP_STOPBIT(this, "4", "CMDSTATE_RESP_STOPBIT", "10"),
+    CMDSTATE_INIT(this, "4", "CMDSTATE_INIT", "15"),
     // signals
     w_cmd_out(this, "w_cmd_out", "1"),
     w_crc7_clear(this, "w_crc7_clear", "1"),
@@ -49,12 +51,16 @@ vip_sdcard_cmdio::vip_sdcard_cmdio(GenObject *parent, const char *name) :
     w_crc7_dat(this, "w_crc7_dat", "1"),
     wb_crc7(this, "wb_crc7", "7"),
     // registers
+    clkcnt(this, "clkcnt", "8"),
     cmdz(this, "cmdz", "1", "1"),
     cmd_dir(this, "cmd_dir", "1", "1"),
     cmd_rxshift(this, "cmd_rxshift", "48", "-1"),
     cmd_txshift(this, "cmd_txshift", "48", "-1"),
-    cmd_state(this, "cmd_state", "4", "CMDSTATE_IDLE"),
+    cmd_state(this, "cmd_state", "4", "CMDSTATE_INIT"),
     bitcnt(this, "bitcnt", "6"),
+    txbit(this, "txbit", "1"),
+    crc_calc(this, "crc_calc", "7"),
+    crc_rx(this, "crc_rx", "7"),
     cmd_req_valid(this, "cmd_req_valid", "1"),
     cmd_req_cmd(this, "cmd_req_cmd", "6"),
     cmd_req_data(this, "cmd_req_data", "32"),
@@ -81,33 +87,36 @@ vip_sdcard_cmdio::vip_sdcard_cmdio(GenObject *parent, const char *name) :
 void vip_sdcard_cmdio::proc_comb() {
     SETVAL(comb.vb_cmd_txshift, CC2(BITS(cmd_txshift, 46, 0), CONST("1", 1)));
     SETVAL(comb.v_crc7_in, i_cmd);
-    SETVAL(cmdz, i_cmd);
 
 TEXT();
     IF (NZ(i_cmd_req_ready));
         SETZERO(cmd_req_valid);
     ENDIF();
+    SETVAL(clkcnt, INC(clkcnt));
 
 TEXT();
     SWITCH(cmd_state);
-    CASE (CMDSTATE_IDLE);
+    CASE (CMDSTATE_INIT);
         SETONE(cmd_dir);
-        IF (NZ(i_cmd));
-            SETONE(comb.v_crc7_next);
+        SETONE(comb.v_crc7_clear);
+        TEXT("Wait several (72) clocks to switch into idle state");
+        IF (EQ(clkcnt, CONST("70")));
             SETVAL(cmd_state, CMDSTATE_REQ_STARTBIT);
+        ENDIF();
+        ENDCASE();
+    CASE (CMDSTATE_REQ_STARTBIT);
+        IF (AND2(NZ(cmdz), EZ(i_cmd)));
+            SETONE(comb.v_crc7_next);
+            SETVAL(cmd_state, CMDSTATE_REQ_TXBIT);
         ELSE();
             SETONE(comb.v_crc7_clear);
         ENDIF();
         ENDCASE();
-    CASE (CMDSTATE_REQ_STARTBIT);
-        IF (NZ(i_cmd));
-            SETONE(comb.v_crc7_next);
-            SETVAL(cmd_state, CMDSTATE_REQ_CMD);
-            SETVAL(bitcnt, CONST("5", 6));
-        ELSE();
-            SETONE(comb.v_crc7_clear);
-            SETVAL(cmd_state, CMDSTATE_IDLE);
-        ENDIF();
+    CASE (CMDSTATE_REQ_TXBIT);
+        SETVAL(cmd_state, CMDSTATE_REQ_CMD);
+        SETVAL(bitcnt, CONST("5", 6));
+        SETONE(comb.v_crc7_next);
+        SETVAL(txbit, i_cmd);
         ENDCASE();
     CASE (CMDSTATE_REQ_CMD);
         SETONE(comb.v_crc7_next);
@@ -123,11 +132,13 @@ TEXT();
         IF (EZ(bitcnt));
             SETVAL(cmd_state, CMDSTATE_REQ_CRC7);
             SETVAL(bitcnt, CONST("6", 6));
+            SETVAL(crc_calc, wb_crc7);
         ELSE();
             SETVAL(bitcnt, DEC(bitcnt));
         ENDIF();
         ENDCASE();
     CASE (CMDSTATE_REQ_CRC7);
+        SETVAL(crc_rx, CC2(BITS(crc_rx, 5, 0), i_cmd));
         IF (EZ(bitcnt));
             SETVAL(cmd_state, CMDSTATE_REQ_STOPBIT);
         ELSE();
@@ -140,13 +151,19 @@ TEXT();
         SETONE(comb.v_crc7_clear);
         ENDCASE();
     CASE (CMDSTATE_REQ_VALID);
-        SETVAL(cmd_state, CMDSTATE_WAIT_RESP);
-        SETONE(cmd_req_valid);
+        IF (ANDx(2, &NZ(txbit),
+                    &EQ(crc_calc, crc_rx)));
+            SETVAL(cmd_state, CMDSTATE_WAIT_RESP);
+            SETONE(cmd_req_valid);
+        ELSE();
+            SETVAL(cmd_state, CMDSTATE_REQ_STARTBIT);
+            SETONE(cmd_dir);
+        ENDIF();
         SETVAL(cmd_req_cmd, BITS(cmd_rxshift, 45, 40));
         SETVAL(cmd_req_data, BITS(cmd_rxshift, 39, 8));
-        SETONE(cmd_resp_ready);
         ENDCASE();
     CASE (CMDSTATE_WAIT_RESP);
+        SETONE(cmd_resp_ready);
         IF (NZ(i_cmd_resp_valid));
             SETZERO(cmd_resp_ready);
             SETVAL(cmd_state, CMDSTATE_RESP);
@@ -160,9 +177,10 @@ TEXT();
     CASE (CMDSTATE_RESP);
         SETVAL(comb.v_crc7_in, BIT(cmd_txshift, 47));
         IF (EZ(bitcnt));
-            SETVAL(bitcnt, CONST("7", 6));
+            SETVAL(bitcnt, CONST("6", 6));
             SETVAL(cmd_state, CMDSTATE_RESP_CRC7);
             SETBITS(comb.vb_cmd_txshift, 47, 40, CC2(wb_crc7, CONST("1", 1)));
+            SETVAL(crc_calc, wb_crc7);
         ELSE();
             SETONE(comb.v_crc7_next);
             SETVAL(bitcnt, DEC(bitcnt));
@@ -170,12 +188,15 @@ TEXT();
     ENDCASE();
     CASE (CMDSTATE_RESP_CRC7);
         IF (EZ(bitcnt));
-            SETVAL(cmd_state, CMDSTATE_IDLE);
-            SETONE(cmd_dir);
+            SETVAL(cmd_state, CMDSTATE_RESP_STOPBIT);
         ELSE();
             SETVAL(bitcnt, DEC(bitcnt));
         ENDIF();
     ENDCASE();
+    CASE (CMDSTATE_RESP_STOPBIT);
+        SETVAL(cmd_state, CMDSTATE_REQ_STARTBIT);
+        SETONE(cmd_dir);
+        ENDCASE();
     CASEDEF();
         ENDCASE();
     ENDSWITCH();
@@ -185,10 +206,19 @@ TEXT();
         SETVAL(cmd_rxshift, CC2(BITS(cmd_rxshift, 46, 0), i_cmd));
         SETVAL(cmd_txshift, ALLONES());
     ELSE();
-        IF (AND2(EQ(cmd_state, CMDSTATE_RESP_CRC7), EZ(bitcnt)));
+        IF (AND2(EQ(cmd_state, CMDSTATE_RESP_STOPBIT), EZ(bitcnt)));
             SETVAL(cmd_rxshift, ALLONES());
         ENDIF();
         SETVAL(cmd_txshift, comb.vb_cmd_txshift);
+    ENDIF();
+
+TEXT();
+    IF (EZ(cmd_dir));
+        TEXT("Output:");
+        SETVAL(cmdz, BIT(cmd_txshift, 47));
+    ELSE();
+        TEXT("Input:");
+        SETVAL(cmdz, i_cmd);
     ENDIF();
 
 

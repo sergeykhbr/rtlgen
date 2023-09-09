@@ -60,6 +60,7 @@ sdctrl_cmd_transmitter::sdctrl_cmd_transmitter(GenObject *parent, const char *na
     CMDSTATE_RESP_CID_CSD(this, "4", "CMDSTATE_RESP_CID_CSD", "9"),
     CMDSTATE_RESP_CRC7(this, "4", "CMDSTATE_RESP_CRC7", "10"),
     CMDSTATE_RESP_STOPBIT(this, "4", "CMDSTATE_RESP_STOPBIT", "11"),
+    CMDSTATE_PAUSE(this, "4", "CMDSTATE_PAUSE", "12"),
     // signals
     // registers
     req_cmd(this, "req_cmd", "6"),
@@ -216,14 +217,22 @@ TEXT();
             IF (EZ(i_cmd));
                 SETVAL(cmderr, sdctrl_cfg_->CMDERR_WRONG_RESP_STOPBIT);
             ENDIF();
-            SETVAL(cmdstate, CMDSTATE_IDLE);
+            SETVAL(cmdstate, CMDSTATE_PAUSE);
+            SETVAL(cmdbitcnt, CONST("2", 7));
             SETONE(resp_valid);
+        ELSIF (EQ(cmdstate, CMDSTATE_PAUSE));
+            IF (NZ(cmdbitcnt));
+                SETVAL(cmdbitcnt, DEC(cmdbitcnt));
+            ELSE();
+                SETVAL(cmdstate, CMDSTATE_IDLE);
+            ENDIF();
         ENDIF();
     ENDIF();
     SETVAL(cmdshift, comb.vb_cmdshift);
 
 TEXT();
-    IF (LS(cmdstate, CMDSTATE_RESP_WAIT));
+    IF (ORx(2, &LS(cmdstate, CMDSTATE_RESP_WAIT),
+               &EQ(cmdstate, CMDSTATE_PAUSE)));
         SETVAL(comb.v_cmd_dir, sdctrl_cfg_->DIR_OUTPUT);
         SETVAL(comb.v_crc7_dat, BIT(cmdshift, 39));
     ELSE();
