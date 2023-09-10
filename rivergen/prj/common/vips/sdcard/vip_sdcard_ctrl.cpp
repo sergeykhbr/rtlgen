@@ -66,6 +66,9 @@ vip_sdcard_ctrl::vip_sdcard_ctrl(GenObject *parent, const char *name) :
 }
 
 void vip_sdcard_ctrl::proc_comb() {
+    SETVAL(comb.vb_resp_data32, cmd_resp_data32);
+
+TEXT();
     IF (AND2(NZ(cmd_resp_valid_delayed), NZ(i_cmd_resp_ready)));
         SETZERO(cmd_resp_valid_delayed);
     ENDIF();
@@ -104,6 +107,7 @@ TEXT();
                 SETBITS(comb.vb_resp_data32, 7, 0, BITS(i_cmd_req_data, 7, 0));
                 ENDCASE();
             CASE (CONST("55", 6), "CMD55: APP_CMD.");
+                SETONE(cmd_resp_valid);
                 SETZERO(comb.vb_resp_data32);
                 ENDCASE();
             CASE (CONST("41", 6), "ACMD41: SD_SEND_OP_COND.");
@@ -118,13 +122,13 @@ TEXT();
                 SETBIT(comb.vb_resp_data32, 31, powerup_done);
                 SETBITS(comb.vb_resp_data32, 23, 0,
                     AND2_L(BITS(i_cmd_req_data, 23, 0), CFG_SDCARD_VDD_VOLTAGE_WINDOW));
-                ENDCASE();
                 IF (EQ(AND2_L(BITS(i_cmd_req_data, 23, 0), CFG_SDCARD_VDD_VOLTAGE_WINDOW), CONST("0", 24)));
                     TEXT("OCR check failed:");
                     SETVAL(sdstate, SDSTATE_INA);
                 ELSIF (NZ(powerup_done));
                     SETVAL(sdstate, SDSTATE_READY);
                 ENDIF();
+                ENDCASE();
             CASEDEF();
                 TEXT("Illegal commands in 'idle' state:");
                 SETONE(cmd_resp_valid);
@@ -140,18 +144,15 @@ TEXT();
                 SETVAL(delay_cnt, CONST("2", 32));
                 SETVAL(sdstate, SDSTATE_IDLE);
                 ENDCASE();
-            ENDCASE();
             CASE (CONST("2", 6), "CMD2: .");
                 SETONE(cmd_resp_valid);
                 SETVAL(delay_cnt, CONST("1", 32));
                 SETVAL(sdstate, SDSTATE_IDENT);
-                ENDCASE();
             ENDCASE();
-            CASE (CONST("11", 6), "CMD11: .");
+                CASE (CONST("11", 6), "CMD11: .");
                 SETONE(cmd_resp_valid);
                 SETVAL(delay_cnt, CONST("1", 32));
                 ENDCASE();
-            ENDCASE();
             CASEDEF();
                 TEXT("Illegal commands in 'ready' state:");
                 SETONE(cmd_resp_valid);
@@ -167,13 +168,11 @@ TEXT();
                 SETVAL(delay_cnt, CONST("2", 32));
                 SETVAL(sdstate, SDSTATE_IDLE);
                 ENDCASE();
-            ENDCASE();
             CASE (CONST("3", 6), "CMD3: .");
                 SETONE(cmd_resp_valid);
                 SETVAL(delay_cnt, CONST("1", 32));
                 SETVAL(sdstate, SDSTATE_STBY);
                 ENDCASE();
-            ENDCASE();
             CASEDEF();
                 TEXT("Illegal commands in 'stby' state:");
                 SETONE(cmd_resp_valid);

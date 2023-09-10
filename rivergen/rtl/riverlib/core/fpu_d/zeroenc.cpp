@@ -38,7 +38,7 @@ void zeroenc::gen_comb() {
     ASSIGNARRITEM(wb_muxind, iwidth, wb_muxind, ALLZEROS());
     GenObject &i = FORGEN ("i", DEC(iwidth), CONST("0"), "--", new STRING("shftgen"));
         ASSIGNARRITEM(wb_muxind, i, wb_muxind,
-            IF_OTHERWISE(NZ(BIT(i_value, i)), i, ARRITEM_B(wb_muxind, INC(i), wb_muxind)));
+            IF_OTHERWISE(NZ(BIT(i_value, i)), i, TO_INT(ARRITEM_B(wb_muxind, INC(i), wb_muxind))));
     ENDFORGEN(new STRING("shftgen"));
     ASSIGN(o_shift, ARRITEM(wb_muxind, 0, wb_muxind));
 }
