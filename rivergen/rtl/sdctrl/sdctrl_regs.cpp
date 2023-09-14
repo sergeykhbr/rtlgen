@@ -38,6 +38,11 @@ sdctrl_regs::sdctrl_regs(GenObject *parent, const char *name) :
     i_sdtype(this, "i_sdtype", "3", "Ver1X or Ver2X standard or Ver2X high/extended capacity"),
     i_sdstate(this, "i_sdstate", "4", "Card state:0=idle;1=ready;2=ident;3=stby,... see spec"),
     _cmd0_(this, "Debug command state machine"),
+    i_sd_cmd(this, "i_sd_cmd", "1"),
+    i_sd_dat0(this, "i_sd_dat0", "1"),
+    i_sd_dat1(this, "i_sd_dat1", "1"),
+    i_sd_dat2(this, "i_sd_dat2", "1"),
+    i_sd_dat3(this, "i_sd_dat3", "1"),
     i_cmd_state(this, "i_cmd_state", "4"),
     i_cmd_err(this, "i_cmd_err", "4"),
     i_cmd_req_valid(this, "i_cmd_req_valid", "1"),
@@ -140,6 +145,11 @@ TEXT();
         ENDCASE();
     CASE (CONST("0x1", 10), "{0x04, 'RW', 'control', 'Global Control register'}");
         SETBIT(comb.vb_rdata, 0, sclk_ena);
+        SETBIT(comb.vb_rdata, 4, i_sd_dat0);
+        SETBIT(comb.vb_rdata, 5, i_sd_dat1);
+        SETBIT(comb.vb_rdata, 6, i_sd_dat2);
+        SETBIT(comb.vb_rdata, 7, i_sd_dat3);
+        SETBIT(comb.vb_rdata, 8, i_sd_cmd);
         IF (AND2(NZ(w_req_valid), NZ(w_req_write)));
             SETVAL(sclk_ena, BIT(wb_req_wdata, 0));
             SETVAL(clear_cmderr, BIT(wb_req_wdata, 1));

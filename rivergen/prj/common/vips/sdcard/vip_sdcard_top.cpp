@@ -38,6 +38,18 @@ vip_sdcard_top::vip_sdcard_top(GenObject *parent, const char *name) :
     w_cmd_in(this, "w_cmd_in", "1"),
     w_cmd_out(this, "w_cmd_out", "1"),
     w_cmd_dir(this, "w_cmd_dir", "1"),
+    w_dat0_in(this, "w_dat0_in", "1"),
+    w_dat1_in(this, "w_dat1_in", "1"),
+    w_dat2_in(this, "w_dat2_in", "1"),
+    w_dat3_in(this, "w_dat3_in", "1"),
+    w_dat0_out(this, "w_dat0_out", "1"),
+    w_dat1_out(this, "w_dat1_out", "1"),
+    w_dat2_out(this, "w_dat2_out", "1"),
+    w_dat3_out(this, "w_dat3_out", "1"),
+    w_dat0_dir(this, "w_dat0_dir", "1"),
+    w_dat1_dir(this, "w_dat1_dir", "1"),
+    w_dat2_dir(this, "w_dat2_dir", "1"),
+    w_dat3_dir(this, "w_dat3_dir", "1"),
     w_cmd_req_valid(this, "w_cmd_req_valid", "1"),
     wb_cmd_req_cmd(this, "wb_cmd_req_cmd", "6"),
     wb_cmd_req_data(this, "wb_cmd_req_data", "32"),
@@ -49,6 +61,10 @@ vip_sdcard_top::vip_sdcard_top(GenObject *parent, const char *name) :
     //
     comb(this),
     iobufcmd0(this, "iobufcmd0"),
+    iobufdat0(this, "iobufdat0"),
+    iobufdat1(this, "iobufdat1"),
+    iobufdat2(this, "iobufdat2"),
+    iobufdat3(this, "iobufdat3"),
     cmdio0(this, "cmdio0"),
     ctrl0(this, "ctrl0")
 {
@@ -58,6 +74,34 @@ vip_sdcard_top::vip_sdcard_top(GenObject *parent, const char *name) :
         CONNECT(iobufcmd0, 0, iobufcmd0.o, w_cmd_in);
         CONNECT(iobufcmd0, 0, iobufcmd0.i, w_cmd_out);
         CONNECT(iobufcmd0, 0, iobufcmd0.t, w_cmd_dir);
+    ENDNEW();
+
+    NEW(iobufdat0, iobufdat0.getName().c_str());
+        CONNECT(iobufdat0, 0, iobufdat0.io, io_dat0);
+        CONNECT(iobufdat0, 0, iobufdat0.o, w_dat0_in);
+        CONNECT(iobufdat0, 0, iobufdat0.i, w_dat0_out);
+        CONNECT(iobufdat0, 0, iobufdat0.t, w_dat0_dir);
+    ENDNEW();
+
+    NEW(iobufdat1, iobufdat1.getName().c_str());
+        CONNECT(iobufdat1, 0, iobufdat1.io, io_dat1);
+        CONNECT(iobufdat1, 0, iobufdat1.o, w_dat1_in);
+        CONNECT(iobufdat1, 0, iobufdat1.i, w_dat1_out);
+        CONNECT(iobufdat1, 0, iobufdat1.t, w_dat1_dir);
+    ENDNEW();
+
+    NEW(iobufdat2, iobufdat2.getName().c_str());
+        CONNECT(iobufdat2, 0, iobufdat2.io, io_dat2);
+        CONNECT(iobufdat2, 0, iobufdat2.o, w_dat2_in);
+        CONNECT(iobufdat2, 0, iobufdat2.i, w_dat2_out);
+        CONNECT(iobufdat2, 0, iobufdat2.t, w_dat2_dir);
+    ENDNEW();
+
+    NEW(iobufdat3, iobufdat3.getName().c_str());
+        CONNECT(iobufdat3, 0, iobufdat3.io, io_cd_dat3);
+        CONNECT(iobufdat3, 0, iobufdat3.o, w_dat3_in);
+        CONNECT(iobufdat3, 0, iobufdat3.i, w_dat3_out);
+        CONNECT(iobufdat3, 0, iobufdat3.t, w_dat3_dir);
     ENDNEW();
 
     NEW(cmdio0, cmdio0.getName().c_str());
@@ -92,4 +136,14 @@ vip_sdcard_top::vip_sdcard_top(GenObject *parent, const char *name) :
 }
 
 void vip_sdcard_top::proc_comb() {
+    SETONE(w_dat0_dir, "in:");
+    SETONE(w_dat1_dir, "in:");
+    SETONE(w_dat2_dir, "in:");
+    SETZERO(w_dat3_dir, "out: Emulate pull-up CardDetect value");
+
+TEXT();
+    SETONE(w_dat0_out);
+    SETONE(w_dat1_out);
+    SETONE(w_dat2_out);
+    SETONE(w_dat3_out);
 }

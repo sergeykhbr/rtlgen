@@ -123,7 +123,7 @@ sdctrl::sdctrl(GenObject *parent, const char *name) :
     cmd_resp_reg(this, "cmd_resp_reg", "32"),
     crc16_clear(this, "crc16_clear", "1", "1"),
     dat(this, "dat", "4", "-1"),
-    dat_dir(this, "dat_dir", "1", "DIR_OUTPUT"),
+    dat_dir(this, "dat_dir", "1", "DIR_INPUT"),
     sdstate(this, "sdstate", "4", "SDSTATE_PRE_INIT"),
     idlestate(this, "initstate", "3", "IDLESTATE_CMD0"),
     readystate(this, "readystate", "2", "READYSTATE_CMD11"),
@@ -173,6 +173,11 @@ sdctrl::sdctrl(GenObject *parent, const char *name) :
         CONNECT(regs0, 0, regs0.o_pcfg, o_pcfg);
         CONNECT(regs0, 0, regs0.i_apbi, i_apbi);
         CONNECT(regs0, 0, regs0.o_apbo, o_apbo);
+        CONNECT(regs0, 0, regs0.i_sd_cmd, i_cmd);
+        CONNECT(regs0, 0, regs0.i_sd_dat0, i_dat0);
+        CONNECT(regs0, 0, regs0.i_sd_dat1, i_dat1);
+        CONNECT(regs0, 0, regs0.i_sd_dat2, i_dat2);
+        CONNECT(regs0, 0, regs0.i_sd_dat3, i_cd_dat3);
         CONNECT(regs0, 0, regs0.o_sck, o_sclk);
         CONNECT(regs0, 0, regs0.o_sck_posedge, w_regs_sck_posedge);
         CONNECT(regs0, 0, regs0.o_sck_negedge, w_regs_sck_negedge);

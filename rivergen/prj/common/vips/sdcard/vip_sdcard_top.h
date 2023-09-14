@@ -71,6 +71,18 @@ class vip_sdcard_top : public ModuleObject {
     Signal w_cmd_in;
     Signal w_cmd_out;
     Signal w_cmd_dir;
+    Signal w_dat0_in;
+    Signal w_dat1_in;
+    Signal w_dat2_in;
+    Signal w_dat3_in;
+    Signal w_dat0_out;
+    Signal w_dat1_out;
+    Signal w_dat2_out;
+    Signal w_dat3_out;
+    Signal w_dat0_dir;
+    Signal w_dat1_dir;
+    Signal w_dat2_dir;
+    Signal w_dat3_dir;
     Signal w_cmd_req_valid;
     Signal wb_cmd_req_cmd;
     Signal wb_cmd_req_data;
@@ -79,9 +91,12 @@ class vip_sdcard_top : public ModuleObject {
     Signal wb_cmd_resp_data32;
     Signal w_cmd_resp_ready;
 
-
     CombProcess comb;
     iobuf_tech iobufcmd0;
+    iobuf_tech iobufdat0;
+    iobuf_tech iobufdat1;
+    iobuf_tech iobufdat2;
+    iobuf_tech iobufdat3;
     vip_sdcard_cmdio cmdio0;
     vip_sdcard_ctrl ctrl0;
 };

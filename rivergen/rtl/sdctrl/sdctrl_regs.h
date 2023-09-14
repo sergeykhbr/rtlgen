@@ -52,6 +52,11 @@ class sdctrl_regs : public ModuleObject {
     OutStruct<types_pnp::dev_config_type> o_pcfg;
     InStruct<types_amba::apb_in_type> i_apbi;
     OutStruct<types_amba::apb_out_type> o_apbo;
+    InPort i_sd_cmd;
+    InPort i_sd_dat0;
+    InPort i_sd_dat1;
+    InPort i_sd_dat2;
+    InPort i_sd_dat3;
     OutPort o_sck;
     OutPort o_sck_posedge;
     OutPort o_sck_negedge;
