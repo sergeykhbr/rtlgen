@@ -26,6 +26,8 @@ sdctrl_cmd_transmitter::sdctrl_cmd_transmitter(GenObject *parent, const char *na
     i_cmd(this, "i_cmd", "1"),
     o_cmd(this, "o_cmd", "1"),
     o_cmd_dir(this, "o_cmd_dir", "1"),
+    o_cmd_cs(this, "o_cmd_cs", "1"),
+    i_spi_mode(this, "i_spi_mode", "1", "SPI mode was selected by FW"), 
     i_watchdog(this, "i_watchdog", "16", "Max number of sclk to receive start bit"),
     i_cmd_set_low(this, "i_cmd_set_low", "1", "Set forcibly o_cmd output to LOW"),
     i_req_valid(this, "i_req_valid", "1"),
@@ -78,6 +80,7 @@ sdctrl_cmd_transmitter::sdctrl_cmd_transmitter(GenObject *parent, const char *na
     crc7_clear(this, "crc7_clear", "1", "1"),
     cmdstate(this, "cmdstate", "4", "CMDSTATE_IDLE"),
     cmderr(this, "cmderr", "4", "CMDERR_NONE"),
+    cmd_cs(this, "cmd_cs", "1", "1"),
     watchdog(this, "watchdog", "16"),
     //
     comb(this)
@@ -108,11 +111,13 @@ TEXT();
             ELSE();
                 SETVAL(comb.vb_cmdshift, ALLONES());
             ENDIF();
+            SETONE(cmd_cs);
             SETONE(crc7_clear);
             SETONE(comb.v_req_ready);
             IF (NE(cmderr, sdctrl_cfg_->CMDERR_NONE));
                 SETZERO(comb.v_req_ready);
             ELSIF (NZ(i_req_valid));
+                SETZERO(cmd_cs);
                 SETVAL(req_cmd, i_req_cmd);
                 SETVAL(req_rn, i_req_rn);
                 SETVAL(comb.vb_cmdshift, CC3(CONST("0x1", 2), i_req_cmd, i_req_arg));
@@ -224,6 +229,7 @@ TEXT();
             SETONE(resp_valid);
         ELSIF (EQ(cmdstate, CMDSTATE_PAUSE));
             SETONE(crc7_clear);
+            SETONE(cmd_cs);
             IF (NZ(cmdbitcnt));
                 SETVAL(cmdbitcnt, DEC(cmdbitcnt));
             ELSE();
@@ -249,6 +255,7 @@ TEXT();
 TEXT();
     SETVAL(o_cmd, BIT(cmdshift, 39));
     SETVAL(o_cmd_dir, comb.v_cmd_dir);
+    SETVAL(o_cmd_cs, cmd_cs);
     SETVAL(o_req_ready, comb.v_req_ready);
     SETVAL(o_crc7_clear, crc7_clear);
     SETVAL(o_crc7_next, comb.v_crc7_next);

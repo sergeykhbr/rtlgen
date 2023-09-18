@@ -68,6 +68,7 @@ class vip_sdcard_top : public ModuleObject {
     // signals
     Signal w_clk;
     Signal wb_rdata;
+    Signal w_spi_mode;
     Signal w_cmd_in;
     Signal w_cmd_out;
     Signal w_cmd_dir;

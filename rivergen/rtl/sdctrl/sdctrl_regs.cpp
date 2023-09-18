@@ -30,6 +30,7 @@ sdctrl_regs::sdctrl_regs(GenObject *parent, const char *name) :
     o_watchdog(this, "o_watchdog", "16", "Number of sclk to detect no response"),
     o_clear_cmderr(this, "o_clear_cmderr", "1", "Clear cmderr from FW"),
     _cfg0_(this, "Configuration parameters:"),
+    o_spi_mode(this, "o_spi_mode", "1", "SPI mode was selected from FW"),
     o_pcie_12V_support(this, "o_pcie_12V_support", "1", "0b: not asking 1.2V support"),
     o_pcie_available(this, "o_pcie_available", "1", "0b: not asking PCIe availability"),
     o_voltage_supply(this, "o_voltage_supply", "4", "0=not defined; 1=2.7-3.6V; 2=reserved for Low Voltage Range"),
@@ -60,6 +61,7 @@ sdctrl_regs::sdctrl_regs(GenObject *parent, const char *name) :
     wb_req_wdata(this, "wb_req_wdata", "32"),
     // registers
     sclk_ena(this, "sclk_ena", "1"),
+    spi_mode(this, "spi_mode", "1"),
     clear_cmderr(this, "clear_cmderr", "1"),
     scaler_400khz(this, "scaler_400khz", "24"),
     scaler_data(this, "scaler_data", "8"),
@@ -145,6 +147,7 @@ TEXT();
         ENDCASE();
     CASE (CONST("0x1", 10), "{0x04, 'RW', 'control', 'Global Control register'}");
         SETBIT(comb.vb_rdata, 0, sclk_ena);
+        SETBIT(comb.vb_rdata, 3, spi_mode);
         SETBIT(comb.vb_rdata, 4, i_sd_dat0);
         SETBIT(comb.vb_rdata, 5, i_sd_dat1);
         SETBIT(comb.vb_rdata, 6, i_sd_dat2);
@@ -153,6 +156,7 @@ TEXT();
         IF (AND2(NZ(w_req_valid), NZ(w_req_write)));
             SETVAL(sclk_ena, BIT(wb_req_wdata, 0));
             SETVAL(clear_cmderr, BIT(wb_req_wdata, 1));
+            SETVAL(spi_mode, BIT(wb_req_wdata, 3));
         ENDIF();
         ENDCASE();
     CASE (CONST("0x2", 10), "{0x08, 'RW', 'watchdog', 'Watchdog'}");
@@ -212,6 +216,7 @@ TEXT();
     SYNC_RESET(*this);
 
 TEXT();
+    SETVAL(o_spi_mode, spi_mode);
     SETVAL(o_pcie_12V_support, pcie_12V_support);
     SETVAL(o_pcie_available, pcie_available);
     SETVAL(o_voltage_supply, voltage_supply);

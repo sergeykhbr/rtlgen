@@ -25,6 +25,7 @@ vip_sdcard_ctrl::vip_sdcard_ctrl(GenObject *parent, const char *name) :
     CFG_SDCARD_VDD_VOLTAGE_WINDOW(this, "CFG_SDCARD_VDD_VOLTAGE_WINDOW", "24", "0xff8000"),
     i_nrst(this, "i_nrst", "1"),
     i_clk(this, "i_clk", "1"),
+    i_spi_mode(this, "i_spi_mode", "1"),
     i_cmd_req_valid(this, "i_cmd_req_valid", "1"),
     i_cmd_req_cmd(this, "i_cmd_req_cmd", "6"),
     i_cmd_req_data(this, "i_cmd_req_data", "32"),

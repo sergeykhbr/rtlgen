@@ -63,6 +63,7 @@ class sdctrl_regs : public ModuleObject {
     OutPort o_watchdog;
     OutPort o_clear_cmderr;
     TextLine _cfg0_;
+    OutPort o_spi_mode;
     OutPort o_pcie_12V_support;
     OutPort o_pcie_available;
     OutPort o_voltage_supply;
@@ -87,6 +88,7 @@ class sdctrl_regs : public ModuleObject {
     Signal wb_req_wdata;
 
     RegSignal sclk_ena;
+    RegSignal spi_mode;
     RegSignal clear_cmderr;
     RegSignal scaler_400khz;
     RegSignal scaler_data;

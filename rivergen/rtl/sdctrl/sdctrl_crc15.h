@@ -20,33 +20,21 @@
 
 using namespace sysvc;
 
-class sdctrl_crc16 : public ModuleObject {
+class sdctrl_crc15 : public ModuleObject {
  public:
-    sdctrl_crc16(GenObject *parent, const char *name);
+    sdctrl_crc15(GenObject *parent, const char *name);
 
     class CombProcess : public ProcObject {
      public:
         CombProcess(GenObject *parent) :
             ProcObject(parent, "comb"),
-            v_inv16_3(this, "v_inv16_3", "1"),
-            vb_crc16_3(this, "vb_crc16_3", "16"),
-            v_inv16_2(this, "v_inv16_2", "1"),
-            vb_crc16_2(this, "vb_crc16_2", "16"),
-            v_inv16_1(this, "v_inv16_1", "1"),
-            vb_crc16_1(this, "vb_crc16_1", "16"),
-            v_inv16_0(this, "v_inv16_0", "1"),
-            vb_crc16_0(this, "vb_crc16_0", "16") {
+            v_inv15(this, "v_inv15_0", "1"),
+            vb_crc15(this, "vb_crc15_0", "15") {
         }
 
      public:
-        Logic v_inv16_3;
-        Logic vb_crc16_3;
-        Logic v_inv16_2;
-        Logic vb_crc16_2;
-        Logic v_inv16_1;
-        Logic vb_crc16_1;
-        Logic v_inv16_0;
-        Logic vb_crc16_0;
+        Logic v_inv15;
+        Logic vb_crc15;
     };
 
     void proc_comb();
@@ -58,20 +46,20 @@ class sdctrl_crc16 : public ModuleObject {
     InPort i_clear;
     InPort i_next;
     InPort i_dat;
-    OutPort o_crc16;
+    OutPort o_crc15;
 
-    RegSignal crc16;
+    RegSignal crc15;
 
     CombProcess comb;
 };
 
-class sdctrl_crc16_file : public FileObject {
+class sdctrl_crc15_file : public FileObject {
  public:
-    sdctrl_crc16_file(GenObject *parent) :
-        FileObject(parent, "sdctrl_crc16"),
-        sdctrl_crc16_(this, "") {}
+    sdctrl_crc15_file(GenObject *parent) :
+        FileObject(parent, "sdctrl_crc15"),
+        sdctrl_crc15_(this, "") {}
 
  private:
-    sdctrl_crc16 sdctrl_crc16_;
+    sdctrl_crc15 sdctrl_crc15_;
 };
 

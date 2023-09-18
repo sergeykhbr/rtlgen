@@ -49,6 +49,7 @@ class vip_sdcard_ctrl : public ModuleObject {
     // io:
     InPort i_nrst;
     InPort i_clk;
+    InPort i_spi_mode;
     InPort i_cmd_req_valid;
     InPort i_cmd_req_cmd;
     InPort i_cmd_req_data;

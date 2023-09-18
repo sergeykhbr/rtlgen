@@ -79,6 +79,7 @@ sdctrl::sdctrl(GenObject *parent, const char *name) :
     w_regs_sck_negedge(this, "w_regs_sck", "1"),
     w_regs_clear_cmderr(this, "w_regs_clear_cmderr", "1"),
     wb_regs_watchdog(this, "wb_regs_watchdog", "16"),
+    w_regs_spi_mode(this, "w_regs_spi_mode", "1"),
     w_regs_pcie_12V_support(this, "w_regs_pcie_12V_support", "1"),
     w_regs_pcie_available(this, "w_regs_pcie_available", "1"),
     wb_regs_voltage_supply(this, "wb_regs_voltage_supply", "4"),
@@ -94,6 +95,9 @@ sdctrl::sdctrl(GenObject *parent, const char *name) :
     w_mem_resp_valid(this, "w_mem_resp_valid", "1"),
     wb_mem_resp_rdata(this, "wb_mem_resp_rdata", "CFG_SYSBUS_DATA_BITS"),
     wb_mem_resp_err(this, "wb_mem_resp_err", "1"),
+    w_trx_cmd_dir(this, "w_trx_cmd_dir", "1"),
+    w_trx_cmd_cs(this, "w_trx_cmd_cs", "1"),
+    w_cmd_in(this, "w_cmd_in", "1"),
     w_cmd_req_ready(this, "w_cmd_req_ready", "1"),
     w_cmd_resp_valid(this, "w_cmd_resp_valid", "1"),
     wb_cmd_resp_cmd(this, "wb_cmd_resp_cmd", "6"),
@@ -109,9 +113,11 @@ sdctrl::sdctrl(GenObject *parent, const char *name) :
     w_crc7_next(this, "w_crc7_next", "1"),
     w_crc7_dat(this, "w_crc7_dat", "1"),
     wb_crc7(this, "wb_crc7", "7"),
-    w_crc16_next(this, "w_crc16_next", "1"),
-    wb_crc16_dat(this, "wb_crc16_dat", "4"),
-    wb_crc16(this, "wb_crc16", "16"),
+    w_crc15_next(this, "w_crc15_next", "1"),
+    wb_crc15_0(this, "wb_crc15_0", "15"),
+    wb_crc15_1(this, "wb_crc15_1", "15"),
+    wb_crc15_2(this, "wb_crc15_2", "15"),
+    wb_crc15_3(this, "wb_crc15_3", "15"),
     // registers
     clkcnt(this, "clkcnt", "7"),
     cmd_set_low(this, "cmd_set_low", "1"),
@@ -121,9 +127,10 @@ sdctrl::sdctrl(GenObject *parent, const char *name) :
     cmd_req_rn(this, "cmd_req_rn", "3"),
     cmd_resp_cmd(this, "cmd_resp_r1", "6"),
     cmd_resp_reg(this, "cmd_resp_reg", "32"),
-    crc16_clear(this, "crc16_clear", "1", "1"),
+    crc15_clear(this, "crc15_clear", "1", "1"),
     dat(this, "dat", "4", "-1"),
-    dat_dir(this, "dat_dir", "1", "DIR_INPUT"),
+    dat_dir(this, "dat_dir", "1", "DIR_OUTPUT"),
+    dat3_dir(this, "dat3_dir", "1", "DIR_INPUT"),
     sdstate(this, "sdstate", "4", "SDSTATE_PRE_INIT"),
     idlestate(this, "initstate", "3", "IDLESTATE_CMD0"),
     readystate(this, "readystate", "2", "READYSTATE_CMD11"),
@@ -140,6 +147,9 @@ sdctrl::sdctrl(GenObject *parent, const char *name) :
     regs0(this, "regs0"),
     crccmd0(this, "crccmd0"),
     crcdat0(this, "crcdat0"),
+    crcdat1(this, "crcdat1"),
+    crcdat2(this, "crcdat2"),
+    crcdat3(this, "crcdat3"),
     cmdtrx0(this, "cmdtrx0")
 {
     Operation::start(this);
@@ -183,6 +193,7 @@ sdctrl::sdctrl(GenObject *parent, const char *name) :
         CONNECT(regs0, 0, regs0.o_sck_negedge, w_regs_sck_negedge);
         CONNECT(regs0, 0, regs0.o_watchdog, wb_regs_watchdog);
         CONNECT(regs0, 0, regs0.o_clear_cmderr, w_regs_clear_cmderr);
+        CONNECT(regs0, 0, regs0.o_spi_mode, w_regs_spi_mode);
         CONNECT(regs0, 0, regs0.o_pcie_12V_support, w_regs_pcie_12V_support);
         CONNECT(regs0, 0, regs0.o_pcie_available, w_regs_pcie_available);
         CONNECT(regs0, 0, regs0.o_voltage_supply, wb_regs_voltage_supply);
@@ -213,10 +224,37 @@ sdctrl::sdctrl(GenObject *parent, const char *name) :
     NEW(crcdat0, crcdat0.getName().c_str());
         CONNECT(crcdat0, 0, crcdat0.i_clk, i_clk);
         CONNECT(crcdat0, 0, crcdat0.i_nrst, i_nrst);
-        CONNECT(crcdat0, 0, crcdat0.i_clear, crc16_clear);
-        CONNECT(crcdat0, 0, crcdat0.i_next, w_crc16_next);
-        CONNECT(crcdat0, 0, crcdat0.i_dat, wb_crc16_dat);
-        CONNECT(crcdat0, 0, crcdat0.o_crc16, wb_crc16);
+        CONNECT(crcdat0, 0, crcdat0.i_clear, crc15_clear);
+        CONNECT(crcdat0, 0, crcdat0.i_next, w_crc15_next);
+        CONNECT(crcdat0, 0, crcdat0.i_dat, i_dat0);
+        CONNECT(crcdat0, 0, crcdat0.o_crc15, wb_crc15_0);
+    ENDNEW();
+
+    NEW(crcdat0, crcdat0.getName().c_str());
+        CONNECT(crcdat0, 0, crcdat0.i_clk, i_clk);
+        CONNECT(crcdat0, 0, crcdat0.i_nrst, i_nrst);
+        CONNECT(crcdat0, 0, crcdat0.i_clear, crc15_clear);
+        CONNECT(crcdat0, 0, crcdat0.i_next, w_crc15_next);
+        CONNECT(crcdat0, 0, crcdat0.i_dat, i_dat1);
+        CONNECT(crcdat0, 0, crcdat0.o_crc15, wb_crc15_1);
+    ENDNEW();
+
+    NEW(crcdat0, crcdat0.getName().c_str());
+        CONNECT(crcdat0, 0, crcdat0.i_clk, i_clk);
+        CONNECT(crcdat0, 0, crcdat0.i_nrst, i_nrst);
+        CONNECT(crcdat0, 0, crcdat0.i_clear, crc15_clear);
+        CONNECT(crcdat0, 0, crcdat0.i_next, w_crc15_next);
+        CONNECT(crcdat0, 0, crcdat0.i_dat, i_dat2);
+        CONNECT(crcdat0, 0, crcdat0.o_crc15, wb_crc15_2);
+    ENDNEW();
+
+    NEW(crcdat0, crcdat0.getName().c_str());
+        CONNECT(crcdat0, 0, crcdat0.i_clk, i_clk);
+        CONNECT(crcdat0, 0, crcdat0.i_nrst, i_nrst);
+        CONNECT(crcdat0, 0, crcdat0.i_clear, crc15_clear);
+        CONNECT(crcdat0, 0, crcdat0.i_next, w_crc15_next);
+        CONNECT(crcdat0, 0, crcdat0.i_dat, i_cd_dat3);
+        CONNECT(crcdat0, 0, crcdat0.o_crc15, wb_crc15_3);
     ENDNEW();
 
     NEW(cmdtrx0, cmdtrx0.getName().c_str());
@@ -224,9 +262,11 @@ sdctrl::sdctrl(GenObject *parent, const char *name) :
         CONNECT(cmdtrx0, 0, cmdtrx0.i_nrst, i_nrst);
         CONNECT(cmdtrx0, 0, cmdtrx0.i_sclk_posedge, w_regs_sck_posedge);
         CONNECT(cmdtrx0, 0, cmdtrx0.i_sclk_negedge, w_regs_sck_negedge);
-        CONNECT(cmdtrx0, 0, cmdtrx0.i_cmd, i_cmd);
+        CONNECT(cmdtrx0, 0, cmdtrx0.i_cmd, w_cmd_in);
         CONNECT(cmdtrx0, 0, cmdtrx0.o_cmd, o_cmd);
-        CONNECT(cmdtrx0, 0, cmdtrx0.o_cmd_dir, o_cmd_dir);
+        CONNECT(cmdtrx0, 0, cmdtrx0.o_cmd_dir, w_trx_cmd_dir);
+        CONNECT(cmdtrx0, 0, cmdtrx0.o_cmd_cs, w_trx_cmd_cs);
+        CONNECT(cmdtrx0, 0, cmdtrx0.i_spi_mode, w_regs_spi_mode);
         CONNECT(cmdtrx0, 0, cmdtrx0.i_watchdog, wb_regs_watchdog);
         CONNECT(cmdtrx0, 0, cmdtrx0.i_cmd_set_low, cmd_set_low);
         CONNECT(cmdtrx0, 0, cmdtrx0.i_req_valid, cmd_req_valid);
@@ -255,6 +295,21 @@ sdctrl::sdctrl(GenObject *parent, const char *name) :
 
 void sdctrl::proc_comb() {
     SETVAL(comb.vb_cmd_req_arg, cmd_req_arg);
+
+TEXT();
+    IF (NZ(w_regs_spi_mode));
+        SETVAL(comb.v_dat3_dir, sdctrl_cfg_->DIR_OUTPUT);
+        SETVAL(comb.v_dat3_out, w_trx_cmd_cs);
+        SETVAL(comb.v_cmd_dir, sdctrl_cfg_->DIR_OUTPUT);
+        SETVAL(comb.v_dat0_dir, sdctrl_cfg_->DIR_INPUT);
+        SETVAL(comb.v_cmd_in, i_dat0);
+    ELSE();
+        SETVAL(comb.v_dat3_dir, dat3_dir);
+        SETVAL(comb.v_dat3_out, BIT(dat, 3));
+        SETVAL(comb.v_cmd_dir, w_trx_cmd_dir);
+        SETVAL(comb.v_dat0_dir, dat_dir);
+        SETVAL(comb.v_cmd_in, i_cmd);
+    ENDIF();
 
 TEXT();
     IF (NZ(wait_cmd_resp));
@@ -480,7 +535,7 @@ TEXT();
 
 TEXT();
     SETVAL(w_cmd_resp_ready, comb.v_cmd_resp_ready);
-    SETVAL(w_crc16_next, comb.v_crc16_next);
+    SETVAL(w_crc15_next, comb.v_crc15_next);
     TEXT("Page 222, Table 4-81 Overview of Card States vs Operation Modes table");
     IF (ORx(3, &LE(sdstate, SDSTATE_IDENT),
                &EQ(sdstate, SDSTATE_INA),
@@ -493,16 +548,18 @@ TEXT();
     ENDIF();
 
 TEXT();
-    SETVAL(o_cd_dat3, BIT(dat, 3));
+    SETVAL(w_cmd_in, comb.v_cmd_in);
+    SETVAL(o_cd_dat3, comb.v_dat3_out);
     SETVAL(o_dat2, BIT(dat, 2));
     SETVAL(o_dat1, BIT(dat, 1));
     SETVAL(o_dat0, BIT(dat, 0));
 
     TEXT("Direction bits:");
-    SETVAL(o_dat0_dir, dat_dir);
+    SETVAL(o_cmd_dir, comb.v_cmd_dir);
+    SETVAL(o_dat0_dir, comb.v_dat0_dir);
     SETVAL(o_dat1_dir, dat_dir);
     SETVAL(o_dat2_dir, dat_dir);
-    SETVAL(o_cd_dat3_dir, dat_dir);
+    SETVAL(o_cd_dat3_dir, comb.v_dat3_dir);
     TEXT("Memory request:");
     SETONE(w_mem_req_ready);
     SETONE(w_mem_resp_valid);

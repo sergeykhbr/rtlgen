@@ -49,6 +49,8 @@ class vip_sdcard_cmdio : public ModuleObject {
     // io:
     InPort i_nrst;           // to avoid xxx after start
     InPort i_clk;
+    InPort i_cs;
+    OutPort o_spi_mode;
     InPort i_cmd;
     OutPort o_cmd;
     OutPort o_cmd_dir;
@@ -83,6 +85,8 @@ class vip_sdcard_cmdio : public ModuleObject {
     Signal wb_crc7;
 
     RegSignal clkcnt;
+    RegSignal cs;
+    RegSignal spi_mode;
     RegSignal cmdz;
     RegSignal cmd_dir;
     RegSignal cmd_rxshift;

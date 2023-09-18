@@ -54,6 +54,8 @@ class sdctrl_cmd_transmitter : public ModuleObject {
     InPort i_cmd;           // CMD IO Command/Resonse; Data output in SPI mode
     OutPort o_cmd;
     OutPort o_cmd_dir;
+    OutPort o_cmd_cs;
+    InPort i_spi_mode;
     InPort i_watchdog;
     InPort i_cmd_set_low;
     InPort i_req_valid;
@@ -106,6 +108,7 @@ class sdctrl_cmd_transmitter : public ModuleObject {
     RegSignal crc7_clear;
     RegSignal cmdstate;
     RegSignal cmderr;
+    RegSignal cmd_cs;
     RegSignal watchdog;
 
     CombProcess comb;

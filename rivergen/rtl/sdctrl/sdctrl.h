@@ -23,7 +23,7 @@
 #include "sdctrl_cfg.h"
 #include "sdctrl_regs.h"
 #include "sdctrl_crc7.h"
-#include "sdctrl_crc16.h"
+#include "sdctrl_crc15.h"
 #include "sdctrl_cmd_transmitter.h"
 
 using namespace sysvc;
@@ -36,16 +36,26 @@ class sdctrl : public ModuleObject {
      public:
         CombProcess(GenObject *parent) :
             ProcObject(parent, "comb"),
-            v_crc16_next(this, "v_crc16_next", "1"),
+            v_crc15_next(this, "v_crc15_next", "1"),
             vb_cmd_req_arg(this, "vb_cmd_req_arg", "32"),
             v_cmd_resp_ready(this, "v_cmd_resp_ready", "1"),
+            v_cmd_dir(this, "v_cmd_dir", "1"),
+            v_cmd_in(this, "v_cmd_in", "1"),
+            v_dat0_dir(this, "v_dat0_dir", "1"),
+            v_dat3_dir(this, "v_dat3_dir", "1"),
+            v_dat3_out(this, "v_dat3_out", "1"),
             v_clear_cmderr(this, "v_clear_cmderr", "1") {
         }
 
      public:
-        Logic v_crc16_next;
+        Logic v_crc15_next;
         Logic vb_cmd_req_arg;
         Logic v_cmd_resp_ready;
+        Logic v_cmd_dir;
+        Logic v_cmd_in;
+        Logic v_dat0_dir;
+        Logic v_dat3_dir;
+        Logic v_dat3_out;
         Logic v_clear_cmderr;
     };
 
@@ -114,6 +124,7 @@ class sdctrl : public ModuleObject {
     Signal w_regs_sck_negedge;
     Signal w_regs_clear_cmderr;
     Signal wb_regs_watchdog;
+    Signal w_regs_spi_mode;
     Signal w_regs_pcie_12V_support;
     Signal w_regs_pcie_available;
     Signal wb_regs_voltage_supply;
@@ -130,6 +141,9 @@ class sdctrl : public ModuleObject {
     Signal wb_mem_resp_rdata;
     Signal wb_mem_resp_err;
 
+    Signal w_trx_cmd_dir;
+    Signal w_trx_cmd_cs;
+    Signal w_cmd_in;
     Signal w_cmd_req_ready;
     Signal w_cmd_resp_valid;
     Signal wb_cmd_resp_cmd;
@@ -146,9 +160,11 @@ class sdctrl : public ModuleObject {
     Signal w_crc7_next;
     Signal w_crc7_dat;
     Signal wb_crc7;
-    Signal w_crc16_next;
-    Signal wb_crc16_dat;
-    Signal wb_crc16;
+    Signal w_crc15_next;
+    Signal wb_crc15_0;
+    Signal wb_crc15_1;
+    Signal wb_crc15_2;
+    Signal wb_crc15_3;
 
     RegSignal clkcnt;
     RegSignal cmd_set_low;
@@ -159,9 +175,10 @@ class sdctrl : public ModuleObject {
     RegSignal cmd_resp_cmd;
     RegSignal cmd_resp_reg;
 
-    RegSignal crc16_clear;
+    RegSignal crc15_clear;
     RegSignal dat;
     RegSignal dat_dir;
+    RegSignal dat3_dir;
 
     RegSignal sdstate;
     RegSignal idlestate;
@@ -179,7 +196,10 @@ class sdctrl : public ModuleObject {
     axi_slv xslv0;
     sdctrl_regs regs0;
     sdctrl_crc7 crccmd0;
-    sdctrl_crc16 crcdat0;
+    sdctrl_crc15 crcdat0;
+    sdctrl_crc15 crcdat1;
+    sdctrl_crc15 crcdat2;
+    sdctrl_crc15 crcdat3;
     sdctrl_cmd_transmitter cmdtrx0;
 };
 

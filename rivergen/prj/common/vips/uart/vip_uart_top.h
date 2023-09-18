@@ -23,7 +23,7 @@
 
 using namespace sysvc;
 
-#define FROST3
+//#define FROST3
 
 class vip_uart_top : public ModuleObject {
  public:

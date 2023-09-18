@@ -20,6 +20,8 @@ vip_sdcard_cmdio::vip_sdcard_cmdio(GenObject *parent, const char *name) :
     ModuleObject(parent, "vip_sdcard_cmdio", name),
     i_nrst(this, "i_nrst", "1"),
     i_clk(this, "i_clk", "1"),
+    i_cs(this, "i_cs", "1", "dat3 in SPI mode."),
+    o_spi_mode(this, "o_spi_mode", "1", "Detected SPI mode on CMD0"),
     i_cmd(this, "i_cmd", "1"),
     o_cmd(this, "o_cmd", "1"),
     o_cmd_dir(this, "o_cmd_dir", "1"),
@@ -52,6 +54,8 @@ vip_sdcard_cmdio::vip_sdcard_cmdio(GenObject *parent, const char *name) :
     wb_crc7(this, "wb_crc7", "7"),
     // registers
     clkcnt(this, "clkcnt", "8"),
+    cs(this, "cs", "1"),
+    spi_mode(this, "spi_mode", "1"),
     cmdz(this, "cmdz", "1", "1"),
     cmd_dir(this, "cmd_dir", "1", "1"),
     cmd_rxshift(this, "cmd_rxshift", "48", "-1"),
@@ -97,6 +101,7 @@ TEXT();
 TEXT();
     SWITCH(cmd_state);
     CASE (CMDSTATE_INIT);
+        SETZERO(spi_mode);
         SETONE(cmd_dir);
         SETONE(comb.v_crc7_clear);
         TEXT("Wait several (72) clocks to switch into idle state");
@@ -106,6 +111,7 @@ TEXT();
         ENDCASE();
     CASE (CMDSTATE_REQ_STARTBIT);
         IF (AND2(NZ(cmdz), EZ(i_cmd)));
+            SETVAL(cs, i_cs);
             SETONE(comb.v_crc7_next);
             SETVAL(cmd_state, CMDSTATE_REQ_TXBIT);
         ELSE();
@@ -155,6 +161,10 @@ TEXT();
                     &EQ(crc_calc, crc_rx)));
             SETVAL(cmd_state, CMDSTATE_WAIT_RESP);
             SETONE(cmd_req_valid);
+            IF (AND2(EZ(BITS(cmd_rxshift, 45, 40)), EZ(cs)));
+                TEXT("CMD0 with CS = 0 (CD_DAT3)");
+                SETONE(spi_mode);
+            ENDIF();
         ELSE();
             SETVAL(cmd_state, CMDSTATE_REQ_STARTBIT);
             SETONE(cmd_dir);

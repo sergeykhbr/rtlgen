@@ -35,6 +35,7 @@ vip_sdcard_top::vip_sdcard_top(GenObject *parent, const char *name) :
     // signals
     w_clk(this, "w_clk", "1"),
     wb_rdata(this, "wb_rdata", "8"),
+    w_spi_mode(this, "w_spi_mode", "1"),
     w_cmd_in(this, "w_cmd_in", "1"),
     w_cmd_out(this, "w_cmd_out", "1"),
     w_cmd_dir(this, "w_cmd_dir", "1"),
@@ -107,6 +108,8 @@ vip_sdcard_top::vip_sdcard_top(GenObject *parent, const char *name) :
     NEW(cmdio0, cmdio0.getName().c_str());
         CONNECT(cmdio0, 0, cmdio0.i_clk, i_sclk);
         CONNECT(cmdio0, 0, cmdio0.i_nrst, i_nrst);
+        CONNECT(cmdio0, 0, cmdio0.i_cs, w_dat3_in);
+        CONNECT(cmdio0, 0, cmdio0.o_spi_mode, w_spi_mode);
         CONNECT(cmdio0, 0, cmdio0.i_cmd, w_cmd_in);
         CONNECT(cmdio0, 0, cmdio0.o_cmd, w_cmd_out);
         CONNECT(cmdio0, 0, cmdio0.o_cmd_dir, w_cmd_dir);
@@ -122,6 +125,7 @@ vip_sdcard_top::vip_sdcard_top(GenObject *parent, const char *name) :
     NEW(ctrl0, ctrl0.getName().c_str());
         CONNECT(ctrl0, 0, ctrl0.i_clk, i_sclk);
         CONNECT(ctrl0, 0, ctrl0.i_nrst, i_nrst);
+        CONNECT(ctrl0, 0, ctrl0.i_spi_mode, w_spi_mode);
         CONNECT(ctrl0, 0, ctrl0.i_cmd_req_valid, w_cmd_req_valid);
         CONNECT(ctrl0, 0, ctrl0.i_cmd_req_cmd, wb_cmd_req_cmd);
         CONNECT(ctrl0, 0, ctrl0.i_cmd_req_data, wb_cmd_req_data);
@@ -139,7 +143,7 @@ void vip_sdcard_top::proc_comb() {
     SETONE(w_dat0_dir, "in:");
     SETONE(w_dat1_dir, "in:");
     SETONE(w_dat2_dir, "in:");
-    SETZERO(w_dat3_dir, "out: Emulate pull-up CardDetect value");
+    SETONE(w_dat3_dir, "in:");
 
 TEXT();
     SETONE(w_dat0_out);
