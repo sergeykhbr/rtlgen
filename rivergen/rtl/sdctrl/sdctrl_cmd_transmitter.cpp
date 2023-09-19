@@ -44,6 +44,7 @@ sdctrl_cmd_transmitter::sdctrl_cmd_transmitter(GenObject *parent, const char *na
     o_resp_reg(this, "o_resp_reg", "32", "Card Status, OCR register (R3) or RCA register (R6)"),
     o_resp_crc7_rx(this, "o_resp_crc7_rx", "7", "Received CRC7"),
     o_resp_crc7_calc(this, "o_resp_crc7_calc", "7", "Calculated CRC7"),
+    o_resp_spistatus(this, "o_resp_spistatus", "15", "{R1,R2} response valid only in SPI mode"),
     i_resp_ready(this, "i_resp_ready", "1"),
     i_clear_cmderr(this, "i_clear_cmderr", "1"),
     o_cmdstate(this, "o_cmdstate", "4"),
@@ -57,12 +58,14 @@ sdctrl_cmd_transmitter::sdctrl_cmd_transmitter(GenObject *parent, const char *na
     CMDSTATE_RESP_WAIT(this, "4", "CMDSTATE_RESP_WAIT", "4"),
     CMDSTATE_RESP_TRANSBIT(this, "4", "CMDSTATE_RESP_TRANSBIT", "5"),
     CMDSTATE_RESP_CMD_MIRROR(this, "4", "CMDSTATE_RESP_CMD_MIRROR", "6"),
-    CMDSTATE_RESP_R1(this, "4", "CMDSTATE_RESP_R1", "7"),
-    CMDSTATE_RESP_REG(this, "4", "CMDSTATE_RESP_REG", "8"),
-    CMDSTATE_RESP_CID_CSD(this, "4", "CMDSTATE_RESP_CID_CSD", "9"),
-    CMDSTATE_RESP_CRC7(this, "4", "CMDSTATE_RESP_CRC7", "10"),
-    CMDSTATE_RESP_STOPBIT(this, "4", "CMDSTATE_RESP_STOPBIT", "11"),
-    CMDSTATE_PAUSE(this, "4", "CMDSTATE_PAUSE", "12"),
+    CMDSTATE_RESP_REG(this, "4", "CMDSTATE_RESP_REG", "7"),
+    CMDSTATE_RESP_CID_CSD(this, "4", "CMDSTATE_RESP_CID_CSD", "8"),
+    CMDSTATE_RESP_CRC7(this, "4", "CMDSTATE_RESP_CRC7", "9"),
+    CMDSTATE_RESP_STOPBIT(this, "4", "CMDSTATE_RESP_STOPBIT", "10"),
+    CMDSTATE_RESP_SPI_R1(this, "4", "CMDSTATE_RESP_SPI_R1", "11"),
+    CMDSTATE_RESP_SPI_R2(this, "4", "CMDSTATE_RESP_SPI_R2", "12"),
+    CMDSTATE_RESP_SPI_DATA(this, "4", "CMDSTATE_RESP_SPI_DATA", "13"),
+    CMDSTATE_PAUSE(this, "4", "CMDSTATE_PAUSE", "15"),
     // signals
     // registers
     req_cmd(this, "req_cmd", "6"),
@@ -70,6 +73,7 @@ sdctrl_cmd_transmitter::sdctrl_cmd_transmitter(GenObject *parent, const char *na
     resp_valid(this, "resp_valid", "1"),
     resp_cmd(this, "resp_cmd", "6"),
     resp_reg(this, "resp_arg", "32"),
+    resp_spistatus(this, "resp_spistatus", "15"),
     cmdshift(this, "cmdshift", "40", "-1"),
     cmdmirror(this, "cmdmirror", "6"),
     regshift(this, "regshift", "32"),
@@ -93,6 +97,7 @@ sdctrl_cmd_transmitter::sdctrl_cmd_transmitter(GenObject *parent, const char *na
 
 void sdctrl_cmd_transmitter::proc_comb() {
     SETVAL(comb.vb_cmdshift, cmdshift);
+    SETVAL(comb.vb_resp_spistatus, resp_spistatus);
     IF (NZ(i_clear_cmderr));
         SETZERO(cmderr);
     ENDIF();
@@ -132,6 +137,7 @@ TEXT();
                 SETVAL(cmdbitcnt, DEC(cmdbitcnt));
             ELSE();
                 SETVAL(cmdstate, CMDSTATE_REQ_CRC7);
+                SETVAL(crc_calc, i_crc7);
                 SETBITS(comb.vb_cmdshift, 39, 32, CC2(i_crc7, CONST("1", 1)));
                 SETVAL(cmdbitcnt, CONST("6", 7));
                 SETONE(crc7_clear);
@@ -156,8 +162,17 @@ TEXT();
             TEXT("[47] start bit; [135] for R2");
             SETVAL(watchdog, DEC(watchdog));
             IF (EZ(i_cmd));
-                SETONE(comb.v_crc7_next);
-                SETVAL(cmdstate, CMDSTATE_RESP_TRANSBIT);
+                IF (EZ(i_spi_mode));
+                    SETONE(comb.v_crc7_next);
+                    SETVAL(cmdstate, CMDSTATE_RESP_TRANSBIT);
+                ELSE();
+                    TEXT("Response in SPI mode:");
+                    SETVAL(cmdstate, CMDSTATE_RESP_SPI_R1);
+                    SETVAL(cmdbitcnt, CONST("6", 7));
+                    SETVAL(cmdmirror, req_cmd);
+                    SETZERO(resp_spistatus);
+                    SETZERO(regshift);
+                ENDIF();
             ELSIF(EZ(watchdog));
                 SETVAL(cmderr, sdctrl_cfg_->CMDERR_NO_RESPONSE);
                 SETVAL(cmdstate, CMDSTATE_IDLE);
@@ -227,6 +242,38 @@ TEXT();
             SETVAL(cmdstate, CMDSTATE_PAUSE);
             SETVAL(cmdbitcnt, CONST("2", 7));
             SETONE(resp_valid);
+        ELSIF(EQ(cmdstate, CMDSTATE_RESP_SPI_R1));
+            SETBITS(comb.vb_resp_spistatus, 14, 8, CC2(BITS(resp_spistatus, 13, 8), i_cmd));
+            IF (NZ(cmdbitcnt));
+                SETVAL(cmdbitcnt, DEC(cmdbitcnt));
+            ELSE();
+                IF (EQ(req_rn, sdctrl_cfg_->R2));
+                    SETVAL(cmdbitcnt, CONST("7", 7));
+                    SETVAL(cmdstate, CMDSTATE_RESP_SPI_R2);
+                ELSIF (OR2(EQ(req_rn, sdctrl_cfg_->R3), EQ(req_rn, sdctrl_cfg_->R7)));
+                    SETVAL(cmdbitcnt, CONST("31", 7));
+                    SETVAL(cmdstate, CMDSTATE_RESP_SPI_DATA);
+                ELSE();
+                    SETVAL(cmdstate, CMDSTATE_PAUSE);
+                    SETONE(resp_valid);
+                ENDIF();
+            ENDIF();
+        ELSIF(EQ(cmdstate, CMDSTATE_RESP_SPI_R2));
+            SETBITS(comb.vb_resp_spistatus, 7, 0, CC2(BITS(resp_spistatus, 6, 0), i_cmd));
+            IF (NZ(cmdbitcnt));
+                SETVAL(cmdbitcnt, DEC(cmdbitcnt));
+            ELSE();
+                SETVAL(cmdstate, CMDSTATE_PAUSE);
+                SETONE(resp_valid);
+            ENDIF();
+        ELSIF(EQ(cmdstate, CMDSTATE_RESP_SPI_DATA));
+            SETVAL(regshift, CC2(BITS(regshift, 30, 0), i_cmd));
+            IF (NZ(cmdbitcnt));
+                SETVAL(cmdbitcnt, DEC(cmdbitcnt));
+            ELSE();
+                SETVAL(cmdstate, CMDSTATE_PAUSE);
+                SETONE(resp_valid);
+            ENDIF();
         ELSIF (EQ(cmdstate, CMDSTATE_PAUSE));
             SETONE(crc7_clear);
             SETONE(cmd_cs);
@@ -238,6 +285,7 @@ TEXT();
         ENDIF();
     ENDIF();
     SETVAL(cmdshift, comb.vb_cmdshift);
+    SETVAL(resp_spistatus, comb.vb_resp_spistatus);
 
 TEXT();
     IF (ORx(2, &LS(cmdstate, CMDSTATE_RESP_WAIT),
@@ -265,6 +313,7 @@ TEXT();
     SETVAL(o_resp_reg, regshift);
     SETVAL(o_resp_crc7_rx, crc_rx);
     SETVAL(o_resp_crc7_calc, crc_calc);
+    SETVAL(o_resp_spistatus, resp_spistatus);
     SETVAL(o_cmdstate, cmdstate);
     SETVAL(o_cmderr, cmderr);
 }

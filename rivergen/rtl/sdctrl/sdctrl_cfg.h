@@ -34,6 +34,7 @@ class sdctrl_cfg : public FileObject {
     ParamLogic CMD11;
     ParamLogic ACMD41;
     ParamLogic CMD55;
+    ParamLogic CMD58;
     TextLine _cmd2_;
     ParamLogic R1;
     TextLine _r20_;

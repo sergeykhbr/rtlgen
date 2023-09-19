@@ -66,7 +66,8 @@ sdctrl::sdctrl(GenObject *parent, const char *name) :
     IDLESTATE_CMD8(this, "3", "IDLESTATE_CMD8", "1"),
     IDLESTATE_CMD55(this, "3", "IDLESTATE_CMD55", "2"),
     IDLESTATE_ACMD41(this, "3", "IDLESTATE_ACMD41", "3"),
-    IDLESTATE_CARD_IDENTIFICATION(this, "3", "IDLESTATE_CARD_IDENTIFICATION", "4"),
+    IDLESTATE_CMD58(this, "3", "IDLESTATE_CMD58", "4"),
+    IDLESTATE_CARD_IDENTIFICATION(this, "3", "IDLESTATE_CARD_IDENTIFICATION", "5"),
     _readystate0_(this, "SD-card 'ready' state substates:"),
     READYSTATE_CMD11(this, "2", "READYSTATE_CMD11", "0"),
     READYSTATE_CMD2(this, "2", "READYSTATE_CMD2", "1"),
@@ -104,6 +105,7 @@ sdctrl::sdctrl(GenObject *parent, const char *name) :
     wb_cmd_resp_reg(this, "wb_cmd_resp_reg", "32"),
     wb_cmd_resp_crc7_rx(this, "wb_cmd_resp_crc7_rx", "7"),
     wb_cmd_resp_crc7_calc(this, "wb_cmd_resp_crc7_calc", "7"),
+    wb_cmd_resp_spistatus(this, "wb_cmd_resp_spistatus", "15"),
     w_cmd_resp_ready(this, "w_cmd_resp_ready", "1"),
     wb_trx_cmdstate(this, "wb_trx_cmdstate", "4"),
     wb_trx_cmderr(this, "wb_trx_cmderr", "4"),
@@ -127,6 +129,7 @@ sdctrl::sdctrl(GenObject *parent, const char *name) :
     cmd_req_rn(this, "cmd_req_rn", "3"),
     cmd_resp_cmd(this, "cmd_resp_r1", "6"),
     cmd_resp_reg(this, "cmd_resp_reg", "32"),
+    cmd_resp_spistatus(this, "cmd_resp_spistatus", "15"),
     crc15_clear(this, "crc15_clear", "1", "1"),
     dat(this, "dat", "4", "-1"),
     dat_dir(this, "dat_dir", "1", "DIR_OUTPUT"),
@@ -283,6 +286,7 @@ sdctrl::sdctrl(GenObject *parent, const char *name) :
         CONNECT(cmdtrx0, 0, cmdtrx0.o_resp_reg, wb_cmd_resp_reg);
         CONNECT(cmdtrx0, 0, cmdtrx0.o_resp_crc7_rx, wb_cmd_resp_crc7_rx);
         CONNECT(cmdtrx0, 0, cmdtrx0.o_resp_crc7_calc, wb_cmd_resp_crc7_calc);
+        CONNECT(cmdtrx0, 0, cmdtrx0.o_resp_spistatus, wb_cmd_resp_spistatus);
         CONNECT(cmdtrx0, 0, cmdtrx0.i_resp_ready, w_cmd_resp_ready);
         CONNECT(cmdtrx0, 0, cmdtrx0.i_clear_cmderr, w_clear_cmderr);
         CONNECT(cmdtrx0, 0, cmdtrx0.o_cmdstate, wb_trx_cmdstate);
@@ -318,6 +322,7 @@ TEXT();
             SETZERO(wait_cmd_resp);
             SETVAL(cmd_resp_cmd, wb_cmd_resp_cmd);
             SETVAL(cmd_resp_reg, wb_cmd_resp_reg);
+            SETVAL(cmd_resp_spistatus, wb_cmd_resp_spistatus);
 
 TEXT();
             IF (ANDx(2, &EQ(cmd_req_cmd, sdctrl_cfg_->CMD8),
@@ -437,30 +442,57 @@ TEXT();
                 TEXT("  [23:0] VDD voltage window (OCR[23:0])");
                 SETONE(cmd_req_valid);
                 SETVAL(cmd_req_cmd, sdctrl_cfg_->ACMD41);
-                SETVAL(cmd_req_rn, sdctrl_cfg_->R3);
                 SETZERO(comb.vb_cmd_req_arg);
                 SETBIT(comb.vb_cmd_req_arg, 30, HCS);
-                SETBIT(comb.vb_cmd_req_arg, 24, S18);
                 SETBITS(comb.vb_cmd_req_arg, 23, 0, OCR_VoltageWindow);
-                SETVAL(idlestate, IDLESTATE_CARD_IDENTIFICATION);
+                IF (EZ(w_regs_spi_mode));
+                    TEXT("SD mode:");
+                    SETBIT(comb.vb_cmd_req_arg, 24, S18);
+                    SETVAL(cmd_req_rn, sdctrl_cfg_->R3);
+                    SETVAL(idlestate, IDLESTATE_CARD_IDENTIFICATION);
+                ELSE();
+                    TEXT("SPI mode:");
+                    SETVAL(cmd_req_rn, sdctrl_cfg_->R1);
+                    SETVAL(idlestate, IDLESTATE_CMD58);
+                ENDIF();
                 ENDCASE();
-            CASE (IDLESTATE_CARD_IDENTIFICATION);
-                IF (EZ(BIT(cmd_resp_reg, 31)));
-                    TEXT("LOW if the card has not finished power-up routine");
+            CASE (IDLESTATE_CMD58);
+                TEXT("READ_OCR: Reads OCR register. Used in SPI mode only.");
+                TEXT("  [31] reserved bit");
+                TEXT("  [30] HCS (high capacity support)");
+                TEXT("  [29:0] reserved");
+                IF (NE(BITS(cmd_resp_spistatus, 14, 8), CONST("0x1", 7)));
+                    TEXT("SD card not in idle state");
                     SETVAL(idlestate, IDLESTATE_CMD55);
                 ELSE();
-                    IF (NZ(HCS));
-                        SETVAL(sdtype, sdctrl_cfg_->SDCARD_VER2X_HC);
-                    ELSIF (EQ(sdtype, sdctrl_cfg_->SDCARD_UNKNOWN));
-                        SETVAL(sdtype, sdctrl_cfg_->SDCARD_VER2X_SC);
-                    ENDIF();
-                    IF (NZ(S18));
+                    SETONE(cmd_req_valid);
+                    SETVAL(cmd_req_cmd, sdctrl_cfg_->CMD58);
+                    SETZERO(comb.vb_cmd_req_arg);
+                    SETVAL(cmd_req_rn, sdctrl_cfg_->R3);
+                    SETVAL(idlestate, IDLESTATE_CARD_IDENTIFICATION);
+                ENDIF();
+                ENDCASE();
+            CASE (IDLESTATE_CARD_IDENTIFICATION);
+                IF (NZ(HCS));
+                    SETVAL(sdtype, sdctrl_cfg_->SDCARD_VER2X_HC);
+                ELSIF (EQ(sdtype, sdctrl_cfg_->SDCARD_UNKNOWN));
+                    SETVAL(sdtype, sdctrl_cfg_->SDCARD_VER2X_SC);
+                ENDIF();
+                IF (EZ(w_regs_spi_mode));
+                    TEXT("SD mode:");
+                    IF (EZ(BIT(cmd_resp_reg, 31)));
+                        TEXT("LOW if the card has not finished power-up routine");
+                        SETVAL(idlestate, IDLESTATE_CMD55);
+                    ELSIF (NZ(S18));
                         TEXT("Voltage switch command to change 3.3V to 1.8V");
                         SETVAL(readystate, READYSTATE_CMD11);
                     ELSE();
                         SETVAL(readystate, READYSTATE_CMD2);
                     ENDIF();
                     SETVAL(sdstate, SDSTATE_READY);
+                ELSE();
+                    TEXT("SPI mode:");
+                    SETVAL(sdstate, SDSTATE_STBY);
                 ENDIF();
                 ENDCASE();
             CASEDEF();

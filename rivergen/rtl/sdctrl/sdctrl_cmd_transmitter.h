@@ -30,6 +30,7 @@ class sdctrl_cmd_transmitter : public ModuleObject {
             ProcObject(parent, "comb"),
             v_req_ready(this, "v_req_ready", "1"),
             vb_cmdshift(this, "vb_cmdshift", "48"),
+            vb_resp_spistatus(this, "vb_resp_spistatus", "15"),
             v_cmd_dir(this, "v_cmd_dir", "1"),
             v_crc7_dat(this, "v_crc7_dat", "1"),
             v_crc7_next(this, "v_crc7_next", "1") {
@@ -38,6 +39,7 @@ class sdctrl_cmd_transmitter : public ModuleObject {
      public:
         Logic v_req_ready;
         Logic vb_cmdshift;
+        Logic vb_resp_spistatus;
         Logic v_cmd_dir;
         Logic v_crc7_dat;
         Logic v_crc7_next;
@@ -72,6 +74,7 @@ class sdctrl_cmd_transmitter : public ModuleObject {
     OutPort o_resp_reg;
     OutPort o_resp_crc7_rx;
     OutPort o_resp_crc7_calc;
+    OutPort o_resp_spistatus;
     InPort i_resp_ready;
     InPort i_clear_cmderr;
     OutPort o_cmdstate;
@@ -85,11 +88,13 @@ class sdctrl_cmd_transmitter : public ModuleObject {
     ParamLogic CMDSTATE_RESP_WAIT;
     ParamLogic CMDSTATE_RESP_TRANSBIT;
     ParamLogic CMDSTATE_RESP_CMD_MIRROR;
-    ParamLogic CMDSTATE_RESP_R1;
     ParamLogic CMDSTATE_RESP_REG;
     ParamLogic CMDSTATE_RESP_CID_CSD;
     ParamLogic CMDSTATE_RESP_CRC7;
     ParamLogic CMDSTATE_RESP_STOPBIT;
+    ParamLogic CMDSTATE_RESP_SPI_R1;
+    ParamLogic CMDSTATE_RESP_SPI_R2;
+    ParamLogic CMDSTATE_RESP_SPI_DATA;
     ParamLogic CMDSTATE_PAUSE;
 
     RegSignal req_cmd;
@@ -97,6 +102,7 @@ class sdctrl_cmd_transmitter : public ModuleObject {
     RegSignal resp_valid;
     RegSignal resp_cmd;
     RegSignal resp_reg;
+    RegSignal resp_spistatus;
 
     RegSignal cmdshift;
     RegSignal cmdmirror;

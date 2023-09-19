@@ -29,6 +29,7 @@ sdctrl_cfg::sdctrl_cfg(GenObject *parent) :
     CMD11(this, "6", "CMD11", "11", "VOLTAGE_SWITCH: Switch to 1.8V bus signaling level"),
     ACMD41(this, "6", "ACMD41", "41"),
     CMD55(this, "6", "CMD55", "55", "APP_CMD: application specific commands"),
+    CMD58(this, "6", "CMD58", "58", "READ_OCR: Read OCR register in SPI mode"),
     _cmd2_(this, ""),
     R1(this, "3", "R1", "1"),
     _r20_(this, "4.9.3 R2 (CID, CSD register, page 140)"),

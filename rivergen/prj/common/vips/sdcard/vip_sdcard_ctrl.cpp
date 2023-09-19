@@ -19,6 +19,7 @@
 vip_sdcard_ctrl::vip_sdcard_ctrl(GenObject *parent, const char *name) :
     ModuleObject(parent, "vip_sdcard_ctrl", name),
     CFG_SDCARD_POWERUP_DONE_DELAY(this, "CFG_SDCARD_POWERUP_DONE_DELAY", "700", "Delay of busy bits in ACMD41 response"),
+    CFG_SDCARD_HCS(this, "CFG_SDCARD_HCS", "1", "0x1", "High Capacity Support"),
     CFG_SDCARD_VHS(this, "CFG_SDCARD_VHS", "4", "0x1", "CMD8 Voltage supply mask"),
     CFG_SDCARD_PCIE_1_2V(this, "CFG_SDCARD_PCIE_1_2V", "1", "0"),
     CFG_SDCARD_PCIE_AVAIL(this, "CFG_SDCARD_PCIE_AVAIL", "1", "0"),
@@ -33,6 +34,12 @@ vip_sdcard_ctrl::vip_sdcard_ctrl(GenObject *parent, const char *name) :
     o_cmd_resp_valid(this, "o_cmd_resp_valid", "1"),
     o_cmd_resp_data32(this, "o_cmd_resp_data32", "32"),
     i_cmd_resp_ready(this, "i_cmd_resp_ready", "1"),
+    o_cmd_resp_r1b(this, "o_cmd_resp_r1b", "1"),
+    o_cmd_resp_r2(this, "o_cmd_resp_r2", "1"),
+    o_cmd_resp_r3(this, "o_cmd_resp_r3", "1"),
+    o_cmd_resp_r7(this, "o_cmd_resp_r7", "1"),
+    o_stat_idle_state(this, "o_stat_idle_state", "1"),
+    o_stat_illegal_cmd(this, "o_stat_illegal_cmd", "1"),
     // params
     _sdstate0_(this, ""),
     _sdstate1_(this, "SD-card states (see Card Status[12:9] CURRENT_STATE on page 145)"),
@@ -57,6 +64,11 @@ vip_sdcard_ctrl::vip_sdcard_ctrl(GenObject *parent, const char *name) :
     cmd_resp_valid(this, "cmd_resp_valid", "1"),
     cmd_resp_valid_delayed(this, "cmd_resp_valid_delayed", "1"),
     cmd_resp_data32(this, "cmd_resp_data32", "32"),
+    cmd_resp_r1b(this, "cmd_resp_r1b", "1"),
+    cmd_resp_r2(this, "cmd_resp_r2", "1"),
+    cmd_resp_r3(this, "cmd_resp_r3", "1"),
+    cmd_resp_r7(this, "cmd_resp_r7", "1"),
+    illegal_cmd(this, "illegal_cmd", "1"),
     //
     comb(this)
 {
@@ -72,6 +84,11 @@ void vip_sdcard_ctrl::proc_comb() {
 TEXT();
     IF (AND2(NZ(cmd_resp_valid_delayed), NZ(i_cmd_resp_ready)));
         SETZERO(cmd_resp_valid_delayed);
+        SETZERO(cmd_resp_r1b);
+        SETZERO(cmd_resp_r2);
+        SETZERO(cmd_resp_r3);
+        SETZERO(cmd_resp_r7);
+        SETZERO(illegal_cmd);
     ENDIF();
     TEXT("Power-up counter emulates 'busy' bit in ACMD41 response:");
     IF (AND2(EZ(powerup_done), LS(powerup_cnt, CFG_SDCARD_POWERUP_DONE_DELAY)));
@@ -80,6 +97,10 @@ TEXT();
         SETONE(powerup_done);
     ENDIF();
 
+TEXT();
+    IF (EQ(sdstate, SDSTATE_IDLE));
+        SETONE(comb.v_idle_state);
+    ENDIF();
 
 TEXT();
     IF (NZ(i_cmd_req_valid));
@@ -98,6 +119,7 @@ TEXT();
                 TEXT("[19:16] Voltage supply");
                 TEXT("[15:8] check pattern");
                 SETONE(cmd_resp_valid);
+                SETONE(cmd_resp_r7);
                 SETVAL(delay_cnt, CONST("20", 32));
                 SETBIT(comb.vb_resp_data32, 13,
                         AND2_L(BIT(i_cmd_req_data, 13), CFG_SDCARD_PCIE_1_2V));
@@ -121,19 +143,34 @@ TEXT();
                 SETONE(cmd_resp_valid);
                 SETVAL(delay_cnt, CONST("20", 32));
                 SETBIT(comb.vb_resp_data32, 31, powerup_done);
+                SETBIT(comb.vb_resp_data32, 30, BIT(i_cmd_req_data, 30));
                 SETBITS(comb.vb_resp_data32, 23, 0,
                     AND2_L(BITS(i_cmd_req_data, 23, 0), CFG_SDCARD_VDD_VOLTAGE_WINDOW));
                 IF (EQ(AND2_L(BITS(i_cmd_req_data, 23, 0), CFG_SDCARD_VDD_VOLTAGE_WINDOW), CONST("0", 24)));
                     TEXT("OCR check failed:");
                     SETVAL(sdstate, SDSTATE_INA);
-                ELSIF (NZ(powerup_done));
+                ELSIF (AND2(EZ(i_spi_mode), NZ(powerup_done)));
+                    TEXT("SD mode only");
                     SETVAL(sdstate, SDSTATE_READY);
+                ENDIF();
+                ENDCASE();
+            CASE (CONST("58", 6), "CMD58: READ_OCR.");
+                SETONE(cmd_resp_valid);
+                SETONE(cmd_resp_r7);
+                SETVAL(delay_cnt, CONST("20", 32));
+                IF (NZ(i_spi_mode));
+                    SETZERO(comb.vb_resp_data32);
+                    SETBIT(comb.vb_resp_data32, 30, CFG_SDCARD_HCS);
+                    SETBITS(comb.vb_resp_data32, 23, 0, CFG_SDCARD_VDD_VOLTAGE_WINDOW);
+                ELSE();
+                    SETONE(illegal_cmd);
                 ENDIF();
                 ENDCASE();
             CASEDEF();
                 TEXT("Illegal commands in 'idle' state:");
                 SETONE(cmd_resp_valid);
                 SETVAL(comb.vb_resp_data32, ALLONES());
+                SETONE(illegal_cmd);
                 ENDCASE();
             ENDSWITCH();
             ENDCASE();
@@ -149,8 +186,8 @@ TEXT();
                 SETONE(cmd_resp_valid);
                 SETVAL(delay_cnt, CONST("1", 32));
                 SETVAL(sdstate, SDSTATE_IDENT);
-            ENDCASE();
-                CASE (CONST("11", 6), "CMD11: .");
+                ENDCASE();
+            CASE (CONST("11", 6), "CMD11: .");
                 SETONE(cmd_resp_valid);
                 SETVAL(delay_cnt, CONST("1", 32));
                 ENDCASE();
@@ -158,6 +195,7 @@ TEXT();
                 TEXT("Illegal commands in 'ready' state:");
                 SETONE(cmd_resp_valid);
                 SETVAL(comb.vb_resp_data32, ALLONES());
+                SETONE(illegal_cmd);
                 ENDCASE();
             ENDSWITCH();
             ENDCASE();
@@ -178,6 +216,7 @@ TEXT();
                 TEXT("Illegal commands in 'stby' state:");
                 SETONE(cmd_resp_valid);
                 SETVAL(comb.vb_resp_data32, ALLONES());
+                SETONE(illegal_cmd);
                 ENDCASE();
             ENDSWITCH();
             ENDCASE();
@@ -217,4 +256,10 @@ TEXT();
     SETVAL(o_cmd_req_ready, cmd_req_ready);
     SETVAL(o_cmd_resp_valid, cmd_resp_valid_delayed);
     SETVAL(o_cmd_resp_data32, cmd_resp_data32);
+    SETVAL(o_cmd_resp_r1b, cmd_resp_r1b);
+    SETVAL(o_cmd_resp_r2, cmd_resp_r2);
+    SETVAL(o_cmd_resp_r3, cmd_resp_r3);
+    SETVAL(o_cmd_resp_r7, cmd_resp_r7);
+    SETVAL(o_stat_illegal_cmd, illegal_cmd);
+    SETVAL(o_stat_idle_state, comb.v_idle_state);
 }

@@ -61,6 +61,7 @@ class vip_sdcard_top : public ModuleObject {
     // param
     TextLine _cfg0_;
     ParamI32D CFG_SDCARD_POWERUP_DONE_DELAY;
+    ParamLogic CFG_SDCARD_HCS;
     ParamLogic CFG_SDCARD_VHS;
     ParamLogic CFG_SDCARD_PCIE_1_2V;
     ParamLogic CFG_SDCARD_PCIE_AVAIL;
@@ -91,6 +92,27 @@ class vip_sdcard_top : public ModuleObject {
     Signal w_cmd_resp_valid;
     Signal wb_cmd_resp_data32;
     Signal w_cmd_resp_ready;
+    Signal w_cmd_resp_r1b;
+    Signal w_cmd_resp_r2;
+    Signal w_cmd_resp_r3;
+    Signal w_cmd_resp_r7;
+    Signal w_cmdio_cmd_dir;
+    Signal w_cmdio_cmd_out;
+    TextLine _status0_;
+    Signal w_stat_idle_state;
+    Signal w_stat_erase_reset;
+    Signal w_stat_illegal_cmd;
+    Signal w_stat_err_erase_sequence;
+    Signal w_stat_err_address;
+    Signal w_stat_err_parameter;
+    Signal w_stat_locked;
+    Signal w_stat_wp_erase_skip;
+    Signal w_stat_err;
+    Signal w_stat_err_cc;
+    Signal w_stat_ecc_failed;
+    Signal w_stat_wp_violation;
+    Signal w_stat_erase_param;
+    Signal w_stat_out_of_range;
 
     CombProcess comb;
     iobuf_tech iobufcmd0;

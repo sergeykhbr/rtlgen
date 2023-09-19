@@ -28,6 +28,7 @@ vip_sdcard_top::vip_sdcard_top(GenObject *parent, const char *name) :
     // params
     _cfg0_(this, "Generic config parameters"),
     CFG_SDCARD_POWERUP_DONE_DELAY(this, "CFG_SDCARD_POWERUP_DONE_DELAY", "700", "Delay of busy bits in ACMD41 response"),
+    CFG_SDCARD_HCS(this, "1", "CFG_SDCARD_HCS", "1", "High Capacity Support"),
     CFG_SDCARD_VHS(this, "4", "CFG_SDCARD_VHS", "0x1", "CMD8 Voltage supply mask"),
     CFG_SDCARD_PCIE_1_2V(this, "1", "CFG_SDCARD_PCIE_1_2V", "0"),
     CFG_SDCARD_PCIE_AVAIL(this, "1", "CFG_SDCARD_PCIE_AVAIL", "0"),
@@ -58,6 +59,27 @@ vip_sdcard_top::vip_sdcard_top(GenObject *parent, const char *name) :
     w_cmd_resp_valid(this, "w_cmd_resp_valid", "1"),
     wb_cmd_resp_data32(this, "wb_cmd_resp_data32", "32"),
     w_cmd_resp_ready(this, "w_cmd_resp_ready", "1"),
+    w_cmd_resp_r1b(this, "w_cmd_resp_r1b", "1"),
+    w_cmd_resp_r2(this, "w_cmd_resp_r2", "1"),
+    w_cmd_resp_r3(this, "w_cmd_resp_r3", "1"),
+    w_cmd_resp_r7(this, "w_cmd_resp_r7", "1"),
+    w_cmdio_cmd_dir(this, "w_cmdio_cmd_dir", "1"),
+    w_cmdio_cmd_out(this, "w_cmdio_cmd_out", "1"),
+    _status0_(this, "Status signals:"),
+    w_stat_idle_state(this, "w_stat_idle_state", "1"),
+    w_stat_erase_reset(this, "w_stat_erase_reset", "1"),
+    w_stat_illegal_cmd(this, "w_stat_illegal_cmd", "1"),
+    w_stat_err_erase_sequence(this, "w_stat_err_erase_sequence", "1"),
+    w_stat_err_address(this, "w_stat_err_address", "1"),
+    w_stat_err_parameter(this, "w_stat_err_parameter", "1"),
+    w_stat_locked(this, "w_stat_locked", "1"),
+    w_stat_wp_erase_skip(this, "w_stat_wp_erase_skip", "1"),
+    w_stat_err(this, "w_stat_err", "1"),
+    w_stat_err_cc(this, "w_stat_err_cc", "1"),
+    w_stat_ecc_failed(this, "w_stat_ecc_failed", "1"),
+    w_stat_wp_violation(this, "w_stat_wp_violation", "1"),
+    w_stat_erase_param(this, "w_stat_erase_param", "1"),
+    w_stat_out_of_range(this, "w_stat_out_of_range", "1"),
     // registers
     //
     comb(this),
@@ -111,8 +133,8 @@ vip_sdcard_top::vip_sdcard_top(GenObject *parent, const char *name) :
         CONNECT(cmdio0, 0, cmdio0.i_cs, w_dat3_in);
         CONNECT(cmdio0, 0, cmdio0.o_spi_mode, w_spi_mode);
         CONNECT(cmdio0, 0, cmdio0.i_cmd, w_cmd_in);
-        CONNECT(cmdio0, 0, cmdio0.o_cmd, w_cmd_out);
-        CONNECT(cmdio0, 0, cmdio0.o_cmd_dir, w_cmd_dir);
+        CONNECT(cmdio0, 0, cmdio0.o_cmd, w_cmdio_cmd_out);
+        CONNECT(cmdio0, 0, cmdio0.o_cmd_dir, w_cmdio_cmd_dir);
         CONNECT(cmdio0, 0, cmdio0.o_cmd_req_valid, w_cmd_req_valid);
         CONNECT(cmdio0, 0, cmdio0.o_cmd_req_cmd, wb_cmd_req_cmd);
         CONNECT(cmdio0, 0, cmdio0.o_cmd_req_data, wb_cmd_req_data);
@@ -120,6 +142,24 @@ vip_sdcard_top::vip_sdcard_top(GenObject *parent, const char *name) :
         CONNECT(cmdio0, 0, cmdio0.i_cmd_resp_valid, w_cmd_resp_valid);
         CONNECT(cmdio0, 0, cmdio0.i_cmd_resp_data32, wb_cmd_resp_data32);
         CONNECT(cmdio0, 0, cmdio0.o_cmd_resp_ready, w_cmd_resp_ready);
+        CONNECT(cmdio0, 0, cmdio0.i_cmd_resp_r1b, w_cmd_resp_r1b);
+        CONNECT(cmdio0, 0, cmdio0.i_cmd_resp_r2, w_cmd_resp_r2);
+        CONNECT(cmdio0, 0, cmdio0.i_cmd_resp_r3, w_cmd_resp_r3);
+        CONNECT(cmdio0, 0, cmdio0.i_cmd_resp_r7, w_cmd_resp_r7);
+        CONNECT(cmdio0, 0, cmdio0.i_stat_idle_state, w_stat_idle_state);
+        CONNECT(cmdio0, 0, cmdio0.i_stat_erase_reset, w_stat_erase_reset);
+        CONNECT(cmdio0, 0, cmdio0.i_stat_illegal_cmd, w_stat_illegal_cmd);
+        CONNECT(cmdio0, 0, cmdio0.i_stat_err_erase_sequence, w_stat_err_erase_sequence);
+        CONNECT(cmdio0, 0, cmdio0.i_stat_err_address, w_stat_err_address);
+        CONNECT(cmdio0, 0, cmdio0.i_stat_err_parameter, w_stat_err_parameter);
+        CONNECT(cmdio0, 0, cmdio0.i_stat_locked, w_stat_locked);
+        CONNECT(cmdio0, 0, cmdio0.i_stat_wp_erase_skip, w_stat_wp_erase_skip);
+        CONNECT(cmdio0, 0, cmdio0.i_stat_err, w_stat_err);
+        CONNECT(cmdio0, 0, cmdio0.i_stat_err_cc, w_stat_err_cc);
+        CONNECT(cmdio0, 0, cmdio0.i_stat_ecc_failed, w_stat_ecc_failed);
+        CONNECT(cmdio0, 0, cmdio0.i_stat_wp_violation, w_stat_wp_violation);
+        CONNECT(cmdio0, 0, cmdio0.i_stat_erase_param, w_stat_erase_param);
+        CONNECT(cmdio0, 0, cmdio0.i_stat_out_of_range, w_stat_out_of_range);
     ENDNEW();
 
     NEW(ctrl0, ctrl0.getName().c_str());
@@ -133,6 +173,12 @@ vip_sdcard_top::vip_sdcard_top(GenObject *parent, const char *name) :
         CONNECT(ctrl0, 0, ctrl0.o_cmd_resp_valid, w_cmd_resp_valid);
         CONNECT(ctrl0, 0, ctrl0.o_cmd_resp_data32, wb_cmd_resp_data32);
         CONNECT(ctrl0, 0, ctrl0.i_cmd_resp_ready, w_cmd_resp_ready);
+        CONNECT(ctrl0, 0, ctrl0.o_cmd_resp_r1b, w_cmd_resp_r1b);
+        CONNECT(ctrl0, 0, ctrl0.o_cmd_resp_r2, w_cmd_resp_r2);
+        CONNECT(ctrl0, 0, ctrl0.o_cmd_resp_r3, w_cmd_resp_r3);
+        CONNECT(ctrl0, 0, ctrl0.o_cmd_resp_r7, w_cmd_resp_r7);
+        CONNECT(ctrl0, 0, ctrl0.o_stat_idle_state, w_stat_idle_state);
+        CONNECT(ctrl0, 0, ctrl0.o_stat_illegal_cmd, w_stat_illegal_cmd);
     ENDNEW();
 
     Operation::start(&comb);
@@ -140,14 +186,46 @@ vip_sdcard_top::vip_sdcard_top(GenObject *parent, const char *name) :
 }
 
 void vip_sdcard_top::proc_comb() {
-    SETONE(w_dat0_dir, "in:");
-    SETONE(w_dat1_dir, "in:");
-    SETONE(w_dat2_dir, "in:");
-    SETONE(w_dat3_dir, "in:");
+    IF (NZ(w_spi_mode));
+        SETONE(w_cmd_dir, "in: din");
+        SETZERO(w_dat0_dir, "out: dout");
+        SETONE(w_dat1_dir, "in: reserved");
+        SETONE(w_dat2_dir, "in: reserved");
+        SETONE(w_dat3_dir, "in: cs");
+
+        TEXT();
+        SETVAL(w_dat0_out, w_cmdio_cmd_out);
+        SETONE(w_dat1_out);
+        SETONE(w_dat2_out);
+        SETONE(w_dat3_out);
+    ELSE();
+        SETVAL(w_cmd_dir, w_cmdio_cmd_dir);
+        SETONE(w_dat0_dir, "in:");
+        SETONE(w_dat1_dir, "in:");
+        SETONE(w_dat2_dir, "in:");
+        SETONE(w_dat3_dir, "in:");
+        
+        TEXT();
+        SETVAL(w_cmd_out, w_cmdio_cmd_out);
+        SETONE(w_dat0_out);
+        SETONE(w_dat1_out);
+        SETONE(w_dat2_out);
+        SETONE(w_dat3_out);
+    ENDIF();
 
 TEXT();
-    SETONE(w_dat0_out);
-    SETONE(w_dat1_out);
-    SETONE(w_dat2_out);
-    SETONE(w_dat3_out);
+    TEXT("Not implemented yet:");
+    SETZERO(w_stat_erase_reset);
+    SETZERO(w_stat_err_erase_sequence);
+    SETZERO(w_stat_err_address);
+    SETZERO(w_stat_err_parameter);
+    SETZERO(w_stat_locked);
+    SETZERO(w_stat_wp_erase_skip);
+    SETZERO(w_stat_err);
+    SETZERO(w_stat_err_cc);
+    SETZERO(w_stat_ecc_failed);
+    SETZERO(w_stat_wp_violation);
+    SETZERO(w_stat_erase_param);
+    SETZERO(w_stat_out_of_range);
+
 }

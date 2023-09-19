@@ -32,6 +32,24 @@ vip_sdcard_cmdio::vip_sdcard_cmdio(GenObject *parent, const char *name) :
     i_cmd_resp_valid(this, "i_cmd_resp_valid", "1"),
     i_cmd_resp_data32(this, "i_cmd_resp_data32", "32"),
     o_cmd_resp_ready(this, "o_cmd_resp_ready", "1"),
+    i_cmd_resp_r1b(this, "i_cmd_resp_r1b", "1", "Same as R1 with zero line (any number of bits) card is busy, non-zero is ready"),
+    i_cmd_resp_r2(this, "i_cmd_resp_r2", "1", "2-Bytes status"),
+    i_cmd_resp_r3(this, "i_cmd_resp_r3", "1", "Read OCR 32 bits"),
+    i_cmd_resp_r7(this, "i_cmd_resp_r7", "1", "CMD8 interface condition response"),
+    i_stat_idle_state(this, "i_stat_idle_state", "1", "Card in idle state and running initialization process"),
+    i_stat_erase_reset(this, "i_stat_erase_reset", "1", "Erase sequence was cleared before executing"),
+    i_stat_illegal_cmd(this, "i_stat_illegal_cmd", "1", "Illegal command was detected"),
+    i_stat_err_erase_sequence(this, "i_stat_err_erase_sequence", "1", "An error ini the sequence of erase commands occured"),
+    i_stat_err_address(this, "i_stat_err_address", "1", "A misaligned adddres that didnot mathc block length"),
+    i_stat_err_parameter(this, "i_stat_err_parameter", "1", "The command argument was otuside the allows range"),
+    i_stat_locked(this, "i_stat_locked", "1", "Is set when card is locked by the user"),
+    i_stat_wp_erase_skip(this, "i_stat_wp_erase_skip", "1", "Erase wp-sector or password error during card lock/unlock"),
+    i_stat_err(this, "i_stat_err", "1", "A general or an unknown error occured during operation"),
+    i_stat_err_cc(this, "i_stat_err_cc", "1", "Internal card controller error"),
+    i_stat_ecc_failed(this, "i_stat_ecc_failed", "1", "Card internal ECC eas applied but failed to correct data"),
+    i_stat_wp_violation(this, "i_stat_wp_violation", "1", "The command tried to write wp block"),
+    i_stat_erase_param(this, "i_stat_erase_param", "1", "An invalid selection for erase, sectors or groups"),
+    i_stat_out_of_range(this, "i_stat_out_of_range", "1"),
     _cmdstate0_(this, ""),
     _cmdstate1_(this, "Receiver CMD state:"),
     CMDSTATE_REQ_STARTBIT(this, "4", "CMDSTATE_REQ_STARTBIT", "0"),
@@ -61,6 +79,7 @@ vip_sdcard_cmdio::vip_sdcard_cmdio(GenObject *parent, const char *name) :
     cmd_rxshift(this, "cmd_rxshift", "48", "-1"),
     cmd_txshift(this, "cmd_txshift", "48", "-1"),
     cmd_state(this, "cmd_state", "4", "CMDSTATE_INIT"),
+    cmd_req_crc_err(this, "cmd_req_crc_err", "1"),
     bitcnt(this, "bitcnt", "6"),
     txbit(this, "txbit", "1"),
     crc_calc(this, "crc_calc", "7"),
@@ -104,6 +123,7 @@ TEXT();
         SETZERO(spi_mode);
         SETONE(cmd_dir);
         SETONE(comb.v_crc7_clear);
+        SETZERO(cmd_req_crc_err);
         TEXT("Wait several (72) clocks to switch into idle state");
         IF (EQ(clkcnt, CONST("70")));
             SETVAL(cmd_state, CMDSTATE_REQ_STARTBIT);
@@ -157,8 +177,10 @@ TEXT();
         SETONE(comb.v_crc7_clear);
         ENDCASE();
     CASE (CMDSTATE_REQ_VALID);
-        IF (ANDx(2, &NZ(txbit),
-                    &EQ(crc_calc, crc_rx)));
+        IF (NE(crc_calc, crc_rx));
+            SETONE(cmd_req_crc_err);
+        ENDIF();
+        IF (NZ(txbit));
             SETVAL(cmd_state, CMDSTATE_WAIT_RESP);
             SETONE(cmd_req_valid);
             IF (AND2(EZ(BITS(cmd_rxshift, 45, 40)), EZ(cs)));
@@ -177,20 +199,52 @@ TEXT();
         IF (NZ(i_cmd_resp_valid));
             SETZERO(cmd_resp_ready);
             SETVAL(cmd_state, CMDSTATE_RESP);
-            SETVAL(bitcnt, CONST("39", 6));
-            SETZERO(comb.vb_cmd_txshift);
-            SETBITS(comb.vb_cmd_txshift, 45, 40, BITS(cmd_rxshift, 45, 40));
-            SETBITS(comb.vb_cmd_txshift, 39, 8, i_cmd_resp_data32);
-            SETBITS(comb.vb_cmd_txshift, 7, 0, CONST("0xFF", 8));
+            IF (EZ(spi_mode));
+                SETVAL(bitcnt, CONST("39", 6));
+                SETZERO(comb.vb_cmd_txshift);
+                SETBITS(comb.vb_cmd_txshift, 45, 40, BITS(cmd_rxshift, 45, 40));
+                SETBITS(comb.vb_cmd_txshift, 39, 8, i_cmd_resp_data32);
+                SETBITS(comb.vb_cmd_txshift, 7, 0, CONST("0xFF", 8));
+            ELSE();
+                TEXT("Default R1 response in SPI mode:");
+                SETVAL(bitcnt, CONST("7", 6));
+                SETVAL(comb.vb_cmd_txshift, ALLONES());
+                SETBIT(comb.vb_cmd_txshift, 47, CONST("0", 1));
+                SETBIT(comb.vb_cmd_txshift, 46, i_stat_err_parameter);
+                SETBIT(comb.vb_cmd_txshift, 45, i_stat_err_address);
+                SETBIT(comb.vb_cmd_txshift, 44, i_stat_err_erase_sequence);
+                SETBIT(comb.vb_cmd_txshift, 43, cmd_req_crc_err);
+                SETBIT(comb.vb_cmd_txshift, 42, i_stat_illegal_cmd);
+                SETBIT(comb.vb_cmd_txshift, 41, i_stat_erase_reset);
+                SETBIT(comb.vb_cmd_txshift, 40, i_stat_idle_state);
+                IF (NZ(i_cmd_resp_r2));
+                    SETVAL(bitcnt, CONST("15", 6));
+                    SETBIT(comb.vb_cmd_txshift, 39, i_stat_out_of_range);
+                    SETBIT(comb.vb_cmd_txshift, 38, i_stat_erase_param);
+                    SETBIT(comb.vb_cmd_txshift, 37, i_stat_wp_violation);
+                    SETBIT(comb.vb_cmd_txshift, 36, i_stat_ecc_failed);
+                    SETBIT(comb.vb_cmd_txshift, 35, i_stat_err_cc);
+                    SETBIT(comb.vb_cmd_txshift, 34, i_stat_err);
+                    SETBIT(comb.vb_cmd_txshift, 33, i_stat_wp_erase_skip);
+                    SETBIT(comb.vb_cmd_txshift, 32, i_stat_locked);
+                ELSIF (OR2(NZ(i_cmd_resp_r3), NZ(i_cmd_resp_r7)));
+                    SETVAL(bitcnt, CONST("39", 6));
+                    SETBITS(comb.vb_cmd_txshift, 39, 8, i_cmd_resp_data32);
+                ENDIF();
+            ENDIF();
         ENDIF();
         ENDCASE();
     CASE (CMDSTATE_RESP);
         SETVAL(comb.v_crc7_in, BIT(cmd_txshift, 47));
         IF (EZ(bitcnt));
-            SETVAL(bitcnt, CONST("6", 6));
-            SETVAL(cmd_state, CMDSTATE_RESP_CRC7);
-            SETBITS(comb.vb_cmd_txshift, 47, 40, CC2(wb_crc7, CONST("1", 1)));
-            SETVAL(crc_calc, wb_crc7);
+            IF (EZ(spi_mode));
+                SETVAL(bitcnt, CONST("6", 6));
+                SETVAL(cmd_state, CMDSTATE_RESP_CRC7);
+                SETBITS(comb.vb_cmd_txshift, 47, 40, CC2(wb_crc7, CONST("1", 1)));
+                SETVAL(crc_calc, wb_crc7);
+            ELSE();
+                SETVAL(cmd_state, CMDSTATE_RESP_STOPBIT);
+            ENDIF();
         ELSE();
             SETONE(comb.v_crc7_next);
             SETVAL(bitcnt, DEC(bitcnt));
@@ -206,6 +260,7 @@ TEXT();
     CASE (CMDSTATE_RESP_STOPBIT);
         SETVAL(cmd_state, CMDSTATE_REQ_STARTBIT);
         SETONE(cmd_dir);
+        SETONE(comb.v_crc7_clear);
         ENDCASE();
     CASEDEF();
         ENDCASE();
@@ -242,4 +297,5 @@ TEXT();
     SETVAL(o_cmd_req_cmd, cmd_req_cmd);
     SETVAL(o_cmd_req_data, cmd_req_data);
     SETVAL(o_cmd_resp_ready, cmd_resp_ready);
+    SETVAL(o_spi_mode, spi_mode);
 }

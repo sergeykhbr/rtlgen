@@ -61,6 +61,24 @@ class vip_sdcard_cmdio : public ModuleObject {
     InPort i_cmd_resp_valid;
     InPort i_cmd_resp_data32;
     OutPort o_cmd_resp_ready;
+    InPort i_cmd_resp_r1b;
+    InPort i_cmd_resp_r2;
+    InPort i_cmd_resp_r3;
+    InPort i_cmd_resp_r7;
+    InPort i_stat_idle_state;
+    InPort i_stat_erase_reset;
+    InPort i_stat_illegal_cmd;
+    InPort i_stat_err_erase_sequence;
+    InPort i_stat_err_address;
+    InPort i_stat_err_parameter;
+    InPort i_stat_locked;
+    InPort i_stat_wp_erase_skip;
+    InPort i_stat_err;
+    InPort i_stat_err_cc;
+    InPort i_stat_ecc_failed;
+    InPort i_stat_wp_violation;
+    InPort i_stat_erase_param;
+    InPort i_stat_out_of_range;
 
     // param
     TextLine _cmdstate0_;
@@ -92,6 +110,7 @@ class vip_sdcard_cmdio : public ModuleObject {
     RegSignal cmd_rxshift;
     RegSignal cmd_txshift;
     RegSignal cmd_state;
+    RegSignal cmd_req_crc_err;
     RegSignal bitcnt;
     RegSignal txbit;
     RegSignal crc_calc;

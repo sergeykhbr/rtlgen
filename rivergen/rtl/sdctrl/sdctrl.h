@@ -111,6 +111,7 @@ class sdctrl : public ModuleObject {
     ParamLogic IDLESTATE_CMD8;
     ParamLogic IDLESTATE_CMD55;
     ParamLogic IDLESTATE_ACMD41;
+    ParamLogic IDLESTATE_CMD58;
     ParamLogic IDLESTATE_CARD_IDENTIFICATION;
     TextLine _readystate0_;
     ParamLogic READYSTATE_CMD11;
@@ -150,6 +151,7 @@ class sdctrl : public ModuleObject {
     Signal wb_cmd_resp_reg;
     Signal wb_cmd_resp_crc7_rx;
     Signal wb_cmd_resp_crc7_calc;
+    Signal wb_cmd_resp_spistatus;
     Signal w_cmd_resp_ready;
     Signal wb_trx_cmdstate;
     Signal wb_trx_cmderr;
@@ -174,6 +176,7 @@ class sdctrl : public ModuleObject {
     RegSignal cmd_req_rn;
     RegSignal cmd_resp_cmd;
     RegSignal cmd_resp_reg;
+    RegSignal cmd_resp_spistatus;
 
     RegSignal crc15_clear;
     RegSignal dat;
