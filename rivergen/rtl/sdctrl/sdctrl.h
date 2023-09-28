@@ -25,6 +25,7 @@
 #include "sdctrl_crc7.h"
 #include "sdctrl_crc15.h"
 #include "sdctrl_cmd_transmitter.h"
+#include "sdctrl_cache.h"
 
 using namespace sysvc;
 
@@ -44,7 +45,8 @@ class sdctrl : public ModuleObject {
             v_dat0_dir(this, "v_dat0_dir", "1"),
             v_dat3_dir(this, "v_dat3_dir", "1"),
             v_dat3_out(this, "v_dat3_out", "1"),
-            v_clear_cmderr(this, "v_clear_cmderr", "1") {
+            v_clear_cmderr(this, "v_clear_cmderr", "1"),
+            v_mem_req_ready(this, "v_mem_req_ready", "1") {
         }
 
      public:
@@ -57,6 +59,7 @@ class sdctrl : public ModuleObject {
         Logic v_dat3_dir;
         Logic v_dat3_out;
         Logic v_clear_cmderr;
+        Logic v_mem_req_ready;
     };
 
     void proc_comb();
@@ -95,6 +98,7 @@ class sdctrl : public ModuleObject {
     InPort i_protect;
     
     TextLine _sdstate0_;
+    ParamLogic SDSTATE_SPI_DATA;
     ParamLogic SDSTATE_PRE_INIT;
     ParamLogic SDSTATE_IDLE;
     ParamLogic SDSTATE_READY;
@@ -120,6 +124,10 @@ class sdctrl : public ModuleObject {
     TextLine _identstate0_;
     ParamLogic IDENTSTATE_CMD3;
     ParamLogic IDENTSTATE_CHECK_RCA;
+    TextLine _spidatastate0_;
+    ParamLogic SPIDATASTATE_WAIT_MEM_REQ;
+    ParamLogic SPIDATASTATE_CACHE_REQ;
+    ParamLogic SPIDATASTATE_CACHE_WAIT_RESP;
 
     Signal w_regs_sck_posedge;
     Signal w_regs_sck_negedge;
@@ -138,9 +146,22 @@ class sdctrl : public ModuleObject {
     Signal wb_mem_req_wstrb;
     Signal w_mem_req_last;
     Signal w_mem_req_ready;
-    Signal w_mem_resp_valid;
-    Signal wb_mem_resp_rdata;
-    Signal wb_mem_resp_err;
+    Signal w_cache_req_ready;
+    Signal w_cache_resp_valid;
+    Signal wb_cache_resp_rdata;
+    Signal w_cache_resp_err;
+    Signal w_cache_resp_ready;
+    Signal w_req_sdmem_ready;
+    Signal w_req_sdmem_valid;
+    Signal w_req_sdmem_write;
+    Signal wb_req_sdmem_addr;
+    Signal wb_req_sdmem_wdata;
+    Signal w_resp_sdmem_valid;
+    Signal wb_resp_sdmem_rdata;
+    Signal w_resp_sdmem_err;
+    Signal wb_regs_flush_address;
+    Signal w_regs_flush_valid;
+    Signal w_cache_flush_end;
 
     Signal w_trx_cmd_dir;
     Signal w_trx_cmd_cs;
@@ -177,6 +198,11 @@ class sdctrl : public ModuleObject {
     RegSignal cmd_resp_cmd;
     RegSignal cmd_resp_reg;
     RegSignal cmd_resp_spistatus;
+    RegSignal cache_req_valid;
+    RegSignal cache_req_addr;
+    RegSignal cache_req_write;
+    RegSignal cache_req_wdata;
+    RegSignal cache_req_wstrb;
 
     RegSignal crc15_clear;
     RegSignal dat;
@@ -187,6 +213,7 @@ class sdctrl : public ModuleObject {
     RegSignal idlestate;
     RegSignal readystate;
     RegSignal identstate;
+    RegSignal spidatastate;
     RegSignal wait_cmd_resp;
     RegSignal sdtype;
     RegSignal HCS;
@@ -204,6 +231,7 @@ class sdctrl : public ModuleObject {
     sdctrl_crc15 crcdat2;
     sdctrl_crc15 crcdat3;
     sdctrl_cmd_transmitter cmdtrx0;
+    sdctrl_cache cache0;
 };
 
 class sdctrl_file : public FileObject {

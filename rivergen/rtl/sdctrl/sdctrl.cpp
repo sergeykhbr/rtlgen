@@ -50,6 +50,7 @@ sdctrl::sdctrl(GenObject *parent, const char *name) :
     i_protect(this, "i_protect", "1"),
     // params
     _sdstate0_(this, "SD-card states see Card Status[12:9] CURRENT_STATE on page 145:"),
+    SDSTATE_SPI_DATA(this, "4", "SDSTATE_SPI_DATA", "0xE"),
     SDSTATE_PRE_INIT(this, "4", "SDSTATE_PRE_INIT", "0xF"),
     SDSTATE_IDLE(this, "4", "SDSTATE_IDLE", "0"),
     SDSTATE_READY(this, "4", "SDSTATE_READY", "1"),
@@ -75,6 +76,10 @@ sdctrl::sdctrl(GenObject *parent, const char *name) :
     _identstate0_(this, "SD-card 'ident' state substates:"),
     IDENTSTATE_CMD3(this, "1", "IDENTSTATE_CMD3", "0"),
     IDENTSTATE_CHECK_RCA(this, "1", "IDENTSTATE_CHECK_RCA", "1", "State change: ident -> stby"),
+    _spidatastate0_(this, ""),
+    SPIDATASTATE_WAIT_MEM_REQ(this, "2", "SPIDATASTATE_WAIT_MEM_REQ", "0"),
+    SPIDATASTATE_CACHE_REQ(this, "2", "SPIDATASTATE_CACHE_REQ", "1"),
+    SPIDATASTATE_CACHE_WAIT_RESP(this, "2", "SPIDATASTATE_CACHE_WAIT_RESP", "2"),
     // signals
     w_regs_sck_posedge(this, "w_regs_sck_posedge", "1"),
     w_regs_sck_negedge(this, "w_regs_sck", "1"),
@@ -93,9 +98,22 @@ sdctrl::sdctrl(GenObject *parent, const char *name) :
     wb_mem_req_wstrb(this, "wb_mem_req_wstrb", "CFG_SYSBUS_DATA_BYTES"),
     w_mem_req_last(this, "w_mem_req_last", "1"),
     w_mem_req_ready(this, "w_mem_req_ready", "1"),
-    w_mem_resp_valid(this, "w_mem_resp_valid", "1"),
-    wb_mem_resp_rdata(this, "wb_mem_resp_rdata", "CFG_SYSBUS_DATA_BITS"),
-    wb_mem_resp_err(this, "wb_mem_resp_err", "1"),
+    w_cache_req_ready(this, "w_cache_req_ready", "1"),
+    w_cache_resp_valid(this, "w_cache_resp_valid", "1"),
+    wb_cache_resp_rdata(this, "wb_cache_resp_rdata", "64"),
+    w_cache_resp_err(this, "w_cache_resp_err", "1"),
+    w_cache_resp_ready(this, "w_cache_resp_ready", "1"),
+    w_req_sdmem_ready(this, "w_req_sdmem_ready", "1"),
+    w_req_sdmem_valid(this, "w_req_sdmem_valid", "1"),
+    w_req_sdmem_write(this, "w_req_sdmem_write", "1"),
+    wb_req_sdmem_addr(this, "wb_req_sdmem_addr", "CFG_SDCACHE_ADDR_BITS"),
+    wb_req_sdmem_wdata(this, "wb_req_sdmem_wdata", "SDCACHE_LINE_BITS"),
+    w_resp_sdmem_valid(this, "w_resp_sdmem_valid", "1"),
+    wb_resp_sdmem_rdata(this, "wb_resp_sdmem_rdata", "SDCACHE_LINE_BITS"),
+    w_resp_sdmem_err(this, "w_resp_sdmem_err", "1"),
+    wb_regs_flush_address(this, "wb_regs_flush_address", "CFG_SDCACHE_ADDR_BITS"),
+    w_regs_flush_valid(this, "w_regs_flush_valid", "1"),
+    w_cache_flush_end(this, "w_cache_flush_end", "1"),
     w_trx_cmd_dir(this, "w_trx_cmd_dir", "1"),
     w_trx_cmd_cs(this, "w_trx_cmd_cs", "1"),
     w_cmd_in(this, "w_cmd_in", "1"),
@@ -130,6 +148,11 @@ sdctrl::sdctrl(GenObject *parent, const char *name) :
     cmd_resp_cmd(this, "cmd_resp_r1", "6"),
     cmd_resp_reg(this, "cmd_resp_reg", "32"),
     cmd_resp_spistatus(this, "cmd_resp_spistatus", "15"),
+    cache_req_valid(this, "cache_req_valid", "1"),
+    cache_req_addr(this, "cache_req_addr", "CFG_SDCACHE_ADDR_BITS"),
+    cache_req_write(this, "cache_req_write", "1"),
+    cache_req_wdata(this, "cache_req_wdata", "64"),
+    cache_req_wstrb(this, "cache_req_wstrb", "8"),
     crc15_clear(this, "crc15_clear", "1", "1"),
     dat(this, "dat", "4", "-1"),
     dat_dir(this, "dat_dir", "1", "DIR_OUTPUT"),
@@ -138,6 +161,7 @@ sdctrl::sdctrl(GenObject *parent, const char *name) :
     idlestate(this, "initstate", "3", "IDLESTATE_CMD0"),
     readystate(this, "readystate", "2", "READYSTATE_CMD11"),
     identstate(this, "identstate", "1", "IDENTSTATE_CMD3"),
+    spidatastate(this, "spidatastate", "2", "SPIDATASTATE_WAIT_MEM_REQ"),
     wait_cmd_resp(this, "wait_cmd_resp", "1"),
     sdtype(this, "sdtype", "3", "SDCARD_UNKNOWN"),
     HCS(this, "HCS", "1", "1", "High Capacity Support"),
@@ -153,7 +177,8 @@ sdctrl::sdctrl(GenObject *parent, const char *name) :
     crcdat1(this, "crcdat1"),
     crcdat2(this, "crcdat2"),
     crcdat3(this, "crcdat3"),
-    cmdtrx0(this, "cmdtrx0")
+    cmdtrx0(this, "cmdtrx0"),
+    cache0(this, "cache0")
 {
     Operation::start(this);
 
@@ -174,9 +199,9 @@ sdctrl::sdctrl(GenObject *parent, const char *name) :
         CONNECT(xslv0, 0, xslv0.o_req_wstrb, wb_mem_req_wstrb);
         CONNECT(xslv0, 0, xslv0.o_req_last, w_mem_req_last);
         CONNECT(xslv0, 0, xslv0.i_req_ready, w_mem_req_ready);
-        CONNECT(xslv0, 0, xslv0.i_resp_valid, w_mem_resp_valid);
-        CONNECT(xslv0, 0, xslv0.i_resp_rdata, wb_mem_resp_rdata);
-        CONNECT(xslv0, 0, xslv0.i_resp_err, wb_mem_resp_err);
+        CONNECT(xslv0, 0, xslv0.i_resp_valid, w_cache_resp_valid);
+        CONNECT(xslv0, 0, xslv0.i_resp_rdata, wb_cache_resp_rdata);
+        CONNECT(xslv0, 0, xslv0.i_resp_err, w_cache_resp_err);
     ENDNEW();
 
     NEW(regs0, regs0.getName().c_str());
@@ -233,31 +258,31 @@ sdctrl::sdctrl(GenObject *parent, const char *name) :
         CONNECT(crcdat0, 0, crcdat0.o_crc15, wb_crc15_0);
     ENDNEW();
 
-    NEW(crcdat0, crcdat0.getName().c_str());
-        CONNECT(crcdat0, 0, crcdat0.i_clk, i_clk);
-        CONNECT(crcdat0, 0, crcdat0.i_nrst, i_nrst);
-        CONNECT(crcdat0, 0, crcdat0.i_clear, crc15_clear);
-        CONNECT(crcdat0, 0, crcdat0.i_next, w_crc15_next);
-        CONNECT(crcdat0, 0, crcdat0.i_dat, i_dat1);
-        CONNECT(crcdat0, 0, crcdat0.o_crc15, wb_crc15_1);
+    NEW(crcdat1, crcdat1.getName().c_str());
+        CONNECT(crcdat1, 0, crcdat1.i_clk, i_clk);
+        CONNECT(crcdat1, 0, crcdat1.i_nrst, i_nrst);
+        CONNECT(crcdat1, 0, crcdat1.i_clear, crc15_clear);
+        CONNECT(crcdat1, 0, crcdat1.i_next, w_crc15_next);
+        CONNECT(crcdat1, 0, crcdat1.i_dat, i_dat1);
+        CONNECT(crcdat1, 0, crcdat1.o_crc15, wb_crc15_1);
     ENDNEW();
 
-    NEW(crcdat0, crcdat0.getName().c_str());
-        CONNECT(crcdat0, 0, crcdat0.i_clk, i_clk);
-        CONNECT(crcdat0, 0, crcdat0.i_nrst, i_nrst);
-        CONNECT(crcdat0, 0, crcdat0.i_clear, crc15_clear);
-        CONNECT(crcdat0, 0, crcdat0.i_next, w_crc15_next);
-        CONNECT(crcdat0, 0, crcdat0.i_dat, i_dat2);
-        CONNECT(crcdat0, 0, crcdat0.o_crc15, wb_crc15_2);
+    NEW(crcdat2, crcdat2.getName().c_str());
+        CONNECT(crcdat2, 0, crcdat2.i_clk, i_clk);
+        CONNECT(crcdat2, 0, crcdat2.i_nrst, i_nrst);
+        CONNECT(crcdat2, 0, crcdat2.i_clear, crc15_clear);
+        CONNECT(crcdat2, 0, crcdat2.i_next, w_crc15_next);
+        CONNECT(crcdat2, 0, crcdat2.i_dat, i_dat2);
+        CONNECT(crcdat2, 0, crcdat2.o_crc15, wb_crc15_2);
     ENDNEW();
 
-    NEW(crcdat0, crcdat0.getName().c_str());
-        CONNECT(crcdat0, 0, crcdat0.i_clk, i_clk);
-        CONNECT(crcdat0, 0, crcdat0.i_nrst, i_nrst);
-        CONNECT(crcdat0, 0, crcdat0.i_clear, crc15_clear);
-        CONNECT(crcdat0, 0, crcdat0.i_next, w_crc15_next);
-        CONNECT(crcdat0, 0, crcdat0.i_dat, i_cd_dat3);
-        CONNECT(crcdat0, 0, crcdat0.o_crc15, wb_crc15_3);
+    NEW(crcdat3, crcdat3.getName().c_str());
+        CONNECT(crcdat3, 0, crcdat3.i_clk, i_clk);
+        CONNECT(crcdat3, 0, crcdat3.i_nrst, i_nrst);
+        CONNECT(crcdat3, 0, crcdat3.i_clear, crc15_clear);
+        CONNECT(crcdat3, 0, crcdat3.i_next, w_crc15_next);
+        CONNECT(crcdat3, 0, crcdat3.i_dat, i_cd_dat3);
+        CONNECT(crcdat3, 0, crcdat3.o_crc15, wb_crc15_3);
     ENDNEW();
 
     NEW(cmdtrx0, cmdtrx0.getName().c_str());
@@ -291,6 +316,34 @@ sdctrl::sdctrl(GenObject *parent, const char *name) :
         CONNECT(cmdtrx0, 0, cmdtrx0.i_clear_cmderr, w_clear_cmderr);
         CONNECT(cmdtrx0, 0, cmdtrx0.o_cmdstate, wb_trx_cmdstate);
         CONNECT(cmdtrx0, 0, cmdtrx0.o_cmderr, wb_trx_cmderr);
+    ENDNEW();
+
+    cache0.waybits.setObjValue(&sdctrl_cfg_->CFG_LOG2_SDCACHE_WAYBITS);
+    cache0.ibits.setObjValue(&sdctrl_cfg_->CFG_LOG2_SDCACHE_LINEBITS);
+    NEW(cache0, cache0.getName().c_str());
+        CONNECT(cache0, 0, cache0.i_clk, i_clk);
+        CONNECT(cache0, 0, cache0.i_nrst, i_nrst);
+        CONNECT(cache0, 0, cache0.i_req_valid, cache_req_valid);
+        CONNECT(cache0, 0, cache0.i_req_write, cache_req_write);
+        CONNECT(cache0, 0, cache0.i_req_addr, cache_req_addr);
+        CONNECT(cache0, 0, cache0.i_req_wdata, cache_req_wdata);
+        CONNECT(cache0, 0, cache0.i_req_wstrb, cache_req_wstrb);
+        CONNECT(cache0, 0, cache0.o_req_ready, w_cache_req_ready);
+        CONNECT(cache0, 0, cache0.o_resp_valid, w_cache_resp_valid);
+        CONNECT(cache0, 0, cache0.o_resp_data, wb_cache_resp_rdata);
+        CONNECT(cache0, 0, cache0.o_resp_err, w_cache_resp_err);
+        CONNECT(cache0, 0, cache0.i_resp_ready, w_cache_resp_ready);
+        CONNECT(cache0, 0, cache0.i_req_mem_ready, w_req_sdmem_ready);
+        CONNECT(cache0, 0, cache0.o_req_mem_valid, w_req_sdmem_valid);
+        CONNECT(cache0, 0, cache0.o_req_mem_write, w_req_sdmem_write);
+        CONNECT(cache0, 0, cache0.o_req_mem_addr, wb_req_sdmem_addr);
+        CONNECT(cache0, 0, cache0.o_req_mem_data, wb_req_sdmem_wdata);
+        CONNECT(cache0, 0, cache0.i_mem_data_valid, w_resp_sdmem_valid);
+        CONNECT(cache0, 0, cache0.i_mem_data, wb_resp_sdmem_rdata);
+        CONNECT(cache0, 0, cache0.i_mem_fault, w_resp_sdmem_err);
+        CONNECT(cache0, 0, cache0.i_flush_address, wb_regs_flush_address);
+        CONNECT(cache0, 0, cache0.i_flush_valid, w_regs_flush_valid);
+        CONNECT(cache0, 0, cache0.o_flush_end, w_cache_flush_end);
     ENDNEW();
 
     Operation::start(&comb);
@@ -461,6 +514,7 @@ TEXT();
                 TEXT("  [31] reserved bit");
                 TEXT("  [30] HCS (high capacity support)");
                 TEXT("  [29:0] reserved");
+                TEXT("  SPI R1 response always in upper bits [14:8]");
                 IF (NE(BITS(cmd_resp_spistatus, 14, 8), CONST("0x1", 7)));
                     TEXT("SD card not in idle state");
                     SETVAL(idlestate, IDLESTATE_CMD55);
@@ -492,7 +546,7 @@ TEXT();
                     SETVAL(sdstate, SDSTATE_READY);
                 ELSE();
                     TEXT("SPI mode:");
-                    SETVAL(sdstate, SDSTATE_STBY);
+                    SETVAL(sdstate, SDSTATE_SPI_DATA);
                 ENDIF();
                 ENDCASE();
             CASEDEF();
@@ -549,6 +603,30 @@ TEXT();
             ENDSWITCH();
             ENDCASE();
 
+        CASE (SDSTATE_SPI_DATA);
+            IF (EQ(spidatastate, SPIDATASTATE_CACHE_REQ));
+                IF (NZ(w_cache_req_ready));
+                    SETZERO(cache_req_valid);
+                    SETVAL(spidatastate, SPIDATASTATE_CACHE_WAIT_RESP);
+                ENDIF();
+            ELSIF (EQ(spidatastate, SPIDATASTATE_CACHE_WAIT_RESP));
+                IF (NZ(w_cache_resp_valid));
+                    SETVAL(spidatastate, SPIDATASTATE_WAIT_MEM_REQ);
+                ENDIF();
+            ELSE();
+                TEXT("Wait memory request:");
+                SETONE(comb.v_mem_req_ready);
+                IF (NZ(w_mem_req_valid));
+                    SETVAL(spidatastate, SPIDATASTATE_CACHE_REQ);
+                    SETONE(cache_req_valid);
+                    SETVAL(cache_req_addr, wb_mem_req_addr);
+                    SETVAL(cache_req_write, w_mem_req_write);
+                    SETVAL(cache_req_wdata, wb_mem_req_wdata);
+                    SETVAL(cache_req_wstrb, wb_mem_req_wstrb);
+                ENDIF();
+            ENDIF();
+            ENDCASE();
+
         CASEDEF();
             ENDCASE();
         ENDSWITCH();
@@ -593,9 +671,11 @@ TEXT();
     SETVAL(o_dat2_dir, dat_dir);
     SETVAL(o_cd_dat3_dir, comb.v_dat3_dir);
     TEXT("Memory request:");
-    SETONE(w_mem_req_ready);
-    SETONE(w_mem_resp_valid);
-    SETVAL(wb_mem_resp_rdata, ALLONES());
-    SETZERO(wb_mem_resp_err);
+    SETVAL(w_mem_req_ready, comb.v_mem_req_ready);
+    SETONE(w_cache_resp_ready);
     SETVAL(w_clear_cmderr, OR2(w_regs_clear_cmderr, comb.v_clear_cmderr));
+    TEXT("Cache to SD card requests:");
+    SETONE(w_req_sdmem_ready);
+    SETONE(w_resp_sdmem_valid);
+    SETZERO(w_regs_flush_valid);
 }

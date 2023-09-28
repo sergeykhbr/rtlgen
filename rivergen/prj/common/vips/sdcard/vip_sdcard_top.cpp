@@ -27,7 +27,7 @@ vip_sdcard_top::vip_sdcard_top(GenObject *parent, const char *name) :
     io_cd_dat3(this, "io_cd_dat3", "1"),
     // params
     _cfg0_(this, "Generic config parameters"),
-    CFG_SDCARD_POWERUP_DONE_DELAY(this, "CFG_SDCARD_POWERUP_DONE_DELAY", "700", "Delay of busy bits in ACMD41 response"),
+    CFG_SDCARD_POWERUP_DONE_DELAY(this, "CFG_SDCARD_POWERUP_DONE_DELAY", "450", "Delay of busy bits in ACMD41 response"),
     CFG_SDCARD_HCS(this, "1", "CFG_SDCARD_HCS", "1", "High Capacity Support"),
     CFG_SDCARD_VHS(this, "4", "CFG_SDCARD_VHS", "0x1", "CMD8 Voltage supply mask"),
     CFG_SDCARD_PCIE_1_2V(this, "1", "CFG_SDCARD_PCIE_1_2V", "0"),

@@ -18,7 +18,7 @@
 
 vip_sdcard_ctrl::vip_sdcard_ctrl(GenObject *parent, const char *name) :
     ModuleObject(parent, "vip_sdcard_ctrl", name),
-    CFG_SDCARD_POWERUP_DONE_DELAY(this, "CFG_SDCARD_POWERUP_DONE_DELAY", "700", "Delay of busy bits in ACMD41 response"),
+    CFG_SDCARD_POWERUP_DONE_DELAY(this, "CFG_SDCARD_POWERUP_DONE_DELAY", "450", "Delay of busy bits in ACMD41 response"),
     CFG_SDCARD_HCS(this, "CFG_SDCARD_HCS", "1", "0x1", "High Capacity Support"),
     CFG_SDCARD_VHS(this, "CFG_SDCARD_VHS", "4", "0x1", "CMD8 Voltage supply mask"),
     CFG_SDCARD_PCIE_1_2V(this, "CFG_SDCARD_PCIE_1_2V", "1", "0"),
@@ -69,6 +69,8 @@ vip_sdcard_ctrl::vip_sdcard_ctrl(GenObject *parent, const char *name) :
     cmd_resp_r3(this, "cmd_resp_r3", "1"),
     cmd_resp_r7(this, "cmd_resp_r7", "1"),
     illegal_cmd(this, "illegal_cmd", "1"),
+    ocr_hcs(this, "ocr_hcs", "1"),
+    ocr_vdd_window(this, "ocr_vdd_window", "24"),
     //
     comb(this)
 {
@@ -95,11 +97,6 @@ TEXT();
         SETVAL(powerup_cnt, INC(powerup_cnt));
     ELSE();
         SETONE(powerup_done);
-    ENDIF();
-
-TEXT();
-    IF (EQ(sdstate, SDSTATE_IDLE));
-        SETONE(comb.v_idle_state);
     ENDIF();
 
 TEXT();
@@ -140,10 +137,12 @@ TEXT();
                 TEXT("[36] XPC");
                 TEXT("[32] S18R");
                 TEXT("[31:8] VDD Voltage Window (OCR[23:0])");
+                SETVAL(ocr_hcs, AND2_L(BIT(i_cmd_req_data, 30), CFG_SDCARD_HCS));
+                SETVAL(ocr_vdd_window, AND2_L(BITS(i_cmd_req_data, 23, 0), CFG_SDCARD_VDD_VOLTAGE_WINDOW));
                 SETONE(cmd_resp_valid);
                 SETVAL(delay_cnt, CONST("20", 32));
                 SETBIT(comb.vb_resp_data32, 31, powerup_done);
-                SETBIT(comb.vb_resp_data32, 30, BIT(i_cmd_req_data, 30));
+                SETBIT(comb.vb_resp_data32, 30, AND2_L(BIT(i_cmd_req_data, 30), CFG_SDCARD_HCS));
                 SETBITS(comb.vb_resp_data32, 23, 0,
                     AND2_L(BITS(i_cmd_req_data, 23, 0), CFG_SDCARD_VDD_VOLTAGE_WINDOW));
                 IF (EQ(AND2_L(BITS(i_cmd_req_data, 23, 0), CFG_SDCARD_VDD_VOLTAGE_WINDOW), CONST("0", 24)));
@@ -160,8 +159,8 @@ TEXT();
                 SETVAL(delay_cnt, CONST("20", 32));
                 IF (NZ(i_spi_mode));
                     SETZERO(comb.vb_resp_data32);
-                    SETBIT(comb.vb_resp_data32, 30, CFG_SDCARD_HCS);
-                    SETBITS(comb.vb_resp_data32, 23, 0, CFG_SDCARD_VDD_VOLTAGE_WINDOW);
+                    SETBIT(comb.vb_resp_data32, 30, ocr_hcs);
+                    SETBITS(comb.vb_resp_data32, 23, 0, ocr_vdd_window);
                 ELSE();
                     SETONE(illegal_cmd);
                 ENDIF();
@@ -261,5 +260,5 @@ TEXT();
     SETVAL(o_cmd_resp_r3, cmd_resp_r3);
     SETVAL(o_cmd_resp_r7, cmd_resp_r7);
     SETVAL(o_stat_illegal_cmd, illegal_cmd);
-    SETVAL(o_stat_idle_state, comb.v_idle_state);
+    SETVAL(o_stat_idle_state, powerup_done);
 }

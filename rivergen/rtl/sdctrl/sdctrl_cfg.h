@@ -25,6 +25,17 @@ class sdctrl_cfg : public FileObject {
     sdctrl_cfg(GenObject *parent);
 
  public:
+    TextLine _cache0_;
+    ParamI32D CFG_SDCACHE_ADDR_BITS;
+    ParamI32D CFG_LOG2_SDCACHE_WAYBITS;
+    ParamI32D CFG_LOG2_SDCACHE_LINEBITS;
+    ParamI32D CFG_LOG2_SDCACHE_BYTES_PER_LINE;
+    ParamI32D SDCACHE_BYTES_PER_LINE;
+    ParamI32D SDCACHE_LINE_BITS;
+    TextLine _cache1_;
+    ParamI32D SDCACHE_FL_VALID;
+    ParamI32D SDCACHE_FL_DIRTY;
+    ParamI32D SDCACHE_FL_TOTAL;
     TextLine _cmd0_;
     TextLine _cmd1_;
     ParamLogic CMD0;

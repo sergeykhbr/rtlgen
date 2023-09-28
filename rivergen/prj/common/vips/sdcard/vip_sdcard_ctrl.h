@@ -29,14 +29,12 @@ class vip_sdcard_ctrl : public ModuleObject {
         CombProcess(GenObject *parent) :
             ProcObject(parent, "comb"),
             v_resp_valid(this, "v_resp_valid", "1"),
-            vb_resp_data32(this, "vb_resp_data32", "32"),
-            v_idle_state(this, "v_idle_state", "1") {
+            vb_resp_data32(this, "vb_resp_data32", "32") {
         }
 
      public:
         Logic v_resp_valid;
         Logic vb_resp_data32;
-        Logic v_idle_state;
     };
 
     void proc_comb();
@@ -97,6 +95,8 @@ class vip_sdcard_ctrl : public ModuleObject {
     RegSignal cmd_resp_r3;
     RegSignal cmd_resp_r7;
     RegSignal illegal_cmd;
+    RegSignal ocr_hcs;
+    RegSignal ocr_vdd_window;
 
     CombProcess comb;
 };

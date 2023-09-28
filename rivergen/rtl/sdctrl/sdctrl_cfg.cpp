@@ -20,6 +20,17 @@ sdctrl_cfg *sdctrl_cfg_ = 0;
 
 sdctrl_cfg::sdctrl_cfg(GenObject *parent) :
     FileObject(parent, "sdctrl_cfg"),
+    _cache0_(this, "Cache config:"),
+    CFG_SDCACHE_ADDR_BITS(this, "CFG_SDCACHE_ADDR_BITS", "48"),
+    CFG_LOG2_SDCACHE_WAYBITS(this, "CFG_LOG2_SDCACHE_WAYBITS", "0", "0=1way"),
+    CFG_LOG2_SDCACHE_LINEBITS(this, "CFG_LOG2_SDCACHE_LINEBITS", "2", "2=2KB (4 x 512)"),
+    CFG_LOG2_SDCACHE_BYTES_PER_LINE(this, "CFG_LOG2_SDCACHE_BYTES_PER_LINE", "9", "[8:0] 512 Bytes"),
+    SDCACHE_BYTES_PER_LINE(this, "SDCACHE_BYTES_PER_LINE", "POW2(1,CFG_LOG2_SDCACHE_BYTES_PER_LINE)"),
+    SDCACHE_LINE_BITS(this, "SDCACHE_LINE_BITS", "MUL(8,SDCACHE_BYTES_PER_LINE)"),
+    _cache1_(this),
+    SDCACHE_FL_VALID(this, "SDCACHE_FL_VALID", "0"),
+    SDCACHE_FL_DIRTY(this, "SDCACHE_FL_DIRTY", "1"),
+    SDCACHE_FL_TOTAL(this, "SDCACHE_FL_TOTAL", "2"),
     _cmd0_(this, ""),
     _cmd1_(this, ""),
     CMD0(this, "6", "CMD0", "0", "GO_IDLE_STATE: Reset card to idle state. Response - (4.7.4)"),

@@ -22,6 +22,7 @@
 #include "sdctrl_crc7.h"
 #include "sdctrl_crc15.h"
 #include "sdctrl_cmd_transmitter.h"
+#include "sdctrl_cache.h"
 #include "sdctrl.h"
 
 class sdctrl_folder : public FolderObject {
@@ -33,6 +34,7 @@ class sdctrl_folder : public FolderObject {
         sdctrl_crc7_file_(this),
         sdctrl_crc15_file_(this),
         sdctrl_cmd_transmitter_file_(this),
+        sdctrl_cache_file_(this),
         sdctrl_file_(this) {}
 
  protected:
@@ -43,5 +45,6 @@ class sdctrl_folder : public FolderObject {
     sdctrl_crc7_file sdctrl_crc7_file_;
     sdctrl_crc15_file sdctrl_crc15_file_;
     sdctrl_cmd_transmitter_file sdctrl_cmd_transmitter_file_;
+    sdctrl_cache_file sdctrl_cache_file_;
     sdctrl_file sdctrl_file_;
 };
