@@ -53,9 +53,16 @@ vip_sdcard_ctrl::vip_sdcard_ctrl(GenObject *parent, const char *name) :
     SDSTATE_PRG(this, "4", "SDSTATE_PRG", "7"),
     SDSTATE_DIS(this, "4", "SDSTATE_DIS", "8"),
     SDSTATE_INA(this, "4", "SDSTATE_INA", "9"),
+    _sdstate2_(this),
+    _sdstate3_(this, "Data block access state machine:"),
+    DATASTATE_IDLE(this, "3", "DATASTATE_IDLE", "0"),
+    DATASTATE_START(this, "3", "DATASTATE_START", "1"),
+    DATASTATE_CRC15(this, "3", "DATASTATE_CRC15", "2"),
+    DATASTATE_STOP(this, "3", "DATASTATE_STOP", "3"),
     // signals
     // registers
     sdstate(this, "sdstate", "4", "SDSTATE_IDLE"),
+    datastate(this, "datastate", "3", "DATASTATE_IDLE"),
     powerup_cnt(this, "powerup_cnt", "32"),
     preinit_cnt(this, "preinit_cnt", "8"),
     delay_cnt(this, "delay_cnt", "32"),
@@ -71,6 +78,8 @@ vip_sdcard_ctrl::vip_sdcard_ctrl(GenObject *parent, const char *name) :
     illegal_cmd(this, "illegal_cmd", "1"),
     ocr_hcs(this, "ocr_hcs", "1"),
     ocr_vdd_window(this, "ocr_vdd_window", "24"),
+    req_mem_valid(this, "req_mem_valid", "1"),
+    req_mem_addr(this, "req_mem_addr", "41"),
     //
     comb(this)
 {
@@ -165,6 +174,17 @@ TEXT();
                     SETONE(illegal_cmd);
                 ENDIF();
                 ENDCASE();
+            CASE (CONST("17", 6), "CMD17: READ_SINGLE_BLOCK.");
+                SETONE(cmd_resp_valid);
+                SETVAL(delay_cnt, CONST("20", 32));
+                IF (NZ(i_spi_mode));
+                    SETONE(req_mem_valid);
+                    SETVAL(req_mem_addr, CC2(i_cmd_req_data, CONST("0", 9)));
+                    SETZERO(comb.vb_resp_data32);
+                ELSE();
+                    SETONE(illegal_cmd);
+                ENDIF();
+                ENDCASE();
             CASEDEF();
                 TEXT("Illegal commands in 'idle' state:");
                 SETONE(cmd_resp_valid);
@@ -237,6 +257,18 @@ TEXT();
             ENDCASE();
         ENDSWITCH();
     ENDIF();
+
+TEXT();
+    SWITCH(datastate);
+    CASE (DATASTATE_IDLE);
+        IF (NZ(req_mem_valid));
+            SETZERO(req_mem_valid);
+            SETVAL(datastate, DATASTATE_START);
+        ENDIF();
+        ENDCASE();
+    CASEDEF();
+        ENDCASE();
+    ENDSWITCH();
 
 TEXT();
     SETVAL(cmd_resp_data32, comb.vb_resp_data32);

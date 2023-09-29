@@ -18,7 +18,7 @@
 
 #include <api.h>
 #include "sdctrl_cfg.h"
-#include "../riverlib/cache/tagmemnway.h"
+#include "../riverlib/cache/tagmem.h"
 
 using namespace sysvc;
 
@@ -39,16 +39,12 @@ class sdctrl_cache : public ModuleObject {
             vb_uncached_data(this, "vb_uncached_data", "64"),
             v_resp_valid(this, "v_resp_valid", "1"),
             vb_resp_data(this, "vb_resp_data", "64"),
-            v_direct_access(this, "v_direct_access", "1"),
-            v_invalidate(this, "v_invalidate", "1"),
             v_flush_end(this, "v_flush_end", "1"),
-            v_line_cs_read(this, "v_line_cs_read", "1"),
-            v_line_cs_write(this, "v_line_cs_write", "1"),
             vb_line_addr(this, "vb_line_addr", "CFG_SDCACHE_ADDR_BITS"),
             vb_line_wdata(this, "vb_line_wdata", "SDCACHE_LINE_BITS"),
             vb_line_wstrb(this, "vb_line_wstrb", "SDCACHE_BYTES_PER_LINE"),
             vb_req_mask(this, "vb_req_mask", "64"),
-            v_line_wflags(this, "v_line_wflags", "SDCACHE_FL_TOTAL"),
+            vb_line_wflags(this, "vb_line_wflags", "SDCACHE_FL_TOTAL"),
             ridx(this, "ridx", "SUB(CFG_LOG2_SDCACHE_BYTES_PER_LINE,3)"),
             v_req_same_line(this, "v_req_same_line", "1"),
             v_ready_next(this, "v_ready_next", "1"),
@@ -65,16 +61,12 @@ class sdctrl_cache : public ModuleObject {
         Logic vb_uncached_data;
         Logic v_resp_valid;
         Logic vb_resp_data;
-        Logic v_direct_access;
-        Logic v_invalidate;
         Logic v_flush_end;
-        Logic v_line_cs_read;
-        Logic v_line_cs_write;
         Logic vb_line_addr;
         Logic vb_line_wdata;
         Logic vb_line_wstrb;
         Logic vb_req_mask;
-        Logic v_line_wflags;
+        Logic vb_line_wflags;
         Logic ridx;
         Logic v_req_same_line;
         Logic v_ready_next;
@@ -84,7 +76,6 @@ class sdctrl_cache : public ModuleObject {
     void proc_comb();
 
  public:
-    DefParamUI32D waybits;
     DefParamUI32D ibits;
     // io:
     InPort i_clk;
@@ -117,7 +108,6 @@ class sdctrl_cache : public ModuleObject {
     ParamI32D abus;
     ParamI32D lnbits;
     ParamI32D flbits;
-    ParamI32D ways;
     TextLine _1_;
     TextLine _2_;
     ParamLogic State_Idle;
@@ -136,10 +126,6 @@ class sdctrl_cache : public ModuleObject {
     ParamLogic LINE_BYTES_MASK;
     ParamLogic FLUSH_ALL_VALUE;
 
-    Signal line_direct_access_i;
-    Signal line_invalidate_i;
-    Signal line_re_i;
-    Signal line_we_i;
     Signal line_addr_i;
     Signal line_wdata_i;
     Signal line_wstrb_i;
@@ -150,7 +136,6 @@ class sdctrl_cache : public ModuleObject {
     Signal line_hit_o;
     TextLine _snoop1_;
     Signal line_snoop_addr_i;
-    Signal line_snoop_ready_o;
     Signal line_snoop_flags_o;
 
     // registers
@@ -175,7 +160,7 @@ class sdctrl_cache : public ModuleObject {
     RegSignal cache_line_o;
 
     CombProcess comb;
-    TagMemNWay mem0;
+    TagMem mem0;
 };
 
 class sdctrl_cache_file : public FileObject {

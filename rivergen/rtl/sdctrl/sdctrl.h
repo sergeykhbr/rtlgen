@@ -46,7 +46,9 @@ class sdctrl : public ModuleObject {
             v_dat3_dir(this, "v_dat3_dir", "1"),
             v_dat3_out(this, "v_dat3_out", "1"),
             v_clear_cmderr(this, "v_clear_cmderr", "1"),
-            v_mem_req_ready(this, "v_mem_req_ready", "1") {
+            v_mem_req_ready(this, "v_mem_req_ready", "1"),
+            v_req_sdmem_ready(this, "v_req_sdmem_ready", "1"),
+            v_cache_resp_ready(this, "v_cache_resp_ready", "1") {
         }
 
      public:
@@ -60,6 +62,8 @@ class sdctrl : public ModuleObject {
         Logic v_dat3_out;
         Logic v_clear_cmderr;
         Logic v_mem_req_ready;
+        Logic v_req_sdmem_ready;
+        Logic v_cache_resp_ready;
     };
 
     void proc_comb();
@@ -128,6 +132,12 @@ class sdctrl : public ModuleObject {
     ParamLogic SPIDATASTATE_WAIT_MEM_REQ;
     ParamLogic SPIDATASTATE_CACHE_REQ;
     ParamLogic SPIDATASTATE_CACHE_WAIT_RESP;
+    ParamLogic SPIDATASTATE_CMD17_READ_SINGLE_BLOCK;
+    ParamLogic SPIDATASTATE_CMD24_WRITE_SINGLE_BLOCK;
+    ParamLogic SPIDATASTATE_WAIT_DATA_START;
+    ParamLogic SPIDATASTATE_READING_DATA;
+    ParamLogic SPIDATASTATE_READING_CRC15;
+    ParamLogic SPIDATASTATE_READING_END;
 
     Signal w_regs_sck_posedge;
     Signal w_regs_sck_negedge;
@@ -156,7 +166,6 @@ class sdctrl : public ModuleObject {
     Signal w_req_sdmem_write;
     Signal wb_req_sdmem_addr;
     Signal wb_req_sdmem_wdata;
-    Signal w_resp_sdmem_valid;
     Signal wb_resp_sdmem_rdata;
     Signal w_resp_sdmem_err;
     Signal wb_regs_flush_address;
@@ -203,6 +212,9 @@ class sdctrl : public ModuleObject {
     RegSignal cache_req_write;
     RegSignal cache_req_wdata;
     RegSignal cache_req_wstrb;
+    RegSignal sdmem_addr;
+    RegSignal sdmem_data;
+    RegSignal sdmem_valid;
 
     RegSignal crc15_clear;
     RegSignal dat;
@@ -220,6 +232,7 @@ class sdctrl : public ModuleObject {
     RegSignal S18;
     RegSignal RCA;
     RegSignal OCR_VoltageWindow;
+    RegSignal bitcnt;
 
     CombProcess comb;
 

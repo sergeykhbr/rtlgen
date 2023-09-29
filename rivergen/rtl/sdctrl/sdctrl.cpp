@@ -77,9 +77,15 @@ sdctrl::sdctrl(GenObject *parent, const char *name) :
     IDENTSTATE_CMD3(this, "1", "IDENTSTATE_CMD3", "0"),
     IDENTSTATE_CHECK_RCA(this, "1", "IDENTSTATE_CHECK_RCA", "1", "State change: ident -> stby"),
     _spidatastate0_(this, ""),
-    SPIDATASTATE_WAIT_MEM_REQ(this, "2", "SPIDATASTATE_WAIT_MEM_REQ", "0"),
-    SPIDATASTATE_CACHE_REQ(this, "2", "SPIDATASTATE_CACHE_REQ", "1"),
-    SPIDATASTATE_CACHE_WAIT_RESP(this, "2", "SPIDATASTATE_CACHE_WAIT_RESP", "2"),
+    SPIDATASTATE_WAIT_MEM_REQ(this, "4", "SPIDATASTATE_WAIT_MEM_REQ", "0"),
+    SPIDATASTATE_CACHE_REQ(this, "4", "SPIDATASTATE_CACHE_REQ", "1"),
+    SPIDATASTATE_CACHE_WAIT_RESP(this, "4", "SPIDATASTATE_CACHE_WAIT_RESP", "2"),
+    SPIDATASTATE_CMD17_READ_SINGLE_BLOCK(this, "4", "SPIDATASTATE_CMD17_READ_SINGLE_BLOCK", "3"),
+    SPIDATASTATE_CMD24_WRITE_SINGLE_BLOCK(this, "4", "SPIDATASTATE_CMD24_WRITE_SINGLE_BLOCK", "4"),
+    SPIDATASTATE_WAIT_DATA_START(this, "4", "SPIDATASTATE_WAIT_DATA_START", "5"),
+    SPIDATASTATE_READING_DATA(this, "4", "SPIDATASTATE_READING_DATA", "6"),
+    SPIDATASTATE_READING_CRC15(this, "4", "SPIDATASTATE_READING_CRC15", "7"),
+    SPIDATASTATE_READING_END(this, "4", "SPIDATASTATE_READING_END", "8"),
     // signals
     w_regs_sck_posedge(this, "w_regs_sck_posedge", "1"),
     w_regs_sck_negedge(this, "w_regs_sck", "1"),
@@ -108,7 +114,6 @@ sdctrl::sdctrl(GenObject *parent, const char *name) :
     w_req_sdmem_write(this, "w_req_sdmem_write", "1"),
     wb_req_sdmem_addr(this, "wb_req_sdmem_addr", "CFG_SDCACHE_ADDR_BITS"),
     wb_req_sdmem_wdata(this, "wb_req_sdmem_wdata", "SDCACHE_LINE_BITS"),
-    w_resp_sdmem_valid(this, "w_resp_sdmem_valid", "1"),
     wb_resp_sdmem_rdata(this, "wb_resp_sdmem_rdata", "SDCACHE_LINE_BITS"),
     w_resp_sdmem_err(this, "w_resp_sdmem_err", "1"),
     wb_regs_flush_address(this, "wb_regs_flush_address", "CFG_SDCACHE_ADDR_BITS"),
@@ -153,6 +158,9 @@ sdctrl::sdctrl(GenObject *parent, const char *name) :
     cache_req_write(this, "cache_req_write", "1"),
     cache_req_wdata(this, "cache_req_wdata", "64"),
     cache_req_wstrb(this, "cache_req_wstrb", "8"),
+    sdmem_addr(this, "sdmem_addr", "32"),
+    sdmem_data(this, "sdmem_data", "512"),
+    sdmem_valid(this, "sdmem_valid", "1"),
     crc15_clear(this, "crc15_clear", "1", "1"),
     dat(this, "dat", "4", "-1"),
     dat_dir(this, "dat_dir", "1", "DIR_OUTPUT"),
@@ -161,13 +169,14 @@ sdctrl::sdctrl(GenObject *parent, const char *name) :
     idlestate(this, "initstate", "3", "IDLESTATE_CMD0"),
     readystate(this, "readystate", "2", "READYSTATE_CMD11"),
     identstate(this, "identstate", "1", "IDENTSTATE_CMD3"),
-    spidatastate(this, "spidatastate", "2", "SPIDATASTATE_WAIT_MEM_REQ"),
+    spidatastate(this, "spidatastate", "4", "SPIDATASTATE_WAIT_MEM_REQ"),
     wait_cmd_resp(this, "wait_cmd_resp", "1"),
     sdtype(this, "sdtype", "3", "SDCARD_UNKNOWN"),
     HCS(this, "HCS", "1", "1", "High Capacity Support"),
     S18(this, "S18", "1", "0", "1.8V Low voltage"),
     RCA(this, "RCA", "32", "0", "Relative Address"),
     OCR_VoltageWindow(this, "OCR_VoltageWindow", "24", "0xff8000", "all ranges 2.7 to 3.6 V"),
+    bitcnt(this, "bitcnt", "12"),
     //
     comb(this),
     xslv0(this, "xslv0"),
@@ -318,7 +327,6 @@ sdctrl::sdctrl(GenObject *parent, const char *name) :
         CONNECT(cmdtrx0, 0, cmdtrx0.o_cmderr, wb_trx_cmderr);
     ENDNEW();
 
-    cache0.waybits.setObjValue(&sdctrl_cfg_->CFG_LOG2_SDCACHE_WAYBITS);
     cache0.ibits.setObjValue(&sdctrl_cfg_->CFG_LOG2_SDCACHE_LINEBITS);
     NEW(cache0, cache0.getName().c_str());
         CONNECT(cache0, 0, cache0.i_clk, i_clk);
@@ -338,7 +346,7 @@ sdctrl::sdctrl(GenObject *parent, const char *name) :
         CONNECT(cache0, 0, cache0.o_req_mem_write, w_req_sdmem_write);
         CONNECT(cache0, 0, cache0.o_req_mem_addr, wb_req_sdmem_addr);
         CONNECT(cache0, 0, cache0.o_req_mem_data, wb_req_sdmem_wdata);
-        CONNECT(cache0, 0, cache0.i_mem_data_valid, w_resp_sdmem_valid);
+        CONNECT(cache0, 0, cache0.i_mem_data_valid, sdmem_valid);
         CONNECT(cache0, 0, cache0.i_mem_data, wb_resp_sdmem_rdata);
         CONNECT(cache0, 0, cache0.i_mem_fault, w_resp_sdmem_err);
         CONNECT(cache0, 0, cache0.i_flush_address, wb_regs_flush_address);
@@ -360,6 +368,11 @@ TEXT();
         SETVAL(comb.v_cmd_dir, sdctrl_cfg_->DIR_OUTPUT);
         SETVAL(comb.v_dat0_dir, sdctrl_cfg_->DIR_INPUT);
         SETVAL(comb.v_cmd_in, i_dat0);
+        IF (w_regs_sck_posedge);
+            TEXT("Not a full block 4096 bits just a cache line:");
+            SETVAL(sdmem_data, CC2(BITS(sdmem_data, 510, 0), i_dat0));
+            SETVAL(bitcnt, INC(bitcnt));
+        ENDIF();
     ELSE();
         SETVAL(comb.v_dat3_dir, dat3_dir);
         SETVAL(comb.v_dat3_out, BIT(dat, 3));
@@ -610,16 +623,53 @@ TEXT();
                     SETVAL(spidatastate, SPIDATASTATE_CACHE_WAIT_RESP);
                 ENDIF();
             ELSIF (EQ(spidatastate, SPIDATASTATE_CACHE_WAIT_RESP));
-                IF (NZ(w_cache_resp_valid));
+                SETONE(comb.v_req_sdmem_ready);
+                SETONE(comb.v_cache_resp_ready);
+                SETVAL(sdmem_addr, BITS(wb_req_sdmem_addr, DEC(sdctrl_cfg_->CFG_SDCACHE_ADDR_BITS), CONST("9")));
+                IF (NZ(w_req_sdmem_valid));
+                    IF (EZ(w_req_sdmem_write));
+                        SETVAL(spidatastate, SPIDATASTATE_CMD17_READ_SINGLE_BLOCK);
+                    ELSE();
+                        SETVAL(spidatastate, SPIDATASTATE_CMD24_WRITE_SINGLE_BLOCK);
+                    ENDIF();
+                ELSIF (NZ(w_cache_resp_valid));
                     SETVAL(spidatastate, SPIDATASTATE_WAIT_MEM_REQ);
                 ENDIF();
+            ELSIF (EQ(spidatastate, SPIDATASTATE_CMD17_READ_SINGLE_BLOCK));
+                TEXT("CMD17: READ_SINGLE_BLOCK. Reads a block of the size SET_BLOCKLEN");
+                TEXT("  [31:0] data address");
+                SETONE(cmd_req_valid);
+                SETVAL(cmd_req_cmd, sdctrl_cfg_->CMD17);
+                SETVAL(cmd_req_rn, sdctrl_cfg_->R1);
+                SETVAL(comb.vb_cmd_req_arg, sdmem_addr);
+                SETVAL(spidatastate, SPIDATASTATE_WAIT_DATA_START);
+                SETZERO(bitcnt);
+            ELSIF (EQ(spidatastate, SPIDATASTATE_CMD24_WRITE_SINGLE_BLOCK));
+            ELSIF (EQ(spidatastate, SPIDATASTATE_WAIT_DATA_START));
+                //IF (EQ(BITS(sdmem_data, 7, 0), CONST("0xFE", 8)));
+                IF (EQ(BITS(bitcnt, 7, 0), CONST("0xFE", 8)));   // just to check state machine
+                    SETVAL(spidatastate, SPIDATASTATE_READING_DATA);
+                    SETZERO(bitcnt);
+                ELSIF(NZ(AND_REDUCE(bitcnt)));
+                    TEXT("TODO: set errmode, no data response");
+                ENDIF();
+            ELSIF (EQ(spidatastate, SPIDATASTATE_READING_DATA));
+                IF (NZ(w_regs_sck_posedge));
+                    IF (NZ(AND_REDUCE(bitcnt)));
+                        SETVAL(spidatastate, SPIDATASTATE_READING_CRC15);
+                    ENDIF();
+                ENDIF();
+            ELSIF (EQ(spidatastate, SPIDATASTATE_READING_CRC15));
+                SETVAL(spidatastate, SPIDATASTATE_READING_END);
+            ELSIF (EQ(spidatastate, SPIDATASTATE_READING_END));
+                SETVAL(spidatastate, SPIDATASTATE_CACHE_WAIT_RESP);
             ELSE();
                 TEXT("Wait memory request:");
                 SETONE(comb.v_mem_req_ready);
                 IF (NZ(w_mem_req_valid));
                     SETVAL(spidatastate, SPIDATASTATE_CACHE_REQ);
                     SETONE(cache_req_valid);
-                    SETVAL(cache_req_addr, wb_mem_req_addr);
+                    SETVAL(cache_req_addr, SUB2(wb_mem_req_addr, i_xmapinfo.addr_start));
                     SETVAL(cache_req_write, w_mem_req_write);
                     SETVAL(cache_req_wdata, wb_mem_req_wdata);
                     SETVAL(cache_req_wstrb, wb_mem_req_wstrb);
@@ -637,6 +687,14 @@ TEXT();
     IF (AND2(NZ(cmd_req_valid), NZ(w_cmd_req_ready)));
         SETZERO(cmd_req_valid);
         SETONE(wait_cmd_resp);
+    ENDIF();
+
+TEXT();
+    SETZERO(sdmem_valid);
+    IF (ANDx(3, &EQ(spidatastate, SPIDATASTATE_READING_DATA),
+                &NZ(AND_REDUCE(BITS(bitcnt, 8, 0))),
+                &NZ(w_regs_sck_posedge)));
+        SETONE(sdmem_valid);
     ENDIF();
 
 TEXT();
@@ -672,10 +730,9 @@ TEXT();
     SETVAL(o_cd_dat3_dir, comb.v_dat3_dir);
     TEXT("Memory request:");
     SETVAL(w_mem_req_ready, comb.v_mem_req_ready);
-    SETONE(w_cache_resp_ready);
+    SETVAL(w_cache_resp_ready, comb.v_cache_resp_ready);
     SETVAL(w_clear_cmderr, OR2(w_regs_clear_cmderr, comb.v_clear_cmderr));
     TEXT("Cache to SD card requests:");
-    SETONE(w_req_sdmem_ready);
-    SETONE(w_resp_sdmem_valid);
+    SETVAL(w_req_sdmem_ready, comb.v_req_sdmem_ready);
     SETZERO(w_regs_flush_valid);
 }

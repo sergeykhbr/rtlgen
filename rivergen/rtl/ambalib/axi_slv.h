@@ -31,14 +31,14 @@ class axi_slv : public ModuleObject {
         CombProcess(GenObject *parent) :
             ProcObject(parent, "comb"),
             vb_req_addr_next(this, "vb_req_addr_next", "12"),
-            v_req_last(this, "v_req_last", "1"),
+            vb_req_len_next(this, "vb_req_len_next", "8"),
             vcfg(this, "vcfg"),
             vxslvo(this, "vxslvo") {
         }
 
      public:
         Logic vb_req_addr_next;
-        Logic v_req_last;
+        Logic vb_req_len_next;
         types_pnp::dev_config_type vcfg;
         types_amba::axi4_slave_out_type vxslvo;
     };
@@ -70,7 +70,6 @@ class axi_slv : public ModuleObject {
     ParamLogic State_Idle;
     ParamLogic State_w;
     ParamLogic State_burst_w;
-    ParamLogic State_last_w;
     ParamLogic State_addr_r;
     ParamLogic State_addrdata_r;
     ParamLogic State_data_r;

@@ -124,8 +124,8 @@ void sdctrl_regs::proc_comb() {
 TEXT();
     TEXT("system bus clock scaler to baudrate:");
     IF (NZ(sclk_ena));
-        IF (ORx(2, &AND2(NZ(i_400khz_ena), EQ(scaler_cnt, scaler_400khz)),
-                   &AND2(EZ(i_400khz_ena), EQ(scaler_cnt, scaler_data))));
+        IF (ORx(2, &AND2(NZ(i_400khz_ena), GE(scaler_cnt, scaler_400khz)),
+                   &AND2(EZ(i_400khz_ena), GE(scaler_cnt, scaler_data))));
             SETZERO(scaler_cnt);
             SETVAL(level, INV(level));
             SETVAL(comb.v_posedge, INV(level));

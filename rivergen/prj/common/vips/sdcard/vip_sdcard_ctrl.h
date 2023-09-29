@@ -78,10 +78,17 @@ class vip_sdcard_ctrl : public ModuleObject {
     ParamLogic SDSTATE_PRG;
     ParamLogic SDSTATE_DIS;
     ParamLogic SDSTATE_INA;
+    TextLine _sdstate2_;
+    TextLine _sdstate3_;
+    ParamLogic DATASTATE_IDLE;
+    ParamLogic DATASTATE_START;
+    ParamLogic DATASTATE_CRC15;
+    ParamLogic DATASTATE_STOP;
     // signals
 
     // registers
     RegSignal sdstate;
+    RegSignal datastate;
     RegSignal powerup_cnt;
     RegSignal preinit_cnt;
     RegSignal delay_cnt;
@@ -97,6 +104,8 @@ class vip_sdcard_ctrl : public ModuleObject {
     RegSignal illegal_cmd;
     RegSignal ocr_hcs;
     RegSignal ocr_vdd_window;
+    RegSignal req_mem_valid;
+    RegSignal req_mem_addr;
 
     CombProcess comb;
 };

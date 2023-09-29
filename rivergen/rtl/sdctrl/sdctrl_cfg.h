@@ -27,7 +27,6 @@ class sdctrl_cfg : public FileObject {
  public:
     TextLine _cache0_;
     ParamI32D CFG_SDCACHE_ADDR_BITS;
-    ParamI32D CFG_LOG2_SDCACHE_WAYBITS;
     ParamI32D CFG_LOG2_SDCACHE_LINEBITS;
     ParamI32D CFG_LOG2_SDCACHE_BYTES_PER_LINE;
     ParamI32D SDCACHE_BYTES_PER_LINE;
@@ -43,6 +42,8 @@ class sdctrl_cfg : public FileObject {
     ParamLogic CMD3;
     ParamLogic CMD8;
     ParamLogic CMD11;
+    ParamLogic CMD17;
+    ParamLogic CMD24;
     ParamLogic ACMD41;
     ParamLogic CMD55;
     ParamLogic CMD58;

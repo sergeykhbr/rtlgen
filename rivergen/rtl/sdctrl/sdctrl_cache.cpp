@@ -18,8 +18,7 @@
 
 sdctrl_cache::sdctrl_cache(GenObject *parent, const char *name) :
     ModuleObject(parent, "sdctrl_cache", name),
-    waybits(this, "waybits", "0", "Log2 of number of ways. Default 2: 4 ways"),
-    ibits(this, "ibits", "2", "Log2 of number of lines per way: 2=2KB; .. (if bytes per line = 512 B)"),
+    ibits(this, "ibits", "2", "Log2 of number of lines: 2=2KB; .. (if bytes per line = 512 B)"),
     i_clk(this, "i_clk", "1", "CPU clock"),
     i_nrst(this, "i_nrst", "1", "Reset: active LOW"),
     _ctrl0_(this, "Data path:"),
@@ -50,7 +49,6 @@ sdctrl_cache::sdctrl_cache(GenObject *parent, const char *name) :
     abus(this, "abus", "CFG_SDCACHE_ADDR_BITS"),
     lnbits(this, "lnbits", "CFG_LOG2_SDCACHE_BYTES_PER_LINE"),
     flbits(this, "flbits", "SDCACHE_FL_TOTAL"),
-    ways(this, "ways", "POW2(1,waybits)"),
     _1_(this),
     _2_(this, "State machine states:"),
     State_Idle(this, "4", "State_Idle", "0"),
@@ -67,12 +65,8 @@ sdctrl_cache::sdctrl_cache(GenObject *parent, const char *name) :
     State_ResetWrite(this, "4", "State_ResetWrite", "11"),
     _3_(this),
     LINE_BYTES_MASK(this, "CFG_SDCACHE_ADDR_BITS", "LINE_BYTES_MASK", "SUB(POW2(1,CFG_LOG2_SDCACHE_BYTES_PER_LINE),1)"),
-    FLUSH_ALL_VALUE(this, "32", "FLUSH_ALL_VALUE", "SUB(POW2(1,ADD(ibits,waybits)),1)", "Actual bitwidth is (ibits + waybits) but to avoid sc template generation use 32-bits"),
+    FLUSH_ALL_VALUE(this, "32", "FLUSH_ALL_VALUE", "SUB(POW2(1,ibits),1)"),
     // signals
-    line_direct_access_i(this, "line_direct_access_i", "1"),
-    line_invalidate_i(this, "line_invalidate_i", "1"),
-    line_re_i(this, "line_re_i", "1"),
-    line_we_i(this, "line_we_i", "1"),
     line_addr_i(this, "line_addr_i", "CFG_SDCACHE_ADDR_BITS"),
     line_wdata_i(this, "line_wdata_i", "SDCACHE_LINE_BITS"),
     line_wstrb_i(this, "line_wstrb_i", "SDCACHE_BYTES_PER_LINE"),
@@ -83,7 +77,6 @@ sdctrl_cache::sdctrl_cache(GenObject *parent, const char *name) :
     line_hit_o(this, "line_hit_o", "1"),
     _snoop1_(this, "Snoop signals:"),
     line_snoop_addr_i(this, "line_snoop_addr_i", "CFG_SDCACHE_ADDR_BITS"),
-    line_snoop_ready_o(this, "line_snoop_ready_o", "1"),
     line_snoop_flags_o(this, "line_snoop_flags_o", "SDCACHE_FL_TOTAL"),
     // registers
     req_write(this, "req_write", "1"),
@@ -107,30 +100,24 @@ sdctrl_cache::sdctrl_cache(GenObject *parent, const char *name) :
     cache_line_o(this, "cache_line_o", "SDCACHE_LINE_BITS"),
     // process
     comb(this),
-    mem0(this, "mem0", "abus", "waybits", "ibits", "lnbits", "flbits", "0")
+    mem0(this, "mem0", "abus", "ibits", "lnbits", "flbits", "0")
 {
     Operation::start(this);
 
     // Generic paramters to template parameters assignment
-    mem0.waybits.setObjValue(&waybits);
     mem0.ibits.setObjValue(&ibits);
     NEW(mem0, mem0.getName().c_str());
         CONNECT(mem0, 0, mem0.i_clk, i_clk);
         CONNECT(mem0, 0, mem0.i_nrst, i_nrst);
-        CONNECT(mem0, 0, mem0.i_direct_access, line_direct_access_i);
-        CONNECT(mem0, 0, mem0.i_invalidate, line_invalidate_i);
-        CONNECT(mem0, 0, mem0.i_re, line_re_i);
-        CONNECT(mem0, 0, mem0.i_we, line_we_i);
         CONNECT(mem0, 0, mem0.i_addr, line_addr_i);
-        CONNECT(mem0, 0, mem0.i_wdata, line_wdata_i);
         CONNECT(mem0, 0, mem0.i_wstrb, line_wstrb_i);
+        CONNECT(mem0, 0, mem0.i_wdata, line_wdata_i);
         CONNECT(mem0, 0, mem0.i_wflags, line_wflags_i);
         CONNECT(mem0, 0, mem0.o_raddr, line_raddr_o);
         CONNECT(mem0, 0, mem0.o_rdata, line_rdata_o);
         CONNECT(mem0, 0, mem0.o_rflags, line_rflags_o);
         CONNECT(mem0, 0, mem0.o_hit, line_hit_o);
         CONNECT(mem0, 0, mem0.i_snoop_addr, line_snoop_addr_i);
-        CONNECT(mem0, 0, mem0.o_snoop_ready, line_snoop_ready_o);
         CONNECT(mem0, 0, mem0.o_snoop_flags, line_snoop_flags_o);
     ENDNEW();
 
@@ -195,12 +182,7 @@ TEXT();
 
 TEXT();
     TEXT("Flush counter when direct access");
-    IF (EQ(BITS(req_addr, DEC(waybits), CONST("0")), DEC(ways)));
-        SETVAL(comb.vb_addr_direct_next, ANDx_L(2, &ADD2(req_addr, cfg->SDCACHE_BYTES_PER_LINE),
-                                                   &INV_L(LINE_BYTES_MASK)));
-    ELSE();
-        SETVAL(comb.vb_addr_direct_next, INC(req_addr));
-    ENDIF();
+    SETVAL(comb.vb_addr_direct_next, INC(req_addr));
 
 TEXT();
     SETVAL(comb.vb_line_addr, req_addr);
@@ -221,9 +203,8 @@ TEXT();
             IF (NZ(i_resp_ready));
                 IF (NZ(req_write));
                     TEXT("Modify tagged mem output with request and write back");
-                    SETONE(comb.v_line_cs_write);
-                    SETBITONE(comb.v_line_wflags, cfg->SDCACHE_FL_VALID);
-                    SETBITONE(comb.v_line_wflags, cfg->SDCACHE_FL_DIRTY);
+                    SETBITONE(comb.vb_line_wflags, cfg->SDCACHE_FL_VALID);
+                    SETBITONE(comb.vb_line_wflags, cfg->SDCACHE_FL_DIRTY);
                     SETZERO(req_write);
                     SETVAL(comb.vb_line_wstrb, comb.vb_line_rdata_o_wstrb);
                     SETVAL(comb.vb_line_wdata, comb.vb_line_rdata_o_modified);
@@ -299,13 +280,12 @@ TEXT();
             ENDIF();
         ELSE();
             SETVAL(state, State_SetupReadAdr);
-            SETONE(comb.v_line_cs_write);
-            SETBITONE(comb.v_line_wflags, cfg->SDCACHE_FL_VALID);
+            SETBITONE(comb.vb_line_wflags, cfg->SDCACHE_FL_VALID);
             SETVAL(comb.vb_line_wstrb, ALLONES(), "write full line");
             IF (NZ(req_write));
                 TEXT("Modify tagged mem output with request before write");
                 SETZERO(req_write);
-                SETBITONE(comb.v_line_wflags, cfg->SDCACHE_FL_DIRTY);
+                SETBITONE(comb.vb_line_wflags, cfg->SDCACHE_FL_DIRTY);
                 SETVAL(comb.vb_line_wdata, comb.vb_cache_line_i_modified);
                 SETONE(comb.v_resp_valid);
                 SETVAL(state, State_Idle);
@@ -341,15 +321,13 @@ TEXT();
         ENDCASE();
     CASE(State_FlushAddr);
         SETVAL(state, State_FlushCheck);
-        SETVAL(comb.v_direct_access, req_flush_all, "0=only if hit; 1=will be applied ignoring hit");
-        SETONE(comb.v_invalidate, "generate: wstrb='1; wflags='0");
+        SETVAL(comb.vb_line_wstrb, ALLONES());
+        SETZERO(comb.vb_line_wflags);
         SETZERO(write_flush);
         SETZERO(cache_line_i);
         ENDCASE();
     CASE(State_FlushCheck);
         SETVAL(cache_line_o, line_rdata_o);
-        SETVAL(comb.v_direct_access, req_flush_all);
-        SETVAL(comb.v_line_cs_write, req_flush_all);
         IF (ANDx(2, &NZ(BIT(line_rflags_o, cfg->SDCACHE_FL_VALID)),
                     &NZ(BIT(line_rflags_o, cfg->SDCACHE_FL_DIRTY))));
             TEXT("Off-load valid line");
@@ -381,13 +359,13 @@ TEXT();
             SETZERO(req_flush);
             SETVAL(flush_cnt, FLUSH_ALL_VALUE, "Init after power-on-reset");
         ENDIF();
-        SETONE(comb.v_direct_access);
-        SETONE(comb.v_invalidate, "generate: wstrb='1; wflags='0");
+        SETVAL(comb.vb_line_wstrb, ALLONES());
+        SETZERO(comb.vb_line_wflags);
         SETVAL(state, State_ResetWrite);
         ENDCASE();
     CASE(State_ResetWrite);
-        SETONE(comb.v_direct_access);
-        SETONE(comb.v_line_cs_write);
+        SETVAL(comb.vb_line_wstrb, ALLONES());
+        SETZERO(comb.vb_line_wflags);
         SETVAL(state, State_Reset);
         IF (NZ(flush_cnt));
             SETVAL(flush_cnt, DEC(flush_cnt));
@@ -411,7 +389,6 @@ TEXT();
             SETVAL(flush_cnt, req_flush_cnt);
         ELSE();
             SETONE(comb.v_req_ready);
-            SETVAL(comb.v_line_cs_read, i_req_valid);
             SETVAL(comb.vb_line_addr, i_req_addr);
             IF (NZ(i_req_valid));
                 SETVAL(req_addr, i_req_addr);
@@ -427,14 +404,10 @@ TEXT();
     SYNC_RESET(*this);
 
 TEXT();
-    SETVAL(line_direct_access_i, comb.v_direct_access);
-    SETVAL(line_invalidate_i, comb.v_invalidate);
-    SETVAL(line_re_i, comb.v_line_cs_read);
-    SETVAL(line_we_i, comb.v_line_cs_write);
     SETVAL(line_addr_i, comb.vb_line_addr);
     SETVAL(line_wdata_i, comb.vb_line_wdata);
     SETVAL(line_wstrb_i, comb.vb_line_wstrb);
-    SETVAL(line_wflags_i, comb.v_line_wflags);
+    SETVAL(line_wflags_i, comb.vb_line_wflags);
     SETZERO(line_snoop_addr_i);
 
 TEXT();
