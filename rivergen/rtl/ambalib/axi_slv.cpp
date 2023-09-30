@@ -38,17 +38,16 @@ axi_slv::axi_slv(GenObject *parent, const char *name) :
     i_resp_rdata(this, "i_resp_rdata", "CFG_SYSBUS_DATA_BITS"),
     i_resp_err(this, "i_resp_err", "1"),
     // params
-    State_Idle(this, "4", "State_Idle", "0"),
-    State_w(this, "4", "State_w", "1"), 
-    State_burst_w(this, "4", "State_burst_w", "2"),
-    State_addr_r(this, "4", "State_addr_r", "4"),
-    State_addrdata_r(this, "4", "State_addrdata_r", "5"),
-    State_data_r(this, "4", "State_data_r", "6"),
-    State_out_r(this, "4", "State_out_r", "7"),
-    State_b(this, "4", "State_b", "8"),
+    State_Idle(this, "3", "State_Idle", "0"),
+    State_w(this, "3", "State_w", "1"), 
+    State_burst_w(this, "3", "State_burst_w", "2"),
+    State_addr_r(this, "3", "State_addr_r", "3"),
+    State_data_r(this, "3", "State_data_r", "4"),
+    State_out_r(this, "3", "State_out_r", "5"),
+    State_b(this, "3", "State_b", "6"),
     // signals
     // registers
-    state(this, "state", "4", "State_Idle"),
+    state(this, "state", "3", "State_Idle"),
     req_valid(this, "req_valid", "1"),
     req_addr(this, "req_addr", "CFG_SYSBUS_ADDR_BITS"),
     req_write(this, "req_write", "1"),
@@ -59,7 +58,9 @@ axi_slv::axi_slv(GenObject *parent, const char *name) :
     req_user(this, "req_user", "CFG_SYSBUS_USER_BITS"),
     req_id(this, "req_id", "CFG_SYSBUS_ID_BITS"),
     req_burst(this, "req_burst", "2"),
-    req_last(this, "req_last", "1"),
+    req_last_a(this, "req_last_a", "1"),
+    req_last_r(this, "req_last_r", "1"),
+    req_done(this, "req_done", "1"),
     resp_valid(this, "resp_valid", "1"),
     resp_last(this, "resp_last", "1"),
     resp_rdata(this, "resp_rdata", "CFG_SYSBUS_DATA_BITS"),
@@ -112,6 +113,7 @@ TEXT();
 TEXT();
     SWITCH(state);
     CASE(State_Idle);
+        SETZERO(req_done);
         SETZERO(req_valid);
         SETZERO(req_write);
         SETZERO(resp_valid);
@@ -134,13 +136,13 @@ TEXT();
                 SETVAL(state, State_burst_w);
                 SETONE(req_valid);
                 SETONE(req_write);
-                SETVAL(req_last, INV(OR_REDUCE(i_xslvi.aw_bits.len)));
+                SETVAL(req_last_a, INV(OR_REDUCE(i_xslvi.aw_bits.len)));
             ELSE();
                 SETVAL(state, State_w);
             ENDIF();
         ELSIF (NZ(i_xslvi.ar_valid));
             SETONE(req_valid);
-            SETVAL(req_last, INV(OR_REDUCE(i_xslvi.ar_bits.len)));
+            SETVAL(req_last_a, INV(OR_REDUCE(i_xslvi.ar_bits.len)));
             SETVAL(req_addr, i_xslvi.ar_bits.addr);
             CALLF(&req_xsize, glob_types_amba_->XSizeToBytes, 1, &i_xslvi.ar_bits.size);
             SETVAL(req_len, i_xslvi.ar_bits.len);
@@ -157,91 +159,84 @@ TEXT();
         IF(NZ(i_xslvi.w_valid));
             SETONE(req_valid);
             SETONE(req_write);
-            SETVAL(req_last, INV(OR_REDUCE(req_len)));
+            SETVAL(req_last_a, INV(OR_REDUCE(comb.vb_req_len_next)));
             SETVAL(state, State_burst_w);
         ENDIF();
         ENDCASE();
     CASE(State_burst_w);
-        SETVAL(comb.vxslvo.w_ready, i_resp_valid);
-        IF (NZ(req_last));
-            IF (NZ(i_req_ready));
-                SETZERO(req_valid);
-                SETZERO(req_write);
-                SETVAL(state, State_b);
-            ENDIF();
-        ELSIF (AND2(NZ(i_xslvi.w_valid), NZ(i_resp_valid)));
-            SETVAL(req_valid, i_xslvi.w_valid);
-            SETVAL(req_addr, CC2(BITS(req_addr, DEC(glb->CFG_SYSBUS_ADDR_BITS), CONST("12")),
-                                 comb.vb_req_addr_next));
+        SETVAL(comb.vxslvo.w_ready, i_req_ready);
+        IF (NZ(i_xslvi.w_valid));
+            SETONE(req_valid);
             SETVAL(req_wdata, i_xslvi.w_data);
             SETVAL(req_wstrb, i_xslvi.w_strb);
-            SETVAL(req_last, INV(OR_REDUCE(req_len)));
+        ELSIF(NZ(i_req_ready));
+            SETZERO(req_valid);
+        ENDIF();
+        IF (AND2(NZ(req_valid), NZ(i_req_ready)));
+            SETONE(req_done);
+            SETVAL(req_addr, CC2(BITS(req_addr, DEC(glb->CFG_SYSBUS_ADDR_BITS), CONST("12")),
+                                 comb.vb_req_addr_next));
+            SETVAL(req_last_a, INV(OR_REDUCE(comb.vb_req_len_next)));
             IF (NZ(req_len));
                 SETVAL(req_len, DEC(req_len));
+            ELSE();
+                SETZERO(req_write);
+                SETZERO(req_last_a);
+                SETVAL(state, State_b);
             ENDIF();
         ENDIF();
         ENDCASE();
     CASE (State_b);
         SETVAL(comb.vxslvo.b_valid, i_resp_valid);
-        IF (AND2(NZ(i_resp_valid), NZ(i_xslvi.b_ready)));
+        IF (AND2(NZ(i_xslvi.b_ready), NZ(i_resp_valid)));
+            SETZERO(req_done);
             SETVAL(state, State_Idle);
         ENDIF();
         ENDCASE();
     CASE (State_addr_r);
         TEXT("Setup address:");
         IF (NZ(i_req_ready));
-            SETVAL(req_last, INV(OR_REDUCE(comb.vb_req_len_next)));
-            IF (EZ(req_last));
-                SETVAL(req_addr, CC2(BITS(req_addr, DEC(glb->CFG_SYSBUS_ADDR_BITS), CONST("12")),
-                                        comb.vb_req_addr_next));
-                SETVAL(req_len, comb.vb_req_len_next);
-                SETVAL(state, State_addrdata_r);
-            ELSE();
-                SETZERO(req_valid);
-                SETVAL(state, State_data_r);
-            ENDIF();
-        ENDIF();
-        ENDCASE();
-    CASE (State_addrdata_r);
-        SETVAL(resp_valid, i_resp_valid);
-        SETVAL(resp_rdata, i_resp_rdata);
-        SETVAL(resp_err, i_resp_err);
-        IF (AND2(EZ(i_xslvi.r_ready), NZ(i_resp_valid)));
-            TEXT("Bus is not ready to accept read data");
-            SETZERO(req_valid);
-            SETVAL(state, State_out_r);
-        ELSIF (AND2(EZ(i_req_ready), NZ(i_resp_valid)));
-            SETVAL(state, State_addr_r);
-        ELSIF (AND2(NZ(req_last), NZ(i_req_ready)));
-            TEXT("The last response in a burst");
-            SETZERO(req_valid);
             SETVAL(state, State_data_r);
-        ELSIF(NZ(i_resp_valid));
             SETVAL(req_addr, CC2(BITS(req_addr, DEC(glb->CFG_SYSBUS_ADDR_BITS), CONST("12")),
                                     comb.vb_req_addr_next));
             SETVAL(req_len, comb.vb_req_len_next);
-            SETVAL(req_last, INV(OR_REDUCE(comb.vb_req_len_next)));
+            SETVAL(req_last_a, INV(OR_REDUCE(comb.vb_req_len_next)));
+            SETVAL(req_last_r, req_last_a);
+            SETVAL(req_valid, OR_REDUCE(req_len));
+            SETONE(req_done);
         ENDIF();
         ENDCASE();
     CASE (State_data_r);
-        IF (NZ(i_resp_valid));
+        SETVAL(req_valid, AND2_L(INV(req_last_r), i_xslvi.r_ready));
+        IF (AND2(NZ(i_resp_valid), NZ(req_done)));
+            SETZERO(req_done);
             SETONE(resp_valid);
+            SETVAL(resp_last, req_last_r);
             SETVAL(resp_rdata, i_resp_rdata);
             SETVAL(resp_err, i_resp_err);
-            SETVAL(resp_last, req_last);
-            SETVAL(state, State_out_r);
+            IF (NZ(req_last_r));
+                SETVAL(state, State_out_r);
+            ENDIF();
+        ELSIF(NZ(i_xslvi.r_ready));
+            SETZERO(resp_valid);
+        ENDIF();
+        IF (AND2(NZ(req_valid), NZ(i_req_ready)));
+            SETVAL(req_addr, CC2(BITS(req_addr, DEC(glb->CFG_SYSBUS_ADDR_BITS), CONST("12")),
+                                    comb.vb_req_addr_next));
+            SETVAL(req_len, comb.vb_req_len_next);
+            SETVAL(req_last_a, INV(OR_REDUCE(comb.vb_req_len_next)));
+            SETVAL(req_last_r, req_last_a);
+            SETVAL(req_valid, AND2_L(INV(req_last_a), i_xslvi.r_ready));
+            SETONE(req_done);
         ENDIF();
         ENDCASE();
     CASE (State_out_r);
         IF (NZ(i_xslvi.r_ready));
-            SETZERO(resp_valid);
+            SETZERO(req_last_a);
+            SETZERO(req_last_r);
             SETZERO(resp_last);
-            IF (NZ(resp_last));
-                SETVAL(state, State_Idle);
-            ELSE();
-                SETONE(req_valid);
-                SETVAL(state, State_addr_r);
-            ENDIF();
+            SETZERO(resp_valid);
+            SETVAL(state, State_Idle);
         ENDIF();
         ENDCASE();
     CASEDEF();
@@ -253,7 +248,7 @@ TEXT();
 
 TEXT();
     SETVAL(o_req_valid, req_valid);
-    SETVAL(o_req_last, req_last);
+    SETVAL(o_req_last, req_last_a);
     SETVAL(o_req_addr, req_addr);
     SETVAL(o_req_size, req_xsize);
     SETVAL(o_req_write, req_write);
