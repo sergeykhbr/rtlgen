@@ -168,7 +168,6 @@ class sdctrl : public ModuleObject {
     Signal wb_req_sdmem_wdata;
     Signal wb_resp_sdmem_rdata;
     Signal w_resp_sdmem_err;
-    Signal wb_regs_flush_address;
     Signal w_regs_flush_valid;
     Signal w_cache_flush_end;
 

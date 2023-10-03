@@ -116,7 +116,6 @@ sdctrl::sdctrl(GenObject *parent, const char *name) :
     wb_req_sdmem_wdata(this, "wb_req_sdmem_wdata", "SDCACHE_LINE_BITS"),
     wb_resp_sdmem_rdata(this, "wb_resp_sdmem_rdata", "SDCACHE_LINE_BITS"),
     w_resp_sdmem_err(this, "w_resp_sdmem_err", "1"),
-    wb_regs_flush_address(this, "wb_regs_flush_address", "CFG_SDCACHE_ADDR_BITS"),
     w_regs_flush_valid(this, "w_regs_flush_valid", "1"),
     w_cache_flush_end(this, "w_cache_flush_end", "1"),
     w_trx_cmd_dir(this, "w_trx_cmd_dir", "1"),
@@ -349,7 +348,6 @@ sdctrl::sdctrl(GenObject *parent, const char *name) :
         CONNECT(cache0, 0, cache0.i_mem_data_valid, sdmem_valid);
         CONNECT(cache0, 0, cache0.i_mem_data, wb_resp_sdmem_rdata);
         CONNECT(cache0, 0, cache0.i_mem_fault, w_resp_sdmem_err);
-        CONNECT(cache0, 0, cache0.i_flush_address, wb_regs_flush_address);
         CONNECT(cache0, 0, cache0.i_flush_valid, w_regs_flush_valid);
         CONNECT(cache0, 0, cache0.o_flush_end, w_cache_flush_end);
     ENDNEW();

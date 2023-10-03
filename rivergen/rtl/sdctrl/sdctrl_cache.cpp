@@ -42,7 +42,6 @@ sdctrl_cache::sdctrl_cache(GenObject *parent, const char *name) :
     i_mem_data(this, "i_mem_data", "SDCACHE_LINE_BITS"),
     i_mem_fault(this, "i_mem_fault", "1"),
     _dbg0_(this, "Debug interface"),
-    i_flush_address(this, "i_flush_address", "CFG_SDCACHE_ADDR_BITS"),
     i_flush_valid(this, "i_flush_valid", "1"),
     o_flush_end(this, "o_flush_end", "1"),
     // params
@@ -52,12 +51,12 @@ sdctrl_cache::sdctrl_cache(GenObject *parent, const char *name) :
     _1_(this),
     _2_(this, "State machine states:"),
     State_Idle(this, "4", "State_Idle", "0"),
-    State_CheckHit(this, "4", "State_CheckHit", "1"),
-    State_TranslateAddress(this, "4", "State_TranslateAddress", "2"),
-    State_WaitGrant(this, "4", "State_WaitGrant", "3"),
-    State_WaitResp(this, "4", "State_WaitResp", "4"),
-    State_CheckResp(this, "4", "State_CheckResp", "5"),
-    State_SetupReadAdr(this, "4", "State_SetupReadAdr", "6"),
+    State_SetupReadAdr(this, "4", "State_SetupReadAdr", "1"),
+    State_CheckHit(this, "4", "State_CheckHit", "2"),
+    State_TranslateAddress(this, "4", "State_TranslateAddress", "3"),
+    State_WaitGrant(this, "4", "State_WaitGrant", "4"),
+    State_WaitResp(this, "4", "State_WaitResp", "5"),
+    State_CheckResp(this, "4", "State_CheckResp", "6"),
     State_WriteBus(this, "4", "State_WriteBus", "7"),
     State_FlushAddr(this, "4", "State_FlushAddr", "8"),
     State_FlushCheck(this, "4", "State_FlushCheck", "9"),
@@ -67,7 +66,6 @@ sdctrl_cache::sdctrl_cache(GenObject *parent, const char *name) :
     LINE_BYTES_MASK(this, "CFG_SDCACHE_ADDR_BITS", "LINE_BYTES_MASK", "SUB(POW2(1,CFG_LOG2_SDCACHE_BYTES_PER_LINE),1)"),
     FLUSH_ALL_VALUE(this, "32", "FLUSH_ALL_VALUE", "SUB(POW2(1,ibits),1)"),
     // signals
-    line_addr_i(this, "line_addr_i", "CFG_SDCACHE_ADDR_BITS"),
     line_wdata_i(this, "line_wdata_i", "SDCACHE_LINE_BITS"),
     line_wstrb_i(this, "line_wstrb_i", "SDCACHE_BYTES_PER_LINE"),
     line_wflags_i(this, "line_wflags_i", "SDCACHE_FL_TOTAL"),
@@ -90,12 +88,9 @@ sdctrl_cache::sdctrl_cache(GenObject *parent, const char *name) :
     mem_fault(this, "mem_fault", "1"),
     write_first(this, "write_first", "1"),
     write_flush(this, "write_flush", "1"),
-    write_share(this, "write_share", "1"),
-    req_flush(this, "req_flush", "1", "1", "init flush request"),
-    req_flush_all(this, "req_flush_all", "1"),
-    req_flush_addr(this, "req_flush_addr", "CFG_SDCACHE_ADDR_BITS", "0", "[0]=1 flush all"),
-    req_flush_cnt(this, "req_flush_cnt", "32"),
+    req_flush(this, "req_flush", "1"),
     flush_cnt(this, "flush_cnt", "32"),
+    line_addr_i(this, "line_addr_i", "CFG_SDCACHE_ADDR_BITS"),
     cache_line_i(this, "cache_line_i", "SDCACHE_LINE_BITS"),
     cache_line_o(this, "cache_line_o", "SDCACHE_LINE_BITS"),
     // process
@@ -130,6 +125,7 @@ void sdctrl_cache::proc_comb() {
     GenObject *i;
 
     SETVAL(comb.ridx, BITS(req_addr, DEC(cfg->CFG_LOG2_SDCACHE_BYTES_PER_LINE), CONST("3")));
+    SETVAL(comb.v_mem_addr_last, AND_REDUCE(BITS(mem_addr, CONST("9"), cfg->CFG_LOG2_SDCACHE_BYTES_PER_LINE)));
 
 TEXT();
     SETVAL(comb.vb_cached_data, BITSW(line_rdata_o, MUL2(CONST("64"), TO_INT(comb.ridx)), CONST("64")));
@@ -144,14 +140,6 @@ TEXT();
 TEXT();
     IF (NZ(i_flush_valid));
         SETONE(req_flush);
-        SETVAL(req_flush_all, BIT(i_flush_address, 0));
-        IF (NZ(BIT(i_flush_address, 0)));
-            SETVAL(req_flush_cnt, FLUSH_ALL_VALUE);
-            SETZERO(req_flush_addr);
-        ELSE();
-            SETZERO(req_flush_cnt);
-            SETVAL(req_flush_addr, i_flush_address);
-        ENDIF();
     ENDIF();
 
 TEXT();
@@ -185,7 +173,6 @@ TEXT();
     SETVAL(comb.vb_addr_direct_next, INC(req_addr));
 
 TEXT();
-    SETVAL(comb.vb_line_addr, req_addr);
     SETVAL(comb.vb_line_wdata, cache_line_i);
 
 TEXT();
@@ -193,7 +180,30 @@ TEXT();
     SWITCH (state);
     CASE(State_Idle);
         SETZERO(mem_fault);
-        SETONE(comb.v_ready_next);
+        IF (NZ(req_flush));
+            SETVAL(state, State_FlushAddr);
+            SETZERO(cache_line_i);
+            SETVAL(flush_cnt, FLUSH_ALL_VALUE);
+        ELSE();
+            SETONE(comb.v_req_ready);
+            IF (NZ(i_req_valid));
+                SETVAL(line_addr_i, i_req_addr);
+                SETVAL(req_addr, i_req_addr);
+                SETVAL(req_wstrb, i_req_wstrb);
+                SETVAL(req_wdata, i_req_wdata);
+                SETVAL(req_write, i_req_write);
+                IF (NZ(comb.v_req_same_line));
+                    TEXT("Write address is the same as the next requested, so use it to write");
+                    TEXT("value and update state machine");
+                    SETVAL(state, State_CheckHit);
+                ELSE();
+                    SETVAL(state, State_SetupReadAdr);
+                ENDIF();
+            ENDIF();
+        ENDIF();
+        ENDCASE();
+    CASE(State_SetupReadAdr);
+        SETVAL(state, State_CheckHit);
         ENDCASE();
     CASE(State_CheckHit);
         SETVAL(comb.vb_resp_data, comb.vb_cached_data);
@@ -201,6 +211,7 @@ TEXT();
             TEXT("Hit");
             SETONE(comb.v_resp_valid);
             IF (NZ(i_resp_ready));
+                SETVAL(state, State_Idle);
                 IF (NZ(req_write));
                     TEXT("Modify tagged mem output with request and write back");
                     SETBITONE(comb.vb_line_wflags, cfg->SDCACHE_FL_VALID);
@@ -208,14 +219,6 @@ TEXT();
                     SETZERO(req_write);
                     SETVAL(comb.vb_line_wstrb, comb.vb_line_rdata_o_wstrb);
                     SETVAL(comb.vb_line_wdata, comb.vb_line_rdata_o_modified);
-                    IF (NZ(comb.v_req_same_line));
-                        TEXT("Write address is the same as the next requested, so use it to write");
-                        TEXT("value and update state machine");
-                        SETONE(comb.v_ready_next);
-                    ENDIF();
-                    SETVAL(state, State_Idle);
-                ELSE();
-                    SETONE(comb.v_ready_next);
                     SETVAL(state, State_Idle);
                 ENDIF();
             ENDIF();
@@ -228,21 +231,15 @@ TEXT();
         SETONE(req_mem_valid);
         SETZERO(mem_fault);
         SETVAL(state, State_WaitGrant);
-        IF (NZ(write_share));
-            SETONE(req_mem_write);
-            SETVAL(mem_addr, LSH(BITS(line_raddr_o, DEC(cfg->CFG_SDCACHE_ADDR_BITS),
-                        cfg->CFG_LOG2_SDCACHE_BYTES_PER_LINE), cfg->CFG_LOG2_SDCACHE_BYTES_PER_LINE));
-        ELSIF (ANDx(2, &NZ(BIT(line_rflags_o, cfg->SDCACHE_FL_VALID)),
+        IF (ANDx(2, &NZ(BIT(line_rflags_o, cfg->SDCACHE_FL_VALID)),
                         &NZ(BIT(line_rflags_o, cfg->SDCACHE_FL_DIRTY))));
             SETONE(write_first);
             SETONE(req_mem_write);
-            SETVAL(mem_addr, LSH(BITS(line_raddr_o, DEC(cfg->CFG_SDCACHE_ADDR_BITS),
-                        cfg->CFG_LOG2_SDCACHE_BYTES_PER_LINE), cfg->CFG_LOG2_SDCACHE_BYTES_PER_LINE));
+            SETVAL(mem_addr, LSH(BITS(line_raddr_o, DEC(cfg->CFG_SDCACHE_ADDR_BITS), CONST("9")), 9));
         ELSE();
             TEXT("1. Read -> Save cache");
             TEXT("2. Read -> Modify -> Save cache");
-            SETVAL(mem_addr, LSH(BITS(req_addr, DEC(cfg->CFG_SDCACHE_ADDR_BITS),
-                        cfg->CFG_LOG2_SDCACHE_BYTES_PER_LINE), cfg->CFG_LOG2_SDCACHE_BYTES_PER_LINE));
+            SETVAL(mem_addr, LSH(BITS(req_addr, DEC(cfg->CFG_SDCACHE_ADDR_BITS), CONST("9")), 9));
             SETVAL(req_mem_write, req_write);
         ENDIF();
         SETVAL(cache_line_o, line_rdata_o);
@@ -250,9 +247,8 @@ TEXT();
         ENDCASE();
     CASE(State_WaitGrant);
         IF (NZ(i_req_mem_ready));
-            IF (ORx(4, &NZ(write_flush),
+            IF (ORx(3, &NZ(write_flush),
                        &NZ(write_first),
-                       &NZ(write_share),
                        &NZ(req_write)));
                 SETVAL(state, State_WriteBus);
             ELSE();
@@ -279,28 +275,29 @@ TEXT();
                 SETVAL(state, State_Idle);
             ENDIF();
         ELSE();
-            SETVAL(state, State_SetupReadAdr);
             SETBITONE(comb.vb_line_wflags, cfg->SDCACHE_FL_VALID);
             SETVAL(comb.vb_line_wstrb, ALLONES(), "write full line");
-            IF (NZ(req_write));
+            SETVAL(mem_addr, ADD2(mem_addr, cfg->SDCACHE_BYTES_PER_LINE));
+            IF (NZ(comb.v_mem_addr_last));
+                SETVAL(state, State_SetupReadAdr);
+                SETVAL(line_addr_i, req_addr);
+            ELSE();
+                SETVAL(state, State_WaitResp);
+                SETVAL(line_addr_i, ADD2(line_addr_i, cfg->SDCACHE_BYTES_PER_LINE));
+            ENDIF();
+            /*IF (NZ(req_write));
                 TEXT("Modify tagged mem output with request before write");
                 SETZERO(req_write);
                 SETBITONE(comb.vb_line_wflags, cfg->SDCACHE_FL_DIRTY);
                 SETVAL(comb.vb_line_wdata, comb.vb_cache_line_i_modified);
                 SETONE(comb.v_resp_valid);
                 SETVAL(state, State_Idle);
-            ENDIF();
+            ENDIF();*/
         ENDIF();
-        ENDCASE();
-    CASE(State_SetupReadAdr);
-        SETVAL(state, State_CheckHit);
         ENDCASE();
     CASE(State_WriteBus);
         IF (NZ(i_mem_data_valid));
-            IF (NZ(write_share));
-                SETZERO(write_share);
-                SETVAL(state, State_Idle);
-            ELSIF (NZ(write_flush));
+            IF (NZ(write_flush));
                 TEXT("Offloading Cache line on flush request");
                 SETVAL(state, State_FlushAddr);
             ELSIF (NZ(write_first));
@@ -344,32 +341,23 @@ TEXT();
                 SETONE(comb.v_flush_end);
             ENDIF();
         ENDIF();
+        SETVAL(line_addr_i, ADD2(line_addr_i, cfg->SDCACHE_BYTES_PER_LINE));
         IF (NZ(flush_cnt));
             SETVAL(flush_cnt, DEC(flush_cnt));
-            IF (NZ(req_flush_all));
-                SETVAL(req_addr, comb.vb_addr_direct_next);
-            ELSE();
-                SETVAL(req_addr, ADD2(req_addr, cfg->SDCACHE_BYTES_PER_LINE));
-            ENDIF();
         ENDIF();
         ENDCASE();
     CASE(State_Reset);
         TEXT("Write clean line");
-        IF (NZ(req_flush));
-            SETZERO(req_flush);
-            SETVAL(flush_cnt, FLUSH_ALL_VALUE, "Init after power-on-reset");
-        ENDIF();
-        SETVAL(comb.vb_line_wstrb, ALLONES());
-        SETZERO(comb.vb_line_wflags);
+        SETZERO(line_addr_i);
+        SETVAL(flush_cnt, FLUSH_ALL_VALUE, "Init after power-on-reset");
         SETVAL(state, State_ResetWrite);
         ENDCASE();
     CASE(State_ResetWrite);
         SETVAL(comb.vb_line_wstrb, ALLONES());
         SETZERO(comb.vb_line_wflags);
-        SETVAL(state, State_Reset);
+        SETVAL(line_addr_i, ADD2(line_addr_i, cfg->SDCACHE_BYTES_PER_LINE));
         IF (NZ(flush_cnt));
             SETVAL(flush_cnt, DEC(flush_cnt));
-            SETVAL(req_addr, comb.vb_addr_direct_next);
         ELSE();
             SETVAL(state, State_Idle);
         ENDIF();
@@ -380,31 +368,9 @@ TEXT();
 
 
 TEXT();
-    IF (NZ(comb.v_ready_next));
-        IF (NZ(req_flush));
-            SETVAL(state, State_FlushAddr);
-            SETZERO(req_flush);
-            SETZERO(cache_line_i);
-            SETVAL(req_addr, AND2_L(req_flush_addr, INV_L(LINE_BYTES_MASK)));
-            SETVAL(flush_cnt, req_flush_cnt);
-        ELSE();
-            SETONE(comb.v_req_ready);
-            SETVAL(comb.vb_line_addr, i_req_addr);
-            IF (NZ(i_req_valid));
-                SETVAL(req_addr, i_req_addr);
-                SETVAL(req_wstrb, i_req_wstrb);
-                SETVAL(req_wdata, i_req_wdata);
-                SETVAL(req_write, i_req_write);
-                SETVAL(state, State_CheckHit);
-            ENDIF();
-        ENDIF();
-    ENDIF();
-
-TEXT();
     SYNC_RESET(*this);
 
 TEXT();
-    SETVAL(line_addr_i, comb.vb_line_addr);
     SETVAL(line_wdata_i, comb.vb_line_wdata);
     SETVAL(line_wstrb_i, comb.vb_line_wstrb);
     SETVAL(line_wflags_i, comb.vb_line_wflags);
