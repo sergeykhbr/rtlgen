@@ -51,6 +51,7 @@ class vip_sdcard_ctrl : public ModuleObject {
     InPort i_nrst;
     InPort i_clk;
     InPort i_spi_mode;
+    InPort i_cs;
     InPort i_cmd_req_valid;
     InPort i_cmd_req_cmd;
     InPort i_cmd_req_data;
@@ -64,6 +65,14 @@ class vip_sdcard_ctrl : public ModuleObject {
     OutPort o_cmd_resp_r7;
     OutPort o_stat_idle_state;
     OutPort o_stat_illegal_cmd;
+    OutPort o_mem_addr;
+    InPort i_mem_rdata;
+    OutPort o_crc16_clear;
+    OutPort o_crc16_next;
+    InPort i_crc16;
+    OutPort o_dat_trans;
+    OutPort o_dat;
+    InPort i_cmdio_busy;
 
     // param
     TextLine _sdstate0_;
@@ -106,6 +115,11 @@ class vip_sdcard_ctrl : public ModuleObject {
     RegSignal ocr_vdd_window;
     RegSignal req_mem_valid;
     RegSignal req_mem_addr;
+    RegSignal shiftdat;
+    RegSignal bitcnt;
+    RegSignal crc16_clear;
+    RegSignal crc16_next;
+    RegSignal dat_trans;
 
     CombProcess comb;
 };

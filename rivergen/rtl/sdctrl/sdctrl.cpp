@@ -114,8 +114,6 @@ sdctrl::sdctrl(GenObject *parent, const char *name) :
     w_req_sdmem_write(this, "w_req_sdmem_write", "1"),
     wb_req_sdmem_addr(this, "wb_req_sdmem_addr", "CFG_SDCACHE_ADDR_BITS"),
     wb_req_sdmem_wdata(this, "wb_req_sdmem_wdata", "SDCACHE_LINE_BITS"),
-    wb_resp_sdmem_rdata(this, "wb_resp_sdmem_rdata", "SDCACHE_LINE_BITS"),
-    w_resp_sdmem_err(this, "w_resp_sdmem_err", "1"),
     w_regs_flush_valid(this, "w_regs_flush_valid", "1"),
     w_cache_flush_end(this, "w_cache_flush_end", "1"),
     w_trx_cmd_dir(this, "w_trx_cmd_dir", "1"),
@@ -137,11 +135,11 @@ sdctrl::sdctrl(GenObject *parent, const char *name) :
     w_crc7_next(this, "w_crc7_next", "1"),
     w_crc7_dat(this, "w_crc7_dat", "1"),
     wb_crc7(this, "wb_crc7", "7"),
-    w_crc15_next(this, "w_crc15_next", "1"),
-    wb_crc15_0(this, "wb_crc15_0", "15"),
-    wb_crc15_1(this, "wb_crc15_1", "15"),
-    wb_crc15_2(this, "wb_crc15_2", "15"),
-    wb_crc15_3(this, "wb_crc15_3", "15"),
+    w_crc16_next(this, "w_crc16_next", "1"),
+    wb_crc16_0(this, "wb_crc16_0", "16"),
+    wb_crc16_1(this, "wb_crc16_1", "16"),
+    wb_crc16_2(this, "wb_crc16_2", "16"),
+    wb_crc16_3(this, "wb_crc16_3", "16"),
     // registers
     clkcnt(this, "clkcnt", "7"),
     cmd_set_low(this, "cmd_set_low", "1"),
@@ -160,10 +158,14 @@ sdctrl::sdctrl(GenObject *parent, const char *name) :
     sdmem_addr(this, "sdmem_addr", "32"),
     sdmem_data(this, "sdmem_data", "512"),
     sdmem_valid(this, "sdmem_valid", "1"),
-    crc15_clear(this, "crc15_clear", "1", "1"),
+    sdmem_err(this, "sdmem_err", "1"),
+    crc16_clear(this, "crc16_clear", "1", "1"),
+    crc16_calc0(this, "crc16_calc0", "16"),
+    crc16_rx0(this, "crc16_rx0", "16"),
     dat(this, "dat", "4", "-1"),
     dat_dir(this, "dat_dir", "1", "DIR_OUTPUT"),
     dat3_dir(this, "dat3_dir", "1", "DIR_INPUT"),
+    dat_tran(this, "dat_tran", "1", "1"),
     sdstate(this, "sdstate", "4", "SDSTATE_PRE_INIT"),
     idlestate(this, "initstate", "3", "IDLESTATE_CMD0"),
     readystate(this, "readystate", "2", "READYSTATE_CMD11"),
@@ -260,37 +262,37 @@ sdctrl::sdctrl(GenObject *parent, const char *name) :
     NEW(crcdat0, crcdat0.getName().c_str());
         CONNECT(crcdat0, 0, crcdat0.i_clk, i_clk);
         CONNECT(crcdat0, 0, crcdat0.i_nrst, i_nrst);
-        CONNECT(crcdat0, 0, crcdat0.i_clear, crc15_clear);
-        CONNECT(crcdat0, 0, crcdat0.i_next, w_crc15_next);
+        CONNECT(crcdat0, 0, crcdat0.i_clear, crc16_clear);
+        CONNECT(crcdat0, 0, crcdat0.i_next, w_crc16_next);
         CONNECT(crcdat0, 0, crcdat0.i_dat, i_dat0);
-        CONNECT(crcdat0, 0, crcdat0.o_crc15, wb_crc15_0);
+        CONNECT(crcdat0, 0, crcdat0.o_crc16, wb_crc16_0);
     ENDNEW();
 
     NEW(crcdat1, crcdat1.getName().c_str());
         CONNECT(crcdat1, 0, crcdat1.i_clk, i_clk);
         CONNECT(crcdat1, 0, crcdat1.i_nrst, i_nrst);
-        CONNECT(crcdat1, 0, crcdat1.i_clear, crc15_clear);
-        CONNECT(crcdat1, 0, crcdat1.i_next, w_crc15_next);
+        CONNECT(crcdat1, 0, crcdat1.i_clear, crc16_clear);
+        CONNECT(crcdat1, 0, crcdat1.i_next, w_crc16_next);
         CONNECT(crcdat1, 0, crcdat1.i_dat, i_dat1);
-        CONNECT(crcdat1, 0, crcdat1.o_crc15, wb_crc15_1);
+        CONNECT(crcdat1, 0, crcdat1.o_crc16, wb_crc16_1);
     ENDNEW();
 
     NEW(crcdat2, crcdat2.getName().c_str());
         CONNECT(crcdat2, 0, crcdat2.i_clk, i_clk);
         CONNECT(crcdat2, 0, crcdat2.i_nrst, i_nrst);
-        CONNECT(crcdat2, 0, crcdat2.i_clear, crc15_clear);
-        CONNECT(crcdat2, 0, crcdat2.i_next, w_crc15_next);
+        CONNECT(crcdat2, 0, crcdat2.i_clear, crc16_clear);
+        CONNECT(crcdat2, 0, crcdat2.i_next, w_crc16_next);
         CONNECT(crcdat2, 0, crcdat2.i_dat, i_dat2);
-        CONNECT(crcdat2, 0, crcdat2.o_crc15, wb_crc15_2);
+        CONNECT(crcdat2, 0, crcdat2.o_crc16, wb_crc16_2);
     ENDNEW();
 
     NEW(crcdat3, crcdat3.getName().c_str());
         CONNECT(crcdat3, 0, crcdat3.i_clk, i_clk);
         CONNECT(crcdat3, 0, crcdat3.i_nrst, i_nrst);
-        CONNECT(crcdat3, 0, crcdat3.i_clear, crc15_clear);
-        CONNECT(crcdat3, 0, crcdat3.i_next, w_crc15_next);
+        CONNECT(crcdat3, 0, crcdat3.i_clear, crc16_clear);
+        CONNECT(crcdat3, 0, crcdat3.i_next, w_crc16_next);
         CONNECT(crcdat3, 0, crcdat3.i_dat, i_cd_dat3);
-        CONNECT(crcdat3, 0, crcdat3.o_crc15, wb_crc15_3);
+        CONNECT(crcdat3, 0, crcdat3.o_crc16, wb_crc16_3);
     ENDNEW();
 
     NEW(cmdtrx0, cmdtrx0.getName().c_str());
@@ -326,7 +328,6 @@ sdctrl::sdctrl(GenObject *parent, const char *name) :
         CONNECT(cmdtrx0, 0, cmdtrx0.o_cmderr, wb_trx_cmderr);
     ENDNEW();
 
-    cache0.ibits.setObjValue(&sdctrl_cfg_->CFG_LOG2_SDCACHE_LINEBITS);
     NEW(cache0, cache0.getName().c_str());
         CONNECT(cache0, 0, cache0.i_clk, i_clk);
         CONNECT(cache0, 0, cache0.i_nrst, i_nrst);
@@ -346,8 +347,8 @@ sdctrl::sdctrl(GenObject *parent, const char *name) :
         CONNECT(cache0, 0, cache0.o_req_mem_addr, wb_req_sdmem_addr);
         CONNECT(cache0, 0, cache0.o_req_mem_data, wb_req_sdmem_wdata);
         CONNECT(cache0, 0, cache0.i_mem_data_valid, sdmem_valid);
-        CONNECT(cache0, 0, cache0.i_mem_data, wb_resp_sdmem_rdata);
-        CONNECT(cache0, 0, cache0.i_mem_fault, w_resp_sdmem_err);
+        CONNECT(cache0, 0, cache0.i_mem_data, sdmem_data);
+        CONNECT(cache0, 0, cache0.i_mem_fault, sdmem_err);
         CONNECT(cache0, 0, cache0.i_flush_valid, w_regs_flush_valid);
         CONNECT(cache0, 0, cache0.o_flush_end, w_cache_flush_end);
     ENDNEW();
@@ -362,13 +363,13 @@ void sdctrl::proc_comb() {
 TEXT();
     IF (NZ(w_regs_spi_mode));
         SETVAL(comb.v_dat3_dir, sdctrl_cfg_->DIR_OUTPUT);
-        SETVAL(comb.v_dat3_out, w_trx_cmd_cs);
+        SETVAL(comb.v_dat3_out, AND2(w_trx_cmd_cs, dat_tran));
         SETVAL(comb.v_cmd_dir, sdctrl_cfg_->DIR_OUTPUT);
         SETVAL(comb.v_dat0_dir, sdctrl_cfg_->DIR_INPUT);
         SETVAL(comb.v_cmd_in, i_dat0);
         IF (w_regs_sck_posedge);
-            TEXT("Not a full block 4096 bits just a cache line:");
-            SETVAL(sdmem_data, CC2(BITS(sdmem_data, 510, 0), i_dat0));
+            TEXT("Not a full block 4096 bits just a cache line (dat_tran is active LOW):");
+            SETVAL(sdmem_data, CC2(BITS(sdmem_data, 510, 0), OR2(i_dat0, dat_tran)));
             SETVAL(bitcnt, INC(bitcnt));
         ENDIF();
     ELSE();
@@ -644,22 +645,34 @@ TEXT();
                 SETZERO(bitcnt);
             ELSIF (EQ(spidatastate, SPIDATASTATE_CMD24_WRITE_SINGLE_BLOCK));
             ELSIF (EQ(spidatastate, SPIDATASTATE_WAIT_DATA_START));
-                //IF (EQ(BITS(sdmem_data, 7, 0), CONST("0xFE", 8)));
-                IF (EQ(BITS(bitcnt, 7, 0), CONST("0xFE", 8)));   // just to check state machine
+                SETZERO(dat_tran);
+                SETONE(crc16_clear);
+                IF (NE(wb_trx_cmderr, sdctrl_cfg_->CMDERR_NONE));
+                    SETVAL(spidatastate, SPIDATASTATE_CACHE_WAIT_RESP);
+                ELSIF (EQ(BITS(sdmem_data, 7, 0), CONST("0xFE", 8)));
                     SETVAL(spidatastate, SPIDATASTATE_READING_DATA);
                     SETZERO(bitcnt);
+                    SETZERO(crc16_clear);
                 ELSIF(NZ(AND_REDUCE(bitcnt)));
                     TEXT("TODO: set errmode, no data response");
                 ENDIF();
             ELSIF (EQ(spidatastate, SPIDATASTATE_READING_DATA));
                 IF (NZ(w_regs_sck_posedge));
+                    SETONE(comb.v_crc16_next);
                     IF (NZ(AND_REDUCE(bitcnt)));
                         SETVAL(spidatastate, SPIDATASTATE_READING_CRC15);
+                        SETVAL(crc16_calc0, wb_crc16_0);
                     ENDIF();
                 ENDIF();
             ELSIF (EQ(spidatastate, SPIDATASTATE_READING_CRC15));
-                SETVAL(spidatastate, SPIDATASTATE_READING_END);
+                IF (NZ(w_regs_sck_posedge));
+                    IF (NZ(AND_REDUCE(BITS(bitcnt, 3, 0))));
+                        SETVAL(spidatastate, SPIDATASTATE_READING_END);
+                        SETONE(dat_tran);
+                    ENDIF();
+                ENDIF();
             ELSIF (EQ(spidatastate, SPIDATASTATE_READING_END));
+                SETVAL(crc16_rx0, TO_U32(BITS(sdmem_data, 15, 0)));
                 SETVAL(spidatastate, SPIDATASTATE_CACHE_WAIT_RESP);
             ELSE();
                 TEXT("Wait memory request:");
@@ -689,7 +702,12 @@ TEXT();
 
 TEXT();
     SETZERO(sdmem_valid);
-    IF (ANDx(3, &EQ(spidatastate, SPIDATASTATE_READING_DATA),
+    SETZERO(sdmem_err);
+    IF (NE(wb_trx_cmderr, sdctrl_cfg_->CMDERR_NONE));
+        TEXT("To avoid cache hanging set always valid in error state");
+        SETONE(sdmem_valid);
+        SETONE(sdmem_err);
+    ELSIF (ANDx(3, &EQ(spidatastate, SPIDATASTATE_READING_DATA),
                 &NZ(AND_REDUCE(BITS(bitcnt, 8, 0))),
                 &NZ(w_regs_sck_posedge)));
         SETONE(sdmem_valid);
@@ -701,7 +719,7 @@ TEXT();
 
 TEXT();
     SETVAL(w_cmd_resp_ready, comb.v_cmd_resp_ready);
-    SETVAL(w_crc15_next, comb.v_crc15_next);
+    SETVAL(w_crc16_next, comb.v_crc16_next);
     TEXT("Page 222, Table 4-81 Overview of Card States vs Operation Modes table");
     IF (ORx(3, &LE(sdstate, SDSTATE_IDENT),
                &EQ(sdstate, SDSTATE_INA),

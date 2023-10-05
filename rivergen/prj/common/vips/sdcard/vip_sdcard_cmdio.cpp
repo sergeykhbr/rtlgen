@@ -50,6 +50,7 @@ vip_sdcard_cmdio::vip_sdcard_cmdio(GenObject *parent, const char *name) :
     i_stat_wp_violation(this, "i_stat_wp_violation", "1", "The command tried to write wp block"),
     i_stat_erase_param(this, "i_stat_erase_param", "1", "An invalid selection for erase, sectors or groups"),
     i_stat_out_of_range(this, "i_stat_out_of_range", "1"),
+    o_busy(this, "o_busy", "1"),
     _cmdstate0_(this, ""),
     _cmdstate1_(this, "Receiver CMD state:"),
     CMDSTATE_REQ_STARTBIT(this, "4", "CMDSTATE_REQ_STARTBIT", "0"),
@@ -130,12 +131,13 @@ TEXT();
         ENDIF();
         ENDCASE();
     CASE (CMDSTATE_REQ_STARTBIT);
-        IF (AND2(NZ(cmdz), EZ(i_cmd)));
+        SETZERO(comb.v_busy);
+        SETONE(comb.v_crc7_clear);
+        IF (NZ(AND2(spi_mode, i_cs)));
+            TEXT("Do nothing");
+        ELSIF (AND2(NZ(cmdz), EZ(i_cmd)));
             SETVAL(cs, i_cs);
-            SETONE(comb.v_crc7_next);
             SETVAL(cmd_state, CMDSTATE_REQ_TXBIT);
-        ELSE();
-            SETONE(comb.v_crc7_clear);
         ENDIF();
         ENDCASE();
     CASE (CMDSTATE_REQ_TXBIT);
@@ -298,4 +300,5 @@ TEXT();
     SETVAL(o_cmd_req_data, cmd_req_data);
     SETVAL(o_cmd_resp_ready, cmd_resp_ready);
     SETVAL(o_spi_mode, spi_mode);
+    SETVAL(o_busy, comb.v_busy);
 }

@@ -214,6 +214,7 @@ std::string GenObject::getStrValue() {
         } else if (objValue_->getId() == ID_DEF_PARAM) {
             if (SCV_is_sysc()) {
                 // Cannot use generic parameter as template parameters, so use const value
+                SCV_printf("FIXME: template parameter not working with generic parameters");
                 return objValue_->getStrValue();
             } else {
                 return objValue_->getName();

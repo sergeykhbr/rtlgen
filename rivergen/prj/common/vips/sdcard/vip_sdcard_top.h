@@ -113,6 +113,14 @@ class vip_sdcard_top : public ModuleObject {
     Signal w_stat_wp_violation;
     Signal w_stat_erase_param;
     Signal w_stat_out_of_range;
+    Signal wb_mem_addr;
+    Signal wb_mem_rdata;
+    Signal w_crc16_clear;
+    Signal w_crc16_next;
+    Signal wb_crc16;
+    Signal w_dat_trans;
+    Signal wb_dat;
+    Signal w_cmdio_busy;
 
     CombProcess comb;
     iobuf_tech iobufcmd0;

@@ -27,6 +27,7 @@ vip_sdcard_ctrl::vip_sdcard_ctrl(GenObject *parent, const char *name) :
     i_nrst(this, "i_nrst", "1"),
     i_clk(this, "i_clk", "1"),
     i_spi_mode(this, "i_spi_mode", "1"),
+    i_cs(this, "i_cs", "1"),
     i_cmd_req_valid(this, "i_cmd_req_valid", "1"),
     i_cmd_req_cmd(this, "i_cmd_req_cmd", "6"),
     i_cmd_req_data(this, "i_cmd_req_data", "32"),
@@ -40,6 +41,14 @@ vip_sdcard_ctrl::vip_sdcard_ctrl(GenObject *parent, const char *name) :
     o_cmd_resp_r7(this, "o_cmd_resp_r7", "1"),
     o_stat_idle_state(this, "o_stat_idle_state", "1"),
     o_stat_illegal_cmd(this, "o_stat_illegal_cmd", "1"),
+    o_mem_addr(this, "o_mem_addr", "41"),
+    i_mem_rdata(this, "i_mem_rdata", "8"),
+    o_crc16_clear(this, "o_crc16_clear", "1"),
+    o_crc16_next(this, "o_crc16_next", "1"),
+    i_crc16(this, "i_crc16", "16"),
+    o_dat_trans(this, "o_dat_trans", "1"),
+    o_dat(this, "o_dat", "4"),
+    i_cmdio_busy(this, "i_cmdio_busy", "1"),
     // params
     _sdstate0_(this, ""),
     _sdstate1_(this, "SD-card states (see Card Status[12:9] CURRENT_STATE on page 145)"),
@@ -80,6 +89,11 @@ vip_sdcard_ctrl::vip_sdcard_ctrl(GenObject *parent, const char *name) :
     ocr_vdd_window(this, "ocr_vdd_window", "24"),
     req_mem_valid(this, "req_mem_valid", "1"),
     req_mem_addr(this, "req_mem_addr", "41"),
+    shiftdat(this, "shiftdat", "16", "-1"),
+    bitcnt(this, "bitcnt", "13"),
+    crc16_clear(this, "crc16_clear", "1"),
+    crc16_next(this, "crc16_next", "1"),
+    dat_trans(this, "dat_trans", "1"),
     //
     comb(this)
 {
@@ -259,11 +273,42 @@ TEXT();
     ENDIF();
 
 TEXT();
+    SETVAL(shiftdat, CC2(BITS(shiftdat, 14, 0), CONST("1", 1)));
     SWITCH(datastate);
     CASE (DATASTATE_IDLE);
-        IF (NZ(req_mem_valid));
+        SETONE(crc16_clear);
+        SETZERO(crc16_next);
+        SETZERO(dat_trans);
+        IF (AND3(NZ(req_mem_valid), EZ(i_cmdio_busy), EZ(i_cs)));
             SETZERO(req_mem_valid);
             SETVAL(datastate, DATASTATE_START);
+            SETVAL(shiftdat, CONST("0xFE00", 16));
+            SETZERO(bitcnt);
+            SETONE(dat_trans);
+        ENDIF();
+        ENDCASE();
+    CASE (DATASTATE_START);
+        SETVAL(bitcnt, INC(bitcnt));
+        IF (NZ(AND_REDUCE(BITS(bitcnt, 2, 0))));
+            SETZERO(crc16_clear);
+            SETONE(crc16_next);
+            IF (EQ(BITS(bitcnt, 12, 3), CONST("512", 10)));
+                SETVAL(datastate, DATASTATE_CRC15);
+                SETVAL(shiftdat, i_crc16);
+                SETZERO(bitcnt);
+                SETZERO(crc16_next);
+            ELSE();
+                TEXT("Read memory byte:");
+                SETVAL(shiftdat, CC2(i_mem_rdata, BITS(shiftdat, 7, 0)));
+                SETVAL(req_mem_addr, INC(req_mem_addr));
+            ENDIF();
+        ENDIF();
+        ENDCASE();
+    CASE (DATASTATE_CRC15);
+        SETVAL(bitcnt, INC(bitcnt));
+        IF (NZ(AND_REDUCE(BITS(bitcnt, 3, 0))));
+            SETVAL(datastate, DATASTATE_IDLE);
+            SETZERO(dat_trans);
         ENDIF();
         ENDCASE();
     CASEDEF();
@@ -293,4 +338,9 @@ TEXT();
     SETVAL(o_cmd_resp_r7, cmd_resp_r7);
     SETVAL(o_stat_illegal_cmd, illegal_cmd);
     SETVAL(o_stat_idle_state, powerup_done);
+    SETVAL(o_mem_addr, req_mem_addr);
+    SETVAL(o_crc16_clear,  crc16_clear);
+    SETVAL(o_crc16_next,  crc16_next);
+    SETVAL(o_dat_trans, dat_trans);
+    SETVAL(o_dat, BITS(shiftdat, 15, 12));
 }

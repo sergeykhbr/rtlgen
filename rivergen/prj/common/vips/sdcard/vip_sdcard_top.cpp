@@ -80,6 +80,14 @@ vip_sdcard_top::vip_sdcard_top(GenObject *parent, const char *name) :
     w_stat_wp_violation(this, "w_stat_wp_violation", "1"),
     w_stat_erase_param(this, "w_stat_erase_param", "1"),
     w_stat_out_of_range(this, "w_stat_out_of_range", "1"),
+    wb_mem_addr(this, "wb_mem_addr", "41"),
+    wb_mem_rdata(this, "wb_mem_rdata", "8"),
+    w_crc16_clear(this, "w_crc15_clear", "1"),
+    w_crc16_next(this, "w_crc15_next", "1"),
+    wb_crc16(this, "wb_crc16", "16"),
+    w_dat_trans(this, "w_dat_trans", "1"),
+    wb_dat(this, "wb_dat", "4"),
+    w_cmdio_busy(this, "w_cmdio_busy", "1"),
     // registers
     //
     comb(this),
@@ -160,12 +168,14 @@ vip_sdcard_top::vip_sdcard_top(GenObject *parent, const char *name) :
         CONNECT(cmdio0, 0, cmdio0.i_stat_wp_violation, w_stat_wp_violation);
         CONNECT(cmdio0, 0, cmdio0.i_stat_erase_param, w_stat_erase_param);
         CONNECT(cmdio0, 0, cmdio0.i_stat_out_of_range, w_stat_out_of_range);
+        CONNECT(cmdio0, 0, cmdio0.o_busy, w_cmdio_busy);
     ENDNEW();
 
     NEW(ctrl0, ctrl0.getName().c_str());
         CONNECT(ctrl0, 0, ctrl0.i_clk, i_sclk);
         CONNECT(ctrl0, 0, ctrl0.i_nrst, i_nrst);
         CONNECT(ctrl0, 0, ctrl0.i_spi_mode, w_spi_mode);
+        CONNECT(ctrl0, 0, ctrl0.i_cs, w_dat3_in);
         CONNECT(ctrl0, 0, ctrl0.i_cmd_req_valid, w_cmd_req_valid);
         CONNECT(ctrl0, 0, ctrl0.i_cmd_req_cmd, wb_cmd_req_cmd);
         CONNECT(ctrl0, 0, ctrl0.i_cmd_req_data, wb_cmd_req_data);
@@ -179,6 +189,14 @@ vip_sdcard_top::vip_sdcard_top(GenObject *parent, const char *name) :
         CONNECT(ctrl0, 0, ctrl0.o_cmd_resp_r7, w_cmd_resp_r7);
         CONNECT(ctrl0, 0, ctrl0.o_stat_idle_state, w_stat_idle_state);
         CONNECT(ctrl0, 0, ctrl0.o_stat_illegal_cmd, w_stat_illegal_cmd);
+        CONNECT(ctrl0, 0, ctrl0.o_mem_addr, wb_mem_addr);
+        CONNECT(ctrl0, 0, ctrl0.i_mem_rdata, wb_mem_rdata);
+        CONNECT(ctrl0, 0, ctrl0.o_crc16_clear, w_crc16_clear);
+        CONNECT(ctrl0, 0, ctrl0.o_crc16_next, w_crc16_next);
+        CONNECT(ctrl0, 0, ctrl0.i_crc16, wb_crc16);
+        CONNECT(ctrl0, 0, ctrl0.o_dat_trans, w_dat_trans);
+        CONNECT(ctrl0, 0, ctrl0.o_dat, wb_dat);
+        CONNECT(ctrl0, 0, ctrl0.i_cmdio_busy, w_cmdio_busy);
     ENDNEW();
 
     Operation::start(&comb);
@@ -194,7 +212,8 @@ void vip_sdcard_top::proc_comb() {
         SETONE(w_dat3_dir, "in: cs");
 
         TEXT();
-        SETVAL(w_dat0_out, w_cmdio_cmd_out);
+        SETVAL(w_dat0_out, ORx_L(2, &AND2_L(INV(w_dat_trans), w_cmdio_cmd_out),
+                                    &AND2_L(w_dat_trans, BIT(wb_dat, 3))));
         SETONE(w_dat1_out);
         SETONE(w_dat2_out);
         SETONE(w_dat3_out);
@@ -207,10 +226,10 @@ void vip_sdcard_top::proc_comb() {
         
         TEXT();
         SETVAL(w_cmd_out, w_cmdio_cmd_out);
-        SETONE(w_dat0_out);
-        SETONE(w_dat1_out);
-        SETONE(w_dat2_out);
-        SETONE(w_dat3_out);
+        SETVAL(w_dat0_out, BIT(wb_dat, 0));
+        SETVAL(w_dat1_out, BIT(wb_dat, 1));
+        SETVAL(w_dat2_out, BIT(wb_dat, 2));
+        SETVAL(w_dat3_out, BIT(wb_dat, 3));
     ENDIF();
 
 TEXT();
@@ -227,5 +246,6 @@ TEXT();
     SETZERO(w_stat_wp_violation);
     SETZERO(w_stat_erase_param);
     SETZERO(w_stat_out_of_range);
-
+    SETVAL(wb_mem_rdata, CONST("0xFF", 8));
+    SETVAL(wb_crc16, CONST("0x7fa1", 16));
 }

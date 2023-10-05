@@ -23,7 +23,7 @@
 #include "sdctrl_cfg.h"
 #include "sdctrl_regs.h"
 #include "sdctrl_crc7.h"
-#include "sdctrl_crc15.h"
+#include "sdctrl_crc16.h"
 #include "sdctrl_cmd_transmitter.h"
 #include "sdctrl_cache.h"
 
@@ -37,7 +37,7 @@ class sdctrl : public ModuleObject {
      public:
         CombProcess(GenObject *parent) :
             ProcObject(parent, "comb"),
-            v_crc15_next(this, "v_crc15_next", "1"),
+            v_crc16_next(this, "v_crc16_next", "1"),
             vb_cmd_req_arg(this, "vb_cmd_req_arg", "32"),
             v_cmd_resp_ready(this, "v_cmd_resp_ready", "1"),
             v_cmd_dir(this, "v_cmd_dir", "1"),
@@ -52,7 +52,7 @@ class sdctrl : public ModuleObject {
         }
 
      public:
-        Logic v_crc15_next;
+        Logic v_crc16_next;
         Logic vb_cmd_req_arg;
         Logic v_cmd_resp_ready;
         Logic v_cmd_dir;
@@ -166,8 +166,6 @@ class sdctrl : public ModuleObject {
     Signal w_req_sdmem_write;
     Signal wb_req_sdmem_addr;
     Signal wb_req_sdmem_wdata;
-    Signal wb_resp_sdmem_rdata;
-    Signal w_resp_sdmem_err;
     Signal w_regs_flush_valid;
     Signal w_cache_flush_end;
 
@@ -191,11 +189,11 @@ class sdctrl : public ModuleObject {
     Signal w_crc7_next;
     Signal w_crc7_dat;
     Signal wb_crc7;
-    Signal w_crc15_next;
-    Signal wb_crc15_0;
-    Signal wb_crc15_1;
-    Signal wb_crc15_2;
-    Signal wb_crc15_3;
+    Signal w_crc16_next;
+    Signal wb_crc16_0;
+    Signal wb_crc16_1;
+    Signal wb_crc16_2;
+    Signal wb_crc16_3;
 
     RegSignal clkcnt;
     RegSignal cmd_set_low;
@@ -214,11 +212,15 @@ class sdctrl : public ModuleObject {
     RegSignal sdmem_addr;
     RegSignal sdmem_data;
     RegSignal sdmem_valid;
+    RegSignal sdmem_err;
 
-    RegSignal crc15_clear;
+    RegSignal crc16_clear;
+    RegSignal crc16_calc0;
+    RegSignal crc16_rx0;
     RegSignal dat;
     RegSignal dat_dir;
     RegSignal dat3_dir;
+    RegSignal dat_tran;
 
     RegSignal sdstate;
     RegSignal idlestate;
@@ -238,10 +240,10 @@ class sdctrl : public ModuleObject {
     axi_slv xslv0;
     sdctrl_regs regs0;
     sdctrl_crc7 crccmd0;
-    sdctrl_crc15 crcdat0;
-    sdctrl_crc15 crcdat1;
-    sdctrl_crc15 crcdat2;
-    sdctrl_crc15 crcdat3;
+    sdctrl_crc16 crcdat0;
+    sdctrl_crc16 crcdat1;
+    sdctrl_crc16 crcdat2;
+    sdctrl_crc16 crcdat3;
     sdctrl_cmd_transmitter cmdtrx0;
     sdctrl_cache cache0;
 };

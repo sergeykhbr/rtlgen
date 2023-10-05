@@ -18,7 +18,6 @@
 
 sdctrl_cache::sdctrl_cache(GenObject *parent, const char *name) :
     ModuleObject(parent, "sdctrl_cache", name),
-    ibits(this, "ibits", "2", "Log2 of number of lines: 2=2KB; .. (if bytes per line = 512 B)"),
     i_clk(this, "i_clk", "1", "CPU clock"),
     i_nrst(this, "i_nrst", "1", "Reset: active LOW"),
     _ctrl0_(this, "Data path:"),
@@ -46,6 +45,7 @@ sdctrl_cache::sdctrl_cache(GenObject *parent, const char *name) :
     o_flush_end(this, "o_flush_end", "1"),
     // params
     abus(this, "abus", "CFG_SDCACHE_ADDR_BITS"),
+    ibits(this, "ibits", "CFG_LOG2_SDCACHE_LINEBITS"),
     lnbits(this, "lnbits", "CFG_LOG2_SDCACHE_BYTES_PER_LINE"),
     flbits(this, "flbits", "SDCACHE_FL_TOTAL"),
     _1_(this),
@@ -100,7 +100,6 @@ sdctrl_cache::sdctrl_cache(GenObject *parent, const char *name) :
     Operation::start(this);
 
     // Generic paramters to template parameters assignment
-    mem0.ibits.setObjValue(&ibits);
     NEW(mem0, mem0.getName().c_str());
         CONNECT(mem0, 0, mem0.i_clk, i_clk);
         CONNECT(mem0, 0, mem0.i_nrst, i_nrst);

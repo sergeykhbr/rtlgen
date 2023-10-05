@@ -33,7 +33,8 @@ class vip_sdcard_cmdio : public ModuleObject {
             vb_cmd_txshift(this, "vb_cmd_txshift", "48"),
             v_crc7_clear(this, "v_crc7_clear", "1"),
             v_crc7_next(this, "v_crc7_next", "1"),
-            v_crc7_in(this, "v_crc7_in", "1") {
+            v_crc7_in(this, "v_crc7_in", "1"),
+            v_busy(this, "v_busy", "1", "1") {
         }
 
      public:
@@ -41,6 +42,7 @@ class vip_sdcard_cmdio : public ModuleObject {
         Logic v_crc7_clear;
         Logic v_crc7_next;
         Logic v_crc7_in;
+        Logic v_busy;
     };
 
     void proc_comb();
@@ -79,6 +81,7 @@ class vip_sdcard_cmdio : public ModuleObject {
     InPort i_stat_wp_violation;
     InPort i_stat_erase_param;
     InPort i_stat_out_of_range;
+    OutPort o_busy;
 
     // param
     TextLine _cmdstate0_;
