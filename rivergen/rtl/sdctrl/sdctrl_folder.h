@@ -23,6 +23,10 @@
 #include "sdctrl_crc16.h"
 #include "sdctrl_cmd_transmitter.h"
 #include "sdctrl_cache.h"
+#include "sdctrl_err.h"
+#include "sdctrl_wdog.h"
+#include "sdctrl_sdmode.h"
+#include "sdctrl_spimode.h"
 #include "sdctrl.h"
 
 class sdctrl_folder : public FolderObject {
@@ -35,6 +39,10 @@ class sdctrl_folder : public FolderObject {
         sdctrl_crc16_file_(this),
         sdctrl_cmd_transmitter_file_(this),
         sdctrl_cache_file_(this),
+        sdctrl_err_file_(this),
+        sdctrl_wdog_file_(this),
+        sdctrl_sdmode_file_(this),
+        sdctrl_spimode_file_(this),
         sdctrl_file_(this) {}
 
  protected:
@@ -46,5 +54,9 @@ class sdctrl_folder : public FolderObject {
     sdctrl_crc16_file sdctrl_crc16_file_;
     sdctrl_cmd_transmitter_file sdctrl_cmd_transmitter_file_;
     sdctrl_cache_file sdctrl_cache_file_;
+    sdctrl_err_file sdctrl_err_file_;
+    sdctrl_wdog_file sdctrl_wdog_file_;
+    sdctrl_sdmode_file sdctrl_sdmode_file_;
+    sdctrl_spimode_file sdctrl_spimode_file_;
     sdctrl_file sdctrl_file_;
 };
