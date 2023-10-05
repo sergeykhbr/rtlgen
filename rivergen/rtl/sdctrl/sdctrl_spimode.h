@@ -99,7 +99,7 @@ class sdctrl_spimode : public ModuleObject {
     RegSignal cmd_req_arg;
     RegSignal cmd_req_rn;
     RegSignal cmd_resp_cmd;
-    RegSignal cmd_resp_reg;
+    RegSignal cmd_resp_arg32;
     RegSignal cmd_resp_r1;
     RegSignal cmd_resp_r2;
     RegSignal data_addr;
@@ -120,7 +120,6 @@ class sdctrl_spimode : public ModuleObject {
     RegSignal sdtype;
     RegSignal HCS;
     RegSignal S18;
-    RegSignal RCA;
     RegSignal OCR_VoltageWindow;
     RegSignal bitcnt;
 

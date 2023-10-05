@@ -25,6 +25,10 @@
 #include "sdctrl_crc7.h"
 #include "sdctrl_crc16.h"
 #include "sdctrl_cmd_transmitter.h"
+#include "sdctrl_err.h"
+#include "sdctrl_wdog.h"
+#include "sdctrl_spimode.h"
+#include "sdctrl_sdmode.h"
 #include "sdctrl_cache.h"
 
 using namespace sysvc;
@@ -38,11 +42,15 @@ class sdctrl : public ModuleObject {
         CombProcess(GenObject *parent) :
             ProcObject(parent, "comb"),
             v_crc16_next(this, "v_crc16_next", "1"),
-            vb_cmd_req_arg(this, "vb_cmd_req_arg", "32"),
-            v_cmd_resp_ready(this, "v_cmd_resp_ready", "1"),
             v_cmd_dir(this, "v_cmd_dir", "1"),
             v_cmd_in(this, "v_cmd_in", "1"),
+            v_cmd_out(this, "v_cmd_out", "1"),
             v_dat0_dir(this, "v_dat0_dir", "1"),
+            v_dat0_out(this, "v_dat0_out", "1"),
+            v_dat1_dir(this, "v_dat1_dir", "1"),
+            v_dat1_out(this, "v_dat1_out", "1"),
+            v_dat2_dir(this, "v_dat2_dir", "1"),
+            v_dat2_out(this, "v_dat2_out", "1"),
             v_dat3_dir(this, "v_dat3_dir", "1"),
             v_dat3_out(this, "v_dat3_out", "1"),
             v_clear_cmderr(this, "v_clear_cmderr", "1"),
@@ -53,11 +61,15 @@ class sdctrl : public ModuleObject {
 
      public:
         Logic v_crc16_next;
-        Logic vb_cmd_req_arg;
-        Logic v_cmd_resp_ready;
         Logic v_cmd_dir;
         Logic v_cmd_in;
+        Logic v_cmd_out;
         Logic v_dat0_dir;
+        Logic v_dat0_out;
+        Logic v_dat1_dir;
+        Logic v_dat1_out;
+        Logic v_dat2_dir;
+        Logic v_dat2_out;
         Logic v_dat3_dir;
         Logic v_dat3_out;
         Logic v_clear_cmderr;
@@ -101,43 +113,10 @@ class sdctrl : public ModuleObject {
     InPort i_detected;
     InPort i_protect;
     
-    TextLine _sdstate0_;
-    ParamLogic SDSTATE_SPI_DATA;
-    ParamLogic SDSTATE_PRE_INIT;
-    ParamLogic SDSTATE_IDLE;
-    ParamLogic SDSTATE_READY;
-    ParamLogic SDSTATE_IDENT;
-    ParamLogic SDSTATE_STBY;
-    ParamLogic SDSTATE_TRAN;
-    ParamLogic SDSTATE_DATA;
-    ParamLogic SDSTATE_RCV;
-    ParamLogic SDSTATE_PRG;
-    ParamLogic SDSTATE_DIS;
-    ParamLogic SDSTATE_INA;
-    TextLine _idlestate0_;
-    ParamLogic IDLESTATE_CMD0;
-    ParamLogic IDLESTATE_CMD8;
-    ParamLogic IDLESTATE_CMD55;
-    ParamLogic IDLESTATE_ACMD41;
-    ParamLogic IDLESTATE_CMD58;
-    ParamLogic IDLESTATE_CARD_IDENTIFICATION;
-    TextLine _readystate0_;
-    ParamLogic READYSTATE_CMD11;
-    ParamLogic READYSTATE_CMD2;
-    ParamLogic READYSTATE_CHECK_CID;
-    TextLine _identstate0_;
-    ParamLogic IDENTSTATE_CMD3;
-    ParamLogic IDENTSTATE_CHECK_RCA;
-    TextLine _spidatastate0_;
-    ParamLogic SPIDATASTATE_WAIT_MEM_REQ;
-    ParamLogic SPIDATASTATE_CACHE_REQ;
-    ParamLogic SPIDATASTATE_CACHE_WAIT_RESP;
-    ParamLogic SPIDATASTATE_CMD17_READ_SINGLE_BLOCK;
-    ParamLogic SPIDATASTATE_CMD24_WRITE_SINGLE_BLOCK;
-    ParamLogic SPIDATASTATE_WAIT_DATA_START;
-    ParamLogic SPIDATASTATE_READING_DATA;
-    ParamLogic SPIDATASTATE_READING_CRC15;
-    ParamLogic SPIDATASTATE_READING_END;
+    TextLine _mode0_;
+    ParamLogic MODE_PRE_INIT;
+    ParamLogic MODE_SPI;
+    ParamLogic MODE_SD;
 
     Signal w_regs_sck_posedge;
     Signal w_regs_sck_negedge;
@@ -169,8 +148,8 @@ class sdctrl : public ModuleObject {
     Signal w_regs_flush_valid;
     Signal w_cache_flush_end;
 
-    Signal w_trx_cmd_dir;
-    Signal w_trx_cmd_cs;
+    Signal w_trx_cmd;
+    Signal w_trx_cmd_csn;
     Signal w_cmd_in;
     Signal w_cmd_req_ready;
     Signal w_cmd_resp_valid;
@@ -182,8 +161,6 @@ class sdctrl : public ModuleObject {
     Signal w_cmd_resp_ready;
     Signal wb_trx_cmdstate;
     Signal wb_trx_cmderr;
-    Signal w_clear_cmderr;
-    Signal w_400kHz_ena;
     
     Signal w_crc7_clear;
     Signal w_crc7_next;
@@ -195,12 +172,31 @@ class sdctrl : public ModuleObject {
     Signal wb_crc16_2;
     Signal wb_crc16_3;
 
+    TextLine _mux0_;
+    Signal w_spi_dat;
+    Signal w_spi_dat_csn;
+    Signal w_spi_cmd_req_valid;
+    Signal wb_spi_cmd_req_cmd;
+    Signal wb_spi_cmd_req_arg;
+    Signal wb_spi_cmd_req_rn;
+    Signal w_spi_err_valid;
+    Signal w_spi_err_clear;
+    Signal wb_spi_err_setcode;
+    Signal w_spi_400kHz_ena;
+    TextLine _mux1_;
+    Signal w_cmd_req_valid;
+    Signal wb_cmd_req_cmd;
+    Signal wb_cmd_req_arg;
+    Signal wb_cmd_req_rn;
+    Signal w_err_valid;
+    Signal w_err_clear;
+    Signal wb_err_setcode;
+    Signal w_400kHz_ena;
+
+    RegSignal nrst_spimode;
+    RegSignal nrst_sdmode;
     RegSignal clkcnt;
     RegSignal cmd_set_low;
-    RegSignal cmd_req_valid;
-    RegSignal cmd_req_cmd;
-    RegSignal cmd_req_arg;
-    RegSignal cmd_req_rn;
     RegSignal cmd_resp_cmd;
     RegSignal cmd_resp_reg;
     RegSignal cmd_resp_spistatus;
@@ -222,28 +218,21 @@ class sdctrl : public ModuleObject {
     RegSignal dat3_dir;
     RegSignal dat_tran;
 
-    RegSignal sdstate;
-    RegSignal idlestate;
-    RegSignal readystate;
-    RegSignal identstate;
-    RegSignal spidatastate;
-    RegSignal wait_cmd_resp;
-    RegSignal sdtype;
-    RegSignal HCS;
-    RegSignal S18;
-    RegSignal RCA;
-    RegSignal OCR_VoltageWindow;
-    RegSignal bitcnt;
+    RegSignal mode;
 
     CombProcess comb;
 
     axi_slv xslv0;
     sdctrl_regs regs0;
+    sdctrl_err err0;
+    sdctrl_wdog wdog0;
     sdctrl_crc7 crccmd0;
     sdctrl_crc16 crcdat0;
     sdctrl_crc16 crcdat1;
     sdctrl_crc16 crcdat2;
     sdctrl_crc16 crcdat3;
+    sdctrl_spimode spimode0;
+    sdctrl_sdmode sdmode0;
     sdctrl_cmd_transmitter cmdtrx0;
     sdctrl_cache cache0;
 };

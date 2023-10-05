@@ -25,14 +25,9 @@ sdctrl_err::sdctrl_err(GenObject *parent, const char *name) :
     i_err_clear(this, "i_err_clear", "1"),
     o_err_code(this, "o_err_code", "4"),
     // parameters
-    _err0_(this, "Error codes:"),
-    CMDERR_NONE(this, "4", "CMDERR_NONE", "0"),
-    CMDERR_NO_RESPONSE(this, "4", "CMDERR_NO_RESPONSE", "1"),
-    CMDERR_WRONG_RESP_STARTBIT(this, "4", "CMDERR_WRONG_RESP_STARTBIT", "2"),
-    CMDERR_WRONG_RESP_STOPBIT(this, "4", "CMDERR_WRONG_RESP_STOPBIT", "3"),
     // signals
     // registers
-    code(this, "code", "4"),
+    code(this, "code", "4", "CMDERR_NONE"),
     //
     comb(this)
 {
@@ -44,9 +39,9 @@ sdctrl_err::sdctrl_err(GenObject *parent, const char *name) :
 
 void sdctrl_err::proc_comb() {
     IF (NZ(i_err_clear));
-        SETVAL(code, CMDERR_NONE);
+        SETVAL(code, sdctrl_cfg_->CMDERR_NONE);
     ELSIF (ANDx(2, &NZ(i_err_valid),
-                   &EQ(code, CMDERR_NONE)));
+                   &EQ(code, sdctrl_cfg_->CMDERR_NONE)));
         SETVAL(code, i_err_code);
     ENDIF();
 

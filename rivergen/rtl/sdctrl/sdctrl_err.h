@@ -17,6 +17,7 @@
 #pragma once
 
 #include <api.h>
+#include "sdctrl_cfg.h"
 
 using namespace sysvc;
 
@@ -44,12 +45,6 @@ class sdctrl_err : public ModuleObject {
     InPort i_err_clear;
     OutPort o_err_code;
     
-    TextLine _err0_;
-    ParamLogic CMDERR_NONE;
-    ParamLogic CMDERR_NO_RESPONSE;
-    ParamLogic CMDERR_WRONG_RESP_STARTBIT;
-    ParamLogic CMDERR_WRONG_RESP_STOPBIT;
-
     RegSignal code;
 
     CombProcess comb;

@@ -73,10 +73,10 @@ sdctrl_spimode::sdctrl_spimode(GenObject *parent, const char *name) :
     cmd_req_cmd(this, "cmd_req_cmd", "6"),
     cmd_req_arg(this, "cmd_req_arg", "32"),
     cmd_req_rn(this, "cmd_req_rn", "3"),
-    cmd_resp_cmd(this, "cmd_resp_r1", "6"),
-    cmd_resp_reg(this, "cmd_resp_reg", "32"),
+    cmd_resp_cmd(this, "cmd_resp_cmd", "6"),
+    cmd_resp_arg32(this, "cmd_resp_arg32", "32"),
     cmd_resp_r1(this, "cmd_resp_r1", "7"),
-    cmd_resp_r2(this, "cmd_resp_r1", "8"),
+    cmd_resp_r2(this, "cmd_resp_r2", "8"),
     data_addr(this, "data_addr", "32"),
     data_data(this, "data_data", "512"),
     data_resp_valid(this, "data_resp_valid", "1"),
@@ -94,7 +94,6 @@ sdctrl_spimode::sdctrl_spimode(GenObject *parent, const char *name) :
     sdtype(this, "sdtype", "3", "SDCARD_UNKNOWN"),
     HCS(this, "HCS", "1", "1", "High Capacity Support"),
     S18(this, "S18", "1", "0", "1.8V Low voltage"),
-    RCA(this, "RCA", "32", "0", "Relative Address"),
     OCR_VoltageWindow(this, "OCR_VoltageWindow", "24", "0xff8000", "all ranges 2.7 to 3.6 V"),
     bitcnt(this, "bitcnt", "12"),
     //
@@ -130,6 +129,7 @@ TEXT();
         TEXT("Parse Rx response:");
         SETZERO(wait_cmd_resp);
         SETVAL(cmd_resp_r1, BITS(i_cmd_resp_r1r2, 14, 8));
+        SETVAL(cmd_resp_arg32, i_cmd_resp_arg32);
         SWITCH(cmd_req_rn);
         CASE (sdctrl_cfg_->R2);
             SETVAL(cmd_resp_r2, BITS(i_cmd_resp_r1r2, 7, 0));
@@ -154,18 +154,19 @@ TEXT();
             ENDIF();
             ENDCASE();
         CASE (sdctrl_cfg_->R6);
-            SETVAL(RCA, CC2(BITS(i_cmd_resp_arg32, 31, 16), CONST("0", 16)));
+            TEXT("Relative Address (RCA):");
+            SETVAL(data_addr, CC2(BITS(i_cmd_resp_arg32, 31, 16), CONST("0", 16)));
             ENDCASE();
         CASEDEF();
             ENDCASE();
         ENDSWITCH();
-    ELSIF (wait_cmd_resp);
+    ELSIF (NZ(wait_cmd_resp));
         TEXT("do nothing");
     ELSIF (EQ(state, STATE_CMD0));
         SETVAL(sdtype, sdctrl_cfg_->SDCARD_UNKNOWN);
         SETONE(HCS);
         SETZERO(S18);
-        SETZERO(RCA);
+        SETZERO(data_addr);
         SETVAL(OCR_VoltageWindow, CONST("0xff8000"));
         SETONE(cmd_req_valid);
         SETVAL(cmd_req_cmd, sdctrl_cfg_->CMD0);
