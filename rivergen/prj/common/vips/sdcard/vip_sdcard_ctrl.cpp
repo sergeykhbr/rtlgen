@@ -182,6 +182,7 @@ TEXT();
                 SETVAL(delay_cnt, CONST("20", 32));
                 IF (NZ(i_spi_mode));
                     SETZERO(comb.vb_resp_data32);
+                    SETBIT(comb.vb_resp_data32, 31, powerup_done);
                     SETBIT(comb.vb_resp_data32, 30, ocr_hcs);
                     SETBITS(comb.vb_resp_data32, 23, 0, ocr_vdd_window);
                 ELSE();

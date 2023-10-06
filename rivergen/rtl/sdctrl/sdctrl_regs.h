@@ -52,16 +52,11 @@ class sdctrl_regs : public ModuleObject {
     OutStruct<types_pnp::dev_config_type> o_pcfg;
     InStruct<types_amba::apb_in_type> i_apbi;
     OutStruct<types_amba::apb_out_type> o_apbo;
-    InPort i_sd_cmd;
-    InPort i_sd_dat0;
-    InPort i_sd_dat1;
-    InPort i_sd_dat2;
-    InPort i_sd_dat3;
     OutPort o_sck;
     OutPort o_sck_posedge;
     OutPort o_sck_negedge;
     OutPort o_watchdog;
-    OutPort o_clear_cmderr;
+    OutPort o_err_clear;
     TextLine _cfg0_;
     OutPort o_spi_mode;
     OutPort o_pcie_12V_support;
@@ -70,10 +65,13 @@ class sdctrl_regs : public ModuleObject {
     OutPort o_check_pattern;
     InPort i_400khz_ena;
     InPort i_sdtype;
-    InPort i_sdstate;
     TextLine _cmd0_;
-    InPort i_cmd_state;
-    InPort i_cmd_err;
+    InPort i_sd_cmd;
+    InPort i_sd_dat0;
+    InPort i_sd_dat1;
+    InPort i_sd_dat2;
+    InPort i_sd_dat3;
+    InPort i_err_code;
     InPort i_cmd_req_valid;
     InPort i_cmd_req_cmd;
     InPort i_cmd_resp_valid;
@@ -89,7 +87,7 @@ class sdctrl_regs : public ModuleObject {
 
     RegSignal sclk_ena;
     RegSignal spi_mode;
-    RegSignal clear_cmderr;
+    RegSignal err_clear;
     RegSignal scaler_400khz;
     RegSignal scaler_data;
     RegSignal scaler_cnt;

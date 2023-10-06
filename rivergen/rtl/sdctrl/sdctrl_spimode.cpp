@@ -31,13 +31,14 @@ sdctrl_spimode::sdctrl_spimode(GenObject *parent, const char *name) :
     i_cfg_voltage_supply(this, "i_cfg_voltage_supply", "4"),
     i_cfg_check_pattern(this, "i_cfg_check_pattern", "8"),
     i_cmd_req_ready(this, "i_cmd_req_ready", "1"),
-    o_cmd_req_valid(this, "o_cmd_req_valid", ""),
+    o_cmd_req_valid(this, "o_cmd_req_valid", "1"),
     o_cmd_req_cmd(this, "o_cmd_req_cmd", "6"),
     o_cmd_req_arg(this, "o_cmd_req_arg", "32"),
     o_cmd_req_rn(this, "o_cmd_req_rn", "3"),
     i_cmd_resp_valid(this, "i_cmd_resp_valid", "1"),
     i_cmd_resp_r1r2(this, "i_cmd_resp_r1r2", "15"),
     i_cmd_resp_arg32(this, "i_cmd_resp_arg32", "32"),
+    o_data_req_ready(this, "o_data_req_ready", "1"),
     i_data_req_valid(this, "i_data_req_valid", "1"),
     i_data_req_write(this, "i_data_req_write", "1"),
     i_data_req_addr(this, "i_data_req_addr", "CFG_SDCACHE_ADDR_BITS"),
@@ -45,6 +46,8 @@ sdctrl_spimode::sdctrl_spimode(GenObject *parent, const char *name) :
     o_data_resp_valid(this, "o_data_resp_valid", "1"),
     o_data_resp_rdata(this, "o_data_resp_rdata", "512"),
     i_crc16_0(this, "i_crc16_0", "16"),
+    o_crc16_clear(this, "o_crc16_clear", "1"),
+    o_crc16_next(this, "o_crc16_next", "1"),
     o_wdog_ena(this, "o_wdog_ena", "1"),
     i_wdog_trigger(this, "i_wdog_trigger", "1"),
     i_err_code(this, "i_err_code", "4"),
@@ -52,6 +55,7 @@ sdctrl_spimode::sdctrl_spimode(GenObject *parent, const char *name) :
     o_err_clear(this, "o_err_clear", "1"),
     o_err_code(this, "o_err_code", "4"),
     o_400khz_ena(this, "o_400khz_ena", "1"),
+    o_sdtype(this, "o_sdtype", "3"),
     // params
     _state0_(this, "Controller state"),
     STATE_CMD0(this, "4", "STATE_CMD0", "0"),
@@ -89,7 +93,7 @@ sdctrl_spimode::sdctrl_spimode(GenObject *parent, const char *name) :
     err_valid(this, "err_valid", "1"),
     err_code(this, "err_code", "4"),
     sck_400khz_ena(this, "sck_400khz_ena", "1", "1"),
-    state(this, "spidatastate", "4", "STATE_CMD0"),
+    state(this, "state", "4", "STATE_CMD0"),
     wait_cmd_resp(this, "wait_cmd_resp", "1"),
     sdtype(this, "sdtype", "3", "SDCARD_UNKNOWN"),
     HCS(this, "HCS", "1", "1", "High Capacity Support"),
@@ -242,6 +246,7 @@ TEXT();
         ENDIF();
     ELSIF (EQ(state, STATE_WAIT_DATA_REQ));
         SETZERO(wdog_ena);
+        SETONE(comb.v_data_req_ready);
         IF (NZ(i_data_req_valid));
             SETVAL(data_addr, BITS(i_data_req_addr, DEC(sdctrl_cfg_->CFG_SDCACHE_ADDR_BITS), CONST("9")));
             SETVAL(data_data, i_data_req_wdata);
@@ -303,7 +308,7 @@ TEXT();
 
 TEXT();
     SETVAL(cmd_req_arg, comb.vb_cmd_req_arg);
-    SETVAL(comb.v_dat, TO_U32(BIT(data_data, 511)));
+    SETVAL(comb.v_dat, BIT(data_data, 511));
 
 TEXT();
     SYNC_RESET(*this);
@@ -314,12 +319,16 @@ TEXT();
     SETVAL(o_cmd_req_cmd, cmd_req_cmd);
     SETVAL(o_cmd_req_arg, cmd_req_arg);
     SETVAL(o_cmd_req_rn, cmd_req_rn);
+    SETVAL(o_data_req_ready, comb.v_data_req_ready);
+    SETVAL(o_data_resp_valid, data_resp_valid);
+    SETVAL(o_data_resp_rdata, data_data);
     SETVAL(o_csn, dat_csn);
+    SETVAL(o_crc16_clear, crc16_clear);
+    SETVAL(o_crc16_next, comb.v_crc16_next);
     SETVAL(o_wdog_ena, wdog_ena);
     SETVAL(o_err_valid, err_valid);
     SETVAL(o_err_clear, err_clear);
     SETVAL(o_err_code, err_code);
     SETVAL(o_400khz_ena, sck_400khz_ena);
-    SETVAL(o_data_resp_valid, data_resp_valid);
-    SETVAL(o_data_resp_rdata, data_data);
+    SETVAL(o_sdtype, sdtype);
 }

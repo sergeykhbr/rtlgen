@@ -290,7 +290,6 @@ riscv_soc::riscv_soc(GenObject *parent, const char *name) :
         CONNECT(gpio0, 0, gpio0.o_irq, wb_irq_gpio);
     ENDNEW();
 
-    sdctrl0.log2_fifosz.setObjValue(&SOC_SPI0_LOG2_FIFOSZ);
     NEW(sdctrl0, sdctrl0.getName().c_str());
         CONNECT(sdctrl0, 0, sdctrl0.i_clk, i_sys_clk);
         CONNECT(sdctrl0, 0, sdctrl0.i_nrst, i_sys_nrst);

@@ -28,7 +28,7 @@ sdctrl_regs::sdctrl_regs(GenObject *parent, const char *name) :
     o_sck_posedge(this, "o_sck_posedge", "1", "Strob just before positive edge"),
     o_sck_negedge(this, "o_sck_negedge", "1", "Strob just before negative edge"),
     o_watchdog(this, "o_watchdog", "16", "Number of sclk to detect no response"),
-    o_clear_cmderr(this, "o_clear_cmderr", "1", "Clear cmderr from FW"),
+    o_err_clear(this, "o_err_clear", "1", "Clear err from FW"),
     _cfg0_(this, "Configuration parameters:"),
     o_spi_mode(this, "o_spi_mode", "1", "SPI mode was selected from FW"),
     o_pcie_12V_support(this, "o_pcie_12V_support", "1", "0b: not asking 1.2V support"),
@@ -37,15 +37,13 @@ sdctrl_regs::sdctrl_regs(GenObject *parent, const char *name) :
     o_check_pattern(this, "o_check_pattern", "8", "Check pattern in CMD8 request"),
     i_400khz_ena(this, "i_400khz_ena", "1", "Default frequency enabled in identification mode"),
     i_sdtype(this, "i_sdtype", "3", "Ver1X or Ver2X standard or Ver2X high/extended capacity"),
-    i_sdstate(this, "i_sdstate", "4", "Card state:0=idle;1=ready;2=ident;3=stby,... see spec"),
     _cmd0_(this, "Debug command state machine"),
     i_sd_cmd(this, "i_sd_cmd", "1"),
     i_sd_dat0(this, "i_sd_dat0", "1"),
     i_sd_dat1(this, "i_sd_dat1", "1"),
     i_sd_dat2(this, "i_sd_dat2", "1"),
     i_sd_dat3(this, "i_sd_dat3", "1"),
-    i_cmd_state(this, "i_cmd_state", "4"),
-    i_cmd_err(this, "i_cmd_err", "4"),
+    i_err_code(this, "i_err_code", "4"),
     i_cmd_req_valid(this, "i_cmd_req_valid", "1"),
     i_cmd_req_cmd(this, "i_cmd_req_cmd", "6"),
     i_cmd_resp_valid(this, "i_cmd_resp_valid", "1"),
@@ -62,7 +60,7 @@ sdctrl_regs::sdctrl_regs(GenObject *parent, const char *name) :
     // registers
     sclk_ena(this, "sclk_ena", "1"),
     spi_mode(this, "spi_mode", "1"),
-    clear_cmderr(this, "clear_cmderr", "1"),
+    err_clear(this, "err_clear", "1"),
     scaler_400khz(this, "scaler_400khz", "24"),
     scaler_data(this, "scaler_data", "8"),
     scaler_cnt(this, "scaler_cnt", "32"),
@@ -110,7 +108,7 @@ sdctrl_regs::sdctrl_regs(GenObject *parent, const char *name) :
 }
 
 void sdctrl_regs::proc_comb() {
-    SETZERO(clear_cmderr);
+    SETZERO(err_clear);
     IF (NZ(i_cmd_req_valid));
         SETVAL(last_req_cmd, i_cmd_req_cmd);
     ENDIF();
@@ -155,7 +153,7 @@ TEXT();
         SETBIT(comb.vb_rdata, 8, i_sd_cmd);
         IF (AND2(NZ(w_req_valid), NZ(w_req_write)));
             SETVAL(sclk_ena, BIT(wb_req_wdata, 0));
-            SETVAL(clear_cmderr, BIT(wb_req_wdata, 1));
+            SETVAL(err_clear, BIT(wb_req_wdata, 1));
             SETVAL(spi_mode, BIT(wb_req_wdata, 3));
         ENDIF();
         ENDCASE();
@@ -166,9 +164,7 @@ TEXT();
         ENDIF();
         ENDCASE();
     CASE (CONST("0x4", 10), "{0x10, 'RO', 'status', 'state machines status'}");
-        SETBITS(comb.vb_rdata, 3, 0, i_cmd_err, "cmd transmitter error flag");
-        SETBITS(comb.vb_rdata, 7, 4, i_cmd_state, "cmd transmitter state");
-        SETBITS(comb.vb_rdata, 11, 8, i_sdstate, "card state"),
+        SETBITS(comb.vb_rdata, 3, 0, i_err_code, "the latest error code");
         SETBITS(comb.vb_rdata, 14, 12, i_sdtype, "detected card type");
         ENDCASE();
     CASE (CONST("0x5", 10), "{0x14, 'RO', 'last_cmd_response', 'Last CMD response data'}");
@@ -227,5 +223,5 @@ TEXT();
     SETVAL(o_sck_posedge, comb.v_posedge);
     SETVAL(o_sck_negedge, comb.v_negedge);
     SETVAL(o_watchdog, wdog);
-    SETVAL(o_clear_cmderr, clear_cmderr);
+    SETVAL(o_err_clear, err_clear);
 }

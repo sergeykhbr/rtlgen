@@ -31,12 +31,14 @@ class sdctrl_spimode : public ModuleObject {
             ProcObject(parent, "comb"),
             v_dat(this, "v_dat", "1"),
             vb_cmd_req_arg(this, "vb_cmd_req_arg", "32"),
+            v_data_req_ready(this, "v_data_req_ready", "1"),
             v_crc16_next(this, "v_crc16_next", "1") {
             }
 
      public:
         Logic v_dat;
         Logic vb_cmd_req_arg;
+        Logic v_data_req_ready;
         Logic v_crc16_next;
     };
 
@@ -64,6 +66,7 @@ class sdctrl_spimode : public ModuleObject {
     InPort i_cmd_resp_valid;
     InPort i_cmd_resp_r1r2;
     InPort i_cmd_resp_arg32;
+    OutPort o_data_req_ready;
     InPort i_data_req_valid;
     InPort i_data_req_write;
     InPort i_data_req_addr;
@@ -71,6 +74,8 @@ class sdctrl_spimode : public ModuleObject {
     OutPort o_data_resp_valid;
     OutPort o_data_resp_rdata;
     InPort i_crc16_0;
+    OutPort o_crc16_clear;
+    OutPort o_crc16_next;
     OutPort o_wdog_ena;
     InPort i_wdog_trigger;
     InPort i_err_code;
@@ -78,6 +83,7 @@ class sdctrl_spimode : public ModuleObject {
     OutPort o_err_clear;
     OutPort o_err_code;
     OutPort o_400khz_ena;
+    OutPort o_sdtype;
     
     TextLine _state0_;
     ParamLogic STATE_CMD0;

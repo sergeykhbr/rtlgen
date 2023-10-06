@@ -28,17 +28,14 @@ sdctrl_cmd_transmitter::sdctrl_cmd_transmitter(GenObject *parent, const char *na
     o_cmd_dir(this, "o_cmd_dir", "1"),
     o_cmd_cs(this, "o_cmd_cs", "1"),
     i_spi_mode(this, "i_spi_mode", "1", "SPI mode was selected by FW"), 
-    i_watchdog(this, "i_watchdog", "16", "Max number of sclk to receive start bit"),
+    i_err_code(this, "i_err_code", "4"),
+    i_wdog_trigger(this, "i_wdog_trigger", "1", "Event from wdog timer"),
     i_cmd_set_low(this, "i_cmd_set_low", "1", "Set forcibly o_cmd output to LOW"),
     i_req_valid(this, "i_req_valid", "1"),
     i_req_cmd(this, "i_req_cmd", "6"),
     i_req_arg(this, "i_req_arg", "32"),
     i_req_rn(this, "i_req_rn", "3", "R1, R3,R6 or R2"),
     o_req_ready(this, "o_req_ready", "1"),
-    i_crc7(this, "i_crc7", "7"),
-    o_crc7_clear(this, "o_crc7_clear", "1"),
-    o_crc7_next(this, "o_crc7_next", "1"),
-    o_crc7_dat(this, "o_crc7_dat", "1"),
     o_resp_valid(this, "o_resp_valid", "1"),
     o_resp_cmd(this, "o_resp_cmd", "6", "Mirrored command"),
     o_resp_reg(this, "o_resp_reg", "32", "Card Status, OCR register (R3) or RCA register (R6)"),
@@ -46,9 +43,9 @@ sdctrl_cmd_transmitter::sdctrl_cmd_transmitter(GenObject *parent, const char *na
     o_resp_crc7_calc(this, "o_resp_crc7_calc", "7", "Calculated CRC7"),
     o_resp_spistatus(this, "o_resp_spistatus", "15", "{R1,R2} response valid only in SPI mode"),
     i_resp_ready(this, "i_resp_ready", "1"),
-    i_clear_cmderr(this, "i_clear_cmderr", "1"),
-    o_cmdstate(this, "o_cmdstate", "4"),
-    o_cmderr(this, "o_cmderr", "4"),
+    o_wdog_ena(this, "o_wdog_ena", "1"),
+    o_err_valid(this, "o_err_valid", "1"),
+    o_err_setcode(this, "o_err_setcode", "4"),
     // params
     _cmdstate0_(this, "Command request states:"),
     CMDSTATE_IDLE(this, "4", "CMDSTATE_IDLE", "0"),
@@ -67,6 +64,9 @@ sdctrl_cmd_transmitter::sdctrl_cmd_transmitter(GenObject *parent, const char *na
     CMDSTATE_RESP_SPI_DATA(this, "4", "CMDSTATE_RESP_SPI_DATA", "13"),
     CMDSTATE_PAUSE(this, "4", "CMDSTATE_PAUSE", "15"),
     // signals
+    wb_crc7(this, "wb_crc7", "7"),
+    w_crc7_next(this, "w_crc7_next", "1"),
+    w_crc7_dat(this, "w_crc7_dat", "1"),
     // registers
     req_cmd(this, "req_cmd", "6"),
     req_rn(this, "req_rn", "3"),
@@ -83,13 +83,25 @@ sdctrl_cmd_transmitter::sdctrl_cmd_transmitter(GenObject *parent, const char *na
     cmdbitcnt(this, "cmdbitcnt", "7"),
     crc7_clear(this, "crc7_clear", "1", "1"),
     cmdstate(this, "cmdstate", "4", "CMDSTATE_IDLE"),
-    cmderr(this, "cmderr", "4", "CMDERR_NONE"),
+    err_valid(this, "err_valid", "1"),
+    err_setcode(this, "err_setcode", "4", "CMDERR_NONE"),
     cmd_cs(this, "cmd_cs", "1", "1"),
-    watchdog(this, "watchdog", "16"),
+    cmd_dir(this, "cmd_dir", "1", "1"),
+    wdog_ena(this, "wdog_ena", "1"),
     //
-    comb(this)
+    comb(this),
+    crc0(this, "crc0")
 {
     Operation::start(this);
+
+    NEW(crc0, crc0.getName().c_str());
+        CONNECT(crc0, 0, crc0.i_clk, i_clk);
+        CONNECT(crc0, 0, crc0.i_nrst, i_nrst);
+        CONNECT(crc0, 0, crc0.i_clear, crc7_clear);
+        CONNECT(crc0, 0, crc0.i_next, w_crc7_next);
+        CONNECT(crc0, 0, crc0.i_dat, w_crc7_dat);
+        CONNECT(crc0, 0, crc0.o_crc7, wb_crc7);
+    ENDNEW();
 
     Operation::start(&comb);
     proc_comb();
@@ -98,9 +110,8 @@ sdctrl_cmd_transmitter::sdctrl_cmd_transmitter(GenObject *parent, const char *na
 void sdctrl_cmd_transmitter::proc_comb() {
     SETVAL(comb.vb_cmdshift, cmdshift);
     SETVAL(comb.vb_resp_spistatus, resp_spistatus);
-    IF (NZ(i_clear_cmderr));
-        SETZERO(cmderr);
-    ENDIF();
+    SETZERO(err_valid);
+    SETZERO(err_setcode);
     IF (NZ(i_resp_ready));
         SETZERO(resp_valid);
     ENDIF();
@@ -116,10 +127,12 @@ TEXT();
             ELSE();
                 SETVAL(comb.vb_cmdshift, ALLONES());
             ENDIF();
+            SETZERO(wdog_ena);
             SETONE(cmd_cs);
+            SETVAL(cmd_dir, sdctrl_cfg_->DIR_OUTPUT);
             SETONE(crc7_clear);
             SETONE(comb.v_req_ready);
-            IF (NE(cmderr, sdctrl_cfg_->CMDERR_NONE));
+            IF (NE(i_err_code, sdctrl_cfg_->CMDERR_NONE));
                 SETZERO(comb.v_req_ready);
             ELSIF (NZ(i_req_valid));
                 SETZERO(cmd_cs);
@@ -137,8 +150,8 @@ TEXT();
                 SETVAL(cmdbitcnt, DEC(cmdbitcnt));
             ELSE();
                 SETVAL(cmdstate, CMDSTATE_REQ_CRC7);
-                SETVAL(crc_calc, i_crc7);
-                SETBITS(comb.vb_cmdshift, 39, 32, CC2(i_crc7, CONST("1", 1)));
+                SETVAL(crc_calc, wb_crc7);
+                SETBITS(comb.vb_cmdshift, 39, 32, CC2(wb_crc7, CONST("1", 1)));
                 SETVAL(cmdbitcnt, CONST("6", 7));
                 SETONE(crc7_clear);
             ENDIF();
@@ -151,8 +164,18 @@ TEXT();
             ENDIF();
         ELSIF (EQ(cmdstate, CMDSTATE_REQ_STOPBIT));
             SETVAL(cmdstate, CMDSTATE_RESP_WAIT);
-            SETVAL(watchdog, i_watchdog);
+            SETVAL(cmd_dir, sdctrl_cfg_->DIR_INPUT);
+            SETONE(wdog_ena);
             SETZERO(crc7_clear);
+        ELSIF (EQ(cmdstate, CMDSTATE_PAUSE));
+            SETONE(crc7_clear);
+            SETONE(cmd_cs);
+            SETVAL(cmd_dir, sdctrl_cfg_->DIR_OUTPUT);
+            IF (NZ(cmdbitcnt));
+                SETVAL(cmdbitcnt, DEC(cmdbitcnt));
+            ELSE();
+                SETVAL(cmdstate, CMDSTATE_IDLE);
+            ENDIF();
         ENDIF();
 
     ELSIF (NZ(i_sclk_posedge));
@@ -160,7 +183,6 @@ TEXT();
         TEXT();
         IF (EQ(cmdstate, CMDSTATE_RESP_WAIT));
             TEXT("[47] start bit; [135] for R2");
-            SETVAL(watchdog, DEC(watchdog));
             IF (EZ(i_cmd));
                 IF (EZ(i_spi_mode));
                     SETONE(comb.v_crc7_next);
@@ -173,8 +195,10 @@ TEXT();
                     SETZERO(resp_spistatus);
                     SETZERO(regshift);
                 ENDIF();
-            ELSIF(EZ(watchdog));
-                SETVAL(cmderr, sdctrl_cfg_->CMDERR_NO_RESPONSE);
+            ELSIF(NZ(i_wdog_trigger));
+                SETZERO(wdog_ena);
+                SETONE(err_valid);
+                SETVAL(err_setcode, sdctrl_cfg_->CMDERR_NO_RESPONSE);
                 SETVAL(cmdstate, CMDSTATE_IDLE);
                 SETONE(resp_valid);
             ENDIF();
@@ -186,7 +210,8 @@ TEXT();
                 SETZERO(cmdmirror);
                 SETVAL(cmdbitcnt, CONST("5", 7));
             ELSE();
-                SETVAL(cmderr, sdctrl_cfg_->CMDERR_WRONG_RESP_STARTBIT);
+                SETONE(err_valid);
+                SETVAL(err_setcode, sdctrl_cfg_->CMDERR_WRONG_RESP_STARTBIT);
                 SETVAL(cmdstate, CMDSTATE_IDLE);
                 SETONE(resp_valid);
             ENDIF();
@@ -212,7 +237,7 @@ TEXT();
             IF (NZ(cmdbitcnt));
                 SETVAL(cmdbitcnt, DEC(cmdbitcnt));
             ELSE();
-                SETVAL(crc_calc, i_crc7);
+                SETVAL(crc_calc, wb_crc7);
                 SETVAL(cmdbitcnt, CONST("6", 7));
                 SETVAL(cmdstate, CMDSTATE_RESP_CRC7);
             ENDIF();
@@ -222,7 +247,7 @@ TEXT();
             IF (NZ(cmdbitcnt));
                 SETVAL(cmdbitcnt, DEC(cmdbitcnt));
             ELSE();
-                SETVAL(crc_calc, i_crc7);
+                SETVAL(crc_calc, wb_crc7);
                 SETVAL(cmdbitcnt, CONST("6", 7));
                 SETVAL(cmdstate, CMDSTATE_RESP_CRC7);
             ENDIF();
@@ -237,7 +262,8 @@ TEXT();
         ELSIF (EQ(cmdstate, CMDSTATE_RESP_STOPBIT));
             TEXT("[7:1] End bit");
             IF (EZ(i_cmd));
-                SETVAL(cmderr, sdctrl_cfg_->CMDERR_WRONG_RESP_STOPBIT);
+                SETONE(err_valid);
+                SETVAL(err_setcode, sdctrl_cfg_->CMDERR_WRONG_RESP_STOPBIT);
             ENDIF();
             SETVAL(cmdstate, CMDSTATE_PAUSE);
             SETVAL(cmdbitcnt, CONST("2", 7));
@@ -255,6 +281,7 @@ TEXT();
                     SETVAL(cmdstate, CMDSTATE_RESP_SPI_DATA);
                 ELSE();
                     SETVAL(cmdstate, CMDSTATE_PAUSE);
+                    SETVAL(cmdbitcnt, CONST("2", 7));
                     SETONE(resp_valid);
                 ENDIF();
             ENDIF();
@@ -264,6 +291,7 @@ TEXT();
                 SETVAL(cmdbitcnt, DEC(cmdbitcnt));
             ELSE();
                 SETVAL(cmdstate, CMDSTATE_PAUSE);
+                SETVAL(cmdbitcnt, CONST("2", 7));
                 SETONE(resp_valid);
             ENDIF();
         ELSIF(EQ(cmdstate, CMDSTATE_RESP_SPI_DATA));
@@ -272,15 +300,8 @@ TEXT();
                 SETVAL(cmdbitcnt, DEC(cmdbitcnt));
             ELSE();
                 SETVAL(cmdstate, CMDSTATE_PAUSE);
+                SETVAL(cmdbitcnt, CONST("2", 7));
                 SETONE(resp_valid);
-            ENDIF();
-        ELSIF (EQ(cmdstate, CMDSTATE_PAUSE));
-            SETONE(crc7_clear);
-            SETONE(cmd_cs);
-            IF (NZ(cmdbitcnt));
-                SETVAL(cmdbitcnt, DEC(cmdbitcnt));
-            ELSE();
-                SETVAL(cmdstate, CMDSTATE_IDLE);
             ENDIF();
         ENDIF();
     ENDIF();
@@ -290,10 +311,8 @@ TEXT();
 TEXT();
     IF (ORx(2, &LS(cmdstate, CMDSTATE_RESP_WAIT),
                &EQ(cmdstate, CMDSTATE_PAUSE)));
-        SETVAL(comb.v_cmd_dir, sdctrl_cfg_->DIR_OUTPUT);
         SETVAL(comb.v_crc7_dat, BIT(cmdshift, 39));
     ELSE();
-        SETVAL(comb.v_cmd_dir, sdctrl_cfg_->DIR_INPUT);
         SETVAL(comb.v_crc7_dat, i_cmd);
     ENDIF();
 
@@ -301,19 +320,19 @@ TEXT();
     SYNC_RESET(*this);
 
 TEXT();
+    SETVAL(w_crc7_next, comb.v_crc7_next);
+    SETVAL(w_crc7_dat, comb.v_crc7_dat);
     SETVAL(o_cmd, BIT(cmdshift, 39));
-    SETVAL(o_cmd_dir, comb.v_cmd_dir);
+    SETVAL(o_cmd_dir, cmd_dir);
     SETVAL(o_cmd_cs, cmd_cs);
     SETVAL(o_req_ready, comb.v_req_ready);
-    SETVAL(o_crc7_clear, crc7_clear);
-    SETVAL(o_crc7_next, comb.v_crc7_next);
-    SETVAL(o_crc7_dat, comb.v_crc7_dat);
     SETVAL(o_resp_valid, resp_valid);
     SETVAL(o_resp_cmd, cmdmirror);
     SETVAL(o_resp_reg, regshift);
     SETVAL(o_resp_crc7_rx, crc_rx);
     SETVAL(o_resp_crc7_calc, crc_calc);
     SETVAL(o_resp_spistatus, resp_spistatus);
-    SETVAL(o_cmdstate, cmdstate);
-    SETVAL(o_cmderr, cmderr);
+    SETVAL(o_wdog_ena, wdog_ena);
+    SETVAL(o_err_valid, err_valid);
+    SETVAL(o_err_setcode, err_setcode);
 }

@@ -17,6 +17,7 @@
 #pragma once
 
 #include <api.h>
+#include "sdctrl_crc7.h"
 
 using namespace sysvc;
 
@@ -31,7 +32,6 @@ class sdctrl_cmd_transmitter : public ModuleObject {
             v_req_ready(this, "v_req_ready", "1"),
             vb_cmdshift(this, "vb_cmdshift", "48"),
             vb_resp_spistatus(this, "vb_resp_spistatus", "15"),
-            v_cmd_dir(this, "v_cmd_dir", "1"),
             v_crc7_dat(this, "v_crc7_dat", "1"),
             v_crc7_next(this, "v_crc7_next", "1") {
         }
@@ -40,7 +40,6 @@ class sdctrl_cmd_transmitter : public ModuleObject {
         Logic v_req_ready;
         Logic vb_cmdshift;
         Logic vb_resp_spistatus;
-        Logic v_cmd_dir;
         Logic v_crc7_dat;
         Logic v_crc7_next;
     };
@@ -58,17 +57,14 @@ class sdctrl_cmd_transmitter : public ModuleObject {
     OutPort o_cmd_dir;
     OutPort o_cmd_cs;
     InPort i_spi_mode;
-    InPort i_watchdog;
+    InPort i_err_code;
+    InPort i_wdog_trigger;
     InPort i_cmd_set_low;
     InPort i_req_valid;
     InPort i_req_cmd;
     InPort i_req_arg;
     InPort i_req_rn;
     OutPort o_req_ready;
-    InPort i_crc7;
-    OutPort o_crc7_clear;
-    OutPort o_crc7_next;
-    OutPort o_crc7_dat;
     OutPort o_resp_valid;
     OutPort o_resp_cmd;
     OutPort o_resp_reg;
@@ -76,9 +72,9 @@ class sdctrl_cmd_transmitter : public ModuleObject {
     OutPort o_resp_crc7_calc;
     OutPort o_resp_spistatus;
     InPort i_resp_ready;
-    InPort i_clear_cmderr;
-    OutPort o_cmdstate;
-    OutPort o_cmderr;
+    OutPort o_wdog_ena;
+    OutPort o_err_valid;
+    OutPort o_err_setcode;
     
     TextLine _cmdstate0_;
     ParamLogic CMDSTATE_IDLE;
@@ -97,13 +93,16 @@ class sdctrl_cmd_transmitter : public ModuleObject {
     ParamLogic CMDSTATE_RESP_SPI_DATA;
     ParamLogic CMDSTATE_PAUSE;
 
+    Signal wb_crc7;
+    Signal w_crc7_next;
+    Signal w_crc7_dat;
+
     RegSignal req_cmd;
     RegSignal req_rn;
     RegSignal resp_valid;
     RegSignal resp_cmd;
     RegSignal resp_reg;
     RegSignal resp_spistatus;
-
     RegSignal cmdshift;
     RegSignal cmdmirror;
     RegSignal regshift;
@@ -113,11 +112,15 @@ class sdctrl_cmd_transmitter : public ModuleObject {
     RegSignal cmdbitcnt;
     RegSignal crc7_clear;
     RegSignal cmdstate;
-    RegSignal cmderr;
+    RegSignal err_valid;
+    RegSignal err_setcode;
     RegSignal cmd_cs;
-    RegSignal watchdog;
+    RegSignal cmd_dir;
+    RegSignal wdog_ena;
 
     CombProcess comb;
+
+    sdctrl_crc7 crc0;
 };
 
 class sdctrl_cmd_transmitter_file : public FileObject {

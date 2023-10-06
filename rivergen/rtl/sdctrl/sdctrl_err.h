@@ -44,6 +44,7 @@ class sdctrl_err : public ModuleObject {
     InPort i_err_code;
     InPort i_err_clear;
     OutPort o_err_code;
+    OutPort o_err_pending;
     
     RegSignal code;
 

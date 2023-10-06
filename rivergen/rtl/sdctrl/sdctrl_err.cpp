@@ -24,6 +24,7 @@ sdctrl_err::sdctrl_err(GenObject *parent, const char *name) :
     i_err_code(this, "i_err_code", "4"),
     i_err_clear(this, "i_err_clear", "1"),
     o_err_code(this, "o_err_code", "4"),
+    o_err_pending(this, "o_err_pending", "1"),
     // parameters
     // signals
     // registers
@@ -50,4 +51,5 @@ TEXT();
 
 TEXT();
     SETVAL(o_err_code, code);
+    SETVAL(o_err_pending, OR_REDUCE(code));
 }
