@@ -68,7 +68,6 @@ sdctrl::sdctrl(GenObject *parent, const char *name) :
     wb_mem_req_wdata(this, "wb_mem_req_wdata", "CFG_SYSBUS_DATA_BITS"),
     wb_mem_req_wstrb(this, "wb_mem_req_wstrb", "CFG_SYSBUS_DATA_BYTES"),
     w_mem_req_last(this, "w_mem_req_last", "1"),
-    w_mem_req_ready(this, "w_mem_req_ready", "1"),
     w_cache_req_ready(this, "w_cache_req_ready", "1"),
     w_cache_resp_valid(this, "w_cache_resp_valid", "1"),
     wb_cache_resp_rdata(this, "wb_cache_resp_rdata", "64"),
@@ -202,7 +201,7 @@ sdctrl::sdctrl(GenObject *parent, const char *name) :
         CONNECT(xslv0, 0, xslv0.o_req_wdata, wb_mem_req_wdata);
         CONNECT(xslv0, 0, xslv0.o_req_wstrb, wb_mem_req_wstrb);
         CONNECT(xslv0, 0, xslv0.o_req_last, w_mem_req_last);
-        CONNECT(xslv0, 0, xslv0.i_req_ready, w_mem_req_ready);
+        CONNECT(xslv0, 0, xslv0.i_req_ready, w_cache_req_ready);
         CONNECT(xslv0, 0, xslv0.i_resp_valid, w_cache_resp_valid);
         CONNECT(xslv0, 0, xslv0.i_resp_rdata, wb_cache_resp_rdata);
         CONNECT(xslv0, 0, xslv0.i_resp_err, w_cache_resp_err);
@@ -474,8 +473,8 @@ TEXT();
     ELSIF (EQ(mode, MODE_SPI));
         TEXT("SPI MOSI:");
         SETVAL(comb.v_cmd_dir, sdctrl_cfg_->DIR_OUTPUT);
-        SETVAL(comb.v_cmd_out, ORx(2, &AND2(w_trx_cmd, INV(w_trx_cmd_csn)),
-                                      &AND2(w_spi_dat, INV(w_spi_dat_csn))));
+        SETVAL(comb.v_cmd_out, INV(ORx(2, &AND2(INV(w_trx_cmd), INV(w_trx_cmd_csn)),
+                                          &AND2(INV(w_spi_dat), INV(w_spi_dat_csn)))));
         TEXT("SPI MISO:");
         SETVAL(comb.v_dat0_dir, sdctrl_cfg_->DIR_INPUT);
         SETVAL(comb.v_cmd_in, i_dat0);
@@ -556,6 +555,7 @@ TEXT();
     SETVAL(wb_cmd_req_arg, comb.vb_cmd_req_arg);
     SETVAL(wb_cmd_req_rn, comb.vb_cmd_req_rn);
     SETONE(w_cmd_resp_ready);
+    SETONE(w_cache_resp_ready);
     SETVAL(w_req_sdmem_ready, comb.v_req_sdmem_ready);
     SETVAL(w_resp_sdmem_valid, comb.v_resp_sdmem_valid);
     SETVAL(wb_resp_sdmem_data, comb.vb_resp_sdmem_data);

@@ -151,7 +151,6 @@ class sdctrl : public ModuleObject {
     Signal wb_mem_req_wdata;
     Signal wb_mem_req_wstrb;
     Signal w_mem_req_last;
-    Signal w_mem_req_ready;
     Signal w_cache_req_ready;
     Signal w_cache_resp_valid;
     Signal wb_cache_resp_rdata;

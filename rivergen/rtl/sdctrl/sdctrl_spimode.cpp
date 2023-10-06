@@ -89,6 +89,7 @@ sdctrl_spimode::sdctrl_spimode(GenObject *parent, const char *name) :
     crc16_calc0(this, "crc16_calc0", "16"),
     crc16_rx0(this, "crc16_rx0", "16"),
     dat_csn(this, "dat_csn", "1", "1"),
+    dat_reading(this, "dat_reading", "1"),
     err_clear(this, "err_clear", "1"),
     err_valid(this, "err_valid", "1"),
     err_code(this, "err_code", "4"),
@@ -270,6 +271,7 @@ TEXT();
 
     ELSIF (EQ(state, STATE_WAIT_DATA_START));
         SETZERO(dat_csn);
+        SETONE(dat_reading);
         SETONE(crc16_clear);
         SETONE(wdog_ena);
         IF (NE(i_err_code, sdctrl_cfg_->CMDERR_NONE));
@@ -299,16 +301,17 @@ TEXT();
             IF (NZ(AND_REDUCE(BITS(bitcnt, 3, 0))));
                 SETVAL(state, STATE_READING_END);
                 SETONE(dat_csn);
+                SETZERO(dat_reading);
             ENDIF();
         ENDIF();
     ELSIF (EQ(state, STATE_READING_END));
         SETVAL(crc16_rx0, TO_U32(BITS(data_data, 15, 0)));
-        SETVAL(state, STATE_READING_DATA);
+        SETVAL(state, STATE_WAIT_DATA_REQ);
     ENDIF();
 
 TEXT();
     SETVAL(cmd_req_arg, comb.vb_cmd_req_arg);
-    SETVAL(comb.v_dat, BIT(data_data, 511));
+    SETVAL(comb.v_dat, OR2(dat_reading, BIT(data_data, 511)));
 
 TEXT();
     SYNC_RESET(*this);

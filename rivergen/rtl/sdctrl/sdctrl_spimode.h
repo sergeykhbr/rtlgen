@@ -116,6 +116,7 @@ class sdctrl_spimode : public ModuleObject {
     RegSignal crc16_calc0;
     RegSignal crc16_rx0;
     RegSignal dat_csn;
+    RegSignal dat_reading;
     RegSignal err_clear;
     RegSignal err_valid;
     RegSignal err_code;
