@@ -23,10 +23,6 @@ RiverTop::RiverTop(GenObject *parent, const char *name) :
     fpu_ena(this, "fpu_ena", "true"),
     coherence_ena(this, "coherence_ena", "false"),
     tracer_ena(this, "tracer_ena", "true"),
-    ilog2_nways(this, "ilog2_nways", "2", "I$ Cache associativity. Default bits width = 2, means 4 ways"),
-    ilog2_lines_per_way(this, "ilog2_lines_per_way", "7", "I$ Cache length: 7=16KB; 8=32KB; .."),
-    dlog2_nways(this, "dlog2_nways", "2", "D$ Cache associativity. Default bits width = 2, means 4 ways"),
-    dlog2_lines_per_way(this, "dlog2_lines_per_way", "7", "D$ Cache length: 7=16KB; 8=32KB; .."),
     // Ports
     i_clk(this, "i_clk", "1", "CPU clock"),
     i_nrst(this, "i_nrst", "1", "Reset: active LOW"),

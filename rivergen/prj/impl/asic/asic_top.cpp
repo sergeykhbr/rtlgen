@@ -18,38 +18,8 @@
 
 asic_top::asic_top(GenObject *parent, const char *name) :
     ModuleObject(parent, "asic_top", name),
-    // simulation parameters
-    sim_uart_speedup_rate(this, "sim_uart_speedup_rate", "0", "simulation UART speed-up: 0=no speed up, 1=2x, 2=4x, etc"),
-    // Generic parameters
     async_reset(this, "async_reset", "0"),
-    _prj0_(this),
-    _prj1_(this, "@brief   Number of processors in a system"),
-    _prj2_(this, "@details This value may be in a range 1 to CFG_TOTAL_CPU_MAX-1"),
-    CFG_CPU_NUM(this, "CFG_CPU_NUM", "1"),
-    _cache0_(this),
-    _cache1_(this, "@brief Caches size parameters."),
-    _cache2_(this, "@note Caches line size configured in river_cfg file and affects L1 memory bus width."),
-    CFG_ILOG2_LINES_PER_WAY(this, "CFG_ILOG2_LINES_PER_WAY", "7", "I$ length: 7=16KB; 8=32KB; .."),
-    CFG_ILOG2_NWAYS(this, "CFG_ILOG2_NWAYS", "2", "I$ associativity. Default bits width = 2, means 4 ways"),
-    _cache3_(this),
-    CFG_DLOG2_LINES_PER_WAY(this, "CFG_DLOG2_LINES_PER_WAY", "7", "D$ length: 7=16KB; 8=32KB; .."),
-    CFG_DLOG2_NWAYS(this, "CFG_DLOG2_NWAYS", "2", "D$ associativity. Default bits width = 2, means 4 ways"),
-    _cache4_(this),
-    _cache5_(this, "@brief Enable/disable L2 caching. L2 can be enabled even in 1 CPU config"),
-    CFG_L2CACHE_ENA(this, "CFG_L2CACHE_ENA", "1"),
-    CFG_L2_LOG2_NWAYS(this, "CFG_L2_LOG2_NWAYS", "4"),
-    CFG_L2_LOG2_LINES_PER_WAY(this, "CFG_L2_LOG2_LINES_PER_WAY", "9", "7=16KB; 8=32KB; 9=64KB, .."),
-    _mem0_(this),
-    _mem1_(this, "Internal Boot ROM size:"),
-    CFG_BOOTROM_LOG2_SIZE(this, "CFG_BOOTROM_LOG2_SIZE", "16", "16=64 KB (default); 17=128KB; .."),
-    _hex0_(this),
-    _hex1_(this, "Project relative HEX-file name to init boot ROM without .hex extension:"),
-    CFG_BOOTROM_FILE_HEX(this, "CFG_BOOTROM_FILE_HEX", "../../../../examples/bootrom_tests/linuxbuild/bin/bootrom_tests"),
-    _mem2_(this),
-    _mem3_(this, "Internal SRAM block:"),   
-    _mem4_(this, "    - Increase memory map if need > 2MB FU740"),
-    _mem5_(this, "    - Change bootloader stack pointer if need less than 512 KB"),
-    CFG_SRAM_LOG2_SIZE(this, "CFG_SRAM_LOG2_SIZE", "21", "19=512 KB (KC705); 21=2 MB (ASIC); .."),
+    sim_uart_speedup_rate(this, "sim_uart_speedup_rate", "0", "simulation UART speed-up: 0=no speed up, 1=2x, 2=4x, etc"),
     // Ports
     i_rst(this, "i_rst", "1", "Power-on system reset active HIGH"),
     _clk0_(this, "Differential clock (LVDS) positive/negaive signal."),
@@ -199,17 +169,6 @@ asic_top::asic_top(GenObject *parent, const char *name) :
     ENDNEW();
 
 
-    soc0.cpu_num.setObjValue(&CFG_CPU_NUM);
-    soc0.l2cache_ena.setObjValue(&CFG_L2CACHE_ENA);
-    soc0.ilog2_nways.setObjValue(&CFG_ILOG2_NWAYS);
-    soc0.ilog2_lines_per_way.setObjValue(&CFG_ILOG2_LINES_PER_WAY);
-    soc0.dlog2_nways.setObjValue(&CFG_DLOG2_NWAYS);
-    soc0.dlog2_lines_per_way.setObjValue(&CFG_DLOG2_LINES_PER_WAY);
-    soc0.l2log2_nways.setObjValue(&CFG_L2_LOG2_NWAYS);
-    soc0.l2log2_lines_per_way.setObjValue(&CFG_L2_LOG2_LINES_PER_WAY);
-    soc0.bootrom_log2_size.setObjValue(&CFG_BOOTROM_LOG2_SIZE);
-    soc0.sram_log2_size.setObjValue(&CFG_SRAM_LOG2_SIZE);
-    soc0.bootfile.setObjValue(&CFG_BOOTROM_FILE_HEX);
     soc0.sim_uart_speedup_rate.setObjValue(&sim_uart_speedup_rate);
     NEW(soc0, soc0.getName().c_str());
         CONNECT(soc0, 0, soc0.i_sys_nrst, w_sys_nrst);

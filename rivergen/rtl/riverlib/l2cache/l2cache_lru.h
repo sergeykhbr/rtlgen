@@ -88,8 +88,6 @@ class L2CacheLru : public ModuleObject {
     void proc_comb();
 
  public:
-    DefParamUI32D waybits;
-    DefParamUI32D ibits;
     // io:
     InPort i_clk;
     InPort i_nrst;

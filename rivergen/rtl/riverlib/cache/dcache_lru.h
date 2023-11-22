@@ -96,8 +96,6 @@ class DCacheLru : public ModuleObject {
     void proc_comb();
 
  public:
-    DefParamUI32D waybits;
-    DefParamUI32D ibits;
     DefParamBOOL coherence_ena;
     // io:
     InPort i_clk;

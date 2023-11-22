@@ -15,21 +15,11 @@
 // 
 
 #include "riscv_soc.h"
+#include "../prj/impl/asic/target_cfg.h"
 
 riscv_soc::riscv_soc(GenObject *parent, const char *name) :
     ModuleObject(parent, "riscv_soc", name),
     // simulation parameters
-    cpu_num(this, "cpu_num", "1"),
-    ilog2_nways(this, "ilog2_nways", "2", "I$ Cache associativity. Default bits width = 2, means 4 ways"),
-    ilog2_lines_per_way(this, "ilog2_lines_per_way", "7", "I$ Cache length: 7=16KB; 8=32KB; .."),
-    dlog2_nways(this, "dlog2_nways", "2", "D$ Cache associativity. Default bits width = 2, means 4 ways"),
-    dlog2_lines_per_way(this, "dlog2_lines_per_way", "7", "D$ Cache length: 7=16KB; 8=32KB; .."),
-    l2cache_ena(this, "l2cache_ena", "1"),
-    l2log2_nways(this, "l2log2_nways", "4", "L2$ Cache associativity. Default bits width = 4, means 16 ways"),
-    l2log2_lines_per_way(this, "l2log2_lines_per_way", "9", "L2$ Cache length: 9=64KB;"),
-    bootrom_log2_size(this, "bootrom_log2_size", "16", "16=64 KB (default); 17=128KB; .."),
-    sram_log2_size(this, "sram_log2_size", "21", "19=512 KB (KC705); 21=2 MB (ASIC); .."),
-    bootfile(this, "bootfile", "", "Project relative HEX-file name to init boot ROM without .hex extension"),
     sim_uart_speedup_rate(this, "sim_uart_speedup_rate", "0", "simulation UART speed-up: 0=no speed up, 1=2x, 2=4x, etc"),
     // Generic parameters
     //async_reset(this, "async_reset", "CFG_ASYNC_RESET"),
@@ -170,14 +160,8 @@ riscv_soc::riscv_soc(GenObject *parent, const char *name) :
         CONNECT(bus1, 0, bus1.o_mapinfo, bus1_mapinfo);
     ENDNEW();
 
-    group0.cpu_num.setObjValue(&cpu_num);
-    group0.l2cache_ena.setObjValue(&l2cache_ena);
-    group0.ilog2_nways.setObjValue(&ilog2_nways);
-    group0.ilog2_lines_per_way.setObjValue(&ilog2_lines_per_way);
-    group0.dlog2_nways.setObjValue(&dlog2_nways);
-    group0.dlog2_lines_per_way.setObjValue(&dlog2_lines_per_way);
-    group0.l2log2_nways.setObjValue(&l2log2_nways);
-    group0.l2log2_lines_per_way.setObjValue(&l2log2_lines_per_way);
+    group0.cpu_num.setObjValue(&glob_target_cfg_->CFG_CPU_NUM);
+    group0.l2cache_ena.setObjValue(&glob_target_cfg_->CFG_L2CACHE_ENA);
     NEW(group0, group0.getName().c_str());
         CONNECT(group0, 0, group0.i_clk, i_sys_clk);
         CONNECT(group0, 0, group0.i_cores_nrst, i_sys_nrst);
@@ -204,8 +188,8 @@ riscv_soc::riscv_soc(GenObject *parent, const char *name) :
         CONNECT(group0, 0, group0.o_dmreset, o_dmreset);
     ENDNEW();
 
-    rom0.abits.setObjValue(&bootrom_log2_size);
-    rom0.filename.setObjValue(&bootfile);
+    rom0.abits.setObjValue(&glob_target_cfg_->CFG_BOOTROM_LOG2_SIZE);
+    rom0.filename.setObjValue(&glob_target_cfg_->CFG_BOOTROM_FILE_HEX);
     NEW(rom0, rom0.getName().c_str());
         CONNECT(rom0, 0, rom0.i_clk, i_sys_clk);
         CONNECT(rom0, 0, rom0.i_nrst, i_sys_nrst);
@@ -215,7 +199,7 @@ riscv_soc::riscv_soc(GenObject *parent, const char *name) :
         CONNECT(rom0, 0, rom0.o_xslvo, ARRITEM(axiso, glob_bus0_cfg_->CFG_BUS0_XSLV_BOOTROM, axiso));
     ENDNEW();
 
-    sram0.abits.setObjValue(&sram_log2_size);
+    sram0.abits.setObjValue(&glob_target_cfg_->CFG_SRAM_LOG2_SIZE);
     NEW(sram0, sram0.getName().c_str());
         CONNECT(sram0, 0, sram0.i_clk, i_sys_clk);
         CONNECT(sram0, 0, sram0.i_nrst, i_sys_nrst);
@@ -323,8 +307,8 @@ riscv_soc::riscv_soc(GenObject *parent, const char *name) :
 
     pnp0.cfg_slots.setObjValue(&glob_pnp_cfg_->SOC_PNP_TOTAL);
     pnp0.hw_id.setObjValue(&SOC_HW_ID);
-    pnp0.cpu_max.setObjValue(&cpu_num);
-    pnp0.l2cache_ena.setObjValue(&l2cache_ena);
+    pnp0.cpu_max.setObjValue(&glob_target_cfg_->CFG_CPU_NUM);
+    pnp0.l2cache_ena.setObjValue(&glob_target_cfg_->CFG_L2CACHE_ENA);
     pnp0.plic_irq_max.setObjValue(&SOC_PLIC_IRQ_TOTAL);
     NEW(pnp0, pnp0.getName().c_str());
         CONNECT(pnp0, 0, pnp0.i_clk, i_sys_clk);

@@ -69,10 +69,6 @@ class CacheTop : public ModuleObject {
 
  public:
     DefParamBOOL coherence_ena;
-    DefParamUI32D ilog2_nways;
-    DefParamUI32D ilog2_lines_per_way;
-    DefParamUI32D dlog2_nways;
-    DefParamUI32D dlog2_lines_per_way;
 
     InPort i_clk;
     InPort i_nrst;

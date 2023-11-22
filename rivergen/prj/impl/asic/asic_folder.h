@@ -17,17 +17,16 @@
 #pragma once
 
 #include <api.h>
-//#include "asic_top.h"
+#include "asic_top.h"
 
 class asic_folder : public FolderObject {
   public:
     asic_folder(GenObject *parent) :
-        FolderObject(parent, "asic")
-        //,asic_top_file_(this)
-        {}
+        FolderObject(parent, "asic"),
+        asic_top_file_(this) {}
 
  protected:
     // subfolders:
     // files
-    //asic_top_file asic_top_file_; // see prj_river.h: top level must be instantiated after rtl
+    asic_top_file asic_top_file_; // see prj_river.h: config should be created before asic top level
 };

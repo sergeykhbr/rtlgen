@@ -19,10 +19,6 @@
 CacheTop::CacheTop(GenObject *parent, const char *name) :
     ModuleObject(parent, "CacheTop", name),
     coherence_ena(this, "coherence_ena", "false"),
-    ilog2_nways(this, "ilog2_nways", "2", "I$ Cache associativity. Default bits width = 2, means 4 ways"),
-    ilog2_lines_per_way(this, "ilog2_lines_per_way", "7", "I$ Cache length: 7=16KB; 8=32KB; .."),
-    dlog2_nways(this, "dlog2_nways", "2", "D$ Cache associativity. Default bits width = 2, means 4 ways"),
-    dlog2_lines_per_way(this, "dlog2_lines_per_way", "7", "D$ Cache length: 7=16KB; 8=32KB; .."),
     i_clk(this, "i_clk", "1", "CPU clock"),
     i_nrst(this, "i_nrst", "1", "Reset: active LOW"),
     _ControlPath0_(this, "Control path:"),
@@ -132,8 +128,6 @@ CacheTop::CacheTop(GenObject *parent, const char *name) :
     queue0(this, "queue0", "2", "QUEUE_WIDTH")
 {
     Operation::start(this);
-    i1.waybits.setObjValue(&ilog2_nways);
-    i1.ibits.setObjValue(&ilog2_lines_per_way);
     NEW(i1, i1.getName().c_str());
         CONNECT(i1, 0, i1.i_clk, i_clk);
         CONNECT(i1, 0, i1.i_nrst, i_nrst);
@@ -162,8 +156,6 @@ CacheTop::CacheTop(GenObject *parent, const char *name) :
         CONNECT(i1, 0, i1.i_flush_valid, i_flushi_valid);
     ENDNEW();
 
-    d0.waybits.setObjValue(&dlog2_nways);
-    d0.ibits.setObjValue(&dlog2_lines_per_way);
     NEW(d0, d0.getName().c_str());
         CONNECT(d0, 0, d0.i_clk, i_clk);
         CONNECT(d0, 0, d0.i_nrst, i_nrst);

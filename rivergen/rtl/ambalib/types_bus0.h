@@ -125,7 +125,7 @@ class types_bus0 : public FileObject {
      public:
         CONST_CFG_BUS0_MAP(GenObject *parent)
             : bus0_mapinfo_vector(parent, "CFG_BUS0_MAP"),
-            bootrom(this, "bootrom", "0, bootrom"),
+            bootrom(this, "bootrom", "0, bootrom, 256 KB"),
             clint(this, "clint", "1, clint"),
             sram(this, "sram", "2, sram, 2MB"),
             plic(this, "plic", "3, plic"),
@@ -133,7 +133,7 @@ class types_bus0 : public FileObject {
             ddr(this, "ddr", "5, ddr, 512 MB"),
             sdctrl(this, "sdctrl", "6, sdctrl, 32 GB") {
             bootrom.addr_start.setStrValue("0x0000000010000");
-            bootrom.addr_end.setStrValue(  "0x0000000020000");
+            bootrom.addr_end.setStrValue(  "0x0000000050000");
 
             clint.addr_start.setStrValue("0x0000002000000");
             clint.addr_end.setStrValue(  "0x0000002010000");

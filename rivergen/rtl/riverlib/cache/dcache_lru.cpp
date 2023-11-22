@@ -14,12 +14,11 @@
 //  limitations under the License.
 // 
 
+#include "../../../prj/impl/asic/target_cfg.h"
 #include "dcache_lru.h"
 
 DCacheLru::DCacheLru(GenObject *parent, const char *name) :
     ModuleObject(parent, "DCacheLru", name),
-    waybits(this, "waybits", "2", "Log2 of number of ways. Default 2: 4 ways"),
-    ibits(this, "ibits", "7", "Log2 of number of lines per way: 7=16KB; 8=32KB; .. (if bytes per line = 32 B)"),
     coherence_ena(this, "coherence_ena", "false"),
     i_clk(this, "i_clk", "1", "CPU clock"),
     i_nrst(this, "i_nrst", "1", "Reset: active LOW"),
@@ -71,7 +70,7 @@ DCacheLru::DCacheLru(GenObject *parent, const char *name) :
     abus(this, "abus", "CFG_CPU_ADDR_BITS"),
     lnbits(this, "lnbits", "CFG_LOG2_L1CACHE_BYTES_PER_LINE"),
     flbits(this, "flbits", "DTAG_FL_TOTAL"),
-    ways(this, "ways", "POW2(1,waybits)"),
+    ways(this, "ways", "POW2(1,CFG_DLOG2_NWAYS)"),
     _1_(this),
     _2_(this, "State machine states:"),
     State_Idle(this, "4", "State_Idle", "0"),
@@ -90,7 +89,7 @@ DCacheLru::DCacheLru(GenObject *parent, const char *name) :
     State_SnoopReadData(this, "4", "State_SnoopReadData", "13"),
     _3_(this),
     LINE_BYTES_MASK(this, "CFG_CPU_ADDR_BITS", "LINE_BYTES_MASK", "SUB(POW2(1,CFG_LOG2_L1CACHE_BYTES_PER_LINE),1)"),
-    FLUSH_ALL_VALUE(this, "32", "FLUSH_ALL_VALUE", "SUB(POW2(1,ADD(ibits,waybits)),1)", "Actual bitwidth is (ibits + waybits) but to avoid sc template generation use 32-bits"),
+    FLUSH_ALL_VALUE(this, "32", "FLUSH_ALL_VALUE", "SUB(POW2(1,ADD(CFG_DLOG2_LINES_PER_WAY,CFG_DLOG2_NWAYS)),1)", "Actual bitwidth is (ibits + waybits) but to avoid sc template generation use 32-bits"),
     // signals
     line_direct_access_i(this, "line_direct_access_i", "1"),
     line_invalidate_i(this, "line_invalidate_i", "1"),
@@ -138,13 +137,13 @@ DCacheLru::DCacheLru(GenObject *parent, const char *name) :
     req_addr_restore(this, "req_addr_restore", "CFG_CPU_ADDR_BITS"),
     // process
     comb(this),
-    mem0(this, "mem0", "abus", "waybits", "ibits", "lnbits", "flbits", "1")
+    mem0(this, "mem0", "abus", "CFG_DLOG2_NWAYS", "CFG_DLOG2_LINES_PER_WAY", "lnbits", "flbits", "1")
 {
     Operation::start(this);
 
     // Generic paramters to template parameters assignment
-    mem0.waybits.setObjValue(&waybits);
-    mem0.ibits.setObjValue(&ibits);
+    mem0.waybits.setObjValue(&glob_target_cfg_->CFG_DLOG2_NWAYS);
+    mem0.ibits.setObjValue(&glob_target_cfg_->CFG_DLOG2_LINES_PER_WAY);
     NEW(mem0, mem0.getName().c_str());
         CONNECT(mem0, 0, mem0.i_clk, i_clk);
         CONNECT(mem0, 0, mem0.i_nrst, i_nrst);
@@ -228,7 +227,7 @@ TEXT();
 
 TEXT();
     TEXT("Flush counter when direct access");
-    IF (EQ(BITS(req_addr, DEC(waybits), CONST("0")), DEC(ways)));
+    IF (EQ(BITS(req_addr, DEC(glob_target_cfg_->CFG_DLOG2_NWAYS), CONST("0")), DEC(ways)));
         SETVAL(comb.vb_addr_direct_next, ANDx_L(2, &ADD2(req_addr, cfg->L1CACHE_BYTES_PER_LINE),
                                                    &INV_L(LINE_BYTES_MASK)));
     ELSE();

@@ -20,13 +20,7 @@ Workgroup::Workgroup(GenObject *parent, const char *name) :
     ModuleObject(parent, "Workgroup", name),
     // Generic parameters
     cpu_num(this, "cpu_num", "1"),
-    ilog2_nways(this, "ilog2_nways", "2", "I$ Cache associativity. Default bits width = 2, means 4 ways"),
-    ilog2_lines_per_way(this, "ilog2_lines_per_way", "7", "I$ Cache length: 7=16KB; 8=32KB; .."),
-    dlog2_nways(this, "dlog2_nways", "2", "D$ Cache associativity. Default bits width = 2, means 4 ways"),
-    dlog2_lines_per_way(this, "dlog2_lines_per_way", "7", "D$ Cache length: 7=16KB; 8=32KB; .."),
     l2cache_ena(this, "l2cache_ena", "1"),
-    l2log2_nways(this, "l2log2_nways", "4", "L2$ Cache associativity. Default bits width = 4, means 16 ways"),
-    l2log2_lines_per_way(this, "l2log2_lines_per_way", "9", "L2$ Cache length: 9=64KB;"),
     // Ports
     i_cores_nrst(this, "i_cores_nrst", "1", "System reset without DMI inteface"),
     i_dmi_nrst(this, "i_dmi_nrst", "1", "Debug interface reset"),
@@ -199,8 +193,6 @@ Workgroup::Workgroup(GenObject *parent, const char *name) :
     ENDGENERATE("hartgen");
 
     IFGEN(EQ(l2cache_ena, CONST("1")), new STRING("l2_en"));
-        l2cache.waybits.setObjValue(&l2log2_nways);
-        l2cache.ibits.setObjValue(&l2log2_lines_per_way);
         NEW(l2cache, l2cache.getName().c_str());
             CONNECT(l2cache, 0, l2cache.i_clk, i_clk);
             CONNECT(l2cache, 0, l2cache.i_nrst, i_cores_nrst);

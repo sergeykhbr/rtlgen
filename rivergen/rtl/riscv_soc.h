@@ -60,17 +60,6 @@ class riscv_soc : public ModuleObject {
     void proc_comb();
 
 public:
-    DefParamUI32D cpu_num;
-    DefParamUI32D ilog2_nways;
-    DefParamUI32D ilog2_lines_per_way;
-    DefParamUI32D dlog2_nways;
-    DefParamUI32D dlog2_lines_per_way;
-    DefParamUI32D l2cache_ena;
-    DefParamUI32D l2log2_nways;
-    DefParamUI32D l2log2_lines_per_way;
-    DefParamUI32D bootrom_log2_size;
-    DefParamUI32D sram_log2_size;
-    DefParamString bootfile;
     DefParamI32D sim_uart_speedup_rate;
     //ParamBOOL async_reset;
     // Ports:

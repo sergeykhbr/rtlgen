@@ -14,12 +14,11 @@
 //  limitations under the License.
 // 
 
+#include "../../../prj/impl/asic/target_cfg.h"
 #include "icache_lru.h"
 
 ICacheLru::ICacheLru(GenObject *parent, const char *name) :
     ModuleObject(parent, "ICacheLru", name),
-    waybits(this, "waybits", "2", "Log2 of number of ways. Default 2: 4 ways"),
-    ibits(this, "ibits", "7", "Log2 of number of lines per way: 7=16KB; 8=32KB; .. (if bytes per line = 32 B)"),
     i_clk(this, "i_clk", "1", "CPU clock"),
     i_nrst(this, "i_nrst", "1", "Reset: active LOW"),
     _ctrl0_(this, "Control path:"),
@@ -53,7 +52,7 @@ ICacheLru::ICacheLru(GenObject *parent, const char *name) :
     abus(this, "abus", "CFG_CPU_ADDR_BITS"),
     lnbits(this, "lnbits", "CFG_LOG2_L1CACHE_BYTES_PER_LINE"),
     flbits(this, "flbits", "ITAG_FL_TOTAL"),
-    ways(this, "ways", "POW2(1,waybits)"),
+    ways(this, "ways", "POW2(1,CFG_ILOG2_NWAYS)"),
     _1_(this),
     _2_(this, "State machine states:"),
     State_Idle(this, "4", "State_Idle", "0"),
@@ -69,7 +68,7 @@ ICacheLru::ICacheLru(GenObject *parent, const char *name) :
     State_ResetWrite(this, "4", "State_ResetWrite", "11"),
     _3_(this),
     LINE_BYTES_MASK(this, "CFG_CPU_ADDR_BITS", "LINE_BYTES_MASK", "SUB(POW2(1,CFG_LOG2_L1CACHE_BYTES_PER_LINE),1)"),
-    FLUSH_ALL_VALUE(this, "32", "FLUSH_ALL_VALUE", "SUB(POW2(1,ADD(ibits,waybits)),1)", "Actual bitwidth is (ibits + waybits) but to avoid sc template generation use 32-bits"),
+    FLUSH_ALL_VALUE(this, "32", "FLUSH_ALL_VALUE", "SUB(POW2(1,ADD(CFG_ILOG2_LINES_PER_WAY,CFG_ILOG2_NWAYS)),1)", "Actual bitwidth is (ibits + waybits) but to avoid sc template generation use 32-bits"),
     // signals
     line_direct_access_i(this, "line_direct_access_i", "1"),
     line_invalidate_i(this, "line_invalidate_i", "1"),
@@ -102,13 +101,13 @@ ICacheLru::ICacheLru(GenObject *parent, const char *name) :
     cache_line_i(this, "cache_line_i", "L1CACHE_LINE_BITS"),
     // process
     comb(this),
-    mem0(this, "mem0", "abus", "waybits", "ibits", "lnbits", "flbits")
+    mem0(this, "mem0", "abus", "CFG_ILOG2_NWAYS", "CFG_ILOG2_LINES_PER_WAY", "lnbits", "flbits")
 {
     Operation::start(this);
 
     // Generic paramters to template parameters assignment
-    mem0.waybits.setObjValue(&waybits);
-    mem0.ibits.setObjValue(&ibits);
+    mem0.waybits.setObjValue(&glob_target_cfg_->CFG_ILOG2_NWAYS);
+    mem0.ibits.setObjValue(&glob_target_cfg_->CFG_ILOG2_LINES_PER_WAY);
     NEW(mem0, mem0.getName().c_str());
         CONNECT(mem0, 0, mem0.i_clk, i_clk);
         CONNECT(mem0, 0, mem0.i_nrst, i_nrst);
@@ -158,7 +157,7 @@ TEXT();
 
 TEXT();
     TEXT("Flush counter when direct access");
-    IF (EQ(BITS(req_addr, DEC(waybits), CONST("0")), DEC(ways)));
+    IF (EQ(BITS(req_addr, DEC(glob_target_cfg_->CFG_ILOG2_NWAYS), CONST("0")), DEC(ways)));
         SETVAL(comb.vb_addr_direct_next, AND2_L(ADD2(req_addr, cfg->L1CACHE_BYTES_PER_LINE),
                                                 INV_L(LINE_BYTES_MASK)));
     ELSE();

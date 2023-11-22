@@ -19,7 +19,7 @@
 #include <api.h>
 #include "prj/prj_folder.h"
 #include "rtl/rtl_folder.h"
-#include "prj/impl/asic/asic_top.h"   // top level must be instantiated after rtl
+#include "prj/impl/asic/target_cfg.h"   // top level must be instantiated after rtl
 
 using namespace sysvc;
 
@@ -27,10 +27,31 @@ class RiverProject : public ProjectObject {
  public:
     RiverProject(const char *rootpath);
 
+    /**
+        Create folder "prj/impl/asic" before generating target_cfg
+    */
+    class target_folder : public FolderObject {
+      public:
+        target_folder(GenObject *parent)
+            : FolderObject(parent, "prj"), impl_folder_(this) {}
+      protected:
+         class impl_folder : public FolderObject {
+          public:
+            impl_folder(GenObject *parent) : FolderObject(parent, "impl"), asic_folder_(this) {}
+          protected:
+            class asic_folder : public FolderObject {
+              public:
+                asic_folder(GenObject *parent) : FolderObject(parent, "asic"), target_cfg_(this) {}
+              protected:
+                target_cfg target_cfg_;
+            } asic_folder_;
+        } impl_folder_;
+    };
+
  protected:
-    prj_folder prj_;
+    target_folder target_folder_;
     rtl_folder rtl_;
-    asic_top_file asic_top_file_;
+    prj_folder prj_;
 };
 
 

@@ -76,9 +76,6 @@ class ICacheLru : public ModuleObject {
     void proc_comb();
 
  public:
-    DefParamUI32D waybits;
-    DefParamUI32D ibits;
-
     InPort i_clk;
     InPort i_nrst;
     TextLine _ctrl0_;

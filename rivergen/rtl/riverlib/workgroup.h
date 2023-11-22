@@ -87,13 +87,7 @@ class Workgroup : public ModuleObject {
 
 public:
     DefParamUI32D cpu_num;
-    DefParamUI32D ilog2_nways;
-    DefParamUI32D ilog2_lines_per_way;
-    DefParamUI32D dlog2_nways;
-    DefParamUI32D dlog2_lines_per_way;
     DefParamUI32D l2cache_ena;
-    DefParamUI32D l2log2_nways;
-    DefParamUI32D l2log2_lines_per_way;
     // Ports:
     InPort i_cores_nrst;
     InPort i_dmi_nrst;
