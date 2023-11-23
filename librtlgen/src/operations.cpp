@@ -27,6 +27,24 @@ int spaces_ = 1;
 int stackcnt_ = 0;
 GenObject *stackobj_[256] = {0};
 
+std::string addspaces() {
+    std::string ret = "";
+    for (int i = 0; i < 4*spaces_; i++) {
+        ret += " ";
+    }
+    return ret;
+}
+
+void pushspaces() {
+    spaces_++;
+}
+
+void popspaces() {
+    if (spaces_) {
+        spaces_--;
+    }
+}
+
 Operation::Operation(const char *comment)
     : GenObject(top_obj(), "", ID_OPERATION, "", comment), igen_(0), argcnt_(0) {
 }

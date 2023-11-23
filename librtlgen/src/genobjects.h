@@ -81,6 +81,7 @@ class GenObject {
     virtual bool getResetActive() { return false; }
     virtual std::string getName() { return name_; }
     virtual void setName(const char *n) { name_ = std::string(n); }
+    virtual std::string addComment();
     virtual std::string getComment() { return comment_; }
     virtual std::string getType() { return type_; }
     virtual bool isString() { return false; }

@@ -83,6 +83,20 @@ std::string Logic::getType() {
             }
             ret += ":0]";
         }
+    } else if (SCV_is_vhdl()) {
+        if (getWidth() <= 1) {
+            ret = std::string("std_logic");
+        } else {
+            ret += "std_logic_vector(";
+            if (isNumber(w)) {
+                char tstr[256];
+                RISCV_sprintf(tstr, sizeof(tstr), "%d", getWidth() - 1);
+                ret += tstr;
+            } else {
+                ret += w + " - 1";
+            }
+            ret += " downto 0)";
+        }
     }
     return ret;
 }
@@ -98,6 +112,8 @@ std::string Logic1::getType() {
         }
     } else if (SCV_is_sv()) {
         ret = std::string("logic");
+    } else if (SCV_is_vhdl()) {
+        ret = std::string("std_logic");
     }
     return ret;
 }
@@ -116,6 +132,21 @@ std::string Logic::getStrValue() {
             int w = getWidth();
             RISCV_sprintf(fmt, sizeof(fmt), "%%d'h%%0%d" RV_PRI64 "x", (w+3)/4);
             RISCV_sprintf(tstr, sizeof(tstr), fmt, w, GenValue::getValue());
+            ret += tstr;
+        }
+    } else if (SCV_is_vhdl() && isNumber(t)) {
+        if (getValue() == 0) {
+            if (getWidth() == 1) {
+                ret += "'0'";
+            } else {
+                ret += "(others => '0')";
+            }
+        } else {
+            char fmt[64];
+            char tstr[256];
+            int w = getWidth();
+            RISCV_sprintf(fmt, sizeof(fmt), "X\"%%0%d" RV_PRI64 "x\"", (w+3)/4);
+            RISCV_sprintf(tstr, sizeof(tstr), fmt, GenValue::getValue());
             ret += tstr;
         }
     } else {

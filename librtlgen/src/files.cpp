@@ -157,7 +157,7 @@ std::string FileObject::generate() {
         generate_sysc();
     } else if (SCV_is_sv()) {
         generate_sysv();
-    } else {
+    } else if (SCV_is_vhdl()) {
         generate_vhdl();
     }
     return GenObject::generate();
@@ -475,7 +475,93 @@ void FileObject::generate_sysv() {
 }
 
 void FileObject::generate_vhdl() {
-}
+    bool is_module = false;
+    std::string out = "";
+    std::string filename = getFullPath();
+    filename = filename + "_pkg.vhd";
 
+    out += CommentLicense().generate();
+    out += "library ieee;\n";
+    out += "use ieee.std_logic_1164.all;\n";
+    out += "use ieee.numeric_std.all;\n";
+    out += "\n";
+    out += "package " + getName() + "_pkg is\n";
+    out += "\n";
+
+#if 0
+    // Automatic Dependency detection
+    std::list<std::string> pkglist;
+    getDepList(pkglist, 0);
+    for (auto &f : pkglist) {
+        out += "import " + f + "::*;\n";
+    }
+    out += "\n";
+#endif
+
+    // header
+    bool skip_pkg = false;
+    ModuleObject *mod;
+    std::list <GenObject *> tmplparlist;
+    Operation::set_space(0);
+    for (auto &p: entries_) {
+        if (p->getId() == ID_MODULE) {
+            is_module = true;
+            mod = static_cast<ModuleObject *>(p);
+            mod->getTmplParamList(tmplparlist);
+            if (tmplparlist.size()) {
+                // do not create package for template modules: queue, ram,  etc.
+                skip_pkg = true;
+            } else {
+                std::string strtype = p->getType();
+                SCV_select_local(strtype);
+                out += mod->generate_vhdl_pkg();
+            }
+        } else {
+            if (p->getId() == ID_FUNCTION) {
+                out += "function ";
+            } else if (p->isTypedef() && p->getName().size() == 0) {
+                out += "type " + p->getType();
+                out += " is array (0 to " + p->getStrDepth() + " - 1) of ";
+                out += p->generate() + ";\n";
+                continue;
+            } else if (p->isVector() && p->getName().size()) {
+                out += "constant " + p->getName();
+                out += " : " + p->getType() + " := ";
+                out += generate_const(p);
+                out += ";\n";
+                continue;
+            }
+            out += p->generate();
+        }
+    }
+
+    out += "end;  -- " + getName() + " package body\n";
+
+    if (!skip_pkg) {
+        SCV_write_file(filename.c_str(), out.c_str(), out.size());
+    }
+
+    // source file if any module defined in this file
+    if (is_module) {
+        out = "";
+        filename = getFullPath();
+        filename = filename + ".vhd";
+
+        out += CommentLicense().generate();
+
+        // module definition
+        for (auto &p: entries_) {
+            if (p->getId() == ID_MODULE) {
+                is_module = true;
+                std::string strtype = p->getType();
+                SCV_select_local(strtype);
+                out += static_cast<ModuleObject *>(p)->generate_vhdl_mod();
+            } else {
+                out += p->generate();
+            }
+        }
+        SCV_write_file(filename.c_str(), out.c_str(), out.size());
+    }
+}
 
 }

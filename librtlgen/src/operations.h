@@ -30,6 +30,10 @@ namespace sysvc {
 
 typedef std::string (*generate_type)(GenObject **args);
 
+std::string addspaces();
+void pushspaces();
+void popspaces();
+
 class Operation : public GenObject {
  public:
     Operation(const char *comment="");

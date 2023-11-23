@@ -47,31 +47,4 @@ IoPort::IoPort(GenObject *parent, const char *name, GenValue *width,
     const char *comment) : Logic(width, name, "", parent, comment) {
 }
 
-
-/*std::string InPort::getType() {
-    std::string out = "";
-    if (SCV_is_sysc()) {
-        out += "sc_in<" + Logic::getType() + ">";
-    } else if (SCV_is_sv()) {
-        SCV_set_generator(SV_PKG);  // to generate with package name
-        out += "input " + Logic::getType();
-        SCV_set_generator(SV_ALL);
-    } else {
-    }
-    return out;
-}
-
-std::string OutPort::getType() {
-    std::string out = "";
-    if (SCV_is_sysc()) {
-        out += "sc_out<" + Logic::getType() + ">";
-    } else if (SCV_is_sv()) {
-        SCV_set_generator(SV_PKG);  // to generate with package name
-        out += "output " + Logic::getType();
-        SCV_set_generator(SV_ALL);
-    } else {
-    }
-    return out;
-}*/
-
 }

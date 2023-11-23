@@ -393,17 +393,15 @@ std::string StructObject::generate_interface_sc_trace() {
 std::string StructObject::generate_interface() {
     std::string ret = "";
     std::string ln;
-    int space = Operation::get_space();
-    Operation::set_space(0);
 
     if (getComment().size()) {
-        ret += "// " + getComment() + "\n";
+        ret += addspaces() + addComment();
     }
     if (SCV_is_sysc()) {
         ret += "class " + getType() + " {\n";
         ret += " public:\n";
 
-        Operation::set_space(Operation::get_space() + 1);
+        pushspaces();
         ret += generate_interface_constructor();
         if (isInitable()) {
             ret += generate_interface_constructor_init();
@@ -415,64 +413,69 @@ std::string StructObject::generate_interface() {
         if (isVector()) {
             ret += generate_interface_op_bracket();
         }
-        Operation::set_space(Operation::get_space() - 1);
+        popspaces();
         ret += " public:\n";
-    } else {
+    } else if (SCV_is_sv()) {
         ret += "typedef struct {\n";
+    } else if (SCV_is_vhdl()) {
+        ret += "type " + getType() + " is record\n";
     }
-    Operation::set_space(Operation::get_space() + 1);
+    pushspaces();
     for (auto& p : entries_) {
-        ln = Operation::addspaces();
+        ln = addspaces();
         if (p->getId() == ID_COMMENT) {
-            ln += "//";
+            ret += ln + p->addComment() + "\n";
+            continue;
         }
-        ln += p->getType() + " " + p->getName();
+        if (SCV_is_sysc()) {
+            ln += p->getName() + " : " + p->getType();
+        } else {
+            ln += p->getType() + " " + p->getName();
+        }
         if (p->getDepth()) {
-            ln += "[";
             if (SCV_is_sysc()) {
-                ln += p->getStrDepth();
+                ln += "[" + p->getStrDepth() + "]";
+            } else if (SCV_is_sv()) {
+                ln += "[0: " + p->getStrDepth() + " - 1]";
+            } else if (SCV_is_vhdl()) {
+                ln += "(0 up " + p->getStrDepth() + " - 1)";
             }
-            else {
-                ln += "0: " + p->getStrDepth() + " - 1";
-            }
-            ln += "]";
         }
         ln += ";";
         if (p->getComment().size()) {
             while (ln.size() < 60) {
                 ln += " ";
             }
-            ln += "// " + p->getComment();
+            ln += p->addComment();
         }
         ret += ln + "\n";
     }
-    Operation::set_space(Operation::get_space() - 1);
-    ret += Operation::addspaces();
+    popspaces();
+    ret += addspaces();
     if (SCV_is_sysc()) {
         ret += "};\n";
-    }
-    else {
+    } else if (SCV_is_sv()) {
         ret += "} " + getType() + ";\n";
+    } else if (SCV_is_vhdl()) {
+        ret += "end record;\n";
     }
-    Operation::set_space(space);
     return ret;
 }
 
 std::string StructObject::generate_const_none() {
     std::string ret = "";
-    int space = Operation::get_space();
-    Operation::set_space(0);
-
     if (SCV_is_sysc()) {
+        ret += addspaces();
         ret += "static const " + getType() + " " + getName() + ";\n";
-    } else {
+    } else if (SCV_is_sv()) {
+        ret += addspaces();
         ret += "const " + getType() + " " + getName() + " = '{\n";
-        Operation::set_space(Operation::get_space() + 1);
+        pushspaces();
         for (auto& p : entries_) {
             if (p->getId() == ID_COMMENT) {
                 continue;
             }
-            ret += Operation::addspaces();
+            ret += addspaces();
             std::string strvalue = p->getStrValue();
             if (p->isNumber(strvalue)
                 && p->getWidth() > 1 && p->getValue() == 0) {
@@ -485,10 +488,32 @@ std::string StructObject::generate_const_none() {
             }
             ret += "  // " + p->getName() + "\n";
         }
-        Operation::set_space(Operation::get_space() - 1);
-        ret += "};\n";
+        popspaces();
+        ret += addspaces() + "};\n";
+    } else if (SCV_is_vhdl()) {
+        ret += addspaces();
+        ret += "constant " + getName() + " : " + getType() + " := (\n";
+        pushspaces();
+        for (auto& p : entries_) {
+            if (p->getId() == ID_COMMENT) {
+                continue;
+            }
+            ret += addspaces();
+            std::string strvalue = p->getStrValue();
+            if (p->isNumber(strvalue)
+                && p->getWidth() > 1 && p->getValue() == 0) {
+                ret += "(others => '0')";
+            } else {
+                ret += strvalue;
+            }
+            if (p != entries_.back()) {
+                ret += ",";
+            }
+            ret += "  -- " + p->getName() + "\n";
+        }
+        popspaces();
+        ret += addspaces() + ");\n";
     }
-    Operation::set_space(space);
     return ret;
 }
 
@@ -506,19 +531,23 @@ std::string StructObject::generate() {
     }
 
     if (getComment().size()) {
-        ret += "    // " + getComment() + "\n";
+        ret += addspaces();
+        ret += addComment() + "\n";
     }
-    ret += Operation::addspaces();
+    ret += addspaces();
     if (SCV_is_sysc()) {
         ret += "struct " + getType() + " {\n";
-    } else {
+    } else if (SCV_is_sv()) {
         ret += "typedef struct {\n";
+    } else if (SCV_is_vhdl()) {
+        ret += "type " + getType() + " is record\n";
     }
-    Operation::set_space(Operation::get_space() + 1);
+    pushspaces();
     for (auto &p: entries_) {
-        ln = Operation::addspaces();
+        ln = addspaces();
         if (p->getId() == ID_COMMENT) {
-            ln += "//";
+            ret += ln + p->addComment() + "\n";
+            continue;
         }
         if (SCV_is_sysc()) {
             if (p->isVector()) {
@@ -527,43 +556,44 @@ std::string StructObject::generate() {
             if (p->isSignal()) {
                 ln += "sc_signal<";
             }
-        }
-        ln += p->getType();
-        if (SCV_is_sysc()) {
+            ln += p->getType();
             if (p->isSignal()) {
                 ln += ">";
             }
             if (p->isVector()) {
                 ln += ">";
             }
+            ln += " " + p->getName();
+        } else if (SCV_is_sv()) {
+            ln += p->getType() + " " + p->getName();
+        } else if (SCV_is_vhdl()) {
+            ln += p->getName() + " :" +  p->getType();
         }
-        ln += " " + p->getName();
         if (p->getDepth()) {
-            ln += "[";
             if (SCV_is_sysc()) {
-                ln += p->getStrDepth();
-            } else {
-                ln += "0: " + p->getStrDepth() + " - 1";
+                ln += "[" + p->getStrDepth() + "]";
+            } else if (SCV_is_sv()) {
+                ln += "[0: " + p->getStrDepth() + " - 1]";
+            } else if (SCV_is_vhdl()) {
+                ln += "(0 up " + p->getStrDepth() + " - 1)";
             }
-            ln += "]";
-        }
-        if (p->getId() != ID_COMMENT) {
-            ln += ";";
         }
         if (p->getComment().size()) {
             while (ln.size() < 60) {
                 ln += " ";
             }
-            ln += "// " + p->getComment();
+            ln += p->addComment();
         }
         ret += ln + "\n";
     }
-    Operation::set_space(Operation::get_space() - 1);
-    ret += Operation::addspaces();
+    popspaces();
+    ret += addspaces();
     if (SCV_is_sysc()) {
         ret += "};\n";
-    } else  {
+    } else if (SCV_is_sv()) {
         ret += "} " + getType() +";\n";
+    } else if (SCV_is_vhdl()) {
+        ret += "end record;\n";
     }
     ret += "\n";
     return ret;

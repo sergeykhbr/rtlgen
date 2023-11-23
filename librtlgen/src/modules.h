@@ -34,6 +34,8 @@ class ModuleObject : public GenObject {
     virtual std::string generate_sysc_cpp();
     virtual std::string generate_sv_pkg();
     virtual std::string generate_sv_mod();
+    virtual std::string generate_vhdl_pkg();
+    virtual std::string generate_vhdl_mod();
 
     // Check registers in current module and all sub-modules to create
     // async_reset logic and always (ff) process
@@ -80,6 +82,14 @@ class ModuleObject : public GenObject {
     std::string generate_sysc_sensitivity(std::string prefix, std::string name, GenObject *obj);
     std::string generate_sysc_vcd_entries(std::string name1, std::string name2, GenObject *obj);
 
+    std::string generate_vhdl_pkg_localparam();
+    std::string generate_vhdl_pkg_reg_struct(bool negedge);
+    std::string generate_vhdl_pkg_struct();
+    std::string generate_vhdl_mod_genparam();     // generic parameters
+    std::string generate_vhdl_mod_param_strings();
+    std::string generate_vhdl_mod_func(GenObject *func);
+    std::string generate_vhdl_mod_signals();
+    
  protected:
 };
 

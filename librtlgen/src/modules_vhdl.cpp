@@ -20,7 +20,512 @@
 #include "signals.h"
 #include "utils.h"
 #include "files.h"
+#include "structs.h"
+#include "regs.h"
+#include "operations.h"
+#include "array.h"
+#include "funcs.h"
+#include <list>
 
 namespace sysvc {
+
+std::string ModuleObject::generate_vhdl_pkg_localparam() {
+    std::string ret = "";
+    std::string ln = "";
+    std::string comment = "";
+    int tcnt = 0;
+    // Local paramaters visible inside of module
+    for (auto &p: entries_) {
+        if (p->getId() == ID_COMMENT) {
+            comment += p->generate();
+            continue;
+        } else if (p->getId() != ID_PARAM || !p->isLocal() || p->isGenericDep()) {
+            // do nothing
+        } else {
+            ln = "constant " + p->getName() + " : " + p->getType();
+            ln += " := " + p->getStrValue() + ";";
+            if (p->getComment().size()) {
+                while (ln.size() < 60) {
+                    ln += " ";
+                }
+                ln += "-- " + p->getComment();
+            }
+            ret += comment + ln + "\n";
+            tcnt++;
+        }
+        comment = "";
+    }
+    if (tcnt) {
+        ret += "\n";
+    }
+    return ret;
+}
+
+std::string ModuleObject::generate_vhdl_pkg_reg_struct(bool negedge) {
+    std::string ret = "";
+    std::string ln = "";
+    std::string tstr;
+    int tcnt = 0;
+    bool twodim = false;
+
+    ret += Operation::addspaces();
+    ret += "type " + getType();
+    if (negedge == false) {
+        ret += "_registers";
+    } else {
+        ret += "_nregisters";
+    }
+    ret += " is record\n";
+    Operation::set_space(Operation::get_space() + 1);
+    for (auto &p: entries_) {
+        if ((!p->isReg() && negedge == false)
+            || (!p->isNReg() && negedge == true)) {
+            continue;
+        }
+        ln = Operation::addspaces() + p->getName() + " : " + p->getType();
+        if (p->getDepth()) {
+            twodim = true;
+            ln += "(0 to " + p->getStrDepth() + " - 1)";
+        }
+        ln += ";";
+        if (p->getComment().size()) {
+            while (ln.size() < 60) {
+                ln += " ";
+            }
+            ln += "-- " + p->getComment();
+        }
+        ret += ln + "\n";
+    }
+    Operation::set_space(Operation::get_space() - 1);
+    ret += Operation::addspaces() + "end record;\n";
+    ret += "\n";
+
+    // Reset function only if no two-dimensial signals
+    tcnt = 0;
+    for (auto &p: entries_) {
+        if ((p->isReg() && negedge == false)
+            || (p->isNReg() && negedge == true)) {
+            tcnt++;
+        }
+    }
+    if (!twodim) {
+        ret += Operation::addspaces();
+        if (negedge == false) {
+            ret += "constant " + getType() + "_r_reset : " + getType() + "_registers := (\n";
+        } else {
+            ret += "constant " + getType() + "_nr_reset : " + getType() + "_nregisters := (\n";
+        }
+        Operation::set_space(Operation::get_space() + 1);
+        for (auto &p: entries_) {
+            if ((!p->isReg() && negedge == false)
+                || (!p->isNReg() && negedge == true)) {
+                continue;
+            }
+            ln = Operation::addspaces();
+            tstr = p->getStrValue();    // to provide compatibility with gcc
+            if (p->isNumber(tstr) && p->getValue() == 0) {
+                if (p->getWidth() == 1) {
+                    ln += "'0'";
+                } else {
+                    ln += "(others => '0')";
+                }
+            } else {
+                ln += p->getStrValue();
+            }
+            if (--tcnt) {
+                ln += ",";
+            }
+            while (ln.size() < 40) {
+                ln += " ";
+            }
+            ln += "-- " + p->getName();
+            ret += ln + "\n";
+        }
+        Operation::set_space(Operation::get_space() - 1);
+        ret += Operation::addspaces() + ");\n";
+        ret += "\n";
+    }
+    return ret;
+}
+
+
+std::string ModuleObject::generate_vhdl_pkg_struct() {
+    std::string ret = "";
+    std::string ln = "";
+    std::string tstr;
+    int tcnt = 0;
+
+    // struct definitions
+    for (auto &p: entries_) {
+        if (p->getId() != ID_STRUCT_DEF) {
+            continue;
+        }
+        if (p->isVector()) {
+            ret += "type ";
+            ret += p->generate();
+            ret += " is array (0 to " + p->getStrDepth() + " - 1)";
+            ret += " of " + p->getType() + ";\n";
+        } else {
+            ret += p->generate();
+        }
+        tcnt++;
+    }
+    if (tcnt) {
+        ret += "\n";
+        tcnt = 0;
+    }
+    // Register structure definition
+    bool twodim = false;        // if 2-dimensional register array, then do not use reset function
+    if (isRegs() && isCombProcess()) {
+        ret += generate_vhdl_pkg_reg_struct(false);
+    }
+    if (isNRegs() && isCombProcess()) {
+        ret += generate_vhdl_pkg_reg_struct(true);
+    }
+    return ret;
+}
+
+
+std::string ModuleObject::generate_vhdl_pkg() {
+    std::string ret = "";
+    Operation::set_space(0);
+    ret += generate_vhdl_pkg_localparam();
+    ret += generate_vhdl_pkg_struct();
+    return ret;
+}
+
+
+std::string ModuleObject::generate_vhdl_mod_genparam() {
+    std::string ret = "";
+    std::string ln;
+    int icnt = 0;
+    std::list<GenObject *> genparam;
+    getTmplParamList(genparam);
+    getParamList(genparam);
+
+    if (genparam.size() == 0 && !getAsyncReset()) {
+        return ret;
+    }
+    ret += Operation::addspaces() + "generic (\n";
+    Operation::set_space(Operation::get_space() + 1);
+
+    if (getAsyncReset() && getEntryByName("async_reset") == 0) {
+        ret += Operation::addspaces() + "async_reset : boolean := '0'";           // Mandatory generic parameter
+        if (genparam.size()) {
+            ret += ";";
+        }
+        ret += "\n";
+        icnt++;
+    }
+
+    for (auto &p : genparam) {
+        ln = Operation::addspaces() + p->getName() + " : ";
+        ln += p->getType() + " := " + p->getStrValue();
+
+        if (p != genparam.back()) {
+            ln += ";";
+        }
+        if (p->getComment().size()) {
+            while (ln.size() < 60) {
+                ln += " ";
+            }
+            ln += "-- " + p->getComment();
+        }
+        ret += ln + "\n";
+    }
+
+    Operation::set_space(Operation::get_space() - 1);
+    ret += Operation::addspaces() + ");\n";
+    return ret;
+}
+
+std::string ModuleObject::generate_vhdl_mod_param_strings() {
+    std::string ret = "";
+    int tcnt = 0;
+    for (auto &p: getEntries()) {
+        if (p->getId() != ID_PARAM) {
+            continue;
+        }
+        if (!p->isLocal() || !p->isGenericDep()) {
+            continue;
+        }
+        if (p->isString()) {
+            // Vivado doesn't support string parameters
+            ret += "localparam " + p->getName();
+        } else {
+            ret += "localparam " + p->getType() + " " + p->getName();
+        }
+        ret += " = " + p->getStrValue() + ";\n";
+
+        tcnt++;
+    }
+    for (auto &p: getEntries()) {
+        if (p->getId() != ID_ARRAY_STRING) {
+            continue;
+        }
+        ret += "localparam string " + p->getName() + "[0: " + p->getStrDepth() +"-1]";
+        ret += " = '{\n";
+        for (auto &e: p->getEntries()) {
+            ret += "    \"" + e->getName() + "\"";
+            if (e != p->getEntries().back()) {
+                ret += ",";
+            }
+            ret += "\n";
+        }
+        ret += "};\n";
+        tcnt++;
+    }
+    if (tcnt) {
+        ret += "\n";
+    }
+    return ret;
+}
+
+std::string ModuleObject::generate_vhdl_mod_func(GenObject *func) {
+    std::string ret = "function ";
+    ret += static_cast<FunctionObject *>(func)->generate();
+    return ret;
+}
+
+std::string ModuleObject::generate_vhdl_mod_signals() {
+    std::string ret = "";
+    std::string ln;
+    std::string text;
+    int tcnt = 0;
+    tcnt = 0;
+    text = "";
+    for (auto &p: getEntries()) {
+        if (p->isInput() || p->isOutput()) {
+            text = "";
+            continue;
+        }
+        if (p->getName() == "") {
+            // typedef should be skipped
+            continue;
+        }
+        if (p->isReg() || p->isNReg()
+            || (!p->isSignal()
+                && p->getId() != ID_VALUE
+                && p->getId() != ID_CLOCK
+                && p->getId() != ID_STRUCT_INST
+                && p->getId() != ID_ARRAY_DEF
+                && p->getId() != ID_VECTOR)) {
+            if (p->getId() == ID_COMMENT) {
+                text += Operation::addspaces() + p->generate();
+            } else {
+                text = "";
+            }
+            continue;
+        }
+        if (p->getId() == ID_ARRAY_DEF) {
+            if (p->getItem()->getId() == ID_MODULE_INST) {
+                text = "";
+                continue;
+            }
+        }
+        if (text.size()) {
+            ret += text;
+            text = "";
+        }
+        ln = Operation::addspaces() + "signal " + p->getName() + " : " + p->getType();
+        if (p->getDepth() && !p->isVector()) {
+            ln += "(0 up " + p->getStrDepth() + " - 1)";
+        }
+        ln += ";";
+        if (p->getComment().size()) {
+            while (ln.size() < 60) {
+                ln += " ";
+            }
+            ln += "-- " + p->getComment();
+        }
+        ret += ln + "\n";
+        tcnt++;
+    }
+    for (auto &p: getEntries()) {
+        if (p->getId() != ID_FILEVALUE) {
+            continue;
+        }
+        ret += "file " + p->getName() + ";\n";
+        tcnt++;
+    }
+
+    if (isRegs() && isCombProcess()) {
+        ret += Operation::addspaces();
+        ret += "signal r, rin : " + getType() + "_registers;\n";
+        tcnt++;
+    }
+    if (isNRegs() && isCombProcess()) {
+        ret += Operation::addspaces();
+        ret += "signal nr, nrin : " + getType() + "_nregisters;\n";
+        tcnt++;
+    }
+    if (tcnt) {
+        ret += "\n";
+        tcnt = 0;
+    }
+    return ret;
+}
+
+
+std::string ModuleObject::generate_vhdl_mod() {
+    int tcnt = 0;
+    std::string ret = "";
+    std::string text;
+    std::string ln;
+    std::list<GenObject *> tmplparam;
+    getTmplParamList(tmplparam);
+
+    // import statement:
+    std::list<std::string> pkglst;
+    FileObject *pf = static_cast<FileObject *>(getParent());
+    pf->getDepList(pkglst, tmplparam.size());
+    for (auto &e: pkglst) {
+        ret += "use " + e + ".all;\n";
+    }
+    if (tmplparam.size() == 0) {
+        ret += "use " + pf->getName() + "_pkg.all;\n";
+        ret += "\n";
+    } else {
+        // insert pkg data for template modules: ram, queue, ..
+//        ret += generate_vhdl_pkg_localparam();
+    }
+
+
+    Operation::set_space(0);
+    ret += "entity " + getType() + " is ";
+
+    // Generic parameters
+    ret += generate_vhdl_mod_genparam();
+
+    // In/Out ports
+    ret += Operation::addspaces() + "port (\n";
+    Operation::set_space(Operation::get_space() + 1);
+    int port_cnt = 0;
+    for (auto &p: entries_) {
+        if (p->isInput() || p->isOutput()) {
+            port_cnt++;
+        }
+    }
+    text = "";
+    std::string strtype;
+    for (auto &p: entries_) {
+        if (!p->isInput() && !p->isOutput()) {
+            if (p->getId() == ID_COMMENT) {
+                text += Operation::addspaces() + p->generate();
+            } else {
+                text = "";
+            }
+            continue;
+        }
+        ret += text;
+        text = "";
+        ln = Operation::addspaces() + p->getName() + " : ";
+        if (p->isInput() && p->isOutput()) {
+            ln += "inout ";
+        } else if (p->isInput()) {
+            ln += "in ";
+        } else {
+            ln += "out ";
+        }
+        SCV_set_generator(VHDL_PKG);  // to generate with package name
+        strtype = p->getType();
+//        if (SCV_is_cfg_parameter(strtype) && SCV_get_cfg_file(strtype).size()) {
+//            // whole types (like vectors or typedef)
+//            ln += SCV_get_cfg_file(strtype) + "_pkg::" + strtype;
+//        } else {
+            // Width or depth definitions
+            ln += strtype;
+//        }
+        SCV_set_generator(VHDL_ALL);
+
+        if (--port_cnt) {
+            ln += ";";
+        }
+        if (p->getComment().size()) {
+            while (ln.size() < 60) {
+                ln += " ";
+            }
+            ln += "-- " + p->getComment();
+        }
+        ret += ln + "\n";
+    }
+    ret += Operation::addspaces() + ");\n";
+    Operation::set_space(Operation::get_space() - 1);
+    ret += "end;\n";
+    ret += "\n";
+
+    ret += "architecture arch_" + getType() + " of " + getType() + " is\n";
+    ret += "\n";
+    Operation::set_space(Operation::get_space() + 1);
+
+    // static strings
+    ret += generate_vhdl_mod_param_strings();
+
+    // struct definitions:
+    if (tmplparam.size()) {
+        ret += generate_vhdl_pkg_struct();
+    }
+
+
+    // Signal list:
+    ret += generate_vhdl_mod_signals();
+
+    // Functions
+    for (auto &p: entries_) {
+        if (p->getId() != ID_FUNCTION) {
+            continue;
+        }
+        ret += generate_vhdl_mod_func(p);
+    }
+
+    Operation::set_space(Operation::get_space() - 1);
+    ret += "begin\n";
+    ret += "\n";
+    Operation::set_space(Operation::get_space() + 1);
+
+
+    // Sub-module instantiation
+    Operation::set_space(0);
+    for (auto &p: entries_) {
+        if (p->getId() != ID_OPERATION) {
+            continue;
+        }
+        ln = p->generate();
+        ret += ln;
+        ret += "\n";
+    }
+/*
+    // Clock process
+    for (auto &p: entries_) {
+        if (p->getId() != ID_CLOCK) {
+            continue;
+        }
+        ret += generate_sv_mod_clock(p);
+    }
+
+    // Process
+    for (auto &p: entries_) {
+        if (p->getId() != ID_PROCESS) {
+            continue;
+        }
+        if (p->getName() == "registers") {
+            continue;
+        }
+        Operation::set_space(0);
+        ret += generate_sv_mod_proc(p);
+    }
+
+    if (isRegProcess()) {
+        Operation::set_space(0);
+        ret += generate_sv_mod_proc_registers();
+    }
+*/
+
+    Operation::set_space(Operation::get_space() - 1);
+    ret += "end;\n";
+
+
+    return ret;
+}
 
 }

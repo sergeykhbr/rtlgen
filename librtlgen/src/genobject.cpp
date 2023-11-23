@@ -135,6 +135,21 @@ GenObject *GenObject::getEntryByName(const char *name) {
     return 0;
 }
 
+std::string GenObject::addComment() {
+    std::string ret = "";
+    if (SCV_is_vhdl()) {
+        ret += "-- ";
+    } else {
+        ret += "// ";
+    }
+    if (getId() == ID_COMMENT) {    
+        ret += getName();
+    } else {
+        ret += getComment();
+    }
+    return ret;
+}
+
 bool GenObject::isLocal() {
     bool local = false;
     GenObject *p = getParent();
