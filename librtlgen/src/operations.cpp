@@ -28,7 +28,7 @@ int stackcnt_ = 0;
 GenObject *stackobj_[256] = {0};
 
 Operation::Operation(const char *comment)
-    : GenObject(stackobj_[stackcnt_], "", ID_OPERATION, "", comment), igen_(0), argcnt_(0) {
+    : GenObject(top_obj(), "", ID_OPERATION, "", comment), igen_(0), argcnt_(0) {
 }
 
 Operation::Operation(GenObject *parent, const char *comment)
@@ -46,6 +46,10 @@ void Operation::push_obj(GenObject *obj) {
 
 void Operation::pop_obj() {
     stackobj_[stackcnt_--] = 0;
+}
+
+GenObject *Operation::top_obj() {
+    return stackobj_[stackcnt_];
 }
 
 void Operation::set_space(int n) {
@@ -72,6 +76,15 @@ std::string Operation::addtext(GenObject *obj, size_t curpos) {
     }
     return ret;
 }
+
+std::string Operation::v_name(std::string v) {
+    std::string ret = generate();
+    if (v.size()) {
+        ret += "." + v;
+    }
+    return ret;
+}
+
 
 std::string Operation::fullname(const char *prefix, std::string name, GenObject *obj) {
     if (!obj) {
@@ -111,7 +124,7 @@ std::string Operation::fullname(const char *prefix, std::string name, GenObject 
     } else if (obj->getId() == ID_DEF_PARAM && SCV_is_sysc()) {
         curname = obj->getName() + "_";
     } else {
-        curname = obj->getName() + name;
+        curname = obj->getName();
     }
 
     if (p && p->isInput()) {
@@ -3211,103 +3224,41 @@ void DISPLAYSTR(GenObject &str) {
     str.getParentFile()->setSvApiUsed();
 }
 
+
 // NEW module instance
-std::string NEW_gen_sv(Operation *op, ModuleObject *mod, std::string name) {
-    std::string ret = "";
-    std::string ln = "";
-    std::string idx = "";
-    int tcnt = 0;
-
-    ln = Operation::addspaces();
-    ln += mod->getType() + " ";
-    ret += ln;
-    
-    std::list<GenObject *>tmpllist;
-    mod->getTmplParamList(tmpllist);
-    mod->getParamList(tmpllist);    
-    tcnt = 0;
-    if (mod->getAsyncReset() || tmpllist.size()) {
-        ret += "#(\n";
-        Operation::set_space(Operation::get_space() + 1);
-        if (mod->getAsyncReset() && mod->getEntryByName("async_reset") == 0) {
-            ret += Operation::addspaces() + ".async_reset(async_reset)";
-            if (tmpllist.size()) {
-                ret += ",";
-            }
-            ret += "\n";
-            tcnt++;
-        }
-        for (auto &e : tmpllist) {
-            ret += Operation::addspaces();
-            if (e->getId() == ID_TMPL_PARAM) {
-                ret += "." + e->getName() + "(" + e->getStrValue() + ")";
-            } else if (e->getObjValue()) {
-                // generic parameter but with the defined string value
-                ret += "." + e->getName() + "(" + e->getObjValue()->getName() + ")";
-            } else {
-                ret += "." + e->getName() + "(" + e->getName() + ")";
-            }
-            if (e != tmpllist.back()) {
-                ret += ",";
-            }
-            ret += "\n";
-            tcnt++;
-        }
-        Operation::set_space(Operation::get_space() - 1);
-        ret += Operation::addspaces() + ") ";
+std::string NewOperation::generate() {
+    if (SCV_is_sysc()) {
+        return generate_sc();
+    } else if (SCV_is_sv()) {
+        return generate_sv();
     }
-    
-    ret += name + " (";
-    Operation::set_space(Operation::get_space() + 1);
-
-    std::list<GenObject *>iolist;
-    mod->getIoList(iolist);
-    ret += "\n";
-    for (auto &io : iolist) {
-        ret += op->gen_connection(io->getName());
-        if (io != iolist.back()) {
-            ret += ",";
-        }
-        ret += "\n";
-    }
-    Operation::set_space(Operation::get_space() - 1);
-    ret += Operation::addspaces() + ");";
-    ret += "\n";
-    return ret;
+    return generate_vhdl();
 }
 
-std::string NEW_gen(GenObject **args) {
+std::string NewOperation::generate_sc() {
     std::string ret = "";
     std::string ln = "";
     std::string lasttmpl = "";
     std::string idx = "";
     int tcnt = 0;
-    std::string name = Operation::obj2varname(args[2]);
-    ModuleObject *mod = static_cast<ModuleObject *>(args[1]);
 
-    if (SCV_is_sv()) {
-        ret += NEW_gen_sv(static_cast<Operation *>(args[0]),
-                          mod,
-                          name);
-        return ret;
-    }
-    ln = Operation::addspaces();
-    if (args[3]) {
-        idx = Operation::obj2varname(args[3]);
-        ret += Operation::addspaces();
+    ln = addspaces();
+    if (idx_) {
+        idx = obj2varname(idx_);
+        ret += addspaces();
         ret += "char tstr[256];\n";
-        ret += Operation::addspaces();
-        ret += "RISCV_sprintf(tstr, sizeof(tstr), \"" + name + "%d\", " + idx + ");\n";
+        ret += addspaces();
+        ret += "RISCV_sprintf(tstr, sizeof(tstr), \"" + instname_ + "%d\", " + idx + ");\n";
     }
-    ln += name;
+    ln += instname_;
     if (idx.size()) {
         ln += "[" + idx + "]";
     }
-    ln += " = new " + mod->getType();
+    ln += " = new " + m_->getType();
     ret += ln;
     
     std::list<GenObject *>tmpllist;
-    mod->getTmplParamList(tmpllist);
+    m_->getTmplParamList(tmpllist);
     tcnt = 0;
     if (tmpllist.size()) {
         ret += "<";
@@ -3331,13 +3282,13 @@ std::string NEW_gen(GenObject **args) {
     if (idx.size()) {
         ret += "tstr";
     } else {
-        ret += "\"" + name + "\"";
+        ret += "\"" + instname_ + "\"";
     }
-    if (mod->getAsyncReset() && mod->getEntryByName("async_reset") == 0) {
+    if (m_->getAsyncReset() && m_->getEntryByName("async_reset") == 0) {
         ret += ", async_reset";
     }
     std::list<GenObject *>genlist;
-    mod->getParamList(genlist);
+    m_->getParamList(genlist);
     for (auto &g : genlist) {
         ret += ",\n";
         for (int i = 0; i <= ln.size(); i++) {
@@ -3353,72 +3304,163 @@ std::string NEW_gen(GenObject **args) {
     ret += ");\n";
 
     std::list<GenObject *>iolist;
-    mod->getIoList(iolist);
+    m_->getIoList(iolist);
     for (auto &io : iolist) {
-        ret += Operation::addspaces();
-        ret += name;
-        ret += static_cast<Operation *>(args[0])->gen_connection(io->getName());
+        ret += addspaces();
+        ret += instname_;
+        ret += gen_connection(io->getName());
         ret += ";";
         ret += "\n";
     }
     return ret;
 }
 
-void NEW(GenObject &m, const char *name, GenObject *idx, const char *comment) {
-    Operation *p = new Operation(comment);
-    Operation::push_obj(p);
-    p->igen_ = NEW_gen;
-    p->add_arg(p);
-    p->add_arg(&m);
-    p->add_arg(new TextLine(0, name));
-    p->add_arg(idx);
+std::string NewOperation::generate_sv() {
+    std::string ret = "";
+    std::string ln = "";
+    std::string idx = "";
+    int tcnt = 0;
+
+    ln = addspaces();
+    ln += m_->getType() + " ";
+    ret += ln;
+    
+    std::list<GenObject *>tmpllist;
+    m_->getTmplParamList(tmpllist);
+    m_->getParamList(tmpllist);    
+    tcnt = 0;
+    if (m_->getAsyncReset() || tmpllist.size()) {
+        ret += "#(\n";
+        set_space(get_space() + 1);
+        if (m_->getAsyncReset() && m_->getEntryByName("async_reset") == 0) {
+            ret += addspaces() + ".async_reset(async_reset)";
+            if (tmpllist.size()) {
+                ret += ",";
+            }
+            ret += "\n";
+            tcnt++;
+        }
+        for (auto &e : tmpllist) {
+            ret += addspaces();
+            if (e->getId() == ID_TMPL_PARAM) {
+                ret += "." + e->getName() + "(" + e->getStrValue() + ")";
+            } else if (e->getObjValue()) {
+                // generic parameter but with the defined string value
+                ret += "." + e->getName() + "(" + e->getObjValue()->getName() + ")";
+            } else {
+                ret += "." + e->getName() + "(" + e->getName() + ")";
+            }
+            if (e != tmpllist.back()) {
+                ret += ",";
+            }
+            ret += "\n";
+            tcnt++;
+        }
+        set_space(get_space() - 1);
+        ret += addspaces() + ") ";
+    }
+    
+    ret += instname_ + " (";
+    set_space(get_space() + 1);
+
+    std::list<GenObject *>iolist;
+    m_->getIoList(iolist);
+    ret += "\n";
+    for (auto &io : iolist) {
+        ret += gen_connection(io->getName());
+        if (io != iolist.back()) {
+            ret += ",";
+        }
+        ret += "\n";
+    }
+    set_space(get_space() - 1);
+    ret += addspaces() + ");";
+    ret += "\n";
+    return ret;
 }
+
+std::string NewOperation::generate_vhdl() {
+    std::string ret = "";
+    std::string ln = "";
+    std::string idx = "";
+    int tcnt = 0;
+
+    ln = addspaces();
+    ln += instname_ + " : " + m_->getType() + " ";
+    ret += ln;
+    
+    std::list<GenObject *>tmpllist;
+    m_->getTmplParamList(tmpllist);
+    m_->getParamList(tmpllist);    
+    tcnt = 0;
+    if (m_->getAsyncReset() || tmpllist.size()) {
+        ret += "generic map (\n";
+        set_space(get_space() + 1);
+        if (m_->getAsyncReset() && m_->getEntryByName("async_reset") == 0) {
+            ret += addspaces() + "async_reset => async_reset";
+            if (tmpllist.size()) {
+                ret += ",";
+            }
+            ret += "\n";
+            tcnt++;
+        }
+        for (auto &e : tmpllist) {
+            ret += addspaces();
+            if (e->getId() == ID_TMPL_PARAM) {
+                ret += e->getName() + " => " + e->getStrValue();
+            } else if (e->getObjValue()) {
+                // generic parameter but with the defined string value
+                ret += e->getName() + " => " + e->getObjValue()->getName();
+            } else {
+                ret += e->getName() + " => " + e->getName();
+            }
+            if (e != tmpllist.back()) {
+                ret += ",";
+            }
+            ret += "\n";
+            tcnt++;
+        }
+        set_space(get_space() - 1);
+        ret += addspaces() + ") ";
+    }
+    
+    ret += "port map (";
+    set_space(get_space() + 1);
+
+    std::list<GenObject *>iolist;
+    m_->getIoList(iolist);
+    ret += "\n";
+    for (auto &io : iolist) {
+        ret += gen_connection(io->getName());
+        if (io != iolist.back()) {
+            ret += ",";
+        }
+        ret += "\n";
+    }
+    set_space(get_space() - 1);
+    ret += addspaces() + ");";
+    ret += "\n";
+    return ret;
+}
+
 
 // CONNECT
-std::string CONNECT_gen(GenObject **args) {
+std::string ConnectOperation::generate() {
     std::string ret = "";
-    Operation *p = static_cast<Operation *>(args[0]);
     if (SCV_is_sysc()) {
-        if (args[2]) {
-            ret += "[" + Operation::obj2varname(args[2]) + "]";
+        if (idx_) {
+            ret += "[" + obj2varname(idx_) + "]";
         }
         ret += "->";
-        ret += args[3]->getName();
-        ret += "(";
-        ret += Operation::obj2varname(args[4]);
-        ret += ")";
+        ret += port_->getName() + "(" + obj2varname(s_) + ")";
+    } else if (SCV_is_sv()) {
+        ret += addspaces() + ".";
+        ret += port_->getName() + "(" + obj2varname(s_) + ")";
     } else {
-        ret += Operation::addspaces();
-        ret += "." + args[3]->getName();
-        ret += "(";
-        ret += Operation::obj2varname(args[4]);
-        ret += ")";
+        ret += addspaces();
+        ret += port_->getName() + " => " + obj2varname(s_);
     }
     return ret;
-}
-
-void CONNECT(GenObject &inst, GenObject *idx, GenObject &port, GenObject &s, const char *comment) {
-    Operation *p = new Operation(0, comment);
-    p->igen_ = CONNECT_gen;
-    p->add_arg(p);
-    p->add_arg(&inst);
-    p->add_arg(idx);
-    p->add_arg(&port);
-    p->add_arg(&s);
-    static_cast<Operation *>(stackobj_[stackcnt_])->add_connection(port.getName(), p);
-}
-
-// ENDNEW
-std::string ENDNEW_gen(GenObject **args) {
-    std::string ret = "";
-    return ret;
-}
-
-void ENDNEW(const char *comment) {
-    Operation::pop_obj();
-    Operation *p = new Operation(comment);
-    p->igen_ = ENDNEW_gen;
-    p->add_arg(p);
 }
 
 // DECLARE_TSTR

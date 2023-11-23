@@ -29,5 +29,12 @@ int main()
             prj->getFullPath().c_str());
     SCV_set_generator(SV_ALL);
     prj->generate();
+
+#if 1
+    printf("Generating VHDL into '%s' subfolder\n",
+            prj->getFullPath().c_str());
+    SCV_set_generator(VHDL_ALL);
+    prj->generate();
+#endif
     return 0;
 }

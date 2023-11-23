@@ -38,9 +38,12 @@ class Operation : public GenObject {
     static void start(GenObject *owner);
     static void push_obj(GenObject *obj);
     static void pop_obj();
+    static GenObject *top_obj();
     static void set_space(int n);
     static int get_space();
     static std::string addspaces();
+    std::string v_name(std::string v) override;
+    std::string r_name(std::string v) override { return v_name(v); }
     static std::string obj2varname(GenObject *obj, const char *prefix="r", bool read=false);
     static std::string fullname(const char *prefix, std::string name, GenObject *obj);
     static std::string addtext(GenObject *obj, size_t curpos);
@@ -52,18 +55,6 @@ class Operation : public GenObject {
 
     virtual void add_arg(GenObject *arg) {
         args[argcnt_++] = arg;
-    }
-    virtual void add_connection(std::string port, GenObject *arg) {
-        connection_[port] = arg;
-    }
-    virtual std::string gen_connection(std::string port) {
-        std::string ret = "";
-        if (connection_.find(port) != connection_.end()) {
-            ret = connection_[port]->generate();
-        } else {
-            SHOW_ERROR("Port %s not found", port.c_str());
-        }
-        return ret;
     }
     virtual bool isGen(generate_type t) { return t == igen_; }
     virtual GenObject *getArg(int cnt) { return args[cnt]; }
@@ -83,7 +74,6 @@ class Operation : public GenObject {
  protected:
     GenObject *args[256];
     int argcnt_;
-    std::map<std::string, GenObject *> connection_;
 };
 
 /**
@@ -244,10 +234,84 @@ void FFLUSH(GenObject &f);
 void READMEMH(GenObject &fname, GenObject &mem);
 void DISPLAYSTR(GenObject &str);
 
-// Create new module
-void NEW(GenObject &m, const char *name, GenObject *idx=0, const char *comment="");
-void CONNECT(GenObject &inst, GenObject *idx, GenObject &port, GenObject &s, const char *comment="");
-void ENDNEW(const char *comment="");
+/**
+    Create new module instance
+*/
+class NewOperation : public Operation {
+ public:
+    NewOperation(GenObject &m, const char *name, GenObject *idx, const char *comment)
+        : Operation(comment), m_(dynamic_cast<ModuleObject *>(&m)), idx_(idx) {
+        instname_ = std::string(name);
+        push_obj(this);
+    }
+    virtual std::string generate() override;
+
+    virtual void add_connection(std::string port, GenObject *arg) {
+        connection_[port] = arg;
+    }
+    virtual std::string gen_connection(std::string port) {
+        std::string ret = "";
+        if (connection_.find(port) != connection_.end()) {
+            ret = connection_[port]->generate();
+        } else {
+            SHOW_ERROR("Port %s not found", port.c_str());
+        }
+        return ret;
+    }
+
+ private:
+    std::string generate_sc();
+    std::string generate_sv();
+    std::string generate_vhdl();
+ protected:
+    ModuleObject *m_;       // Module class
+    GenObject *idx_;        // Module index (optional)
+    std::string instname_;  // instance name
+    std::map<std::string, GenObject *> connection_;
+};
+
+static void NEW(GenObject &m, const char *name, GenObject *idx=0, const char *comment="") {
+    new NewOperation(m, name, idx, comment);
+}
+
+/**
+    Connect module instance port. Generated as a childs of NEW operation:
+*/
+class ConnectOperation : public Operation {
+ public:
+    ConnectOperation(GenObject &m, GenObject *idx, GenObject &port, GenObject &s, const char *comment)
+        : Operation(comment), m_(dynamic_cast<ModuleObject *>(&m)), idx_(idx), port_(&port), s_(&s) {
+        dynamic_cast<NewOperation *>(getParent())->add_connection(port.getName(), this);
+    }
+    virtual std::string generate() override;
+
+ protected:
+    ModuleObject *m_;       // Module class
+    GenObject *idx_;        // Module index (optional)
+    GenObject *port_;       // Port to connect
+    GenObject *s_;          // Connection signal
+};
+
+static void CONNECT(GenObject &m, GenObject *idx, GenObject &port, GenObject &s, const char *comment="") {
+    new ConnectOperation(m, idx, port, s, comment);
+}
+
+/**
+    End of module connection process. Parent assigned after poping:
+*/
+class EndNewOperation : public Operation {
+ public:
+    EndNewOperation(const char *comment) : Operation(0, comment) {
+        pop_obj();
+        parent_ = top_obj();
+        if (parent_) {
+            parent_->add_entry(this);
+        }
+    }
+    virtual std::string generate() override { return std::string(""); }
+};
+
+static void ENDNEW(const char *comment="") { new EndNewOperation(comment); }
 
 // RTL specific not used in SystemC
 void DECLARE_TSTR();    // declare temporary string buffer

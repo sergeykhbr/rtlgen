@@ -189,6 +189,8 @@ void SCV_create_dir(const char *path) {
         tpath = "_sysc" + tpath;
     } else if (SCV_is_sv()) {
         tpath = "_sv" + tpath;
+    } else if (SCV_is_vhdl()) {
+        tpath = "_vhdl" + tpath;
     }
     if (SCV_is_dir_exists(tpath.c_str())) {
         return;
@@ -210,6 +212,8 @@ void SCV_write_file(const char *fname, const char *buf, size_t sz) {
         tname = "_sysc" + tname;
     } else if (SCV_is_sv()) {
         tname = "_sv" + tname;
+    } else if (SCV_is_vhdl()) {
+        tname = "_vhdl" + tname;
     }
     FILE *f = fopen(tname.c_str(), "wb");
     if (f) {
@@ -274,6 +278,13 @@ int SCV_is_sv_pkg() {
 
 int SCV_is_vhdl() {
     if (gentype_ == VHDL_ALL || gentype_ == VHDL_MOD || gentype_ == VHDL_PKG) {
+        return gentype_;
+    }
+    return 0;
+}
+
+int SCV_is_vhdl_pkg() {
+    if (gentype_ == VHDL_PKG) {
         return gentype_;
     }
     return 0;
