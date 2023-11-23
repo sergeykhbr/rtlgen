@@ -85,10 +85,8 @@ std::string Operation::fullname(const char *prefix, std::string name, GenObject 
         // Do not add 'name' to avoid double adding
     } else if (obj->getId() == ID_CONST) {
         curname = obj->getStrValue();
-        curname += name;
     } else if (obj->getId() == ID_OPERATION) {
         curname = obj->generate();
-        curname += name;
     } else if (obj->getSelector()) {
         curname = "";
         curname = fullname("r", curname, obj->getSelector());
@@ -111,7 +109,7 @@ std::string Operation::fullname(const char *prefix, std::string name, GenObject 
         }
         curname += name;
     } else if (obj->getId() == ID_DEF_PARAM && SCV_is_sysc()) {
-        curname = obj->getName() + name + "_";
+        curname = obj->getName() + "_";
     } else {
         curname = obj->getName() + name;
     }
@@ -149,6 +147,10 @@ std::string Operation::obj2varname(GenObject *obj, const char *prefix, bool read
             }
         }
     }
+
+    // IT IS JUST A BEGINNING OF THE fullname() FUNCTION REMOVING. IN PROGRESS!!!
+    std::string tr = obj->r_name("");
+    std::string tv = obj->v_name("");
     return ret;
 }
 
@@ -280,7 +282,7 @@ std::string Operation::copyreg(const char *dst, const char *src, ModuleObject *m
 std::string Operation::reset(const char *dst, const char *src, ModuleObject *m, std::string xrst) {
     std::string ret = "";
     if (SCV_is_sysc()) {
-        ret += Operation::addspaces();
+        ret += addspaces();
         if (dst[0] == 'v') {
             ret += "if ";
             if (xrst.size()) {
@@ -316,7 +318,7 @@ std::string Operation::reset(const char *dst, const char *src, ModuleObject *m, 
         if (!m->is2DimReg()) {
             if (src == 0) {
                 // reset using function
-                ret += Operation::addspaces();
+                ret += addspaces();
                 if (dst[0] == 'n' && dst[1] == 'r' && (dst[2] == '\0' || dst[2] == '.')) {
                     ret += m->getType() + "_nr_reset(" + std::string(dst) + ")";
                 } else {
@@ -324,7 +326,7 @@ std::string Operation::reset(const char *dst, const char *src, ModuleObject *m, 
                 }
             } else {
                 // copy data from src into dst
-                ret += Operation::addspaces();
+                ret += addspaces();
                 ret += std::string(dst) + " = " + std::string(src);
             }
             ret += ";\n";
@@ -332,9 +334,9 @@ std::string Operation::reset(const char *dst, const char *src, ModuleObject *m, 
             ret += copyreg(dst, src, m);
         }
         spaces_--;
-        ret += Operation::addspaces() + "}";
+        ret += addspaces() + "}";
     } else if (SCV_is_sv()) {
-        ret += Operation::addspaces();
+        ret += addspaces();
         if (dst[0] == 'v') {
             ret += "if ";
             if (xrst.size()) {
@@ -366,7 +368,7 @@ std::string Operation::reset(const char *dst, const char *src, ModuleObject *m, 
         if (!m->is2DimReg()) {
             if (src == 0) {
                 // reset using function
-                ret += Operation::addspaces();
+                ret += addspaces();
                 if (dst[0] == 'r' && (dst[1] == '\0' || dst[1] == '.')) {
                     ret += std::string(dst) + " <= " + m->getType() + "_r_reset";
                 } else if (dst[0] == 'n' && dst[1] == 'r' && (dst[2] == '\0' || dst[2] == '.')) {
@@ -376,7 +378,7 @@ std::string Operation::reset(const char *dst, const char *src, ModuleObject *m, 
                 }
             } else {
                 // copy data from src into dst
-                ret += Operation::addspaces();
+                ret += addspaces();
                 if (dst[0] == 'r' && (dst[1] == '\0' || dst[1] == '.')) {
                     ret += std::string(dst) + " <= " + std::string(src);
                 } else if (dst[0] == 'n' && dst[1] == 'r' && (dst[2] == '\0' || dst[2] == '.')) {
@@ -390,68 +392,58 @@ std::string Operation::reset(const char *dst, const char *src, ModuleObject *m, 
             ret += copyreg(dst, src, m);
         }
         spaces_--;
-        ret += Operation::addspaces() + "end";
+        ret += addspaces() + "end";
     } else {
     }
     return ret;
 }
 
-
-// TEXT
-std::string TEXT_gen(GenObject **args) {
+/**
+    Generate commenting string:
+        // text
+ */
+std::string TextOperation::generate() {
     std::string ret = "";
-    if (args[0]->getComment().size() == 0) {
+    if (getComment().size() == 0) {
         // Do nothing
     } else {
-        ret = Operation::addspaces() + "// " + args[0]->getComment();
+        ret += addspaces();
+        if (SCV_is_vhdl()) {
+            ret += "-- ";
+        } else {
+            ret += "// ";
+        }
+        ret += getComment();
     }
     ret += "\n";
     return ret;
 }
-void TEXT(const char *comment) {
-    Operation *p = new Operation(comment);
-    p->igen_ = TEXT_gen;
-    p->add_arg(p);
-}
 
-// ALLZEROS
-std::string ALLZEROS_gen(GenObject **args) {
+/**
+    Assign constant value to all bits. No parent.
+ */
+std::string AllConstOperation::generate() {
     std::string ret = "";
     if (SCV_is_sysc()) {
-         ret += "0";
+        if (v_) {
+            ret += "~0ull";
+        } else {
+            ret += "0";
+        }
     } else if (SCV_is_sv()) {
-         ret += "'0";
+        if (v_) {
+            ret += "'1";
+        } else {
+            ret += "'0";
+        }
     } else {
-        ret += "(others => '0')";
+        if (v_) {
+            ret += "(others => '1')";
+        } else {
+            ret += "(others => '0')";
+        }
     }
     return ret;
-}
-
-Operation &ALLZEROS(const char *comment) {
-    Operation *p = new Operation(0, comment);
-    p->igen_ = ALLZEROS_gen;
-    p->add_arg(p);
-    return *p;
-}
-
-// ALLONES
-std::string ALLONES_gen(GenObject **args) {
-    std::string ret = "";
-    if (SCV_is_sysc()) {
-         ret += "~0ull";
-    } else if (SCV_is_sv()) {
-         ret += "'1";
-    } else {
-        ret += "(others => '1')";
-    }
-    return ret;
-}
-
-Operation &ALLONES(const char *comment) {
-    Operation *p = new Operation(0, comment);
-    p->igen_ = ALLONES_gen;
-    p->add_arg(p);
-    return *p;
 }
 
 
@@ -491,9 +483,8 @@ Operation &BIT(GenObject &a, const char *b, const char *comment) {
 }
 
 Operation &BIT(GenObject &a, int b, const char *comment) {
-    char tstr[64];
-    RISCV_sprintf(tstr, sizeof(tstr), "%d", b);
-    return (BIT(a, tstr, comment));
+    GenObject *t1 = new I32D(b);
+    return (BIT(a, *t1, comment));
 }
 
 // BITS
@@ -3524,61 +3515,39 @@ void ENDGENERATE(const char *name, const char *comment) {
     p->add_arg(new STRING(name));
 }
 
-// ASSIGNZERO
-std::string ASSIGNZERO_gen(GenObject **args) {
-    std::string ret = Operation::addspaces();
+/**
+    Assigning value in the out-of-combination method:
+        a = 0
+        a = b
+ */
+std::string AssignOperation::generate() {
+    std::string ret = addspaces();
     if (SCV_is_sv()) {
         ret += "assign ";
     }
-    ret += Operation::obj2varname(args[1], "v");
-    if (SCV_is_sysc()) {
-        ret += " = 0";
-    } else if (SCV_is_sv()) {
-        if (args[1]->getWidth() == 1) {
-            ret += " = 1'b0";
-        } else {
-            ret += " = '0";
-        }
-    } else  {
-        ret += " = (others => '0')";
-    }
-    ret +=  + ";";
-    ret += Operation::addtext(args[0], ret.size());
-    ret += "\n";
-    return ret;
-}
-
-Operation &ASSIGNZERO(GenObject &a, const char *comment) {
-    Operation *p = new Operation(comment);
-    p->igen_ = ASSIGNZERO_gen;
-    p->add_arg(p);
-    p->add_arg(&a);
-    return *p;
-}
-
-// ASSIGNONE
-std::string ASSIGN_gen(GenObject **args) {
-    std::string ret = Operation::addspaces();
-    std::string b = Operation::obj2varname(args[2], "r");
-    if (SCV_is_sv()) {
-        ret += "assign ";
-    }
-    ret += Operation::obj2varname(args[1], "v");
+    ret += obj2varname(a_, "v");
     ret += " = ";
-    ret += b;
+    if (b_) {
+        ret += obj2varname(b_, "r");;
+    } else if (SCV_is_sysc()) {
+        ret += "0";
+    } else if (SCV_is_sv()) {
+        if (a_->getWidth() == 1) {
+            ret += "1'b0";
+        } else {
+            ret += "'0";
+        }
+    } else {
+        if (a_->getWidth() == 1) {
+            ret += "'0'";
+        } else {
+            ret += "(others => '0')";
+        }
+    }
     ret +=  ";";
-    ret += Operation::addtext(args[0], ret.size());
+    ret += addtext(this, ret.size());
     ret += "\n";
     return ret;
-}
-
-Operation &ASSIGN(GenObject &a, GenObject &b, const char *comment) {
-    Operation *p = new Operation(comment);
-    p->igen_ = ASSIGN_gen;
-    p->add_arg(p);
-    p->add_arg(&a);
-    p->add_arg(&b);
-    return *p;
 }
 
 }

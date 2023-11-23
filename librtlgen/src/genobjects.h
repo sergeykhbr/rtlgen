@@ -98,6 +98,8 @@ class GenObject {
     virtual bool isTop() { return false; }
     virtual bool isInitable() { return false; } // Generate structure constructor with arguemnts to initialize all class variables
 
+    virtual std::string v_name(std::string v);
+    virtual std::string r_name(std::string v);
     virtual uint64_t getValue();
     virtual double getFloatValue();
     virtual std::string getStrValue();

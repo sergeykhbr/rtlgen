@@ -42,6 +42,50 @@ GenValue::GenValue(const char *width, GenObject *val, const char *name,
     setStrWidth(width);
 }
 
+GenValue::GenValue(int val) : GenObject(0, "", ID_CONST, "", "") {
+    char tstr[32];
+    objValue_ = 0;
+    RISCV_sprintf(tstr, sizeof(tstr), "%d", val);
+    strValue_ = std::string(tstr);
+    setStrWidth("32");
+}
+
+std::string GenValue::v_name(std::string v) {
+    std::string ret = "";
+    if (getId() == ID_CONST) {
+        ret = getStrValue();
+    } else {
+        ret = getName();
+    }
+    if (v.size()) {
+        ret += "." + v;
+    }
+    if (getParent()) {
+        ret = getParent()->v_name(ret);
+    }
+    return ret;
+}
+
+std::string GenValue::r_name(std::string v) {
+    std::string ret = "";
+    if (getId() == ID_CONST) {
+        ret = getStrValue();
+    } else {
+        ret = getName();
+    }
+    if (SCV_is_sysc() && (isInput() || isSignal())) {
+        ret += ".read()";
+    }
+    if (v.size()) {
+        ret += "." + v;
+    }
+    if (getParent()) {
+        ret = getParent()->r_name(ret);
+    }
+    return ret;
+}
+
+
 std::string GenValue::getStrValue() {
     if (SCV_is_sv() && getId() == ID_CONST) {
         char tstr[64];

@@ -169,6 +169,29 @@ bool GenObject::isGenericDep() {
 }
 
 
+std::string GenObject::v_name(std::string v) {
+    if (v.size()) {
+        if (isReg()) {
+            v += "v." + v;
+        } else if (isNReg()) {
+            v += "nv." + v;
+        }
+    }
+    return v;
+}
+
+std::string GenObject::r_name(std::string v) {
+    if (v.size()) {
+        if (isReg()) {
+            v += "r." + v;
+        } else if (isNReg()) {
+            v += "nr." + v;
+        }
+    }
+    return v;
+}
+
+
 uint64_t GenObject::getValue() {
     if (objValue_) {
         return objValue_->getValue();

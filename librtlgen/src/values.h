@@ -31,7 +31,11 @@ class GenValue : public GenObject {
              GenObject *parent, const char *comment="");
     GenValue(const char *width, GenObject *val, const char *name,
              GenObject *parent, const char *comment="");
+    // default width = 32 (int)
+    GenValue(int val);
     virtual std::string getStrValue() override;
+    virtual std::string v_name(std::string v) override;
+    virtual std::string r_name(std::string v) override;
 };
 
 class BOOL : public GenValue {
@@ -85,6 +89,7 @@ class I32D : public GenValue {
     I32D(GenObject *val, const char *name,
         GenObject *parent, const char *comment="") :
         GenValue("32", val, name, parent, comment) {}
+    I32D(int val) : GenValue(val) {}
 
     virtual std::string getType();
 };

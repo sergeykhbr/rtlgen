@@ -30,18 +30,18 @@ module, port, signal etc.
 
 ## Generated Example System Verilog:
 
-    // Code commentary
+    // Code comment
     localparam int CFG_PARAM1 = 128;
-    localparam int CFG_PARAM2 = CFG_PARAM1 - 64;    // commentary 2
+    localparam int CFG_PARAM2 = CFG_PARAM1 - 64;    // comment 2
 
     logic [CFG_PARAM1-1:0] A;
     logic [CFG_PARAM1-CFG_PARAM2-1:0] B;
 
 ## Generated Example SystemC:
 
-    // Code commentary
+    // Code comment
     static const int CFG_PARAM1 = 128;
-    static const int CFG_PARAM2 = CFG_PARAM1 - 64;  // commentary 2
+    static const int CFG_PARAM2 = CFG_PARAM1 - 64;  // comment 2
 
     sc_biguint<CFG_PARAM1> A;
     sc_uint<CFG_PARAM1-CFG_PARAM2> B;

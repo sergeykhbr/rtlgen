@@ -86,9 +86,32 @@ class Operation : public GenObject {
     std::map<std::string, GenObject *> connection_;
 };
 
-void TEXT(const char *comment="");
-Operation &ALLZEROS(const char *comment="");
-Operation &ALLONES(const char *comment="");
+/**
+    Generate commenting string:
+        // text
+ */
+class TextOperation : public Operation {
+ public:
+    TextOperation(const char *comment) : Operation(comment) {}
+    virtual std::string generate() override;
+};
+
+static void TEXT(const char *comment="") { new TextOperation(comment); }
+
+/**
+    Assign constant value to all bits. No parent.
+ */
+class AllConstOperation : public Operation {
+ public:
+    AllConstOperation(int v, const char *comment) : Operation(0, comment), v_(v) {}
+    virtual std::string generate() override;
+ protected:
+    int v_;
+};
+
+static Operation &ALLZEROS(const char *comment="") { return *new AllConstOperation(0, comment); }
+static Operation &ALLONES(const char *comment="") { return *new AllConstOperation(1, comment); }
+
 Operation &SETZERO(GenObject &a, const char *comment="");
 Operation &SETONE(GenObject &a, const char *comment="");
 
@@ -232,7 +255,25 @@ void INITIAL();
 void ENDINITIAL();
 void GENERATE(const char *name, const char *comment="");
 void ENDGENERATE(const char *name, const char *comment="");
-Operation &ASSIGNZERO(GenObject &a, const char *comment="");
-Operation &ASSIGN(GenObject &a, GenObject &b, const char *comment="");
+
+/**
+    Assigning value in the out-of-combination method:
+        a = 0
+        a = b
+ */
+class AssignOperation : public Operation {
+ public:
+    AssignOperation(GenObject &a, const char *comment)
+        : Operation(comment), a_(&a), b_(0) {}
+    AssignOperation(GenObject &a, GenObject &b, const char *comment)
+        : Operation(comment), a_(&a), b_(&b) {}
+    virtual std::string generate() override;
+ protected:
+    GenObject *a_;
+    GenObject *b_;
+};
+
+static Operation &ASSIGNZERO(GenObject &a, const char *comment="") { return *new AssignOperation(a, comment); }
+static Operation &ASSIGN(GenObject &a, GenObject &b, const char *comment="") { return *new AssignOperation(a, b, comment); }
 
 }  // namespace sysvc
