@@ -16,7 +16,7 @@
 
 #pragma once
 
-#include <api.h>
+#include <api_rtlgen.h>
 #include "ambalib/ambalib_folder.h"
 #include "techmap/techmap_folder.h"
 #include "riverlib/riverlib_folder.h"

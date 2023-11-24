@@ -16,7 +16,7 @@
 
 #pragma once
 
-#include <api.h>
+#include <api_rtlgen.h>
 #include "l2cache_lru.h"
 #include "l2_amba.h"
 #include "l2_dst.h"

@@ -16,7 +16,7 @@
 
 #pragma once
 
-#include <api.h>
+#include <api_rtlgen.h>
 #include "../../../../rtl/techmap/bufg/iobuf_tech.h"
 #include "vip_sdcard_crc7.h"
 

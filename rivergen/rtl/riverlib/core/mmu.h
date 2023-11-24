@@ -16,7 +16,7 @@
 
 #pragma once
 
-#include <api.h>
+#include <api_rtlgen.h>
 #include "../river_cfg.h"
 #include "../../techmap/mem/ram_mmu_tech.h"
 

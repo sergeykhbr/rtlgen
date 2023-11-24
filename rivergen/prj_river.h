@@ -16,7 +16,7 @@
 
 #pragma once
 
-#include <api.h>
+#include <api_rtlgen.h>
 #include "prj/prj_folder.h"
 #include "rtl/rtl_folder.h"
 #include "prj/impl/asic/target_cfg.h"   // top level must be instantiated after rtl

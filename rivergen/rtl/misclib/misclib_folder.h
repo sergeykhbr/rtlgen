@@ -16,7 +16,7 @@
 
 #pragma once
 
-#include <api.h>
+#include <api_rtlgen.h>
 #include "sfifo.h"
 #include "apb_prci.h"
 #include "apb_uart.h"

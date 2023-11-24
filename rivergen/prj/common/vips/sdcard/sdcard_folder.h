@@ -16,7 +16,7 @@
 
 #pragma once
 
-#include <api.h>
+#include <api_rtlgen.h>
 #include "vip_sdcard_crc7.h"
 #include "vip_sdcard_cmdio.h"
 #include "vip_sdcard_ctrl.h"

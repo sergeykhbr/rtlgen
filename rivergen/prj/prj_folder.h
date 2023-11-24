@@ -16,7 +16,7 @@
 
 #pragma once
 
-#include <api.h>
+#include <api_rtlgen.h>
 #include "common/common_folder.h"
 #include "impl/impl_folder.h"
 

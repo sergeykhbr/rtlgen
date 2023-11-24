@@ -16,7 +16,7 @@
 
 #pragma once
 
-#include <api.h>
+#include <api_rtlgen.h>
 #include "vip_spi_transmitter.h"
 #include "vip_spi_top.h"
 

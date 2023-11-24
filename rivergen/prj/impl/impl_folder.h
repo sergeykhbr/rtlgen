@@ -16,7 +16,7 @@
 
 #pragma once
 
-#include <api.h>
+#include <api_rtlgen.h>
 #include "asic/asic_folder.h"
 #include "asic_sim/asic_sim_folder.h"
 

@@ -87,8 +87,6 @@ class TextOperation : public Operation {
     virtual std::string generate() override;
 };
 
-static void TEXT(const char *comment="") { new TextOperation(comment); }
-
 /**
     Assign constant value to all bits. No parent.
  */
@@ -100,11 +98,19 @@ class AllConstOperation : public Operation {
     int v_;
 };
 
-static Operation &ALLZEROS(const char *comment="") { return *new AllConstOperation(0, comment); }
-static Operation &ALLONES(const char *comment="") { return *new AllConstOperation(1, comment); }
-
-Operation &SETZERO(GenObject &a, const char *comment="");
-Operation &SETONE(GenObject &a, const char *comment="");
+/**
+    Set constant value int variable:
+        a = const
+ */
+class SetConstOperation : public Operation {
+ public:
+    SetConstOperation(GenObject &a, uint64_t v, const char *comment)
+        : Operation(comment), a_(&a), v_(v) {}
+    virtual std::string generate() override;
+ protected:
+    GenObject *a_;
+    uint64_t v_;
+};
 
 Operation &BIT(GenObject &a, GenObject &b, const char *comment="");
 Operation &BIT(GenObject &a, const char *b, const char *comment="");
@@ -271,10 +277,6 @@ class NewOperation : public Operation {
     std::map<std::string, GenObject *> connection_;
 };
 
-static void NEW(GenObject &m, const char *name, GenObject *idx=0, const char *comment="") {
-    new NewOperation(m, name, idx, comment);
-}
-
 /**
     Connect module instance port. Generated as a childs of NEW operation:
 */
@@ -293,10 +295,6 @@ class ConnectOperation : public Operation {
     GenObject *s_;          // Connection signal
 };
 
-static void CONNECT(GenObject &m, GenObject *idx, GenObject &port, GenObject &s, const char *comment="") {
-    new ConnectOperation(m, idx, port, s, comment);
-}
-
 /**
     End of module connection process. Parent assigned after poping:
 */
@@ -311,8 +309,6 @@ class EndNewOperation : public Operation {
     }
     virtual std::string generate() override { return std::string(""); }
 };
-
-static void ENDNEW(const char *comment="") { new EndNewOperation(comment); }
 
 // RTL specific not used in SystemC
 void DECLARE_TSTR();    // declare temporary string buffer
@@ -337,8 +333,5 @@ class AssignOperation : public Operation {
     GenObject *a_;
     GenObject *b_;
 };
-
-static Operation &ASSIGNZERO(GenObject &a, const char *comment="") { return *new AssignOperation(a, comment); }
-static Operation &ASSIGN(GenObject &a, GenObject &b, const char *comment="") { return *new AssignOperation(a, b, comment); }
 
 }  // namespace sysvc

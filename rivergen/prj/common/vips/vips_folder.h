@@ -16,7 +16,7 @@
 
 #pragma once
 
-#include <api.h>
+#include <api_rtlgen.h>
 #include "clk/clk_folder.h"
 #include "sdcard/sdcard_folder.h"
 #include "uart/uart_folder.h"

@@ -16,7 +16,7 @@
 
 #pragma once
 
-#include <api.h>
+#include <api_rtlgen.h>
 #include "sdctrl_cfg.h"
 #include "sdctrl_regs.h"
 #include "sdctrl_crc7.h"

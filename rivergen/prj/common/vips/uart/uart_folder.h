@@ -16,7 +16,7 @@
 
 #pragma once
 
-#include <api.h>
+#include <api_rtlgen.h>
 #include "vip_uart_receiver.h"
 #include "vip_uart_transmitter.h"
 #include "vip_uart_top.h"

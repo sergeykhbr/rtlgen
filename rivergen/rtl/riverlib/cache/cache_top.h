@@ -16,7 +16,7 @@
 
 #pragma once
 
-#include <api.h>
+#include <api_rtlgen.h>
 #include "../river_cfg.h"
 #include "icache_lru.h"
 #include "dcache_lru.h"

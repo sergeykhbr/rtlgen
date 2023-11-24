@@ -151,6 +151,7 @@ class ParamLogic : public Logic,
         ParamGeneric(static_cast<GenValue *>(this)) {
         id_ = ID_PARAM;
     }
+    virtual bool isLogic() override { return true; }
     virtual std::string generate() override {
         return genparam(static_cast<GenValue *>(this));
     }

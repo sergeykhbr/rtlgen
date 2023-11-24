@@ -16,7 +16,7 @@
 
 #pragma once
 
-#include <api.h>
+#include <api_rtlgen.h>
 #include "sdctrl_crc7.h"
 
 using namespace sysvc;

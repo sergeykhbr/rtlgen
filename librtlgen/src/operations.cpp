@@ -78,7 +78,7 @@ std::string Operation::addtext(GenObject *obj, size_t curpos) {
         while (curpos++ < 60) {
             ret += " ";
         }
-        ret += "// " + obj->getComment();
+        ret += obj->addComment();
     }
     return ret;
 }
@@ -630,6 +630,32 @@ GenObject &CONST(const char *val, int width) {
     return CONST(val, tstr);
 }
 
+std::string SetConstOperation::generate() {
+    std::string ret = addspaces();
+    char tstr[32];
+    RISCV_sprintf(tstr, sizeof(tstr), "%" RV_PRI64 "d", v_);
+    if (SCV_is_sysc() && a_->getId() == ID_CLOCK) {
+        ret += "// ";   // do not clear clock module
+    }
+    ret += obj2varname(a_, "v");
+    if (SCV_is_vhdl()) {
+        ret += " := ";
+    } else {
+        ret += " = ";
+    }
+    if (a_->isLogic()) {
+        Logic b(a_->getStrWidth().c_str(), "", tstr);
+        ret += obj2varname(&b);
+    } else {
+        GenValue b(a_->getStrWidth().c_str(), tstr, "", 0);
+        ret += obj2varname(&b);
+    }
+    ret += ";";
+    ret += addtext(this, ret.size());
+    ret += "\n";
+    return ret;
+}
+#if 0
 // SETZERO
 std::string SETZERO_gen(GenObject **args) {
     std::string ret = addspaces();
@@ -693,6 +719,7 @@ Operation &SETONE(GenObject &a, const char *comment) {
     p->add_arg(&a);    // output signal
     return *p;
 }
+#endif
 
 // SETBIT
 std::string SETBIT_gen(GenObject **args) {
@@ -3556,7 +3583,11 @@ std::string AssignOperation::generate() {
         ret += "assign ";
     }
     ret += obj2varname(a_, "v");
-    ret += " = ";
+    if (SCV_is_vhdl()) {
+        ret += " <= ";
+    } else {
+        ret += " = ";
+    }
     if (b_) {
         ret += obj2varname(b_, "r");;
     } else if (SCV_is_sysc()) {
@@ -3567,7 +3598,7 @@ std::string AssignOperation::generate() {
         } else {
             ret += "'0";
         }
-    } else {
+    } else if (SCV_is_vhdl()) {
         if (a_->getWidth() == 1) {
             ret += "'0'";
         } else {

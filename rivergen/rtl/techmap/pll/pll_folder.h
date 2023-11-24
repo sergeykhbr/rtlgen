@@ -16,7 +16,7 @@
 
 #pragma once
 
-#include <api.h>
+#include <api_rtlgen.h>
 #include "SysPLL_tech.h"
 
 class pll_folder : public FolderObject {

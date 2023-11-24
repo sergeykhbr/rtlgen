@@ -118,7 +118,7 @@ std::string Logic1::getType() {
     return ret;
 }
 
-std::string Logic::getStrValue() {
+/*std::string Logic::getStrValue() {
     std::string ret = "";
     std::string t = GenValue::getStrValue();
     if (SCV_is_sysc() && isNumber(t) && (getWidth() > 32)) {
@@ -153,6 +153,6 @@ std::string Logic::getStrValue() {
         ret += t;
     }
     return ret;
-}
+}*/
 
 }

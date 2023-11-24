@@ -16,7 +16,7 @@
 
 #pragma once
 
-#include <api.h>
+#include <api_rtlgen.h>
 #include "bp_predec.h"
 #include "bp_btb.h"
 #include "bp.h"

@@ -16,7 +16,7 @@
 
 #pragma once
 
-#include <api.h>
+#include <api_rtlgen.h>
 #include "d2l_d.h"
 #include "divstage53.h"
 #include "zeroenc.h"

@@ -16,7 +16,7 @@
 
 #pragma once
 
-#include <api.h>
+#include <api_rtlgen.h>
 #include "alu_logic.h"
 #include "divstage64.h"
 #include "int_addsub.h"

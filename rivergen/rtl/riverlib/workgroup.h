@@ -16,7 +16,7 @@
 
 #pragma once
 
-#include <api.h>
+#include <api_rtlgen.h>
 #include "river_cfg.h"
 #include "types_river.h"
 #include "../ambalib/types_amba.h"

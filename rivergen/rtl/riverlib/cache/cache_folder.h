@@ -16,7 +16,7 @@
 
 #pragma once
 
-#include <api.h>
+#include <api_rtlgen.h>
 #include "lrunway.h"
 #include "tagmem.h"
 #include "tagmemnway.h"

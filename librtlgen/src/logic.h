@@ -45,8 +45,9 @@ class Logic : public GenValue {
           const char *comment="") :
         Logic(width, name, val, parent, comment) {}
 
+    virtual bool isLogic() override { return true; }
     virtual std::string getType();
-    virtual std::string getStrValue() override;
+//    virtual std::string getStrValue() override;
 };
 
 class Logic1 : public Logic {

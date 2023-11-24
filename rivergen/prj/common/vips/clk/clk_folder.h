@@ -16,7 +16,7 @@
 
 #pragma once
 
-#include <api.h>
+#include <api_rtlgen.h>
 #include "vip_clk.h"
 
 class clk_folder : public FolderObject {

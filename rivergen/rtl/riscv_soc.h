@@ -16,7 +16,7 @@
 
 #pragma once
 
-#include <api.h>
+#include <api_rtlgen.h>
 #include "ambalib/types_amba.h"
 #include "ambalib/types_bus0.h"
 #include "ambalib/types_bus1.h"

@@ -16,7 +16,7 @@
 
 #pragma once
 
-#include <api.h>
+#include <api_rtlgen.h>
 
 class asic_sim_folder : public FolderObject {
   public:

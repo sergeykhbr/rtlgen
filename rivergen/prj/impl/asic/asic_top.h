@@ -16,7 +16,7 @@
 
 #pragma once
 
-#include <api.h>
+#include <api_rtlgen.h>
 #include "target_cfg.h"
 #include "../../../rtl/ambalib/types_amba.h"
 #include "../../../rtl/ambalib/types_pnp.h"

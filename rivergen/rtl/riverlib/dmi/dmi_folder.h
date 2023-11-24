@@ -16,7 +16,7 @@
 
 #pragma once
 
-#include <api.h>
+#include <api_rtlgen.h>
 #include "ic_dport.h"
 #include "dmidebug.h"
 #include "jtagcdc.h"

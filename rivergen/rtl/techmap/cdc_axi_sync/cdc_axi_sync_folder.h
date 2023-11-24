@@ -16,7 +16,7 @@
 
 #pragma once
 
-#include <api.h>
+#include <api_rtlgen.h>
 #include "cdc_axi_sync_tech.h"
 
 class cdc_axi_sync_folder : public FolderObject {

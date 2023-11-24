@@ -16,7 +16,7 @@
 
 #pragma once
 
-#include <api.h>
+#include <api_rtlgen.h>
 #include "../river_cfg.h"
 #include "arith/alu_logic.h"
 #include "arith/int_addsub.h"

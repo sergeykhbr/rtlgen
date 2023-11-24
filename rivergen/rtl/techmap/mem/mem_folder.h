@@ -16,7 +16,7 @@
 
 #pragma once
 
-#include <api.h>
+#include <api_rtlgen.h>
 #include "ram_tech.h"
 #include "ram_bytes_tech.h"
 #include "ram_mmu_tech.h"

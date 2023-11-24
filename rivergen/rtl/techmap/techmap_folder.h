@@ -16,7 +16,7 @@
 
 #pragma once
 
-#include <api.h>
+#include <api_rtlgen.h>
 #include "bufg/bufg_folder.h"
 #include "mem/mem_folder.h"
 #include "pll/pll_folder.h"

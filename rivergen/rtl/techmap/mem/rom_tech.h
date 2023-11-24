@@ -16,7 +16,7 @@
 
 #pragma once
 
-#include <api.h>
+#include <api_rtlgen.h>
 #include "rom_inferred_2x32.h"
 
 using namespace sysvc;

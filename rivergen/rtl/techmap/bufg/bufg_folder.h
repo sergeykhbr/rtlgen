@@ -16,7 +16,7 @@
 
 #pragma once
 
-#include <api.h>
+#include <api_rtlgen.h>
 #include "ids_tech.h"
 #include "iobuf_tech.h"
 

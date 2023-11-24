@@ -16,7 +16,7 @@
 
 #pragma once
 
-#include <api.h>
+#include <api_rtlgen.h>
 #include "cache/cache_folder.h"
 #include "l2cache/l2cache_folder.h"
 #include "core/core_folder.h"
