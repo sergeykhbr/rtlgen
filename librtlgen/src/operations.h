@@ -60,6 +60,7 @@ class Operation : public GenObject {
     virtual bool isGen(generate_type t) { return t == igen_; }
     virtual GenObject *getArg(int cnt) { return args[cnt]; }
     virtual std::string getType() { return std::string(""); }
+    virtual std::string getStrValue() override { return generate(); }
     virtual std::string generate() override {
         std::string ret = igen_(args);
         for (auto &e: entries_) {

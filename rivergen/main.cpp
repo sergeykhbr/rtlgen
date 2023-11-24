@@ -23,7 +23,7 @@ int main()
     printf("Generating SystemC into '%s' subfolder\n",
             prj->getFullPath().c_str());
     SCV_set_generator(SYSC_ALL);
-    //prj->generate();
+    prj->generate();
 
     printf("Generating SystemVerilog into '%s' subfolder\n",
             prj->getFullPath().c_str());

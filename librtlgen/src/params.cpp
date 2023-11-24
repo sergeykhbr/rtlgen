@@ -28,12 +28,12 @@ ParamGeneric::ParamGeneric(GenValue *parent) {
     }
 }
 
-std::string ParamGeneric::genparam(GenValue *p) {
+std::string ParamGeneric::genparam(GenValue *p, std::string val) {
     std::string ret = "";
 
     if (SCV_is_sysc()) {
         ret += "static const " + p->getType() + " ";
-        ret += p->getName() + " = " + p->getStrValue() + ";";
+        ret += p->getName() + " = " + val + ";";
     } else if (SCV_is_sv()) {
         ret += "localparam ";
         if (p->isString()) {
@@ -41,10 +41,10 @@ std::string ParamGeneric::genparam(GenValue *p) {
         } else {
             ret += p->getType() + " ";
         }
-        ret += p->getName() + " = " + p->getStrValue() + ";";
+        ret += p->getName() + " = " + val + ";";
     } else if (SCV_is_vhdl()) {
         ret += "constant " + p->getName() + " : ";
-        ret += p->getType() + " := " + p->getStrValue() + ";";
+        ret += p->getType() + " := " + val + ";";
     }
 
     // One line comment

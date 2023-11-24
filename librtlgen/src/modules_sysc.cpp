@@ -158,18 +158,13 @@ std::string ModuleObject::generate_sysc_h() {
             if (e != tmpllist.front()) {
                 ln += "         ";
             }
-            ln += e->getType() + " " + e->getName() + " = " + e->getStrValue();
+            ln += e->getType() + " " + e->getName() + " = " + e->generate();
             if (e != tmpllist.back()) {
                 ln += ",";
             } else {
                 ln += ">";
             }
-            if (e->getComment().size()) {
-                while (ln.size() < 60) {
-                    ln += " ";
-                }
-                ln += "// " + e->getComment();
-            }
+            e->addComment(ln);
             out += ln + "\n";
             ln = "";
         }
@@ -215,17 +210,8 @@ std::string ModuleObject::generate_sysc_h() {
             ln += ">";
         }
         ln += " " + p->getName() + ";";
-        if (p->getComment().size()) {
-            while (ln.size() < 60) {
-                ln += " ";
-            }
-            ln += "// " + p->getComment();
-        }
-        if (text.size()) {
-            out += text;
-        }
+        p->addComment(ln);
         out += ln + "\n";
-        text = "";
     }
 
     // Process declaration:
@@ -325,16 +311,17 @@ std::string ModuleObject::generate_sysc_h() {
         if (p->getId() == ID_COMMENT) {
             comment += addspaces() + p->generate();
             continue;
-        } else if (p->getId() != ID_PARAM || !p->isLocal()
-              || (p->isGenericDep() && tmpllist.size() == 0)) {
-              // do nothing
-        } else if (p->isString()) {
-            // strings defined in cpp-file
-        } else {
-            out += comment;
-            out += addspaces() + "static const " + p->getType() + " " + p->getName();
-            out += " = " + p->getStrValue() + ";\n";
-            tcnt++;
+        } else if (p->getId() == ID_PARAM) {
+            if (p->isString()) {
+                // Do Nothing: strings defined in cpp-file
+            } else if (p->isGenericDep() && tmpllist.size() == 0) {
+                // Do nothing: This parameter depends of generic parameter (constrcutor argument)
+            } else {
+                out += comment;
+                out += addspaces() + "static const " + p->getType() + " ";
+                out += p->getName() + " = " + p->generate() + ";\n";
+                tcnt++;
+            }
         }
         comment = "";
     }
@@ -430,12 +417,7 @@ std::string ModuleObject::generate_sysc_h() {
             ln += "[" + p->getStrDepth() + "]";
         }
         ln += ";";
-        if (p->getComment().size()) {
-            while (ln.size() < 60) {
-                ln += " ";
-            }
-            ln += "// " + p->getComment();
-        }
+        p->addComment(ln);
         out += ln + "\n";
         tcnt++;
     }
@@ -736,7 +718,7 @@ std::string ModuleObject::generate_sysc_template_param(GenObject *p) {
             if (tcnt++) {
                 ret += ", ";
             }
-            ret += e->getStrValue();
+            ret += e->generate();
         }
         ret += ">";
     }
@@ -785,19 +767,12 @@ std::string ModuleObject::generate_sysc_param_strings() {
     std::string ret = "";
     int tcnt = 0;
     for (auto &p: getEntries()) {
-        if (p->getId() != ID_PARAM) {
-            continue;
+        if (p->getId() == ID_PARAM && p->isLocal() && p->isString()) {
+            // Only string parameter defined inside of this module
+            ret += "static " + p->getType() + " " + p->getName();
+            ret += " = " + p->generate() + ";\n";
+            tcnt++;
         }
-        if (!static_cast<GenValue *>(p)->isLocal()) {
-            continue;
-        }
-        if (p->getType() != "std::string") {
-            continue;
-        }
-        ret += "static " + p->getType() + " " + p->getName();
-        ret += " = " + p->getStrValue() + ";\n";
-
-        tcnt++;
     }
     for (auto &p: getEntries()) {
         if (p->getId() != ID_ARRAY_STRING) {
@@ -924,7 +899,7 @@ std::string ModuleObject::generate_sysc_constructor() {
             ret += addspaces() + p->getName() + "_ = " + p->getName() + ";\n";
         }
         if (p->getId() == ID_PARAM && p->isGenericDep() && tmpllist.size() == 0) {
-            ret += addspaces() + p->getName() + " = " + p->getStrValue() + ";\n";
+            ret += addspaces() + p->getName() + " = " + p->generate() + ";\n";
         }
     }
 

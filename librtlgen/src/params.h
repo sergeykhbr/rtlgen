@@ -28,7 +28,7 @@ class ParamGeneric {
     // if local = false, then register parameter using method SCV_..
     ParamGeneric(GenValue *parent);
 
-    virtual std::string genparam(GenValue *p);
+    virtual std::string genparam(GenValue *p, std::string val);
 };
 
 class ParamBOOL : public BOOL,
@@ -40,9 +40,8 @@ class ParamBOOL : public BOOL,
         ParamGeneric(static_cast<GenValue *>(this)) {
         id_ = ID_PARAM;
     }
-    virtual std::string generate() override {
-        return genparam(static_cast<GenValue *>(this));
-    }
+    virtual std::string getStrValue() override { return getName(); }
+    virtual std::string generate() override { return BOOL::getStrValue(); }
 };
 
 class ParamString : public STRING,
@@ -54,9 +53,8 @@ class ParamString : public STRING,
         ParamGeneric(static_cast<GenValue *>(this)) {
         id_ = ID_PARAM;
     }
-    virtual std::string generate() override {
-        return genparam(static_cast<GenValue *>(this));
-    }
+    virtual std::string getStrValue() override { return getName(); }
+    virtual std::string generate() override { return STRING::getStrValue(); }
 };
 
 class TmplParamI32D : public I32D,
@@ -68,9 +66,7 @@ class TmplParamI32D : public I32D,
         ParamGeneric(static_cast<GenValue *>(this)) {
         id_ = ID_TMPL_PARAM;
     }
-    virtual std::string generate() override {
-        return genparam(static_cast<GenValue *>(this));
-    }
+    virtual std::string generate() override { return I32D::getStrValue(); }
 };
 
 class ParamUI16D : public UI16D,
@@ -81,10 +77,9 @@ class ParamUI16D : public UI16D,
         : UI16D(val, name, parent, comment),
         ParamGeneric(static_cast<GenValue *>(this)) {
             id_ = ID_PARAM;
-        }
-    virtual std::string generate() override {
-        return genparam(static_cast<GenValue *>(this));
     }
+    virtual std::string getStrValue() override { return getName(); }
+    virtual std::string generate() override { return UI16D::getStrValue(); }
 };
 
 class ParamI32D : public I32D,
@@ -95,16 +90,15 @@ class ParamI32D : public I32D,
         : I32D(val, name, parent, comment),
         ParamGeneric(static_cast<GenValue *>(this)) {
             id_ = ID_PARAM;
-        }
+    }
     ParamI32D(GenObject *parent, const char *name, GenObject *val,
         const char *comment="")
         : I32D(val, name, parent, comment),
         ParamGeneric(static_cast<GenValue *>(this)) {
             id_ = ID_PARAM;
-        }
-    virtual std::string generate() override {
-        return genparam(static_cast<GenValue *>(this));
     }
+    virtual std::string getStrValue() override { return getName(); }
+    virtual std::string generate() override { return I32D::getStrValue(); }
 };
 
 
@@ -116,10 +110,9 @@ class ParamUI32D : public UI32D,
         : UI32D(val, name, parent, comment),
         ParamGeneric(static_cast<GenValue *>(this)) {
             id_ = ID_PARAM;
-        }
-    virtual std::string generate() override {
-        return genparam(static_cast<GenValue *>(this));
     }
+    virtual std::string getStrValue() override { return getName(); }
+    virtual std::string generate() override { return UI32D::getStrValue(); }
 };
 
 class ParamUI64H : public UI64H,
@@ -130,10 +123,9 @@ class ParamUI64H : public UI64H,
         : UI64H(val, name, parent, comment),
         ParamGeneric(static_cast<GenValue *>(this)) {
             id_ = ID_PARAM;
-        }
-    virtual std::string generate() override {
-        return genparam(static_cast<GenValue *>(this));
     }
+    virtual std::string getStrValue() override { return getName(); }
+    virtual std::string generate() override { return UI64H::getStrValue(); }
 };
 
 class ParamLogic : public Logic,
@@ -151,10 +143,9 @@ class ParamLogic : public Logic,
         ParamGeneric(static_cast<GenValue *>(this)) {
         id_ = ID_PARAM;
     }
+    virtual std::string getStrValue() override { return getName(); }
     virtual bool isLogic() override { return true; }
-    virtual std::string generate() override {
-        return genparam(static_cast<GenValue *>(this));
-    }
+    virtual std::string generate() override { return Logic::getStrValue(); }
 };
 
 class ParamTIMESEC : public TIMESEC,
@@ -165,10 +156,9 @@ class ParamTIMESEC : public TIMESEC,
         : TIMESEC(val, name, parent, comment),
         ParamGeneric(static_cast<GenValue *>(this)) {
             id_ = ID_PARAM;
-        }
-    virtual std::string generate() override {
-        return genparam(static_cast<GenValue *>(this));
     }
+    virtual std::string getStrValue() override { return getName(); }
+    virtual std::string generate() override { return TIMESEC::getStrValue(); }
 };
 
 class TmplParamLogic : public ParamLogic {
@@ -178,9 +168,7 @@ class TmplParamLogic : public ParamLogic {
         : ParamLogic(parent, width, name, val, comment) {
         id_ = ID_TMPL_PARAM;
     }
-    virtual std::string generate() override {
-        return genparam(static_cast<GenValue *>(this));
-    }
+    virtual std::string generate() override { return Logic::getStrValue(); }
 };
 
 }  // namespace sysvc

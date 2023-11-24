@@ -86,7 +86,7 @@ std::string GenValue::r_name(std::string v) {
 }
 
 
-std::string GenValue::getStrValue() {
+/*std::string GenValue::getStrValue() {
     std::string ret = GenObject::getStrValue();
     char tstr[256] = "";
     if (!isNumber(ret)) {
@@ -144,7 +144,7 @@ std::string GenValue::getStrValue() {
     }
     return GenObject::getStrValue();
 }
-
+*/
 
 std::string BOOL::getType() {
     std::string ret = "";

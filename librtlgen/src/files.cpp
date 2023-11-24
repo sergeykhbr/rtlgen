@@ -232,6 +232,7 @@ std::string FileObject::generate_const(GenObject *obj) {
 void FileObject::generate_sysc() {
     bool module_cpp = false;
     std::string out = "";
+    std::string ln;
     std::string filename = getFullPath();
     filename = filename + ".h";
 
@@ -284,6 +285,12 @@ void FileObject::generate_sysc() {
             if (p->getId() == ID_FUNCTION) {
                 // for global functions only
                 out += addspaces() + "static " + p->getType() + " ";
+            } else if (p->getId() == ID_PARAM) {
+                ln = addspaces() + "static const " + p->getType() + " ";
+                ln += p->getName() + " = " + p->generate() + ";";
+                p->addComment(ln);
+                out += ln + "\n";
+                continue;
             } else if (p->isTypedef() && p->getName().size() == 0) {
                 out += addspaces() + "typedef ";
                 if (p->isVector()) {

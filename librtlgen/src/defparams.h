@@ -31,6 +31,13 @@ class DefParamBOOL : public BOOL {
         id_ = ID_DEF_PARAM;
         SCV_set_cfg_parameter(parent, this, getValue());
     }
+    virtual std::string getStrValue() override {
+        if (SCV_is_sysc()) {
+            SCV_printf("FIXME: template parameter not working with generic parameters");
+            return BOOL::getStrValue();
+        }
+        return getName();
+    }
 };
 
 class DefParamI32D : public I32D {
@@ -39,6 +46,13 @@ class DefParamI32D : public I32D {
                 const char *comment="") : I32D(val, name, parent, comment) {
         id_ = ID_DEF_PARAM;
         SCV_set_cfg_parameter(parent, this, getValue());
+    }
+    virtual std::string getStrValue() override {
+        if (SCV_is_sysc()) {
+            SCV_printf("FIXME: template parameter not working with generic parameters");
+            return I32D::getStrValue();
+        }
+        return getName();
     }
 };
 
@@ -49,6 +63,13 @@ class DefParamUI32D : public UI32D {
         id_ = ID_DEF_PARAM;
         SCV_set_cfg_parameter(parent, this, getValue());
     }
+    virtual std::string getStrValue() override {
+        if (SCV_is_sysc()) {
+            SCV_printf("FIXME: template parameter not working with generic parameters");
+            return UI32D::getStrValue();
+        }
+        return getName();
+    }
 };
 
 class DefParamUI64H : public UI64H {
@@ -57,6 +78,13 @@ class DefParamUI64H : public UI64H {
                 const char *comment="") : UI64H(val, name, parent, comment) {
         id_ = ID_DEF_PARAM;
         SCV_set_cfg_parameter(parent, this, getValue());
+    }
+    virtual std::string getStrValue() override {
+        if (SCV_is_sysc()) {
+            SCV_printf("FIXME: template parameter not working with generic parameters");
+            return UI64H::getStrValue();
+        }
+        return getName();
     }
 };
 
@@ -67,6 +95,13 @@ class DefParamTIMESEC : public TIMESEC {
         id_ = ID_DEF_PARAM;
         SCV_set_cfg_parameter(parent, this, getValue());
     }
+    virtual std::string getStrValue() override {
+        if (SCV_is_sysc()) {
+            SCV_printf("FIXME: template parameter not working with generic parameters");
+            return TIMESEC::getStrValue();
+        }
+        return getName();
+    }
 };
 
 class DefParamString : public STRING {
@@ -75,6 +110,13 @@ class DefParamString : public STRING {
                 const char *comment="") : STRING(val, name, parent, comment) {
         id_ = ID_DEF_PARAM;
     }
+    virtual std::string getStrValue() override {
+        if (SCV_is_sysc()) {
+            SCV_printf("FIXME: template parameter not working with generic parameters");
+            return STRING::getStrValue();
+        }
+        return getName();
+    }
 };
 
 class DefParamLogic : public Logic {
@@ -82,6 +124,13 @@ class DefParamLogic : public Logic {
     DefParamLogic(GenObject *parent, const char *name, const char *width, const char *val,
                 const char *comment="") : Logic(parent, name, width, val, comment) {
         id_ = ID_DEF_PARAM;
+    }
+    virtual std::string getStrValue() override {
+        if (SCV_is_sysc()) {
+            SCV_printf("FIXME: template parameter not working with generic parameters");
+            return Logic::getStrValue();
+        }
+        return getName();
     }
 };
 

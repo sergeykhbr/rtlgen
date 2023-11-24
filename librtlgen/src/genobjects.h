@@ -82,6 +82,7 @@ class GenObject {
     virtual std::string getName() { return name_; }
     virtual void setName(const char *n) { name_ = std::string(n); }
     virtual std::string addComment();
+    virtual void addComment(std::string &out);  // comment after 60 spaces
     virtual std::string getComment() { return comment_; }
     virtual std::string getType() { return type_; }
     virtual bool isString() { return false; }

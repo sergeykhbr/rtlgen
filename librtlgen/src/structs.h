@@ -41,8 +41,8 @@ class StructObject : public GenObject {
     virtual std::string getType() { return type_; }
     virtual std::string getName() override;
     virtual void setZeroValue(const char *v) { zeroval_ = std::string(v); }
-    virtual std::string getStrValue() override;
-    virtual std::string generate();
+    virtual std::string getStrValue() override { return zeroval_; }
+    virtual std::string generate() override;
 
  protected:
     virtual bool isVector() override;

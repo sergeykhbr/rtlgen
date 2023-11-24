@@ -150,6 +150,16 @@ std::string GenObject::addComment() {
     return ret;
 }
 
+void GenObject::addComment(std::string &out) {
+    if (getComment().size() == 0) {
+        return;
+    }
+    while (out.size() < 60) {
+        out += " ";
+    }
+    out += addComment();
+}
+
 bool GenObject::isLocal() {
     bool local = false;
     GenObject *p = getParent();
@@ -245,26 +255,59 @@ int GenObject::getDepth() {
 std::string GenObject::getStrValue() {
     size_t tpos = 0;
     if (objValue_) {
-        if (objValue_->getId() == ID_OPERATION) {
-            return objValue_->generate();
-        } else if (objValue_->getId() == ID_PARAM) {
-            return objValue_->getName();
-        } else if (objValue_->getId() == ID_DEF_PARAM) {
-            if (SCV_is_sysc()) {
-                // Cannot use generic parameter as template parameters, so use const value
-                SCV_printf("FIXME: template parameter not working with generic parameters");
-                return objValue_->getStrValue();
-            } else {
-                return objValue_->getName();
-            }
-        } else {
-            return objValue_->getStrValue();
-        }
-    } else if (isString()) {
-        return strValue_;
-    } else {
-        return parse_to_str(strValue_.c_str(), tpos);
+        return objValue_->getStrValue();
     }
+    std::string ret = parse_to_str(strValue_.c_str(), tpos);
+    if (!isNumber(ret)) {
+        return ret;
+    }
+
+    char tstr[513];
+    char fmt[64];
+    int w = getWidth();
+    if (SCV_is_sysc() && w > 32) {
+        ret += "ull";
+    } else if (SCV_is_sv()) {
+        uint64_t v = getValue();
+        if (isFloat()) {
+            RISCV_sprintf(tstr, sizeof(tstr), "%.f", getFloatValue());
+        } else if (w == 1) {
+            RISCV_sprintf(tstr, sizeof(tstr), "1'b%" RV_PRI64 "x", v);
+        } else if (!isLogic()) {
+            RISCV_sprintf(tstr, sizeof(tstr), "%" RV_PRI64 "d", v);
+        } else if (v == 0 && isLogic()) {
+            return std::string("'0");
+        } else if (v == 1 && isLogic()) {
+            RISCV_sprintf(tstr, sizeof(tstr), "%d'd1", w);
+        } else {
+            RISCV_sprintf(fmt, sizeof(fmt), "%%d'h%%0%d" RV_PRI64 "x", (w+3)/4);
+            RISCV_sprintf(tstr, sizeof(tstr), fmt, w, v);
+        }
+        return std::string(tstr);
+    } else if (SCV_is_vhdl()) {
+        uint64_t v = getValue();
+        if (isFloat()) {
+            RISCV_sprintf(tstr, sizeof(tstr), "%.f", getFloatValue());
+        } else if (w == 1) {
+            RISCV_sprintf(tstr, sizeof(tstr), "'%" RV_PRI64 "X'", v);
+        } else if (v == 0 && isLogic()) {
+            return std::string("(others => '0')");
+        } else {
+            RISCV_sprintf(fmt, sizeof(fmt), "X\"%%0%d" RV_PRI64 "X\"", w / 4);
+            if ((w & 0x3) == 0) {
+                RISCV_sprintf(tstr, sizeof(tstr), fmt, v);
+            } else {
+                tstr[0] = '\"';
+                for (int i = 0; i < w; i++) {
+                    tstr[1 + i] = '0' + static_cast<char>((v >> (w - i - 1)) & 0x1);
+                }
+                tstr[w + 1] = '\"';
+                tstr[w + 2] = '\0';
+            }
+        }
+        return std::string(tstr);
+    }
+    return ret;
 }
 
 std::string GenObject::getStrWidth() {

@@ -68,14 +68,6 @@ std::string StructObject::getName() {
     return ret;
 }
 
-std::string StructObject::getStrValue() {
-    std::string ret = zeroval_;
-    //if (ret.size() == 0) {
-        //SHOW_ERROR("todo: struct initialization", getName());
-    //}
-    return ret;
-}
-
 std::string StructObject::generate_interface_constructor() {
     std::string ret = "";
 
