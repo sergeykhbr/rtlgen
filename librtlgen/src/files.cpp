@@ -169,11 +169,14 @@ std::string FileObject::generate_const(GenObject *obj) {
     std::string ln;
     GenObject *item;
     if (obj->getDepth() > 1) {
-        if (SCV_is_sv()) {
-            out += "'";
+        if (SCV_is_sysc()) {
+            out += "{\n";
+        } else if (SCV_is_sv()) {
+            out += "'{\n";
+        } else if (SCV_is_vhdl()) {
+            out += "(\n";
         }
-        out += "{\n";
-        Operation::set_space(Operation::get_space() + 1);
+        pushspaces();
         for (int i = 0; i < obj->getDepth(); i++) {
             item = obj->getItem(i);
             ln = generate_const(item);
@@ -184,18 +187,26 @@ std::string FileObject::generate_const(GenObject *obj) {
                 while (ln.size() < 60) {
                     ln += " ";
                 }
-                ln += "// " + item->getComment();
+                ln += item->addComment();
             }
             out += ln + "\n";
         }
-        Operation::set_space(Operation::get_space() - 1);
-        out += Operation::addspaces() + "}";
-    } else if (obj->getId() == ID_STRUCT_INST) {
-        out += Operation::addspaces();
-        if (SCV_is_sv()) {
-            out += "'";
+        popspaces();
+        out += addspaces();
+        if (SCV_is_vhdl()) {
+            out += ")";
+        } else {
+            out += "}";
         }
-        out += "{";
+    } else if (obj->getId() == ID_STRUCT_INST) {
+        out += addspaces();
+        if (SCV_is_sysc()) {
+            out += "{";
+        } else if (SCV_is_sv()) {
+            out += "'{";
+        } else if (SCV_is_vhdl()) {
+            out += "(";
+        }
         for (auto &m: obj->getEntries()) {
             ln = generate_const(m);
             if (ln.size()) {
@@ -205,7 +216,11 @@ std::string FileObject::generate_const(GenObject *obj) {
             }
             out += ln;
         }
-        out += "}";
+        if (SCV_is_vhdl()) {
+            out += ")";
+        } else {
+            out += "}";
+        }
     } else if (obj->getId() == ID_CONST || obj->getId() == ID_VALUE) {
         out += obj->getStrValue();
     }
@@ -404,7 +419,6 @@ void FileObject::generate_sysv() {
     bool skip_pkg = false;
     ModuleObject *mod;
     std::list <GenObject *> tmplparlist;
-    Operation::set_space(0);
     for (auto &p: entries_) {
         if (p->getId() == ID_MODULE) {
             is_module = true;
@@ -500,7 +514,6 @@ void FileObject::generate_vhdl() {
     bool skip_pkg = false;
     ModuleObject *mod;
     std::list <GenObject *> tmplparlist;
-    Operation::set_space(0);
     for (auto &p: entries_) {
         if (p->getId() == ID_MODULE) {
             is_module = true;

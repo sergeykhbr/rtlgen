@@ -186,7 +186,6 @@ std::string ModuleObject::generate_sv_pkg_struct() {
 
 std::string ModuleObject::generate_sv_pkg() {
     std::string ret = "";
-    Operation::set_space(0);
     ret += generate_sv_pkg_localparam();
     ret += generate_sv_pkg_struct();
     return ret;
@@ -363,7 +362,7 @@ std::string ModuleObject::generate_sv_mod_proc_nullify(GenObject *obj,
     std::string ret = "";
     if (obj->getId() == ID_VALUE
         || (obj->getId() == ID_STRUCT_INST && obj->getStrValue().size() != 0)) {
-        ret += Operation::addspaces() + prefix;
+        ret += addspaces() + prefix;
         if (obj->getName() != "0") {
             if (prefix.size() != 0) {
                 ret += ".";
@@ -390,17 +389,17 @@ std::string ModuleObject::generate_sv_mod_proc_nullify(GenObject *obj,
         }
     } else if (obj->getId() == ID_ARRAY_DEF) {
         GenObject *item = obj->getItem();
-        ret += Operation::addspaces();
+        ret += addspaces();
         ret += "for (int " + i + " = 0; " + i + " < " + obj->getStrDepth() + "; " + i + "++) begin\n";
-        Operation::set_space(Operation::get_space() + 1);
+        pushspaces();
 
         std::string prefix2 = prefix + obj->getName() + "[" + i + "]";
         const char tidx[2] = {i.c_str()[0], 0};
         std::string i2 = std::string(tidx);
         ret += generate_sv_mod_proc_nullify(item, prefix2, i2);
 
-        Operation::set_space(Operation::get_space() - 1);
-        ret += Operation::addspaces() + "end\n";
+        popspaces();
+        ret += addspaces() + "end\n";
     }
     return ret;
 }
@@ -408,16 +407,16 @@ std::string ModuleObject::generate_sv_mod_proc_nullify(GenObject *obj,
 std::string ModuleObject::generate_sv_mod_clock(GenObject *p) {
     std::string ret = "";
 
-    ret += Operation::addspaces() + "always begin\n";
-    Operation::set_space(Operation::get_space() + 1);
+    ret += addspaces() + "always begin\n";
+    pushspaces();
 
-    ret += Operation::addspaces() + "#(0.5 * ";
+    ret += addspaces() + "#(0.5 * ";
     ret += "1000000000 * ";     // timescale default 1ns/10ps
     ret += p->getStrValue() + ") ";
     ret += p->getName() + " = ~" + p->getName() + ";\n";
 
-    Operation::set_space(Operation::get_space() - 1);
-    ret += Operation::addspaces() + "end\n";
+    popspaces();
+    ret += addspaces() + "end\n";
     ret += "\n";
     return ret;
 }
@@ -431,15 +430,15 @@ std::string ModuleObject::generate_sv_mod_proc(GenObject *proc) {
         ret += "always_comb\n";
         ret += "begin: " + proc->getName() + "_proc\n";
     }
-    Operation::set_space(1);
+    pushspaces();
     
     // process variables declaration
     tcnt = 0;
     if (isRegs()) {
-        ret += Operation::addspaces() + getType() + "_registers v;\n";
+        ret += addspaces() + getType() + "_registers v;\n";
     }
     if (isNRegs()) {
-        ret += Operation::addspaces() + getType() + "_nregisters nv;\n";
+        ret += addspaces() + getType() + "_nregisters nv;\n";
     }
 
     for (auto &e: proc->getEntries()) {
@@ -482,12 +481,10 @@ std::string ModuleObject::generate_sv_mod_proc(GenObject *proc) {
     }
 
     if (isRegs()) {
-        Operation::set_space(1);
         ret += Operation::copyreg("v", "r", this);
         tcnt++;
     }
     if (isNRegs()) {
-        Operation::set_space(1);
         ret += Operation::copyreg("nv", "nr", this);
         tcnt++;
     }
@@ -497,9 +494,9 @@ std::string ModuleObject::generate_sv_mod_proc(GenObject *proc) {
     }
 
     // Generate operations:
-    if (proc->isGenerate() == false) {
-        Operation::set_space(1);
-    }
+//    if (proc->isGenerate() == false) {
+//        Operation::set_space(1);
+//    }
     for (auto &e: proc->getEntries()) {
         if (e->getId() != ID_OPERATION) {
             continue;
@@ -514,6 +511,7 @@ std::string ModuleObject::generate_sv_mod_proc(GenObject *proc) {
     if (isNRegs()) {
         ret += Operation::copyreg("nrin", "nv", this);
     }
+    popspaces();
     if (proc->isGenerate() == false) {
         ret += "end: " + proc->getName() + "_proc\n";
     }
@@ -528,7 +526,7 @@ std::string ModuleObject::generate_sv_mod_always_ff_rst(bool clkpos) {
     std::string dst = "r";
     std::string blkname = ": rg_proc";  // to minimiz differences. Could be removed later
     bool isregs;
-    out += Operation::addspaces() + "always_ff @(";
+    out += addspaces() + "always_ff @(";
     if (clkpos) {
         out += "posedge ";
         isregs = isRegs();
@@ -550,23 +548,23 @@ std::string ModuleObject::generate_sv_mod_always_ff_rst(bool clkpos) {
         out += getResetPort()->getName();
     }
     out += ") begin" + blkname + "\n";
-    Operation::set_space(Operation::get_space() + 1);
+    pushspaces();
     if (isCombProcess() &&  isregs) {
         if (getResetPort()) {
             out += Operation::reset(dst.c_str(), 0, this, xrst);
             out += " else begin\n";
-            Operation::set_space(Operation::get_space() + 1);
+            pushspaces();
             out += Operation::copyreg(dst.c_str(), src.c_str(), this);
-            Operation::set_space(Operation::get_space() - 1);
-            out += Operation::addspaces() + "end\n";
+            popspaces();
+            out += addspaces() + "end\n";
         } else {
             out += Operation::copyreg(dst.c_str(), src.c_str(), this);
         }
     }
     // additional operation on posedge clock events
     out += generate_sv_mod_always_ops();
-    Operation::set_space(Operation::get_space() - 1);
-    out += Operation::addspaces() + "end" + blkname + "\n";
+    popspaces();
+    out += addspaces() + "end" + blkname + "\n";
     return out; 
 }
 
@@ -593,9 +591,9 @@ std::string ModuleObject::generate_sv_mod_proc_registers() {
     if (getAsyncReset() && getResetPort()) {
         // Need to generate both cases: always with and without reset
         out += "generate\n";
-        Operation::set_space(Operation::get_space() + 1);
-        out += Operation::addspaces() + "if (async_reset) begin: async_rst_gen\n";
-        Operation::set_space(Operation::get_space() + 1);
+        pushspaces();
+        out += addspaces() + "if (async_reset) begin: async_rst_gen\n";
+        pushspaces();
         out += "\n";
     }
     if (getResetPort()) {
@@ -607,32 +605,32 @@ std::string ModuleObject::generate_sv_mod_proc_registers() {
         }
     }
     if (getAsyncReset() && getResetPort()) {
-        Operation::set_space(Operation::get_space() - 1);
+        popspaces();
         out += "\n";
-        out += Operation::addspaces() + "end: async_rst_gen\n";
-        out += Operation::addspaces() + "else begin: no_rst_gen\n";
-        Operation::set_space(Operation::get_space() + 1);
+        out += addspaces() + "end: async_rst_gen\n";
+        out += addspaces() + "else begin: no_rst_gen\n";
+        pushspaces();
         out += "\n";
     }
 
     if (getAsyncReset() || getResetPort() == 0) {
-        out += Operation::addspaces() + "always_ff @(posedge ";
+        out += addspaces() + "always_ff @(posedge ";
         out += getClockPort()->getName();
         out += ") begin: rg_proc\n";
-        Operation::set_space(Operation::get_space() + 1);
+        pushspaces();
         if (isRegs() && isCombProcess()) {
             out += Operation::copyreg("r", "rin", this);
         }
         out += generate_sv_mod_always_ops();   // additional operation on posedge clock events
-        Operation::set_space(Operation::get_space() - 1);
-        out += Operation::addspaces() + "end: rg_proc\n";
+        popspaces();
+        out += addspaces() + "end: rg_proc\n";
         out += "\n";
     }
 
     if (getAsyncReset() && getResetPort()) {
-        Operation::set_space(Operation::get_space() - 1);
-        out += Operation::addspaces() + "end: no_rst_gen\n";
-        Operation::set_space(Operation::get_space() - 1);
+        popspaces();
+        out += addspaces() + "end: no_rst_gen\n";
+        popspaces();
         out += "endgenerate\n";
         out += "\n";
     }
@@ -648,7 +646,6 @@ std::string ModuleObject::generate_sv_mod() {
     std::list<GenObject *> tmplparam;
     getTmplParamList(tmplparam);
 
-    Operation::set_space(0);
     ret += "module " + getType();
 
     // Generic parameters
@@ -661,7 +658,7 @@ std::string ModuleObject::generate_sv_mod() {
 
     // In/Out ports
     ret += "(\n";
-    Operation::set_space(Operation::get_space() + 1);
+    pushspaces();
     int port_cnt = 0;
     for (auto &p: entries_) {
         if (p->isInput() || p->isOutput()) {
@@ -673,7 +670,7 @@ std::string ModuleObject::generate_sv_mod() {
     for (auto &p: entries_) {
         if (!p->isInput() && !p->isOutput()) {
             if (p->getId() == ID_COMMENT) {
-                text += Operation::addspaces() + p->generate();
+                text += addspaces() + p->generate();
             } else {
                 text = "";
             }
@@ -681,7 +678,7 @@ std::string ModuleObject::generate_sv_mod() {
         }
         ret += text;
         text = "";
-        ln = Operation::addspaces();
+        ln = addspaces();
         if (p->isInput() && p->isOutput()) {
             ln += "inout ";
         } else if (p->isInput()) {
@@ -712,7 +709,7 @@ std::string ModuleObject::generate_sv_mod() {
         }
         ret += ln + "\n";
     }
-    Operation::set_space(Operation::get_space() - 1);
+    popspaces();
     ret += ");\n";
     ret += "\n";
 
@@ -732,7 +729,6 @@ std::string ModuleObject::generate_sv_mod() {
     }
 
     // static strings
-    Operation::set_space(0);
     ret += generate_sv_mod_param_strings();
 
     // struct definitions:
@@ -749,12 +745,10 @@ std::string ModuleObject::generate_sv_mod() {
         if (p->getId() != ID_FUNCTION) {
             continue;
         }
-        Operation::set_space(0);
         ret += generate_sv_mod_func(p);
     }
 
     // Sub-module instantiation
-    Operation::set_space(0);
     for (auto &p: entries_) {
         if (p->getId() != ID_OPERATION) {
             continue;
@@ -780,12 +774,10 @@ std::string ModuleObject::generate_sv_mod() {
         if (p->getName() == "registers") {
             continue;
         }
-        Operation::set_space(0);
         ret += generate_sv_mod_proc(p);
     }
 
     if (isRegProcess()) {
-        Operation::set_space(0);
         ret += generate_sv_mod_proc_registers();
     }
 

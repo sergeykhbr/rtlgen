@@ -68,7 +68,7 @@ std::string ModuleObject::generate_vhdl_pkg_reg_struct(bool negedge) {
     int tcnt = 0;
     bool twodim = false;
 
-    ret += Operation::addspaces();
+    ret += addspaces();
     ret += "type " + getType();
     if (negedge == false) {
         ret += "_registers";
@@ -76,13 +76,13 @@ std::string ModuleObject::generate_vhdl_pkg_reg_struct(bool negedge) {
         ret += "_nregisters";
     }
     ret += " is record\n";
-    Operation::set_space(Operation::get_space() + 1);
+    pushspaces();
     for (auto &p: entries_) {
         if ((!p->isReg() && negedge == false)
             || (!p->isNReg() && negedge == true)) {
             continue;
         }
-        ln = Operation::addspaces() + p->getName() + " : " + p->getType();
+        ln = addspaces() + p->getName() + " : " + p->getType();
         if (p->getDepth()) {
             twodim = true;
             ln += "(0 to " + p->getStrDepth() + " - 1)";
@@ -96,8 +96,8 @@ std::string ModuleObject::generate_vhdl_pkg_reg_struct(bool negedge) {
         }
         ret += ln + "\n";
     }
-    Operation::set_space(Operation::get_space() - 1);
-    ret += Operation::addspaces() + "end record;\n";
+    popspaces();
+    ret += addspaces() + "end record;\n";
     ret += "\n";
 
     // Reset function only if no two-dimensial signals
@@ -109,19 +109,19 @@ std::string ModuleObject::generate_vhdl_pkg_reg_struct(bool negedge) {
         }
     }
     if (!twodim) {
-        ret += Operation::addspaces();
+        ret += addspaces();
         if (negedge == false) {
             ret += "constant " + getType() + "_r_reset : " + getType() + "_registers := (\n";
         } else {
             ret += "constant " + getType() + "_nr_reset : " + getType() + "_nregisters := (\n";
         }
-        Operation::set_space(Operation::get_space() + 1);
+        pushspaces();
         for (auto &p: entries_) {
             if ((!p->isReg() && negedge == false)
                 || (!p->isNReg() && negedge == true)) {
                 continue;
             }
-            ln = Operation::addspaces();
+            ln = addspaces();
             tstr = p->getStrValue();    // to provide compatibility with gcc
             if (p->isNumber(tstr) && p->getValue() == 0) {
                 if (p->getWidth() == 1) {
@@ -141,8 +141,8 @@ std::string ModuleObject::generate_vhdl_pkg_reg_struct(bool negedge) {
             ln += "-- " + p->getName();
             ret += ln + "\n";
         }
-        Operation::set_space(Operation::get_space() - 1);
-        ret += Operation::addspaces() + ");\n";
+        popspaces();
+        ret += addspaces() + ");\n";
         ret += "\n";
     }
     return ret;
@@ -188,7 +188,6 @@ std::string ModuleObject::generate_vhdl_pkg_struct() {
 
 std::string ModuleObject::generate_vhdl_pkg() {
     std::string ret = "";
-    Operation::set_space(0);
     ret += generate_vhdl_pkg_localparam();
     ret += generate_vhdl_pkg_struct();
     return ret;
@@ -206,11 +205,11 @@ std::string ModuleObject::generate_vhdl_mod_genparam() {
     if (genparam.size() == 0 && !getAsyncReset()) {
         return ret;
     }
-    ret += Operation::addspaces() + "generic (\n";
-    Operation::set_space(Operation::get_space() + 1);
+    ret += addspaces() + "generic (\n";
+    pushspaces();
 
     if (getAsyncReset() && getEntryByName("async_reset") == 0) {
-        ret += Operation::addspaces() + "async_reset : boolean := '0'";           // Mandatory generic parameter
+        ret += addspaces() + "async_reset : boolean := '0'";           // Mandatory generic parameter
         if (genparam.size()) {
             ret += ";";
         }
@@ -219,7 +218,7 @@ std::string ModuleObject::generate_vhdl_mod_genparam() {
     }
 
     for (auto &p : genparam) {
-        ln = Operation::addspaces() + p->getName() + " : ";
+        ln = addspaces() + p->getName() + " : ";
         ln += p->getType() + " := " + p->getStrValue();
 
         if (p != genparam.back()) {
@@ -234,8 +233,8 @@ std::string ModuleObject::generate_vhdl_mod_genparam() {
         ret += ln + "\n";
     }
 
-    Operation::set_space(Operation::get_space() - 1);
-    ret += Operation::addspaces() + ");\n";
+    popspaces();
+    ret += addspaces() + ");\n";
     return ret;
 }
 
@@ -311,7 +310,7 @@ std::string ModuleObject::generate_vhdl_mod_signals() {
                 && p->getId() != ID_ARRAY_DEF
                 && p->getId() != ID_VECTOR)) {
             if (p->getId() == ID_COMMENT) {
-                text += Operation::addspaces() + p->generate();
+                text += addspaces() + p->generate();
             } else {
                 text = "";
             }
@@ -327,7 +326,7 @@ std::string ModuleObject::generate_vhdl_mod_signals() {
             ret += text;
             text = "";
         }
-        ln = Operation::addspaces() + "signal " + p->getName() + " : " + p->getType();
+        ln = addspaces() + "signal " + p->getName() + " : " + p->getType();
         if (p->getDepth() && !p->isVector()) {
             ln += "(0 up " + p->getStrDepth() + " - 1)";
         }
@@ -350,12 +349,12 @@ std::string ModuleObject::generate_vhdl_mod_signals() {
     }
 
     if (isRegs() && isCombProcess()) {
-        ret += Operation::addspaces();
+        ret += addspaces();
         ret += "signal r, rin : " + getType() + "_registers;\n";
         tcnt++;
     }
     if (isNRegs() && isCombProcess()) {
-        ret += Operation::addspaces();
+        ret += addspaces();
         ret += "signal nr, nrin : " + getType() + "_nregisters;\n";
         tcnt++;
     }
@@ -391,15 +390,14 @@ std::string ModuleObject::generate_vhdl_mod() {
     }
 
 
-    Operation::set_space(0);
     ret += "entity " + getType() + " is ";
 
     // Generic parameters
     ret += generate_vhdl_mod_genparam();
 
     // In/Out ports
-    ret += Operation::addspaces() + "port (\n";
-    Operation::set_space(Operation::get_space() + 1);
+    ret += addspaces() + "port (\n";
+    pushspaces();
     int port_cnt = 0;
     for (auto &p: entries_) {
         if (p->isInput() || p->isOutput()) {
@@ -411,7 +409,7 @@ std::string ModuleObject::generate_vhdl_mod() {
     for (auto &p: entries_) {
         if (!p->isInput() && !p->isOutput()) {
             if (p->getId() == ID_COMMENT) {
-                text += Operation::addspaces() + p->generate();
+                text += addspaces() + p->generate();
             } else {
                 text = "";
             }
@@ -419,7 +417,7 @@ std::string ModuleObject::generate_vhdl_mod() {
         }
         ret += text;
         text = "";
-        ln = Operation::addspaces() + p->getName() + " : ";
+        ln = addspaces() + p->getName() + " : ";
         if (p->isInput() && p->isOutput()) {
             ln += "inout ";
         } else if (p->isInput()) {
@@ -449,14 +447,14 @@ std::string ModuleObject::generate_vhdl_mod() {
         }
         ret += ln + "\n";
     }
-    ret += Operation::addspaces() + ");\n";
-    Operation::set_space(Operation::get_space() - 1);
+    ret += addspaces() + ");\n";
+    popspaces();
     ret += "end;\n";
     ret += "\n";
 
     ret += "architecture arch_" + getType() + " of " + getType() + " is\n";
     ret += "\n";
-    Operation::set_space(Operation::get_space() + 1);
+    pushspaces();
 
     // static strings
     ret += generate_vhdl_mod_param_strings();
@@ -478,14 +476,13 @@ std::string ModuleObject::generate_vhdl_mod() {
         ret += generate_vhdl_mod_func(p);
     }
 
-    Operation::set_space(Operation::get_space() - 1);
+    popspaces();
     ret += "begin\n";
     ret += "\n";
-    Operation::set_space(Operation::get_space() + 1);
+    pushspaces();
 
 
     // Sub-module instantiation
-    Operation::set_space(0);
     for (auto &p: entries_) {
         if (p->getId() != ID_OPERATION) {
             continue;
@@ -511,19 +508,16 @@ std::string ModuleObject::generate_vhdl_mod() {
         if (p->getName() == "registers") {
             continue;
         }
-        Operation::set_space(0);
         ret += generate_sv_mod_proc(p);
     }
 
     if (isRegProcess()) {
-        Operation::set_space(0);
         ret += generate_sv_mod_proc_registers();
     }
 */
 
-    Operation::set_space(Operation::get_space() - 1);
+    popspaces();
     ret += "end;\n";
-
 
     return ret;
 }

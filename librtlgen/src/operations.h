@@ -43,9 +43,6 @@ class Operation : public GenObject {
     static void push_obj(GenObject *obj);
     static void pop_obj();
     static GenObject *top_obj();
-    static void set_space(int n);
-    static int get_space();
-    static std::string addspaces();
     std::string v_name(std::string v) override;
     std::string r_name(std::string v) override { return v_name(v); }
     static std::string obj2varname(GenObject *obj, const char *prefix="r", bool read=false);

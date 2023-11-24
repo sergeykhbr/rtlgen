@@ -79,42 +79,42 @@ std::string StructObject::getStrValue() {
 std::string StructObject::generate_interface_constructor() {
     std::string ret = "";
 
-    ret += Operation::addspaces() + getType() + "() {\n";
-    Operation::set_space(Operation::get_space() + 1);
+    ret += addspaces() + getType() + "() {\n";
+    pushspaces();
     std::list<GenObject *> *pentries = &getEntries();
     std::string prefix = "";
     if (isVector()) {
         pentries = &getItem()->getEntries();
         prefix = getEntries().front()->getName() + "[i].";
 
-        ret += Operation::addspaces();
+        ret += addspaces();
         ret += "for (int i = 0; i < " + getEntries().front()->getStrDepth() + "; i++) {\n";
-        Operation::set_space(Operation::get_space() + 1);
+        pushspaces();
     }
     for (auto& p : *pentries) {
         if (p->getId() == ID_COMMENT) {
-            ret += Operation::addspaces() + "// " + p->getName() + "\n";
+            ret += addspaces() + p->addComment() + "\n";
         } else if (p->getId() == ID_STRUCT_INST) {
             // 1 level of sub structures without recursive implementation
             for (auto &p2 : p->getEntries()) {
                 if (p2->getId() == ID_COMMENT) {
                     continue;
                 }
-                ret += Operation::addspaces();
+                ret += addspaces();
                 ret += prefix + p->getName() + "." + p2->getName();
                 ret += " = " + p2->getStrValue() + ";\n";
             }
         } else {
-            ret += Operation::addspaces() + prefix + p->getName();
+            ret += addspaces() + prefix + p->getName();
             ret += " = " + p->getStrValue() + ";\n";
         }
     }
     if (isVector()) {
-        Operation::set_space(Operation::get_space() - 1);
-        ret += Operation::addspaces() + "}\n";
+        popspaces();
+        ret += addspaces() + "}\n";
     }
-    Operation::set_space(Operation::get_space() - 1);
-    ret += Operation::addspaces() + "}\n";
+    popspaces();
+    ret += addspaces() + "}\n";
     ret += "\n";
 
     return ret;
@@ -125,7 +125,7 @@ std::string StructObject::generate_interface_constructor_init() {
     int argcnt = 0;
     int aligncnt;
 
-    ret += Operation::addspaces() + getType() + "(";
+    ret += addspaces() + getType() + "(";
     aligncnt = static_cast<int>(ret.size());
     for (auto& p : getEntries()) {
         if (p->getId() == ID_COMMENT) {
@@ -140,16 +140,16 @@ std::string StructObject::generate_interface_constructor_init() {
         ret += p->getType() + " " + p->getName() + "_";
     }
     ret += ") {\n";
-    Operation::set_space(Operation::get_space() + 1);
+    pushspaces();
     for (auto& p : getEntries()) {
         if (p->getId() == ID_COMMENT) {
             continue;
         }
-        ret += Operation::addspaces();
+        ret += addspaces();
         ret += p->getName() + " = " + p->getName() + "_;\n";
     }
-    Operation::set_space(Operation::get_space() - 1);
-    ret += Operation::addspaces() + "}\n";
+    popspaces();
+    ret += addspaces() + "}\n";
     ret += "\n";
 
     return ret;
@@ -159,9 +159,9 @@ std::string StructObject::generate_interface_op_equal() {
     std::string ret = "";
     int tcnt = 0;
 
-    ret += Operation::addspaces() + "inline bool operator == (const " + getType() + " &rhs) const {\n";
-    Operation::set_space(Operation::get_space() + 1);
-    ret += Operation::addspaces() + "bool ret = true;\n";
+    ret += addspaces() + "inline bool operator == (const " + getType() + " &rhs) const {\n";
+    pushspaces();
+    ret += addspaces() + "bool ret = true;\n";
 
     std::list<GenObject *> *pentries = &getEntries();
     std::string prefix = "";
@@ -169,13 +169,13 @@ std::string StructObject::generate_interface_op_equal() {
         pentries = &getItem()->getEntries();
         prefix = getEntries().front()->getName() + "[i].";
 
-        ret += Operation::addspaces();
+        ret += addspaces();
         ret += "for (int i = 0; i < " + getEntries().front()->getStrDepth() + "; i++) {\n";
-        Operation::set_space(Operation::get_space() + 1);
+        pushspaces();
     }
 
-    ret += Operation::addspaces() + "ret = ret";
-    Operation::set_space(Operation::get_space() + 1);
+    ret += addspaces() + "ret = ret";
+    pushspaces();
     for (auto& p : *pentries) {
         if (p->getId() == ID_COMMENT) {
         } else if (p->getId() == ID_STRUCT_INST) {
@@ -184,24 +184,24 @@ std::string StructObject::generate_interface_op_equal() {
                 if (p2->getId() == ID_COMMENT) {
                     continue;
                 }
-                ret += "\n" + Operation::addspaces() + "&& ";
+                ret += "\n" + addspaces() + "&& ";
                 ret += "rhs." + prefix + p->getName() + "." + p2->getName() + " == ";
                 ret += prefix + p->getName() + "." + p2->getName();
             }
         } else {
-            ret += "\n" + Operation::addspaces() + "&& ";
+            ret += "\n" + addspaces() + "&& ";
             ret += "rhs." + prefix + p->getName() + " == " + prefix + p->getName();
         }
     }
     ret += ";\n";
-    Operation::set_space(Operation::get_space() - 1);
+    popspaces();
     if (isVector()) {
-        Operation::set_space(Operation::get_space() - 1);
-        ret += Operation::addspaces() + "}\n";
+        popspaces();
+        ret += addspaces() + "}\n";
     }
-    ret += Operation::addspaces() + "return ret;\n";
-    Operation::set_space(Operation::get_space() - 1);
-    ret += Operation::addspaces() + "}\n";
+    ret += addspaces() + "return ret;\n";
+    popspaces();
+    ret += addspaces() + "}\n";
     ret += "\n";
 
     return ret;
@@ -210,8 +210,8 @@ std::string StructObject::generate_interface_op_equal() {
 std::string StructObject::generate_interface_op_assign() {
     std::string ret = "";
 
-    ret += Operation::addspaces() + "inline " + getType() + "& operator = (const " + getType() + " &rhs) {\n";
-    Operation::set_space(Operation::get_space() + 1);
+    ret += addspaces() + "inline " + getType() + "& operator = (const " + getType() + " &rhs) {\n";
+    pushspaces();
 
     std::list<GenObject *> *pentries = &getEntries();
     std::string prefix = "";
@@ -219,9 +219,9 @@ std::string StructObject::generate_interface_op_assign() {
         pentries = &getItem()->getEntries();
         prefix = getEntries().front()->getName() + "[i].";
 
-        ret += Operation::addspaces();
+        ret += addspaces();
         ret += "for (int i = 0; i < " + getEntries().front()->getStrDepth() + "; i++) {\n";
-        Operation::set_space(Operation::get_space() + 1);
+        pushspaces();
     }
     for (auto& p : *pentries) {
         if (p->getId() == ID_COMMENT) {
@@ -231,22 +231,22 @@ std::string StructObject::generate_interface_op_assign() {
                 if (p2->getId() == ID_COMMENT) {
                     continue;
                 }
-                ret += Operation::addspaces();
+                ret += addspaces();
                 ret += prefix + p->getName() + "." + p2->getName();
                 ret += " = rhs." + prefix + p->getName() + "." + p2->getName() + ";\n";
             }
         } else {
-            ret += Operation::addspaces();
+            ret += addspaces();
             ret += prefix + p->getName() + " = rhs." + prefix + p->getName() + ";\n";
         }
     }
     if (isVector()) {
-        Operation::set_space(Operation::get_space() - 1);
-        ret += Operation::addspaces() + "}\n";
+        popspaces();
+        ret += addspaces() + "}\n";
     }
-    ret += Operation::addspaces() + "return *this;\n";
-    Operation::set_space(Operation::get_space() - 1);
-    ret += Operation::addspaces() + "}\n";
+    ret += addspaces() + "return *this;\n";
+    popspaces();
+    ret += addspaces() + "}\n";
     ret += "\n";
 
     return ret;
@@ -254,12 +254,12 @@ std::string StructObject::generate_interface_op_assign() {
 
 std::string StructObject::generate_interface_op_bracket() {
     std::string ret = "";
-    ret += Operation::addspaces() + getEntries().front()->getType();
+    ret += addspaces() + getEntries().front()->getType();
     ret += " operator [](int i) const { return ";
     ret += getEntries().front()->getName() + "[i]; ";
     ret += "}\n";
 
-    ret += Operation::addspaces() + getEntries().front()->getType();
+    ret += addspaces() + getEntries().front()->getType();
     ret += " &operator [](int i) { return ";
     ret += getEntries().front()->getName() + "[i]; ";
     ret += "}\n";
@@ -272,7 +272,7 @@ std::string StructObject::generate_interface_op_stream() {
     std::string ln;
     size_t tspace;
 
-    ln = Operation::addspaces() + "inline friend ostream &operator << (";
+    ln = addspaces() + "inline friend ostream &operator << (";
     tspace = ln.size();
     ret = ln + "ostream &os,\n";
     ln = "";
@@ -280,7 +280,7 @@ std::string StructObject::generate_interface_op_stream() {
         ln += " ";
     }
     ret += ln + getType() + " const &v) {\n";
-    Operation::set_space(Operation::get_space() + 1);
+    pushspaces();
 
     std::list<GenObject *> *pentries = &getEntries();
     std::string prefix = "";
@@ -288,11 +288,11 @@ std::string StructObject::generate_interface_op_stream() {
         pentries = &getItem()->getEntries();
         prefix = getEntries().front()->getName() + "[i].";
 
-        ret += Operation::addspaces();
+        ret += addspaces();
         ret += "for (int i = 0; i < " + getEntries().front()->getStrDepth() + "; i++) {\n";
-        Operation::set_space(Operation::get_space() + 1);
+        pushspaces();
     }
-    ret += Operation::addspaces() + "os << \"(\"\n";
+    ret += addspaces() + "os << \"(\"\n";
     for (auto& p : *pentries) {
         if (p->getId() == ID_COMMENT) {
             // do nothing
@@ -305,25 +305,25 @@ std::string StructObject::generate_interface_op_stream() {
                 if (tcnt++) {
                     ret += " << \",\"\n";
                 }
-                ret += Operation::addspaces();
+                ret += addspaces();
                 ret += "<< v." + prefix + p->getName() + "." + p2->getName();
             }
         } else {
             if (tcnt++) {
                 ret += " << \",\"\n";
             }
-            ret += Operation::addspaces();
+            ret += addspaces();
             ret += "<< v." + prefix + p->getName();
         }
     }
     ret += " << \")\";\n";
     if (isVector()) {
-        Operation::set_space(Operation::get_space() - 1);
-        ret += Operation::addspaces() + "}\n";
+        popspaces();
+        ret += addspaces() + "}\n";
     }
-    ret += Operation::addspaces() + "return os;\n";
-    Operation::set_space(Operation::get_space() - 1);
-    ret += Operation::addspaces() + "}\n";
+    ret += addspaces() + "return os;\n";
+    popspaces();
+    ret += addspaces() + "}\n";
     ret += "\n";
 
     return ret;
@@ -334,7 +334,7 @@ std::string StructObject::generate_interface_sc_trace() {
     std::string ln;
     size_t tspace;
 
-    ln = Operation::addspaces() + "inline friend void sc_trace(";
+    ln = addspaces() + "inline friend void sc_trace(";
     tspace = ln.size();
     ret = ln + "sc_trace_file *tf,\n";
     ln = "";
@@ -343,7 +343,7 @@ std::string StructObject::generate_interface_sc_trace() {
     }
     ret += ln + "const " + getType() + "&v,\n";
     ret += ln + "const std::string &NAME) {\n";
-    Operation::set_space(Operation::get_space() + 1);
+    pushspaces();
 
     std::list<GenObject *> *pentries = &getEntries();
     std::string prefix = "";
@@ -353,11 +353,11 @@ std::string StructObject::generate_interface_sc_trace() {
         prefix = getEntries().front()->getName() + "[i].";
         N_plus = "N + ";
 
-        ret += Operation::addspaces() + "char N[16];\n";
-        ret += Operation::addspaces();
+        ret += addspaces() + "char N[16];\n";
+        ret += addspaces();
         ret += "for (int i = 0; i < " + getEntries().front()->getStrDepth() + "; i++) {\n";
-        Operation::set_space(Operation::get_space() + 1);
-        ret += Operation::addspaces() + "sprintf(N, \"(%d)\", i);\n";
+        pushspaces();
+        ret += addspaces() + "sprintf(N, \"(%d)\", i);\n";
     }
     for (auto& p : *pentries) {
         if (p->getId() == ID_COMMENT) {
@@ -368,22 +368,22 @@ std::string StructObject::generate_interface_sc_trace() {
                 if (p2->getId() == ID_COMMENT) {
                     continue;
                 }
-                ret += Operation::addspaces();
+                ret += addspaces();
                 ret += "sc_trace(tf, v." + prefix + p->getName() + "." + p2->getName() + ", NAME + ";
                 ret += N_plus + "\"_" + p->getName() + "_" + p2->getName() + "\");\n";
             }
         } else {
-            ret += Operation::addspaces();
+            ret += addspaces();
             ret += "sc_trace(tf, v." + prefix + p->getName() + ", NAME + ";
             ret += N_plus + "\"_" + p->getName() + "\");\n";
         }
     }
     if (isVector()) {
-        Operation::set_space(Operation::get_space() - 1);
-        ret += Operation::addspaces() + "}\n";
+        popspaces();
+        ret += addspaces() + "}\n";
     }
-    Operation::set_space(Operation::get_space() - 1);
-    ret += Operation::addspaces() + "}\n";
+    popspaces();
+    ret += addspaces() + "}\n";
     ret += "\n";
 
     return ret;
