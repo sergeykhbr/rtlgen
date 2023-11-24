@@ -314,6 +314,13 @@ void GenObject::setStrDepth(const char *val) {
     depth_ = static_cast<int>(parse_to_u64(val, pos));
 }
 
+std::string GenObject::getLibName() {
+    if (getParent()) {
+        return getParent()->getLibName();
+    }
+    return std::string("work");
+}
+
 
 void GenObject::setValue(uint64_t val) {
     char tstr[256];

@@ -262,14 +262,13 @@ void FileObject::generate_sysc() {
         "\n";
 
     // header
-    Operation::set_space(0);
     for (auto &p: getEntries()) {
         if (p->getId() != ID_MODULE) {
             if (p->getId() == ID_FUNCTION) {
                 // for global functions only
-                out += "static " + p->getType() + " ";
+                out += addspaces() + "static " + p->getType() + " ";
             } else if (p->isTypedef() && p->getName().size() == 0) {
-                out += "typedef ";
+                out += addspaces() + "typedef ";
                 if (p->isVector()) {
                     out += "sc_vector<";
                 }
@@ -286,10 +285,9 @@ void FileObject::generate_sysc() {
                 out += " " + p->getType() + ";\n";
                 continue;
             } else if (p->isVector() && p->getName().size()) {
-                out += "static const " + p->generate();
+                out += addspaces() + "static const " + p->generate();
                 out += " " + p->getName() + "[" + p->getStrDepth() + "] = ";
-                out += generate_const(p);
-                out += ";\n";
+                out += generate_const(p) + ";\n";
                 continue;
             }
             out += p->generate();

@@ -23,7 +23,7 @@
 
 namespace sysvc {
 
-int spaces_ = 1;
+int spaces_ = 0;
 int stackcnt_ = 0;
 GenObject *stackobj_[256] = {0};
 

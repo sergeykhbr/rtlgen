@@ -115,6 +115,7 @@ class GenObject {
     virtual int getDepth();    // two-dimensional object
     virtual std::string getStrDepth();
     virtual void setStrDepth(const char *val);
+    virtual std::string getLibName();   // VHDL library. Default is "work"
 
     virtual void setSelector(GenObject *sel) { sel_ = sel; }
     virtual GenObject *getSelector() { return sel_; }

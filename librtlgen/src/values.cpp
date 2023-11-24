@@ -199,7 +199,7 @@ std::string UI32D::getType() {
     if (SCV_is_sysc()) {
         ret = std::string("uint32_t");
     } else if (SCV_is_sv()) {
-        ret = std::string("unsigned");
+        ret = std::string("int unsigned");
     } else if (SCV_is_vhdl()) {
         ret = std::string("std_logic_vector(31 downto 0)");
     }

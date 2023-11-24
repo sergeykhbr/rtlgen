@@ -28,7 +28,6 @@ FunctionObject::FunctionObject(GenObject *parent,
 
 std::string FunctionObject::generate() {
     std::string ret = "";
-    Operation::set_space(1);
     if (SCV_is_sysc()) {
         ret += generate_sysc();
     } else if (SCV_is_sv()) {
@@ -52,15 +51,17 @@ std::string FunctionObject::generate_sysc() {
             ret += e->getType() + " " + e->getName();
         }
     } else if (argslist.size() > 1) {
-        Operation::set_space(Operation::get_space() + 2);
-        ret += "\n" + Operation::addspaces();
+        pushspaces();
+        pushspaces();
+        ret += "\n" + addspaces();
         for (auto &e: argslist) {
             ret += e->getType() + " " + e->getName();
             if (e != argslist.back()) {
-                ret += ",\n" + Operation::addspaces();
+                ret += ",\n" + addspaces();
             }
         }
-        Operation::set_space(Operation::get_space() - 2);
+        popspaces();
+        popspaces();
     }
     ret += ") {\n";
     
@@ -105,7 +106,7 @@ std::string FunctionObject::generate_sysc() {
     }
 
     // Generate operations:
-    Operation::set_space(1);
+    pushspaces();
     for (auto &e: getEntries()) {
         if (e->getId() != ID_OPERATION) {
             continue;
@@ -115,10 +116,11 @@ std::string FunctionObject::generate_sysc() {
 
     // return value
     if (getpReturn()) {
-        ret += "    return " + getpReturn()->getName() + ";\n";
+        ret += addspaces() + "return " + getpReturn()->getName() + ";\n";
     }
+    popspaces();
 
-    ret += "}\n";
+    ret += addspaces() + "}\n";
     return ret;
 }
 
@@ -136,15 +138,17 @@ std::string FunctionObject::generate_sysv() {
             ret += "input " + e->getType() + " " + e->getName();
         }
     } else if (argslist.size() > 1) {
-        Operation::set_space(Operation::get_space() + 2);
-        ret += "\n" + Operation::addspaces();
+        pushspaces();
+        pushspaces();
+        ret += "\n" + addspaces();
         for (auto &e: argslist) {
             ret += "input " + e->getType() + " " + e->getName();
             if (e != argslist.back()) {
-                ret += ",\n" + Operation::addspaces();
+                ret += ",\n" + addspaces();
             }
         }
-        Operation::set_space(Operation::get_space() - 2);
+        popspaces();
+        popspaces();
     }
     ret += ");\n";
     
@@ -193,7 +197,7 @@ std::string FunctionObject::generate_sysv() {
     }
 
     // Generate operations:
-    Operation::set_space(1);
+    pushspaces();
     for (auto &e: getEntries()) {
         if (e->getId() != ID_OPERATION) {
             continue;
@@ -203,11 +207,12 @@ std::string FunctionObject::generate_sysv() {
 
     // return value
     if (getpReturn()) {
-        ret += "    return " + getpReturn()->getName() + ";\n";
+        ret += addspaces() + "return " + getpReturn()->getName() + ";\n";
     }
+    popspaces();
 
-    ret += "end\n";
-    ret += "endfunction: " + getName() + "\n";
+    ret += addspaces() + "end\n";
+    ret += addspaces() + "endfunction: " + getName() + "\n";
     ret += "\n";
     return ret;
 }

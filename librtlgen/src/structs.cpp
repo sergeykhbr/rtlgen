@@ -395,11 +395,11 @@ std::string StructObject::generate_interface() {
     std::string ln;
 
     if (getComment().size()) {
-        ret += addspaces() + addComment();
+        ret += addspaces() + addComment() + "\n";
     }
     if (SCV_is_sysc()) {
-        ret += "class " + getType() + " {\n";
-        ret += " public:\n";
+        ret += addspaces() + "class " + getType() + " {\n";
+        ret += addspaces() + " public:\n";
 
         pushspaces();
         ret += generate_interface_constructor();
@@ -414,11 +414,11 @@ std::string StructObject::generate_interface() {
             ret += generate_interface_op_bracket();
         }
         popspaces();
-        ret += " public:\n";
+        ret += addspaces() + " public:\n";
     } else if (SCV_is_sv()) {
-        ret += "typedef struct {\n";
+        ret += addspaces() + "typedef struct {\n";
     } else if (SCV_is_vhdl()) {
-        ret += "type " + getType() + " is record\n";
+        ret += addspaces() + "type " + getType() + " is record\n";
     }
     pushspaces();
     for (auto& p : entries_) {
@@ -427,7 +427,7 @@ std::string StructObject::generate_interface() {
             ret += ln + p->addComment() + "\n";
             continue;
         }
-        if (SCV_is_sysc()) {
+        if (SCV_is_vhdl()) {
             ln += p->getName() + " : " + p->getType();
         } else {
             ln += p->getType() + " " + p->getName();
@@ -451,6 +451,7 @@ std::string StructObject::generate_interface() {
         ret += ln + "\n";
     }
     popspaces();
+
     ret += addspaces();
     if (SCV_is_sysc()) {
         ret += "};\n";
@@ -578,6 +579,7 @@ std::string StructObject::generate() {
                 ln += "(0 up " + p->getStrDepth() + " - 1)";
             }
         }
+        ln += ";";
         if (p->getComment().size()) {
             while (ln.size() < 60) {
                 ln += " ";
