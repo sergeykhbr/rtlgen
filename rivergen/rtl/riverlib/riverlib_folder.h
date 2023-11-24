@@ -45,6 +45,8 @@ class riverlib_folder : public FolderObject {
         ic_axi4_to_l1_(this),
         workgroup_(this) {}
 
+    virtual std::string getLibName() override { return getName(); }
+
  protected:
     river_cfg river_cfg_;
     types_river types_river_;

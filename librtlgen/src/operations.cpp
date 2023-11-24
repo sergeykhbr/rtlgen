@@ -43,7 +43,7 @@ void popspaces() {
     if (spaces_) {
         spaces_--;
     } else {
-        SHOW_ERROR("spaces == 0");
+        SHOW_ERROR("spaces = %d", spaces_);
     }
 }
 

@@ -24,22 +24,26 @@
 
 namespace sysvc {
 
+typedef std::map<std::string, std::list<std::string>>::const_iterator depit;
+
 FileObject::FileObject(GenObject *parent,
                            const char *name)
     : GenObject(parent, "", ID_FILE, name) {
     SCV_set_access_listener(static_cast<AccessListener *>(this));
 }
 
-void FileObject::notifyAccess(std::string &file) {
+void FileObject::notifyAccess(std::string &libname, std::string &file) {
     bool found = false;
-    for (auto &f: depfiles_) {
-        if (f == file) {
-            found = true;
-            break;
+    for (depit it = depfiles_.begin(); it != depfiles_.end(); ++it) {
+        for (auto &f: it->second) {
+            if (f == file) {
+                found = true;
+                break;
+            }
         }
     }
     if (!found) {
-        depfiles_.push_back(file);
+        depfiles_[libname].push_back(file);
     }
 }
 
@@ -96,7 +100,6 @@ std::string FileObject::fullPath2fileRelative(const char *fullpath) {
     return ret;
 }
 
-// call notifyAccess() for all modules
 void FileObject::list_of_modules(GenObject *p, std::list<std::string> &fpath) {
     GenObject *f = 0;
     if (!p) {
@@ -129,7 +132,6 @@ void FileObject::list_of_modules(GenObject *p, std::list<std::string> &fpath) {
             continue;
         }
         tstr = f->getFullPath();
-        //notifyAccess(tstr);
         fpath.push_back(tstr);
         break;
     }
@@ -253,7 +255,7 @@ void FileObject::generate_sysc() {
 
     // Automatic Dependency detection
     std::list<std::string> deplist;
-    getDepList(deplist, 0);
+    getDepList(deplist);
     for (auto &f: deplist) {
         out += "#include \"" + f + "\"\n";
     }
@@ -341,7 +343,7 @@ void FileObject::generate_sysc() {
             "\n";
 
         // module definition
-        for (auto &p: entries_) {
+        for (auto &p: getEntries()) {
             if (p->getId() == ID_MODULE) {
                 std::string strtype = p->getType();
                 SCV_select_local(strtype);
@@ -358,25 +360,27 @@ void FileObject::generate_sysc() {
     }
 }
 
-void FileObject::getDepList(std::list<std::string> &lst, size_t tmplsz) {
+void FileObject::getDepList(std::list<std::string> &lst) {
     std::string tstr;
     std::vector<std::string> subs;
     std::list<std::string> submodlist;
     std::string thisfile = getFullPath();
-    for (auto &f : depfiles_) {
-        if (f == thisfile) {
-            continue;
+    for (depit it = depfiles_.begin(); it != depfiles_.end(); ++it) {
+        for (auto &f : it->second) {
+            if (f == thisfile) {
+                continue;
+            }
+            if (SCV_is_sysc()) {
+                tstr = fullPath2fileRelative(f.c_str()) + ".h";
+            } else {
+                fullPath2vector(f.c_str(), subs);
+                tstr = subs.back() + "_pkg";
+            }
+            lst.push_back(tstr);
         }
-        if (SCV_is_sysc()) {
-            tstr = fullPath2fileRelative(f.c_str()) + ".h";
-        } else {
-            fullPath2vector(f.c_str(), subs);
-            tstr = subs.back() + "_pkg";
-        }
-        lst.push_back(tstr);
     }
     if (SCV_is_sysc()) {
-        // Add submodules include files:
+        // Add submodules include files (Child modules):
         list_of_modules(this, submodlist);
         for (auto &f : submodlist) {
             if (f == thisfile) {
@@ -397,6 +401,27 @@ void FileObject::getDepList(std::list<std::string> &lst, size_t tmplsz) {
     }
 }
 
+// Package per libraries (VHDL only)
+void FileObject::getDepLibList(std::map<std::string, std::list<std::string>> &liblst) {
+    std::string tstr;
+    std::vector<std::string> subs;
+    std::string thisfile = getFullPath();
+    for (depit it = depfiles_.begin(); it != depfiles_.end(); ++it) {
+        for (auto &f : it->second) {
+            if (f == thisfile) {
+                continue;
+            }
+            if (SCV_is_sysc()) {
+                tstr = fullPath2fileRelative(f.c_str()) + ".h";
+            } else {
+                fullPath2vector(f.c_str(), subs);
+                tstr = subs.back() + "_pkg";
+            }
+            liblst[it->first].push_back(tstr);
+        }
+    }
+}
+
 void FileObject::generate_sysv() {
     bool is_module = false;
     std::string out = "";
@@ -409,7 +434,7 @@ void FileObject::generate_sysv() {
 
     // Automatic Dependency detection
     std::list<std::string> pkglist;
-    getDepList(pkglist, 0);
+    getDepList(pkglist);
     for (auto &f : pkglist) {
         out += "import " + f + "::*;\n";
     }

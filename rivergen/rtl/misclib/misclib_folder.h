@@ -45,6 +45,8 @@ class misclib_folder : public FolderObject {
         plic_file_(this),
         clint_file_(this) {}
 
+    virtual std::string getLibName() override { return getName(); }
+
  protected:
     // subfolders:
     // files

@@ -45,6 +45,8 @@ class sdctrl_folder : public FolderObject {
         sdctrl_spimode_file_(this),
         sdctrl_file_(this) {}
 
+    virtual std::string getLibName() override { return getName(); }
+
  protected:
     // subfolders:
     // files

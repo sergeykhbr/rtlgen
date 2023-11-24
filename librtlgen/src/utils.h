@@ -41,7 +41,7 @@ int RISCV_sprintf(char *s, size_t len, const char *fmt, ...);
 
 class AccessListener {
  public:
-    virtual void notifyAccess(std::string &file) = 0;
+    virtual void notifyAccess(std::string &libname, std::string &file) = 0;
 };
 
 void SCV_set_generator(EGenerateType v);

@@ -716,7 +716,7 @@ std::string ModuleObject::generate_sv_mod() {
     // import statement:
     std::list<std::string> pkglst;
     FileObject *pf = static_cast<FileObject *>(getParent());
-    pf->getDepList(pkglst, tmplparam.size());
+    pf->getDepList(pkglst);
     for (auto &e: pkglst) {
         ret += "import " + e + "::*;\n";
     }

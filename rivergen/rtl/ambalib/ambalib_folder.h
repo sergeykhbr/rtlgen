@@ -39,6 +39,8 @@ class ambalib_folder : public FolderObject {
         axi_slv_file_(this),
         apb_slv_file_(this) {}
 
+    virtual std::string getLibName() override { return getName(); }
+
  protected:
     // subfolders:
     // files

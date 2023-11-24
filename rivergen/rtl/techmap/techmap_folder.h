@@ -31,6 +31,8 @@ class techmap_folder : public FolderObject {
         pll_folder_(this),
         cdc_axi_sync_folder_(this) {}
 
+    virtual std::string getLibName() override { return getName(); }
+
  protected:
     bufg_folder bufg_folder_;
     mem_folder mem_folder_;

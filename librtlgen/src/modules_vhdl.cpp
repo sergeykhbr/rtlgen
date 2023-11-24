@@ -42,13 +42,13 @@ std::string ModuleObject::generate_vhdl_pkg_localparam() {
         } else if (p->getId() != ID_PARAM || !p->isLocal() || p->isGenericDep()) {
             // do nothing
         } else {
-            ln = "constant " + p->getName() + " : " + p->getType();
+            ln = addspaces() + "constant " + p->getName() + " : " + p->getType();
             ln += " := " + p->getStrValue() + ";";
             if (p->getComment().size()) {
                 while (ln.size() < 60) {
                     ln += " ";
                 }
-                ln += "-- " + p->getComment();
+                ln += p->addComment();
             }
             ret += comment + ln + "\n";
             tcnt++;
@@ -92,7 +92,7 @@ std::string ModuleObject::generate_vhdl_pkg_reg_struct(bool negedge) {
             while (ln.size() < 60) {
                 ln += " ";
             }
-            ln += "-- " + p->getComment();
+            ln += p->addComment();
         }
         ret += ln + "\n";
     }
@@ -228,7 +228,7 @@ std::string ModuleObject::generate_vhdl_mod_genparam() {
             while (ln.size() < 60) {
                 ln += " ";
             }
-            ln += "-- " + p->getComment();
+            ln += p->addComment();
         }
         ret += ln + "\n";
     }
@@ -335,7 +335,7 @@ std::string ModuleObject::generate_vhdl_mod_signals() {
             while (ln.size() < 60) {
                 ln += " ";
             }
-            ln += "-- " + p->getComment();
+            ln += p->addComment();
         }
         ret += ln + "\n";
         tcnt++;
@@ -365,31 +365,43 @@ std::string ModuleObject::generate_vhdl_mod_signals() {
     return ret;
 }
 
-
 std::string ModuleObject::generate_vhdl_mod() {
     int tcnt = 0;
     std::string ret = "";
     std::string text;
     std::string ln;
     std::list<GenObject *> tmplparam;
+    std::map<std::string, std::list<GenObject *>> vhdlibs;
     getTmplParamList(tmplparam);
 
     // import statement:
-    std::list<std::string> pkglst;
+    std::map<std::string, std::list<std::string>> pkglst;
     FileObject *pf = static_cast<FileObject *>(getParent());
-    pf->getDepList(pkglst, tmplparam.size());
-    for (auto &e: pkglst) {
-        ret += "use " + e + ".all;\n";
-    }
+    pf->getDepLibList(pkglst);
+
     if (tmplparam.size() == 0) {
-        ret += "use " + pf->getName() + "_pkg.all;\n";
-        ret += "\n";
-    } else {
-        // insert pkg data for template modules: ram, queue, ..
-//        ret += generate_vhdl_pkg_localparam();
+        // Add own package
+        std::string ownpkg = pf->getName() + "_pkg";
+        pkglst[pf->getLibName()].push_back(ownpkg);
     }
 
+    ret += "library ieee;\n";
+    ret += "use ieee.std_logic_1164.all;\n";
+    ret += "use ieee.numeric_std.all;\n";
 
+    for (std::map<std::string, std::list<std::string>>::const_iterator 
+        it = pkglst.begin(); it != pkglst.end(); ++it) {
+        ret += "\nlibrary " + it->first + ";\n";
+        for (auto &e: it->second) {
+            ret += "use " + it->first + "." + e + ".all;\n";
+        }
+    }
+    if (tmplparam.size() != 0) {
+        // insert pkg data for template modules: ram, queue, ..
+        ret += generate_vhdl_pkg_localparam();
+    }
+
+    ret += "\n";
     ret += "entity " + getType() + " is ";
 
     // Generic parameters

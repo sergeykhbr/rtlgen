@@ -31,6 +31,7 @@ struct CfgParameterInfo {
     GenObject *obj;
     std::string path;
     std::string file;
+    std::string lib;
     uint64_t value;
 };
 
@@ -51,10 +52,13 @@ void SCV_set_cfg_parameter(GenObject *parent,
     cfg.obj = obj;
     cfg.path = path;
     cfg.file = file;
+    cfg.lib = obj->getLibName();
     cfg.value = v;
     if (obj->isLocal()) {
+        // Parent of the paramter is module
         cfgLocalParamters_[localname_][obj->getName()] = cfg;
     } else {
+        // Parent of the parameter if file
         cfgParamters_[obj->getName()] = cfg;
     }
 }
@@ -67,6 +71,7 @@ void SCV_set_cfg_type(GenObject *obj) {
     cfg.obj = obj;
     cfg.path = path;
     cfg.file = file;
+    cfg.lib = obj->getLibName();
     cfg.value = 0;
     if (obj->isLocal()) {
         cfgLocalParamters_[localname_][obj->getType()] = cfg;
@@ -126,7 +131,7 @@ GenObject *SCV_get_cfg_obj(std::string &name) {
         return 0;
     }
     if (accessListener_) {
-        accessListener_->notifyAccess(cfgParamters_[name].path);
+        accessListener_->notifyAccess(cfgParamters_[name].lib, cfgParamters_[name].path);
     }
     return cfgParamters_[name].obj;
 }
@@ -140,7 +145,7 @@ uint64_t SCV_get_cfg_parameter(std::string &name) {
 
     info = &cfgParamters_[name];
     if (accessListener_) {
-        accessListener_->notifyAccess(info->path);
+        accessListener_->notifyAccess(info->lib, info->path);
     }
     return info->value;
 }

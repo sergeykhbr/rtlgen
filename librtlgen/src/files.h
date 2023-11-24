@@ -21,6 +21,7 @@
 #include <iostream>
 #include <vector>
 #include <list>
+#include <map>
 
 namespace sysvc {
 
@@ -31,13 +32,14 @@ class FileObject : public GenObject,
                  const char *name);
 
     // Access Listener
-    virtual void notifyAccess(std::string &file);
+    virtual void notifyAccess(std::string &libname, std::string &file);
 
     virtual std::string getFullPath() override;
     virtual std::string getType() { return std::string(""); }
     virtual std::string generate() override;
 
-    virtual void getDepList(std::list<std::string> &lst, size_t tmplsz);
+    virtual void getDepList(std::list<std::string> &lst);
+    virtual void getDepLibList(std::map<std::string, std::list<std::string>> &liblst);    // for VHDL only
 
  protected:
     void generate_sysc();
@@ -51,7 +53,7 @@ class FileObject : public GenObject,
     void list_of_modules(GenObject *p, std::list<std::string> &fpath);
 
  private:
-    std::list<std::string> depfiles_;
+    std::map<std::string, std::list<std::string>> depfiles_;
 };
 
 }  // namespace sysvc
