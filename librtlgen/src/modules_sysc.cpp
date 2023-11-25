@@ -61,12 +61,7 @@ std::string ModuleObject::generate_sysc_h_reg_struct(bool negedge) {
             ln += "[" + p->getStrDepth() + "]";
         }
         ln += ";";
-        if (p->getComment().size()) {
-            while (ln.size() < 60) {
-                ln += " ";
-            }
-            ln += "// " + p->getComment();
-        }
+        p->addComment(ln);
         out += ln + "\n";
     }
     if (!negedge) {
@@ -92,6 +87,7 @@ std::string ModuleObject::generate_sysc_h_reg_struct(bool negedge) {
             }
             out += "        iv." + p->getName() + " = ";
             out += p->getStrValue();
+            // TODO: add "_" for Generic value
             out += ";\n";
         }
         out += "    }\n";
