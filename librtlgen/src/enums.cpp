@@ -47,22 +47,19 @@ std::string EnumObject::generate() {
 std::string EnumObject::generate_sysc() {
     std::string ret = "";
     std::string ln = "";
-    ret += "enum " + getName() + " {\n";
+    ret += addspaces() + "enum " + getName() + " {\n";
+    pushspaces();
     for (auto &p: entries_) {
-        ln = "    " + p->getName() + " = ";
-        ln += static_cast<I32D *>(p)->getStrValue();
+        ln = addspaces() + p->getName() + " = ";
+        ln += p->getStrValue();
         if (&p != &entries_.back()) {
             ln += ",";
         }
-        if (p->getComment().size()) {
-            while (ln.size() < 60) {
-                ln += " ";
-            }
-            ln += "// " + p->getComment();
-        }
+        p->addComment(ln);
         ret += ln + "\n";
     }
-    ret += "};\n";
+    popspaces();
+    ret += addspaces() + "};\n";
     return ret;
 }
 
@@ -70,14 +67,9 @@ std::string EnumObject::generate_sysv() {
     std::string ret = "";
     std::string ln = "";
     for (auto &p: entries_) {
-        ln = "localparam int " + p->getName() + " = ";
-        ln += static_cast<I32D *>(p)->getStrValue() + ";";
-        if (p->getComment().size()) {
-            while (ln.size() < 60) {
-                ln += " ";
-            }
-            ln += "// " + p->getComment();
-        }
+        ln = addspaces() + "localparam int " + p->getName() + " = ";
+        ln += p->getStrValue() + ";";       // FIXME to logic and generate() instead of int
+        p->addComment(ln);
         ret += ln + "\n";
     }
     return ret;
@@ -85,6 +77,13 @@ std::string EnumObject::generate_sysv() {
 
 std::string EnumObject::generate_vhdl() {
     std::string ret = "";
+    std::string ln = "";
+    for (auto &p: entries_) {
+        ln = addspaces() + "constant " + p->getName() + " : " + p->getType();
+        ln += " := " + p->getStrValue() + ";";
+        p->addComment(ln);
+        ret += ln + "\n";
+    }
     return ret;
 }
 

@@ -28,12 +28,12 @@ class RegIntBank : public ModuleObject {
     class CombProcess : public ProcObject {
      public:
         CombProcess(GenObject *parent) : ProcObject(parent, "comb"),
-            int_daddr("", "int_daddr", this),
-            int_waddr("", "int_waddr", this),
-            int_radr1("", "int_radr1", this),
-            int_radr2("", "int_radr2", this),
-            v_inordered("1", "v_inordered", "", this),
-            next_tag("CFG_REG_TAG_WIDTH", "next_tag", "", this) {
+            int_daddr("0", "int_daddr", this),
+            int_waddr("0", "int_waddr", this),
+            int_radr1("0", "int_radr1", this),
+            int_radr2("0", "int_radr2", this),
+            v_inordered("1", "v_inordered", "0", this),
+            next_tag("CFG_REG_TAG_WIDTH", "next_tag", "'0", this) {
             RegIntBank *p = static_cast<RegIntBank *>(parent);
             Operation::start(this);
             p->proc_comb();

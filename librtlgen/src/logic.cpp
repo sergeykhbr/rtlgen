@@ -118,41 +118,4 @@ std::string Logic1::getType() {
     return ret;
 }
 
-/*std::string Logic::getStrValue() {
-    std::string ret = "";
-    std::string t = GenValue::getStrValue();
-    if (SCV_is_sysc() && isNumber(t) && (getWidth() > 32)) {
-        ret = t + "ull";
-    } else if (SCV_is_sv() && isNumber(t)) {
-        if (getValue() == 0 && getWidth() > 64) {
-            ret += "'0";
-        } else {
-            char fmt[64] = "%d'h%";
-            char tstr[256];
-            int w = getWidth();
-            RISCV_sprintf(fmt, sizeof(fmt), "%%d'h%%0%d" RV_PRI64 "x", (w+3)/4);
-            RISCV_sprintf(tstr, sizeof(tstr), fmt, w, GenValue::getValue());
-            ret += tstr;
-        }
-    } else if (SCV_is_vhdl() && isNumber(t)) {
-        if (getValue() == 0) {
-            if (getWidth() == 1) {
-                ret += "'0'";
-            } else {
-                ret += "(others => '0')";
-            }
-        } else {
-            char fmt[64];
-            char tstr[256];
-            int w = getWidth();
-            RISCV_sprintf(fmt, sizeof(fmt), "X\"%%0%d" RV_PRI64 "x\"", (w+3)/4);
-            RISCV_sprintf(tstr, sizeof(tstr), fmt, GenValue::getValue());
-            ret += tstr;
-        }
-    } else {
-        ret += t;
-    }
-    return ret;
-}*/
-
 }

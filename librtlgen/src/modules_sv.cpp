@@ -43,18 +43,13 @@ std::string ModuleObject::generate_sv_pkg_localparam() {
             // do nothing
         } else {
             if (p->isString()) {
-                // Vivado doesn't support string parameters
+                // Vivado doesn't support string parameters, skip type
                 ln = "localparam " + p->getName();
             } else {
                 ln = "localparam " + p->getType() + " " + p->getName();
             }
-            ln += " = " + p->getStrValue() + ";";
-            if (p->getComment().size()) {
-                while (ln.size() < 60) {
-                    ln += " ";
-                }
-                ln += "// " + p->getComment();
-            }
+            ln += " = " + p->generate() + ";";
+            p->addComment(ln);
             ret += comment + ln + "\n";
             tcnt++;
         }
@@ -69,7 +64,6 @@ std::string ModuleObject::generate_sv_pkg_localparam() {
 std::string ModuleObject::generate_sv_pkg_reg_struct(bool negedge) {
     std::string ret = "";
     std::string ln = "";
-    std::string tstr;
     int tcnt = 0;
     bool twodim = false;
 
@@ -110,27 +104,19 @@ std::string ModuleObject::generate_sv_pkg_reg_struct(bool negedge) {
         }
     }
     if (!twodim) {
+        ret += addspaces();
         if (negedge == false) {
             ret += "const " + getType() + "_registers " + getType() + "_r_reset = '{\n";
         } else {
             ret += "const " + getType() + "_nregisters " + getType() + "_nr_reset = '{\n";
         }
+        pushspaces();
         for (auto &p: entries_) {
             if ((!p->isReg() && negedge == false)
                 || (!p->isNReg() && negedge == true)) {
                 continue;
             }
-            ln = "    ";
-            tstr = p->getStrValue();    // to provide compatibility with gcc
-            if (p->isNumber(tstr) && p->getValue() == 0) {
-                if (p->getWidth() == 1) {
-                    ln += "1'b0";
-                } else {
-                    ln += "'0";
-                }
-            } else {
-                ln += p->getStrValue();
-            }
+            ln = addspaces() + p->getStrValue();
             if (--tcnt) {
                 ln += ",";
             }
@@ -140,7 +126,8 @@ std::string ModuleObject::generate_sv_pkg_reg_struct(bool negedge) {
             ln += "// " + p->getName();
             ret += ln + "\n";
         }
-        ret += "};\n";
+        popspaces();
+        ret += addspaces() + "};\n";
         ret += "\n";
     }
     return ret;
@@ -214,17 +201,11 @@ std::string ModuleObject::generate_sv_mod_genparam() {
             // vivado doesn't support string as parameter:
             ln += p->getType() + " ";
         }
-        ln += p->getName() + " = " + p->getStrValue();
-
+        ln += p->getName() + " = " + p->generate();
         if (p != genparam.back()) {
             ln += ",";
         }
-        if (p->getComment().size()) {
-            while (ln.size() < 60) {
-                ln += " ";
-            }
-            ln += "// " + p->getComment();
-        }
+        p->addComment(ln);
         ret += ln + "\n";
     }
 
@@ -247,7 +228,7 @@ std::string ModuleObject::generate_sv_mod_param_strings() {
         } else {
             ret += "localparam " + p->getType() + " " + p->getName();
         }
-        ret += " = " + p->getStrValue() + ";\n";
+        ret += " = " + p->generate() + ";\n";
 
         tcnt++;
     }
@@ -369,13 +350,7 @@ std::string ModuleObject::generate_sv_mod_proc_nullify(GenObject *obj,
             }
             ret += obj->getName();
         }
-        ret += " = ";
-        if (obj->getStrValue().size() == 0) {
-            ret += "0";
-        } else {
-            ret += obj->getStrValue();
-        }
-        ret += ";\n";
+        ret += " = " + obj->getStrValue() + ";\n";
     } else if (obj->getId() == ID_STRUCT_INST) {
         std::string prefix2 = prefix;
         if (obj->getName() != "0") {
@@ -458,12 +433,7 @@ std::string ModuleObject::generate_sv_mod_proc(GenObject *proc) {
         }
         tcnt++;
         ln += ";";
-        if (e->getComment().size()) {
-            while (ln.size() < 60) {
-                ln += " ";
-            }
-            ln += "// " + e->getComment();
-        }
+        e->addComment(ln);
         ret += ln + "\n";
     }
     if (tcnt) {

@@ -432,6 +432,7 @@ void FileObject::getDepLibList(std::map<std::string, std::list<std::string>> &li
 void FileObject::generate_sysv() {
     bool is_module = false;
     std::string out = "";
+    std::string ln;
     std::string filename = getFullPath();
     filename = filename + "_pkg.sv";
 
@@ -467,6 +468,17 @@ void FileObject::generate_sysv() {
         } else {
             if (p->getId() == ID_FUNCTION) {
                 out += "function automatic ";
+            } else if (p->getId() == ID_PARAM) {
+                ln = addspaces() + "localparam ";
+                if (p->isString()) {
+                    // Vivado doesn't support string parameters. Skip type definition
+                } else {
+                    ln += p->getType() + " ";
+                }
+                ln += p->getName() + " = " + p->generate() + ";";
+                p->addComment(ln);
+                out += ln + "\n";
+                continue;
             } else if (p->isTypedef() && p->getName().size() == 0) {
                 out += "typedef ";
                 out += p->generate();
@@ -521,6 +533,7 @@ void FileObject::generate_sysv() {
 void FileObject::generate_vhdl() {
     bool is_module = false;
     std::string out = "";
+    std::string ln;
     std::string filename = getFullPath();
     filename = filename + "_pkg.vhd";
 
@@ -531,16 +544,6 @@ void FileObject::generate_vhdl() {
     out += "\n";
     out += "package " + getName() + "_pkg is\n";
     out += "\n";
-
-#if 0
-    // Automatic Dependency detection
-    std::list<std::string> pkglist;
-    getDepList(pkglist, 0);
-    for (auto &f : pkglist) {
-        out += "import " + f + "::*;\n";
-    }
-    out += "\n";
-#endif
 
     // header
     bool skip_pkg = false;
@@ -562,6 +565,12 @@ void FileObject::generate_vhdl() {
         } else {
             if (p->getId() == ID_FUNCTION) {
                 out += "function ";
+            } else if (p->getId() == ID_PARAM) {
+                ln = addspaces() + "constant " + p->getName() + " : ";
+                ln += p->getType() + " := " + p->generate() + ";";
+                p->addComment(ln);
+                out += ln + "\n";
+                continue;
             } else if (p->isTypedef() && p->getName().size() == 0) {
                 out += "type " + p->getType();
                 out += " is array (0 to " + p->getStrDepth() + " - 1) of ";

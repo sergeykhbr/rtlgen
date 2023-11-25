@@ -38,6 +38,7 @@ class DefParamBOOL : public BOOL {
         }
         return getName();
     }
+    virtual std::string generate() override { return BOOL::getStrValue(); }
 };
 
 class DefParamI32D : public I32D {
@@ -54,6 +55,7 @@ class DefParamI32D : public I32D {
         }
         return getName();
     }
+    virtual std::string generate() override { return I32D::getStrValue(); }
 };
 
 class DefParamUI32D : public UI32D {
@@ -70,6 +72,7 @@ class DefParamUI32D : public UI32D {
         }
         return getName();
     }
+    virtual std::string generate() override { return UI32D::getStrValue(); }
 };
 
 class DefParamUI64H : public UI64H {
@@ -86,6 +89,7 @@ class DefParamUI64H : public UI64H {
         }
         return getName();
     }
+    virtual std::string generate() override { return UI64H::getStrValue(); }
 };
 
 class DefParamTIMESEC : public TIMESEC {
@@ -102,6 +106,7 @@ class DefParamTIMESEC : public TIMESEC {
         }
         return getName();
     }
+    virtual std::string generate() override { return TIMESEC::getStrValue(); }
 };
 
 class DefParamString : public STRING {
@@ -117,6 +122,7 @@ class DefParamString : public STRING {
         }
         return getName();
     }
+    virtual std::string generate() override { return STRING::getStrValue(); }
 };
 
 class DefParamLogic : public Logic {
@@ -132,6 +138,7 @@ class DefParamLogic : public Logic {
         }
         return getName();
     }
+    virtual std::string generate() override { return Logic::getStrValue(); }
 };
 
 }  // namespace sysvc

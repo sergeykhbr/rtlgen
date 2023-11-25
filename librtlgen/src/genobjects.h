@@ -142,7 +142,10 @@ class GenObject {
     size_t parse_to_objlist(const char *val, size_t pos, std::list<GenObject *> &objlist);
 
     virtual bool isNumber(std::string &s) {
-        return s.c_str()[0] >= '0' && s.c_str()[0] <= '9';
+        const char *pch = s.c_str();
+        return (pch[0] >= '0' && pch[0] <= '9')
+            || (pch[0] == '-' && pch[1] == '1')     // all ones
+            || (pch[0] == '\'' && pch[1] == '0');    // all zeros
     }
 
  protected:

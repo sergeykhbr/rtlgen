@@ -33,7 +33,6 @@ class GenValue : public GenObject {
              GenObject *parent, const char *comment="");
     // default width = 32 (int)
     GenValue(int val);
-    //virtual std::string getStrValue() override;
     virtual std::string v_name(std::string v) override;
     virtual std::string r_name(std::string v) override;
 };

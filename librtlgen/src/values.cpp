@@ -86,66 +86,6 @@ std::string GenValue::r_name(std::string v) {
 }
 
 
-/*std::string GenValue::getStrValue() {
-    std::string ret = GenObject::getStrValue();
-    char tstr[256] = "";
-    if (!isNumber(ret)) {
-        return ret;
-    }
-    if (SCV_is_sv() && getId() == ID_CONST) {
-        int w = getWidth();
-        uint64_t v = getValue();
-        if (isFloat()) {
-            RISCV_sprintf(tstr, sizeof(tstr), "%.f", getFloatValue());
-        } else if (w == 1) {
-            RISCV_sprintf(tstr, sizeof(tstr), "1'b%" RV_PRI64 "x", v);
-        } else if (!isLogic()) {
-            RISCV_sprintf(tstr, sizeof(tstr), "%" RV_PRI64 "d", v);
-        } else if (v == 0 && isLogic() && (w > 64)) {
-            return std::string("'0");
-//        } else if (strValue_.c_str()[1] == 'x') {
-//            if (w == 32) {
-//                RISCV_sprintf(tstr, sizeof(tstr), "32'h%08" RV_PRI64 "x", v);
-//            } else {
-//                RISCV_sprintf(tstr, sizeof(tstr), "%d'h%" RV_PRI64 "x", w, v);
-//            }
-        } else {
-            char fmt[64];
-            RISCV_sprintf(fmt, sizeof(fmt), "%%d'h%%0%d" RV_PRI64 "x", (w+3)/4);
-            RISCV_sprintf(tstr, sizeof(tstr), fmt, w, GenValue::getValue());
-//            return GenObject::getStrValue();
-        }
-        return std::string(tstr);
-    } else if (SCV_is_vhdl() && getId() == ID_CONST) {
-        char tstr[513];
-        int w = getWidth();
-        uint64_t v = getValue();
-        if (isFloat()) {
-            RISCV_sprintf(tstr, sizeof(tstr), "%.f", getFloatValue());
-        } else if (w == 1) {
-            RISCV_sprintf(tstr, sizeof(tstr), "'%" RV_PRI64 "X'", v);
-        } else if (v == 0 && isLogic()) {
-            return std::string("(others => '0')");
-        } else {
-            char fmt[16];
-            RISCV_sprintf(fmt, sizeof(fmt), "X\"%%0%d" RV_PRI64 "X\"", w / 4);
-            if ((w & 0x3) == 0) {
-                RISCV_sprintf(tstr, sizeof(tstr), fmt, v);
-            } else {
-                tstr[0] = '\"';
-                for (int i = 0; i < w; i++) {
-                    tstr[1 + i] = '0' + static_cast<char>((v >> (w - i - 1)) & 0x1);
-                }
-                tstr[w + 1] = '\"';
-                tstr[w + 2] = '\0';
-            }
-        }
-        return std::string(tstr);
-    }
-    return GenObject::getStrValue();
-}
-*/
-
 std::string BOOL::getType() {
     std::string ret = "";
     if (SCV_is_sysc()) {

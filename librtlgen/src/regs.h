@@ -28,7 +28,7 @@ class RegSignal : public Signal {
     RegSignal(GenObject *parent,
            const char *name,
            const char *width="1",
-           const char *val="0", // reset value
+           const char *val="'0", // reset value
            const char *comment="");
  protected:
 };
@@ -38,7 +38,7 @@ class NRegSignal : public Signal {
     NRegSignal(GenObject *parent,
            const char *name,
            const char *width,
-           const char *val="0", // reset value
+           const char *val="'0", // reset value
            const char *comment="");
  protected:
 };

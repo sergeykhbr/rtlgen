@@ -41,6 +41,28 @@ static std::list<GenObject *> modules_;
 AccessListener *accessListener_ = 0;
 static EGenerateType gentype_ = GEN_UNDEFINED;
 static std::string localname_ = "";
+int spaces_ = 0;
+
+std::string addspaces() {
+    std::string ret = "";
+    for (int i = 0; i < 4*spaces_; i++) {
+        ret += " ";
+    }
+    return ret;
+}
+
+void pushspaces() {
+    spaces_++;
+}
+
+void popspaces() {
+    if (spaces_) {
+        spaces_--;
+    } else {
+        SHOW_ERROR("spaces = %d", spaces_);
+    }
+}
+
 
 void SCV_set_cfg_parameter(GenObject *parent,
                            GenObject *obj,

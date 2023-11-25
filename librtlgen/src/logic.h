@@ -28,32 +28,31 @@ class Logic : public GenValue {
  public:
     Logic(const char *width="1",
           const char *name="",
-          const char *val="",
+          const char *val="'0",
           GenObject *parent=0,
           const char *comment="");
 
     Logic(GenValue *width,
           const char *name="",
-          const char *val="",
+          const char *val="'0",
           GenObject *parent=0,
           const char *comment="");
 
     Logic(GenObject *parent,
           const char *name,
           const char *width,
-          const char *val="",
+          const char *val="'0",
           const char *comment="") :
         Logic(width, name, val, parent, comment) {}
 
     virtual bool isLogic() override { return true; }
     virtual std::string getType();
-    //virtual std::string getStrValue() override;
 };
 
 class Logic1 : public Logic {
  public:
     Logic1(const char *name="",
-          const char *val="",
+          const char *val="0",
           GenObject *parent=0,
           const char *comment="") :
         Logic("1", name, val, parent, comment) {}
@@ -61,7 +60,7 @@ class Logic1 : public Logic {
     Logic1(GenObject *parent,
           const char *name,
           const char *comment="") :
-        Logic("1", name, "", parent, comment) {}
+        Logic("1", name, "0", parent, comment) {}
 
     virtual std::string getType() override;
 };
@@ -72,7 +71,7 @@ class LogicBig : public Logic {
     LogicBig(GenObject *parent,
              const char *name,
              const char *width,
-             const char *val="0",
+             const char *val="'0",
              const char *comment="") :
         Logic(width, name, val, parent, comment) {}
 
@@ -84,7 +83,7 @@ class LogicBv : public Logic {
     LogicBv(GenObject *parent,
              const char *name,
              const char *width,
-             const char *val="0",
+             const char *val="'0",
              const char *comment="") :
         Logic(width, name, val, parent, comment) {}
 

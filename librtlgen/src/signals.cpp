@@ -20,7 +20,7 @@
 namespace sysvc {
 
 Signal::Signal(GenObject *parent, const char *name, GenValue *width, 
-    const char *comment) : Logic(width, name, "0", parent, comment) {
+    const char *comment) : Logic(width, name, "'0", parent, comment) {
 }
 
 Signal::Signal(GenObject *parent, const char *name, const char *width,

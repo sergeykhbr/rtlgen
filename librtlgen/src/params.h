@@ -27,8 +27,6 @@ class ParamGeneric {
  public:
     // if local = false, then register parameter using method SCV_..
     ParamGeneric(GenValue *parent);
-
-    virtual std::string genparam(GenValue *p, std::string val);
 };
 
 class ParamBOOL : public BOOL,

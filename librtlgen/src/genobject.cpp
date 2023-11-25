@@ -262,26 +262,44 @@ std::string GenObject::getStrValue() {
         return ret;
     }
 
-    char tstr[513];
+    char tstr[515];
     char fmt[64];
     int w = getWidth();
-    if (SCV_is_sysc() && w > 32) {
-        ret += "ull";
+    if (SCV_is_sysc()) {
+        if (ret == "-1") {
+            if (w <= 32) {
+                RISCV_sprintf(tstr, sizeof(tstr), "%s", "~0ul");
+            } else {
+                RISCV_sprintf(tstr, sizeof(tstr), "%s", "~0ull");
+            }
+            ret = std::string(tstr);
+        } else if (ret == "'0") {
+            RISCV_sprintf(tstr, sizeof(tstr), "%s", "0");
+            ret = std::string(tstr);
+        } else if (w > 32) {
+            ret += "ull";
+        }
     } else if (SCV_is_sv()) {
         uint64_t v = getValue();
         if (isFloat()) {
             RISCV_sprintf(tstr, sizeof(tstr), "%.f", getFloatValue());
         } else if (w == 1) {
+            // One bit value (logic/bit)
             RISCV_sprintf(tstr, sizeof(tstr), "1'b%" RV_PRI64 "x", v);
-        } else if (!isLogic()) {
-            RISCV_sprintf(tstr, sizeof(tstr), "%" RV_PRI64 "d", v);
-        } else if (v == 0 && isLogic()) {
-            return std::string("'0");
-        } else if (v == 1 && isLogic()) {
-            RISCV_sprintf(tstr, sizeof(tstr), "%d'd1", w);
-        } else {
+        } else if (ret == "-1") {
+            RISCV_sprintf(tstr, sizeof(tstr), "%s", "'1");
+        } else if (ret == "'0") {
+            RISCV_sprintf(tstr, sizeof(tstr), "%s", "'0");
+        } else if (ret.c_str()[1] == 'x') {
+            // HEX numbers always with bus width (logic and integer)
             RISCV_sprintf(fmt, sizeof(fmt), "%%d'h%%0%d" RV_PRI64 "x", (w+3)/4);
             RISCV_sprintf(tstr, sizeof(tstr), fmt, w, v);
+        } else if (!isLogic()) {
+            // integer numbers
+            RISCV_sprintf(tstr, sizeof(tstr), "%" RV_PRI64 "d", v);
+        } else {
+            // DEC Logic always with the bus width
+            RISCV_sprintf(tstr, sizeof(tstr), "%d'd%" RV_PRI64 "d", w, v);
         }
         return std::string(tstr);
     } else if (SCV_is_vhdl()) {
@@ -290,20 +308,23 @@ std::string GenObject::getStrValue() {
             RISCV_sprintf(tstr, sizeof(tstr), "%.f", getFloatValue());
         } else if (w == 1) {
             RISCV_sprintf(tstr, sizeof(tstr), "'%" RV_PRI64 "X'", v);
-        } else if (v == 0 && isLogic()) {
-            return std::string("(others => '0')");
-        } else {
+        } else if (ret == "-1") {
+            RISCV_sprintf(tstr, sizeof(tstr), "%s", "(others => '1')");
+        } else if (ret == "'0") {
+            RISCV_sprintf(tstr, sizeof(tstr), "%s", "(others => '0')");
+        } else if ((w & 0x3) == 0) {
             RISCV_sprintf(fmt, sizeof(fmt), "X\"%%0%d" RV_PRI64 "X\"", w / 4);
-            if ((w & 0x3) == 0) {
-                RISCV_sprintf(tstr, sizeof(tstr), fmt, v);
-            } else {
-                tstr[0] = '\"';
-                for (int i = 0; i < w; i++) {
-                    tstr[1 + i] = '0' + static_cast<char>((v >> (w - i - 1)) & 0x1);
-                }
-                tstr[w + 1] = '\"';
-                tstr[w + 2] = '\0';
+            RISCV_sprintf(tstr, sizeof(tstr), fmt, v);
+        } else if (!isLogic()) {
+            // integer numbers
+            RISCV_sprintf(tstr, sizeof(tstr), "%" RV_PRI64 "d", v);
+        } else {
+            tstr[0] = '\"';
+            for (int i = 0; i < w; i++) {
+                tstr[1 + i] = '0' + static_cast<char>((v >> (w - i - 1)) & 0x1);
             }
+            tstr[w + 1] = '\"';
+            tstr[w + 2] = '\0';
         }
         return std::string(tstr);
     }
@@ -418,8 +439,12 @@ uint64_t GenObject::parse_to_u64(const char *val, size_t &pos) {
         ret = strtoll(buf, 0, base);
         return ret;
     }
-    if (buf[0] == '-') {// && buf[1] == '1') {
+    if (buf[0] == '-' && buf[1] == '1') {
         ret = ~0ull;
+        return ret;
+    }
+    if (buf[0] == '\'' && buf[1] == '0') {
+        ret = 0ull;
         return ret;
     }
     if (strcmp(buf, "true") == 0 || strcmp(buf, "false") == 0) {
@@ -493,6 +518,22 @@ std::string GenObject::parse_to_str(const char *val, size_t &pos) {
         ret = std::string(buf);
         return ret;
     }
+#if 1
+    if ((buf[0] >= '0' && buf[0] <= '9')
+        || (buf[0] == '-' && buf[1] == '1')
+        || (buf[0] == '\'' && buf[1] == '0')) {
+        ret = std::string(buf);
+        return ret;
+    }
+    if (strcmp(buf, "true") == 0) {
+        ret = std::string("1");
+        return ret;
+    }
+    if (strcmp(buf, "false") == 0) {
+        ret = std::string("0");
+        return ret;
+    }
+#else
     if (buf[0] >= '0' && buf[0] <= '9') {
         int base = buf[1] == 'x' ? 16: 10;
         if (SCV_is_sv() && base == 16) {
@@ -529,6 +570,7 @@ std::string GenObject::parse_to_str(const char *val, size_t &pos) {
         }
         return ret;
     }
+#endif
     m = std::string(buf);
     if (SCV_is_cfg_parameter(m)) {
         GenObject *obj = SCV_get_cfg_obj(m);

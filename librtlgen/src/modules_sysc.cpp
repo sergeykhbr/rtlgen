@@ -1139,13 +1139,7 @@ std::string ModuleObject::generate_sysc_proc_nullify(GenObject *obj,
             }
             ret += obj->getName();
         }
-        ret += " = ";
-        if (obj->getStrValue().size() == 0) {
-            ret += "0";
-        } else {
-            ret += obj->getStrValue();
-        }
-        ret += ";\n";
+        ret += " = " + obj->getStrValue() + ";\n";
     } else if (obj->getId() == ID_STRUCT_INST) {
         std::string prefix2 = prefix;
         if (obj->getName() != "0") {

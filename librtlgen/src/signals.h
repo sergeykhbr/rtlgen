@@ -34,7 +34,7 @@ class Signal : public Logic {
     Signal(GenObject *parent,
            const char *name,
            const char *width,
-           const char *val="0",
+           const char *val="'0",
            const char *comment="");
 
     virtual bool isSignal() override { return true; }
@@ -52,7 +52,7 @@ class SignalBig : public Signal {
     SignalBig(GenObject *parent,
            const char *name,
            const char *width,
-           const char *val="0",
+           const char *val="'0",
            const char *comment="")
         : Signal(parent, name, width, val, comment) {}
 

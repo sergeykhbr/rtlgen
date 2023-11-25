@@ -44,6 +44,10 @@ class AccessListener {
     virtual void notifyAccess(std::string &libname, std::string &file) = 0;
 };
 
+std::string addspaces();
+void pushspaces();
+void popspaces();
+
 void SCV_set_generator(EGenerateType v);
 int SCV_is_sysc();
 int SCV_is_sv();

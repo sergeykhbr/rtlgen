@@ -43,13 +43,8 @@ std::string ModuleObject::generate_vhdl_pkg_localparam() {
             // do nothing
         } else {
             ln = addspaces() + "constant " + p->getName() + " : " + p->getType();
-            ln += " := " + p->getStrValue() + ";";
-            if (p->getComment().size()) {
-                while (ln.size() < 60) {
-                    ln += " ";
-                }
-                ln += p->addComment();
-            }
+            ln += " := " + p->generate() + ";";
+            p->addComment(ln);
             ret += comment + ln + "\n";
             tcnt++;
         }
@@ -219,17 +214,12 @@ std::string ModuleObject::generate_vhdl_mod_genparam() {
 
     for (auto &p : genparam) {
         ln = addspaces() + p->getName() + " : ";
-        ln += p->getType() + " := " + p->getStrValue();
+        ln += p->getType() + " := " + p->generate();
 
         if (p != genparam.back()) {
             ln += ";";
         }
-        if (p->getComment().size()) {
-            while (ln.size() < 60) {
-                ln += " ";
-            }
-            ln += p->addComment();
-        }
+        p->addComment(ln);
         ret += ln + "\n";
     }
 
@@ -254,7 +244,7 @@ std::string ModuleObject::generate_vhdl_mod_param_strings() {
         } else {
             ret += "localparam " + p->getType() + " " + p->getName();
         }
-        ret += " = " + p->getStrValue() + ";\n";
+        ret += " = " + p->generate() + ";\n";
 
         tcnt++;
     }

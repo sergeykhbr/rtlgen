@@ -28,34 +28,4 @@ ParamGeneric::ParamGeneric(GenValue *parent) {
     }
 }
 
-std::string ParamGeneric::genparam(GenValue *p, std::string val) {
-    std::string ret = "";
-
-    if (SCV_is_sysc()) {
-        ret += "static const " + p->getType() + " ";
-        ret += p->getName() + " = " + val + ";";
-    } else if (SCV_is_sv()) {
-        ret += "localparam ";
-        if (p->isString()) {
-            // Vivado doesn't support string parameters
-        } else {
-            ret += p->getType() + " ";
-        }
-        ret += p->getName() + " = " + val + ";";
-    } else if (SCV_is_vhdl()) {
-        ret += "constant " + p->getName() + " : ";
-        ret += p->getType() + " := " + val + ";";
-    }
-
-    // One line comment
-    if (p->getComment().size()) {
-        while (ret.size() < 60) {
-            ret += " ";
-        }
-        ret += p->addComment();
-    }
-    ret += "\n";
-    return ret;
-}
-
 }
