@@ -89,7 +89,7 @@ vip_sdcard_ctrl::vip_sdcard_ctrl(GenObject *parent, const char *name) :
     ocr_vdd_window(this, "ocr_vdd_window", "24"),
     req_mem_valid(this, "req_mem_valid", "1"),
     req_mem_addr(this, "req_mem_addr", "41"),
-    shiftdat(this, "shiftdat", "16", "-1"),
+    shiftdat(this, "shiftdat", "16", "'1"),
     bitcnt(this, "bitcnt", "13"),
     crc16_clear(this, "crc16_clear", "1"),
     crc16_next(this, "crc16_next", "1"),

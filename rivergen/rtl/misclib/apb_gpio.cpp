@@ -37,7 +37,7 @@ apb_gpio::apb_gpio(GenObject *parent, const char *name) :
     wb_req_wdata(this, "wb_req_wdata", "32"),
     // registers
     input_val(this, "input_val", "width"),
-    input_en(this, "input_en", "width", "-1"),
+    input_en(this, "input_en", "width", "'1"),
     output_en(this, "output_en", "width"),
     output_val(this, "output_val", "width"),
     ie(this, "ie", "width"),

@@ -37,7 +37,7 @@ vip_uart_transmitter::vip_uart_transmitter(GenObject *parent, const char *name) 
     sample(this, "sample", "32"),
     txdata_rdy(this, "txdata_rdy", "1"),
     txdata(this, "txdata", "8"),
-    shiftreg(this, "shiftreg", "9", "-1"),
+    shiftreg(this, "shiftreg", "9", "'1"),
     bitpos(this, "bitpos", "4"),
     overflow(this, "overflow", "1"),
     //

@@ -70,7 +70,7 @@ class BpBTB : public ModuleObject {
         // Structure definition
         BtbEntryType(GenObject *parent, const char *name="", int idx=-1, const char *comment="")
             : StructObject(parent, "BtbEntryType", name, idx, comment),
-            pc(this, "pc", "RISCV_ARCH", "-1"),
+            pc(this, "pc", "RISCV_ARCH", "'1"),
             npc(this, "npc", "RISCV_ARCH"),
             exec(this, "exec", "1", "0", "0=predec; 1=exec (high priority)") {}
      public:

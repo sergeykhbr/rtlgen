@@ -144,7 +144,7 @@ class GenObject {
     virtual bool isNumber(std::string &s) {
         const char *pch = s.c_str();
         return (pch[0] >= '0' && pch[0] <= '9')
-            || (pch[0] == '-' && pch[1] == '1')     // all ones
+            || (pch[0] == '\'' && pch[1] == '1')     // all ones
             || (pch[0] == '\'' && pch[1] == '0');    // all zeros
     }
 

@@ -70,10 +70,10 @@ DecoderRvc::DecoderRvc(GenObject *parent, const char *name) :
     OPCODE_C_SDSP(this, "5", "OPCODE_C_SDSP", "0x1E"),
     // signals
     // registers
-    pc(this, "pc", "RISCV_ARCH", "-1"),
+    pc(this, "pc", "RISCV_ARCH", "'1"),
     isa_type(this, "isa_type", "ISA_Total"),
     instr_vec(this, "instr_vec", "Instr_Total"),
-    instr(this, "instr", "16", "-1"),
+    instr(this, "instr", "16", "'1"),
     memop_store(this, "memop_store", "1"),
     memop_load(this, "memop_load", "1"),
     memop_sign_ext(this, "memop_sign_ext", "1"),

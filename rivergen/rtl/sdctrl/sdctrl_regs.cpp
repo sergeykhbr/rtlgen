@@ -70,7 +70,7 @@ sdctrl_regs::sdctrl_regs(GenObject *parent, const char *name) :
     resp_valid(this, "resp_valid", "1"),
     resp_rdata(this, "resp_rdata", "32"),
     resp_err(this, "resp_err", "1"),
-    last_req_cmd(this, "last_req_cmd", "6", "-1"),
+    last_req_cmd(this, "last_req_cmd", "6", "'1"),
     last_resp_cmd(this, "last_resp_cmd", "6"),
     last_resp_crc7_rx(this, "last_resp_crc7_rx", "7"),
     last_resp_crc7_calc(this, "last_resp_crc7_calc", "7"),

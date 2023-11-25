@@ -266,7 +266,7 @@ std::string GenObject::getStrValue() {
     char fmt[64];
     int w = getWidth();
     if (SCV_is_sysc()) {
-        if (ret == "-1") {
+        if (ret == "'1") {
             if (w <= 32) {
                 RISCV_sprintf(tstr, sizeof(tstr), "%s", "~0ul");
             } else {
@@ -286,7 +286,7 @@ std::string GenObject::getStrValue() {
         } else if (w == 1) {
             // One bit value (logic/bit)
             RISCV_sprintf(tstr, sizeof(tstr), "1'b%" RV_PRI64 "x", v);
-        } else if (ret == "-1") {
+        } else if (ret == "'1") {
             RISCV_sprintf(tstr, sizeof(tstr), "%s", "'1");
         } else if (ret == "'0") {
             RISCV_sprintf(tstr, sizeof(tstr), "%s", "'0");
@@ -308,7 +308,7 @@ std::string GenObject::getStrValue() {
             RISCV_sprintf(tstr, sizeof(tstr), "%.f", getFloatValue());
         } else if (w == 1) {
             RISCV_sprintf(tstr, sizeof(tstr), "'%" RV_PRI64 "X'", v);
-        } else if (ret == "-1") {
+        } else if (ret == "'1") {
             RISCV_sprintf(tstr, sizeof(tstr), "%s", "(others => '1')");
         } else if (ret == "'0") {
             RISCV_sprintf(tstr, sizeof(tstr), "%s", "(others => '0')");
@@ -439,7 +439,7 @@ uint64_t GenObject::parse_to_u64(const char *val, size_t &pos) {
         ret = strtoll(buf, 0, base);
         return ret;
     }
-    if (buf[0] == '-' && buf[1] == '1') {
+    if (buf[0] == '\'' && buf[1] == '1') {
         ret = ~0ull;
         return ret;
     }
@@ -518,9 +518,8 @@ std::string GenObject::parse_to_str(const char *val, size_t &pos) {
         ret = std::string(buf);
         return ret;
     }
-#if 1
     if ((buf[0] >= '0' && buf[0] <= '9')
-        || (buf[0] == '-' && buf[1] == '1')
+        || (buf[0] == '\'' && buf[1] == '1')
         || (buf[0] == '\'' && buf[1] == '0')) {
         ret = std::string(buf);
         return ret;
@@ -533,44 +532,7 @@ std::string GenObject::parse_to_str(const char *val, size_t &pos) {
         ret = std::string("0");
         return ret;
     }
-#else
-    if (buf[0] >= '0' && buf[0] <= '9') {
-        int base = buf[1] == 'x' ? 16: 10;
-        if (SCV_is_sv() && base == 16) {
-            char tstr[256];
-            int len = 0;
-            len = RISCV_sprintf(tstr, sizeof(tstr), "%d'h%s", getWidth(), &buf[2]);
-            ret = std::string(tstr);
-        } else {
-            ret = std::string(buf);
-        }
-        return ret;
-    }
-    if (buf[0] == '-' && buf[1] == '1') {
-        if (SCV_is_sysc()) {
-            if (getWidth() <= 32) {
-                ret = std::string("~0ul");
-            } else {
-                ret = std::string("~0ull");
-            }
-        } else if (SCV_is_sv()) {
-            ret = std::string("'1");
-        } else if (SCV_is_vhdl()) {
-            ret = std::string("(others => '1')");
-        }
-        return ret;
-    }
-    if (strcmp(buf, "true") == 0 || strcmp(buf, "false") == 0) {
-        if (SCV_is_sysc()) {
-            ret = std::string(buf);
-        } else if (SCV_is_sv()) {
-            ret = buf[0] == 't' ? "1'b1" : "1'b0";
-        } else if (SCV_is_vhdl()) {
-            ret = ret = buf[0] == 't' ? "'1'" : "'0'";
-        }
-        return ret;
-    }
-#endif
+
     m = std::string(buf);
     if (SCV_is_cfg_parameter(m)) {
         GenObject *obj = SCV_get_cfg_obj(m);

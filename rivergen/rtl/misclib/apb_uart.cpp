@@ -78,7 +78,7 @@ apb_uart::apb_uart(GenObject *parent, const char *name) :
     tx_irq_thresh(this, "tx_irq_thresh", "log2_fifosz"),
     tx_frame_cnt(this, "tx_frame_cnt", "4"),
     tx_stop_cnt(this, "tx_stop_cnt", "1"),
-    tx_shift(this, "tx_shift", "11", "-1"),
+    tx_shift(this, "tx_shift", "11", "'1"),
     tx_amo_guard(this, "tx_amo_guard", "1", "0", "AMO operation read-modify-write often hit on full flag border"),
     resp_valid(this, "resp_valid", "1"),
     resp_rdata(this, "resp_rdata", "32"),

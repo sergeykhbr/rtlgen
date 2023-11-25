@@ -74,7 +74,7 @@ sdctrl_cmd_transmitter::sdctrl_cmd_transmitter(GenObject *parent, const char *na
     resp_cmd(this, "resp_cmd", "6"),
     resp_reg(this, "resp_arg", "32"),
     resp_spistatus(this, "resp_spistatus", "15"),
-    cmdshift(this, "cmdshift", "40", "-1"),
+    cmdshift(this, "cmdshift", "40", "'1"),
     cmdmirror(this, "cmdmirror", "6"),
     regshift(this, "regshift", "32"),
     cidshift(this, "cidshift", "120"),

@@ -69,10 +69,10 @@ DecoderRv::DecoderRv(GenObject *parent, const char *name) :
     OPCODE_CSRR(this, "5", "OPCODE_CSRR", "0x1C", "11100: CSRRC, CSRRCI, CSRRS, CSRRSI, CSRRW, CSRRWI, URET, SRET, HRET, MRET"),
     // signals
     // registers
-    pc(this, "pc", "RISCV_ARCH", "-1"),
+    pc(this, "pc", "RISCV_ARCH", "'1"),
     isa_type(this, "isa_type", "ISA_Total"),
     instr_vec(this, "instr_vec", "Instr_Total"),
-    instr(this, "instr", "32", "-1"),
+    instr(this, "instr", "32", "'1"),
     memop_store(this, "memop_store", "1"),
     memop_load(this, "memop_load", "1"),
     memop_sign_ext(this, "memop_sign_ext", "1"),

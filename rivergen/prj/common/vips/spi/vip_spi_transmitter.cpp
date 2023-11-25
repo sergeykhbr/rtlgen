@@ -43,8 +43,8 @@ vip_spi_transmitter::vip_spi_transmitter(GenObject *parent, const char *name) :
     // registers
     state(this, "state", "2", "state_cmd"),
     sclk(this, "sclk", "1"),
-    rxshift(this, "rxshift", "32", "-1"),
-    txshift(this, "txshift", "32", "-1"),
+    rxshift(this, "rxshift", "32", "'1"),
+    txshift(this, "txshift", "32", "'1"),
     bitcnt(this, "bitcnt", "4"),
     bytecnt(this, "bytecnt", "3"),
     byterdy(this, "byterdy", "1"),

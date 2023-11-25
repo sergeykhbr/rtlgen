@@ -73,7 +73,7 @@ apb_spi::apb_spi(GenObject *parent, const char *name) :
     bit_cnt(this, "bit_cnt", "3"),
     tx_val(this, "tx_val", "8"),
     rx_val(this, "rx_val", "8"),
-    shiftreg(this, "shiftreg", "8", "-1"),
+    shiftreg(this, "shiftreg", "8", "'1"),
     rx_ready(this, "rx_ready", "1"),
     crc7(this, "crc7", "7"),
     crc16(this, "crc16", "16"),

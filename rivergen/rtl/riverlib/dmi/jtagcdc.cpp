@@ -41,7 +41,7 @@ jtagcdc::jtagcdc(GenObject *parent, const char *name) :
                                                     &i_dmi_req_write,
                                                     &i_dmi_req_valid)),
     // registers
-    l1(this, "l1", "CDC_REG_WIDTH", "-1"),
+    l1(this, "l1", "CDC_REG_WIDTH", "'1"),
     l2(this, "l2", "CDC_REG_WIDTH"),
     req_valid(this, "req_valid", "1"),
     req_accepted(this, "req_accepted", "1"),
