@@ -39,9 +39,10 @@ std::string ModuleObject::generate_sv_pkg_localparam() {
         if (p->getId() == ID_COMMENT) {
             comment += p->generate();
             continue;
-        } else if (p->getId() != ID_PARAM || !p->isLocal() || p->isGenericDep()) {
-            // do nothing
-        } else {
+//        } else if (!p->isParam() || !p->isLocal() || p->isGenericDep()) {
+//            // do nothing
+//        } else {
+        } else if (p->isParam() && !p->isParamGeneric() && p->isLocal() && !p->isGenericDep()) {
             if (p->isString()) {
                 // Vivado doesn't support string parameters, skip type
                 ln = "localparam " + p->getName();
@@ -216,7 +217,7 @@ std::string ModuleObject::generate_sv_mod_param_strings() {
     std::string ret = "";
     int tcnt = 0;
     for (auto &p: getEntries()) {
-        if (p->getId() != ID_PARAM) {
+        if (!p->isParam() || p->isParamGeneric()) {
             continue;
         }
         if (!p->isLocal() || !p->isGenericDep()) {

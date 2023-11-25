@@ -105,7 +105,7 @@ std::string Logic1::getType() {
     std::string ret = "";
 
     if (SCV_is_sysc()) {
-        if (getId() == ID_PARAM) {
+        if (isParam() && !isParamGeneric()) {
             ret += "bool";
         } else {
             ret += "sc_uint<1>";

@@ -1150,7 +1150,8 @@ Operation &TO_BIG(size_t sz, GenObject &a) {
 std::string TO_INT_gen(GenObject **args) {
     std::string A = Operation::obj2varname(args[1], "r", true);
     if (SCV_is_sysc()) {
-        if (args[1]->getId() != ID_PARAM) { // params aren't use sc_uint<> tempalates
+        //if (args[1]->getId() != ID_PARAM) { // params aren't use sc_uint<> templates
+        if (!args[1]->isParam()) {
             A = A + ".to_int()";
         }
     } else {
@@ -2264,7 +2265,7 @@ std::string LSH_gen(GenObject **args) {
     if (SCV_is_sysc()) {
         A = "(" + A + " << " + B + ")";
     } else if (SCV_is_sv()) {
-        if (args[2]->getId() == ID_PARAM || args[2]->getId() == ID_CONST) {
+        if (args[2]->isParam() || args[2]->getId() == ID_CONST) {
             A = "{" + A + ", {" + B + "{1'b0}}}";
         } else {
             A = "(" + A + " << " + B + ")";
@@ -3320,30 +3321,32 @@ std::string NewOperation::generate_sv() {
     ln += m_->getType() + " ";
     ret += ln;
     
-    std::list<GenObject *>tmpllist;
-    m_->getTmplParamList(tmpllist);
-    m_->getParamList(tmpllist);    
+    std::list<GenObject *>genlist;
+    m_->getTmplParamList(genlist);
+    m_->getParamList(genlist);    
     tcnt = 0;
-    if (m_->getAsyncReset() || tmpllist.size()) {
+    if (m_->getAsyncReset() || genlist.size()) {
         ret += "#(\n";
         pushspaces();
         if (m_->getAsyncReset() && m_->getEntryByName("async_reset") == 0) {
             ret += addspaces() + ".async_reset(async_reset)";
-            if (tmpllist.size()) {
+            if (genlist.size()) {
                 ret += ",";
             }
             ret += "\n";
             tcnt++;
         }
-        for (auto &e : tmpllist) {
+        for (auto &e : genlist) {
             ret += addspaces() + "." + e->getName();
             if (e->getObjValue()) {
                 // parameter is connected to some config parameter:
-                ret += "(" + e->getObjValue()->getStrValue() + ")";
+                ret += "(" + e->getObjValue()->getName() + ")";
+            } else if (e->isParamTemplate()) {
+                ret += "(" + e->generate() + ")";
             } else {
-                ret += "(" + e->getStrValue() + ")";
+                ret += "(" + e->getName() + ")";
             }
-            if (e != tmpllist.back()) {
+            if (e != genlist.back()) {
                 ret += ",";
             }
             ret += "\n";
@@ -3399,11 +3402,11 @@ std::string NewOperation::generate_vhdl() {
         }
         for (auto &e : tmpllist) {
             ret += addspaces();
-            if (e->isParamTemplate()) {
-                ret += e->getName() + " => " + e->getStrValue();
-            } else if (e->getObjValue()) {
+            if (e->getObjValue()) {
                 // generic parameter but with the defined string value
                 ret += e->getName() + " => " + e->getObjValue()->getName();
+            } else if (e->isParamTemplate()) {
+                ret += e->getName() + " => " + e->generate();
             } else {
                 ret += e->getName() + " => " + e->getName();
             }

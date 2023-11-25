@@ -309,7 +309,7 @@ std::string ModuleObject::generate_sysc_h() {
         if (p->getId() == ID_COMMENT) {
             comment += addspaces() + p->generate();
             continue;
-        } else if (p->getId() == ID_PARAM) {
+        } else if (p->isParam() && !p->isParamGeneric()) {
             if (p->isString()) {
                 // Do Nothing: strings defined in cpp-file
             } else if (p->isGenericDep() && tmpllist.size() == 0) {
@@ -765,7 +765,7 @@ std::string ModuleObject::generate_sysc_param_strings() {
     std::string ret = "";
     int tcnt = 0;
     for (auto &p: getEntries()) {
-        if (p->getId() == ID_PARAM && p->isLocal() && p->isString()) {
+        if (p->isParam() && !p->isParamGeneric() && p->isLocal() && p->isString()) {
             // Only string parameter defined inside of this module
             ret += "static " + p->getType() + " " + p->getName();
             ret += " = " + p->generate() + ";\n";

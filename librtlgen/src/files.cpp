@@ -111,7 +111,7 @@ void FileObject::list_of_modules(GenObject *p, std::list<std::string> &fpath) {
     }
 
     if (p->getId() == ID_MODULE
-        || p->getId() == ID_PARAM) {
+        || p->isParam()) {
         f = p->getParent();
     } else if (p->getId() == ID_MODULE_INST) {
         f = SCV_get_module(p->getType().c_str());
@@ -285,7 +285,7 @@ void FileObject::generate_sysc() {
             if (p->getId() == ID_FUNCTION) {
                 // for global functions only
                 out += addspaces() + "static " + p->getType() + " ";
-            } else if (p->getId() == ID_PARAM) {
+            } else if (p->isParam() && !p->isParamGeneric()) {
                 ln = addspaces() + "static const " + p->getType() + " ";
                 ln += p->getName() + " = " + p->generate() + ";";
                 p->addComment(ln);
@@ -468,7 +468,7 @@ void FileObject::generate_sysv() {
         } else {
             if (p->getId() == ID_FUNCTION) {
                 out += "function automatic ";
-            } else if (p->getId() == ID_PARAM) {
+            } else if (p->isParam() && !p->isParamGeneric()) {
                 ln = addspaces() + "localparam ";
                 if (p->isString()) {
                     // Vivado doesn't support string parameters. Skip type definition
@@ -565,7 +565,7 @@ void FileObject::generate_vhdl() {
         } else {
             if (p->getId() == ID_FUNCTION) {
                 out += "function ";
-            } else if (p->getId() == ID_PARAM) {
+            } else if (p->isParam() && !p->isParamGeneric()) {
                 ln = addspaces() + "constant " + p->getName() + " : ";
                 ln += p->getType() + " := " + p->generate() + ";";
                 p->addComment(ln);
