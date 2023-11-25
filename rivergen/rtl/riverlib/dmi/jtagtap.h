@@ -54,9 +54,9 @@ class jtagtap : public ModuleObject {
     void proc_comb();
 
 public:
-    TmplParamLogic idcode;
     TmplParamI32D abits;
     TmplParamI32D irlen;
+    DefParamLogic idcode;
     ParamI32D drlen;
     // Ports:
     InPort i_trst;

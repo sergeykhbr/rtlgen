@@ -110,7 +110,7 @@ std::string Operation::fullname(const char *prefix, std::string name, GenObject 
             curname += ".";
         }
         curname += name;
-    } else if (obj->getId() == ID_DEF_PARAM && SCV_is_sysc()) {
+    } else if (SCV_is_sysc() && obj->isParamGeneric() && !obj->isParamTemplate()) {
         curname = obj->getName() + "_";
     } else {
         curname = obj->getName();
@@ -917,9 +917,7 @@ std::string SETVAL_gen(GenObject **args) {
         ret += args[2]->getStrValue();
     } else if (args[2]->getId() == ID_VALUE
             || args[2]->getId() == ID_CLOCK
-            || args[2]->getId() == ID_PARAM
-            || args[2]->getId() == ID_DEF_PARAM
-            || args[2]->getId() == ID_TMPL_PARAM
+            || args[2]->isParam()
             || args[2]->getId() == ID_STRUCT_INST
             || args[2]->getId() == ID_VECTOR) {
         ret += Operation::obj2varname(args[2]);
@@ -1016,7 +1014,7 @@ std::string SETSTRF_gen(GenObject **args) {
         }
         ret += Operation::obj2varname(args[5 + i]);
         if (SCV_is_sysc()
-            && args[5+i]->getId() == ID_DEF_PARAM
+            && args[5+i]->isParamGeneric()
             && strstr(args[5+i]->getType().c_str(), "string")) {
             ret += ".c_str()";
         }
@@ -1225,9 +1223,6 @@ Operation &TO_CSTR(GenObject &a, const char *comment) {
 
 // EQ
 std::string EQ_gen(GenObject **args) {
-if (args[1]->getName() == "mantShort") {
-bool x = true;
-}
     std::string A = Operation::obj2varname(args[1], "r", true);
     std::string B = Operation::obj2varname(args[2], "r", true);
     A = "(" + A + " == " + B + ")";
@@ -3341,19 +3336,13 @@ std::string NewOperation::generate_sv() {
             tcnt++;
         }
         for (auto &e : tmpllist) {
-            ret += addspaces();
-#if 0
-            ret += "." + e->getName() + "(" + e->generate() + ")";
-#else
-            if (e->getId() == ID_TMPL_PARAM) {
-                ret += "." + e->getName() + "(" + e->generate() + ")";
-            } else if (e->getObjValue()) {
-                // generic parameter but with the defined string value
-                ret += "." + e->getName() + "(" + e->getObjValue()->getName() + ")";
+            ret += addspaces() + "." + e->getName();
+            if (e->getObjValue()) {
+                // parameter is connected to some config parameter:
+                ret += "(" + e->getObjValue()->getStrValue() + ")";
             } else {
-                ret += "." + e->getName() + "(" + e->getName() + ")";
+                ret += "(" + e->getStrValue() + ")";
             }
-#endif
             if (e != tmpllist.back()) {
                 ret += ",";
             }
@@ -3410,7 +3399,7 @@ std::string NewOperation::generate_vhdl() {
         }
         for (auto &e : tmpllist) {
             ret += addspaces();
-            if (e->getId() == ID_TMPL_PARAM) {
+            if (e->isParamTemplate()) {
                 ret += e->getName() + " => " + e->getStrValue();
             } else if (e->getObjValue()) {
                 // generic parameter but with the defined string value

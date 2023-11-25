@@ -43,7 +43,7 @@ std::string Logic::getType() {
     std::string w = getStrWidth();
 
     if (SCV_is_sysc()) {
-        if (getId() == ID_PARAM || getId() == ID_TMPL_PARAM) {
+        if (isParam() && !isParamGeneric() || isParamTemplate()) {
             if (getWidth() <= 1) {
                 ret += "bool";
             } else if (getWidth() <= 8) {
@@ -67,7 +67,7 @@ std::string Logic::getType() {
             }
         }
     } else if (SCV_is_sv()) {
-        if (getId() == ID_PARAM) {
+        if (isParam() && !isParamGeneric()) {
             ret = std::string("bit");
         } else {
             ret = std::string("logic");

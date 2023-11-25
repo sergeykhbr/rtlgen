@@ -19,154 +19,121 @@
 #include "genobjects.h"
 #include "values.h"
 #include "logic.h"
-#include <iostream>
+#include "utils.h"
 
 namespace sysvc {
 
-class ParamGeneric {
- public:
-    // if local = false, then register parameter using method SCV_..
-    ParamGeneric(GenValue *parent);
-};
-
-class ParamBOOL : public BOOL,
-                  public ParamGeneric {
+class ParamBOOL : public BOOL {
  public:
     ParamBOOL(GenObject *parent, const char *name,
                 const char *val, const char *comment="")
-        : BOOL(val, name, parent, comment),
-        ParamGeneric(static_cast<GenValue *>(this)) {
+        : BOOL(val, name, parent, comment) {
         id_ = ID_PARAM;
+        SCV_set_cfg_parameter(this, this, getValue());
     }
+    virtual bool isParam() override { return true; }
     virtual std::string getStrValue() override { return getName(); }
     virtual std::string generate() override { return BOOL::getStrValue(); }
 };
 
-class ParamString : public STRING,
-                    public ParamGeneric {
+class ParamString : public STRING {
  public:
     ParamString(GenObject *parent, const char *name,
                 const char *val, const char *comment="")
-        : STRING(val, name, parent, comment),
-        ParamGeneric(static_cast<GenValue *>(this)) {
+        : STRING(val, name, parent, comment) {
         id_ = ID_PARAM;
+        //SCV_set_cfg_parameter(this, this, getValue());   // FIX get Value for strings!!! Now it is not available
     }
+    virtual bool isParam() override { return true; }
     virtual std::string getStrValue() override { return getName(); }
     virtual std::string generate() override { return STRING::getStrValue(); }
 };
 
-class TmplParamI32D : public I32D,
-                      public ParamGeneric {
- public:
-    TmplParamI32D(GenObject *parent, const char *name, const char *val,
-                  const char *comment="")
-        : I32D(val, name, parent, comment),
-        ParamGeneric(static_cast<GenValue *>(this)) {
-        id_ = ID_TMPL_PARAM;
-    }
-    virtual std::string generate() override { return I32D::getStrValue(); }
-};
-
-class ParamUI16D : public UI16D,
-                   public ParamGeneric {
+class ParamUI16D : public UI16D {
  public:
     ParamUI16D(GenObject *parent, const char *name, const char *val,
         const char *comment="")
-        : UI16D(val, name, parent, comment),
-        ParamGeneric(static_cast<GenValue *>(this)) {
+        : UI16D(val, name, parent, comment) {
             id_ = ID_PARAM;
+            SCV_set_cfg_parameter(this, this, getValue());
     }
+    virtual bool isParam() override { return true; }
     virtual std::string getStrValue() override { return getName(); }
     virtual std::string generate() override { return UI16D::getStrValue(); }
 };
 
-class ParamI32D : public I32D,
-                  public ParamGeneric {
+class ParamI32D : public I32D {
  public:
     ParamI32D(GenObject *parent, const char *name, const char *val,
-        const char *comment="")
-        : I32D(val, name, parent, comment),
-        ParamGeneric(static_cast<GenValue *>(this)) {
+        const char *comment="") : I32D(val, name, parent, comment) {
             id_ = ID_PARAM;
+            SCV_set_cfg_parameter(this, this, getValue());
     }
     ParamI32D(GenObject *parent, const char *name, GenObject *val,
-        const char *comment="")
-        : I32D(val, name, parent, comment),
-        ParamGeneric(static_cast<GenValue *>(this)) {
+        const char *comment="") : I32D(val, name, parent, comment) {
             id_ = ID_PARAM;
+            SCV_set_cfg_parameter(this, this, getValue());
     }
+    virtual bool isParam() override { return true; }
     virtual std::string getStrValue() override { return getName(); }
     virtual std::string generate() override { return I32D::getStrValue(); }
 };
 
 
-class ParamUI32D : public UI32D,
-                   public ParamGeneric {
+class ParamUI32D : public UI32D {
  public:
     ParamUI32D(GenObject *parent, const char *name, const char *val,
-        const char *comment="")
-        : UI32D(val, name, parent, comment),
-        ParamGeneric(static_cast<GenValue *>(this)) {
+        const char *comment="") : UI32D(val, name, parent, comment) {
             id_ = ID_PARAM;
+            SCV_set_cfg_parameter(this, this, getValue());
     }
+    virtual bool isParam() override { return true; }
     virtual std::string getStrValue() override { return getName(); }
     virtual std::string generate() override { return UI32D::getStrValue(); }
 };
 
-class ParamUI64H : public UI64H,
-                   public ParamGeneric {
+class ParamUI64H : public UI64H {
  public:
     ParamUI64H(GenObject *parent, const char *name, const char *val,
-        const char *comment="")
-        : UI64H(val, name, parent, comment),
-        ParamGeneric(static_cast<GenValue *>(this)) {
+        const char *comment="") : UI64H(val, name, parent, comment) {
             id_ = ID_PARAM;
+            SCV_set_cfg_parameter(this, this, getValue());
     }
+    virtual bool isParam() override { return true; }
     virtual std::string getStrValue() override { return getName(); }
     virtual std::string generate() override { return UI64H::getStrValue(); }
 };
 
-class ParamLogic : public Logic,
-                   public ParamGeneric {
+class ParamLogic : public Logic {
  public:
     ParamLogic(GenObject *parent, const char *width, const char *name,
                 const char *val, const char *comment="")
-        : Logic(width, name, val, parent, comment),
-        ParamGeneric(static_cast<GenValue *>(this)) {
+        : Logic(width, name, val, parent, comment) {
         id_ = ID_PARAM;
+        SCV_set_cfg_parameter(this, this, getValue());
     }
     ParamLogic(GenObject *parent, GenValue *width, const char *name,
                const char *val, const char *comment="")
-        : Logic(width, name, val, parent, comment),
-        ParamGeneric(static_cast<GenValue *>(this)) {
+        : Logic(width, name, val, parent, comment) {
         id_ = ID_PARAM;
+        SCV_set_cfg_parameter(this, this, getValue());
     }
+    virtual bool isParam() override { return true; }
     virtual std::string getStrValue() override { return getName(); }
-    virtual bool isLogic() override { return true; }
     virtual std::string generate() override { return Logic::getStrValue(); }
 };
 
-class ParamTIMESEC : public TIMESEC,
-                     public ParamGeneric {
+class ParamTIMESEC : public TIMESEC {
  public:
     ParamTIMESEC(GenObject *parent, const char *name,
                    const char *val, const char *comment="")
-        : TIMESEC(val, name, parent, comment),
-        ParamGeneric(static_cast<GenValue *>(this)) {
+        : TIMESEC(val, name, parent, comment) {
             id_ = ID_PARAM;
+            SCV_set_cfg_parameter(this, this, getValue());
     }
+    virtual bool isParam() override { return true; }
     virtual std::string getStrValue() override { return getName(); }
     virtual std::string generate() override { return TIMESEC::getStrValue(); }
-};
-
-class TmplParamLogic : public ParamLogic {
- public:
-    TmplParamLogic(GenObject *parent, const char *width, const char *name,
-                   const char *val, const char *comment="")
-        : ParamLogic(parent, width, name, val, comment) {
-        id_ = ID_TMPL_PARAM;
-    }
-    virtual std::string generate() override { return Logic::getStrValue(); }
 };
 
 }  // namespace sysvc

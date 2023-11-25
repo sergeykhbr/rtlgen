@@ -114,10 +114,9 @@ bool ModuleObject::isFileValue() {
 
 void ModuleObject::getTmplParamList(std::list<GenObject *> &genlist) {
     for (auto &e : entries_) {
-        if (e->getId() != ID_TMPL_PARAM) {
-            continue;
+        if (e->isParamTemplate()) {
+            genlist.push_back(e);
         }
-        genlist.push_back(e);
     }
 }
 
@@ -136,19 +135,17 @@ void ModuleObject::changeTmplParameter(const char *name, const char *val) {
 
 void ModuleObject::getParamList(std::list<GenObject *> &genlist) {
     for (auto &e : entries_) {
-        if (e->getId() != ID_DEF_PARAM) {
-            continue;
+        if (e->isParamGeneric() && !e->isParamTemplate()) {
+            genlist.push_back(e);
         }
-        genlist.push_back(e);
     }
 }
 
 void ModuleObject::getIoList(std::list<GenObject *> &iolist) {
     for (auto &e : entries_) {
-        if (!e->isInput() && !e->isOutput()) {
-            continue;
+        if (e->isInput() || e->isOutput()) {
+            iolist.push_back(e);
         }
-        iolist.push_back(e);
     }
 }
 

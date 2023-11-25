@@ -284,6 +284,9 @@ class river_cfg : public FileObject {
     TextLine _dec2_;
     TextLine _dec3_;
     ParamI32D CFG_DEC_DEPTH;
+    TextLine _dmi0_;
+    TextLine _dmi1_;
+    ParamLogic CFG_DMI_TAP_ID;
     TextLine _17_;
     TextLine _20_;
     ParamI32D CFG_PROGBUF_REG_TOTAL;

@@ -184,12 +184,13 @@ bool GenObject::isGenericDep() {
     parse_to_objlist(strValue_.c_str(), 0, objlist);
 
     for (auto &e: objlist) {
-        if (e->getId() == ID_TMPL_PARAM
-            || e->getId() == ID_DEF_PARAM) {
+//        if (e->isGenericDep()) {   // trigger stack overflow, todo: why?
+//            return true;
+//        }
+        if (e->isParamGeneric()) {
             return true;
         }
     }
-
     return false;
 }
 
@@ -537,9 +538,7 @@ std::string GenObject::parse_to_str(const char *val, size_t &pos) {
     if (SCV_is_cfg_parameter(m)) {
         GenObject *obj = SCV_get_cfg_obj(m);
         ret = m;
-        if (SCV_is_sv_pkg() 
-            && obj->getId() != ID_TMPL_PARAM
-            && obj->getId() != ID_DEF_PARAM) {
+        if (SCV_is_sv_pkg() && !obj->isParamGeneric()) {
             if (SCV_get_cfg_file(m).size()) {
                 ret = SCV_get_cfg_file(m) + "_pkg::" + m;
             }

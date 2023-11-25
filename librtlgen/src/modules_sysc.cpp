@@ -253,8 +253,8 @@ std::string ModuleObject::generate_sysc_h() {
         ln += "bool async_reset";           // Mandatory generic parameter
         out += ",\n" + ln;
     }
-    for (auto &p: entries_) {
-        if (p->getId() != ID_DEF_PARAM) {
+    for (auto &p: getEntries()) {
+        if (!p->isParamGeneric() || p->isParamTemplate()) {
             continue;
         }
         out += ",\n";
@@ -291,10 +291,12 @@ std::string ModuleObject::generate_sysc_h() {
         tcnt++;
     }
     for (auto &p: entries_) {
-        if (p->getId() == ID_DEF_PARAM){
+        if (p->isParamTemplate()) {
+            // do nothing
+        } else if (p->isParamGeneric()) {
             out += addspaces() + p->getType() + " " + p->getName() + "_;\n";
             tcnt++;
-        } else if (p->getId() == ID_PARAM && p->isGenericDep() && tmpllist.size() == 0) {
+        } else if (p->isParam() && p->isGenericDep() && tmpllist.size() == 0) {
             // No underscore symbol
             out += addspaces() + p->getType() + " " + p->getName() + ";\n";
             tcnt++;
@@ -838,8 +840,8 @@ std::string ModuleObject::generate_sysc_constructor() {
         ln += "bool async_reset";           // Mandatory generic parameter
         ret += ",\n" + ln;
     }
-    for (auto &p: entries_) {
-        if (p->getId() != ID_DEF_PARAM) {
+    for (auto &p: getEntries()) {
+        if (!p->isParamGeneric() || p->isParamTemplate()) {
             continue;
         }
         ret += ",\n";
@@ -895,17 +897,18 @@ std::string ModuleObject::generate_sysc_constructor() {
         ret += addspaces() + "async_reset_ = async_reset;\n";
     }
     for (auto &p: entries_) {
-        if (p->getId() == ID_DEF_PARAM) {
+        if (p->isParamTemplate()) {
+            // do nothing
+        } else if (p->isParamGeneric()) {
             ret += addspaces() + p->getName() + "_ = " + p->getName() + ";\n";
-        }
-        if (p->getId() == ID_PARAM && p->isGenericDep() && tmpllist.size() == 0) {
+        } else if (p->isParam() && p->isGenericDep() && tmpllist.size() == 0) {
             ret += addspaces() + p->getName() + " = " + p->generate() + ";\n";
         }
     }
 
     // Sub-module instantiation
     ret += generate_sysc_submodule_nullify();
-    for (auto &p: entries_) {
+    for (auto &p: getEntries()) {
         if (p->getId() != ID_OPERATION) {
             continue;
         }
@@ -916,7 +919,7 @@ std::string ModuleObject::generate_sysc_constructor() {
     // Process sensitivity list:
     std::list<GenObject *> objlist;
     std::string prefix1 = "r.";
-    for (auto &p: entries_) {
+    for (auto &p: getEntries()) {
         if (p->getId() != ID_PROCESS) {
             continue;
         }

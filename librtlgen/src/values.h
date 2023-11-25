@@ -121,6 +121,7 @@ class TIMESEC : public GenValue {
     virtual bool isFloat() { return true; }
 };
 
+/** Variable used in generate cycle */
 class GenVar : public I32D {
  public:
     GenVar(const char *val, const char *name,
@@ -128,6 +129,7 @@ class GenVar : public I32D {
         I32D(val, name, parent, comment) {}
 
     virtual bool isGenVar() override { return true; }
+    virtual std::string getStrValue() override { return getName(); }
 };
 
 }  // namespace sysvc

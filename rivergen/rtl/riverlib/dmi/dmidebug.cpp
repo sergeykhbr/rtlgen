@@ -136,6 +136,7 @@ dmidebug::dmidebug(GenObject *parent, const char *name) :
 {
     Operation::start(this);
 
+    tap.idcode.setObjValue(&glob_river_cfg_->CFG_DMI_TAP_ID);
     NEW(tap, tap.getName().c_str());
         CONNECT(tap, 0, tap.i_trst, i_trst);
         CONNECT(tap, 0, tap.i_tck, i_tck);

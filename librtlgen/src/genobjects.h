@@ -85,6 +85,9 @@ class GenObject {
     virtual void addComment(std::string &out);  // comment after 60 spaces
     virtual std::string getComment() { return comment_; }
     virtual std::string getType() { return type_; }
+    virtual bool isParam() { return false; }            // StrValue is its name, Method generate() to generate its value
+    virtual bool isParamGeneric() { return false; }     // Parameter that is defined as argument of constructor
+    virtual bool isParamTemplate() { return false; }    // Special type of ParamGeneric used in systemc, when in/out depend on it
     virtual bool isString() { return false; }
     virtual bool isFloat() { return false; }
     virtual bool isTypedef() { return false; }
@@ -95,7 +98,7 @@ class GenObject {
     virtual bool isInput() { return false; }
     virtual bool isOutput() { return false; }
     virtual bool isVector() { return false; }
-    virtual bool isGenVar() { return false; }   // I32D analog for rtl
+    virtual bool isGenVar() { return false; }   // Variable is used generate cycle: I32D analog for rtl
     virtual bool isGenerate() { return false; } // use generate instead of comb in sv and vhdl
     virtual bool isLocal();     // if parent is file then obj is global; if module obj is local
     virtual bool isTop() { return false; }
