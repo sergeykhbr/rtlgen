@@ -352,15 +352,15 @@ std::string ModuleObject::generate_sysc_h() {
             continue;
         }
         if (p->getName() == "") {
-            SHOW_ERROR("Error: unnamed object");
+            SHOW_ERROR("Error: unnamed object of type %s", p->getType().c_str());
             text = "";
             continue;
         }
         if (p->isReg() || p->isNReg()
             || (!p->isSignal()
                 && p->getId() != ID_VALUE
+                && !p->isStruct()
                 && p->getId() != ID_CLOCK
-                && p->getId() != ID_STRUCT_INST
                 && p->getId() != ID_ARRAY_DEF)) {
                 text = "";
             continue;
@@ -486,17 +486,8 @@ std::string ModuleObject::generate_sysc_sensitivity(std::string prefix,
     std::string ret = "";
     bool prefix_applied = true;
 
-#if 1
-    if (obj->getName() == "BpPreDecoder") {
-        bool st = true;
-    }
-    if (getName() == "i_clk") {
-        bool st = true;
-    }
-#endif
-
-    if (obj->getId() == ID_STRUCT_DEF
-        || (obj->isModule() && !obj->isTypedef())  // module cannot include typedef of other modules, so we here only once excluding child module instances
+    if ((obj->isModule() && !obj->isTypedef())  // first call from file: module cannot include typedef of other modules, so we here only once excluding child module instances
+        || (obj->isStruct() && obj->isTypedef())
         || obj->getId() == ID_PROCESS
         || (obj->isOutput() && !obj->isInput())) {
         return ret;
@@ -512,7 +503,7 @@ std::string ModuleObject::generate_sysc_sensitivity(std::string prefix,
 
     if ((obj->isSignal() && obj->getParent()->getId() != ID_ARRAY_DEF)    // signal is a part of array not a child structure
         || obj->getId() == ID_ARRAY_DEF
-        || obj->getId() == ID_STRUCT_INST) {
+        || (obj->isStruct() && !obj->isTypedef())) {
         if (name.size()) {
             name += ".";
         }
@@ -572,15 +563,8 @@ std::string ModuleObject::generate_sysc_sensitivity(std::string prefix,
         popspaces();
         ret += addspaces();
         ret += "}\n";
-    } else if (obj->getId() == ID_STRUCT_INST) {
-        for (auto &s: obj->getEntries()) {
-            ret += generate_sysc_sensitivity(prefix, name, s);
-        }
     } else {
         for (auto &s: obj->getEntries()) {
-            if (s == obj) {
-                bool st = true;
-            }
             ret += generate_sysc_sensitivity(prefix, name, s);
         }
     }
@@ -618,7 +602,7 @@ std::string ModuleObject::generate_sysc_vcd_entries(std::string name1, std::stri
         name1 += "]";
     } else if ((obj->isSignal() && obj->getParent()->getId() != ID_ARRAY_DEF)    // signal is a part of array not a child structure
         || obj->getId() == ID_ARRAY_DEF
-        || obj->getId() == ID_STRUCT_INST) {
+        || (obj->isStruct() && !obj->isTypedef())) {
         if (name1.size()) {
             name1 += ".";
             name2 += "_";
@@ -1096,7 +1080,7 @@ std::string ModuleObject::generate_sysc_proc_nullify(GenObject *obj,
                                                      std::string i) {
     std::string ret = "";
     if (obj->getId() == ID_VALUE
-        || (obj->getId() == ID_STRUCT_INST && obj->getStrValue().size() != 0)) {
+        || (obj->isStruct() && !obj->isTypedef() && obj->getStrValue().size() != 0)) {
         ret += addspaces() + prefix;
         if (obj->getName() != "0") {
             if (prefix.size() != 0) {
@@ -1105,7 +1089,7 @@ std::string ModuleObject::generate_sysc_proc_nullify(GenObject *obj,
             ret += obj->getName();
         }
         ret += " = " + obj->getStrValue() + ";\n";
-    } else if (obj->getId() == ID_STRUCT_INST) {
+    } else if (obj->isStruct() && !obj->isTypedef()) {
         std::string prefix2 = prefix;
         if (obj->getName() != "0") {
             if (prefix.size()) {
@@ -1147,7 +1131,7 @@ std::string ModuleObject::generate_sysc_proc(GenObject *proc) {
     for (auto &e: proc->getEntries()) {
         ln = "";
         if (e->getId() == ID_VALUE
-            || e->getId() == ID_STRUCT_INST) {
+            || e->isStruct()) {  // no need to check typedef inside of proc
             ln += addspaces() + e->getType() + " " + e->getName();
         } else if (e->getId() == ID_ARRAY_DEF) {
             ln += addspaces() + e->getType() + " " + e->getName();

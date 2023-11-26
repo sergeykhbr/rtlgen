@@ -64,11 +64,12 @@ std::string FunctionObject::generate_sysc() {
         popspaces();
     }
     ret += ") {\n";
-    
+    pushspaces();
+
     // process variables declaration
     if (getType() == "std::string" || getType() == "string") {
         // return value is string
-        ret += "    char tstr[256];\n";
+        ret += addspaces() + "char tstr[256];\n";
     }
     tcnt = 0;
     bool skiparg;
@@ -85,15 +86,15 @@ std::string FunctionObject::generate_sysc() {
         }
 
         if (e->getId() == ID_VALUE) {
-            ret += "    " + e->getType() + " " + e->getName();
+            ret += addspaces() + e->getType() + " " + e->getName();
             tcnt++;
         } else if (e->getId() == ID_ARRAY_DEF) {
-            ret += "    " + e->getType() + " " + e->getName();
+            ret += addspaces() + e->getType() + " " + e->getName();
             ret += "[";
             ret += e->getStrDepth();
             ret += "]";
-        } else if (e->getId() == ID_STRUCT_INST) {
-            ret += "    " + e->getType() + " " + e->getName();
+        } else if (e->isStruct()) { // no need to check typedef inside of function
+            ret += addspaces() + e->getType() + " " + e->getName();
         } else {
             continue;
         }
@@ -106,12 +107,10 @@ std::string FunctionObject::generate_sysc() {
     }
 
     // Generate operations:
-    pushspaces();
     for (auto &e: getEntries()) {
-        if (e->getId() != ID_OPERATION) {
-            continue;
+        if (e->isOperation()) {
+            ret += e->generate();
         }
-        ret += e->generate();
     }
 
     // return value
@@ -158,6 +157,8 @@ std::string FunctionObject::generate_sysv() {
             + getpReturn()->getName() + ";\n";
     }
     ret += "begin\n";
+    pushspaces();
+
     tcnt = 0;
     bool skiparg;
     for (auto &e: getEntries()) {
@@ -176,15 +177,15 @@ std::string FunctionObject::generate_sysv() {
         }
 
         if (e->getId() == ID_VALUE) {
-            ret += "    " + e->getType() + " " + e->getName();
+            ret += addspaces() + e->getType() + " " + e->getName();
             tcnt++;
         } else if (e->getId() == ID_ARRAY_DEF) {
-            ret += "    " + e->getType() + " " + e->getName();
+            ret += addspaces() + e->getType() + " " + e->getName();
             ret += "[";
             ret += e->getStrDepth();
             ret += "]";
-        } else if (e->getId() == ID_STRUCT_INST) {
-            ret += "    " + e->getType() + " " + e->getName();
+        } else if (e->isStruct()) { // no need to check typedef inside function
+            ret += addspaces() + e->getType() + " " + e->getName();
         } else {
             continue;
         }
@@ -197,12 +198,10 @@ std::string FunctionObject::generate_sysv() {
     }
 
     // Generate operations:
-    pushspaces();
     for (auto &e: getEntries()) {
-        if (e->getId() != ID_OPERATION) {
-            continue;
+        if (e->isOperation()) {
+            ret += e->generate();
         }
-        ret += e->generate();
     }
 
     // return value

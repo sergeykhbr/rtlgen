@@ -81,7 +81,7 @@ std::string StructObject::generate_interface_constructor() {
     for (auto& p : *pentries) {
         if (p->getId() == ID_COMMENT) {
             ret += p->generate();
-        } else if (p->getId() == ID_STRUCT_INST) {
+        } else if (p->isStruct() && !p->isTypedef()) {
             // 1 level of sub structures without recursive implementation
             for (auto &p2 : p->getEntries()) {
                 if (p2->getId() == ID_COMMENT) {
@@ -165,7 +165,7 @@ std::string StructObject::generate_interface_op_equal() {
     pushspaces();
     for (auto& p : *pentries) {
         if (p->getId() == ID_COMMENT) {
-        } else if (p->getId() == ID_STRUCT_INST) {
+        } else if (p->isStruct() && !p->isTypedef()) {
             // 1 level of sub structures without recursive implementation
             for (auto &p2 : p->getEntries()) {
                 if (p2->getId() == ID_COMMENT) {
@@ -212,7 +212,7 @@ std::string StructObject::generate_interface_op_assign() {
     }
     for (auto& p : *pentries) {
         if (p->getId() == ID_COMMENT) {
-        } else if (p->getId() == ID_STRUCT_INST) {
+        } else if (p->isStruct() && !p->isTypedef()) {
             // 1 level of sub structures without recursive implementation
             for (auto &p2 : p->getEntries()) {
                 if (p2->getId() == ID_COMMENT) {
@@ -283,7 +283,7 @@ std::string StructObject::generate_interface_op_stream() {
     for (auto& p : *pentries) {
         if (p->getId() == ID_COMMENT) {
             // do nothing
-        } else if (p->getId() == ID_STRUCT_INST) {
+        } else if (p->isStruct() && !p->isTypedef()) {
             // 1 level of sub structures without recursive implementation
             for (auto &p2 : p->getEntries()) {
                 if (p2->getId() == ID_COMMENT) {
@@ -349,7 +349,7 @@ std::string StructObject::generate_interface_sc_trace() {
     for (auto& p : *pentries) {
         if (p->getId() == ID_COMMENT) {
             // do nothing
-        } else if (p->getId() == ID_STRUCT_INST) {
+        } else if (p->isStruct() && !p->isTypedef()) {
             // 1 level of sub structures without recursive implementation
             for (auto &p2 : p->getEntries()) {
                 if (p2->getId() == ID_COMMENT) {
@@ -530,7 +530,7 @@ std::string StructObject::generate() {
         return generate_vector_type();
     }
     if (getParent()->getId() == ID_FILE) {
-        if (getId() == ID_STRUCT_INST) {
+        if (!isTypedef()) {
             ret = generate_const_none();
         } else {
             ret = generate_interface();

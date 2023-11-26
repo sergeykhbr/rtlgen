@@ -223,7 +223,7 @@ std::string FileObject::generate_const(GenObject *obj) {
         } else {
             out += "}";
         }
-    } else if (obj->getId() == ID_STRUCT_INST) {
+    } else if (obj->isStruct()) {
         out += addspaces();
         if (SCV_is_sysc()) {
             out += "{";

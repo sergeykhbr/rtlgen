@@ -103,8 +103,7 @@ std::string Operation::fullname(const char *prefix, std::string name, GenObject 
         }
         curname += name;
         obj->setSelector(0);
-    } else if (obj->getId() == ID_STRUCT_INST
-                || obj->getId() == ID_STRUCT_DEF) {
+    } else if (obj->isStruct()) {
         curname = obj->getName();
         if (name.size()) {
             curname += ".";
@@ -122,8 +121,7 @@ std::string Operation::fullname(const char *prefix, std::string name, GenObject 
         }
     }
 
-    if (p && (p->getId() == ID_STRUCT_INST
-            || p->getId() == ID_STRUCT_DEF)) {
+    if (p && p->isStruct()) {
         curname = fullname(prefix, read + curname, obj->getParent());
     } else if (obj->isReg()) {
         curname = std::string(prefix) + "." + read + curname;
@@ -917,7 +915,7 @@ std::string SETVAL_gen(GenObject **args) {
     } else if (args[2]->getId() == ID_VALUE
             || args[2]->getId() == ID_CLOCK
             || args[2]->isParam()
-            || args[2]->getId() == ID_STRUCT_INST) {
+            || args[2]->isStruct()) {
         ret += Operation::obj2varname(args[2]);
     } else {
         ret += args[2]->generate();

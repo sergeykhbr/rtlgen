@@ -273,16 +273,17 @@ std::string ModuleObject::generate_sv_mod_signals() {
         }
         if (p->getName() == "") {
             // todo: struct_def should be skipped (mark it as a typedef true). 
+            SHOW_ERROR("Unnamed entry of type %s", p->getType().c_str());
             text = "";
             continue;
         }
         if (p->isReg() || p->isNReg()
             || (!p->isSignal()
                 && p->getId() != ID_VALUE
+                && !p->isStruct()
                 && p->getId() != ID_CLOCK
-                && p->getId() != ID_STRUCT_INST
                 && p->getId() != ID_ARRAY_DEF)) {
-                text = "";
+            text = "";
             continue;
         }
         if (text.size()) {
@@ -326,7 +327,7 @@ std::string ModuleObject::generate_sv_mod_proc_nullify(GenObject *obj,
                                                        std::string i) {
     std::string ret = "";
     if (obj->getId() == ID_VALUE
-        || (obj->getId() == ID_STRUCT_INST && obj->getStrValue().size() != 0)) {
+        || (obj->isStruct() && !obj->isTypedef() && obj->getStrValue().size())) {
         ret += addspaces() + prefix;
         if (obj->getName() != "0") {
             if (prefix.size() != 0) {
@@ -335,7 +336,7 @@ std::string ModuleObject::generate_sv_mod_proc_nullify(GenObject *obj,
             ret += obj->getName();
         }
         ret += " = " + obj->getStrValue() + ";\n";
-    } else if (obj->getId() == ID_STRUCT_INST) {
+    } else if (obj->isStruct() && !obj->isTypedef()) {
         std::string prefix2 = prefix;
         if (obj->getName() != "0") {
             if (prefix.size()) {
@@ -403,11 +404,11 @@ std::string ModuleObject::generate_sv_mod_proc(GenObject *proc) {
     for (auto &e: proc->getEntries()) {
         ln = "";
         if (e->getId() == ID_VALUE
-            || e->getId() == ID_STRUCT_INST) {
-            ln += "    " + e->getType() + " " + e->getName();
+            || e->isStruct()) {    // no structure inside of process, typedef can be removed
+            ln += addspaces() + e->getType() + " " + e->getName();
             tcnt++;
         } else if (e->getId() == ID_ARRAY_DEF) {
-            ln += "    " + e->getType() + " " + e->getName();
+            ln += addspaces() + e->getType() + " " + e->getName();
             ln += "[0: ";
             ln += e->getStrDepth();
             ln += "-1]";

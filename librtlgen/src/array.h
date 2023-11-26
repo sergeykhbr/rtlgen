@@ -104,24 +104,6 @@ class TStructArray : public ArrayObject<T> {
     }
 };
 
-/*template<class T>
-class ModuleArray : public ArrayObject<T> {
- public:
-    ModuleArray(GenObject *parent, const char *name, const char *depth, const char *comment="")
-        : ArrayObject<T>(parent, "", name, depth, comment) {
-        int d = GenObject::getDepth();
-        ArrayObject<T>::arr_ = new T *[d];
-        char tstr[64];
-        for (int i = 0; i < d; i++) {
-            RISCV_sprintf(tstr, sizeof(tstr), "%s%d", name, i);
-            ArrayObject<T>::arr_[i] = new T(this, tstr);
-        }
-    }
-    virtual void changeTmplParameter(const char *name, const char *val) {
-        ArrayObject<T>::getItem(name)->setStrValue(val);
-    }
-};*/
-
 class StringArray : public ArrayObject<ParamString> {
  public:
     StringArray(GenObject *parent, const char *name, const char *depth, const char *comment="")

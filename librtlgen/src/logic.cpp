@@ -108,7 +108,7 @@ std::string Logic::generate() {
     }
 
     if (!isVector()) {
-        SHOW_ERROR("Unsupported typedef definition of %s", getType());
+        SHOW_ERROR("Unsupported typedef definition of %s", getType().c_str());
     }
     
     std::string strw = getStrWidth();

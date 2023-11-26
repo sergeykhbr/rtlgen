@@ -276,25 +276,30 @@ std::string ModuleObject::generate_vhdl_mod_signals() {
     tcnt = 0;
     text = "";
     for (auto &p: getEntries()) {
-        if (p->isInput() || p->isOutput()) {
+        if (p->getId() == ID_COMMENT) {
+            text += p->generate();
+            continue;
+        }
+        if (p->isInput()
+            || p->isOutput()
+            || p->isOperation()
+            || p->isTypedef()
+            || p->isParam()) {
             text = "";
             continue;
         }
         if (p->getName() == "") {
+            SHOW_ERROR("Unnamed type %s", p->getType().c_str());
             // typedef should be skipped
             continue;
         }
         if (p->isReg() || p->isNReg()
             || (!p->isSignal()
                 && p->getId() != ID_VALUE
+                && !p->isStruct()
                 && p->getId() != ID_CLOCK
-                && p->getId() != ID_STRUCT_INST
                 && p->getId() != ID_ARRAY_DEF)) {
-            if (p->getId() == ID_COMMENT) {
-                text += p->generate();
-            } else {
-                text = "";
-            }
+            text = "";
             continue;
         }
         if (text.size()) {

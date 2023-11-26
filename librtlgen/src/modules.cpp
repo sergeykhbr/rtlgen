@@ -21,6 +21,7 @@
 #include "utils.h"
 #include "files.h"
 #include "operations.h"
+#include <string.h>
 
 namespace sysvc {
 
