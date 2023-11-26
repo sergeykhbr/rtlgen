@@ -858,11 +858,10 @@ std::string ModuleObject::generate_sysc_constructor() {
     // Sub-module instantiation
     ret += generate_sysc_submodule_nullify();
     for (auto &p: getEntries()) {
-        if (p->getId() != ID_OPERATION) {
-            continue;
+        if (p->isOperation()) {
+            ret += p->generate();
+            ret += "\n";
         }
-        ret += p->generate();
-        ret += "\n";
     }
 
     // Process sensitivity list:
@@ -1180,10 +1179,9 @@ std::string ModuleObject::generate_sysc_proc(GenObject *proc) {
 
     // Generate operations:
     for (auto &e: proc->getEntries()) {
-        if (e->getId() != ID_OPERATION) {
-            continue;
+        if (e->isOperation()) {
+            ret += e->generate();
         }
-        ret += e->generate();
     }
 
     popspaces();

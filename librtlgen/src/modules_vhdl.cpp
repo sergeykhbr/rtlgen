@@ -476,12 +476,10 @@ std::string ModuleObject::generate_vhdl_mod() {
 
     // Sub-module instantiation
     for (auto &p: entries_) {
-        if (p->getId() != ID_OPERATION) {
-            continue;
+        if (p->isOperation()) {
+            ret += p->generate();
+            ret += "\n";
         }
-        ln = p->generate();
-        ret += ln;
-        ret += "\n";
     }
 /*
     // Clock process

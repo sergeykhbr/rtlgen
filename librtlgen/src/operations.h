@@ -61,11 +61,10 @@ class Operation : public GenObject {
     virtual std::string getStrValue() override { return generate(); }
     virtual std::string generate() override {
         std::string ret = igen_(args);
-        for (auto &e: entries_) {
-            if (e->getId() != ID_OPERATION) {
-                continue;
+        for (auto &e: getEntries()) {
+            if (e->isOperation()) {
+                ret += e->generate();
             }
-            ret += e->generate();
         }
         return ret;
     }

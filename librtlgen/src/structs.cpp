@@ -55,7 +55,7 @@ std::string StructObject::getName() {
     }
     if (sel->getId() == ID_CONST) {
         ret = sel->getStrValue();
-    } else if (sel->getId() == ID_OPERATION) {
+    } else if (sel->isOperation()) {
         ret = sel->generate();
     } else {
         ret = sel->getName();

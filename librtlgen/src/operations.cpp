@@ -83,7 +83,7 @@ std::string Operation::fullname(const char *prefix, std::string name, GenObject 
         // Do not add 'name' to avoid double adding
     } else if (obj->getId() == ID_CONST) {
         curname = obj->getStrValue();
-    } else if (obj->getId() == ID_OPERATION) {
+    } else if (obj->isOperation()) {
         curname = obj->generate();
     } else if (obj->getSelector()) {
         curname = "";

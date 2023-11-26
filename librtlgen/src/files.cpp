@@ -109,42 +109,13 @@ void FileObject::list_of_modules(GenObject *p, std::list<std::string> &fpath) {
         // no need to include submodules in system verilog
         return;
     }
-#if 1
-    std::string tn = getName();
-    if (tn == "asic_top") {
-        bool st = true;
-    }
-#endif
 
-#if 1
-    if (p->isModule() && p->isTypedef()
+    if ((p->isModule() && p->isTypedef())
         || p->isParam()) {
         f = p->getParent();
     } else if (p->isModule()) {
         f = SCV_get_module(p->getType().c_str());
-    } else if (p->getId() == ID_ARRAY_DEF) {
-        for (auto &e: p->getEntries()) {
-            if (e->isModule() && !e->isTypedef()) {
-                f = SCV_get_module(e->getType().c_str());
-                break;
-            }
-        }
     }
-#else
-    if (p->getId() == ID_MODULE
-        || p->isParam()) {
-        f = p->getParent();
-    } else if (p->getId() == ID_MODULE_INST) {
-        f = SCV_get_module(p->getType().c_str());
-    } else if (p->getId() == ID_ARRAY_DEF) {
-        for (auto &e: p->getEntries()) {
-            if (e->getId() == ID_MODULE_INST) {
-                f = SCV_get_module(e->getType().c_str());
-                break;
-            }
-        }
-    }
-#endif
 
     // search file owner of the module
     std::string tstr;
@@ -162,7 +133,6 @@ void FileObject::list_of_modules(GenObject *p, std::list<std::string> &fpath) {
     f = p->getParent();
     bool go_deeper = true;
     while (f) {
-        //if (f->getId() == ID_MODULE || f->getId() == ID_MODULE_INST) {
         if (f->isModule()) {
             go_deeper = false;
             break;

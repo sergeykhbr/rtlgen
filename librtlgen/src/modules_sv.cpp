@@ -448,14 +448,10 @@ std::string ModuleObject::generate_sv_mod_proc(GenObject *proc) {
     }
 
     // Generate operations:
-//    if (proc->isGenerate() == false) {
-//        Operation::set_space(1);
-//    }
     for (auto &e: proc->getEntries()) {
-        if (e->getId() != ID_OPERATION) {
-            continue;
+        if (e->isOperation()) {
+            ret += e->generate();
         }
-        ret += e->generate();
     }
 
     if (isRegs()) {
@@ -699,12 +695,10 @@ std::string ModuleObject::generate_sv_mod() {
 
     // Sub-module instantiation
     for (auto &p: entries_) {
-        if (p->getId() != ID_OPERATION) {
-            continue;
+        if (p->isOperation()) {
+            ret += p->generate();
+            ret += "\n";        // No need in this.
         }
-        ln = p->generate();
-        ret += ln;
-        ret += "\n";
     }
 
     // Clock process
