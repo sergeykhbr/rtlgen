@@ -103,26 +103,7 @@ std::string ModuleObject::generate_sysc_h_struct() {
         if (p->getId() != ID_STRUCT_DEF) {
             continue;
         }
-        if (p->isVector()) {
-            out += addspaces();
-            out += "typedef ";
-            if (p->isVector()) {
-                out += "sc_vector<";
-            }
-            if (p->isSignal()) {
-                out += "sc_signal<";
-            }
-            out += p->generate();
-            if (p->isSignal()) {
-                out += ">";
-            }
-            if (p->isVector()) {
-                out += ">";
-            }
-            out += " " + p->getType() + ";\n";
-        } else {
-            out += p->generate();
-        }
+        out += p->generate();
         tcnt++;
     }
     if (tcnt) {
@@ -380,8 +361,7 @@ std::string ModuleObject::generate_sysc_h() {
                 && p->getId() != ID_VALUE
                 && p->getId() != ID_CLOCK
                 && p->getId() != ID_STRUCT_INST
-                && p->getId() != ID_ARRAY_DEF
-                && p->getId() != ID_VECTOR)) {
+                && p->getId() != ID_ARRAY_DEF)) {
                 text = "";
             continue;
         }
@@ -553,7 +533,7 @@ std::string ModuleObject::generate_sysc_sensitivity(std::string prefix,
     }
     if (obj->isInput() && obj->getName() != "i_clk") {
         ret += addspaces();
-        if (obj->isVector() || obj->getItem()->getId() == ID_VECTOR) {
+        if (obj->isVector()) {
             ret += "for (int i = 0; i < " + obj->getItem()->getStrDepth() + "; i++) {\n";
             pushspaces();
             ret += addspaces();
@@ -616,8 +596,7 @@ std::string ModuleObject::generate_sysc_vcd_entries(std::string name1, std::stri
     if (obj->getId() == ID_STRUCT_DEF
         || obj->getId() == ID_MODULE_INST
         || obj->getId() == ID_PROCESS
-        || obj->isVector()
-        || obj->getItem()->getId() == ID_VECTOR) {
+        || obj->isVector()) {
         return ret;
     }
 
@@ -1174,8 +1153,7 @@ std::string ModuleObject::generate_sysc_proc(GenObject *proc) {
     for (auto &e: proc->getEntries()) {
         ln = "";
         if (e->getId() == ID_VALUE
-            || e->getId() == ID_STRUCT_INST
-            || e->getId() == ID_VECTOR) {
+            || e->getId() == ID_STRUCT_INST) {
             ln += addspaces() + e->getType() + " " + e->getName();
         } else if (e->getId() == ID_ARRAY_DEF) {
             ln += addspaces() + e->getType() + " " + e->getName();

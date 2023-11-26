@@ -154,14 +154,7 @@ std::string ModuleObject::generate_vhdl_pkg_struct() {
         if (p->getId() != ID_STRUCT_DEF) {
             continue;
         }
-        if (p->isVector()) {
-            ret += "type ";
-            ret += p->generate();
-            ret += " is array (0 to " + p->getStrDepth() + " - 1)";
-            ret += " of " + p->getType() + ";\n";
-        } else {
-            ret += p->generate();
-        }
+        ret += p->generate();
         tcnt++;
     }
     if (tcnt) {
@@ -296,8 +289,7 @@ std::string ModuleObject::generate_vhdl_mod_signals() {
                 && p->getId() != ID_VALUE
                 && p->getId() != ID_CLOCK
                 && p->getId() != ID_STRUCT_INST
-                && p->getId() != ID_ARRAY_DEF
-                && p->getId() != ID_VECTOR)) {
+                && p->getId() != ID_ARRAY_DEF)) {
             if (p->getId() == ID_COMMENT) {
                 text += p->generate();
             } else {

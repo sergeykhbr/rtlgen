@@ -28,7 +28,7 @@ class ParamBOOL : public BOOL {
     ParamBOOL(GenObject *parent, const char *name,
                 const char *val, const char *comment="")
         : BOOL(val, name, parent, comment) {
-        SCV_set_cfg_parameter(this, this, getValue());
+        SCV_set_cfg_parameter(this);
     }
     virtual bool isParam() override { return true; }
     virtual std::string getStrValue() override { return getName(); }
@@ -40,7 +40,7 @@ class ParamString : public STRING {
     ParamString(GenObject *parent, const char *name,
                 const char *val, const char *comment="")
         : STRING(val, name, parent, comment) {
-        //SCV_set_cfg_parameter(this, this, getValue());   // FIX get Value for strings!!! Now it is not available
+        SCV_set_cfg_parameter(this);
     }
     virtual bool isParam() override { return true; }
     virtual std::string getStrValue() override { return getName(); }
@@ -52,7 +52,7 @@ class ParamUI16D : public UI16D {
     ParamUI16D(GenObject *parent, const char *name, const char *val,
         const char *comment="")
         : UI16D(val, name, parent, comment) {
-            SCV_set_cfg_parameter(this, this, getValue());
+            SCV_set_cfg_parameter(this);
     }
     virtual bool isParam() override { return true; }
     virtual std::string getStrValue() override { return getName(); }
@@ -63,11 +63,11 @@ class ParamI32D : public I32D {
  public:
     ParamI32D(GenObject *parent, const char *name, const char *val,
         const char *comment="") : I32D(val, name, parent, comment) {
-            SCV_set_cfg_parameter(this, this, getValue());
+            SCV_set_cfg_parameter(this);
     }
     ParamI32D(GenObject *parent, const char *name, GenObject *val,
         const char *comment="") : I32D(val, name, parent, comment) {
-            SCV_set_cfg_parameter(this, this, getValue());
+            SCV_set_cfg_parameter(this);
     }
     virtual bool isParam() override { return true; }
     virtual std::string getStrValue() override { return getName(); }
@@ -79,7 +79,7 @@ class ParamUI32D : public UI32D {
  public:
     ParamUI32D(GenObject *parent, const char *name, const char *val,
         const char *comment="") : UI32D(val, name, parent, comment) {
-            SCV_set_cfg_parameter(this, this, getValue());
+            SCV_set_cfg_parameter(this);
     }
     virtual bool isParam() override { return true; }
     virtual std::string getStrValue() override { return getName(); }
@@ -90,7 +90,7 @@ class ParamUI64H : public UI64H {
  public:
     ParamUI64H(GenObject *parent, const char *name, const char *val,
         const char *comment="") : UI64H(val, name, parent, comment) {
-            SCV_set_cfg_parameter(this, this, getValue());
+            SCV_set_cfg_parameter(this);
     }
     virtual bool isParam() override { return true; }
     virtual std::string getStrValue() override { return getName(); }
@@ -102,12 +102,12 @@ class ParamLogic : public Logic {
     ParamLogic(GenObject *parent, const char *width, const char *name,
                 const char *val, const char *comment="")
         : Logic(width, name, val, parent, comment) {
-        SCV_set_cfg_parameter(this, this, getValue());
+        SCV_set_cfg_parameter(this);
     }
     ParamLogic(GenObject *parent, GenValue *width, const char *name,
                const char *val, const char *comment="")
         : Logic(width, name, val, parent, comment) {
-        SCV_set_cfg_parameter(this, this, getValue());
+        SCV_set_cfg_parameter(this);
     }
     virtual bool isParam() override { return true; }
     virtual std::string getStrValue() override { return getName(); }
@@ -119,7 +119,7 @@ class ParamTIMESEC : public TIMESEC {
     ParamTIMESEC(GenObject *parent, const char *name,
                    const char *val, const char *comment="")
         : TIMESEC(val, name, parent, comment) {
-            SCV_set_cfg_parameter(this, this, getValue());
+            SCV_set_cfg_parameter(this);
     }
     virtual bool isParam() override { return true; }
     virtual std::string getStrValue() override { return getName(); }

@@ -143,15 +143,7 @@ std::string ModuleObject::generate_sv_pkg_struct() {
         if (p->getId() != ID_STRUCT_DEF) {
             continue;
         }
-        if (p->isVector()) {
-            ret += "typedef ";
-            ret += p->generate();
-            ret += " " + p->getType();
-            ret += "[0:" + p->getStrDepth() + " - 1]";
-            ret += ";\n";
-        } else {
-            ret += p->generate();
-        }
+        ret += p->generate();
         tcnt++;
     }
     if (tcnt) {
@@ -289,8 +281,7 @@ std::string ModuleObject::generate_sv_mod_signals() {
                 && p->getId() != ID_VALUE
                 && p->getId() != ID_CLOCK
                 && p->getId() != ID_STRUCT_INST
-                && p->getId() != ID_ARRAY_DEF
-                && p->getId() != ID_VECTOR)) {
+                && p->getId() != ID_ARRAY_DEF)) {
                 text = "";
             continue;
         }
@@ -418,8 +409,7 @@ std::string ModuleObject::generate_sv_mod_proc(GenObject *proc) {
     for (auto &e: proc->getEntries()) {
         ln = "";
         if (e->getId() == ID_VALUE
-            || e->getId() == ID_STRUCT_INST
-            || e->getId() == ID_VECTOR) {
+            || e->getId() == ID_STRUCT_INST) {
             ln += "    " + e->getType() + " " + e->getName();
             tcnt++;
         } else if (e->getId() == ID_ARRAY_DEF) {

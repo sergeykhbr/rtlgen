@@ -64,18 +64,18 @@ void popspaces() {
 }
 
 
-void SCV_set_cfg_parameter(GenObject *parent,
-                           GenObject *obj,
-                           uint64_t v) {
-    std::string path = parent->getFullPath();
-    std::string file = parent->getFile();
+void SCV_set_cfg_parameter(GenObject *obj) {
+    std::string path = obj->getFullPath();
+    std::string file = obj->getFile();
 
     CfgParameterInfo cfg;
     cfg.obj = obj;
     cfg.path = path;
     cfg.file = file;
     cfg.lib = obj->getLibName();
-    cfg.value = v;
+    if (!obj->isString()) { //    // FIX get Value for strings!!! Now it is not available
+        cfg.value = obj->getValue();    // Remove me:
+    }
     if (obj->isLocal()) {
         // Parent of the paramter is module
         cfgLocalParamters_[localname_][obj->getName()] = cfg;
