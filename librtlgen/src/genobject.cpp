@@ -136,6 +136,17 @@ GenObject *GenObject::getEntryByName(const char *name) {
     return 0;
 }
 
+void GenObject::setTypedef(const char *n) {
+    typedef_ = type_;
+    type_ = std::string(n);
+           
+    if (getName() == "" || getName() == type_) {
+        SCV_set_cfg_type(this);
+    } else {
+        SCV_get_cfg_parameter(type_);   // to trigger dependecy array
+    }
+}
+
 std::string GenObject::addComment() {
     std::string ret = "";
     if (SCV_is_vhdl()) {

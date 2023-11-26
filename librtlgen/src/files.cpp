@@ -471,7 +471,7 @@ void FileObject::generate_sysv() {
                 out += p->generate();
                 continue;
             } else if (p->isVector() && p->getName().size()) {
-                // WARNING: duplicate logic in struct.cpp
+                // Device mapping constants generation:
                 out += "const " + p->getType();
                 out += " " + p->getName() + " = ";
                 out += generate_const(p);

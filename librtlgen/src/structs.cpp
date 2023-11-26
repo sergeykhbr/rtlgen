@@ -39,14 +39,9 @@ StructObject::StructObject(GenObject *parent,
     }
 }
 
-bool StructObject::isVector() {
-    if (getEntries().size() != 1) {
-        return false;
-    }
-    if (getEntries().front()->getId() == ID_ARRAY_DEF) {
-        return true;
-    }
-    return false;
+/** it is better to remove empty name */
+bool StructObject::isTypedef() {
+    return getName() == "" || getName() == getType();
 }
 
 std::string StructObject::getName() {
@@ -513,14 +508,14 @@ std::string StructObject::generate_vector_type() {
         if (isSignal()) {
             ret += "sc_signal<";
         }
-        ret += getName();
+        ret += getTypedef();
         if (isSignal()) {
             ret += ">";
         }
         ret += "> " + getType() + ";\n";
     } else if (SCV_is_sv()) {
         ret += addspaces();
-        ret += "typedef " + getName() + " " + getType();
+        ret += "typedef " + getTypedef() + " " + getType();
         ret += "[0:" + getStrDepth() + " - 1];\n";
     } else if (SCV_is_vhdl()) {
     }

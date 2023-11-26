@@ -74,17 +74,9 @@ class types_pnp : public FileObject {
      public:
         soc_pnp_vector(GenObject *parent, const char *name, const char *descr="")
             : dev_config_type(parent, name, descr) {
-            typedef_ = type_;
-            type_ = std::string("soc_pnp_vector");
+            setTypedef("soc_pnp_vector");
             setStrDepth("SOC_PNP_TOTAL");
-            
-            if (getName() == "dev_config_type") {
-                SCV_set_cfg_type(this);
-            } else {
-                SCV_get_cfg_parameter(getType());   // to trigger dependecy array
-            }
         }
-        virtual bool isTypedef() override { return getName() == "dev_config_type"; }
         virtual bool isVector() override { return true; }
         virtual bool isSignal() override { return true; }
     };

@@ -29,17 +29,9 @@ class types_bus1 : public FileObject {
      public:
         bus1_apb_in_vector(GenObject *parent, const char *name, const char *descr="")
             : apb_in_type(parent, name, descr) {
-            typedef_ = type_;
-            type_ = std::string("bus1_apb_in_vector");
+            setTypedef("bus1_apb_in_vector");
             setStrDepth("CFG_BUS1_PSLV_TOTAL");
-            
-            if (getName() == "apb_in_type") {
-                SCV_set_cfg_type(this);
-            } else {
-                SCV_get_cfg_parameter(getType());   // to trigger dependecy array
-            }
         }
-        virtual bool isTypedef() override { return getName() == "apb_in_type"; }
         virtual bool isVector() override { return true; }
         virtual bool isSignal() override { return true; }
     };
@@ -48,17 +40,9 @@ class types_bus1 : public FileObject {
      public:
         bus1_apb_out_vector(GenObject *parent, const char *name, const char *descr="")
             : apb_out_type(parent, name, descr) {
-            typedef_ = type_;
-            type_ = std::string("bus1_apb_out_vector");
+            setTypedef("bus1_apb_out_vector");
             setStrDepth("CFG_BUS1_PSLV_TOTAL");
-            
-            if (getName() == "apb_out_type") {
-                SCV_set_cfg_type(this);
-            } else {
-                SCV_get_cfg_parameter(getType());   // to trigger dependecy array
-            }
         }
-        virtual bool isTypedef() override { return getName() == "apb_out_type"; }
         virtual bool isVector() override { return true; }
         virtual bool isSignal() override { return true; }
     };
@@ -67,17 +51,9 @@ class types_bus1 : public FileObject {
      public:
         bus1_mapinfo_vector(GenObject *parent, const char *name, const char *descr="")
             : mapinfo_type(parent, name, descr) {
-            typedef_ = type_;
-            type_ = std::string("bus1_mapinfo_vector");
+            setTypedef("bus1_mapinfo_vector");
             setStrDepth("CFG_BUS1_PSLV_TOTAL");
-            
-            if (getName() == "mapinfo_type") {
-                SCV_set_cfg_type(this);
-            } else {
-                SCV_get_cfg_parameter(getType());   // to trigger dependecy array
-            }
         }
-        virtual bool isTypedef() override { return getName() == "mapinfo_type"; }
         virtual bool isVector() override { return true; }
         virtual bool isSignal() override { return true; }
     };

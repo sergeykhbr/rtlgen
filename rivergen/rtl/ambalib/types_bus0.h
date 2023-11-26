@@ -29,17 +29,9 @@ class types_bus0 : public FileObject {
      public:
         bus0_xmst_in_vector(GenObject *parent, const char *name, const char *descr="")
             : axi4_master_in_type(parent, name, descr) {
-            typedef_ = type_;
-            type_ = std::string("bus0_xmst_in_vector");
+            setTypedef("bus0_xmst_in_vector");
             setStrDepth("CFG_BUS0_XMST_TOTAL");
-            
-            if (getName() == "axi4_master_in_type") {
-                SCV_set_cfg_type(this);
-            } else {
-                SCV_get_cfg_parameter(getType());   // to trigger dependecy array
-            }
         }
-        virtual bool isTypedef() override { return getName() == "axi4_master_in_type"; }
         virtual bool isVector() override { return true; }
         virtual bool isSignal() override { return true; }
     };
@@ -48,17 +40,9 @@ class types_bus0 : public FileObject {
      public:
         bus0_xmst_out_vector(GenObject *parent, const char *name, const char *descr="")
             : axi4_master_out_type(parent, name, descr) {
-            typedef_ = type_;
-            type_ = std::string("bus0_xmst_out_vector");
+            setTypedef("bus0_xmst_out_vector");
             setStrDepth("CFG_BUS0_XMST_TOTAL");
-            
-            if (getName() == "axi4_master_out_type") {
-                SCV_set_cfg_type(this);
-            } else {
-                SCV_get_cfg_parameter(getType());   // to trigger dependecy array
-            }
         }
-        virtual bool isTypedef() override { return getName() == "axi4_master_out_type"; }
         virtual bool isVector() override { return true; }
         virtual bool isSignal() override { return true; }
     };
@@ -68,17 +52,9 @@ class types_bus0 : public FileObject {
      public:
         bus0_xslv_in_vector(GenObject *parent, const char *name, const char *descr="")
             : axi4_slave_in_type(parent, name, descr) {
-            typedef_ = type_;
-            type_ = std::string("bus0_xslv_in_vector");
+            setTypedef("bus0_xslv_in_vector");
             setStrDepth("CFG_BUS0_XSLV_TOTAL");
-            
-            if (getName() == "axi4_slave_in_type") {
-                SCV_set_cfg_type(this);
-            } else {
-                SCV_get_cfg_parameter(getType());   // to trigger dependecy array
-            }
         }
-        virtual bool isTypedef() override { return getName() == "axi4_slave_in_type"; }
         virtual bool isVector() override { return true; }
         virtual bool isSignal() override { return true; }
     };
@@ -87,17 +63,9 @@ class types_bus0 : public FileObject {
      public:
         bus0_xslv_out_vector(GenObject *parent, const char *name, const char *descr="")
             : axi4_slave_out_type(parent, name, descr) {
-            typedef_ = type_;
-            type_ = std::string("bus0_xslv_out_vector");
+            setTypedef("bus0_xslv_out_vector");
             setStrDepth("CFG_BUS0_XSLV_TOTAL");
-            
-            if (getName() == "axi4_slave_out_type") {
-                SCV_set_cfg_type(this);
-            } else {
-                SCV_get_cfg_parameter(getType());   // to trigger dependecy array
-            }
         }
-        virtual bool isTypedef() override { return getName() == "axi4_slave_out_type"; }
         virtual bool isVector() override { return true; }
         virtual bool isSignal() override { return true; }
     };
@@ -106,17 +74,9 @@ class types_bus0 : public FileObject {
      public:
         bus0_mapinfo_vector(GenObject *parent, const char *name, const char *descr="")
             : mapinfo_type(parent, name, descr) {
-            typedef_ = type_;
-            type_ = std::string("bus0_mapinfo_vector");
+            setTypedef("bus0_mapinfo_vector");
             setStrDepth("CFG_BUS0_XSLV_TOTAL");
-            
-            if (getName() == "mapinfo_type") {
-                SCV_set_cfg_type(this);
-            } else {
-                SCV_get_cfg_parameter(getType());   // to trigger dependecy array
-            }
         }
-        virtual bool isTypedef() override { return getName() == "mapinfo_type"; }
         virtual bool isVector() override { return true; }
         virtual bool isSignal() override { return true; }
     };

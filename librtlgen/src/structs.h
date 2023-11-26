@@ -38,9 +38,7 @@ class StructObject : public GenObject {
                  : StructObject(parent, type, name, -1, comment) {}
 
     /** GenObject generic methods */
-    virtual bool isTypedef() override { return getName() == ""; }
-    virtual bool isVector() override;
-    virtual std::string getType() { return type_; }
+    virtual bool isTypedef() override ;
     virtual std::string getName() override;
     virtual void setZeroValue(const char *v) { zeroval_ = std::string(v); }
     virtual std::string getStrValue() override { return zeroval_; }

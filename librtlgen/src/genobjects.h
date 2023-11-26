@@ -86,6 +86,7 @@ class GenObject {
     virtual std::string getComment() { return comment_; }
     virtual std::string getType() { return type_; }
     virtual std::string getTypedef() { return typedef_; }
+    virtual void setTypedef(const char *n);
     virtual bool isParam() { return false; }            // StrValue is its name, Method generate() to generate its value
     virtual bool isParamGeneric() { return false; }     // Parameter that is defined as argument of constructor
     virtual bool isParamTemplate() { return false; }    // Special type of ParamGeneric used in systemc, when in/out depend on it
