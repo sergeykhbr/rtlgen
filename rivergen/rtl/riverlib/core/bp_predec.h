@@ -23,7 +23,7 @@ using namespace sysvc;
 
 class BpPreDecoder : public ModuleObject {
  public:
-    BpPreDecoder(GenObject *parent, const char *name);
+    BpPreDecoder(GenObject *parent, const char *name, const char *depth);
 
     class CombProcess : public ProcObject {
      public:
@@ -78,7 +78,7 @@ class BpPreDecoder : public ModuleObject {
 class bp_predec_file : public FileObject {
  public:
     bp_predec_file(GenObject *parent) : FileObject(parent, "bp_predec"),
-    bp_predec_(this, "") {}
+    bp_predec_(this, "BpPreDecoder", "0") {}
 
  private:
     BpPreDecoder bp_predec_;

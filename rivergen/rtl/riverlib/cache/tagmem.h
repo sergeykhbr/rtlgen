@@ -27,6 +27,7 @@ class TagMem : public ModuleObject {
  public:
     TagMem(GenObject *parent, 
             const char *name,
+            const char *depth,
             const char *gen_abus = "64", 
             const char *gen_ibits = "6", 
             const char *gen_lnbits = "5", 
@@ -105,7 +106,7 @@ class tagmem_file : public FileObject {
  public:
     tagmem_file(GenObject *parent) :
         FileObject(parent, "tagmem"),
-        TagMem_(this, "") {}
+        TagMem_(this, "TagMem", "0") {}
 
  private:
     TagMem TagMem_;

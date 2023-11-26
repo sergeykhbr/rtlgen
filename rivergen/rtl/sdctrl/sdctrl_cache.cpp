@@ -95,7 +95,7 @@ sdctrl_cache::sdctrl_cache(GenObject *parent, const char *name) :
     cache_line_o(this, "cache_line_o", "SDCACHE_LINE_BITS"),
     // process
     comb(this),
-    mem0(this, "mem0", "abus", "ibits", "lnbits", "flbits", "0")
+    mem0(this, "mem0", "0", "abus", "ibits", "lnbits", "flbits", "0")
 {
     Operation::start(this);
 

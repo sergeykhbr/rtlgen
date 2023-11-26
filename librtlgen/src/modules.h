@@ -27,7 +27,8 @@ namespace sysvc {
  */
 class ModuleObject : public GenObject {
  public:
-    ModuleObject(GenObject *parent, const char *type, const char *name="");
+    ModuleObject(GenObject *parent, const char *type,
+        const char *name="", const char *depth="");
 
     virtual std::string getType() { return type_; }
     virtual std::string generate_sysc_h();
@@ -39,6 +40,8 @@ class ModuleObject : public GenObject {
 
     // Check registers in current module and all sub-modules to create
     // async_reset logic and always (ff) process
+    virtual bool isModule() override { return true; }
+    virtual bool isTypedef() override { return getName() == getType() || getName() == ""; }
     virtual bool isCombProcess();
     virtual bool isRegs();
     virtual bool isRegProcess();

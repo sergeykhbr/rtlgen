@@ -16,8 +16,8 @@
 
 #include "river_amba.h"
 
-RiverAmba::RiverAmba(GenObject *parent, const char *name) :
-    ModuleObject(parent, "RiverAmba", name),
+RiverAmba::RiverAmba(GenObject *parent, const char *name, const char *depth) :
+    ModuleObject(parent, "RiverAmba", name, depth),
     // Generic parameters
     hartid(this, "hartid", "0"),
     fpu_ena(this, "fpu_ena", "true"),

@@ -169,8 +169,8 @@ public:
     dmidebug dmi0;
     ic_dport dport_ic0;
     ic_axi4_to_l1 acp_bridge;
-    ModuleArray<RiverAmba> cpux;
-    ModuleArray<DummyCpu> dumx;
+    RiverAmba cpux;
+    DummyCpu dumx;
     L2Top l2cache;
     L2Dummy l2dummy;
     L2SerDes l2serdes0;

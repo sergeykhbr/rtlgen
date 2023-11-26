@@ -56,13 +56,13 @@ BranchPredictor::BranchPredictor(GenObject *parent, const char *name) :
     // Create and connet Sub-modules:
     GenObject &i = FORGEN ("i", CONST("0"), CONST("2"), "++", new STRING("predecx"));
         NEW(*predec.getItem(0), predec.getName().c_str(), &i);
-            CONNECT(predec, &i, predec->i_c_valid, ARRITEM(wb_pd, i, wb_pd->c_valid));
-            CONNECT(predec, &i, predec->i_addr, ARRITEM(wb_pd, i, wb_pd->addr));
-            CONNECT(predec, &i, predec->i_data, ARRITEM(wb_pd, i, wb_pd->data));
-            CONNECT(predec, &i, predec->i_ra, i_ra);
-            CONNECT(predec, &i, predec->o_jmp, ARRITEM(wb_pd, i, wb_pd->jmp));
-            CONNECT(predec, &i, predec->o_pc, ARRITEM(wb_pd, i, wb_pd->pc));
-            CONNECT(predec, &i, predec->o_npc, ARRITEM(wb_pd, i, wb_pd->npc));
+            CONNECT(predec, &i, predec.i_c_valid, ARRITEM(wb_pd, i, wb_pd->c_valid));
+            CONNECT(predec, &i, predec.i_addr, ARRITEM(wb_pd, i, wb_pd->addr));
+            CONNECT(predec, &i, predec.i_data, ARRITEM(wb_pd, i, wb_pd->data));
+            CONNECT(predec, &i, predec.i_ra, i_ra);
+            CONNECT(predec, &i, predec.o_jmp, ARRITEM(wb_pd, i, wb_pd->jmp));
+            CONNECT(predec, &i, predec.o_pc, ARRITEM(wb_pd, i, wb_pd->pc));
+            CONNECT(predec, &i, predec.o_npc, ARRITEM(wb_pd, i, wb_pd->npc));
         ENDNEW();
     ENDFORGEN(new STRING("predecx"));
 

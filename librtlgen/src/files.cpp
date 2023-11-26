@@ -109,7 +109,28 @@ void FileObject::list_of_modules(GenObject *p, std::list<std::string> &fpath) {
         // no need to include submodules in system verilog
         return;
     }
+#if 1
+    std::string tn = getName();
+    if (tn == "asic_top") {
+        bool st = true;
+    }
+#endif
 
+#if 1
+    if (p->isModule() && p->isTypedef()
+        || p->isParam()) {
+        f = p->getParent();
+    } else if (p->isModule()) {
+        f = SCV_get_module(p->getType().c_str());
+    } else if (p->getId() == ID_ARRAY_DEF) {
+        for (auto &e: p->getEntries()) {
+            if (e->isModule() && !e->isTypedef()) {
+                f = SCV_get_module(e->getType().c_str());
+                break;
+            }
+        }
+    }
+#else
     if (p->getId() == ID_MODULE
         || p->isParam()) {
         f = p->getParent();
@@ -123,6 +144,7 @@ void FileObject::list_of_modules(GenObject *p, std::list<std::string> &fpath) {
             }
         }
     }
+#endif
 
     // search file owner of the module
     std::string tstr;
@@ -140,7 +162,8 @@ void FileObject::list_of_modules(GenObject *p, std::list<std::string> &fpath) {
     f = p->getParent();
     bool go_deeper = true;
     while (f) {
-        if (f->getId() == ID_MODULE || f->getId() == ID_MODULE_INST) {
+        //if (f->getId() == ID_MODULE || f->getId() == ID_MODULE_INST) {
+        if (f->isModule()) {
             go_deeper = false;
             break;
         }
@@ -230,7 +253,7 @@ std::string FileObject::generate_const(GenObject *obj) {
 }
 
 void FileObject::generate_sysc() {
-    bool module_cpp = false;
+    std::list<GenObject *> modlistcpp;      // list of modules with the cpp files (without template parameters)
     std::string out = "";
     std::string ln;
     std::string filename = getFullPath();
@@ -242,8 +265,8 @@ void FileObject::generate_sysc() {
         "\n"
         "#include <systemc.h>\n";
     // Check FILE presence
-    for (auto &p: entries_) {
-        if (p->getId() != ID_MODULE) {
+    for (auto &p: getEntries()) {
+        if (!p->isModule()) {
             continue;
         }
         if (!static_cast<ModuleObject *>(p)->isFileValue()) {
@@ -262,9 +285,16 @@ void FileObject::generate_sysc() {
     }
     // Check template class to include <api_core.h> file
     std::list<GenObject *> tmpllist;
-    for (auto &p: entries_) {
-        if (p->getId() == ID_MODULE) {
+    for (auto &p: getEntries()) {
+        if (p->isModule() && p->isTypedef()) {
+            std::string strtype = p->getType();
+            SCV_select_local(strtype);
+
             static_cast<ModuleObject *>(p)->getTmplParamList(tmpllist);
+            // Template modules do not require cpp-files
+            if (tmpllist.size() == 0) {
+                modlistcpp.push_back(p);
+            }
         }
     }
     if (tmpllist.size()) {
@@ -281,39 +311,28 @@ void FileObject::generate_sysc() {
 
     // header
     for (auto &p: getEntries()) {
-        if (p->getId() != ID_MODULE) {
-            if (p->getId() == ID_FUNCTION) {
-                // for global functions only
-                out += addspaces() + "static " + p->getType() + " ";
-            } else if (p->isParam() && !p->isParamGeneric()) {
-                ln = addspaces() + "static const " + p->getType() + " ";
-                ln += p->getName() + " = " + p->generate() + ";";
-                p->addComment(ln);
-                out += ln + "\n";
-                continue;
-            } else if (p->isTypedef()) {
-                out += addspaces();
-                out += p->generate();
-                continue;
-            } else if (p->isVector() && p->getName().size()) {
-                // mapinfo array initializaion:
-                out += addspaces() + "static const " + p->getTypedef();
-                out += " " + p->getName() + "[" + p->getStrDepth() + "] = ";
-                out += generate_const(p) + ";\n";
-                continue;
-            }
+        if (p->isModule() && p->isTypedef()) {
+            out += static_cast<ModuleObject *>(p)->generate_sysc_h();
+        } else if (p->getId() == ID_FUNCTION) {
+            // for global functions only
+            out += addspaces() + "static " + p->getType() + " ";
             out += p->generate();
-            continue;
+        } else if (p->isParam() && !p->isParamGeneric()) {
+            ln = addspaces() + "static const " + p->getType() + " ";
+            ln += p->getName() + " = " + p->generate() + ";";
+            p->addComment(ln);
+            out += ln + "\n";
+        } else if (p->isTypedef()) {
+            out += addspaces();
+            out += p->generate();
+        } else if (p->isVector()) {
+            // mapinfo array initializaion:
+            out += addspaces() + "static const " + p->getTypedef();
+            out += " " + p->getName() + "[" + p->getStrDepth() + "] = ";
+            out += generate_const(p) + ";\n";
+        } else {
+            out += p->generate();
         }
-        // Template modules do not require cpp-files
-        std::list<GenObject *> genlist;
-        static_cast<ModuleObject *>(p)->getTmplParamList(genlist);
-        if (genlist.size() == 0) {
-            module_cpp = true;
-        }
-        std::string strtype = p->getType();
-        SCV_select_local(strtype);
-        out += static_cast<ModuleObject *>(p)->generate_sysc_h();
     }
     out += 
         "}  // namespace debugger\n"
@@ -322,7 +341,7 @@ void FileObject::generate_sysc() {
     SCV_write_file(filename.c_str(), out.c_str(), out.size());
 
     // source file if any module defined in this file
-    if (module_cpp) {
+    for (auto &p: modlistcpp) {
         out = "";
         filename = getFullPath();
         filename = filename + ".cpp";
@@ -337,16 +356,7 @@ void FileObject::generate_sysc() {
             "namespace debugger {\n"
             "\n";
 
-        // module definition
-        for (auto &p: getEntries()) {
-            if (p->getId() == ID_MODULE) {
-                std::string strtype = p->getType();
-                SCV_select_local(strtype);
-                out += static_cast<ModuleObject *>(p)->generate_sysc_cpp();
-            } else {
-                out += p->generate();
-            }
-        }
+        out += static_cast<ModuleObject *>(p)->generate_sysc_cpp();
         out += 
             "}  // namespace debugger\n"
             "\n";
@@ -440,44 +450,42 @@ void FileObject::generate_sysv() {
     bool skip_pkg = false;
     ModuleObject *mod;
     std::list <GenObject *> tmplparlist;
-    for (auto &p: entries_) {
-        if (p->getId() == ID_MODULE) {
+    for (auto &p: getEntries()) {
+        if (p->isModule() && p->isTypedef()) {
             is_module = true;
-            mod = static_cast<ModuleObject *>(p);
+            std::string strtype = p->getType();
+            SCV_select_local(strtype);
+
+            mod = dynamic_cast<ModuleObject *>(p);
             mod->getTmplParamList(tmplparlist);
             if (tmplparlist.size()) {
                 // do not create package for template modules: queue, ram,  etc.
                 skip_pkg = true;
             } else {
-                std::string strtype = p->getType();
-                SCV_select_local(strtype);
                 out += mod->generate_sv_pkg();
             }
-        } else {
-            if (p->getId() == ID_FUNCTION) {
-                out += "function automatic ";
-            } else if (p->isParam() && !p->isParamGeneric()) {
-                ln = addspaces() + "localparam ";
-                if (p->isString()) {
-                    // Vivado doesn't support string parameters. Skip type definition
-                } else {
-                    ln += p->getType() + " ";
-                }
-                ln += p->getName() + " = " + p->generate() + ";";
-                p->addComment(ln);
-                out += ln + "\n";
-                continue;
-            } else if (p->isTypedef()) {
-                out += p->generate();
-                continue;
-            } else if (p->isVector() && p->getName().size()) {
-                // Device mapping constants generation:
-                out += "const " + p->getType();
-                out += " " + p->getName() + " = ";
-                out += generate_const(p);
-                out += ";\n";
-                continue;
+        } else if (p->getId() == ID_FUNCTION) {
+            out += "function automatic ";
+            out += p->generate();
+        } else if (p->isParam() && !p->isParamGeneric()) {
+            ln = addspaces() + "localparam ";
+            if (p->isString()) {
+                // Vivado doesn't support string parameters. Skip type definition
+            } else {
+                ln += p->getType() + " ";
             }
+            ln += p->getName() + " = " + p->generate() + ";";
+            p->addComment(ln);
+            out += ln + "\n";
+        } else if (p->isTypedef()) {
+            out += p->generate();
+        } else if (p->isVector()) {
+            // Device mapping constants generation:
+            out += "const " + p->getType();
+            out += " " + p->getName() + " = ";
+            out += generate_const(p);
+            out += ";\n";
+        } else {
             out += p->generate();
         }
     }
@@ -501,14 +509,13 @@ void FileObject::generate_sysv() {
             "\n";
 
         // module definition
-        for (auto &p: entries_) {
-            if (p->getId() == ID_MODULE) {
-                is_module = true;
+        for (auto &p: getEntries()) {
+            if (p->isModule() && p->isTypedef()) {
                 std::string strtype = p->getType();
                 SCV_select_local(strtype);
                 out += static_cast<ModuleObject *>(p)->generate_sv_mod();
             } else {
-                out += p->generate();
+                out += p->generate();  // REMOVE ME: No entries except module in file
             }
         }
         SCV_write_file(filename.c_str(), out.c_str(), out.size());

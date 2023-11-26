@@ -33,7 +33,7 @@ enum EIdType {
 //    ID_TMPL_PARAM = (1<<8),  // The same as DEF_PARAM in sv but need to generate templates in systemc
     ID_FUNCTION = (1<<9),
     ID_MODULE = (1<<10),
-    ID_MODULE_INST = (1<<11),
+//    ID_MODULE_INST = (1<<11),
     ID_STRUCT_DEF = (1<<15),
     ID_STRUCT_INST = (1<<16),
     ID_ARRAY_DEF = (1<<17),
@@ -101,6 +101,7 @@ class GenObject {
     virtual bool isOutput() { return false; }
     virtual bool isStruct() { return false; }
     virtual bool isVector() { return false; }
+    virtual bool isModule() { return false; }
     virtual bool isOperation() { return false; }
     virtual bool isGenVar() { return false; }   // Variable is used generate cycle: I32D analog for rtl
     virtual bool isGenerate() { return false; } // use generate instead of comb in sv and vhdl

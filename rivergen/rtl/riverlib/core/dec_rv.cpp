@@ -16,8 +16,8 @@
 
 #include "dec_rv.h"
 
-DecoderRv::DecoderRv(GenObject *parent, const char *name) :
-    ModuleObject(parent, "DecoderRv", name),
+DecoderRv::DecoderRv(GenObject *parent, const char *name, const char *depth) :
+    ModuleObject(parent, "DecoderRv", name, depth),
     fpu_ena(this, "fpu_ena", "true"),
     i_clk(this, "i_clk", "1", "CPU clock"),
     i_nrst(this, "i_nrst", "1", "Reset: active LOW"),

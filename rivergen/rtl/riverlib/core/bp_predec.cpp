@@ -16,8 +16,8 @@
 
 #include "bp_predec.h"
 
-BpPreDecoder::BpPreDecoder(GenObject *parent, const char *name) :
-    ModuleObject(parent, "BpPreDecoder", name),
+BpPreDecoder::BpPreDecoder(GenObject *parent, const char *name, const char *depth) :
+    ModuleObject(parent, "BpPreDecoder", name, depth),
     i_c_valid(this, "i_c_valid", "1", "Use compressed for prediction"),
     i_addr(this, "i_addr", "RISCV_ARCH", "Memory response address"),
     i_data(this, "i_data", "32", "Memory response value"),

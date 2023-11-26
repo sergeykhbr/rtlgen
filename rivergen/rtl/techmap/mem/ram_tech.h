@@ -22,7 +22,8 @@ using namespace sysvc;
 
 class ram_tech : public ModuleObject {
  public:
-    ram_tech(GenObject *parent, const char *name, const char *gen_abits="6", const char *gen_dbits="8");
+    ram_tech(GenObject *parent, const char *name, const char *depth,
+            const char *gen_abits="6", const char *gen_dbits="8");
 
     class RegistersProcess : public ProcObject {
      public:
@@ -56,7 +57,7 @@ class ram_tech_file : public FileObject {
  public:
     ram_tech_file(GenObject *parent) :
         FileObject(parent, "ram_tech"),
-        ram_tech_(this, "") {}
+        ram_tech_(this, "ram_tech", "0") {}
 
  private:
     ram_tech ram_tech_;

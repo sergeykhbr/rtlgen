@@ -285,12 +285,6 @@ std::string ModuleObject::generate_sv_mod_signals() {
                 text = "";
             continue;
         }
-        if (p->getId() == ID_ARRAY_DEF) {
-            if (p->getItem()->getId() == ID_MODULE_INST) {
-                text = "";
-                continue;
-            }
-        }
         if (text.size()) {
             ret += text;
             text = "";

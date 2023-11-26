@@ -352,7 +352,7 @@ std::string ModuleObject::generate_sysc_h() {
             continue;
         }
         if (p->getName() == "") {
-            // todo: struct_def should be skipped (mark it as a typedef true). 
+            SHOW_ERROR("Error: unnamed object");
             text = "";
             continue;
         }
@@ -364,12 +364,6 @@ std::string ModuleObject::generate_sysc_h() {
                 && p->getId() != ID_ARRAY_DEF)) {
                 text = "";
             continue;
-        }
-        if (p->getId() == ID_ARRAY_DEF) {
-            if (p->getItem()->getId() == ID_MODULE_INST) {
-                text = "";
-                continue;
-            }
         }
         if (text.size()) {
             out += text;
@@ -405,19 +399,15 @@ std::string ModuleObject::generate_sysc_h() {
     }
 
     // Sub-module list
-    for (auto &p: entries_) {
-        if (p->getId() == ID_MODULE_INST) {
+    for (auto &p: getEntries()) {
+        if (p->isModule()) {
             out += addspaces() + p->getType();
             out += generate_sysc_template_param(p);
-            out += " *" + p->getName() + ";\n";
-            tcnt ++;
-        } else if (p->getId() == ID_ARRAY_DEF) {
-            if (p->getItem()->getId() == ID_MODULE_INST) {
-                out += addspaces() + p->getType();
-                out += generate_sysc_template_param(p->getItem());
-                out += " *" + p->getName();
-                out += "[" + p->getStrDepth() + "];\n";
+            out += " *" + p->getName();
+            if (p->getDepth() > 1) {
+                out += "[" + p->getStrDepth() + "]";
             }
+            out += ";\n";
             tcnt ++;
         }
     }
@@ -495,17 +485,21 @@ std::string ModuleObject::generate_sysc_sensitivity(std::string prefix,
                                                     GenObject *obj) {
     std::string ret = "";
     bool prefix_applied = true;
+
+#if 1
+    if (obj->getName() == "BpPreDecoder") {
+        bool st = true;
+    }
+    if (getName() == "i_clk") {
+        bool st = true;
+    }
+#endif
+
     if (obj->getId() == ID_STRUCT_DEF
-        || obj->getId() == ID_MODULE_INST
+        || (obj->isModule() && !obj->isTypedef())  // module cannot include typedef of other modules, so we here only once excluding child module instances
         || obj->getId() == ID_PROCESS
         || (obj->isOutput() && !obj->isInput())) {
         return ret;
-    }
-    if (obj->getId() == ID_ARRAY_DEF) {
-        // Check when array stores module instantiation:
-        if (obj->getItem()->getId() == ID_MODULE_INST) {
-            return ret;
-        }
     }
 
     for (int i = 0; i < prefix.size(); i++) {
@@ -584,6 +578,9 @@ std::string ModuleObject::generate_sysc_sensitivity(std::string prefix,
         }
     } else {
         for (auto &s: obj->getEntries()) {
+            if (s == obj) {
+                bool st = true;
+            }
             ret += generate_sysc_sensitivity(prefix, name, s);
         }
     }
@@ -594,7 +591,7 @@ std::string ModuleObject::generate_sysc_vcd_entries(std::string name1, std::stri
     std::string ret = "";
     bool prefix_applied = true;
     if (obj->getId() == ID_STRUCT_DEF
-        || obj->getId() == ID_MODULE_INST
+        || (obj->isModule() && !obj->isTypedef())
         || obj->getId() == ID_PROCESS
         || obj->isVector()) {
         return ret;
@@ -935,20 +932,19 @@ std::string ModuleObject::generate_sysc_submodule_nullify() {
     std::string ret = "";
     int icnt = 0;
 
-    for (auto &p: entries_) {
-        if (p->getId() == ID_MODULE_INST) {
-            ret += addspaces() + "" + p->getName() + " = 0;\n";
-            icnt++;
-        } else if (p->getId() == ID_ARRAY_DEF) {
-            if (p->getItem()->getId() == ID_MODULE_INST) {
-                icnt++;
+    for (auto &p: getEntries()) {
+        if (p->isModule()) {
+            if (p->getDepth() > 1) {
                 ret += addspaces();
                 ret += "for (int i = 0; i < " + p->getStrDepth() + "; i++) {\n";
                 pushspaces();
                 ret += addspaces() + p->getName() + "[i] = 0;\n";
                 popspaces();
                 ret += addspaces() + "}\n";
+            } else {
+                ret += addspaces() + "" + p->getName() + " = 0;\n";
             }
+            icnt++;
         }
     }
     if (icnt) {
@@ -964,23 +960,23 @@ std::string ModuleObject::generate_sysc_destructor() {
     ret += generate_sysc_template_f_name("");
     ret += "::~" + getType() + "() {\n";
     pushspaces();
-    for (auto &p: entries_) {
-        if (p->getId() == ID_MODULE_INST) {
-            ret += addspaces() + "if (" + p->getName() + ") {\n";
-            pushspaces();
-            ret += addspaces() + "delete " + p->getName() + ";\n";
-            popspaces();
-            ret += addspaces() + "}\n";
-        } else if (p->getId() == ID_ARRAY_DEF) {
-            if (p->getItem()->getId() == ID_MODULE_INST) {
+    for (auto &p: getEntries()) {
+        if (p->isModule()) {
+            std::string tidx = "";
+            if (p->getDepth() > 1) {
                 ret += addspaces();
                 ret += "for (int i = 0; i < " + p->getStrDepth() + "; i++) {\n";
                 pushspaces();
-                ret += addspaces() + "if (" + p->getName() + "[i]) {\n";
-                pushspaces();
-                ret += addspaces() + "delete " + p->getName() + "[i];\n";
-                popspaces();
-                ret += addspaces() + "}\n";
+                tidx = "[i]";
+            }
+
+            ret += addspaces() + "if (" + p->getName() + tidx + ") {\n";
+            pushspaces();
+            ret += addspaces() + "delete " + p->getName() + tidx + ";\n";
+            popspaces();
+            ret += addspaces() + "}\n";
+
+            if (p->getDepth() > 1) {
                 popspaces();
                 ret += addspaces() + "}\n";
             }
@@ -1012,23 +1008,21 @@ std::string ModuleObject::generate_sysc_vcd() {
 
     // Sub modules:
     for (auto &p: entries_) {
-        if (p->getId() == ID_MODULE_INST && p->isVcd()) {
-            ret += addspaces() + "if (" + p->getName() + ") {\n";
-            pushspaces();
-            ret += addspaces() + p->getName() + "->generateVCD(i_vcd, o_vcd);\n";
-            popspaces();
-            ret += addspaces() + "}\n";
-        } else if (p->getId() == ID_ARRAY_DEF) {
-            if (p->getItem()->getId() == ID_MODULE_INST && p->isVcd()) {
+        if (p->isModule() && p->isVcd()) {
+            std::string tidx = "";
+            if (p->getDepth() > 1) {
                 ret += addspaces();
                 ret += "for (int i = 0; i < " + p->getStrDepth() + "; i++) {\n";
                 pushspaces();
-                ret += addspaces() + "if (" + p->getName() + "[i]) {\n";
-                pushspaces();
-                ret += addspaces();
-                ret += p->getName() + "[i]->generateVCD(i_vcd, o_vcd);\n";
-                popspaces();
-                ret += addspaces() + "}\n";
+                tidx = "[i]";
+            }
+            ret += addspaces() + "if (" + p->getName() + tidx + ") {\n";
+            pushspaces();
+            ret += addspaces() + p->getName() + tidx + "->generateVCD(i_vcd, o_vcd);\n";
+            popspaces();
+            ret += addspaces() + "}\n";
+
+            if (p->getDepth() > 1) {
                 popspaces();
                 ret += addspaces() + "}\n";
             }

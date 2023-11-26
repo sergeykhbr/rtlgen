@@ -18,12 +18,13 @@
 
 TagMem::TagMem(GenObject *parent,
                const char *name,
+               const char *depth,
                const char *gen_abus, 
                const char *gen_ibits, 
                const char *gen_lnbits, 
                const char *gen_flbits,
                const char *gen_snoop) :
-    ModuleObject(parent, "TagMem", name),
+    ModuleObject(parent, "TagMem", name, depth),
     abus(this, "abus", gen_abus, "system bus address width (64 or 32 bits)"),
     ibits(this, "ibits", gen_ibits, "lines memory address width (usually 6..8)"),
     lnbits(this, "lnbits", gen_lnbits, "One line bits: log2(bytes_per_line)"),
@@ -56,9 +57,9 @@ TagMem::TagMem(GenObject *parent,
     snoop_tagaddr(this, "snoop_tagaddr", "TAG_BITS", "0"),
     // process
     comb(this),
-    data0(this, "data0", "ibits", "MUL(8,POW2(1,lnbits))"),
-    tag0(this, "tag0", "ibits", "TAG_WITH_FLAGS"),
-    tagsnoop0(this, "tagsnoop0", "ibits", "TAG_WITH_FLAGS")
+    data0(this, "data0", "0", "ibits", "MUL(8,POW2(1,lnbits))"),
+    tag0(this, "tag0", "0", "ibits", "TAG_WITH_FLAGS"),
+    tagsnoop0(this, "tagsnoop0", "0", "ibits", "TAG_WITH_FLAGS")
 {
     Operation::start(this);
 

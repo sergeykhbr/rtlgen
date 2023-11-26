@@ -23,7 +23,8 @@ using namespace sysvc;
 
 class ram_bytes_tech : public ModuleObject {
  public:
-    ram_bytes_tech(GenObject *parent, const char *name, const char *gen_abits="16", const char *log2_dbytes="3");
+    ram_bytes_tech(GenObject *parent, const char *name, const char *depth,
+        const char *gen_abits="16", const char *log2_dbytes="3");
 
     class CombProcess : public ProcObject {
      public:
@@ -57,14 +58,14 @@ class ram_bytes_tech : public ModuleObject {
 
     // process should be intialized last to make all signals available
     CombProcess comb;
-    ModuleArray<ram_tech> mem;
+    ram_tech mem;
 };
 
 class ram_bytes_tech_file : public FileObject {
  public:
     ram_bytes_tech_file(GenObject *parent) :
         FileObject(parent, "ram_bytes_tech"),
-        ram_bytes_tech_(this, "") {}
+        ram_bytes_tech_(this, "ram_bytes_tech", "0") {}
 
  private:
     ram_bytes_tech ram_bytes_tech_;

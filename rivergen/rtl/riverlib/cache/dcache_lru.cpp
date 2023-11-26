@@ -137,7 +137,7 @@ DCacheLru::DCacheLru(GenObject *parent, const char *name) :
     req_addr_restore(this, "req_addr_restore", "CFG_CPU_ADDR_BITS"),
     // process
     comb(this),
-    mem0(this, "mem0", "abus", "CFG_DLOG2_NWAYS", "CFG_DLOG2_LINES_PER_WAY", "lnbits", "flbits", "1")
+    mem0(this, "mem0", "0", "abus", "CFG_DLOG2_NWAYS", "CFG_DLOG2_LINES_PER_WAY", "lnbits", "flbits", "1")
 {
     Operation::start(this);
 

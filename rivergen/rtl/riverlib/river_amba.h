@@ -25,7 +25,7 @@ using namespace sysvc;
 
 class RiverAmba : public ModuleObject {
  public:
-    RiverAmba(GenObject *parent, const char *name);
+    RiverAmba(GenObject *parent, const char *name, const char *depth);
 
     class CombProcess : public ProcObject {
      public:
@@ -194,9 +194,9 @@ class river_amba_file : public FileObject {
  public:
     river_amba_file(GenObject *parent) :
         FileObject(parent, "river_amba"),
-        river_amba_(this, "") { }
+        RiverAmba_(this, "RiverAmba", "0") { }
 
  private:
-    RiverAmba river_amba_;
+    RiverAmba RiverAmba_;
 };
 

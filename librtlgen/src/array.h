@@ -104,7 +104,7 @@ class TStructArray : public ArrayObject<T> {
     }
 };
 
-template<class T>
+/*template<class T>
 class ModuleArray : public ArrayObject<T> {
  public:
     ModuleArray(GenObject *parent, const char *name, const char *depth, const char *comment="")
@@ -120,7 +120,7 @@ class ModuleArray : public ArrayObject<T> {
     virtual void changeTmplParameter(const char *name, const char *val) {
         ArrayObject<T>::getItem(name)->setStrValue(val);
     }
-};
+};*/
 
 class StringArray : public ArrayObject<ParamString> {
  public:

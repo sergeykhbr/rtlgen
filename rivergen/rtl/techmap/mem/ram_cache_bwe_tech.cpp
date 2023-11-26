@@ -16,8 +16,9 @@
 
 #include "ram_cache_bwe_tech.h"
 
-ram_cache_bwe_tech::ram_cache_bwe_tech(GenObject *parent, const char *name, const char *gen_abits, const char *gen_dbits) :
-    ModuleObject(parent, "ram_cache_bwe_tech", name),
+ram_cache_bwe_tech::ram_cache_bwe_tech(GenObject *parent, const char *name,
+    const char *depth, const char *gen_abits, const char *gen_dbits) :
+    ModuleObject(parent, "ram_cache_bwe_tech", name, depth),
     abits(this, "abits", gen_abits),
     dbits(this, "dbits", gen_dbits),
     i_clk(this, "i_clk", "1", "CPU clock"),
@@ -41,11 +42,11 @@ ram_cache_bwe_tech::ram_cache_bwe_tech(GenObject *parent, const char *name, cons
     rx.changeTmplParameter("abits", "abits");
     GenObject &i = FORGEN ("i", CONST("0"), CONST("DIV(dbits,8)"), "++", new STRING("rxgen"));
         NEW(*rx.getItem(0), rx.getName().c_str(), &i);
-            CONNECT(rx, &i, rx->i_clk, i_clk);
-            CONNECT(rx, &i, rx->i_addr, i_addr);
-            CONNECT(rx, &i, rx->i_wena, ARRITEM(wb_we, i, wb_we));
-            CONNECT(rx, &i, rx->i_wdata, ARRITEM(wb_wdata, i, wb_wdata));
-            CONNECT(rx, &i, rx->o_rdata, ARRITEM(wb_rdata, i, wb_rdata));
+            CONNECT(rx, &i, rx.i_clk, i_clk);
+            CONNECT(rx, &i, rx.i_addr, i_addr);
+            CONNECT(rx, &i, rx.i_wena, ARRITEM(wb_we, i, wb_we));
+            CONNECT(rx, &i, rx.i_wdata, ARRITEM(wb_wdata, i, wb_wdata));
+            CONNECT(rx, &i, rx.o_rdata, ARRITEM(wb_rdata, i, wb_rdata));
         ENDNEW();
     ENDFORGEN(new STRING("rxgen"));
 

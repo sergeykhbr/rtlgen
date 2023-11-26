@@ -23,7 +23,7 @@ using namespace sysvc;
 
 class DecoderRv : public ModuleObject {
  public:
-    DecoderRv(GenObject *parent, const char *name);
+    DecoderRv(GenObject *parent, const char *name, const char *depth);
 
     class CombProcess : public ProcObject {
      public:
@@ -162,7 +162,7 @@ class dec_rv_file : public FileObject {
  public:
     dec_rv_file(GenObject *parent) :
         FileObject(parent, "dec_rv"),
-        DecoderRv_(this, "") {}
+        DecoderRv_(this, "DecoderRv", "0") {}
 
  private:
     DecoderRv DecoderRv_;

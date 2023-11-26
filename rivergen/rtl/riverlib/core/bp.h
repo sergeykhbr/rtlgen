@@ -110,7 +110,7 @@ class BranchPredictor : public ModuleObject {
 
     // Sub-module instances:
     BpBTB btb;
-    ModuleArray<BpPreDecoder> predec;
+    BpPreDecoder predec;
 };
 
 class bp_file : public FileObject {

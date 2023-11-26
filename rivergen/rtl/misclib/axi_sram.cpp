@@ -42,7 +42,7 @@ axi_sram::axi_sram(GenObject *parent, const char *name) :
     //
     comb(this),
     xslv0(this, "xslv0"),
-    tech0(this, "tech0", "abits", "CFG_LOG2_SYSBUS_DATA_BYTES")
+    tech0(this, "tech0", "0", "abits", "CFG_LOG2_SYSBUS_DATA_BYTES")
 {
     Operation::start(this);
 

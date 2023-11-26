@@ -526,7 +526,7 @@ std::string BITS_gen(GenObject **args) {
 
 Operation &BITS(GenObject &a, GenObject &h, GenObject &l, const char *comment) {
     Operation *p = new Operation(0, comment);
-    p->setWidth(static_cast<int>(h.getValue() - l.getValue()) + 1);
+//    p->setWidth(static_cast<int>(h.getValue() - l.getValue()) + 1);
     p->igen_ = BITS_gen;
     p->add_arg(p);
     p->add_arg(&a);

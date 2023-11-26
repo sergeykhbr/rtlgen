@@ -18,13 +18,14 @@
 
 TagMemNWay::TagMemNWay(GenObject *parent,
                const char *name,
+               const char *depth,
                const char *gen_abus, 
                const char *gen_waybits, 
                const char *gen_ibits, 
                const char *gen_lnbits, 
                const char *gen_flbits,
                const char *gen_snoop) :
-    ModuleObject(parent, "TagMemNWay", name),
+    ModuleObject(parent, "TagMemNWay", name, depth),
     abus(this, "abus", gen_abus, "system bus address width (64 or 32 bits)"),
     waybits(this, "waybits", gen_waybits, "log2 of number of ways bits (2 for 4 ways cache; 3 for 8 ways)"),
     ibits(this, "ibits", gen_ibits, "lines memory address width (usually 6..8)"),
@@ -81,18 +82,18 @@ TagMemNWay::TagMemNWay(GenObject *parent,
     wayx.changeTmplParameter("snoop", "snoop");
     GenObject &i = FORGEN ("i", CONST("0"), CONST("NWAYS"), "++", new STRING("waygen"));
         NEW(*wayx.getItem(0), wayx.getName().c_str(), &i);
-            CONNECT(wayx, &i, wayx->i_clk, i_clk);
-            CONNECT(wayx, &i, wayx->i_nrst, i_nrst);
-            CONNECT(wayx, &i, wayx->i_addr, ARRITEM(way_i, i, way_i->addr));
-            CONNECT(wayx, &i, wayx->i_wstrb, ARRITEM(way_i, i, way_i->wstrb));
-            CONNECT(wayx, &i, wayx->i_wdata, ARRITEM(way_i, i, way_i->wdata));
-            CONNECT(wayx, &i, wayx->i_wflags, ARRITEM(way_i, i, way_i->wflags));
-            CONNECT(wayx, &i, wayx->o_raddr, ARRITEM(way_o, i, way_o->raddr));
-            CONNECT(wayx, &i, wayx->o_rdata, ARRITEM(way_o, i, way_o->rdata));
-            CONNECT(wayx, &i, wayx->o_rflags, ARRITEM(way_o, i, way_o->rflags));
-            CONNECT(wayx, &i, wayx->o_hit, ARRITEM(way_o, i, way_o->hit));
-            CONNECT(wayx, &i, wayx->i_snoop_addr, ARRITEM(way_i, i, way_i->snoop_addr));
-            CONNECT(wayx, &i, wayx->o_snoop_flags, ARRITEM(way_o, i, way_o->snoop_flags));
+            CONNECT(wayx, &i, wayx.i_clk, i_clk);
+            CONNECT(wayx, &i, wayx.i_nrst, i_nrst);
+            CONNECT(wayx, &i, wayx.i_addr, ARRITEM(way_i, i, way_i->addr));
+            CONNECT(wayx, &i, wayx.i_wstrb, ARRITEM(way_i, i, way_i->wstrb));
+            CONNECT(wayx, &i, wayx.i_wdata, ARRITEM(way_i, i, way_i->wdata));
+            CONNECT(wayx, &i, wayx.i_wflags, ARRITEM(way_i, i, way_i->wflags));
+            CONNECT(wayx, &i, wayx.o_raddr, ARRITEM(way_o, i, way_o->raddr));
+            CONNECT(wayx, &i, wayx.o_rdata, ARRITEM(way_o, i, way_o->rdata));
+            CONNECT(wayx, &i, wayx.o_rflags, ARRITEM(way_o, i, way_o->rflags));
+            CONNECT(wayx, &i, wayx.o_hit, ARRITEM(way_o, i, way_o->hit));
+            CONNECT(wayx, &i, wayx.i_snoop_addr, ARRITEM(way_i, i, way_i->snoop_addr));
+            CONNECT(wayx, &i, wayx.o_snoop_flags, ARRITEM(way_o, i, way_o->snoop_flags));
 
         ENDNEW();
     ENDFORGEN(new STRING("waygen"));

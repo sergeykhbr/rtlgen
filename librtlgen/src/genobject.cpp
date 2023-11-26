@@ -43,6 +43,11 @@ GenObject::GenObject(GenObject *parent, const char *type, EIdType id,
     name_ = std::string(name);
     comment_ = std::string(comment);
     if (parent_) {
+#if 1
+    if (parent_->isModule() && parent_->getName() == "apb_gpio") {
+        bool st = true;
+    }
+#endif
         parent_->add_entry(this);
     }
 }
@@ -97,7 +102,7 @@ GenObject *GenObject::getAsyncReset() {
         return rst_port;
     }
     for (auto &e: entries_) {
-        if (e->getId() == ID_MODULE_INST) {
+        if (e->isModule()) {
             if (e->getAsyncReset()) {
                 return rst_port;
             }

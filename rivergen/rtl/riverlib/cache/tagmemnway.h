@@ -27,6 +27,7 @@ class TagMemNWay : public ModuleObject {
  public:
     TagMemNWay(GenObject *parent, 
             const char *name,
+            const char *depth,
             const char *gen_abus = "64", 
             const char *gen_waybits = "2", 
             const char *gen_ibits = "6", 
@@ -149,7 +150,7 @@ class TagMemNWay : public ModuleObject {
     // process should be intialized last to make all signals available
     CombProcess comb;
     // sub-modules
-    ModuleArray<TagMem> wayx;
+    TagMem wayx;
     lrunway lru0;
 };
 
@@ -157,7 +158,7 @@ class tagmemnway_file : public FileObject {
  public:
     tagmemnway_file(GenObject *parent) :
         FileObject(parent, "tagmemnway"),
-        TagMemNWay_(this, "") {}
+        TagMemNWay_(this, "TagMemNWay", "0") {}
 
  private:
     TagMemNWay TagMemNWay_;

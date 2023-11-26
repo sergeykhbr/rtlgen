@@ -155,7 +155,7 @@ class TagMemCoupled : public ModuleObject {
     // process should be intialized last to make all signals available
     CombProcess comb;
     // sub-modules
-    ModuleArray<TagMemNWay> memx;
+    TagMemNWay memx;
 };
 
 class tagmemcoupled_file : public FileObject {

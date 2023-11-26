@@ -79,7 +79,7 @@ class apb_gpio_file : public FileObject {
  public:
     apb_gpio_file(GenObject *parent) :
         FileObject(parent, "apb_gpio"),
-        apb_gpio_(this, "") {}
+        apb_gpio_(this, "apb_gpio") {}
 
  private:
     apb_gpio apb_gpio_;

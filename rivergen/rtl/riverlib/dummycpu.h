@@ -23,7 +23,7 @@ using namespace sysvc;
 
 class DummyCpu : public ModuleObject {
  public:
-    DummyCpu(GenObject *parent, const char *name);
+    DummyCpu(GenObject *parent, const char *name, const char *depth);
 
     class CombProcess : public ProcObject {
      public:
@@ -50,7 +50,7 @@ class dummycpu_file : public FileObject {
  public:
     dummycpu_file(GenObject *parent) :
         FileObject(parent, "dummycpu"),
-        DummyCpu_(this, "") { }
+        DummyCpu_(this, "DummyCpu", "0") { }
 
  private:
     DummyCpu DummyCpu_;

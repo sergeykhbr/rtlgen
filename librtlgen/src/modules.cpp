@@ -24,9 +24,12 @@
 
 namespace sysvc {
 
-ModuleObject::ModuleObject(GenObject *parent, const char *type, const char *name) :
-    GenObject(parent, type, name[0] ? ID_MODULE_INST : ID_MODULE, name) {
-    if (getId() == ID_MODULE) {
+ModuleObject::ModuleObject(GenObject *parent, const char *type,
+    const char *name, const char *depth) :
+    GenObject(parent, type, ID_MODULE, name) {
+    setStrDepth(depth);
+    // Cannot call virtual method from constructor
+    if (name[0] == 0 || strcmp(name, type) == 0) {
         SCV_register_module(this);
     }
 }
@@ -95,7 +98,7 @@ bool ModuleObject::is2DimReg() {
 
 bool ModuleObject::isSubModules() {
     for (auto &p: entries_) {
-        if (p->getId() == ID_MODULE_INST) {
+        if (p->isModule()) {
             return true;
         }
     }

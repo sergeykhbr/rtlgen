@@ -168,8 +168,8 @@ class InstrDecoder : public ModuleObject {
     CombProcess comb;
 
     // Sub-module instances:
-    ModuleArray<DecoderRv> rv;
-    ModuleArray<DecoderRvc> rvc;
+    DecoderRv rv;
+    DecoderRvc rvc;
 };
 
 class decoder_file : public FileObject {

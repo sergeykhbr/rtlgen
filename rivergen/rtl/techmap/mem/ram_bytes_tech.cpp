@@ -16,8 +16,9 @@
 
 #include "ram_bytes_tech.h"
 
-ram_bytes_tech::ram_bytes_tech(GenObject *parent, const char *name, const char *gen_abits, const char *log2_dbytes) :
-    ModuleObject(parent, "ram_bytes_tech", name),
+ram_bytes_tech::ram_bytes_tech(GenObject *parent, const char *name, const char *depth,
+    const char *gen_abits, const char *log2_dbytes) :
+    ModuleObject(parent, "ram_bytes_tech", name, depth),
     abits(this, "abits", gen_abits),
     log2_dbytes(this, "log2_dbytes", log2_dbytes),
     dbytes(this, "dbytes", "POW2(1,log2_dbytes)"),
@@ -45,11 +46,11 @@ ram_bytes_tech::ram_bytes_tech(GenObject *parent, const char *name, const char *
     mem.changeTmplParameter("dbits", "8");
     GenObject &i = FORGEN("i", CONST("0"), dbytes, "++", new STRING("memgen"));
         NEW(*mem.getItem(0), mem.getName().c_str(), &i);
-            CONNECT(mem, &i, mem->i_clk, i_clk);
-            CONNECT(mem, &i, mem->i_addr, wb_addr);
-            CONNECT(mem, &i, mem->i_wena, ARRITEM(wb_wena, i, wb_wena));
-            CONNECT(mem, &i, mem->i_wdata, ARRITEM(wb_wdata, i, wb_wdata));
-            CONNECT(mem, &i, mem->o_rdata, ARRITEM(wb_rdata, i, wb_rdata));
+            CONNECT(mem, &i, mem.i_clk, i_clk);
+            CONNECT(mem, &i, mem.i_addr, wb_addr);
+            CONNECT(mem, &i, mem.i_wena, ARRITEM(wb_wena, i, wb_wena));
+            CONNECT(mem, &i, mem.i_wdata, ARRITEM(wb_wdata, i, wb_wdata));
+            CONNECT(mem, &i, mem.o_rdata, ARRITEM(wb_rdata, i, wb_rdata));
         ENDNEW();
     ENDFORGEN(new STRING("memgen"));
 

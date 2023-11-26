@@ -16,8 +16,8 @@
 
 #include "dummycpu.h"
 
-DummyCpu::DummyCpu(GenObject *parent, const char *name) :
-    ModuleObject(parent, "DummyCpu", name),
+DummyCpu::DummyCpu(GenObject *parent, const char *name, const char *depth) :
+    ModuleObject(parent, "DummyCpu", name, depth),
     // Ports
     o_msto(this, "o_msto"),
     o_dport(this, "o_dport"),

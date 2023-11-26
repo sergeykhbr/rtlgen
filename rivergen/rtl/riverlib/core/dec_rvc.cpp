@@ -16,8 +16,8 @@
 
 #include "dec_rvc.h"
 
-DecoderRvc::DecoderRvc(GenObject *parent, const char *name) :
-    ModuleObject(parent, "DecoderRvc", name),
+DecoderRvc::DecoderRvc(GenObject *parent, const char *name, const char *depth) :
+    ModuleObject(parent, "DecoderRvc", name, depth),
     i_clk(this, "i_clk", "1", "CPU clock"),
     i_nrst(this, "i_nrst", "1", "Reset: active LOW"),
     i_flush_pipeline(this, "i_flush_pipeline", "1", "reset pipeline and cache"),
