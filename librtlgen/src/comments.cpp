@@ -32,6 +32,7 @@ TextLine::TextLine(GenObject *parent)
 std::string TextLine::generate() {
     std::string ret = "";
     if (!empty_) {
+        ret += addspaces();
         if (SCV_is_vhdl()) {
             ret += "-- ";
         } else {

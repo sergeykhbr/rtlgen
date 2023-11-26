@@ -28,9 +28,9 @@ enum EIdType {
     ID_CONST = (1<<3),
     ID_VALUE = (1<<4),
     ID_ENUM = (1<<5),
-    ID_PARAM = (1<<6),
-    ID_DEF_PARAM = (1<<7),   // Generic parameter used in ifdef/endif statements
-    ID_TMPL_PARAM = (1<<8),  // The same as DEF_PARAM in sv but need to generate templates in systemc
+//    ID_PARAM = (1<<6),
+//    ID_DEF_PARAM = (1<<7),   // Generic parameter used in ifdef/endif statements
+//    ID_TMPL_PARAM = (1<<8),  // The same as DEF_PARAM in sv but need to generate templates in systemc
     ID_FUNCTION = (1<<9),
     ID_MODULE = (1<<10),
     ID_MODULE_INST = (1<<11),
@@ -85,6 +85,7 @@ class GenObject {
     virtual void addComment(std::string &out);  // comment after 60 spaces
     virtual std::string getComment() { return comment_; }
     virtual std::string getType() { return type_; }
+    virtual std::string getTypedef() { return typedef_; }
     virtual bool isParam() { return false; }            // StrValue is its name, Method generate() to generate its value
     virtual bool isParamGeneric() { return false; }     // Parameter that is defined as argument of constructor
     virtual bool isParamTemplate() { return false; }    // Special type of ParamGeneric used in systemc, when in/out depend on it
@@ -98,6 +99,7 @@ class GenObject {
     virtual bool isInput() { return false; }
     virtual bool isOutput() { return false; }
     virtual bool isVector() { return false; }
+    virtual bool isOperation() { return false; }
     virtual bool isGenVar() { return false; }   // Variable is used generate cycle: I32D analog for rtl
     virtual bool isGenerate() { return false; } // use generate instead of comb in sv and vhdl
     virtual bool isLocal();     // if parent is file then obj is global; if module obj is local
@@ -154,6 +156,7 @@ class GenObject {
  protected:
     EIdType id_;
     GenObject *parent_;
+    std::string typedef_;   // useful only in SystemC, to declare constant array
     std::string type_;
     std::string name_;
 

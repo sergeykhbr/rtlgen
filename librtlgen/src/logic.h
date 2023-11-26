@@ -47,6 +47,7 @@ class Logic : public GenValue {
 
     virtual bool isLogic() override { return true; }
     virtual std::string getType();
+    virtual std::string generate() override;
 };
 
 class Logic1 : public Logic {

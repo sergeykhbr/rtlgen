@@ -39,14 +39,12 @@ std::string ModuleObject::generate_vhdl_pkg_localparam() {
         if (p->getId() == ID_COMMENT) {
             comment += p->generate();
             continue;
-//        } else if (!p->getId() != ID_PARAM || !p->isLocal() || p->isGenericDep()) {
-//            // do nothing
-//        } else {
         } else if (p->isParam() && !p->isParamGeneric() && p->isLocal() && !p->isGenericDep()) {
+            ret += comment;
             ln = addspaces() + "constant " + p->getName() + " : " + p->getType();
             ln += " := " + p->generate() + ";";
             p->addComment(ln);
-            ret += comment + ln + "\n";
+            ret += ln + "\n";
             tcnt++;
         }
         comment = "";
@@ -301,7 +299,7 @@ std::string ModuleObject::generate_vhdl_mod_signals() {
                 && p->getId() != ID_ARRAY_DEF
                 && p->getId() != ID_VECTOR)) {
             if (p->getId() == ID_COMMENT) {
-                text += addspaces() + p->generate();
+                text += p->generate();
             } else {
                 text = "";
             }
@@ -412,7 +410,7 @@ std::string ModuleObject::generate_vhdl_mod() {
     for (auto &p: entries_) {
         if (!p->isInput() && !p->isOutput()) {
             if (p->getId() == ID_COMMENT) {
-                text += addspaces() + p->generate();
+                text += p->generate();
             } else {
                 text = "";
             }

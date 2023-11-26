@@ -39,10 +39,8 @@ std::string ModuleObject::generate_sv_pkg_localparam() {
         if (p->getId() == ID_COMMENT) {
             comment += p->generate();
             continue;
-//        } else if (!p->isParam() || !p->isLocal() || p->isGenericDep()) {
-//            // do nothing
-//        } else {
         } else if (p->isParam() && !p->isParamGeneric() && p->isLocal() && !p->isGenericDep()) {
+            ret += comment;
             if (p->isString()) {
                 // Vivado doesn't support string parameters, skip type
                 ln = "localparam " + p->getName();
@@ -51,7 +49,7 @@ std::string ModuleObject::generate_sv_pkg_localparam() {
             }
             ln += " = " + p->generate() + ";";
             p->addComment(ln);
-            ret += comment + ln + "\n";
+            ret += ln + "\n";
             tcnt++;
         }
         comment = "";
@@ -269,12 +267,21 @@ std::string ModuleObject::generate_sv_mod_signals() {
     tcnt = 0;
     text = "";
     for (auto &p: getEntries()) {
-        if (p->isInput() || p->isOutput()) {
+        if (p->getId() == ID_COMMENT) {
+            text += p->generate();
+            continue;
+        }
+        if (p->isInput()
+            || p->isOutput()
+            || p->isOperation()
+            || p->isTypedef()
+            || p->isParam()) {
             text = "";
             continue;
         }
         if (p->getName() == "") {
-            // typedef should be skipped
+            // todo: struct_def should be skipped (mark it as a typedef true). 
+            text = "";
             continue;
         }
         if (p->isReg() || p->isNReg()
@@ -284,11 +291,7 @@ std::string ModuleObject::generate_sv_mod_signals() {
                 && p->getId() != ID_STRUCT_INST
                 && p->getId() != ID_ARRAY_DEF
                 && p->getId() != ID_VECTOR)) {
-            if (p->getId() == ID_COMMENT) {
-                text += p->generate();
-            } else {
                 text = "";
-            }
             continue;
         }
         if (p->getId() == ID_ARRAY_DEF) {
@@ -301,17 +304,12 @@ std::string ModuleObject::generate_sv_mod_signals() {
             ret += text;
             text = "";
         }
-        ln = p->getType() + " " + p->getName();
+        ln = addspaces() + p->getType() + " " + p->getName();
         if (p->getDepth() && !p->isVector()) {
             ln += "[0: " + p->getStrDepth() + " - 1]";
         }
         ln += ";";
-        if (p->getComment().size()) {
-            while (ln.size() < 60) {
-                ln += " ";
-            }
-            ln += "// " + p->getComment();
-        }
+        p->addComment(ln);
         ret += ln + "\n";
         tcnt++;
     }
@@ -641,7 +639,7 @@ std::string ModuleObject::generate_sv_mod() {
     for (auto &p: entries_) {
         if (!p->isInput() && !p->isOutput()) {
             if (p->getId() == ID_COMMENT) {
-                text += addspaces() + p->generate();
+                text += p->generate();
             } else {
                 text = "";
             }
@@ -672,12 +670,7 @@ std::string ModuleObject::generate_sv_mod() {
         if (--port_cnt) {
             ln += ",";
         }
-        if (p->getComment().size()) {
-            while (ln.size() < 60) {
-                ln += " ";
-            }
-            ln += "// " + p->getComment();
-        }
+        p->addComment(ln);
         ret += ln + "\n";
     }
     popspaces();

@@ -88,38 +88,38 @@ class types_river : public FileObject {
      public:
         dport_in_vector(GenObject *parent, const char *name, const char *descr="")
             : dport_in_type(parent, name, descr) {
+            typedef_ = type_;
             type_ = std::string("dport_in_vector");
             setStrDepth("CFG_CPU_MAX");
             
-            registerCfgType(name);                  // will be registered if name == ""
-            if (name[0]) {
-                std::string strtype = getType();
-                SCV_get_cfg_parameter(strtype);   // to trigger dependecy array
+            if (getName() == "dport_in_type") {
+                SCV_set_cfg_type(this);
+            } else {
+                SCV_get_cfg_parameter(getType());   // to trigger dependecy array
             }
         }
-        virtual bool isTypedef() override { return true; }
+        virtual bool isTypedef() override { return getName() == "dport_in_type"; }
         virtual bool isVector() override { return true; }
         virtual bool isSignal() override { return true; }
-        virtual std::string generate() override { return std::string("dport_in_type"); }
     };
 
     class dport_out_vector : public dport_out_type {
      public:
         dport_out_vector(GenObject *parent, const char *name, const char *descr="")
             : dport_out_type(parent, name, descr) {
+            typedef_ = type_;
             type_ = std::string("dport_out_vector");
             setStrDepth("CFG_CPU_MAX");
 
-            registerCfgType(name);                  // will be registered if name == ""
-            if (name[0]) {
-                std::string strtype = getType();
-                SCV_get_cfg_parameter(strtype);   // to trigger dependecy array
+            if (getName() == "dport_out_type") {
+                SCV_set_cfg_type(this);
+            } else {
+                SCV_get_cfg_parameter(getType());   // to trigger dependecy array
             }
         }
-        virtual bool isTypedef() override { return true; }
+        virtual bool isTypedef() override { return getName() == "dport_out_type"; }
         virtual bool isVector() override { return true; }
         virtual bool isSignal() override { return true; }
-        virtual std::string generate() override { return std::string("dport_out_type"); }
     };
 
     class axi4_l1_out_type : public StructObject {
@@ -254,36 +254,38 @@ class types_river : public FileObject {
         public:
         axi4_l1_in_vector(GenObject *parent, const char *name, const char *comment="")
             : axi4_l1_in_type(parent, name, comment) {
+            typedef_ = type_;
             type_ = std::string("axi4_l1_in_vector");
             setStrDepth("CFG_SLOT_L1_TOTAL");
-            registerCfgType(name);                  // will be registered if name == ""
-            if (name[0]) {
-                std::string strtype = getType();
-                SCV_get_cfg_parameter(strtype);   // to trigger dependecy array
+
+            if (getName() == "axi4_l1_in_type") {
+                SCV_set_cfg_type(this);
+            } else {
+                SCV_get_cfg_parameter(getType());   // to trigger dependecy array
             }
         }
-        virtual bool isTypedef() override { return true; }
+        virtual bool isTypedef() override { return getName() == "axi4_l1_in_type"; }
         virtual bool isVector() override { return true; }
         virtual bool isSignal() override { return true; }
-        virtual std::string generate() override { return std::string("axi4_l1_in_type"); }
     };
 
     class axi4_l1_out_vector : public axi4_l1_out_type {
         public:
         axi4_l1_out_vector(GenObject *parent, const char *name, const char *descr="")
             : axi4_l1_out_type(parent, name, descr) {
+            typedef_ = type_;
             type_ = std::string("axi4_l1_out_vector");
             setStrDepth("CFG_SLOT_L1_TOTAL");
-            registerCfgType(name);                  // will be registered if name == ""
-            if (name[0]) {
-                std::string strtype = getType();
-                SCV_get_cfg_parameter(strtype);   // to trigger dependecy array
+
+            if (getName() == "axi4_l1_out_type") {
+                SCV_set_cfg_type(this);
+            } else {
+                SCV_get_cfg_parameter(getType());   // to trigger dependecy array
             }
         }
-        virtual bool isTypedef() override { return true; }
+        virtual bool isTypedef() override { return getName() == "axi4_l1_out_type"; }
         virtual bool isVector() override { return true; }
         virtual bool isSignal() override { return true; }
-        virtual std::string generate() override { return std::string("axi4_l1_out_type"); }
     };
 
     class axi4_l2_out_type : public StructObject {
@@ -376,26 +378,38 @@ class types_river : public FileObject {
      public:
         hart_signal_vector(GenObject *parent, const char *name) :
             Signal(parent, name, "1") {
+            typedef_ = type_;
             type_ = std::string("hart_signal_vector");
-            strDepth_ = std::string("CFG_CPU_MAX");
+            setStrDepth("CFG_CPU_MAX");
+
+            if (getName() == "") {
+                SCV_set_cfg_type(this);
+            } else {
+                SCV_get_cfg_parameter(getType());   // to trigger dependecy array
+            }
         }
-        virtual bool isTypedef() override { return true; }
+        virtual bool isTypedef() override { return getName() == ""; }
         virtual bool isVector() override { return true; }
         virtual std::string getType() override { return type_; }
-        virtual std::string generate() override { return Signal::getType(); }
     };
 
     class hart_irq_vector : public Signal {
      public:
         hart_irq_vector(GenObject *parent, const char *name) :
             Signal(parent, name, "IRQ_TOTAL") {
+            typedef_ = type_;
             type_ = std::string("hart_irq_vector");
-            strDepth_ = std::string("CFG_CPU_MAX");
+            setStrDepth("CFG_CPU_MAX");
+
+            if (getName() == "") {
+                SCV_set_cfg_type(this);
+            } else {
+                SCV_get_cfg_parameter(getType());   // to trigger dependecy array
+            }
         }
-        virtual bool isTypedef() override { return true; }
+        virtual bool isTypedef() override { return getName() == ""; }
         virtual bool isVector() override { return true; }
         virtual std::string getType() override { return type_; }
-        virtual std::string generate() override { return Signal::getType(); }
     };
 
  public:

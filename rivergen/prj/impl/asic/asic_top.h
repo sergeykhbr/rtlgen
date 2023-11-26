@@ -43,7 +43,7 @@ class asic_top : public ModuleObject {
             type_ = std::string("gpio_signal_vector");
             strDepth_ = std::string("12");
         }
-        virtual bool isTypedef() override { return true; }
+        virtual bool isTypedef() override { return getName() == ""; }
         virtual bool isVector() override { return true; }
         virtual std::string getType() override { return type_; }
         virtual std::string generate() override { return Signal::getType(); }

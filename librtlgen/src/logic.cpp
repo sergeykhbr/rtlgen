@@ -40,7 +40,7 @@ Logic::Logic(GenValue *width,
 
 std::string Logic::getType() {
     std::string ret = "";
-    std::string w = getStrWidth();
+    std::string strw = getStrWidth();
 
     if (SCV_is_sysc()) {
         if (isParam() && !isParamGeneric() || isParamTemplate()) {
@@ -57,13 +57,13 @@ std::string Logic::getType() {
             }
         } else {
             if (getWidth() > 512 || isBvSC()) {
-                ret += "sc_bv<" + w + ">";
+                ret += "sc_bv<" + strw + ">";
             } else if (getWidth() > 64 || isBigSC()) {
-                ret += "sc_biguint<" + w + ">";
-            } else if (getWidth() <= 1 && isNumber(w)) {
+                ret += "sc_biguint<" + strw + ">";
+            } else if (getWidth() <= 1 && isNumber(strw)) {
                 ret += "bool";
             } else {
-                ret += "sc_uint<" + w + ">";
+                ret += "sc_uint<" + strw + ">";
             }
         }
     } else if (SCV_is_sv()) {
@@ -72,14 +72,14 @@ std::string Logic::getType() {
         } else {
             ret = std::string("logic");
         }
-        if (!isNumber(w) || getWidth() > 1) {
+        if (!isNumber(strw) || getWidth() > 1) {
             ret += " [";
-            if (isNumber(w)) {
+            if (isNumber(strw)) {
                 char tstr[256];
                 RISCV_sprintf(tstr, sizeof(tstr), "%d", getWidth() - 1);
                 ret += tstr;
             } else {
-                ret += w + "-1";
+                ret += strw + "-1";
             }
             ret += ":0]";
         }
@@ -88,15 +88,70 @@ std::string Logic::getType() {
             ret = std::string("std_logic");
         } else {
             ret += "std_logic_vector(";
-            if (isNumber(w)) {
+            if (isNumber(strw)) {
                 char tstr[256];
                 RISCV_sprintf(tstr, sizeof(tstr), "%d", getWidth() - 1);
                 ret += tstr;
             } else {
-                ret += w + " - 1";
+                ret += strw + " - 1";
             }
             ret += " downto 0)";
         }
+    }
+    return ret;
+}
+
+std::string Logic::generate() {
+    std::string ret = "";
+    if (!isTypedef()) {
+        return ret;
+    }
+
+    if (!isVector()) {
+        SHOW_ERROR("Unsupported typedef definition of %s", getType());
+    }
+    
+    std::string strw = getStrWidth();
+    if (SCV_is_sysc()) {
+        ret += "typedef sc_vector<";
+        if (isSignal()) {
+            ret += "sc_signal<";
+        }
+        if (getWidth() > 512 || isBvSC()) {
+            ret += "sc_bv<" + strw + ">";
+        } else if (getWidth() > 64 || isBigSC()) {
+            ret += "sc_biguint<" + strw + ">";
+            } else if (getWidth() <= 1 && isNumber(strw)) {
+                ret += "bool";
+        } else {
+            ret += "sc_uint<" + strw + ">";
+        }
+        if (isSignal()) {
+            ret += ">";
+        }
+        ret += "> " + getType();
+        // SystemC vector does not used depth argument
+        ret += ";\n";
+    } else if (SCV_is_sv()) {
+        ret += "typedef logic ";
+        if (getWidth() > 1) {
+            ret += "[" + strw + "-1:0] ";
+        }
+        ret += getType();
+        if (getDepth() > 1) {
+            ret += "[0:" + getStrDepth() + " - 1]";
+        }
+        ret += ";\n";
+    } else if (SCV_is_vhdl()) {
+        ret += "type " + getType() + " is ";
+        if (getDepth() > 1) {
+            ret += "(0 up " + getStrDepth() + " - 1)";
+        }
+        ret += "of std_logic_vector ";
+        if (getWidth() > 1) {
+            ret += "(" + strw + "-1 downto 0) ";
+        }
+        ret += ";\n";
     }
     return ret;
 }

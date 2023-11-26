@@ -28,7 +28,6 @@ class ParamBOOL : public BOOL {
     ParamBOOL(GenObject *parent, const char *name,
                 const char *val, const char *comment="")
         : BOOL(val, name, parent, comment) {
-        id_ = ID_PARAM;
         SCV_set_cfg_parameter(this, this, getValue());
     }
     virtual bool isParam() override { return true; }
@@ -41,7 +40,6 @@ class ParamString : public STRING {
     ParamString(GenObject *parent, const char *name,
                 const char *val, const char *comment="")
         : STRING(val, name, parent, comment) {
-        id_ = ID_PARAM;
         //SCV_set_cfg_parameter(this, this, getValue());   // FIX get Value for strings!!! Now it is not available
     }
     virtual bool isParam() override { return true; }
@@ -54,7 +52,6 @@ class ParamUI16D : public UI16D {
     ParamUI16D(GenObject *parent, const char *name, const char *val,
         const char *comment="")
         : UI16D(val, name, parent, comment) {
-            id_ = ID_PARAM;
             SCV_set_cfg_parameter(this, this, getValue());
     }
     virtual bool isParam() override { return true; }
@@ -66,12 +63,10 @@ class ParamI32D : public I32D {
  public:
     ParamI32D(GenObject *parent, const char *name, const char *val,
         const char *comment="") : I32D(val, name, parent, comment) {
-            id_ = ID_PARAM;
             SCV_set_cfg_parameter(this, this, getValue());
     }
     ParamI32D(GenObject *parent, const char *name, GenObject *val,
         const char *comment="") : I32D(val, name, parent, comment) {
-            id_ = ID_PARAM;
             SCV_set_cfg_parameter(this, this, getValue());
     }
     virtual bool isParam() override { return true; }
@@ -84,7 +79,6 @@ class ParamUI32D : public UI32D {
  public:
     ParamUI32D(GenObject *parent, const char *name, const char *val,
         const char *comment="") : UI32D(val, name, parent, comment) {
-            id_ = ID_PARAM;
             SCV_set_cfg_parameter(this, this, getValue());
     }
     virtual bool isParam() override { return true; }
@@ -96,7 +90,6 @@ class ParamUI64H : public UI64H {
  public:
     ParamUI64H(GenObject *parent, const char *name, const char *val,
         const char *comment="") : UI64H(val, name, parent, comment) {
-            id_ = ID_PARAM;
             SCV_set_cfg_parameter(this, this, getValue());
     }
     virtual bool isParam() override { return true; }
@@ -109,13 +102,11 @@ class ParamLogic : public Logic {
     ParamLogic(GenObject *parent, const char *width, const char *name,
                 const char *val, const char *comment="")
         : Logic(width, name, val, parent, comment) {
-        id_ = ID_PARAM;
         SCV_set_cfg_parameter(this, this, getValue());
     }
     ParamLogic(GenObject *parent, GenValue *width, const char *name,
                const char *val, const char *comment="")
         : Logic(width, name, val, parent, comment) {
-        id_ = ID_PARAM;
         SCV_set_cfg_parameter(this, this, getValue());
     }
     virtual bool isParam() override { return true; }
@@ -128,7 +119,6 @@ class ParamTIMESEC : public TIMESEC {
     ParamTIMESEC(GenObject *parent, const char *name,
                    const char *val, const char *comment="")
         : TIMESEC(val, name, parent, comment) {
-            id_ = ID_PARAM;
             SCV_set_cfg_parameter(this, this, getValue());
     }
     virtual bool isParam() override { return true; }

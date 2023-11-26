@@ -291,25 +291,13 @@ void FileObject::generate_sysc() {
                 p->addComment(ln);
                 out += ln + "\n";
                 continue;
-            } else if (p->isTypedef() && p->getName().size() == 0) {
-                out += addspaces() + "typedef ";
-                if (p->isVector()) {
-                    out += "sc_vector<";
-                }
-                if (p->isSignal()) {
-                    out += "sc_signal<";
-                }
+            } else if (p->isTypedef()) {
+                out += addspaces();
                 out += p->generate();
-                if (p->isSignal()) {
-                    out += ">";
-                }
-                if (p->isVector()) {
-                    out += ">";
-                }
-                out += " " + p->getType() + ";\n";
                 continue;
             } else if (p->isVector() && p->getName().size()) {
-                out += addspaces() + "static const " + p->generate();
+                // mapinfo array initializaion:
+                out += addspaces() + "static const " + p->getTypedef();
                 out += " " + p->getName() + "[" + p->getStrDepth() + "] = ";
                 out += generate_const(p) + ";\n";
                 continue;
@@ -479,14 +467,11 @@ void FileObject::generate_sysv() {
                 p->addComment(ln);
                 out += ln + "\n";
                 continue;
-            } else if (p->isTypedef() && p->getName().size() == 0) {
-                out += "typedef ";
+            } else if (p->isTypedef()) {
                 out += p->generate();
-                out += " " + p->getType();
-                out += "[0:" + p->getStrDepth() + " - 1]";
-                out += ";\n";
                 continue;
             } else if (p->isVector() && p->getName().size()) {
+                // WARNING: duplicate logic in struct.cpp
                 out += "const " + p->getType();
                 out += " " + p->getName() + " = ";
                 out += generate_const(p);
@@ -571,10 +556,14 @@ void FileObject::generate_vhdl() {
                 p->addComment(ln);
                 out += ln + "\n";
                 continue;
-            } else if (p->isTypedef() && p->getName().size() == 0) {
-                out += "type " + p->getType();
-                out += " is array (0 to " + p->getStrDepth() + " - 1) of ";
-                out += p->generate() + ";\n";
+            } else if (p->isTypedef()) {
+                if (p->isVector()) {
+                    out += p->generate();
+                } else if (p->getName().size() == 0) {
+                    out += "type " + p->getType();
+                    out += " is array (0 to " + p->getStrDepth() + " - 1) of ";
+                    out += p->generate() + ";\n";
+                }
                 continue;
             } else if (p->isVector() && p->getName().size()) {
                 out += "constant " + p->getName();

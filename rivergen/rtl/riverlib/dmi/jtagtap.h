@@ -56,7 +56,7 @@ class jtagtap : public ModuleObject {
 public:
     TmplParamI32D abits;
     TmplParamI32D irlen;
-    DefParamLogic idcode;
+    TmplParamLogic idcode;      // idcode is used in reset function of DR register (problem on systemc without template)
     ParamI32D drlen;
     // Ports:
     InPort i_trst;

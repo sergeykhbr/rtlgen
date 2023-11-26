@@ -175,7 +175,7 @@ std::string ModuleObject::generate_sysc_h() {
     for (auto &p: entries_) {
         if (!p->isInput() && !p->isOutput()) {
             if (p->getId() == ID_COMMENT) {
-                text += addspaces() + p->generate();
+                text += p->generate();
             } else {
                 text = "";
             }
@@ -195,9 +195,7 @@ std::string ModuleObject::generate_sysc_h() {
             ln += "sc_out<";
         }
         if (p->isVector()) {
-            // element of vector to form sc_vector<sc_in<type>> and
-            // do not use vector type name
-            ln += p->generate();
+            ln += p->getTypedef();
         } else {
             ln += p->getType();
         }
@@ -307,7 +305,7 @@ std::string ModuleObject::generate_sysc_h() {
     std::string comment = "";
     for (auto &p: entries_) {
         if (p->getId() == ID_COMMENT) {
-            comment += addspaces() + p->generate();
+            comment += p->generate();
             continue;
         } else if (p->isParam() && !p->isParamGeneric()) {
             if (p->isString()) {
@@ -360,12 +358,21 @@ std::string ModuleObject::generate_sysc_h() {
     // Signals list
     text = "";
     for (auto &p: getEntries()) {
-        if (p->isInput() || p->isOutput()) {
+        if (p->getId() == ID_COMMENT) {
+            text += p->generate();
+            continue;
+        }
+        if (p->isInput()
+            || p->isOutput()
+            || p->isOperation()
+            || p->isTypedef()
+            || p->isParam()) {
             text = "";
             continue;
         }
         if (p->getName() == "") {
-            // ignore typedef
+            // todo: struct_def should be skipped (mark it as a typedef true). 
+            text = "";
             continue;
         }
         if (p->isReg() || p->isNReg()
@@ -375,11 +382,7 @@ std::string ModuleObject::generate_sysc_h() {
                 && p->getId() != ID_STRUCT_INST
                 && p->getId() != ID_ARRAY_DEF
                 && p->getId() != ID_VECTOR)) {
-            if (p->getId() == ID_COMMENT) {
-                text += addspaces() + p->generate();
-            } else {
                 text = "";
-            }
             continue;
         }
         if (p->getId() == ID_ARRAY_DEF) {
@@ -393,22 +396,12 @@ std::string ModuleObject::generate_sysc_h() {
             text = "";
         }
         ln = addspaces();
-        if (!p->isTypedef()) {
-            if (p->isVector()) {
-                ln += "sc_vector<";
-            }
-            if (p->isSignal()) {
-                ln += "sc_signal<";
-            }
+        if (p->isSignal() && !p->isVector()) {
+            ln += "sc_signal<";
         }
         ln += p->getType();
-        if (!p->isTypedef()) {
-            if (p->isSignal()) {
-                ln += ">";
-            }
-            if (p->isVector()) {
-                ln += ">";
-            }
+        if (p->isSignal() && !p->isVector()) {
+            ln += ">";
         }
         ln += " " + p->getName();
         if (p->getDepth() && !p->isVector()) {

@@ -15,6 +15,7 @@
 // 
 
 #include "enums.h"
+#include "params.h"
 #include "utils.h"
 
 namespace sysvc {
@@ -28,8 +29,7 @@ void EnumObject::add_value(const char *name, const char *comment) {
     char tstr[64];
     int total = static_cast<int>(entries_.size());
     RISCV_sprintf(tstr, sizeof(tstr), "%d", total);
-    GenObject *pval = new I32D(tstr, name, this, comment);
-    SCV_set_cfg_parameter(this, pval, total);
+    new ParamI32D(this, name, tstr, comment);
 }
 
 std::string EnumObject::generate() {
@@ -49,10 +49,10 @@ std::string EnumObject::generate_sysc() {
     std::string ln = "";
     ret += addspaces() + "enum " + getName() + " {\n";
     pushspaces();
-    for (auto &p: entries_) {
+    for (auto &p: getEntries()) {
         ln = addspaces() + p->getName() + " = ";
-        ln += p->getStrValue();
-        if (&p != &entries_.back()) {
+        ln += p->generate();
+        if (&p != &getEntries().back()) {
             ln += ",";
         }
         p->addComment(ln);
@@ -66,9 +66,10 @@ std::string EnumObject::generate_sysc() {
 std::string EnumObject::generate_sysv() {
     std::string ret = "";
     std::string ln = "";
-    for (auto &p: entries_) {
-        ln = addspaces() + "localparam int " + p->getName() + " = ";
-        ln += p->getStrValue() + ";";       // FIXME to logic and generate() instead of int
+    for (auto &p: getEntries()) {
+        ln = addspaces();
+        ln += "localparam " + p->getType() + " " + p->getName() + " = ";
+        ln += p->generate() + ";";       // FIXME to logic and generate() instead of int
         p->addComment(ln);
         ret += ln + "\n";
     }
@@ -78,9 +79,9 @@ std::string EnumObject::generate_sysv() {
 std::string EnumObject::generate_vhdl() {
     std::string ret = "";
     std::string ln = "";
-    for (auto &p: entries_) {
+    for (auto &p: getEntries()) {
         ln = addspaces() + "constant " + p->getName() + " : " + p->getType();
-        ln += " := " + p->getStrValue() + ";";
+        ln += " := " + p->generate() + ";";
         p->addComment(ln);
         ret += ln + "\n";
     }

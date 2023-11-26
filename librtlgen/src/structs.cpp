@@ -85,7 +85,7 @@ std::string StructObject::generate_interface_constructor() {
     }
     for (auto& p : *pentries) {
         if (p->getId() == ID_COMMENT) {
-            ret += addspaces() + p->addComment() + "\n";
+            ret += p->generate();
         } else if (p->getId() == ID_STRUCT_INST) {
             // 1 level of sub structures without recursive implementation
             for (auto &p2 : p->getEntries()) {
@@ -413,10 +413,10 @@ std::string StructObject::generate_interface() {
         ret += addspaces() + "type " + getType() + " is record\n";
     }
     pushspaces();
-    for (auto& p : entries_) {
+    for (auto& p : getEntries()) {
         ln = addspaces();
         if (p->getId() == ID_COMMENT) {
-            ret += ln + p->addComment() + "\n";
+            ret += p->generate();
             continue;
         }
         if (SCV_is_vhdl()) {
@@ -434,12 +434,7 @@ std::string StructObject::generate_interface() {
             }
         }
         ln += ";";
-        if (p->getComment().size()) {
-            while (ln.size() < 60) {
-                ln += " ";
-            }
-            ln += p->addComment();
-        }
+        p->addComment(ln);
         ret += ln + "\n";
     }
     popspaces();
@@ -510,10 +505,35 @@ std::string StructObject::generate_const_none() {
     return ret;
 }
 
+std::string StructObject::generate_vector_type() {
+    std::string ret;
+    if (SCV_is_sysc()) {
+        ret += addspaces();
+        ret += "typedef sc_vector<";
+        if (isSignal()) {
+            ret += "sc_signal<";
+        }
+        ret += getName();
+        if (isSignal()) {
+            ret += ">";
+        }
+        ret += "> " + getType() + ";\n";
+    } else if (SCV_is_sv()) {
+        ret += addspaces();
+        ret += "typedef " + getName() + " " + getType();
+        ret += "[0:" + getStrDepth() + " - 1];\n";
+    } else if (SCV_is_vhdl()) {
+    }
+    return ret;
+}
+
 std::string StructObject::generate() {
     std::string ret = "";
     std::string ln;
 
+    if (isVector()) {
+        return generate_vector_type();
+    }
     if (getParent()->getId() == ID_FILE) {
         if (getId() == ID_STRUCT_INST) {
             ret = generate_const_none();
@@ -539,7 +559,7 @@ std::string StructObject::generate() {
     for (auto &p: entries_) {
         ln = addspaces();
         if (p->getId() == ID_COMMENT) {
-            ret += ln + p->addComment() + "\n";
+            ret += p->generate();
             continue;
         }
         if (SCV_is_sysc()) {

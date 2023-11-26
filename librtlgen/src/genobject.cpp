@@ -38,6 +38,7 @@ GenObject::GenObject(GenObject *parent, const char *type, EIdType id,
     reset_disabled_ = false;
     vcd_enabled_ = true;
     sv_api_ = false;
+    typedef_ = "";
     type_ = std::string(type);
     name_ = std::string(name);
     comment_ = std::string(comment);

@@ -35,6 +35,8 @@ class Operation : public GenObject {
     Operation(const char *comment="");
     Operation(GenObject *parent, const char *comment="");
 
+    virtual bool isOperation() override { return true; }
+
     static void start(GenObject *owner);
     static void push_obj(GenObject *obj);
     static void pop_obj();
