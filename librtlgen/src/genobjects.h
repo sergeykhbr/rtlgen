@@ -99,6 +99,7 @@ class GenObject {
     virtual bool isBvSC() { return false; }    // Use sc_bv in systemc always (for bitwidth > 512)
     virtual bool isInput() { return false; }
     virtual bool isOutput() { return false; }
+    virtual bool isStruct() { return false; }
     virtual bool isVector() { return false; }
     virtual bool isOperation() { return false; }
     virtual bool isGenVar() { return false; }   // Variable is used generate cycle: I32D analog for rtl
