@@ -49,6 +49,7 @@ class types_amba : public FileObject {
             registerCfgType(name);
             std::string strtype = getType();
             SCV_get_cfg_parameter(strtype);    // to trigger dependecy array
+            disableVcd();
         }
         virtual bool isInitable() override { return true; }
 

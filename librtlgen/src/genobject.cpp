@@ -177,6 +177,25 @@ void GenObject::addComment(std::string &out) {
     out += addComment();
 }
 
+// Not local struct is an interface
+bool GenObject::isInterface() {
+    if (isStruct()) {
+        GenObject *p;
+        if (!isTypedef()) {
+            p = SCV_get_cfg_obj(getType());
+            if (p) {
+                p = p->getParent();  // Maybe it is easy to implement isInterface() method?
+            }
+        } else {
+            p = getParent();
+        }
+        if (p && p->isFile()) {
+            return true;
+        }
+    }
+    return false;
+}
+
 bool GenObject::isLocal() {
     bool local = false;
     GenObject *p = getParent();

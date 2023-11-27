@@ -31,6 +31,7 @@ class FileObject : public GenObject,
     FileObject(GenObject *parent,
                  const char *name);
 
+    virtual bool isFile() override { return true; }
     // Access Listener
     virtual void notifyAccess(std::string &libname, std::string &file);
 

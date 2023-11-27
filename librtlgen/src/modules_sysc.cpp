@@ -538,89 +538,84 @@ std::string ModuleObject::generate_sysc_sensitivity(GenObject *obj,
     return ret;
 }
 
-std::string ModuleObject::generate_sysc_vcd_entries(std::string name1, std::string name2, GenObject *obj) {
+std::string ModuleObject::generate_sysc_vcd_entries(GenObject *obj,
+                                                    std::string prefix,
+                                                    std::string i,
+                                                    std::string &loop) {    // do not print empty for loop cycle
     std::string ret = "";
-    bool prefix_applied = true;
-    if ((obj->isStruct() && obj->isTypedef())
-        || (obj->isModule() && !obj->isTypedef())
-        || obj->getId() == ID_PROCESS
-        || obj->isVector()) {
+    if (!obj->isVcd()
+        || obj->isTypedef()
+        || (obj->getName() == "i_clk" || obj->getName() == "i_nrst") && !isTop()
+        || obj->isVector()
+        || (!obj->isInput()
+            && !obj->isOutput()
+            && !obj->isReg()
+            && !obj->isNReg()
+            && !obj->isStruct())) {
         return ret;
     }
 
-    if (!isTop()
-        && (obj->getName() == "i_clk" || obj->getName() == "i_nrst")) {
-        return ret;
-    }
 
-
-    if (name1.size() < 2
-        || name1.c_str()[0] != 'r' || name1.c_str()[1] != '.') {
-        prefix_applied = false;
-    }
-
-    if (obj->getParent()->getId() == ID_ARRAY_DEF) {
-        name1 += "[";
-        if (obj->getSelector()) {
-            name1 += obj->getSelector()->getName();
-        } else {
-            name1 += obj->getName();
-        }
-        name1 += "]";
-    } else if ((obj->isSignal() && obj->getParent()->getId() != ID_ARRAY_DEF)    // signal is a part of array not a child structure
-        || obj->getId() == ID_ARRAY_DEF
-        || (obj->isStruct() && !obj->isTypedef())) {
-        if (name1.size()) {
-            name1 += ".";
-            name2 += "_";
-        }
-        name1 += obj->getName();
-        name2 += obj->getName();
-        if (obj->isReg() && !prefix_applied) {
-            name1 = "r." + name1;
-            name2 = ".r_" + name2;
-        }
-        if (obj->isNReg() && !prefix_applied) {
-            name1 = "nr." + name1;
-            name2 = ".nr_" + name2;
-        }
-    }
-
-    if (!obj->isVcd()) {
-        // skip it
-    } else if (obj->isInput() || obj->isOutput()) {
-        ret += addspaces();
-        ret += "sc_trace(o_vcd, " + obj->getName() + ", " + obj->getName() + ".name());\n";
-    } else if (obj->getId() == ID_ARRAY_DEF && (obj->isReg() || obj->isNReg())) {
-        (*obj->getEntries().begin())->setSelector(new ParamI32D(0, "i", "0"));
-        name2 += "%d";
-        ret += addspaces();
-        ret += "for (int i = 0; i < " + obj->getStrDepth() + "; i++) {\n";
-        std::list<GenObject *>::iterator it = obj->getEntries().begin();
+    std::string objname = obj->getName();
+    if (obj->getDepth() > 1) {
+        objname += "[" + i + "]";
+        loop = addspaces();
+        loop += "for (int " + i + " = 0; " + i + " < " + obj->getStrDepth() + "; " + i + "++) {\n";
         pushspaces();
-
-        ret += addspaces();
-        ret += "char tstr[1024];\n";
-        ret += generate_sysc_vcd_entries(name1, name2, *it);
-
-        popspaces();
-        ret += addspaces();
-        ret += "}\n";
-    } else if (obj->isSignal() && (obj->isReg() || obj->isNReg())) {
-        ret += addspaces();
-        if (obj->getParent()->getId() == ID_ARRAY_DEF
-            || obj->getParent()->getParent()->getId() == ID_ARRAY_DEF) {
-            ret += "RISCV_sprintf(tstr, sizeof(tstr), \"%s" + name2 + "\", pn.c_str(), i);\n";
-            ret += addspaces() + "sc_trace(o_vcd, " + name1 + ", tstr);\n";
+        //loop += addspaces() + "char tstr[1024];\n";
+        if (obj->isReg()) {
+            loop += addspaces() + "pn = r." + objname + ".name();\n";
+        } else if (obj->isNReg()) {
+            loop += addspaces() + "pn = nr." + objname + ".name();\n";
         } else {
-            ret += "sc_trace(o_vcd, " + name1 + ", pn + \"" + name2 + "\");\n";
+            loop += addspaces() + "pn = " + objname + ".name();\n";
+        }
+    }
+
+    if (obj->isStruct() && !obj->isInterface()) {
+        if (prefix.size()) {
+            prefix += ".";
+        }
+        prefix += objname;
+        // VCD for each entry of the struct separetely
+        const char tidx[2] = {i.c_str()[0] + 1, 0};
+        i = std::string(tidx);
+        for (auto &e: obj->getEntries()) {
+            ret += generate_sysc_vcd_entries(e, prefix, i, loop);
         }
     } else {
-        for (auto &s: obj->getEntries()) {
-            ret += generate_sysc_vcd_entries(name1, name2, s);
+        std::string name1;
+        std::string name2;
+        if (prefix.size()) {
+            prefix += ".";
         }
+        if (loop.size()) {
+            ret += loop;
+            loop = "";
+        }
+        if (obj->isReg()) {
+            name1 = "r." + prefix + objname;
+            name2 = "pn + \".r_" + objname + "\"";
+        } else if (obj->isNReg()) {
+            name1 = "nr." + prefix + objname;
+            name2 = "pn + \".nr_" + objname + "\"";
+        } else {
+            name1 += prefix + objname;
+            name2 += prefix + objname + ".name()";
+        }
+        ret += addspaces() + "sc_trace(o_vcd, " + name1 + ", " + name2 + ");\n";
     }
 
+    if (obj->getDepth() > 1) {
+        if (loop.size() == 0) {
+            ret += addspaces() + "pn = " + "name();    // restore current object name\n";
+            popspaces();
+            ret += addspaces() + "}\n";
+        } else {
+            popspaces();
+            loop = "";
+        }
+    }
     return ret;
 }
 
@@ -943,6 +938,7 @@ std::string ModuleObject::generate_sysc_vcd() {
     std::string ret = "";
     std::string ln = "";
     std::string ln2 = "";
+    std::string loop = "";
 
     ret += generate_sysc_template_f_name();
     ret += "::generateVCD(sc_trace_file *i_vcd, sc_trace_file *o_vcd) {\n";
@@ -952,13 +948,16 @@ std::string ModuleObject::generate_sysc_vcd() {
     }
     ret += addspaces() + "if (o_vcd) {\n";
     pushspaces();
-    ret += generate_sysc_vcd_entries(ln, ln2, this);
+    for (auto &p: getEntries()) {
+        ln2 = "i";
+        ret += generate_sysc_vcd_entries(p, ln, ln2, loop);
+    }
     popspaces();
     ret += addspaces() + "}\n";
     ret += "\n";
 
     // Sub modules:
-    for (auto &p: entries_) {
+    for (auto &p: getEntries()) {
         if (p->isModule() && p->isVcd()) {
             std::string tidx = "";
             if (p->getDepth() > 1) {

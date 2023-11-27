@@ -104,6 +104,8 @@ class GenObject {
     virtual bool isModule() { return false; }
     virtual bool isOperation() { return false; }
     virtual bool isClock() { return false; }
+    virtual bool isFile() { return false; }
+    virtual bool isInterface();                 // struct with parent = file (sc_trace method generated)
     virtual bool isGenVar() { return false; }   // Variable is used generate cycle: I32D analog for rtl
     virtual bool isGenerate() { return false; } // use generate instead of comb in sv and vhdl
     virtual bool isLocal();     // if parent is file then obj is global; if module obj is local
