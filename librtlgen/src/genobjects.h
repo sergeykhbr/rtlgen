@@ -34,8 +34,8 @@ enum EIdType {
     ID_FUNCTION = (1<<9),
     ID_MODULE = (1<<10),
 //    ID_MODULE_INST = (1<<11),
-    ID_STRUCT_DEF = (1<<15),
-    ID_STRUCT_INST = (1<<16),
+    ID_STRUCT = (1<<15),
+//    ID_STRUCT_INST = (1<<16),
     ID_ARRAY_DEF = (1<<17),
     ID_ARRAY_STRING = (1<<18),
 //    ID_VECTOR = (1<<19),      // array of the fixed depth
@@ -100,7 +100,7 @@ class GenObject {
     virtual bool isInput() { return false; }
     virtual bool isOutput() { return false; }
     virtual bool isStruct() { return false; }
-    virtual bool isVector() { return false; }
+    virtual bool isVector() { return false; }   // vector typedef of array of element
     virtual bool isModule() { return false; }
     virtual bool isOperation() { return false; }
     virtual bool isGenVar() { return false; }   // Variable is used generate cycle: I32D analog for rtl

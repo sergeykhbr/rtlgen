@@ -136,11 +136,11 @@ InstrExecute::InstrExecute(GenObject *parent, const char *name) :
     AmoState_Modify(this, "2", "AmoState_Modify", "2"),
     AmoState_Write(this, "2", "AmoState_Write", "3"),
     // structures
-    select_type_def_(this, "", -1),
+    select_type_def_(this, "select_type"),
     irq2idx(this),
     input_mux_type_def_(this),
     // signals
-    wb_select(this, "", "wb_select", "Res_Total"),
+    wb_select(this, "wb_select", "Res_Total"),
     wb_alu_mode(this, "wb_alu_mode", "3"),
     wb_addsub_mode(this, "wb_addsub_mode", "7"),
     wb_shifter_mode(this, "wb_shifter_mode", "4"),
@@ -231,7 +231,7 @@ InstrExecute::InstrExecute(GenObject *parent, const char *name) :
         CONNECT(alu0, 0, alu0.i_mode, wb_alu_mode);
         CONNECT(alu0, 0, alu0.i_a1, wb_rdata1);
         CONNECT(alu0, 0, alu0.i_a2, wb_rdata2);
-        CONNECT(alu0, 0, alu0.o_res, ARRITEM(wb_select, Res_Alu, wb_select->res));
+        CONNECT(alu0, 0, alu0.o_res, ARRITEM(wb_select, Res_Alu, wb_select.res));
     ENDNEW();
 
     NEW(addsub0, addsub0.getName().c_str());
@@ -240,34 +240,34 @@ InstrExecute::InstrExecute(GenObject *parent, const char *name) :
         CONNECT(addsub0, 0, addsub0.i_mode, wb_addsub_mode);
         CONNECT(addsub0, 0, addsub0.i_a1, wb_rdata1);
         CONNECT(addsub0, 0, addsub0.i_a2, wb_rdata2);
-        CONNECT(addsub0, 0, addsub0.o_res, ARRITEM(wb_select, Res_AddSub, wb_select->res));
+        CONNECT(addsub0, 0, addsub0.o_res, ARRITEM(wb_select, Res_AddSub, wb_select.res));
     ENDNEW();
 
     NEW(mul0, mul0.getName().c_str());
         CONNECT(mul0, 0, mul0.i_clk, i_clk);
         CONNECT(mul0, 0, mul0.i_nrst, i_nrst);
-        CONNECT(mul0, 0, mul0.i_ena, ARRITEM(wb_select, Res_IMul, wb_select->ena));
+        CONNECT(mul0, 0, mul0.i_ena, ARRITEM(wb_select, Res_IMul, wb_select.ena));
         CONNECT(mul0, 0, mul0.i_unsigned, i_unsigned_op);
         CONNECT(mul0, 0, mul0.i_hsu, w_mul_hsu);
         CONNECT(mul0, 0, mul0.i_high, w_arith_residual_high);
         CONNECT(mul0, 0, mul0.i_rv32, i_rv32);
         CONNECT(mul0, 0, mul0.i_a1, wb_rdata1);
         CONNECT(mul0, 0, mul0.i_a2, wb_rdata2);
-        CONNECT(mul0, 0, mul0.o_res, ARRITEM(wb_select, Res_IMul, wb_select->res));
-        CONNECT(mul0, 0, mul0.o_valid, ARRITEM(wb_select, Res_IMul, wb_select->valid));
+        CONNECT(mul0, 0, mul0.o_res, ARRITEM(wb_select, Res_IMul, wb_select.res));
+        CONNECT(mul0, 0, mul0.o_valid, ARRITEM(wb_select, Res_IMul, wb_select.valid));
     ENDNEW();
 
     NEW(div0, div0.getName().c_str());
         CONNECT(div0, 0, div0.i_clk, i_clk);
         CONNECT(div0, 0, div0.i_nrst, i_nrst);
-        CONNECT(div0, 0, div0.i_ena, ARRITEM(wb_select, Res_IDiv, wb_select->ena));
+        CONNECT(div0, 0, div0.i_ena, ARRITEM(wb_select, Res_IDiv, wb_select.ena));
         CONNECT(div0, 0, div0.i_unsigned, i_unsigned_op);
         CONNECT(div0, 0, div0.i_residual, w_arith_residual_high);
         CONNECT(div0, 0, div0.i_rv32, i_rv32);
         CONNECT(div0, 0, div0.i_a1, wb_rdata1);
         CONNECT(div0, 0, div0.i_a2, wb_rdata2);
-        CONNECT(div0, 0, div0.o_res, ARRITEM(wb_select, Res_IDiv, wb_select->res));
-        CONNECT(div0, 0, div0.o_valid, ARRITEM(wb_select, Res_IDiv, wb_select->valid));
+        CONNECT(div0, 0, div0.o_res, ARRITEM(wb_select, Res_IDiv, wb_select.res));
+        CONNECT(div0, 0, div0.o_valid, ARRITEM(wb_select, Res_IDiv, wb_select.valid));
     ENDNEW();
 
     NEW(sh0, sh0.getName().c_str());
@@ -276,7 +276,7 @@ InstrExecute::InstrExecute(GenObject *parent, const char *name) :
         CONNECT(sh0, 0, sh0.i_mode, wb_shifter_mode);
         CONNECT(sh0, 0, sh0.i_a1, wb_shifter_a1);
         CONNECT(sh0, 0, sh0.i_a2, wb_shifter_a2);
-        CONNECT(sh0, 0, sh0.o_res, ARRITEM(wb_select, Res_Shifter, wb_select->res));
+        CONNECT(sh0, 0, sh0.o_res, ARRITEM(wb_select, Res_Shifter, wb_select.res));
     ENDNEW();
 
     GENERATE("fpu");
@@ -284,21 +284,21 @@ InstrExecute::InstrExecute(GenObject *parent, const char *name) :
             NEW(fpu0, fpu0.getName().c_str());
                 CONNECT(fpu0, 0, fpu0.i_clk, i_clk);
                 CONNECT(fpu0, 0, fpu0.i_nrst, i_nrst);
-                CONNECT(fpu0, 0, fpu0.i_ena, ARRITEM(wb_select, Res_FPU, wb_select->ena));
+                CONNECT(fpu0, 0, fpu0.i_ena, ARRITEM(wb_select, Res_FPU, wb_select.ena));
                 CONNECT(fpu0, 0, fpu0.i_ivec, wb_fpu_vec);
                 CONNECT(fpu0, 0, fpu0.i_a, wb_rdata1);
                 CONNECT(fpu0, 0, fpu0.i_b, wb_rdata2);
-                CONNECT(fpu0, 0, fpu0.o_res, ARRITEM(wb_select, Res_FPU, wb_select->res));
+                CONNECT(fpu0, 0, fpu0.o_res, ARRITEM(wb_select, Res_FPU, wb_select.res));
                 CONNECT(fpu0, 0, fpu0.o_ex_invalidop, w_ex_fpu_invalidop);
                 CONNECT(fpu0, 0, fpu0.o_ex_divbyzero, w_ex_fpu_divbyzero);
                 CONNECT(fpu0, 0, fpu0.o_ex_overflow, w_ex_fpu_overflow);
                 CONNECT(fpu0, 0, fpu0.o_ex_underflow, w_ex_fpu_underflow);
                 CONNECT(fpu0, 0, fpu0.o_ex_inexact, w_ex_fpu_inexact);
-                CONNECT(fpu0, 0, fpu0.o_valid, ARRITEM(wb_select, Res_FPU, wb_select->valid));
+                CONNECT(fpu0, 0, fpu0.o_valid, ARRITEM(wb_select, Res_FPU, wb_select.valid));
             ENDNEW();
         ELSEGEN(new STRING("fpu"));
-            ASSIGNZERO(ARRITEM(wb_select, Res_FPU, wb_select->res));
-            ASSIGNZERO(ARRITEM(wb_select, Res_FPU, wb_select->valid));
+            ASSIGNZERO(ARRITEM(wb_select, Res_FPU, wb_select.res));
+            ASSIGNZERO(ARRITEM(wb_select, Res_FPU, wb_select.valid));
             ASSIGNZERO(w_ex_fpu_invalidop);
             ASSIGNZERO(w_ex_fpu_divbyzero);
             ASSIGNZERO(w_ex_fpu_overflow);
@@ -340,7 +340,7 @@ void InstrExecute::proc_comb() {
     SETZERO(ret);
     SETZERO(reg_write);
     GenObject &i1 = FOR ("i", CONST("0"), Res_Total, "++");
-        SETZERO(ARRITEM(wb_select, i1, wb_select->ena));
+        SETZERO(ARRITEM(wb_select, i1, wb_select.ena));
     ENDFOR();
 
     SETVAL(comb.vb_reg_waddr, i_d_waddr);
@@ -829,34 +829,34 @@ TEXT();
     ENDIF();
 
 TEXT();
-    SETARRITEM(wb_select, Res_Zero, wb_select->res, ALLZEROS());
-    SETARRITEM(wb_select, Res_Reg2, wb_select->res, rdata2);
-    SETARRITEM(wb_select, Res_Csr, wb_select->res, res_csr);
-    SETARRITEM(wb_select, Res_Npc, wb_select->res, res_npc);
-    SETARRITEM(wb_select, Res_Ra, wb_select->res, res_ra);
+    SETARRITEM(wb_select, Res_Zero, wb_select.res, ALLZEROS());
+    SETARRITEM(wb_select, Res_Reg2, wb_select.res, rdata2);
+    SETARRITEM(wb_select, Res_Csr, wb_select.res, res_csr);
+    SETARRITEM(wb_select, Res_Npc, wb_select.res, res_npc);
+    SETARRITEM(wb_select, Res_Ra, wb_select.res, res_ra);
 
 TEXT();
     TEXT("Select result:");
     IF (NZ(BIT(select, Res_Reg2)));
-        SETVAL(comb.vb_res, ARRITEM(wb_select, Res_Reg2, wb_select->res));
+        SETVAL(comb.vb_res, ARRITEM(wb_select, Res_Reg2, wb_select.res));
     ELSIF (NZ(BIT(select, Res_Npc)));
-        SETVAL(comb.vb_res, ARRITEM(wb_select, Res_Npc, wb_select->res));
+        SETVAL(comb.vb_res, ARRITEM(wb_select, Res_Npc, wb_select.res));
     ELSIF (NZ(BIT(select, Res_Ra)));
-        SETVAL(comb.vb_res, ARRITEM(wb_select, Res_Ra, wb_select->res));
+        SETVAL(comb.vb_res, ARRITEM(wb_select, Res_Ra, wb_select.res));
     ELSIF (NZ(BIT(select, Res_Csr)));
-        SETVAL(comb.vb_res, ARRITEM(wb_select, Res_Csr, wb_select->res));
+        SETVAL(comb.vb_res, ARRITEM(wb_select, Res_Csr, wb_select.res));
     ELSIF (NZ(BIT(select, Res_Alu)));
-        SETVAL(comb.vb_res, ARRITEM(wb_select, Res_Alu, wb_select->res));
+        SETVAL(comb.vb_res, ARRITEM(wb_select, Res_Alu, wb_select.res));
     ELSIF (NZ(BIT(select, Res_AddSub)));
-        SETVAL(comb.vb_res, ARRITEM(wb_select, Res_AddSub, wb_select->res));
+        SETVAL(comb.vb_res, ARRITEM(wb_select, Res_AddSub, wb_select.res));
     ELSIF (NZ(BIT(select, Res_Shifter)));
-        SETVAL(comb.vb_res, ARRITEM(wb_select, Res_Shifter, wb_select->res));
+        SETVAL(comb.vb_res, ARRITEM(wb_select, Res_Shifter, wb_select.res));
     ELSIF (NZ(BIT(select, Res_IMul)));
-        SETVAL(comb.vb_res, ARRITEM(wb_select, Res_IMul, wb_select->res));
+        SETVAL(comb.vb_res, ARRITEM(wb_select, Res_IMul, wb_select.res));
     ELSIF (NZ(BIT(select, Res_IDiv)));
-        SETVAL(comb.vb_res, ARRITEM(wb_select, Res_IDiv, wb_select->res));
+        SETVAL(comb.vb_res, ARRITEM(wb_select, Res_IDiv, wb_select.res));
     ELSIF (NZ(BIT(select, Res_FPU)));
-        SETVAL(comb.vb_res, ARRITEM(wb_select, Res_FPU, wb_select->res));
+        SETVAL(comb.vb_res, ARRITEM(wb_select, Res_FPU, wb_select.res));
     ELSE();
         SETZERO(comb.vb_res);
     ENDIF();
@@ -1063,9 +1063,9 @@ TEXT();
         ENDCASE();
     CASE (State_WaitMulti);
         TEXT("Wait end of multiclock instructions");
-        IF (NZ(ORx(3, &ARRITEM(wb_select, Res_IMul, wb_select->valid),
-                      &ARRITEM(wb_select, Res_IDiv, wb_select->valid),
-                      &ARRITEM(wb_select, Res_FPU, wb_select->valid))));
+        IF (NZ(ORx(3, &ARRITEM(wb_select, Res_IMul, wb_select.valid),
+                      &ARRITEM(wb_select, Res_IDiv, wb_select.valid),
+                      &ARRITEM(wb_select, Res_FPU, wb_select.valid))));
             SETVAL(state, State_Idle);
             SETVAL(comb.v_reg_ena, OR_REDUCE(waddr));
             SETVAL(comb.vb_reg_waddr, waddr);
@@ -1178,9 +1178,9 @@ TEXT();
         SETVAL(res_ra, comb.vb_npc_incr);
 
 TEXT();
-        SETARRITEM(wb_select, Res_IMul, wb_select->ena, BIT(comb.vb_select, Res_IMul));
-        SETARRITEM(wb_select, Res_IDiv, wb_select->ena, BIT(comb.vb_select, Res_IDiv));
-        SETARRITEM(wb_select, Res_FPU, wb_select->ena, BIT(comb.vb_select, Res_FPU));
+        SETARRITEM(wb_select, Res_IMul, wb_select.ena, BIT(comb.vb_select, Res_IMul));
+        SETARRITEM(wb_select, Res_IDiv, wb_select.ena, BIT(comb.vb_select, Res_IDiv));
+        SETARRITEM(wb_select, Res_FPU, wb_select.ena, BIT(comb.vb_select, Res_FPU));
         SETVAL(select, comb.vb_select);
     ENDIF();
     IF (NZ(comb.v_reg_ena));

@@ -100,11 +100,10 @@ std::string ModuleObject::generate_sysc_h_struct() {
     std::string out = "";
     int tcnt = 0;
     for (auto &p: entries_) {
-        if (p->getId() != ID_STRUCT_DEF) {
-            continue;
+        if (p->isStruct() && p->isTypedef()) {
+            out += p->generate();
+            tcnt++;
         }
-        out += p->generate();
-        tcnt++;
     }
     if (tcnt) {
         out += "\n";
@@ -574,7 +573,7 @@ std::string ModuleObject::generate_sysc_sensitivity(std::string prefix,
 std::string ModuleObject::generate_sysc_vcd_entries(std::string name1, std::string name2, GenObject *obj) {
     std::string ret = "";
     bool prefix_applied = true;
-    if (obj->getId() == ID_STRUCT_DEF
+    if ((obj->isStruct() && obj->isTypedef())
         || (obj->isModule() && !obj->isTypedef())
         || obj->getId() == ID_PROCESS
         || obj->isVector()) {

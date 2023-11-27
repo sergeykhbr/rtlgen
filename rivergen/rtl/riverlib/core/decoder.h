@@ -88,8 +88,8 @@ class InstrDecoder : public ModuleObject {
 
     class DecoderDataType : public StructObject {
      public:
-        DecoderDataType(GenObject *parent, const char *name="", int idx=-1, const char *comment="")
-            : StructObject(parent, "DecoderDataType", name, idx, comment),
+        DecoderDataType(GenObject *parent, const char *name, const char *comment="")
+            : StructObject(parent, "DecoderDataType", name, comment),
         pc(this, "pc", "RISCV_ARCH", "'1"),
         isa_type(this, "isa_type", "ISA_Total"),
         instr_vec(this, "instr_vec", "Instr_Total"),
@@ -140,8 +140,7 @@ class InstrDecoder : public ModuleObject {
     class DecTableType : public TStructArray<DecoderDataType> {
      public:
         DecTableType(GenObject *parent, const char *name)
-            : TStructArray<DecoderDataType>(parent, "", name, "FULL_DEC_DEPTH") {
-            setReg();
+            : TStructArray<DecoderDataType>(parent, name, "FULL_DEC_DEPTH", true) {
         }
     };
 

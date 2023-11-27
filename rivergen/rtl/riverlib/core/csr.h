@@ -188,8 +188,8 @@ class CsrRegs : public ModuleObject {
 
     class RegModeType : public StructObject {
      public:
-        RegModeType(GenObject *parent, const char *name="", int idx=-1, const char *comment="")
-            : StructObject(parent, "RegModeType", name, idx, comment),
+        RegModeType(GenObject *parent, const char *name, const char *comment="")
+            : StructObject(parent, "RegModeType", name, comment),
             xepc(this, "xepc", "RISCV_ARCH", "0", ""),
             xpp(this, "xpp", "2", "0", "Previous Privildge mode. If x is not implemented, then xPP mus be 0"),
             xpie(this, "xpie", "1", "0", "Previous Privildge mode global interrupt enable"),
@@ -225,15 +225,14 @@ class CsrRegs : public ModuleObject {
     class ModeTableType : public TStructArray<RegModeType> {
      public:
         ModeTableType(GenObject *parent, const char *name)
-            : TStructArray<RegModeType>(parent, "", name, "4") {
-            setReg();
+            : TStructArray<RegModeType>(parent, name, "4", true) {
         }
     };
 
     class PmpItemType : public StructObject {
      public:
-        PmpItemType(GenObject *parent, const char *name="", int idx=-1, const char *comment="")
-            : StructObject(parent, "PmpItemType", name, idx, comment),
+        PmpItemType(GenObject *parent, const char *name, const char *comment="")
+            : StructObject(parent, "PmpItemType", name, comment),
             cfg(this, "cfg", "8", "0", "pmpcfg bits without changes"),
             addr(this, "addr", "RISCV_ARCH", "0", "Maximal PMP address bits [55:2]"),
             mask(this, "mask", "RISCV_ARCH", "0", "NAPOT mask formed from address")
@@ -247,8 +246,7 @@ class CsrRegs : public ModuleObject {
     class PmpTableType : public TStructArray<PmpItemType> {
      public:
         PmpTableType(GenObject *parent, const char *name)
-            : TStructArray<PmpItemType>(parent, "", name, "CFG_PMP_TBL_SIZE") {
-            setReg();
+            : TStructArray<PmpItemType>(parent, name, "CFG_PMP_TBL_SIZE", true) {
         }
     };
 

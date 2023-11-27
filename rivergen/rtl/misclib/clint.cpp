@@ -30,7 +30,7 @@ clint::clint(GenObject *parent, const char *name) :
     o_mtip(this, "o_mtip", "cpu_total", "Machine mode Timer Pending Interrupt"),
     // params
     // struct declaration
-    clint_cpu_type_def_(this, "", -1),
+    clint_cpu_type_def_(this, "clint_cpu_type"),
     // signals
     w_req_valid(this, "w_req_valid", "1"),
     wb_req_addr(this, "wb_req_addr", "CFG_SYSBUS_ADDR_BITS"),
@@ -86,30 +86,30 @@ void clint::proc_comb() {
 
 TEXT();
     i = &FOR ("i", CONST("0"), cpu_total, "++");
-        SETARRITEM(hart, *i, hart->mtip, CONST("0", 1));
-        IF (GE(mtime, ARRITEM(hart, *i, hart->mtimecmp)));
-            SETARRITEM(hart, *i, hart->mtip, CONST("1", 1));
+        SETARRITEM(hart, *i, hart.mtip, CONST("0", 1));
+        IF (GE(mtime, ARRITEM(hart, *i, hart.mtimecmp)));
+            SETARRITEM(hart, *i, hart.mtip, CONST("1", 1));
         ENDIF();
     ENDFOR();
 
 TEXT();
     SWITCH (BITS(wb_req_addr, 15, 14));
     CASE (CONST("0", 2));
-        SETBIT(comb.vrdata, 0, ARRITEM(hart, comb.regidx, hart->msip));
-        SETBIT(comb.vrdata, 32, ARRITEM(hart, INC(comb.regidx), hart->msip));
+        SETBIT(comb.vrdata, 0, ARRITEM(hart, comb.regidx, hart.msip));
+        SETBIT(comb.vrdata, 32, ARRITEM(hart, INC(comb.regidx), hart.msip));
         IF (AND2(NZ(w_req_valid), NZ(w_req_write)));
             IF (NZ(OR_REDUCE(BITS(wb_req_wstrb, 3, 0))));
-                SETARRITEM(hart, comb.regidx, hart->msip, BIT(wb_req_wdata, 0));
+                SETARRITEM(hart, comb.regidx, hart.msip, BIT(wb_req_wdata, 0));
             ENDIF();
             IF (NZ(OR_REDUCE(BITS(wb_req_wstrb, 7, 4))));
-                SETARRITEM(hart, INC(comb.regidx), hart->msip, BIT(wb_req_wdata, 32));
+                SETARRITEM(hart, INC(comb.regidx), hart.msip, BIT(wb_req_wdata, 32));
             ENDIF();
         ENDIF();
         ENDCASE();
     CASE (CONST("1", 2));
-        SETVAL(comb.vrdata, ARRITEM(hart, comb.regidx, hart->mtimecmp));
+        SETVAL(comb.vrdata, ARRITEM(hart, comb.regidx, hart.mtimecmp));
         IF (AND2(NZ(w_req_valid), NZ(w_req_write)));
-            SETARRITEM(hart, comb.regidx, hart->mtimecmp, wb_req_wdata);
+            SETARRITEM(hart, comb.regidx, hart.mtimecmp, wb_req_wdata);
         ENDIF();
         ENDCASE();
     CASE (CONST("2", 2));
@@ -127,8 +127,8 @@ TEXT();
 
 TEXT();
     i = &FOR ("i", CONST("0"), cpu_total, "++");
-        SETBIT(comb.vb_msip, *i, ARRITEM(hart, *i, hart->msip));
-        SETBIT(comb.vb_mtip, *i, ARRITEM(hart, *i, hart->mtip));
+        SETBIT(comb.vb_msip, *i, ARRITEM(hart, *i, hart.msip));
+        SETBIT(comb.vb_mtip, *i, ARRITEM(hart, *i, hart.mtip));
     ENDFOR();
 
 TEXT();

@@ -40,8 +40,8 @@ class ic_dport : public ModuleObject {
             vb_hartreset(this, "vb_hartreset", "CFG_CPU_MAX"),
             vb_req_valid(this, "vb_req_valid", "CFG_CPU_MAX"),
             vb_req_ready(this, "vb_req_ready", "CFG_CPU_MAX"),
-            vb_dporti(this, "", "vb_dporti", "CFG_CPU_MAX"),
-            vb_dporto(this, "", "vb_dporto", "CFG_CPU_MAX"),
+            vb_dporti(this, "vb_dporti", "CFG_CPU_MAX"),
+            vb_dporto(this, "vb_dporto", "CFG_CPU_MAX"),
             v_req_accepted(this, "v_req_accepted", "1") {
         }
      public:

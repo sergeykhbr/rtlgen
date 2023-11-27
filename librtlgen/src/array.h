@@ -71,36 +71,30 @@ class ArrayObject : public GenObject {
 
 // T = signal or logic
 template<class T>
-class WireArray : public ArrayObject<T> {
+class WireArray : public T {
  public:
     WireArray(GenObject *parent, const char *name, const char *width,
-        const char *depth, bool reg=false, const char *comment="")
-        : ArrayObject<T>(parent, "", name, depth, comment) {
-        char tstr[64];
-        int d = GenObject::getDepth();
-        GenObject::reg_ = reg;
-        ArrayObject<T>::arr_ = new T *[d];
-        for (int i = 0; i < d; i++) {
-            RISCV_sprintf(tstr, sizeof(tstr), "%d", i);
-            ArrayObject<T>::arr_[i] = new T(this, tstr, width, "0");
-        }
+        const char *depth, const char *comment="")
+        : T(width, name, "'0", parent, comment) {
+        setStrDepth(depth);
     }
-    virtual bool isSignal() override { return ArrayObject<T>::arr_[0]->isSignal(); }
+    WireArray(GenObject *parent, const char *name, const char *width,
+        const char *depth, bool reg, const char *comment="")
+        : WireArray<T>(parent, name, width, depth, comment) {
+        setReg();
+    }
 };
 
 template<class T>
-class TStructArray : public ArrayObject<T> {
+class TStructArray : public T {
     public:
-    TStructArray(GenObject *parent, const char *type, const char *name,
-        const char *depth, const char *comment="")
-        : ArrayObject<T>(parent, type, name, depth, comment) {
-        int d = GenObject::getDepth();
-        ArrayObject<T>::arr_ = new T *[d];
-        char tstr[64];
-        for (int i = 0; i < d; i++) {
-            RISCV_sprintf(tstr, sizeof(tstr), "%d", i);
-            ArrayObject<T>::arr_[i] = new T(this, tstr);
-        }
+    TStructArray(GenObject *parent, const char *name, const char *depth,
+        const char *comment = "") : T(parent, name, comment) {
+        setStrDepth(depth);
+    }
+    TStructArray(GenObject *parent, const char *name, const char *depth, bool reg,
+        const char *comment = "") : TStructArray<T>(parent, name, depth, comment) {
+        setReg();
     }
 };
 

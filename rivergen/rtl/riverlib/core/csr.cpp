@@ -95,8 +95,8 @@ CsrRegs::CsrRegs(GenObject *parent, const char *name) :
     SATP_MODE_SV39(this, "4", "SATP_MODE_SV39", "8", "39-bits Page mode"),
     SATP_MODE_SV48(this, "4", "SATP_MODE_SV48", "9", "48-bits Page mode"),
     // struct definitions
-    RegModeTypeDef_(this),
-    PmpItemTypeDef_(this),
+    RegModeTypeDef_(this, "RegModeType"),
+    PmpItemTypeDef_(this, "PmpItemType"),
     // registers
     xmode(this, "xmode"),
     pmp(this, "pmp"),
@@ -163,26 +163,26 @@ void CsrRegs::proc_comb() {
     GenObject *i;
 
     //SETVAL(dbg_e_valid, i_e_valid, "used in RtlWrapper to count executed instructions");
-    SETVAL(comb.vb_xpp, ARRITEM(xmode, TO_INT(mode), xmode->xpp));
+    SETVAL(comb.vb_xpp, ARRITEM(xmode, TO_INT(mode), xmode.xpp));
     SETVAL(comb.vb_pmp_upd_ena, pmp_upd_ena);
     SETVAL(comb.t_pmpdataidx, SUB2(TO_INT(cmd_addr), CONST("0x3B0")));
     SETVAL(comb.t_pmpcfgidx, MUL2(CONST("8"), TO_INT(BITS(cmd_addr, 3, 1))));
     SETVAL(comb.vb_pmp_napot_mask, CONST("0x7"));
 
 TEXT();
-    SETVAL(comb.vb_xtvec_off_edeleg, ARRITEM(xmode, comb.iM, xmode->xtvec_off));
+    SETVAL(comb.vb_xtvec_off_edeleg, ARRITEM(xmode, comb.iM, xmode.xtvec_off));
     IF (AND2(LE(mode, cfg->PRV_S), NZ(BIT(medeleg, TO_INT(BITS(cmd_addr, 4, 0))))));
         TEXT("Exception delegation to S-mode");
         SETONE(comb.v_medeleg_ena);
-        SETVAL(comb.vb_xtvec_off_edeleg, ARRITEM(xmode, comb.iS, xmode->xtvec_off));
+        SETVAL(comb.vb_xtvec_off_edeleg, ARRITEM(xmode, comb.iS, xmode.xtvec_off));
     ENDIF();
 
 TEXT();
-    SETVAL(comb.vb_xtvec_off_ideleg, ARRITEM(xmode, comb.iM, xmode->xtvec_off));
+    SETVAL(comb.vb_xtvec_off_ideleg, ARRITEM(xmode, comb.iM, xmode.xtvec_off));
     IF (AND2(LE(mode, cfg->PRV_S), NZ(BIT(mideleg, TO_INT(BITS(cmd_addr, 3, 0))))));
         TEXT("Interrupt delegation to S-mode");
         SETONE(comb.v_mideleg_ena);
-        SETVAL(comb.vb_xtvec_off_ideleg, ARRITEM(xmode, comb.iS, xmode->xtvec_off));
+        SETVAL(comb.vb_xtvec_off_ideleg, ARRITEM(xmode, comb.iS, xmode.xtvec_off));
     ENDIF();
 
 TEXT();
@@ -284,7 +284,7 @@ TEXT();
         SETBITONE(comb.vb_e_imux, TO_INT(BITS(cmd_addr, 3, 0)));
         SETVAL(comb.wb_trap_cause, BITS(cmd_addr, 4, 0));
         SETVAL(cmd_data, comb.vb_xtvec_off_ideleg);
-        IF (EQ(ARRITEM_B(xmode, TO_INT(mode), xmode->xtvec_mode), CONST("1", 2)));
+        IF (EQ(ARRITEM_B(xmode, TO_INT(mode), xmode.xtvec_mode), CONST("1", 2)));
             TEXT("vectorized");
             SETVAL(cmd_data, ADD2(comb.vb_xtvec_off_ideleg,
                                   CC2(comb.wb_trap_cause, CONST("0", 2))));
@@ -293,7 +293,7 @@ TEXT();
     CASE (State_TrapReturn);
         SETVAL(state, State_Response);
         SETONE(comb.v_csr_trapreturn);
-        SETVAL(cmd_data, CC2(ALLZEROS(), ARRITEM(xmode, TO_INT(mode), xmode->xepc)));
+        SETVAL(cmd_data, CC2(ALLZEROS(), ARRITEM(xmode, TO_INT(mode), xmode.xepc)));
         ENDCASE();
     CASE (State_RW);
         SETVAL(state, State_Response);
@@ -384,9 +384,9 @@ TEXT();
     // User Trap handling
     ELSIF (EQ(cmd_addr, CONST("0x040", 12)), "uscratch: [URW] Scratch register for user trap handlers");
     ELSIF (EQ(cmd_addr, CONST("0x041", 12)), "uepc: [URW] User exception program counter");
-        SETVAL(comb.vb_rdata, ARRITEM(xmode, comb.iU, xmode->xepc));
+        SETVAL(comb.vb_rdata, ARRITEM(xmode, comb.iU, xmode.xepc));
         IF (comb.v_csr_wena);
-            SETARRITEM(xmode, comb.iU, xmode->xepc, cmd_data);
+            SETARRITEM(xmode, comb.iU, xmode.xepc, cmd_data);
         ENDIF();
     ELSIF (EQ(cmd_addr, CONST("0x042", 12)), "ucause: [URW] User trap cause");
     ELSIF (EQ(cmd_addr, CONST("0x043", 12)), "utval: [URW] User bad address or instruction");
@@ -414,12 +414,12 @@ TEXT();
     // User Counter/Timers
     ELSIF (EQ(cmd_addr, CONST("0xC00", 12)), "cycle: [URO] User Cycle counter for RDCYCLE pseudo-instruction");
         IF (ANDx(2, &EQ(mode, cfg->PRV_U), 
-                    &ORx(2, &EZ(BIT(ARRITEM_B(xmode, comb.iM, xmode->xcounteren), 0)),
-                            &EZ(BIT(ARRITEM_B(xmode, comb.iS, xmode->xcounteren), 0)))));
+                    &ORx(2, &EZ(BIT(ARRITEM_B(xmode, comb.iM, xmode.xcounteren), 0)),
+                            &EZ(BIT(ARRITEM_B(xmode, comb.iS, xmode.xcounteren), 0)))));
             TEXT("Available only if all more prv. bit CY are set");
             SETONE(cmd_exception);
         ELSIF (ANDx(2, &EQ(mode, cfg->PRV_S),
-                       &EZ(BIT(ARRITEM_B(xmode, comb.iM, xmode->xcounteren), 0))));
+                       &EZ(BIT(ARRITEM_B(xmode, comb.iM, xmode.xcounteren), 0))));
             TEXT("Available only if bit CY is set");
             SETONE(cmd_exception);
         ELSE();
@@ -427,12 +427,12 @@ TEXT();
         ENDIF();
     ELSIF (EQ(cmd_addr, CONST("0xC01", 12)), "time: [URO] User Timer for RDTIME pseudo-instruction");
         IF (ANDx(2, &EQ(mode, cfg->PRV_U), 
-                    &ORx(2, &EZ(BIT(ARRITEM_B(xmode, comb.iM, xmode->xcounteren), 1)),
-                            &EZ(BIT(ARRITEM_B(xmode, comb.iS, xmode->xcounteren), 1)))));
+                    &ORx(2, &EZ(BIT(ARRITEM_B(xmode, comb.iM, xmode.xcounteren), 1)),
+                            &EZ(BIT(ARRITEM_B(xmode, comb.iS, xmode.xcounteren), 1)))));
             TEXT("Available only if all more prv. bit TM are set");
             SETONE(cmd_exception);
         ELSIF (ANDx(2, &EQ(mode, cfg->PRV_S),
-                       &EZ(BIT(ARRITEM_B(xmode, comb.iM, xmode->xcounteren), 1))));
+                       &EZ(BIT(ARRITEM_B(xmode, comb.iM, xmode.xcounteren), 1))));
             TEXT("Available only if bit TM is set");
             SETONE(cmd_exception);
         ELSE();
@@ -440,12 +440,12 @@ TEXT();
         ENDIF();
     ELSIF (EQ(cmd_addr, CONST("0xC03", 12)), "insret: [URO] User Instructions-retired counter for RDINSTRET pseudo-instruction");
         IF (ANDx(2, &EQ(mode, cfg->PRV_U),
-                    &ORx(2, &EZ(BIT(ARRITEM_B(xmode, comb.iM, xmode->xcounteren), 2)),
-                            &EZ(BIT(ARRITEM_B(xmode, comb.iS, xmode->xcounteren), 2)))));
+                    &ORx(2, &EZ(BIT(ARRITEM_B(xmode, comb.iM, xmode.xcounteren), 2)),
+                            &EZ(BIT(ARRITEM_B(xmode, comb.iS, xmode.xcounteren), 2)))));
             TEXT("Available only if all more prv. bit IR are set");
             SETONE(cmd_exception);
         ELSIF (ANDx(2, &EQ(mode, cfg->PRV_S),
-                       &EZ(BIT(ARRITEM_B(xmode, comb.iM, xmode->xcounteren), 2))));
+                       &EZ(BIT(ARRITEM_B(xmode, comb.iM, xmode.xcounteren), 2))));
             TEXT("Available only if bit IR is set");
             SETONE(cmd_exception);
         ELSE();
@@ -454,12 +454,12 @@ TEXT();
     // Supervisor Trap Setup
     ELSIF (EQ(cmd_addr, CONST("0x100", 12)), "sstatus: [SRW] Supervisor status register");
         TEXT("[0] WPRI");
-        SETBIT(comb.vb_rdata, 1, ARRITEM(xmode, comb.iS, xmode->xie));
+        SETBIT(comb.vb_rdata, 1, ARRITEM(xmode, comb.iS, xmode.xie));
         TEXT("[4:2] WPRI");
-        SETBIT(comb.vb_rdata, 5, ARRITEM(xmode, comb.iS, xmode->xpie));
+        SETBIT(comb.vb_rdata, 5, ARRITEM(xmode, comb.iS, xmode.xpie));
         TEXT("[6] UBE: Endianess: 0=little-endian; 1=big-endian. Instruction fetch is always little endian");
         TEXT("[7] WPRI");
-        SETBIT(comb.vb_rdata, 8, ARRITEM(xmode, comb.iS, BIT(xmode->xpp, 0)), "SPP can have onle 0 or 1 values, so 1 bit only");
+        SETBIT(comb.vb_rdata, 8, ARRITEM(xmode, comb.iS, BIT(xmode.xpp, 0)), "SPP can have onle 0 or 1 values, so 1 bit only");
         TEXT("[10:9] VS");
         TEXT("[12:11] WPRI");
         IF (cfg->CFG_HW_FPU_ENABLE);
@@ -474,53 +474,53 @@ TEXT();
         TEXT("[62:34] WPRI");
         TEXT("[63] SD. Read-only bit that summize FS, VS or XS fields");
         IF (NZ(comb.v_csr_wena));
-            SETARRITEM(xmode, comb.iS, xmode->xie, BIT(cmd_data, 1));
-            SETARRITEM(xmode, comb.iS, xmode->xpie, BIT(cmd_data, 5));
-            SETARRITEM(xmode, comb.iS, xmode->xpp, CC2(CONST("0", 1), BIT(cmd_data, 8)));
+            SETARRITEM(xmode, comb.iS, xmode.xie, BIT(cmd_data, 1));
+            SETARRITEM(xmode, comb.iS, xmode.xpie, BIT(cmd_data, 5));
+            SETARRITEM(xmode, comb.iS, xmode.xpp, CC2(CONST("0", 1), BIT(cmd_data, 8)));
         ENDIF();
     ELSIF (EQ(cmd_addr, CONST("0x104", 12)), "sie: [SRW] Supervisor interrupt-enable register");
-        SETBIT(comb.vb_rdata, DEC(cfg->IRQ_SSIP), ARRITEM(xmode, comb.iS, xmode->xsie));
-        SETBIT(comb.vb_rdata, DEC(cfg->IRQ_STIP), ARRITEM(xmode, comb.iS, xmode->xtie));
-        SETBIT(comb.vb_rdata, DEC(cfg->IRQ_SEIP), ARRITEM(xmode, comb.iS, xmode->xeie));
+        SETBIT(comb.vb_rdata, DEC(cfg->IRQ_SSIP), ARRITEM(xmode, comb.iS, xmode.xsie));
+        SETBIT(comb.vb_rdata, DEC(cfg->IRQ_STIP), ARRITEM(xmode, comb.iS, xmode.xtie));
+        SETBIT(comb.vb_rdata, DEC(cfg->IRQ_SEIP), ARRITEM(xmode, comb.iS, xmode.xeie));
         IF (comb.v_csr_wena);
             TEXT("Write only supported interrupts");
-            SETARRITEM(xmode, comb.iS, xmode->xsie, BIT(cmd_data, cfg->IRQ_SSIP));
-            SETARRITEM(xmode, comb.iS, xmode->xtie, BIT(cmd_data, cfg->IRQ_STIP));
-            SETARRITEM(xmode, comb.iS, xmode->xeie, BIT(cmd_data, cfg->IRQ_SEIP));
+            SETARRITEM(xmode, comb.iS, xmode.xsie, BIT(cmd_data, cfg->IRQ_SSIP));
+            SETARRITEM(xmode, comb.iS, xmode.xtie, BIT(cmd_data, cfg->IRQ_STIP));
+            SETARRITEM(xmode, comb.iS, xmode.xeie, BIT(cmd_data, cfg->IRQ_SEIP));
         ENDIF();
     ELSIF (EQ(cmd_addr, CONST("0x105", 12)), "stvec: [SRW] Supervisor trap handler base address");
-        SETVAL(comb.vb_rdata, ARRITEM(xmode, comb.iS, xmode->xtvec_off));
-        SETBITS(comb.vb_rdata, 1, 0, ARRITEM(xmode, comb.iS, xmode->xtvec_mode));
+        SETVAL(comb.vb_rdata, ARRITEM(xmode, comb.iS, xmode.xtvec_off));
+        SETBITS(comb.vb_rdata, 1, 0, ARRITEM(xmode, comb.iS, xmode.xtvec_mode));
         IF (NZ(comb.v_csr_wena));
-            SETARRITEM(xmode, comb.iS, xmode->xtvec_off,
+            SETARRITEM(xmode, comb.iS, xmode.xtvec_off,
                 CC2(BITS(cmd_data, DEC(cfg->RISCV_ARCH), CONST("2")), CONST("0", 2)));
-            SETARRITEM(xmode, comb.iS, xmode->xtvec_mode, BITS(cmd_data, 1, 0));
+            SETARRITEM(xmode, comb.iS, xmode.xtvec_mode, BITS(cmd_data, 1, 0));
         ENDIF();
     ELSIF (EQ(cmd_addr, CONST("0x106", 12)), "scounteren: [SRW] Supervisor counter enable");
-        SETVAL(comb.vb_rdata, ARRITEM(xmode, comb.iS, xmode->xcounteren));
+        SETVAL(comb.vb_rdata, ARRITEM(xmode, comb.iS, xmode.xcounteren));
         IF (NZ(comb.v_csr_wena));
-            SETARRITEM(xmode, comb.iS, xmode->xcounteren, BITS(cmd_data, 15, 0));
+            SETARRITEM(xmode, comb.iS, xmode.xcounteren, BITS(cmd_data, 15, 0));
         ENDIF();
     // Supervisor configuration
     ELSIF (EQ(cmd_addr, CONST("0x10A", 12)), "senvcfg: [SRW] Supervisor environment configuration register");
     // Supervisor trap handling
     ELSIF (EQ(cmd_addr, CONST("0x140", 12)), "sscratch: [SRW] Supervisor register for supervisor trap handlers");
-        SETVAL(comb.vb_rdata, ARRITEM(xmode, comb.iS, xmode->xscratch));
+        SETVAL(comb.vb_rdata, ARRITEM(xmode, comb.iS, xmode.xscratch));
         IF (comb.v_csr_wena);
-            SETARRITEM(xmode, comb.iS, xmode->xscratch, cmd_data);
+            SETARRITEM(xmode, comb.iS, xmode.xscratch, cmd_data);
         ENDIF();
     ELSIF (EQ(cmd_addr, CONST("0x141", 12)), "sepc: [SRW] Supervisor exception program counter");
-        SETVAL(comb.vb_rdata, ARRITEM(xmode, comb.iS, xmode->xepc));
+        SETVAL(comb.vb_rdata, ARRITEM(xmode, comb.iS, xmode.xepc));
         IF (comb.v_csr_wena);
-            SETARRITEM(xmode, comb.iS, xmode->xepc, cmd_data);
+            SETARRITEM(xmode, comb.iS, xmode.xepc, cmd_data);
         ENDIF();
     ELSIF (EQ(cmd_addr, CONST("0x142", 12)), "scause: [SRW] Supervisor trap cause");
-        SETBIT(comb.vb_rdata, 63, ARRITEM(xmode, comb.iS, xmode->xcause_irq));
-        SETBITS(comb.vb_rdata, 4, 0, ARRITEM(xmode, comb.iS, xmode->xcause_code));
+        SETBIT(comb.vb_rdata, 63, ARRITEM(xmode, comb.iS, xmode.xcause_irq));
+        SETBITS(comb.vb_rdata, 4, 0, ARRITEM(xmode, comb.iS, xmode.xcause_code));
     ELSIF (EQ(cmd_addr, CONST("0x143", 12)), "stval: [SRW] Supervisor bad address or instruction");
-        SETVAL(comb.vb_rdata, ARRITEM(xmode, comb.iS, xmode->xtval));
+        SETVAL(comb.vb_rdata, ARRITEM(xmode, comb.iS, xmode.xtval));
         IF (comb.v_csr_wena);
-            SETARRITEM(xmode, comb.iS, xmode->xtval, cmd_data);
+            SETARRITEM(xmode, comb.iS, xmode.xtval, cmd_data);
         ENDIF();
     ELSIF (EQ(cmd_addr, CONST("0x144", 12)), "sip: [SRW] Supervisor interrupt pending");
         SETBITS(comb.vb_rdata, 15, 0, AND2_L(irq_pending, CONST("0x0222", 16)), "see fig 4.7. Only s-bits are visible");
@@ -570,16 +570,16 @@ TEXT();
     // Machine Trap setup
     ELSIF (EQ(cmd_addr, CONST("0x300", 12)), "mstatus: [MRW] Machine mode status register");
         TEXT("[0] WPRI");
-        SETBIT(comb.vb_rdata, 1, ARRITEM(xmode, comb.iS, xmode->xie));
+        SETBIT(comb.vb_rdata, 1, ARRITEM(xmode, comb.iS, xmode.xie));
         TEXT("[2] WPRI");
-        SETBIT(comb.vb_rdata, 3, ARRITEM(xmode, comb.iM, xmode->xie));
+        SETBIT(comb.vb_rdata, 3, ARRITEM(xmode, comb.iM, xmode.xie));
         TEXT("[4] WPRI");
-        SETBIT(comb.vb_rdata, 5, ARRITEM(xmode, comb.iS, xmode->xpie));
+        SETBIT(comb.vb_rdata, 5, ARRITEM(xmode, comb.iS, xmode.xpie));
         TEXT("[6] UBE: Endianess: 0=little-endian; 1=big-endian. Instruction fetch is always little endian");
-        SETBIT(comb.vb_rdata, 7, ARRITEM(xmode, comb.iM, xmode->xpie));
-        SETBIT(comb.vb_rdata, 8, ARRITEM(xmode, comb.iS, BIT(xmode->xpp, 0)), "SPP can have onle 0 or 1 values, so 1 bit only");
+        SETBIT(comb.vb_rdata, 7, ARRITEM(xmode, comb.iM, xmode.xpie));
+        SETBIT(comb.vb_rdata, 8, ARRITEM(xmode, comb.iS, BIT(xmode.xpp, 0)), "SPP can have onle 0 or 1 values, so 1 bit only");
         TEXT("[10:9] VS");
-        SETBITS(comb.vb_rdata, 12, 11, ARRITEM(xmode, comb.iM, xmode->xpp));
+        SETBITS(comb.vb_rdata, 12, 11, ARRITEM(xmode, comb.iM, xmode.xpp));
         IF (cfg->CFG_HW_FPU_ENABLE);
             SETBITS(comb.vb_rdata, 14, 13, CONST("0x1", 2), "FS field: Initial state");
         ENDIF();
@@ -598,12 +598,12 @@ TEXT();
         TEXT("[62:38] WPRI");
         TEXT("[63] SD. Read-only bit that summize FS, VS or XS fields");
         IF (NZ(comb.v_csr_wena));
-            SETARRITEM(xmode, comb.iS, xmode->xie, BIT(cmd_data, 1));
-            SETARRITEM(xmode, comb.iM, xmode->xie, BIT(cmd_data, 3));
-            SETARRITEM(xmode, comb.iS, xmode->xpie, BIT(cmd_data, 5));
-            SETARRITEM(xmode, comb.iM, xmode->xpie, BIT(cmd_data, 7));
-            SETARRITEM(xmode, comb.iS, xmode->xpp, CC2(CONST("0", 1), BIT(cmd_data, 8)));
-            SETARRITEM(xmode, comb.iM, xmode->xpp, BITS(cmd_data, 12, 11));
+            SETARRITEM(xmode, comb.iS, xmode.xie, BIT(cmd_data, 1));
+            SETARRITEM(xmode, comb.iM, xmode.xie, BIT(cmd_data, 3));
+            SETARRITEM(xmode, comb.iS, xmode.xpie, BIT(cmd_data, 5));
+            SETARRITEM(xmode, comb.iM, xmode.xpie, BIT(cmd_data, 7));
+            SETARRITEM(xmode, comb.iS, xmode.xpp, CC2(CONST("0", 1), BIT(cmd_data, 8)));
+            SETARRITEM(xmode, comb.iM, xmode.xpp, BITS(cmd_data, 12, 11));
             SETVAL(mprv, BIT(cmd_data, 17));
             SETVAL(sum, BIT(cmd_data, 18));
             SETVAL(mxr, BIT(cmd_data, 19));
@@ -665,52 +665,52 @@ TEXT();
             SETVAL(mideleg, AND2_L(BITS(cmd_data, DEC(cfg->IRQ_TOTAL), CONST("0")), CONST("0x222", 12)));
         ENDIF();
     ELSIF (EQ(cmd_addr, CONST("0x304", 12)), "mie: [MRW] Machine interrupt enable bit");
-        SETBIT(comb.vb_rdata, DEC(cfg->IRQ_SSIP), ARRITEM(xmode, comb.iS, xmode->xsie));
-        SETBIT(comb.vb_rdata, DEC(cfg->IRQ_MSIP), ARRITEM(xmode, comb.iM, xmode->xsie));
-        SETBIT(comb.vb_rdata, DEC(cfg->IRQ_STIP), ARRITEM(xmode, comb.iS, xmode->xtie));
-        SETBIT(comb.vb_rdata, DEC(cfg->IRQ_MTIP), ARRITEM(xmode, comb.iM, xmode->xtie));
-        SETBIT(comb.vb_rdata, DEC(cfg->IRQ_SEIP), ARRITEM(xmode, comb.iS, xmode->xeie));
-        SETBIT(comb.vb_rdata, DEC(cfg->IRQ_MEIP), ARRITEM(xmode, comb.iM, xmode->xeie));
+        SETBIT(comb.vb_rdata, DEC(cfg->IRQ_SSIP), ARRITEM(xmode, comb.iS, xmode.xsie));
+        SETBIT(comb.vb_rdata, DEC(cfg->IRQ_MSIP), ARRITEM(xmode, comb.iM, xmode.xsie));
+        SETBIT(comb.vb_rdata, DEC(cfg->IRQ_STIP), ARRITEM(xmode, comb.iS, xmode.xtie));
+        SETBIT(comb.vb_rdata, DEC(cfg->IRQ_MTIP), ARRITEM(xmode, comb.iM, xmode.xtie));
+        SETBIT(comb.vb_rdata, DEC(cfg->IRQ_SEIP), ARRITEM(xmode, comb.iS, xmode.xeie));
+        SETBIT(comb.vb_rdata, DEC(cfg->IRQ_MEIP), ARRITEM(xmode, comb.iM, xmode.xeie));
         IF (comb.v_csr_wena);
             TEXT("Write only supported interrupts");
-            SETARRITEM(xmode, comb.iS, xmode->xsie, BIT(cmd_data, cfg->IRQ_SSIP));
-            SETARRITEM(xmode, comb.iM, xmode->xsie, BIT(cmd_data, cfg->IRQ_MSIP));
-            SETARRITEM(xmode, comb.iS, xmode->xtie, BIT(cmd_data, cfg->IRQ_STIP));
-            SETARRITEM(xmode, comb.iM, xmode->xtie, BIT(cmd_data, cfg->IRQ_MTIP));
-            SETARRITEM(xmode, comb.iS, xmode->xeie, BIT(cmd_data, cfg->IRQ_SEIP));
-            SETARRITEM(xmode, comb.iM, xmode->xeie, BIT(cmd_data, cfg->IRQ_MEIP));
+            SETARRITEM(xmode, comb.iS, xmode.xsie, BIT(cmd_data, cfg->IRQ_SSIP));
+            SETARRITEM(xmode, comb.iM, xmode.xsie, BIT(cmd_data, cfg->IRQ_MSIP));
+            SETARRITEM(xmode, comb.iS, xmode.xtie, BIT(cmd_data, cfg->IRQ_STIP));
+            SETARRITEM(xmode, comb.iM, xmode.xtie, BIT(cmd_data, cfg->IRQ_MTIP));
+            SETARRITEM(xmode, comb.iS, xmode.xeie, BIT(cmd_data, cfg->IRQ_SEIP));
+            SETARRITEM(xmode, comb.iM, xmode.xeie, BIT(cmd_data, cfg->IRQ_MEIP));
         ENDIF();
     ELSIF (EQ(cmd_addr, CONST("0x305", 12)), "mtvec: [MRW] Machine trap-handler base address");
-        SETVAL(comb.vb_rdata, ARRITEM(xmode, comb.iM, xmode->xtvec_off));
-        SETBITS(comb.vb_rdata, 1, 0, ARRITEM(xmode, comb.iM, xmode->xtvec_mode));
+        SETVAL(comb.vb_rdata, ARRITEM(xmode, comb.iM, xmode.xtvec_off));
+        SETBITS(comb.vb_rdata, 1, 0, ARRITEM(xmode, comb.iM, xmode.xtvec_mode));
         IF (NZ(comb.v_csr_wena));
-            SETARRITEM(xmode, comb.iM, xmode->xtvec_off,
+            SETARRITEM(xmode, comb.iM, xmode.xtvec_off,
                 CC2(BITS(cmd_data, DEC(cfg->RISCV_ARCH), CONST("2")), CONST("0", 2)));
-            SETARRITEM(xmode, comb.iM, xmode->xtvec_mode, BITS(cmd_data, 1, 0));
+            SETARRITEM(xmode, comb.iM, xmode.xtvec_mode, BITS(cmd_data, 1, 0));
         ENDIF();
     ELSIF (EQ(cmd_addr, CONST("0x306", 12)), "mcounteren: [MRW] Machine counter enable");
-        SETVAL(comb.vb_rdata, ARRITEM(xmode, comb.iM, xmode->xcounteren));
+        SETVAL(comb.vb_rdata, ARRITEM(xmode, comb.iM, xmode.xcounteren));
         IF (NZ(comb.v_csr_wena));
-            SETARRITEM(xmode, comb.iM, xmode->xcounteren, BITS(cmd_data, 15, 0));
+            SETARRITEM(xmode, comb.iM, xmode.xcounteren, BITS(cmd_data, 15, 0));
         ENDIF();
     // Machine Trap Handling
     ELSIF (EQ(cmd_addr, CONST("0x340", 12)), "mscratch: [MRW] Machine scratch register");
-        SETVAL(comb.vb_rdata, ARRITEM(xmode, comb.iM, xmode->xscratch));
+        SETVAL(comb.vb_rdata, ARRITEM(xmode, comb.iM, xmode.xscratch));
         IF (comb.v_csr_wena);
-            SETARRITEM(xmode, comb.iM, xmode->xscratch, cmd_data);
+            SETARRITEM(xmode, comb.iM, xmode.xscratch, cmd_data);
         ENDIF();
     ELSIF (EQ(cmd_addr, CONST("0x341", 12)), "mepc: [MRW] Machine program counter");
-        SETVAL(comb.vb_rdata, ARRITEM(xmode, comb.iM, xmode->xepc));
+        SETVAL(comb.vb_rdata, ARRITEM(xmode, comb.iM, xmode.xepc));
         IF (comb.v_csr_wena);
-            SETARRITEM(xmode, comb.iM, xmode->xepc, cmd_data);
+            SETARRITEM(xmode, comb.iM, xmode.xepc, cmd_data);
         ENDIF();
     ELSIF (EQ(cmd_addr, CONST("0x342", 12)), "mcause: [MRW] Machine trap cause");
-        SETBIT(comb.vb_rdata, 63, ARRITEM(xmode, comb.iM, xmode->xcause_irq));
-        SETBITS(comb.vb_rdata, 4, 0, ARRITEM(xmode, comb.iM, xmode->xcause_code));
+        SETBIT(comb.vb_rdata, 63, ARRITEM(xmode, comb.iM, xmode.xcause_irq));
+        SETBITS(comb.vb_rdata, 4, 0, ARRITEM(xmode, comb.iM, xmode.xcause_code));
     ELSIF (EQ(cmd_addr, CONST("0x343", 12)), "mtval: [MRW] Machine bad address or instruction");
-        SETVAL(comb.vb_rdata, ARRITEM(xmode, comb.iM, xmode->xtval));
+        SETVAL(comb.vb_rdata, ARRITEM(xmode, comb.iM, xmode.xtval));
         IF (comb.v_csr_wena);
-            SETARRITEM(xmode, comb.iM, xmode->xtval, cmd_data);
+            SETARRITEM(xmode, comb.iM, xmode.xtval, cmd_data);
         ENDIF();
     ELSIF (EQ(cmd_addr, CONST("0x344", 12)), "mip: [MRW] Machine interrupt pending");
         SETBITS(comb.vb_rdata, DEC(cfg->IRQ_TOTAL), CONST("0"), irq_pending);
@@ -731,11 +731,11 @@ TEXT();
         ELSIF(LS(comb.t_pmpcfgidx, cfg->CFG_PMP_TBL_SIZE));
             i = &FOR("i", CONST("0"), CONST("8"), "++");
                 SETBITSW(comb.vb_rdata, MUL2(CONST("8"), *i), CONST("8"),
-                        ARRITEM(pmp, ADD2(comb.t_pmpcfgidx, *i), pmp->cfg));
+                        ARRITEM(pmp, ADD2(comb.t_pmpcfgidx, *i), pmp.cfg));
                 IF (ANDx(2, &NZ(comb.v_csr_wena),
-                            &EZ(BIT(ARRITEM_B(pmp, ADD2(comb.t_pmpcfgidx, *i), pmp->cfg), 7))));
+                            &EZ(BIT(ARRITEM_B(pmp, ADD2(comb.t_pmpcfgidx, *i), pmp.cfg), 7))));
                     TEXT("[7] Bit L = locked cannot be modified upto reset");
-                    SETARRITEM(pmp, ADD2(comb.t_pmpcfgidx, *i), pmp->cfg,
+                    SETARRITEM(pmp, ADD2(comb.t_pmpcfgidx, *i), pmp.cfg,
                                 BITSW(cmd_data, MUL2(CONST("8"), *i), CONST("8")));
                     SETBITONE(comb.vb_pmp_upd_ena, ADD2(comb.t_pmpcfgidx, *i));
                 ENDIF();
@@ -753,12 +753,12 @@ TEXT();
         ENDFOR();
         IF (LS(comb.t_pmpdataidx, cfg->CFG_PMP_TBL_SIZE));
             SETBITS(comb.vb_rdata, SUB2(cfg->RISCV_ARCH, CONST("3")), CONST("0"),
-                    ARRITEM(pmp, comb.t_pmpdataidx, pmp->addr));
+                    ARRITEM(pmp, comb.t_pmpdataidx, pmp.addr));
                 IF (ANDx(2, &NZ(comb.v_csr_wena),
-                            &EZ(BIT(ARRITEM_B(pmp, comb.t_pmpdataidx, pmp->cfg), 7))));
-                SETARRITEM(pmp, comb.t_pmpdataidx, pmp->addr,
+                            &EZ(BIT(ARRITEM_B(pmp, comb.t_pmpdataidx, pmp.cfg), 7))));
+                SETARRITEM(pmp, comb.t_pmpdataidx, pmp.addr,
                         CC2(BITS(cmd_data, SUB2(cfg->RISCV_ARCH, CONST("3")), CONST("0")), CONST("0", 2)));
-                SETARRITEM(pmp, comb.t_pmpdataidx, pmp->mask, comb.vb_pmp_napot_mask);
+                SETARRITEM(pmp, comb.t_pmpdataidx, pmp.mask, comb.vb_pmp_napot_mask);
             ENDIF();
         ENDIF();
     ELSIF (LE(cmd_addr, CONST("0x3EF", 12)), "pmpaddr63: [MRW] Physical memory protection address register");
@@ -862,12 +862,12 @@ TEXT();
     IF (NZ(comb.v_csr_trapreturn));
         IF (EQ(mode, cmd_addr));
             SETVAL(mode, comb.vb_xpp);
-            SETARRITEM(xmode, TO_INT(mode), xmode->xpie, CONST("1", 1), "xPIE is set to 1 always, page 21");
-            SETARRITEM(xmode, TO_INT(mode), xmode->xpp, cfg->PRV_U, "Set to least-privildged supported mode (U), page 21");
+            SETARRITEM(xmode, TO_INT(mode), xmode.xpie, CONST("1", 1), "xPIE is set to 1 always, page 21");
+            SETARRITEM(xmode, TO_INT(mode), xmode.xpp, cfg->PRV_U, "Set to least-privildged supported mode (U), page 21");
         ELSE();
             SETONE(cmd_exception, "xret not matched to current mode");
         ENDIF();
-        IF (NE(ARRITEM_B(xmode, TO_INT(mode), xmode->xpp), cfg->PRV_M), "see page 21");
+        IF (NE(ARRITEM_B(xmode, TO_INT(mode), xmode.xpp), cfg->PRV_M), "see page 21");
             SETZERO(mprv);
         ENDIF();
     ENDIF();
@@ -892,23 +892,23 @@ TEXT();
     IF (ANDx(2, &LE(mode, cfg->PRV_S),
                 &OR2(AND2_L(comb.vb_e_emux, medeleg), AND2_L(comb.vb_e_imux, mideleg))));
         TEXT("Trap delegated to Supervisor mode");
-        SETARRITEM(xmode, comb.iS, xmode->xpp, mode);
-        SETARRITEM(xmode, comb.iS, xmode->xpie, ARRITEM(xmode, TO_INT(mode), xmode->xie));
-        SETARRITEM(xmode, comb.iS, xmode->xie, CONST("0", 1));
-        SETARRITEM(xmode, comb.iS, xmode->xepc, i_e_pc, "current latched instruction not executed overwritten by exception/interrupt");
-        SETARRITEM(xmode, comb.iS, xmode->xtval, comb.vb_xtval, "trap value/bad address");
-        SETARRITEM(xmode, comb.iS, xmode->xcause_code, comb.wb_trap_cause);
-        SETARRITEM(xmode, comb.iS, xmode->xcause_irq, INV(OR_REDUCE(comb.vb_e_emux)));
+        SETARRITEM(xmode, comb.iS, xmode.xpp, mode);
+        SETARRITEM(xmode, comb.iS, xmode.xpie, ARRITEM(xmode, TO_INT(mode), xmode.xie));
+        SETARRITEM(xmode, comb.iS, xmode.xie, CONST("0", 1));
+        SETARRITEM(xmode, comb.iS, xmode.xepc, i_e_pc, "current latched instruction not executed overwritten by exception/interrupt");
+        SETARRITEM(xmode, comb.iS, xmode.xtval, comb.vb_xtval, "trap value/bad address");
+        SETARRITEM(xmode, comb.iS, xmode.xcause_code, comb.wb_trap_cause);
+        SETARRITEM(xmode, comb.iS, xmode.xcause_irq, INV(OR_REDUCE(comb.vb_e_emux)));
         SETVAL(mode, cfg->PRV_S);
     ELSIF (OR2(NZ(comb.vb_e_emux), NZ(comb.vb_e_imux)));
         TEXT("By default all exceptions and interrupts handled in M-mode (not delegations)");
-        SETARRITEM(xmode, comb.iM, xmode->xpp, mode);
-        SETARRITEM(xmode, comb.iM, xmode->xpie, ARRITEM(xmode, TO_INT(mode), xmode->xie));
-        SETARRITEM(xmode, comb.iM, xmode->xie, CONST("0", 1));
-        SETARRITEM(xmode, comb.iM, xmode->xepc, i_e_pc, "current latched instruction not executed overwritten by exception/interrupt");
-        SETARRITEM(xmode, comb.iM, xmode->xtval, comb.vb_xtval, "trap value/bad address");
-        SETARRITEM(xmode, comb.iM, xmode->xcause_code, comb.wb_trap_cause);
-        SETARRITEM(xmode, comb.iM, xmode->xcause_irq, INV(OR_REDUCE(comb.vb_e_emux)));
+        SETARRITEM(xmode, comb.iM, xmode.xpp, mode);
+        SETARRITEM(xmode, comb.iM, xmode.xpie, ARRITEM(xmode, TO_INT(mode), xmode.xie));
+        SETARRITEM(xmode, comb.iM, xmode.xie, CONST("0", 1));
+        SETARRITEM(xmode, comb.iM, xmode.xepc, i_e_pc, "current latched instruction not executed overwritten by exception/interrupt");
+        SETARRITEM(xmode, comb.iM, xmode.xtval, comb.vb_xtval, "trap value/bad address");
+        SETARRITEM(xmode, comb.iM, xmode.xcause_code, comb.wb_trap_cause);
+        SETARRITEM(xmode, comb.iM, xmode.xcause_irq, INV(OR_REDUCE(comb.vb_e_emux)));
         SETVAL(mode, cfg->PRV_M);
         SETZERO(mmu_ena);
     ENDIF();
@@ -916,11 +916,11 @@ TEXT();
 TEXT();
     TEXT("Step is not enabled or interrupt enabled during stepping");
     IF (NZ(OR2(INV(dcsr_step), dcsr_stepie)));
-        IF (ARRITEM(xmode, comb.iM, xmode->xie));
+        IF (ARRITEM(xmode, comb.iM, xmode.xie));
             TEXT("ALL not-delegated interrupts");
             SETVAL(comb.vb_irq_ena, INV_L(mideleg));
         ENDIF();
-        IF (ARRITEM(xmode, comb.iS, xmode->xie));
+        IF (ARRITEM(xmode, comb.iS, xmode.xie));
             TEXT("Delegated to S-mode:");
             SETVAL(comb.vb_irq_ena, OR2_L(comb.vb_irq_ena, mideleg));
         ENDIF();
@@ -929,17 +929,17 @@ TEXT();
 TEXT();
     TEXT("The following pending interrupt could be set in mip:");
     SETBIT(comb.vb_pending, cfg->IRQ_MSIP, AND2(BIT(i_irq_pending, cfg->IRQ_MSIP),
-                                                ARRITEM(xmode, comb.iM, xmode->xsie)));
+                                                ARRITEM(xmode, comb.iM, xmode.xsie)));
     SETBIT(comb.vb_pending, cfg->IRQ_MTIP, AND2(BIT(i_irq_pending, cfg->IRQ_MTIP),
-                                                ARRITEM(xmode, comb.iM, xmode->xtie)));
+                                                ARRITEM(xmode, comb.iM, xmode.xtie)));
     SETBIT(comb.vb_pending, cfg->IRQ_MEIP, AND2(BIT(i_irq_pending, cfg->IRQ_MEIP),
-                                                ARRITEM(xmode, comb.iM, xmode->xeie)));
+                                                ARRITEM(xmode, comb.iM, xmode.xeie)));
     SETBIT(comb.vb_pending, cfg->IRQ_SSIP, AND2(OR2(BIT(i_irq_pending, cfg->IRQ_SSIP), mip_ssip),
-                                                ARRITEM(xmode, comb.iS, xmode->xsie)));
+                                                ARRITEM(xmode, comb.iS, xmode.xsie)));
     SETBIT(comb.vb_pending, cfg->IRQ_STIP, AND2(OR2(BIT(i_irq_pending, cfg->IRQ_STIP), mip_stip),
-                                                ARRITEM(xmode, comb.iS, xmode->xtie)));
+                                                ARRITEM(xmode, comb.iS, xmode.xtie)));
     SETBIT(comb.vb_pending, cfg->IRQ_SEIP, AND2(OR2(BIT(i_irq_pending, cfg->IRQ_SEIP), mip_seip),
-                                                ARRITEM(xmode, comb.iS, xmode->xeie)));
+                                                ARRITEM(xmode, comb.iS, xmode.xeie)));
     SETVAL(irq_pending, comb.vb_pending);
 
 TEXT();
@@ -950,38 +950,38 @@ TEXT();
 
         SETVAL(pmp_we, BIT(pmp_upd_ena, TO_INT(pmp_upd_cnt)));
         SETVAL(pmp_region, pmp_upd_cnt);
-        IF (EQ(BITS(ARRITEM_B(pmp, TO_INT(pmp_upd_cnt), pmp->cfg), 4, 3), CONST("0", 2)));
+        IF (EQ(BITS(ARRITEM_B(pmp, TO_INT(pmp_upd_cnt), pmp.cfg), 4, 3), CONST("0", 2)));
             TEXT("OFF: Null region (disabled)");
             SETZERO(pmp_start_addr);
-            SETVAL(pmp_end_addr, ARRITEM_B(pmp, TO_INT(pmp_upd_cnt), pmp->addr));
+            SETVAL(pmp_end_addr, ARRITEM_B(pmp, TO_INT(pmp_upd_cnt), pmp.addr));
             SETZERO(pmp_flags);
-        ELSIF (EQ(BITS(ARRITEM_B(pmp, TO_INT(pmp_upd_cnt), pmp->cfg), 4, 3), CONST("1", 2)));
+        ELSIF (EQ(BITS(ARRITEM_B(pmp, TO_INT(pmp_upd_cnt), pmp.cfg), 4, 3), CONST("1", 2)));
             TEXT("TOR: Top of range");
             IF (NZ(BIT(pmp_end_addr, 0)));
                 SETVAL(pmp_start_addr, INC(pmp_end_addr));
             ELSE();
                 SETVAL(pmp_start_addr, pmp_end_addr);
             ENDIF();
-            SETVAL(pmp_end_addr, DEC(ARRITEM_B(pmp, TO_INT(pmp_upd_cnt), pmp->addr)));
+            SETVAL(pmp_end_addr, DEC(ARRITEM_B(pmp, TO_INT(pmp_upd_cnt), pmp.addr)));
             SETVAL(pmp_flags, CC3(CONST("0x1", 1),
-                                  BIT(ARRITEM_B(pmp, TO_INT(pmp_upd_cnt), pmp->cfg), 7),
-                                  BITS(ARRITEM_B(pmp, TO_INT(pmp_upd_cnt), pmp->cfg), 2, 0)));
-        ELSIF (EQ(BITS(ARRITEM_B(pmp, TO_INT(pmp_upd_cnt), pmp->cfg), 4, 3), CONST("2", 2)));
+                                  BIT(ARRITEM_B(pmp, TO_INT(pmp_upd_cnt), pmp.cfg), 7),
+                                  BITS(ARRITEM_B(pmp, TO_INT(pmp_upd_cnt), pmp.cfg), 2, 0)));
+        ELSIF (EQ(BITS(ARRITEM_B(pmp, TO_INT(pmp_upd_cnt), pmp.cfg), 4, 3), CONST("2", 2)));
             TEXT("NA4: Naturally aligned four-bytes region");
-            SETVAL(pmp_start_addr, ARRITEM_B(pmp, TO_INT(pmp_upd_cnt), pmp->addr));
-            SETVAL(pmp_end_addr, OR2_L(ARRITEM_B(pmp, TO_INT(pmp_upd_cnt), pmp->addr), CONST("0x3", 2)));
+            SETVAL(pmp_start_addr, ARRITEM_B(pmp, TO_INT(pmp_upd_cnt), pmp.addr));
+            SETVAL(pmp_end_addr, OR2_L(ARRITEM_B(pmp, TO_INT(pmp_upd_cnt), pmp.addr), CONST("0x3", 2)));
             SETVAL(pmp_flags, CC3(CONST("0x1", 1),
-                                  BIT(ARRITEM_B(pmp, TO_INT(pmp_upd_cnt), pmp->cfg), 7),
-                                  BITS(ARRITEM_B(pmp, TO_INT(pmp_upd_cnt), pmp->cfg), 2, 0)));
+                                  BIT(ARRITEM_B(pmp, TO_INT(pmp_upd_cnt), pmp.cfg), 7),
+                                  BITS(ARRITEM_B(pmp, TO_INT(pmp_upd_cnt), pmp.cfg), 2, 0)));
         ELSE();
             TEXT("NAPOT: Naturally aligned power-of-two region, >=8 bytes");
-            SETVAL(pmp_start_addr, AND2_L(ARRITEM_B(pmp, TO_INT(pmp_upd_cnt), pmp->addr),
-                                          ARRITEM_B(pmp, TO_INT(pmp_upd_cnt), INV_L(pmp->mask))));
-            SETVAL(pmp_end_addr, OR2_L(ARRITEM_B(pmp, TO_INT(pmp_upd_cnt), pmp->addr),
-                                       ARRITEM_B(pmp, TO_INT(pmp_upd_cnt), pmp->mask)));
+            SETVAL(pmp_start_addr, AND2_L(ARRITEM_B(pmp, TO_INT(pmp_upd_cnt), pmp.addr),
+                                          ARRITEM_B(pmp, TO_INT(pmp_upd_cnt), INV_L(pmp.mask))));
+            SETVAL(pmp_end_addr, OR2_L(ARRITEM_B(pmp, TO_INT(pmp_upd_cnt), pmp.addr),
+                                       ARRITEM_B(pmp, TO_INT(pmp_upd_cnt), pmp.mask)));
             SETVAL(pmp_flags, CC3(CONST("0x1", 1),
-                                  BIT(ARRITEM_B(pmp, TO_INT(pmp_upd_cnt), pmp->cfg), 7),
-                                  BITS(ARRITEM_B(pmp, TO_INT(pmp_upd_cnt), pmp->cfg), 2, 0)));
+                                  BIT(ARRITEM_B(pmp, TO_INT(pmp_upd_cnt), pmp.cfg), 7),
+                                  BITS(ARRITEM_B(pmp, TO_INT(pmp_upd_cnt), pmp.cfg), 2, 0)));
         ENDIF();
     ELSE();
         SETZERO(pmp_upd_cnt);

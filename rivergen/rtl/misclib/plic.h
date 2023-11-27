@@ -31,8 +31,8 @@ class plic : public ModuleObject {
      class plic_context_type : public StructObject {
      public:
         // Structure definition
-        plic_context_type(GenObject *parent, const char *name="", int idx=-1, const char *comment="")
-            : StructObject(parent, "plic_context_type", name, idx, comment),
+        plic_context_type(GenObject *parent, const char *name, const char *comment="")
+            : StructObject(parent, "plic_context_type", name, comment),
             priority_th(this, "priority_th", "4", "0"),
             ie(this, "ie", "1024", "0", "interrupt enable per context"),
             ip_prio(this, "ip_prio", "MUL(4,1024)", "0", "interrupt pending priority per context"),
@@ -55,9 +55,9 @@ class plic : public ModuleObject {
         CombProcess(GenObject *parent) :
             ProcObject(parent, "comb"),
             vrdata(this, "vrdata", "CFG_SYSBUS_DATA_BITS"),
-            vb_irq_idx(this, "vb_irq_idx", "10", "ctxmax", false, "Currently selected most prio irq"),
-            vb_irq_prio(this, "vb_irq_prio", "10", "ctxmax", false, "Currently selected prio level"),
-            vb_ctx(this, "", "vb_ctx", "ctxmax"),
+            vb_irq_idx(this, "vb_irq_idx", "10", "ctxmax", "Currently selected most prio irq"),
+            vb_irq_prio(this, "vb_irq_prio", "10", "ctxmax", "Currently selected prio level"),
+            vb_ctx(this, "vb_ctx", "ctxmax"),
             vb_src_priority(this, "vb_src_priority", "MUL(4,1024)"),
             vb_pending(this, "vb_pending", "1024"),
             vb_ip(this, "vb_ip", "ctxmax"),
@@ -95,8 +95,7 @@ class plic : public ModuleObject {
     class PlicContextTableType : public TStructArray<plic_context_type> {
      public:
         PlicContextTableType(GenObject *parent, const char *name)
-            : TStructArray<plic_context_type>(parent, "", name, "ctxmax") {
-            setReg();
+            : TStructArray<plic_context_type>(parent, name, "ctxmax", true) {
         }
     };
 

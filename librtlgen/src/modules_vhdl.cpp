@@ -151,11 +151,10 @@ std::string ModuleObject::generate_vhdl_pkg_struct() {
 
     // struct definitions
     for (auto &p: entries_) {
-        if (p->getId() != ID_STRUCT_DEF) {
-            continue;
+        if (p->isStruct() && p->isTypedef()) {
+            ret += p->generate();
+            tcnt++;
         }
-        ret += p->generate();
-        tcnt++;
     }
     if (tcnt) {
         ret += "\n";

@@ -31,7 +31,7 @@ PMP::PMP(GenObject *parent, const char *name) :
     o_r(this, "o_r", "1"),
     o_w(this, "o_w", "1"),
     o_x(this, "o_x", "1"),
-    MpuTableItemTypeDef_(this, "", -1),
+    PmpTableItemTypeDef_(this, "PmpTableItemType"),
     // registers
     tbl(this, "tbl"),
     // process
@@ -62,30 +62,30 @@ TEXT();
 
 TEXT();
     i = &FOR ("i", DEC(cfg->CFG_PMP_TBL_SIZE), CONST("0"), "--");
-        IF (ANDx(2, &GE(i_iaddr, BITS(ARRITEM_B(tbl, *i, tbl->start_addr), DEC(cfg->CFG_CPU_ADDR_BITS), CONST("0"))),
-                    &LE(i_iaddr, BITS(ARRITEM_B(tbl, *i, tbl->end_addr), DEC(cfg->CFG_CPU_ADDR_BITS), CONST("0")))));
-            IF (ANDx(2, &NZ(BIT(ARRITEM_B(tbl, *i, tbl->flags), cfg->CFG_PMP_FL_V)),
-                        &OR2(i_ena, BIT(ARRITEM_B(tbl, *i, tbl->flags), cfg->CFG_PMP_FL_L))));
-                SETVAL(comb.v_x, BIT(ARRITEM_B(tbl, *i, tbl->flags), cfg->CFG_PMP_FL_X));
+        IF (ANDx(2, &GE(i_iaddr, BITS(ARRITEM_B(tbl, *i, tbl.start_addr), DEC(cfg->CFG_CPU_ADDR_BITS), CONST("0"))),
+                    &LE(i_iaddr, BITS(ARRITEM_B(tbl, *i, tbl.end_addr), DEC(cfg->CFG_CPU_ADDR_BITS), CONST("0")))));
+            IF (ANDx(2, &NZ(BIT(ARRITEM_B(tbl, *i, tbl.flags), cfg->CFG_PMP_FL_V)),
+                        &OR2(i_ena, BIT(ARRITEM_B(tbl, *i, tbl.flags), cfg->CFG_PMP_FL_L))));
+                SETVAL(comb.v_x, BIT(ARRITEM_B(tbl, *i, tbl.flags), cfg->CFG_PMP_FL_X));
             ENDIF();
         ENDIF();
 
         TEXT();
-        IF (ANDx(2, &GE(i_daddr, BITS(ARRITEM_B(tbl, *i, tbl->start_addr), DEC(cfg->CFG_CPU_ADDR_BITS), CONST("0"))),
-                    &LE(i_daddr, BITS(ARRITEM_B(tbl, *i, tbl->end_addr), DEC(cfg->CFG_CPU_ADDR_BITS), CONST("0")))));
-            IF (ANDx(2, &NZ(BIT(ARRITEM_B(tbl, *i, tbl->flags), cfg->CFG_PMP_FL_V)),
-                        &OR2(i_ena, BIT(ARRITEM_B(tbl, *i, tbl->flags), cfg->CFG_PMP_FL_L))));
-                SETVAL(comb.v_r, BIT(ARRITEM_B(tbl, *i, tbl->flags), cfg->CFG_PMP_FL_R));
-                SETVAL(comb.v_w, BIT(ARRITEM_B(tbl, *i, tbl->flags), cfg->CFG_PMP_FL_W));
+        IF (ANDx(2, &GE(i_daddr, BITS(ARRITEM_B(tbl, *i, tbl.start_addr), DEC(cfg->CFG_CPU_ADDR_BITS), CONST("0"))),
+                    &LE(i_daddr, BITS(ARRITEM_B(tbl, *i, tbl.end_addr), DEC(cfg->CFG_CPU_ADDR_BITS), CONST("0")))));
+            IF (ANDx(2, &NZ(BIT(ARRITEM_B(tbl, *i, tbl.flags), cfg->CFG_PMP_FL_V)),
+                        &OR2(i_ena, BIT(ARRITEM_B(tbl, *i, tbl.flags), cfg->CFG_PMP_FL_L))));
+                SETVAL(comb.v_r, BIT(ARRITEM_B(tbl, *i, tbl.flags), cfg->CFG_PMP_FL_R));
+                SETVAL(comb.v_w, BIT(ARRITEM_B(tbl, *i, tbl.flags), cfg->CFG_PMP_FL_W));
             ENDIF();
         ENDIF();
     ENDFOR();
 
 TEXT();
     IF (NZ(i_we));
-        SETARRITEM(tbl, TO_INT(i_region), tbl->start_addr, comb.vb_start_addr);
-        SETARRITEM(tbl, TO_INT(i_region), tbl->end_addr, comb.vb_end_addr);
-        SETARRITEM(tbl, TO_INT(i_region), tbl->flags, comb.vb_flags);
+        SETARRITEM(tbl, TO_INT(i_region), tbl.start_addr, comb.vb_start_addr);
+        SETARRITEM(tbl, TO_INT(i_region), tbl.end_addr, comb.vb_end_addr);
+        SETARRITEM(tbl, TO_INT(i_region), tbl.flags, comb.vb_flags);
     ENDIF();
 
 TEXT();

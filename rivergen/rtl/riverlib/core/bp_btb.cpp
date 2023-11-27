@@ -29,7 +29,7 @@ BpBTB::BpBTB(GenObject *parent, const char *name) :
     o_bp_npc(this, "o_bp_npc", "MUL(CFG_BP_DEPTH,RISCV_ARCH)", "Predicted sequence"),
     o_bp_exec(this, "o_bp_exec", "CFG_BP_DEPTH", "Predicted value was jump-executed before"),
     // struct declaration
-    BtbEntryTypeDef_(this, "", -1),
+    BtbEntryTypeDef_(this, "BtbEntryType"),
     // Signals
     btb(this, "btb"),
     dbg_npc(this, "dbg_npc", "RISCV_ARCH", "CFG_BP_DEPTH"),
@@ -50,11 +50,11 @@ TEXT();
         SETVAL(comb.t_addr, BITSW(comb.vb_addr, MUL2(DEC(*i), cfg->RISCV_ARCH),
                                                 cfg->RISCV_ARCH));
         GenObject &n = FOR("n", DEC(cfg->CFG_BTB_SIZE), CONST("0"), "--");
-            IF (EQ(comb.t_addr, ARRITEM(btb, n, btb->pc)));
+            IF (EQ(comb.t_addr, ARRITEM(btb, n, btb.pc)));
                 SETBITSW(comb.vb_addr, MUL2(*i, cfg->RISCV_ARCH),
-                                       cfg->RISCV_ARCH, ARRITEM(btb, n, btb->npc));
+                                       cfg->RISCV_ARCH, ARRITEM(btb, n, btb.npc));
                 SETBIT(comb.vb_hit, *i, CONST("1", 1));
-                SETBIT(comb.vb_bp_exec, *i, ARRITEM(btb, n, btb->exec),  "Used for: Do not override by pre-decoded jumps");
+                SETBIT(comb.vb_bp_exec, *i, ARRITEM(btb, n, btb.exec),  "Used for: Do not override by pre-decoded jumps");
             ELSIF(EZ(BIT(comb.vb_hit, *i)));
                 SETBITSW(comb.vb_addr, MUL2(*i, cfg->RISCV_ARCH),
                                        cfg->RISCV_ARCH, ADD2(comb.t_addr, CONST("4")));
@@ -66,9 +66,9 @@ TEXT();
     SETVAL(comb.v_dont_update, ALLZEROS());
     SETVAL(comb.vb_pc_equal, ALLZEROS());
     i = &FOR("i", CONST("0"), cfg->CFG_BTB_SIZE, "++");
-        IF (EQ(ARRITEM(btb, *i, btb->pc), i_we_pc));
+        IF (EQ(ARRITEM(btb, *i, btb.pc), i_we_pc));
             SETBIT(comb.vb_pc_equal, *i, CONST("1"));
-            SETVAL(comb.v_dont_update, AND2(ARRITEM(btb, *i, btb->exec), INV(i_e)));
+            SETVAL(comb.v_dont_update, AND2(ARRITEM(btb, *i, btb.exec), INV(i_e)));
         ENDIF();
     ENDFOR();
     SETVAL(comb.vb_pc_nshift, ALLZEROS());
@@ -79,9 +79,9 @@ TEXT();
 
 TEXT();
     IF (NZ(AND2(i_we, INV(comb.v_dont_update))));
-        SETARRITEM(btb, CONST("0"), btb->exec, i_e);
-        SETARRITEM(btb, CONST("0"), btb->pc, i_we_pc);
-        SETARRITEM(btb, CONST("0"), btb->npc, i_we_npc);
+        SETARRITEM(btb, CONST("0"), btb.exec, i_e);
+        SETARRITEM(btb, CONST("0"), btb.pc, i_we_pc);
+        SETARRITEM(btb, CONST("0"), btb.npc, i_we_npc);
         i = &FOR ("i", CONST("1"), cfg->CFG_BTB_SIZE, "++");
             IF (EZ(BIT(comb.vb_pc_nshift, *i)));
                 SETARRITEM(btb, *i, btb, ARRITEM(btb, DEC(*i), btb));

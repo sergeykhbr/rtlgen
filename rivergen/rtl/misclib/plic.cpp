@@ -30,7 +30,7 @@ plic::plic(GenObject *parent, const char *name) :
     o_ip(this, "o_ip", "ctxmax"),
     // params
     // struct declaration
-    plic_context_type_def_(this, "", -1),
+    plic_context_type_def_(this, "plic_context_type"),
     // signals
     w_req_valid(this, "w_req_valid", "1"),
     wb_req_addr(this, "wb_req_addr", "CFG_SYSBUS_ADDR_BITS"),
@@ -91,10 +91,10 @@ void plic::proc_comb() {
     SETVAL(comb.vb_src_priority, src_priority);
     SETVAL(comb.vb_pending, pending);
     i = &FOR ("i", CONST("0"), ctxmax, "++");
-        SETARRITEM(comb.vb_ctx, *i, comb.vb_ctx->priority_th, ARRITEM(ctx, *i, ctx->priority_th));
-        SETARRITEM(comb.vb_ctx, *i, comb.vb_ctx->ie, ARRITEM(ctx, *i, ctx->ie));
-        SETARRITEM(comb.vb_ctx, *i, comb.vb_ctx->irq_idx, ARRITEM(ctx, *i, ctx->irq_idx));
-        SETARRITEM(comb.vb_ctx, *i, comb.vb_ctx->irq_prio, ARRITEM(ctx, *i, ctx->irq_prio));
+        SETARRITEM(comb.vb_ctx, *i, comb.vb_ctx.priority_th, ARRITEM(ctx, *i, ctx.priority_th));
+        SETARRITEM(comb.vb_ctx, *i, comb.vb_ctx.ie, ARRITEM(ctx, *i, ctx.ie));
+        SETARRITEM(comb.vb_ctx, *i, comb.vb_ctx.irq_idx, ARRITEM(ctx, *i, ctx.irq_idx));
+        SETARRITEM(comb.vb_ctx, *i, comb.vb_ctx.irq_prio, ARRITEM(ctx, *i, ctx.irq_prio));
     ENDFOR();
 
 TEXT();
@@ -109,12 +109,12 @@ TEXT();
     n = &FOR ("n", CONST("0"), ctxmax, "++");
         i = &FOR ("i", CONST("0"), irqmax, "++");
             IF (ANDx(3, &NZ(BIT(pending, *i)),
-                        &NZ(BIT(ARRITEM(ctx, *n, ctx->ie), *i)),
+                        &NZ(BIT(ARRITEM(ctx, *n, ctx.ie), *i)),
                         &GT(TO_INT(BITSW(src_priority, MUL2(CONST("4"), *i), CONST("4"))),
-                            ARRITEM(ctx, *n, ctx->priority_th))));
-                SETARRITEMBITSW(comb.vb_ctx, *n, comb.vb_ctx->ip_prio, MUL2(CONST("4"), *i), CONST("4"),
+                            ARRITEM(ctx, *n, ctx.priority_th))));
+                SETARRITEMBITSW(comb.vb_ctx, *n, comb.vb_ctx.ip_prio, MUL2(CONST("4"), *i), CONST("4"),
                                 BITSW(src_priority, MUL2(CONST("4"), *i), CONST("4")));
-                SETARRITEMBIT(comb.vb_ctx, *n, comb.vb_ctx->prio_mask, TO_INT(BITSW(src_priority, MUL2(CONST("4"), *i), CONST("4"))),
+                SETARRITEMBIT(comb.vb_ctx, *n, comb.vb_ctx.prio_mask, TO_INT(BITSW(src_priority, MUL2(CONST("4"), *i), CONST("4"))),
                                 CONST("1", 1));
             ENDIF();
         ENDFOR();
@@ -124,8 +124,8 @@ TEXT();
     TEXT("Select max priority in each context");
     n = &FOR ("n", CONST("0"), ctxmax, "++");
         i = &FOR ("i", CONST("0"), CONST("16"), "++");
-            IF (NZ(BIT(ARRITEM(ctx, *n, ctx->prio_mask), *i)));
-                SETARRITEM(comb.vb_ctx, *n, comb.vb_ctx->sel_prio, *i);
+            IF (NZ(BIT(ARRITEM(ctx, *n, ctx.prio_mask), *i)));
+                SETARRITEM(comb.vb_ctx, *n, comb.vb_ctx.sel_prio, *i);
             ENDIF();
         ENDFOR();
     ENDFOR();
@@ -134,20 +134,20 @@ TEXT();
     TEXT("Select max priority in each context");
     n = &FOR ("n", CONST("0"), ctxmax, "++");
         i = &FOR ("i", CONST("0"), irqmax, "++");
-            IF (ANDx(2, &OR_REDUCE(ARRITEM(ctx, *n, ctx->sel_prio)),
-                        &EQ(BITSW(ARRITEM(ctx, *n, ctx->ip_prio), MUL2(CONST("4"), *i), CONST("4")),
-                            ARRITEM(ctx, *n, ctx->sel_prio))));
+            IF (ANDx(2, &OR_REDUCE(ARRITEM(ctx, *n, ctx.sel_prio)),
+                        &EQ(BITSW(ARRITEM(ctx, *n, ctx.ip_prio), MUL2(CONST("4"), *i), CONST("4")),
+                            ARRITEM(ctx, *n, ctx.sel_prio))));
                 TEXT("Most prio irq and prio level");
                 SETARRITEM(comb.vb_irq_idx, *n, comb.vb_irq_idx, *i);
-                SETARRITEM(comb.vb_irq_prio, *n, comb.vb_irq_prio, ARRITEM(ctx, *n, ctx->sel_prio));
+                SETARRITEM(comb.vb_irq_prio, *n, comb.vb_irq_prio, ARRITEM(ctx, *n, ctx.sel_prio));
             ENDIF();
         ENDFOR();
     ENDFOR();
 
 TEXT();
     n = &FOR ("n", CONST("0"), ctxmax, "++");
-        SETARRITEM(comb.vb_ctx, *n, comb.vb_ctx->irq_idx, ARRITEM(comb.vb_irq_idx, *n, comb.vb_irq_idx));
-        SETARRITEM(comb.vb_ctx, *n, comb.vb_ctx->irq_prio, ARRITEM(comb.vb_irq_prio, *n, comb.vb_irq_prio));
+        SETARRITEM(comb.vb_ctx, *n, comb.vb_ctx.irq_idx, ARRITEM(comb.vb_irq_idx, *n, comb.vb_irq_idx));
+        SETARRITEM(comb.vb_ctx, *n, comb.vb_ctx.irq_prio, ARRITEM(comb.vb_irq_prio, *n, comb.vb_irq_prio));
         SETBIT(comb.vb_ip, *n, OR_REDUCE(ARRITEM(comb.vb_irq_idx, *n, comb.vb_irq_idx)));
     ENDFOR();
 
@@ -195,16 +195,16 @@ TEXT();
                    &LS(BITS(wb_req_addr, 11, 7), ctxmax)));
         TEXT("First 32 context of 15867 support only");
         TEXT("0x002000,0x002080,...,0x200000");
-        SETVAL(comb.vrdata, TO_U64(BITSW(ARRITEM(ctx, BITS(wb_req_addr, 11, 7), ctx->ie),
+        SETVAL(comb.vrdata, TO_U64(BITSW(ARRITEM(ctx, BITS(wb_req_addr, 11, 7), ctx.ie),
                                          MUL2(CONST("64"), BITS(wb_req_addr, 6, 3)),
                                          CONST("64"))));
         IF (AND2(NZ(w_req_valid), NZ(w_req_write)));
             IF (NZ(OR_REDUCE(BITS(wb_req_wstrb, 3, 0))));
-                SETARRITEMBITSW(comb.vb_ctx, BITS(wb_req_addr, 11, 7), comb.vb_ctx->ie,
+                SETARRITEMBITSW(comb.vb_ctx, BITS(wb_req_addr, 11, 7), comb.vb_ctx.ie,
                                MUL2(CONST("64"), BITS(wb_req_addr, 6, 3)), CONST("32"), BITS(wb_req_wdata, 31, 0));
             ENDIF();
             IF (NZ(OR_REDUCE(BITS(wb_req_wstrb, 7, 4))));
-                SETARRITEMBITSW(comb.vb_ctx, BITS(wb_req_addr, 11, 7), comb.vb_ctx->ie,
+                SETARRITEMBITSW(comb.vb_ctx, BITS(wb_req_addr, 11, 7), comb.vb_ctx.ie,
                                ADD2(MUL2(CONST("64"), BITS(wb_req_addr, 6, 3)), CONST("32")), CONST("32"), BITS(wb_req_wdata, 63, 32));
             ENDIF();
         ENDIF();
@@ -212,20 +212,20 @@ TEXT();
         TEXT("0x200000,0x201000,...,0x4000000");
         IF (EQ(BITS(wb_req_addr, 11, 3), CONST("0", 9)));
             TEXT("masking (disabling) all interrupt with <= priority");
-            SETBITS(comb.vrdata, 3, 0, ARRITEM(ctx, comb.rctx_idx, ctx->priority_th));
-            SETBITS(comb.vrdata, 41, 32, ARRITEM(ctx, comb.rctx_idx, ctx->irq_idx));
+            SETBITS(comb.vrdata, 3, 0, ARRITEM(ctx, comb.rctx_idx, ctx.priority_th));
+            SETBITS(comb.vrdata, 41, 32, ARRITEM(ctx, comb.rctx_idx, ctx.irq_idx));
             TEXT("claim/ complete. Reading clears pending bit");
             IF (NZ(BIT(ip, comb.rctx_idx)));
-                SETBIT(comb.vb_pending, ARRITEM(ctx, comb.rctx_idx, ctx->irq_idx), CONST("0", 1));
+                SETBIT(comb.vb_pending, ARRITEM(ctx, comb.rctx_idx, ctx.irq_idx), CONST("0", 1));
             ENDIF();
 
             IF (AND2(NZ(w_req_valid), NZ(w_req_write)));
                 IF (NZ(OR_REDUCE(BITS(wb_req_wstrb, 3, 0))));
-                    SETARRITEM(comb.vb_ctx, comb.rctx_idx, comb.vb_ctx->priority_th, BITS(wb_req_wdata, 3, 0));
+                    SETARRITEM(comb.vb_ctx, comb.rctx_idx, comb.vb_ctx.priority_th, BITS(wb_req_wdata, 3, 0));
                 ENDIF();
                 IF (NZ(OR_REDUCE(BITS(wb_req_wstrb, 7,4))));
                      TEXT("claim/ complete. Reading clears pedning bit");
-                    SETARRITEM(comb.vb_ctx, comb.rctx_idx, comb.vb_ctx->irq_idx, ALLZEROS());
+                    SETARRITEM(comb.vb_ctx, comb.rctx_idx, comb.vb_ctx.irq_idx, ALLZEROS());
                 ENDIF();
             ENDIF();
         ELSE();
@@ -239,13 +239,13 @@ TEXT();
     SETVAL(pending, comb.vb_pending);
     SETVAL(ip, comb.vb_ip);
     n = &FOR ("n", CONST("0"), ctxmax, "++");
-        SETARRITEM(ctx, *n, ctx->priority_th, ARRITEM(comb.vb_ctx, *n, comb.vb_ctx->priority_th));
-        SETARRITEM(ctx, *n, ctx->ie, ARRITEM(comb.vb_ctx, *n, comb.vb_ctx->ie));
-        SETARRITEM(ctx, *n, ctx->ip_prio, ARRITEM(comb.vb_ctx, *n, comb.vb_ctx->ip_prio));
-        SETARRITEM(ctx, *n, ctx->prio_mask, ARRITEM(comb.vb_ctx, *n, comb.vb_ctx->prio_mask));
-        SETARRITEM(ctx, *n, ctx->sel_prio, ARRITEM(comb.vb_ctx, *n, comb.vb_ctx->sel_prio));
-        SETARRITEM(ctx, *n, ctx->irq_idx, ARRITEM(comb.vb_ctx, *n, comb.vb_ctx->irq_idx));
-        SETARRITEM(ctx, *n, ctx->irq_prio, ARRITEM(comb.vb_ctx, *n, comb.vb_ctx->irq_prio));
+        SETARRITEM(ctx, *n, ctx.priority_th, ARRITEM(comb.vb_ctx, *n, comb.vb_ctx.priority_th));
+        SETARRITEM(ctx, *n, ctx.ie, ARRITEM(comb.vb_ctx, *n, comb.vb_ctx.ie));
+        SETARRITEM(ctx, *n, ctx.ip_prio, ARRITEM(comb.vb_ctx, *n, comb.vb_ctx.ip_prio));
+        SETARRITEM(ctx, *n, ctx.prio_mask, ARRITEM(comb.vb_ctx, *n, comb.vb_ctx.prio_mask));
+        SETARRITEM(ctx, *n, ctx.sel_prio, ARRITEM(comb.vb_ctx, *n, comb.vb_ctx.sel_prio));
+        SETARRITEM(ctx, *n, ctx.irq_idx, ARRITEM(comb.vb_ctx, *n, comb.vb_ctx.irq_idx));
+        SETARRITEM(ctx, *n, ctx.irq_prio, ARRITEM(comb.vb_ctx, *n, comb.vb_ctx.irq_prio));
     ENDFOR();
 
 TEXT();

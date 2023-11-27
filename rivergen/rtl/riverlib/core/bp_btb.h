@@ -68,8 +68,8 @@ class BpBTB : public ModuleObject {
     class BtbEntryType : public StructObject {
      public:
         // Structure definition
-        BtbEntryType(GenObject *parent, const char *name="", int idx=-1, const char *comment="")
-            : StructObject(parent, "BtbEntryType", name, idx, comment),
+        BtbEntryType(GenObject *parent, const char *name, const char *comment="")
+            : StructObject(parent, "BtbEntryType", name, comment),
             pc(this, "pc", "RISCV_ARCH", "'1"),
             npc(this, "npc", "RISCV_ARCH"),
             exec(this, "exec", "1", "0", "0=predec; 1=exec (high priority)") {}
@@ -82,8 +82,7 @@ class BpBTB : public ModuleObject {
     class BtbTableType : public TStructArray<BtbEntryType> {
      public:
         BtbTableType(GenObject *parent, const char *name)
-            : TStructArray<BtbEntryType>(parent, "", name, "CFG_BTB_SIZE") {
-            setReg();
+            : TStructArray<BtbEntryType>(parent, name, "CFG_BTB_SIZE", true) {
         }
     };
 

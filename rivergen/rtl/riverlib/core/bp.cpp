@@ -35,9 +35,9 @@ BranchPredictor::BranchPredictor(GenObject *parent, const char *name) :
     i_f_fetched_pc(this, "i_f_fetched_pc", "RISCV_ARCH", "already requested and fetched address"),
     i_d_pc(this, "i_d_pc", "RISCV_ARCH", "decoded instructions"),
     // struct declaration
-    PreDecTypeDef_(this, "", -1),
+    PreDecTypeDef_(this, "PreDecType"),
     // Signals
-    wb_pd(this, "", "wb_pd", "2"),
+    wb_pd(this, "wb_pd", "2"),
     w_btb_e(this, "w_btb_e", "1"),
     w_btb_we(this, "w_btb_we", "1"),
     wb_btb_we_pc(this, "wb_btb_we_pc", "RISCV_ARCH"),
@@ -56,13 +56,13 @@ BranchPredictor::BranchPredictor(GenObject *parent, const char *name) :
     // Create and connet Sub-modules:
     GenObject &i = FORGEN ("i", CONST("0"), CONST("2"), "++", new STRING("predecx"));
         NEW(*predec.getItem(0), predec.getName().c_str(), &i);
-            CONNECT(predec, &i, predec.i_c_valid, ARRITEM(wb_pd, i, wb_pd->c_valid));
-            CONNECT(predec, &i, predec.i_addr, ARRITEM(wb_pd, i, wb_pd->addr));
-            CONNECT(predec, &i, predec.i_data, ARRITEM(wb_pd, i, wb_pd->data));
+            CONNECT(predec, &i, predec.i_c_valid, ARRITEM(wb_pd, i, wb_pd.c_valid));
+            CONNECT(predec, &i, predec.i_addr, ARRITEM(wb_pd, i, wb_pd.addr));
+            CONNECT(predec, &i, predec.i_data, ARRITEM(wb_pd, i, wb_pd.data));
             CONNECT(predec, &i, predec.i_ra, i_ra);
-            CONNECT(predec, &i, predec.o_jmp, ARRITEM(wb_pd, i, wb_pd->jmp));
-            CONNECT(predec, &i, predec.o_pc, ARRITEM(wb_pd, i, wb_pd->pc));
-            CONNECT(predec, &i, predec.o_npc, ARRITEM(wb_pd, i, wb_pd->npc));
+            CONNECT(predec, &i, predec.o_jmp, ARRITEM(wb_pd, i, wb_pd.jmp));
+            CONNECT(predec, &i, predec.o_pc, ARRITEM(wb_pd, i, wb_pd.pc));
+            CONNECT(predec, &i, predec.o_npc, ARRITEM(wb_pd, i, wb_pd.npc));
         ENDNEW();
     ENDFORGEN(new STRING("predecx"));
 
@@ -120,23 +120,23 @@ TEXT();
 TEXT();
     TEXT("Pre-decoder input signals (not used for now)");
     i = &FOR ("i", CONST("0"), CONST("2"), "++");
-        SETARRITEM(p->wb_pd, *i, p->wb_pd->c_valid,
+        SETARRITEM(p->wb_pd, *i, p->wb_pd.c_valid,
                    INV(AND_REDUCE(BITSW(p->i_resp_mem_data,
                                        MUL2(CONST("16"),*i),
                                        CONST("2")))));
-        SETARRITEM(p->wb_pd, *i, p->wb_pd->addr,
+        SETARRITEM(p->wb_pd, *i, p->wb_pd.addr,
                     ADD2(p->i_resp_mem_addr, MUL2(CONST("2"), *i)));
-        SETARRITEM(p->wb_pd, *i, p->wb_pd->data,
+        SETARRITEM(p->wb_pd, *i, p->wb_pd.data,
                     BITSW(p->i_resp_mem_data, MUL2(CONST("16"),*i),
                                               CONST("32")));
     ENDFOR();
     SETVAL(vb_ignore_pd, ALLZEROS());
     i = &FOR ("i", CONST("0"), CONST("4"), "++");
-        IF (EQ(BITS(ARRITEM_B(p->wb_pd, CONST("0"), p->wb_pd->npc), DEC(cfg->RISCV_ARCH), CONST("2")),
+        IF (EQ(BITS(ARRITEM_B(p->wb_pd, CONST("0"), p->wb_pd.npc), DEC(cfg->RISCV_ARCH), CONST("2")),
                ARRITEM(vb_piped, *i, vb_piped)));
             SETBIT(vb_ignore_pd, 0, CONST("1", 1));
         ENDIF();
-        IF (EQ(BITS(ARRITEM_B(p->wb_pd, CONST("1"), p->wb_pd->npc), DEC(cfg->RISCV_ARCH), CONST("2")),
+        IF (EQ(BITS(ARRITEM_B(p->wb_pd, CONST("1"), p->wb_pd.npc), DEC(cfg->RISCV_ARCH), CONST("2")),
                ARRITEM(vb_piped, *i, vb_piped)));
             SETBIT(vb_ignore_pd, 1, CONST("1", 1));
         ENDIF();
@@ -144,26 +144,26 @@ TEXT();
 
 TEXT();
     SETVAL(v_btb_we, OR3(p->i_e_jmp,
-                         ARRITEM(p->wb_pd, CONST("0"), p->wb_pd->jmp),
-                         ARRITEM(p->wb_pd, CONST("1"), p->wb_pd->jmp)));
+                         ARRITEM(p->wb_pd, CONST("0"), p->wb_pd.jmp),
+                         ARRITEM(p->wb_pd, CONST("1"), p->wb_pd.jmp)));
     IF (NZ(p->i_e_jmp));
         SETVAL(vb_btb_we_pc, p->i_e_pc);
         SETVAL(vb_btb_we_npc, p->i_e_npc);
-    ELSIF (ARRITEM(p->wb_pd, CONST("0"), p->wb_pd->jmp));
-        SETVAL(vb_btb_we_pc, ARRITEM(p->wb_pd, CONST("0"), p->wb_pd->pc));
-        SETVAL(vb_btb_we_npc, ARRITEM(p->wb_pd, CONST("0"), p->wb_pd->npc));
+    ELSIF (ARRITEM(p->wb_pd, CONST("0"), p->wb_pd.jmp));
+        SETVAL(vb_btb_we_pc, ARRITEM(p->wb_pd, CONST("0"), p->wb_pd.pc));
+        SETVAL(vb_btb_we_npc, ARRITEM(p->wb_pd, CONST("0"), p->wb_pd.npc));
         IF (AND3(EQ(BITS(vb_hit, 2, 0), CONST("0x7", 3)),
                  EZ(BIT(p->wb_bp_exec, 2)),
                  EZ(BIT(vb_ignore_pd, 0))));
-            SETVAL(vb_fetch_npc, ARRITEM(p->wb_pd, CONST("0"), p->wb_pd->npc));
+            SETVAL(vb_fetch_npc, ARRITEM(p->wb_pd, CONST("0"), p->wb_pd.npc));
         ENDIF();
-    ELSIF (ARRITEM(p->wb_pd, CONST("1"), p->wb_pd->jmp));
-        SETVAL(vb_btb_we_pc, ARRITEM(p->wb_pd, CONST("1"), p->wb_pd->pc));
-        SETVAL(vb_btb_we_npc, ARRITEM(p->wb_pd, CONST("1"), p->wb_pd->npc));
+    ELSIF (ARRITEM(p->wb_pd, CONST("1"), p->wb_pd.jmp));
+        SETVAL(vb_btb_we_pc, ARRITEM(p->wb_pd, CONST("1"), p->wb_pd.pc));
+        SETVAL(vb_btb_we_npc, ARRITEM(p->wb_pd, CONST("1"), p->wb_pd.npc));
         IF (AND3(EQ(BITS(vb_hit, 2, 0), CONST("0x7", 3)),
                  EZ(BIT(p->wb_bp_exec, 2)),
                  EZ(BIT(vb_ignore_pd, 1))));
-            SETVAL(vb_fetch_npc, ARRITEM(p->wb_pd, CONST("1"), p->wb_pd->npc));
+            SETVAL(vb_fetch_npc, ARRITEM(p->wb_pd, CONST("1"), p->wb_pd.npc));
         ENDIF();
     ELSE();
         SETVAL(vb_btb_we_pc, p->i_e_pc);

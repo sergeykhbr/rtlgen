@@ -159,6 +159,7 @@ std::string Operation::copyreg_entry(char *idx, std::string dst, std::string src
     std::string ret = "";
     std::string i = std::string(idx);
     if (p->getId() == ID_ARRAY_DEF) {
+        // DELME:
         ret += addspaces();
         ret += "for (int "+i+" = 0; "+i+" < " + p->getStrDepth() + "; "+i+"++) ";
         if (SCV_is_sysc()) {
@@ -200,6 +201,54 @@ std::string Operation::copyreg_entry(char *idx, std::string dst, std::string src
                 ret += copyreg_entry(idx, tdst, tsrc, s);
             }
             idx[0]--;
+        }
+        popspaces();
+        ret += addspaces();
+        if (SCV_is_sysc()) {
+            ret += "}\n";
+        } else {
+            ret += "end\n";
+        }
+    } else if (p->getDepth() > 1) {
+        ret += addspaces();
+        ret += "for (int " + i + " = 0; " + i + " < " + p->getStrDepth() + "; " + i + "++) ";
+        if (SCV_is_sysc()) {
+            ret += "{\n";
+        } else {
+            ret += "begin\n";
+        }
+        pushspaces();
+        std::string tdst = dst;
+        std::string tsrc = src;
+        tdst += "." + p->getName() + "[" + i + "]";
+        if (tsrc.size()) {
+            tsrc += "." + p->getName() + "[" + i + "]";
+        }
+        if (p->isStruct()) {
+            idx[0]++;
+            for (auto &s: p->getEntries()) {
+                ret += copyreg_entry(idx, tdst, tsrc, s);
+            }
+            idx[0]--;
+        } else {
+            ret += addspaces() + tdst;
+            if (SCV_is_sysc()) {
+                ret += " = ";
+            } else {
+                if (dst[0] == 'r' && (dst[1] == '\0' || dst[1] == '.')) {
+                    ret += " <= ";
+                } else {
+                    ret += " = ";
+                }
+            }
+            if (src.size() == 0) {
+                // reset
+                ret += p->getStrValue();
+            } else {
+                // copy value
+                ret += tsrc;
+            }
+            ret += ";\n";
         }
         popspaces();
         ret += addspaces();

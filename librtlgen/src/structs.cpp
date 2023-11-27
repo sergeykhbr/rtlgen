@@ -27,16 +27,8 @@ StructObject::StructObject(GenObject *parent,
                            const char *name,
                            int idx,
                            const char *comment)
-    : GenObject(parent, type,
-                idx != -1 ? ID_STRUCT_INST 
-                          : name[0] ? ID_STRUCT_INST : ID_STRUCT_DEF, name, comment) {
-    idx_ = idx;
+    : GenObject(parent, type, ID_STRUCT, name, comment) {
     zeroval_ = "";
-    if (idx != -1) {
-        char tstr[256];
-        RISCV_sprintf(tstr, sizeof(tstr), "%d", idx);
-        name_ = std::string(tstr);
-    }
 }
 
 /** it is better to remove empty name */
@@ -44,7 +36,7 @@ bool StructObject::isTypedef() {
     return getName() == "" || getName() == getType();
 }
 
-std::string StructObject::getName() {
+/*std::string StructObject::getName() {
     std::string ret = GenObject::getName();
     if (idx_ == -1) {
         return ret;
@@ -61,7 +53,7 @@ std::string StructObject::getName() {
         ret = sel->getName();
     }
     return ret;
-}
+}*/
 
 std::string StructObject::generate_interface_constructor() {
     std::string ret = "";
@@ -577,7 +569,7 @@ std::string StructObject::generate() {
         } else if (SCV_is_vhdl()) {
             ln += p->getName() + " :" +  p->getType();
         }
-        if (p->getDepth()) {
+        if (p->getDepth() > 1) {
             if (SCV_is_sysc()) {
                 ln += "[" + p->getStrDepth() + "]";
             } else if (SCV_is_sv()) {
@@ -587,12 +579,7 @@ std::string StructObject::generate() {
             }
         }
         ln += ";";
-        if (p->getComment().size()) {
-            while (ln.size() < 60) {
-                ln += " ";
-            }
-            ln += p->addComment();
-        }
+        p->addComment(ln);
         ret += ln + "\n";
     }
     popspaces();

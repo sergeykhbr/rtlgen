@@ -64,8 +64,8 @@ class clint : public ModuleObject {
     class clint_cpu_type : public StructObject {
      public:
         // Structure definition
-        clint_cpu_type(GenObject *parent, const char *name="", int idx=-1, const char *comment="")
-            : StructObject(parent, "clint_cpu_type", name, idx, comment),
+        clint_cpu_type(GenObject *parent, const char *name, const char *comment="")
+            : StructObject(parent, "clint_cpu_type", name, comment),
             msip(this, "msip", "1", "0"),
             mtip(this, "mtip", "1", "0"),
             mtimecmp(this, "mtimecmp", "64", "0") {}
@@ -79,8 +79,7 @@ class clint : public ModuleObject {
     class ClintCpuTableType : public TStructArray<clint_cpu_type> {
      public:
         ClintCpuTableType(GenObject *parent, const char *name)
-            : TStructArray<clint_cpu_type>(parent, "", name, "cpu_total") {
-            setReg();
+            : TStructArray<clint_cpu_type>(parent, name, "cpu_total", true) {
         }
     };
 

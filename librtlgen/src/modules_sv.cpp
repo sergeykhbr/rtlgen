@@ -64,29 +64,30 @@ std::string ModuleObject::generate_sv_pkg_reg_struct(bool negedge) {
     std::string ret = "";
     std::string ln = "";
     int tcnt = 0;
-    bool twodim = false;
+    bool generate_struct_rst = true;    // do not generate structure if there's another structure without _none value
+                                        // or array
 
-    ret += "typedef struct {\n";
-    for (auto &p: entries_) {
+    ret += addspaces() + "typedef struct {\n";
+    pushspaces();
+    for (auto &p: getEntries()) {
         if ((!p->isReg() && negedge == false)
             || (!p->isNReg() && negedge == true)) {
             continue;
         }
-        ln = "    " + p->getType() + " " + p->getName();
-        if (p->getDepth()) {
-            twodim = true;
+        ln = addspaces() + p->getType() + " " + p->getName();
+        if (p->getDepth() > 1) {
+            generate_struct_rst = false;
             ln += "[0: " + p->getStrDepth() + " - 1]";
         }
+        //else if (p->isStruct() && p->getStrValue() == "") {  // not tested yet
+        //    generate_struct_rst = false;
+        //}
         ln += ";";
-        if (p->getComment().size()) {
-            while (ln.size() < 60) {
-                ln += " ";
-            }
-            ln += "// " + p->getComment();
-        }
+        p->addComment(ln);
         ret += ln + "\n";
     }
-    ret += "} " + getType();
+    popspaces();
+    ret += addspaces() + "} " + getType();
     if (negedge == false) {
         ret += "_registers;\n";
     } else {
@@ -102,7 +103,9 @@ std::string ModuleObject::generate_sv_pkg_reg_struct(bool negedge) {
             tcnt++;
         }
     }
-    if (!twodim) {
+
+    // Generate reset constant if possible:
+    if (generate_struct_rst) {
         ret += addspaces();
         if (negedge == false) {
             ret += "const " + getType() + "_registers " + getType() + "_r_reset = '{\n";
@@ -139,12 +142,11 @@ std::string ModuleObject::generate_sv_pkg_struct() {
     int tcnt = 0;
 
     // struct definitions
-    for (auto &p: entries_) {
-        if (p->getId() != ID_STRUCT_DEF) {
-            continue;
+    for (auto &p: getEntries()) {
+        if (p->isStruct() && p->isTypedef()) {
+            ret += p->generate();
+            tcnt++;
         }
-        ret += p->generate();
-        tcnt++;
     }
     if (tcnt) {
         ret += "\n";
@@ -326,38 +328,34 @@ std::string ModuleObject::generate_sv_mod_proc_nullify(GenObject *obj,
                                                        std::string prefix,
                                                        std::string i) {
     std::string ret = "";
-    if (obj->getId() == ID_VALUE
-        || (obj->isStruct() && !obj->isTypedef() && obj->getStrValue().size())) {
-        ret += addspaces() + prefix;
-        if (obj->getName() != "0") {
-            if (prefix.size() != 0) {
-                ret += ".";
-            }
-            ret += obj->getName();
-        }
-        ret += " = " + obj->getStrValue() + ";\n";
-    } else if (obj->isStruct() && !obj->isTypedef()) {
-        std::string prefix2 = prefix;
-        if (obj->getName() != "0") {
-            if (prefix.size()) {
-                prefix2 += ".";
-            }
-            prefix2 += obj->getName();
-        }
-        for (auto &e: obj->getEntries()) {
-            ret += generate_sv_mod_proc_nullify(e, prefix2, i);
-        }
-    } else if (obj->getId() == ID_ARRAY_DEF) {
-        GenObject *item = obj->getItem();
+    if (obj->getId() != ID_VALUE
+        && !(obj->isStruct() && !obj->isTypedef())) {
+        return ret;
+    }
+
+    if (prefix.size()) {
+        prefix += ".";
+    }
+    prefix += obj->getName();
+
+    if (obj->getDepth() > 1) {
+        prefix += "[" + i + "]";
         ret += addspaces();
         ret += "for (int " + i + " = 0; " + i + " < " + obj->getStrDepth() + "; " + i + "++) begin\n";
         pushspaces();
+    }
+    if (obj->isStruct() && obj->getStrValue().size() == 0) {
+        // Initialization of struct each field separetly:
+        const char tidx[2] = {i.c_str()[0] + 1, 0};
+        i = std::string(tidx);
+        for (auto &e: obj->getEntries()) {
+            ret += generate_sv_mod_proc_nullify(e, prefix, i);
+        }
+    } else {
+        ret += addspaces() + prefix + " = " + obj->getStrValue() + ";\n";
+    }
 
-        std::string prefix2 = prefix + obj->getName() + "[" + i + "]";
-        const char tidx[2] = {i.c_str()[0], 0};
-        std::string i2 = std::string(tidx);
-        ret += generate_sv_mod_proc_nullify(item, prefix2, i2);
-
+    if (obj->getDepth() > 1) {
         popspaces();
         ret += addspaces() + "end\n";
     }
@@ -406,8 +404,12 @@ std::string ModuleObject::generate_sv_mod_proc(GenObject *proc) {
         if (e->getId() == ID_VALUE
             || e->isStruct()) {    // no structure inside of process, typedef can be removed
             ln += addspaces() + e->getType() + " " + e->getName();
+            if (e->getDepth() > 1) {
+                ln += "[0: " + e->getStrDepth() + "-1]";
+            }
             tcnt++;
         } else if (e->getId() == ID_ARRAY_DEF) {
+            // DELME:
             ln += addspaces() + e->getType() + " " + e->getName();
             ln += "[0: ";
             ln += e->getStrDepth();

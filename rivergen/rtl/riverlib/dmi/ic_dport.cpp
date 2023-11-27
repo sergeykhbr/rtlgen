@@ -86,16 +86,16 @@ TEXT();
 
 TEXT();
     i = &FOR ("i", CONST("0"), cfg->CFG_CPU_MAX, "++");
-        SETARRITEM(comb.vb_dporti, *i, comb.vb_dporti->haltreq, AND2(BIT(comb.vb_haltreq, *i), BIT(comb.vb_cpu_mask, *i)));
-        SETARRITEM(comb.vb_dporti, *i, comb.vb_dporti->resumereq, AND2(BIT(comb.vb_resumereq, *i), BIT(comb.vb_cpu_mask, *i)));
-        SETARRITEM(comb.vb_dporti, *i, comb.vb_dporti->resethaltreq, AND2(BIT(comb.vb_resethaltreq, *i), BIT(comb.vb_cpu_mask, *i)));
-        SETARRITEM(comb.vb_dporti, *i, comb.vb_dporti->hartreset, AND2(BIT(comb.vb_hartreset, *i), BIT(comb.vb_cpu_mask, *i)));
-        SETARRITEM(comb.vb_dporti, *i, comb.vb_dporti->req_valid, AND2(BIT(comb.vb_req_valid, *i), BIT(comb.vb_cpu_mask, *i)));
-        SETARRITEM(comb.vb_dporti, *i, comb.vb_dporti->dtype, i_dport_req_type);
-        SETARRITEM(comb.vb_dporti, *i, comb.vb_dporti->addr, i_dport_addr);
-        SETARRITEM(comb.vb_dporti, *i, comb.vb_dporti->wdata, i_dport_wdata);
-        SETARRITEM(comb.vb_dporti, *i, comb.vb_dporti->size, i_dport_size);
-        SETARRITEM(comb.vb_dporti, *i, comb.vb_dporti->resp_ready, i_dport_resp_ready);
+        SETARRITEM(comb.vb_dporti, *i, comb.vb_dporti.haltreq, AND2(BIT(comb.vb_haltreq, *i), BIT(comb.vb_cpu_mask, *i)));
+        SETARRITEM(comb.vb_dporti, *i, comb.vb_dporti.resumereq, AND2(BIT(comb.vb_resumereq, *i), BIT(comb.vb_cpu_mask, *i)));
+        SETARRITEM(comb.vb_dporti, *i, comb.vb_dporti.resethaltreq, AND2(BIT(comb.vb_resethaltreq, *i), BIT(comb.vb_cpu_mask, *i)));
+        SETARRITEM(comb.vb_dporti, *i, comb.vb_dporti.hartreset, AND2(BIT(comb.vb_hartreset, *i), BIT(comb.vb_cpu_mask, *i)));
+        SETARRITEM(comb.vb_dporti, *i, comb.vb_dporti.req_valid, AND2(BIT(comb.vb_req_valid, *i), BIT(comb.vb_cpu_mask, *i)));
+        SETARRITEM(comb.vb_dporti, *i, comb.vb_dporti.dtype, i_dport_req_type);
+        SETARRITEM(comb.vb_dporti, *i, comb.vb_dporti.addr, i_dport_addr);
+        SETARRITEM(comb.vb_dporti, *i, comb.vb_dporti.wdata, i_dport_wdata);
+        SETARRITEM(comb.vb_dporti, *i, comb.vb_dporti.size, i_dport_size);
+        SETARRITEM(comb.vb_dporti, *i, comb.vb_dporti.resp_ready, i_dport_resp_ready);
     ENDFOR();
 
 TEXT();

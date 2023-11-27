@@ -30,8 +30,8 @@ class L2Dummy : public ModuleObject {
      public:
         CombProcess(GenObject *parent) :
             ProcObject(parent, "comb"),
-            vl1o(this, "", "vl1o", "CFG_SLOT_L1_TOTAL"),
-            vlxi(this, "", "vlxi", "CFG_SLOT_L1_TOTAL"),
+            vl1o(this, "vl1o", "CFG_SLOT_L1_TOTAL"),
+            vlxi(this, "vlxi", "CFG_SLOT_L1_TOTAL"),
             vl2o(this, "vl2o"),
             vb_src_aw(this, "vb_src_aw", "CFG_SLOT_L1_TOTAL"),
             vb_src_ar(this, "vb_src_ar", "CFG_SLOT_L1_TOTAL"),

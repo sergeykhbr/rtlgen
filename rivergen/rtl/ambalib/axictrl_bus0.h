@@ -32,10 +32,10 @@ class axictrl_bus0 : public ModuleObject {
      public:
         CombProcess(GenObject *parent) :
             ProcObject(parent, "comb"),
-            vmsti(this, "", "vmsti", "ADD(CFG_BUS0_XMST_TOTAL,1)"),
-            vmsto(this, "", "vmsto", "ADD(CFG_BUS0_XMST_TOTAL,1)"),
-            vslvi(this, "", "vslvi", "ADD(CFG_BUS0_XSLV_TOTAL,1)"),
-            vslvo(this, "", "vslvo", "ADD(CFG_BUS0_XSLV_TOTAL,1)"),
+            vmsti(this, "vmsti", "ADD(CFG_BUS0_XMST_TOTAL,1)"),
+            vmsto(this, "vmsto", "ADD(CFG_BUS0_XMST_TOTAL,1)"),
+            vslvi(this, "vslvi", "ADD(CFG_BUS0_XSLV_TOTAL,1)"),
+            vslvo(this, "vslvo", "ADD(CFG_BUS0_XSLV_TOTAL,1)"),
             vb_def_mapinfo(this, "vb_def_mapinfo"),
             i_ar_midx("0", "i_ar_midx", this),
             i_aw_midx("0", "i_aw_midx", this),

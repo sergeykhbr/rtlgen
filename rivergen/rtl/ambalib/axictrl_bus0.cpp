@@ -124,10 +124,10 @@ TEXT();
 TEXT();
     TEXT("Select Master bus:");
     i = &FOR ("i", CONST("0"), bus0->CFG_BUS0_XMST_TOTAL, "++");
-        IF (NZ(ARRITEM(comb.vmsto, *i, comb.vmsto->ar_valid)));
+        IF (NZ(ARRITEM(comb.vmsto, *i, comb.vmsto.ar_valid)));
             SETVAL(comb.i_ar_midx, *i);
         ENDIF();
-        IF (NZ(ARRITEM(comb.vmsto, *i, comb.vmsto->aw_valid)));
+        IF (NZ(ARRITEM(comb.vmsto, *i, comb.vmsto.aw_valid)));
             SETVAL(comb.i_aw_midx, *i);
         ENDIF();
     ENDFOR();
@@ -136,14 +136,14 @@ TEXT();
     TEXT("Select Slave interface:");
     i = &FOR ("i", CONST("0"), bus0->CFG_BUS0_XSLV_TOTAL, "++");
         IF (ANDx(2, &LE(ARRITEM(bus0->CFG_BUS0_MAP, *i, BITS(bus0->CFG_BUS0_MAP.addr_start, DEC(cfg->CFG_SYSBUS_ADDR_BITS), CONST("12"))),
-                        ARRITEM(comb.vmsto, comb.i_ar_midx, BITS(comb.vmsto->ar_bits.addr, DEC(cfg->CFG_SYSBUS_ADDR_BITS), CONST("12")))), 
-                    &LS(ARRITEM(comb.vmsto, comb.i_ar_midx, BITS(comb.vmsto->ar_bits.addr, DEC(cfg->CFG_SYSBUS_ADDR_BITS), CONST("12"))),
+                        ARRITEM(comb.vmsto, comb.i_ar_midx, BITS(comb.vmsto.ar_bits.addr, DEC(cfg->CFG_SYSBUS_ADDR_BITS), CONST("12")))), 
+                    &LS(ARRITEM(comb.vmsto, comb.i_ar_midx, BITS(comb.vmsto.ar_bits.addr, DEC(cfg->CFG_SYSBUS_ADDR_BITS), CONST("12"))),
                         ARRITEM(bus0->CFG_BUS0_MAP, *i, BITS(bus0->CFG_BUS0_MAP.addr_end, DEC(cfg->CFG_SYSBUS_ADDR_BITS), CONST("12"))))));
             SETVAL(comb.i_ar_sidx, *i);
         ENDIF();
         IF (ANDx(2, &LE(ARRITEM(bus0->CFG_BUS0_MAP, *i, BITS(bus0->CFG_BUS0_MAP.addr_start, DEC(cfg->CFG_SYSBUS_ADDR_BITS), CONST("12"))),
-                        ARRITEM(comb.vmsto, comb.i_aw_midx, BITS(comb.vmsto->aw_bits.addr, DEC(cfg->CFG_SYSBUS_ADDR_BITS), CONST("12")))), 
-                    &LS(ARRITEM(comb.vmsto, comb.i_aw_midx, BITS(comb.vmsto->aw_bits.addr, DEC(cfg->CFG_SYSBUS_ADDR_BITS), CONST("12"))),
+                        ARRITEM(comb.vmsto, comb.i_aw_midx, BITS(comb.vmsto.aw_bits.addr, DEC(cfg->CFG_SYSBUS_ADDR_BITS), CONST("12")))), 
+                    &LS(ARRITEM(comb.vmsto, comb.i_aw_midx, BITS(comb.vmsto.aw_bits.addr, DEC(cfg->CFG_SYSBUS_ADDR_BITS), CONST("12"))),
                         ARRITEM(bus0->CFG_BUS0_MAP, *i, BITS(bus0->CFG_BUS0_MAP.addr_end, DEC(cfg->CFG_SYSBUS_ADDR_BITS), CONST("12"))))));
             SETVAL(comb.i_aw_sidx, *i);
         ENDIF();
@@ -151,20 +151,20 @@ TEXT();
 
 TEXT();
     TEXT("Read Channel:");
-    SETVAL(comb.v_ar_fire, AND2_L(ARRITEM(comb.vmsto, comb.i_ar_midx, comb.vmsto->ar_valid),
-                                  ARRITEM(comb.vslvo, comb.i_ar_sidx, comb.vslvo->ar_ready)));
-    SETVAL(comb.v_r_fire, AND3_L(ARRITEM(comb.vmsto, comb.i_r_midx, comb.vmsto->r_ready),
-                                 ARRITEM(comb.vslvo, comb.i_r_sidx, comb.vslvo->r_valid),
-                                 ARRITEM(comb.vslvo, comb.i_r_sidx, comb.vslvo->r_last)));
+    SETVAL(comb.v_ar_fire, AND2_L(ARRITEM(comb.vmsto, comb.i_ar_midx, comb.vmsto.ar_valid),
+                                  ARRITEM(comb.vslvo, comb.i_ar_sidx, comb.vslvo.ar_ready)));
+    SETVAL(comb.v_r_fire, AND3_L(ARRITEM(comb.vmsto, comb.i_r_midx, comb.vmsto.r_ready),
+                                 ARRITEM(comb.vslvo, comb.i_r_sidx, comb.vslvo.r_valid),
+                                 ARRITEM(comb.vslvo, comb.i_r_sidx, comb.vslvo.r_last)));
     TEXT("Write channel:");
-    SETVAL(comb.v_aw_fire, AND2_L(ARRITEM(comb.vmsto, comb.i_aw_midx, comb.vmsto->aw_valid),
-                                  ARRITEM(comb.vslvo, comb.i_aw_sidx, comb.vslvo->aw_ready)));
-    SETVAL(comb.v_w_fire, AND3_L(ARRITEM(comb.vmsto, comb.i_w_midx, comb.vmsto->w_valid),
-                                 ARRITEM(comb.vmsto, comb.i_w_midx, comb.vmsto->w_last),
-                                 ARRITEM(comb.vslvo, comb.i_w_sidx, comb.vslvo->w_ready)));
+    SETVAL(comb.v_aw_fire, AND2_L(ARRITEM(comb.vmsto, comb.i_aw_midx, comb.vmsto.aw_valid),
+                                  ARRITEM(comb.vslvo, comb.i_aw_sidx, comb.vslvo.aw_ready)));
+    SETVAL(comb.v_w_fire, AND3_L(ARRITEM(comb.vmsto, comb.i_w_midx, comb.vmsto.w_valid),
+                                 ARRITEM(comb.vmsto, comb.i_w_midx, comb.vmsto.w_last),
+                                 ARRITEM(comb.vslvo, comb.i_w_sidx, comb.vslvo.w_ready)));
     TEXT("Write confirm channel");
-    SETVAL(comb.v_b_fire, AND2_L(ARRITEM(comb.vmsto, comb.i_b_midx, comb.vmsto->b_ready),
-                                 ARRITEM(comb.vslvo, comb.i_b_sidx, comb.vslvo->b_valid)));
+    SETVAL(comb.v_b_fire, AND2_L(ARRITEM(comb.vmsto, comb.i_b_midx, comb.vmsto.b_ready),
+                                 ARRITEM(comb.vslvo, comb.i_b_sidx, comb.vslvo.b_valid)));
 
 TEXT();
     IF (AND2(NE(r_sidx, bus0->CFG_BUS0_XSLV_TOTAL), EZ(comb.v_r_fire)));
@@ -210,48 +210,48 @@ TEXT();
     ENDIF();
 
 TEXT();
-    SETARRITEM(comb.vmsti, comb.i_ar_midx, comb.vmsti->ar_ready, AND2_L(ARRITEM(comb.vslvo, comb.i_ar_sidx, comb.vslvo->ar_ready),
+    SETARRITEM(comb.vmsti, comb.i_ar_midx, comb.vmsti.ar_ready, AND2_L(ARRITEM(comb.vslvo, comb.i_ar_sidx, comb.vslvo.ar_ready),
                                                                          INV(comb.v_r_busy)));
-    SETARRITEM(comb.vslvi, comb.i_ar_sidx, comb.vslvi->ar_valid, AND2_L(ARRITEM(comb.vmsto, comb.i_ar_midx, comb.vmsto->ar_valid),
+    SETARRITEM(comb.vslvi, comb.i_ar_sidx, comb.vslvi.ar_valid, AND2_L(ARRITEM(comb.vmsto, comb.i_ar_midx, comb.vmsto.ar_valid),
                                                                          INV(comb.v_r_busy)));
-    SETARRITEM(comb.vslvi, comb.i_ar_sidx, comb.vslvi->ar_bits, ARRITEM(comb.vmsto, comb.i_ar_midx, comb.vmsto->ar_bits));
-    SETARRITEM(comb.vslvi, comb.i_ar_sidx, comb.vslvi->ar_id, ARRITEM(comb.vmsto, comb.i_ar_midx, comb.vmsto->ar_id));
-    SETARRITEM(comb.vslvi, comb.i_ar_sidx, comb.vslvi->ar_user, ARRITEM(comb.vmsto, comb.i_ar_midx, comb.vmsto->ar_user));
+    SETARRITEM(comb.vslvi, comb.i_ar_sidx, comb.vslvi.ar_bits, ARRITEM(comb.vmsto, comb.i_ar_midx, comb.vmsto.ar_bits));
+    SETARRITEM(comb.vslvi, comb.i_ar_sidx, comb.vslvi.ar_id, ARRITEM(comb.vmsto, comb.i_ar_midx, comb.vmsto.ar_id));
+    SETARRITEM(comb.vslvi, comb.i_ar_sidx, comb.vslvi.ar_user, ARRITEM(comb.vmsto, comb.i_ar_midx, comb.vmsto.ar_user));
 
 TEXT();
-    SETARRITEM(comb.vmsti, comb.i_r_midx, comb.vmsti->r_valid, ARRITEM(comb.vslvo, comb.i_r_sidx, comb.vslvo->r_valid));
-    SETARRITEM(comb.vmsti, comb.i_r_midx, comb.vmsti->r_resp, ARRITEM(comb.vslvo, comb.i_r_sidx, comb.vslvo->r_resp));
-    SETARRITEM(comb.vmsti, comb.i_r_midx, comb.vmsti->r_data, ARRITEM(comb.vslvo, comb.i_r_sidx, comb.vslvo->r_data));
-    SETARRITEM(comb.vmsti, comb.i_r_midx, comb.vmsti->r_last, ARRITEM(comb.vslvo, comb.i_r_sidx, comb.vslvo->r_last));
-    SETARRITEM(comb.vmsti, comb.i_r_midx, comb.vmsti->r_id, ARRITEM(comb.vslvo, comb.i_r_sidx, comb.vslvo->r_id));
-    SETARRITEM(comb.vmsti, comb.i_r_midx, comb.vmsti->r_user, ARRITEM(comb.vslvo, comb.i_r_sidx, comb.vslvo->r_user));
-    SETARRITEM(comb.vslvi, comb.i_r_sidx, comb.vslvi->r_ready, ARRITEM(comb.vmsto, comb.i_r_midx, comb.vmsto->r_ready));
+    SETARRITEM(comb.vmsti, comb.i_r_midx, comb.vmsti.r_valid, ARRITEM(comb.vslvo, comb.i_r_sidx, comb.vslvo.r_valid));
+    SETARRITEM(comb.vmsti, comb.i_r_midx, comb.vmsti.r_resp, ARRITEM(comb.vslvo, comb.i_r_sidx, comb.vslvo.r_resp));
+    SETARRITEM(comb.vmsti, comb.i_r_midx, comb.vmsti.r_data, ARRITEM(comb.vslvo, comb.i_r_sidx, comb.vslvo.r_data));
+    SETARRITEM(comb.vmsti, comb.i_r_midx, comb.vmsti.r_last, ARRITEM(comb.vslvo, comb.i_r_sidx, comb.vslvo.r_last));
+    SETARRITEM(comb.vmsti, comb.i_r_midx, comb.vmsti.r_id, ARRITEM(comb.vslvo, comb.i_r_sidx, comb.vslvo.r_id));
+    SETARRITEM(comb.vmsti, comb.i_r_midx, comb.vmsti.r_user, ARRITEM(comb.vslvo, comb.i_r_sidx, comb.vslvo.r_user));
+    SETARRITEM(comb.vslvi, comb.i_r_sidx, comb.vslvi.r_ready, ARRITEM(comb.vmsto, comb.i_r_midx, comb.vmsto.r_ready));
 
 TEXT();
-    SETARRITEM(comb.vmsti, comb.i_aw_midx, comb.vmsti->aw_ready, AND2_L(ARRITEM(comb.vslvo, comb.i_aw_sidx, comb.vslvo->aw_ready),
+    SETARRITEM(comb.vmsti, comb.i_aw_midx, comb.vmsti.aw_ready, AND2_L(ARRITEM(comb.vslvo, comb.i_aw_sidx, comb.vslvo.aw_ready),
                                                                          INV(comb.v_w_busy)));
-    SETARRITEM(comb.vslvi, comb.i_aw_sidx, comb.vslvi->aw_valid, AND2_L(ARRITEM(comb.vmsto, comb.i_aw_midx, comb.vmsto->aw_valid),
+    SETARRITEM(comb.vslvi, comb.i_aw_sidx, comb.vslvi.aw_valid, AND2_L(ARRITEM(comb.vmsto, comb.i_aw_midx, comb.vmsto.aw_valid),
                                                                          INV(comb.v_w_busy)));
-    SETARRITEM(comb.vslvi, comb.i_aw_sidx, comb.vslvi->aw_bits, ARRITEM(comb.vmsto, comb.i_aw_midx, comb.vmsto->aw_bits));
-    SETARRITEM(comb.vslvi, comb.i_aw_sidx, comb.vslvi->aw_id, ARRITEM(comb.vmsto, comb.i_aw_midx, comb.vmsto->aw_id));
-    SETARRITEM(comb.vslvi, comb.i_aw_sidx, comb.vslvi->aw_user, ARRITEM(comb.vmsto, comb.i_aw_midx, comb.vmsto->aw_user));
+    SETARRITEM(comb.vslvi, comb.i_aw_sidx, comb.vslvi.aw_bits, ARRITEM(comb.vmsto, comb.i_aw_midx, comb.vmsto.aw_bits));
+    SETARRITEM(comb.vslvi, comb.i_aw_sidx, comb.vslvi.aw_id, ARRITEM(comb.vmsto, comb.i_aw_midx, comb.vmsto.aw_id));
+    SETARRITEM(comb.vslvi, comb.i_aw_sidx, comb.vslvi.aw_user, ARRITEM(comb.vmsto, comb.i_aw_midx, comb.vmsto.aw_user));
 
 TEXT();
-    SETARRITEM(comb.vmsti, comb.i_w_midx, comb.vmsti->w_ready, AND2_L(ARRITEM(comb.vslvo, comb.i_w_sidx, comb.vslvo->w_ready),
+    SETARRITEM(comb.vmsti, comb.i_w_midx, comb.vmsti.w_ready, AND2_L(ARRITEM(comb.vslvo, comb.i_w_sidx, comb.vslvo.w_ready),
                                                                       INV(comb.v_b_busy)));
-    SETARRITEM(comb.vslvi, comb.i_w_sidx, comb.vslvi->w_valid, AND2_L(ARRITEM(comb.vmsto, comb.i_w_midx, comb.vmsto->w_valid),
+    SETARRITEM(comb.vslvi, comb.i_w_sidx, comb.vslvi.w_valid, AND2_L(ARRITEM(comb.vmsto, comb.i_w_midx, comb.vmsto.w_valid),
                                                                       INV(comb.v_b_busy)));
-    SETARRITEM(comb.vslvi, comb.i_w_sidx, comb.vslvi->w_data, ARRITEM(comb.vmsto, comb.i_w_midx, comb.vmsto->w_data));
-    SETARRITEM(comb.vslvi, comb.i_w_sidx, comb.vslvi->w_last, ARRITEM(comb.vmsto, comb.i_w_midx, comb.vmsto->w_last));
-    SETARRITEM(comb.vslvi, comb.i_w_sidx, comb.vslvi->w_strb, ARRITEM(comb.vmsto, comb.i_w_midx, comb.vmsto->w_strb));
-    SETARRITEM(comb.vslvi, comb.i_w_sidx, comb.vslvi->w_user, ARRITEM(comb.vmsto, comb.i_w_midx, comb.vmsto->w_user));
+    SETARRITEM(comb.vslvi, comb.i_w_sidx, comb.vslvi.w_data, ARRITEM(comb.vmsto, comb.i_w_midx, comb.vmsto.w_data));
+    SETARRITEM(comb.vslvi, comb.i_w_sidx, comb.vslvi.w_last, ARRITEM(comb.vmsto, comb.i_w_midx, comb.vmsto.w_last));
+    SETARRITEM(comb.vslvi, comb.i_w_sidx, comb.vslvi.w_strb, ARRITEM(comb.vmsto, comb.i_w_midx, comb.vmsto.w_strb));
+    SETARRITEM(comb.vslvi, comb.i_w_sidx, comb.vslvi.w_user, ARRITEM(comb.vmsto, comb.i_w_midx, comb.vmsto.w_user));
 
 TEXT();
-    SETARRITEM(comb.vmsti, comb.i_b_midx, comb.vmsti->b_valid, ARRITEM(comb.vslvo, comb.i_b_sidx, comb.vslvo->b_valid));
-    SETARRITEM(comb.vmsti, comb.i_b_midx, comb.vmsti->b_resp, ARRITEM(comb.vslvo, comb.i_b_sidx, comb.vslvo->b_resp));
-    SETARRITEM(comb.vmsti, comb.i_b_midx, comb.vmsti->b_id, ARRITEM(comb.vslvo, comb.i_b_sidx, comb.vslvo->b_id));
-    SETARRITEM(comb.vmsti, comb.i_b_midx, comb.vmsti->b_user, ARRITEM(comb.vslvo, comb.i_b_sidx, comb.vslvo->b_user));
-    SETARRITEM(comb.vslvi, comb.i_b_sidx, comb.vslvi->b_ready, ARRITEM(comb.vmsto, comb.i_b_midx, comb.vmsto->b_ready));
+    SETARRITEM(comb.vmsti, comb.i_b_midx, comb.vmsti.b_valid, ARRITEM(comb.vslvo, comb.i_b_sidx, comb.vslvo.b_valid));
+    SETARRITEM(comb.vmsti, comb.i_b_midx, comb.vmsti.b_resp, ARRITEM(comb.vslvo, comb.i_b_sidx, comb.vslvo.b_resp));
+    SETARRITEM(comb.vmsti, comb.i_b_midx, comb.vmsti.b_id, ARRITEM(comb.vslvo, comb.i_b_sidx, comb.vslvo.b_id));
+    SETARRITEM(comb.vmsti, comb.i_b_midx, comb.vmsti.b_user, ARRITEM(comb.vslvo, comb.i_b_sidx, comb.vslvo.b_user));
+    SETARRITEM(comb.vslvi, comb.i_b_sidx, comb.vslvi.b_ready, ARRITEM(comb.vmsto, comb.i_b_midx, comb.vmsto.b_ready));
 
 TEXT();
     SYNC_RESET(*this);

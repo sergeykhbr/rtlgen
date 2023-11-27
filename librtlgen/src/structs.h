@@ -40,7 +40,7 @@ class StructObject : public GenObject {
     /** GenObject generic methods */
     virtual bool isStruct() override { return true; }
     virtual bool isTypedef() override;
-    virtual std::string getName() override;
+//    virtual std::string getName() override;
     virtual void setZeroValue(const char *v) { zeroval_ = std::string(v); }
     virtual std::string getStrValue() override { return zeroval_; }
     virtual std::string generate() override;
@@ -57,7 +57,6 @@ class StructObject : public GenObject {
     virtual std::string generate_interface_sc_trace();      // sc_trace
     virtual std::string generate_const_none();
 
-    int idx_;                            // array item index (-1) if not in an array
     std::string zeroval_;
 };
 

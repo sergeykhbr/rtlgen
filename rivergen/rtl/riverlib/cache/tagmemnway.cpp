@@ -52,8 +52,8 @@ TagMemNWay::TagMemNWay(GenObject *parent,
     o_snoop_flags(this, "o_snoop_flags", "flbits"),
     NWAYS(this, "NWAYS", "POW2(1,waybits)"),
     FL_VALID(this, "FL_VALID", "0"),
-    WayInTypeDef_(this, "", -1),
-    WayOutTypeDef_(this, "", -1),
+    WayInTypeDef_(this, "WayInType"),
+    WayOutTypeDef_(this, "WayOutType"),
     w_lrui_init(this, "w_lrui_init", "1"),
     wb_lrui_raddr(this, "wb_lrui_raddr", "ibits"),
     wb_lrui_waddr(this, "wb_lrui_waddr", "ibits"),
@@ -61,8 +61,8 @@ TagMemNWay::TagMemNWay(GenObject *parent,
     w_lrui_down(this, "w_lrui_down", "1"),
     wb_lrui_lru(this, "wb_lrui_lru", "waybits"),
     wb_lruo_lru(this, "wb_lruo_lru", "waybits"),
-    way_i(this, "", "way_i", "NWAYS"),
-    way_o(this, "", "way_o", "NWAYS"),
+    way_i(this, "way_i", "NWAYS"),
+    way_o(this, "way_o", "NWAYS"),
     req_addr(this, "req_addr", "abus"),
     direct_access(this, "direct_access", "1"),
     invalidate(this, "invalidate", "1"),
@@ -84,16 +84,16 @@ TagMemNWay::TagMemNWay(GenObject *parent,
         NEW(*wayx.getItem(0), wayx.getName().c_str(), &i);
             CONNECT(wayx, &i, wayx.i_clk, i_clk);
             CONNECT(wayx, &i, wayx.i_nrst, i_nrst);
-            CONNECT(wayx, &i, wayx.i_addr, ARRITEM(way_i, i, way_i->addr));
-            CONNECT(wayx, &i, wayx.i_wstrb, ARRITEM(way_i, i, way_i->wstrb));
-            CONNECT(wayx, &i, wayx.i_wdata, ARRITEM(way_i, i, way_i->wdata));
-            CONNECT(wayx, &i, wayx.i_wflags, ARRITEM(way_i, i, way_i->wflags));
-            CONNECT(wayx, &i, wayx.o_raddr, ARRITEM(way_o, i, way_o->raddr));
-            CONNECT(wayx, &i, wayx.o_rdata, ARRITEM(way_o, i, way_o->rdata));
-            CONNECT(wayx, &i, wayx.o_rflags, ARRITEM(way_o, i, way_o->rflags));
-            CONNECT(wayx, &i, wayx.o_hit, ARRITEM(way_o, i, way_o->hit));
-            CONNECT(wayx, &i, wayx.i_snoop_addr, ARRITEM(way_i, i, way_i->snoop_addr));
-            CONNECT(wayx, &i, wayx.o_snoop_flags, ARRITEM(way_o, i, way_o->snoop_flags));
+            CONNECT(wayx, &i, wayx.i_addr, ARRITEM(way_i, i, way_i.addr));
+            CONNECT(wayx, &i, wayx.i_wstrb, ARRITEM(way_i, i, way_i.wstrb));
+            CONNECT(wayx, &i, wayx.i_wdata, ARRITEM(way_i, i, way_i.wdata));
+            CONNECT(wayx, &i, wayx.i_wflags, ARRITEM(way_i, i, way_i.wflags));
+            CONNECT(wayx, &i, wayx.o_raddr, ARRITEM(way_o, i, way_o.raddr));
+            CONNECT(wayx, &i, wayx.o_rdata, ARRITEM(way_o, i, way_o.rdata));
+            CONNECT(wayx, &i, wayx.o_rflags, ARRITEM(way_o, i, way_o.rflags));
+            CONNECT(wayx, &i, wayx.o_hit, ARRITEM(way_o, i, way_o.hit));
+            CONNECT(wayx, &i, wayx.i_snoop_addr, ARRITEM(way_i, i, way_i.snoop_addr));
+            CONNECT(wayx, &i, wayx.o_snoop_flags, ARRITEM(way_o, i, way_o.snoop_flags));
 
         ENDNEW();
     ENDFORGEN(new STRING("waygen"));
@@ -129,15 +129,15 @@ TEXT();
         SETVAL(comb.vb_hit_idx, BITS(req_addr, DEC(waybits), CONST("0")));
     ELSE();
         i = &FOR ("i", CONST("0"), NWAYS, "++");
-            IF (NZ(ARRITEM(way_o, *i, way_o->hit)));
+            IF (NZ(ARRITEM(way_o, *i, way_o.hit)));
                 SETVAL(comb.vb_hit_idx, *i);
             ENDIF();
         ENDFOR();
     ENDIF();
-    SETVAL(comb.vb_raddr, ARRITEM(way_o, TO_INT(comb.vb_hit_idx), way_o->raddr));
-    SETVAL(comb.vb_rdata, ARRITEM(way_o, TO_INT(comb.vb_hit_idx), way_o->rdata));
-    SETVAL(comb.vb_rflags, ARRITEM(way_o, TO_INT(comb.vb_hit_idx), way_o->rflags));
-    SETVAL(comb.v_hit, ARRITEM(way_o, TO_INT(comb.vb_hit_idx), way_o->hit));
+    SETVAL(comb.vb_raddr, ARRITEM(way_o, TO_INT(comb.vb_hit_idx), way_o.raddr));
+    SETVAL(comb.vb_rdata, ARRITEM(way_o, TO_INT(comb.vb_hit_idx), way_o.rdata));
+    SETVAL(comb.vb_rflags, ARRITEM(way_o, TO_INT(comb.vb_hit_idx), way_o.rflags));
+    SETVAL(comb.v_hit, ARRITEM(way_o, TO_INT(comb.vb_hit_idx), way_o.hit));
 
 TEXT();
     IF (NZ(invalidate));
@@ -153,17 +153,17 @@ TEXT();
     TEXT("                HIGH we modify it. Otherwise, we write into displacing line.");
     TEXT("");
     i = &FOR ("i", CONST("0"), NWAYS, "++");
-        SETARRITEM(way_i, *i, way_i->addr, i_addr);
-        SETARRITEM(way_i, *i, way_i->wdata, i_wdata);
-        SETARRITEM(way_i, *i, way_i->wstrb, ALLZEROS());
-        SETARRITEM(way_i, *i, way_i->wflags, comb.vb_wflags);
-        SETARRITEM(way_i, *i, way_i->snoop_addr, i_snoop_addr);
+        SETARRITEM(way_i, *i, way_i.addr, i_addr);
+        SETARRITEM(way_i, *i, way_i.wdata, i_wdata);
+        SETARRITEM(way_i, *i, way_i.wstrb, ALLZEROS());
+        SETARRITEM(way_i, *i, way_i.wflags, comb.vb_wflags);
+        SETARRITEM(way_i, *i, way_i.snoop_addr, i_snoop_addr);
     ENDFOR();
 
 TEXT();
     SETVAL(comb.v_way_we, OR2(i_we, AND2(invalidate, comb.v_hit)));
     IF (NZ(comb.v_way_we));
-        SETARRITEM(way_i, TO_INT(comb.vb_hit_idx), way_i->wstrb, comb.vb_wstrb);
+        SETARRITEM(way_i, TO_INT(comb.vb_hit_idx), way_i.wstrb, comb.vb_wstrb);
     ENDIF();
 
 TEXT();
@@ -171,8 +171,8 @@ TEXT();
     IF (EQ(snoop, CONST("1")));
         i = &FOR("i", CONST("0"), NWAYS, "++");
             TEXT("tagmem already cleared snoop flags if there's no snoop hit");
-            IF (NZ(BIT(ARRITEM_B(way_o, *i, way_o->snoop_flags), FL_VALID)));
-                SETVAL(comb.vb_snoop_flags, ARRITEM(way_o, *i, way_o->snoop_flags));
+            IF (NZ(BIT(ARRITEM_B(way_o, *i, way_o.snoop_flags), FL_VALID)));
+                SETVAL(comb.vb_snoop_flags, ARRITEM(way_o, *i, way_o.snoop_flags));
             ENDIF();
         ENDFOR();
         TEXT("Writing into snoop tag memory, output value won't be valid on next clock");

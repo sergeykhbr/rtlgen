@@ -104,8 +104,8 @@ class RegIntBank : public ModuleObject {
  protected:
     class RegValueType : public StructObject {
      public:
-        RegValueType(GenObject *parent, const char *name="", int idx=-1, const char *comment="")
-            : StructObject(parent, "RegValueType", name, idx, comment),
+        RegValueType(GenObject *parent, const char *name, const char *comment="")
+            : StructObject(parent, "RegValueType", name, comment),
             val(this, "val", "RISCV_ARCH"),
             tag(this, "tag", "CFG_REG_TAG_WIDTH") {}
      public:
@@ -116,8 +116,7 @@ class RegIntBank : public ModuleObject {
     class RegTableType : public TStructArray<RegValueType> {
      public:
         RegTableType(GenObject *parent, const char *name)
-            : TStructArray<RegValueType>(parent, "", name, "REGS_TOTAL") {
-            setReg();
+            : TStructArray<RegValueType>(parent, name, "REGS_TOTAL", true) {
         }
     };
 
