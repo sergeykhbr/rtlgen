@@ -514,7 +514,7 @@ std::string ModuleObject::generate_sysc_sensitivity(GenObject *obj,
     }
     if (obj->isStruct() && obj->getStrValue().size() == 0) {
         // Initialization of struct each field separetly:
-        const char tidx[2] = {i.c_str()[0] + 1, 0};
+        const char tidx[2] = {i.c_str()[0] + static_cast<char>(1), 0};
         i = std::string(tidx);
         for (auto &e: obj->getEntries()) {
             ret += generate_sysc_sensitivity(e, prefix, i);
@@ -556,36 +556,28 @@ std::string ModuleObject::generate_sysc_vcd_entries(GenObject *obj,
     }
 
 
-    std::string objname = obj->getName();
+    std::string realname = obj->getName();
+    std::string fakename = obj->getName();
     if (obj->getDepth() > 1) {
-        objname += "[" + i + "]";
+        realname += "[" + i + "]";
         loop = addspaces();
         loop += "for (int " + i + " = 0; " + i + " < " + obj->getStrDepth() + "; " + i + "++) {\n";
         pushspaces();
-        //loop += addspaces() + "char tstr[1024];\n";
-        if (obj->isReg()) {
-            loop += addspaces() + "pn = r." + objname + ".name();\n";
-        } else if (obj->isNReg()) {
-            loop += addspaces() + "pn = nr." + objname + ".name();\n";
-        } else {
-            loop += addspaces() + "pn = " + objname + ".name();\n";
-        }
+        loop += addspaces() + "char tstr[1024];\n";
     }
 
     if (obj->isStruct() && !obj->isInterface()) {
         if (prefix.size()) {
             prefix += ".";
         }
-        prefix += objname;
+        prefix += realname;
         // VCD for each entry of the struct separetely
-        const char tidx[2] = {i.c_str()[0] + 1, 0};
+        const char tidx[2] = {i.c_str()[0] + static_cast<char>(1), 0};
         i = std::string(tidx);
         for (auto &e: obj->getEntries()) {
             ret += generate_sysc_vcd_entries(e, prefix, i, loop);
         }
     } else {
-        std::string name1;
-        std::string name2;
         if (prefix.size()) {
             prefix += ".";
         }
@@ -594,21 +586,33 @@ std::string ModuleObject::generate_sysc_vcd_entries(GenObject *obj,
             loop = "";
         }
         if (obj->isReg()) {
-            name1 = "r." + prefix + objname;
-            name2 = "pn + \".r_" + objname + "\"";
+            realname = "r." + prefix + realname;
+            fakename = "pn + \".r_" + prefix + fakename + "\"";
         } else if (obj->isNReg()) {
-            name1 = "nr." + prefix + objname;
-            name2 = "pn + \".nr_" + objname + "\"";
+            realname = "nr." + prefix + realname;
+            fakename = "pn + \".nr_" + prefix + fakename + "\"";
         } else {
-            name1 += prefix + objname;
-            name2 += prefix + objname + ".name()";
+            realname = prefix + realname;
+            fakename = realname + ".name()";
         }
-        ret += addspaces() + "sc_trace(o_vcd, " + name1 + ", " + name2 + ");\n";
+        if (obj->getDepth() > 1) {
+            ret += addspaces();
+            ret += "RISCV_sprintf(tstr, sizeof(tstr),"
+                    " \"%s.r_" + prefix + fakename + "%d\", pn.c_str(), " + i + ");\n";
+            ret += addspaces() + "sc_trace(o_vcd, " + realname + ", tstr);\n";
+        } else if (obj->getParent()
+            && obj->getParent()->getDepth() > 1) {
+            ret += addspaces();
+            ret += "RISCV_sprintf(tstr, sizeof(tstr),"
+                    " \"%s.r_" + prefix + fakename + "\", pn.c_str(), " + i + ");\n";
+            ret += addspaces() + "sc_trace(o_vcd, " + realname + ", tstr);\n";
+        } else {
+            ret += addspaces() + "sc_trace(o_vcd, " + realname + ", " + fakename + ");\n";
+        }
     }
 
     if (obj->getDepth() > 1) {
         if (loop.size() == 0) {
-            ret += addspaces() + "pn = " + "name();    // restore current object name\n";
             popspaces();
             ret += addspaces() + "}\n";
         } else {
@@ -1063,7 +1067,7 @@ std::string ModuleObject::generate_sysc_proc_nullify(GenObject *obj,
     }
     if (obj->isStruct() && obj->getStrValue().size() == 0) {
         // Initialization of struct each field separetly:
-        const char tidx[2] = {i.c_str()[0] + 1, 0};
+        const char tidx[2] = {i.c_str()[0] + static_cast<char>(1), 0};
         i = std::string(tidx);
         for (auto &e: obj->getEntries()) {
             ret += generate_sysc_proc_nullify(e, prefix, i);

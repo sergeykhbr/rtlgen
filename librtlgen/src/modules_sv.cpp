@@ -336,7 +336,7 @@ std::string ModuleObject::generate_sv_mod_proc_nullify(GenObject *obj,
     }
     if (obj->isStruct() && obj->getStrValue().size() == 0) {
         // Initialization of struct each field separetly:
-        const char tidx[2] = {i.c_str()[0] + 1, 0};
+        const char tidx[2] = {i.c_str()[0] + static_cast<char>(1), 0};
         i = std::string(tidx);
         for (auto &e: obj->getEntries()) {
             ret += generate_sv_mod_proc_nullify(e, prefix, i);

@@ -182,7 +182,7 @@ bool GenObject::isInterface() {
     if (isStruct()) {
         GenObject *p;
         if (!isTypedef()) {
-            p = SCV_get_cfg_obj(getType());
+            p = SCV_get_cfg_obj(type_);
             if (p) {
                 p = p->getParent();  // Maybe it is easy to implement isInterface() method?
             }
