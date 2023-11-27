@@ -103,6 +103,7 @@ class GenObject {
     virtual bool isVector() { return false; }   // vector typedef of array of element
     virtual bool isModule() { return false; }
     virtual bool isOperation() { return false; }
+    virtual bool isClock() { return false; }
     virtual bool isGenVar() { return false; }   // Variable is used generate cycle: I32D analog for rtl
     virtual bool isGenerate() { return false; } // use generate instead of comb in sv and vhdl
     virtual bool isLocal();     // if parent is file then obj is global; if module obj is local
@@ -132,9 +133,9 @@ class GenObject {
     virtual GenObject *getItem() { return this; }
     virtual GenObject *getItem(int idx)  { return this; }
     virtual GenObject *getItem(const char *name);
-    virtual bool isReg() { return reg_; }       // posedge clock
+    virtual bool isReg();// { return reg_; }       // posedge clock
     virtual void setReg() { reg_ = true; }
-    virtual bool isNReg() { return nreg_; }     // negedge clock
+    virtual bool isNReg(); //{ return nreg_; }     // negedge clock
     virtual void setNReg() { nreg_ = true; }
     virtual void disableReset() { reset_disabled_ = true; }
     virtual bool isResetDisabled() { return reset_disabled_; }

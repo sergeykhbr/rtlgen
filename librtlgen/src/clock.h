@@ -26,10 +26,11 @@ class Clock : public GenValue {
  public:
     Clock(GenObject *parent,
           const char *name,
-          const char *period="",
+          const char *period,
           const char *comment="");
 
     virtual std::string getType();
+    virtual bool isClock() override { return true; }
 };
 
 

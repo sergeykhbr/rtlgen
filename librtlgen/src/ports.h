@@ -102,6 +102,7 @@ class InStruct : public IoStruct<T> {
         : IoStruct<T>(parent, name, comment) { }
  protected:
     virtual bool isInput() override { return true; }
+    virtual bool isOutput() override { return false; }
 };
 
 template<class T>
@@ -110,6 +111,7 @@ class OutStruct : public IoStruct<T> {
     OutStruct(GenObject* parent, const char* name, const char* comment = "")
         : IoStruct<T>(parent, name, comment) { }
  protected:
+    virtual bool isInput() override { return false; }
     virtual bool isOutput() override { return true; }
 };
 

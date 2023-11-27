@@ -403,6 +403,27 @@ std::string GenObject::getLibName() {
     return std::string("work");
 }
 
+bool GenObject::isReg() {
+    if (reg_) {
+        return reg_;
+    }
+    GenObject *p = getParent();
+    if (p && p->isStruct() && p->isReg()) {
+        return true;
+    }
+    return reg_;
+}
+
+bool GenObject::isNReg() {
+    if (nreg_) {
+        return nreg_;
+    }
+    GenObject *p = getParent();
+    if (p && p->isStruct() && p->isNReg()) {
+        return true;
+    }
+    return nreg_;
+}
 
 void GenObject::setValue(uint64_t val) {
     char tstr[256];

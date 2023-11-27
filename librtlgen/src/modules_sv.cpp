@@ -79,12 +79,10 @@ std::string ModuleObject::generate_sv_pkg_reg_struct(bool negedge) {
             generate_struct_rst = false;
             ln += "[0: " + p->getStrDepth() + " - 1]";
         }
-        //else if (p->isStruct() && p->getStrValue() == "") {  // not tested yet
-        //    generate_struct_rst = false;
-        //}
         ln += ";";
         p->addComment(ln);
         ret += ln + "\n";
+        tcnt++;
     }
     popspaces();
     ret += addspaces() + "} " + getType();
@@ -95,14 +93,6 @@ std::string ModuleObject::generate_sv_pkg_reg_struct(bool negedge) {
     }
     ret += "\n";
 
-    // Reset function only if no two-dimensial signals
-    tcnt = 0;
-    for (auto &p: entries_) {
-        if ((p->isReg() && negedge == false)
-            || (p->isNReg() && negedge == true)) {
-            tcnt++;
-        }
-    }
 
     // Generate reset constant if possible:
     if (generate_struct_rst) {

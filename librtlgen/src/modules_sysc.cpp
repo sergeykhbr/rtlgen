@@ -31,14 +31,15 @@ namespace sysvc {
 std::string ModuleObject::generate_sysc_h_reg_struct(bool negedge) {
     std::string out = "";
     std::string ln = "";
-    bool twodim = false;        // if 2-dimensional register array, then do not use reset function
-    out += "    struct " + getType();
+    bool generate_struct_rst = true;        // if 2-dimensional register array, then do not use reset function
+    out += addspaces() + "struct " + getType();
     if (!negedge) {
         out += "_registers";
     } else {
         out += "_nregisters";
     }
     out += " {\n";
+    pushspaces();
     for (auto &p: getEntries()) {
         if (!negedge && !p->isReg()) {
             continue;
@@ -46,7 +47,7 @@ std::string ModuleObject::generate_sysc_h_reg_struct(bool negedge) {
         if (negedge && !p->isNReg()) {
             continue;
         }
-        ln = "        ";
+        ln = addspaces();
         if (p->isSignal()) {
             // some structure are not defined as a signal but probably should be
             ln += "sc_signal<";
@@ -56,41 +57,45 @@ std::string ModuleObject::generate_sysc_h_reg_struct(bool negedge) {
             ln += ">";
         }
         ln += " " + p->getName();
-        if (p->getDepth()) {
-            twodim = true;
+        if (p->getDepth() > 1) {
+            generate_struct_rst = false;
             ln += "[" + p->getStrDepth() + "]";
         }
         ln += ";";
         p->addComment(ln);
         out += ln + "\n";
     }
+    popspaces();
+    out += addspaces();
     if (!negedge) {
-        out += "    } v, r;\n";
+        out += "} v, r;\n";
     } else {
-        out += "    } nv, nr;\n";
+        out += "} nv, nr;\n";
     }
     out += "\n";
     // Reset function only if no two-dimensial signals
-    if (!twodim) {
-        out += "    void " + getType();
+    if (generate_struct_rst) {
+        out += addspaces() + "void " + getType();
         if (!negedge) {
             out += "_r_reset(" + getType() + "_registers &iv) {\n";
         } else {
             out += "_nr_reset(" + getType() + "_nregisters &iv) {\n";
         }
-        for (auto &p: entries_) {
+        pushspaces();
+        for (auto &p: getEntries()) {
             if (!negedge && !p->isReg()) {
                 continue;
             }
             if (negedge && !p->isNReg()) {
                 continue;
             }
-            out += "        iv." + p->getName() + " = ";
+            out += addspaces() + "iv." + p->getName() + " = ";
             out += p->getStrValue();
             // TODO: add "_" for Generic value
             out += ";\n";
         }
-        out += "    }\n";
+        popspaces();
+        out += addspaces() + "}\n";
         out += "\n";
     }
     return out;
@@ -479,93 +484,56 @@ std::string ModuleObject::generate_sysc_proc_registers(bool clkpos) {
     return out;
 }
 
-std::string ModuleObject::generate_sysc_sensitivity(std::string prefix,
-                                                    std::string name, 
-                                                    GenObject *obj) {
+std::string ModuleObject::generate_sysc_sensitivity(GenObject *obj,
+                                                    std::string prefix,
+                                                    std::string i) {
     std::string ret = "";
-    bool prefix_applied = true;
-
-    if ((obj->isModule() && !obj->isTypedef())  // first call from file: module cannot include typedef of other modules, so we here only once excluding child module instances
-        || (obj->isStruct() && obj->isTypedef())
-        || obj->getId() == ID_PROCESS
-        || (obj->isOutput() && !obj->isInput())) {
+    // output port could be signal too:
+    if (obj->isTypedef()
+        || obj->getName() == "i_clk"
+        || (obj->isOutput() && !obj->isInput())
+        || (!obj->isInput()
+            && !obj->isClock()
+            && !obj->isReg()
+            && !obj->isNReg()
+            && !obj->isStruct()         // Non signal structure can have signal variable
+            && !obj->isSignal())) {
         return ret;
     }
 
-    for (int i = 0; i < prefix.size(); i++) {
-        if (i >= name.size()
-            || prefix.c_str()[i] != name.c_str()[i]) {
-            prefix_applied = false;
-            break;
+    if (prefix.size()) {
+        prefix += ".";
+    }
+    prefix += obj->getName();
+
+    if (obj->getDepth() > 1) {
+        prefix += "[" + i + "]";
+        ret += addspaces();
+        ret += "for (int " + i + " = 0; " + i + " < " + obj->getStrDepth() + "; " + i + "++) {\n";
+        pushspaces();
+    }
+    if (obj->isStruct() && obj->getStrValue().size() == 0) {
+        // Initialization of struct each field separetly:
+        const char tidx[2] = {i.c_str()[0] + 1, 0};
+        i = std::string(tidx);
+        for (auto &e: obj->getEntries()) {
+            ret += generate_sysc_sensitivity(e, prefix, i);
         }
+    } else {
+        if (prefix == "tbl[i].start_addr") {
+            bool st = true;
+        }
+        if (obj->isReg()) {
+            prefix = "r." + prefix;
+        } else if (obj->isNReg()) {
+            prefix = "nr." + prefix;
+        }
+        ret += addspaces() + "sensitive << " + prefix + ";\n";
     }
 
-    if ((obj->isSignal() && obj->getParent()->getId() != ID_ARRAY_DEF)    // signal is a part of array not a child structure
-        || obj->getId() == ID_ARRAY_DEF
-        || (obj->isStruct() && !obj->isTypedef())) {
-        if (name.size()) {
-            name += ".";
-        }
-        name += obj->getName();
-        if (obj->isReg() && !prefix_applied) {
-            name = prefix + name;
-        }
-        if (obj->isNReg() && !prefix_applied) {
-            // @warning: Structure is not supported
-            name = "n" + prefix + name;
-        }
-    }
-    if (obj->isInput() && obj->getName() != "i_clk") {
-        ret += addspaces();
-        if (obj->isVector()) {
-            ret += "for (int i = 0; i < " + obj->getItem()->getStrDepth() + "; i++) {\n";
-            pushspaces();
-            ret += addspaces();
-            ret += "sensitive << " + obj->getName() + "[i];\n";
-            popspaces();
-            ret += addspaces();
-            ret += "}\n";
-        } else {
-            ret += "sensitive << " + obj->getName() + ";\n";
-        }
-    } else if  (obj->isSignal()) {
-        ret += addspaces();
-        if (obj->isVector() || obj->getId() == ID_ARRAY_DEF) {
-            ret += "for (int i = 0; i < " + obj->getStrDepth() + "; i++) {\n";
-            pushspaces();
-            ret += addspaces();
-            ret += "sensitive << " + name + "[i];\n";
-            popspaces();
-            ret += addspaces();
-            ret += "}\n";
-        } else {
-            ret += "sensitive << " + name + ";\n";
-        }
-    } else if  (obj->getId() == ID_CLOCK) {
-        ret += addspaces();
-        ret += "sensitive << " + obj->getName() + ";\n";
-    } else if (obj->getId() == ID_ARRAY_DEF
-        && (obj->getItem()->getId() != ID_VALUE || obj->getItem()->isSignal())) {
-        // ignore value (not signals) declared in module scope
-        name += "[i]";
-        ret += addspaces();
-        ret += "for (int i = 0; i < " + obj->getStrDepth() + "; i++) {\n";
-        GenObject *item = obj->getItem();
-        pushspaces();
-        if (item->getEntries().size() == 0) {
-            ret += generate_sysc_sensitivity(prefix, name, item);
-        } else {
-            for (auto &s: item->getEntries()) {
-                ret += generate_sysc_sensitivity(prefix, name, s);
-            }
-        }
+    if (obj->getDepth() > 1) {
         popspaces();
-        ret += addspaces();
-        ret += "}\n";
-    } else {
-        for (auto &s: obj->getEntries()) {
-            ret += generate_sysc_sensitivity(prefix, name, s);
-        }
+        ret += addspaces() + "}\n";
     }
     return ret;
 }
@@ -864,8 +832,7 @@ std::string ModuleObject::generate_sysc_constructor() {
     }
 
     // Process sensitivity list:
-    std::list<GenObject *> objlist;
-    std::string prefix1 = "r.";
+    std::string prefix1 = "";
     for (auto &p: getEntries()) {
         if (p->getId() != ID_PROCESS) {
             continue;
@@ -876,8 +843,10 @@ std::string ModuleObject::generate_sysc_constructor() {
         ret += "\n";
         ret += addspaces() + "SC_METHOD(" + p->getName() + ");\n";
 
-        ln = std::string("");
-        ret += generate_sysc_sensitivity(prefix1, ln, this);
+        ln = std::string("i");
+        for (auto &s: getEntries()) {
+            ret += generate_sysc_sensitivity(s, prefix1, ln);
+        }
     }
     if (isRegProcess()) {
         ret += "\n";
@@ -1077,38 +1046,34 @@ std::string ModuleObject::generate_sysc_proc_nullify(GenObject *obj,
                                                      std::string prefix,
                                                      std::string i) {
     std::string ret = "";
-    if (obj->getId() == ID_VALUE
-        || (obj->isStruct() && !obj->isTypedef() && obj->getStrValue().size() != 0)) {
-        ret += addspaces() + prefix;
-        if (obj->getName() != "0") {
-            if (prefix.size() != 0) {
-                ret += ".";
-            }
-            ret += obj->getName();
-        }
-        ret += " = " + obj->getStrValue() + ";\n";
-    } else if (obj->isStruct() && !obj->isTypedef()) {
-        std::string prefix2 = prefix;
-        if (obj->getName() != "0") {
-            if (prefix.size()) {
-                prefix2 += ".";
-            }
-            prefix2 += obj->getName();
-        }
-        for (auto &e: obj->getEntries()) {
-            ret += generate_sv_mod_proc_nullify(e, prefix2, i);
-        }
-    } else if (obj->getId() == ID_ARRAY_DEF) {
-        GenObject *item = obj->getItem();
+    if (obj->getId() != ID_VALUE
+        && !(obj->isStruct() && !obj->isTypedef())) {
+        return ret;
+    }
+
+    if (prefix.size()) {
+        prefix += ".";
+    }
+    prefix += obj->getName();
+
+    if (obj->getDepth() > 1) {
+        prefix += "[" + i + "]";
         ret += addspaces();
         ret += "for (int " + i + " = 0; " + i + " < " + obj->getStrDepth() + "; " + i + "++) {\n";
         pushspaces();
+    }
+    if (obj->isStruct() && obj->getStrValue().size() == 0) {
+        // Initialization of struct each field separetly:
+        const char tidx[2] = {i.c_str()[0] + 1, 0};
+        i = std::string(tidx);
+        for (auto &e: obj->getEntries()) {
+            ret += generate_sysc_proc_nullify(e, prefix, i);
+        }
+    } else {
+        ret += addspaces() + prefix + " = " + obj->getStrValue() + ";\n";
+    }
 
-        std::string prefix2 = prefix + obj->getName() + "[" + i + "]";
-        const char tidx[2] = {i.c_str()[0], 0};
-        std::string i2 = std::string(tidx);
-        ret += generate_sv_mod_proc_nullify(item, prefix2, i2);
-
+    if (obj->getDepth() > 1) {
         popspaces();
         ret += addspaces() + "}\n";
     }
@@ -1128,26 +1093,17 @@ std::string ModuleObject::generate_sysc_proc(GenObject *proc) {
     tcnt = 0;
     for (auto &e: proc->getEntries()) {
         ln = "";
-        if (e->getId() == ID_VALUE
-            || e->isStruct()) {  // no need to check typedef inside of proc
-            ln += addspaces() + e->getType() + " " + e->getName();
-        } else if (e->getId() == ID_ARRAY_DEF) {
-            ln += addspaces() + e->getType() + " " + e->getName();
-            ln += "[";
-            ln += e->getStrDepth();
-            ln += "]";
-        } else {
+        if (e->getId() != ID_VALUE && !e->isStruct()) {  // no need to check typedef inside of proc
             continue;
         }
-        tcnt++;
-        ln += ";";
-        if (e->getComment().size()) {
-            while (ln.size() < 60) {
-                ln += " ";
-            }
-            ln += "// " + e->getComment();
+        ln += addspaces() + e->getType() + " " + e->getName();
+        if (e->getDepth() > 1) {
+            ln += "[" + e->getStrDepth() + "]";
         }
+        ln += ";";
+        e->addComment(ln);
         ret += ln + "\n";
+        tcnt++;
     }
     if (tcnt) {
         ret += "\n";

@@ -36,6 +36,30 @@ bool StructObject::isTypedef() {
     return getName() == "" || getName() == getType();
 }
 
+/*bool StructObject::isReg() {
+    if (GenObject::isReg()) {
+        return true;
+    }
+    for (auto& p : getEntries()) {
+        if (p->isReg()) {
+            return true;
+        }
+    }
+    return false;
+}
+
+bool StructObject::isNReg() {
+    if (GenObject::isNReg()) {
+        return true;
+    }
+    for (auto& p : getEntries()) {
+        if (p->isNReg()) {
+            return true;
+        }
+    }
+    return false;
+}*/
+
 /*std::string StructObject::getName() {
     std::string ret = GenObject::getName();
     if (idx_ == -1) {

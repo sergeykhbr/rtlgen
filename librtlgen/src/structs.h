@@ -40,7 +40,6 @@ class StructObject : public GenObject {
     /** GenObject generic methods */
     virtual bool isStruct() override { return true; }
     virtual bool isTypedef() override;
-//    virtual std::string getName() override;
     virtual void setZeroValue(const char *v) { zeroval_ = std::string(v); }
     virtual std::string getStrValue() override { return zeroval_; }
     virtual std::string generate() override;

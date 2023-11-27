@@ -82,7 +82,7 @@ class ModuleObject : public GenObject {
     std::string generate_sysc_proc(GenObject *proc);
     std::string generate_sysc_template_param(GenObject *p);
     std::string generate_sysc_template_f_name(const char *rettype="void");
-    std::string generate_sysc_sensitivity(std::string prefix, std::string name, GenObject *obj);
+    std::string generate_sysc_sensitivity(GenObject *obj, std::string prefix, std::string i);
     std::string generate_sysc_vcd_entries(std::string name1, std::string name2, GenObject *obj);
 
     std::string generate_vhdl_pkg_localparam();

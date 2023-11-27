@@ -76,12 +76,12 @@ class WireArray : public T {
     WireArray(GenObject *parent, const char *name, const char *width,
         const char *depth, const char *comment="")
         : T(width, name, "'0", parent, comment) {
-        setStrDepth(depth);
+        T::setStrDepth(depth);
     }
     WireArray(GenObject *parent, const char *name, const char *width,
         const char *depth, bool reg, const char *comment="")
         : WireArray<T>(parent, name, width, depth, comment) {
-        setReg();
+        T::setReg();
     }
 };
 
@@ -90,11 +90,11 @@ class TStructArray : public T {
     public:
     TStructArray(GenObject *parent, const char *name, const char *depth,
         const char *comment = "") : T(parent, name, comment) {
-        setStrDepth(depth);
+        T::setStrDepth(depth);
     }
     TStructArray(GenObject *parent, const char *name, const char *depth, bool reg,
         const char *comment = "") : TStructArray<T>(parent, name, depth, comment) {
-        setReg();
+        T::setReg();
     }
 };
 
