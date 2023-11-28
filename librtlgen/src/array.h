@@ -106,6 +106,7 @@ class RegStructArray : public T {
         const char *comment) : T(parent, name, comment) {
         T::setStrDepth(depth);
     }
+    virtual bool isSignal() override { return true; }
     virtual bool isReg() override { return true; }
 };
 

@@ -91,19 +91,19 @@ TEXT();
     i = &FOR ("i", CONST("0"), cfg_slots, "++");
         SETARRITEM(comb.cfgmap, MUL2(CONST("8"), *i), comb.cfgmap,
                     CC3(CONST("0", 22),
-                       ARRITEM(i_cfg, *i, i_cfg->descrtype),
-                       ARRITEM(i_cfg, *i, i_cfg->descrsize)));
+                       ARRITEM(i_cfg, *i, i_cfg.descrtype),
+                       ARRITEM(i_cfg, *i, i_cfg.descrsize)));
         SETARRITEM(comb.cfgmap, ADD2(MUL2(CONST("8"), *i), CONST("1")), comb.cfgmap,
-                    CC2(ARRITEM(i_cfg, *i, i_cfg->vid),
-                        ARRITEM(i_cfg, *i, i_cfg->did)));
+                    CC2(ARRITEM(i_cfg, *i, i_cfg.vid),
+                        ARRITEM(i_cfg, *i, i_cfg.did)));
         SETARRITEM(comb.cfgmap, ADD2(MUL2(CONST("8"), *i), CONST("4")), comb.cfgmap,
-                    BITS(ARRITEM(i_cfg, *i, i_cfg->addr_start), 31, 0));
+                    BITS(ARRITEM(i_cfg, *i, i_cfg.addr_start), 31, 0));
         SETARRITEM(comb.cfgmap, ADD2(MUL2(CONST("8"), *i), CONST("5")), comb.cfgmap,
-                    BITS(ARRITEM(i_cfg, *i, i_cfg->addr_start), 63, 32));
+                    BITS(ARRITEM(i_cfg, *i, i_cfg.addr_start), 63, 32));
         SETARRITEM(comb.cfgmap, ADD2(MUL2(CONST("8"), *i), CONST("6")), comb.cfgmap,
-                    BITS(ARRITEM(i_cfg, *i, i_cfg->addr_end), 31, 0));
+                    BITS(ARRITEM(i_cfg, *i, i_cfg.addr_end), 31, 0));
         SETARRITEM(comb.cfgmap, ADD2(MUL2(CONST("8"), *i), CONST("7")), comb.cfgmap,
-                    BITS(ARRITEM(i_cfg, *i, i_cfg->addr_end), 63, 32));
+                    BITS(ARRITEM(i_cfg, *i, i_cfg.addr_end), 63, 32));
     ENDFOR();
 
 TEXT();

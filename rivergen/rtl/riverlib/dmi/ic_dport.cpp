@@ -76,7 +76,7 @@ void ic_dport::proc_comb() {
     ENDIF();
 
     i = &FOR ("i", CONST("0"), cfg->CFG_CPU_MAX, "++");
-        SETBIT(comb.vb_req_ready, *i, ARRITEM(i_dporto, *i, i_dporto->req_ready));
+        SETBIT(comb.vb_req_ready, *i, ARRITEM(i_dporto, *i, i_dporto.req_ready));
     ENDFOR();
 
 TEXT();
@@ -113,8 +113,8 @@ TEXT();
 
 TEXT();
     SETVAL(o_dport_req_ready, OR_REDUCE(comb.vb_req_ready_mask));
-    SETVAL(o_dport_resp_valid, ARRITEM(i_dporto, TO_INT(hartsel), i_dporto->resp_valid));
-    SETVAL(o_dport_resp_error, ARRITEM(i_dporto, TO_INT(hartsel), i_dporto->resp_error));
-    SETVAL(o_dport_rdata, ARRITEM(i_dporto, TO_INT(hartsel), i_dporto->rdata));
+    SETVAL(o_dport_resp_valid, ARRITEM(i_dporto, TO_INT(hartsel), i_dporto.resp_valid));
+    SETVAL(o_dport_resp_error, ARRITEM(i_dporto, TO_INT(hartsel), i_dporto.resp_error));
+    SETVAL(o_dport_rdata, ARRITEM(i_dporto, TO_INT(hartsel), i_dporto.rdata));
 
 }

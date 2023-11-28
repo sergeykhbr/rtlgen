@@ -142,11 +142,14 @@ GenObject *GenObject::getEntryByName(const char *name) {
 void GenObject::setTypedef(const char *n) {
     typedef_ = type_;
     type_ = std::string(n);
-           
+     
+    if (typedef_.size()) {
+        SCV_get_cfg_parameter(typedef_);   // to trigger dependecy array
+    } else {
+        // simple logic vector, nothing to trigger
+    }
     if (getName() == "" || getName() == type_) {
         SCV_set_cfg_type(this);
-    } else {
-        SCV_get_cfg_parameter(type_);   // to trigger dependecy array
     }
 }
 

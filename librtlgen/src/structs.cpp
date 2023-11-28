@@ -47,25 +47,6 @@ bool StructObject::isTypedef() {
 }
 
 
-/*std::string StructObject::getName() {
-    std::string ret = GenObject::getName();
-    if (idx_ == -1) {
-        return ret;
-    }
-    GenObject *sel = getParent()->getSelector();
-    if (!sel) {
-        return ret;
-    }
-    if (sel->getId() == ID_CONST) {
-        ret = sel->getStrValue();
-    } else if (sel->isOperation()) {
-        ret = sel->generate();
-    } else {
-        ret = sel->getName();
-    }
-    return ret;
-}*/
-
 std::string StructObject::generate_interface_constructor() {
     std::string ret = "";
 

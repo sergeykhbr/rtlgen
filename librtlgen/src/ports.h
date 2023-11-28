@@ -42,8 +42,8 @@ class InPort : public Logic {
            GenValue *width,
            const char *comment="");
 
-    virtual bool isInput() override { return true; }
     virtual bool isSignal() override { return true; }
+    virtual bool isInput() override { return true; }
 };
 
 class OutPort : public Logic {
@@ -64,6 +64,7 @@ class OutPort : public Logic {
            GenValue *width,
            const char *comment="");
 
+    virtual bool isSignal() override { return false; }
     virtual bool isOutput() override { return true; }
 };
 
@@ -84,24 +85,11 @@ class IoPort : public Logic {
     virtual bool isOutput() override { return true; }
 };
 
-
 template<class T>
-class IoStruct : public T {
-public:
-    IoStruct(GenObject* parent, const char* name, const char* comment = "")
-        : T(parent, name, comment) {
-    }
-    T* operator->() const { return this; }
-    T* operator->() { return this; }
-    virtual GenObject *getItem() override { return this; }
-    virtual T* read() { return this; }
-};
-
-template<class T>
-class InStruct : public IoStruct<T> {
+class InStruct : public T {
  public:
-    InStruct(GenObject* parent, const char* name, const char* comment = "")
-        : IoStruct<T>(parent, name, comment) { }
+    InStruct(GenObject *parent, const char *name, const char *comment = NO_COMMENT)
+        : T(parent, name, comment) {}
  protected:
     virtual bool isSignal() override { return true; }
     virtual bool isInput() override { return true; }
@@ -109,11 +97,12 @@ class InStruct : public IoStruct<T> {
 };
 
 template<class T>
-class OutStruct : public IoStruct<T> {
+class OutStruct : public T {
  public:
-    OutStruct(GenObject* parent, const char* name, const char* comment = "")
-        : IoStruct<T>(parent, name, comment) { }
+    OutStruct(GenObject *parent, const char *name, const char *comment = NO_COMMENT)
+        : T(parent, name, comment) {}
  protected:
+    virtual bool isSignal() override { return false; }
     virtual bool isInput() override { return false; }
     virtual bool isOutput() override { return true; }
 };

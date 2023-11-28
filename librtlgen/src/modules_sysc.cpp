@@ -40,6 +40,7 @@ std::string ModuleObject::generate_sysc_h_reg_struct(bool negedge) {
     }
     out += " {\n";
     pushspaces();
+    bool ignore_struct;
     for (auto &p: getEntries()) {
         if (!negedge && !p->isReg()) {
             continue;
@@ -48,12 +49,14 @@ std::string ModuleObject::generate_sysc_h_reg_struct(bool negedge) {
             continue;
         }
         ln = addspaces();
-        if (p->isSignal() && !p->isInput() && !p->isClock()) {
+
+        ignore_struct = p->isStruct() && p->isSignal() && !p->isInterface();
+        if (p->isSignal() && !p->isInput() && !p->isClock() && !ignore_struct) {
             // some structure are not defined as a signal but probably should be
             ln += "sc_signal<";
         }
         ln += p->getType();
-        if (p->isSignal() && !p->isInput() && !p->isClock()) {
+        if (p->isSignal() && !p->isInput() && !p->isClock() && !ignore_struct) {
             ln += ">";
         }
         ln += " " + p->getName();
@@ -374,11 +377,12 @@ std::string ModuleObject::generate_sysc_h() {
             text = "";
         }
         ln = addspaces();
-        if (p->isSignal() && !p->isInput() && !p->isClock() && !p->isVector()) {
+        bool ignore_struct = p->isStruct() && p->isSignal() && !p->isInterface();
+        if (p->isSignal() && !p->isInput() && !p->isClock() && !p->isVector() && !ignore_struct) {
             ln += "sc_signal<";
         }
         ln += p->getType();
-        if (p->isSignal() && !p->isInput() && !p->isClock() && !p->isVector()) {
+        if (p->isSignal() && !p->isInput() && !p->isClock() && !p->isVector() && !ignore_struct) {
             ln += ">";
         }
         ln += " " + p->getName();
@@ -488,6 +492,21 @@ std::string ModuleObject::generate_sysc_sensitivity(GenObject *obj,
                                                     std::string prefix,
                                                     std::string i) {
     std::string ret = "";
+#if 1
+    if (!obj->isSignal() && !obj->isStruct()) {
+        return ret;
+    }
+    if (obj->isTypedef()
+        || (obj->isOutput() && !obj->isInput())     // ignore out structures
+        || obj->getName() == "i_clk") {
+        return ret;
+    }
+
+    if (obj->getName() == "o_cfg") {
+        obj->isSignal();
+        bool st = true;
+    }
+#else
     // output port could be signal too:
     if (obj->isTypedef()
         || obj->getName() == "i_clk"
@@ -501,6 +520,7 @@ std::string ModuleObject::generate_sysc_sensitivity(GenObject *obj,
             && !obj->isSignal())) {
         return ret;
     }
+#endif
 
     if (prefix.size()) {
         prefix += ".";

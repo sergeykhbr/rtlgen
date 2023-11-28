@@ -62,7 +62,8 @@ class types_pnp : public FileObject {
     class dev_config_type_signal : public dev_config_type {
      public:
         dev_config_type_signal(GenObject* parent, const char *name, const char *comment)
-            : dev_config_type(parent, name, comment) {}
+            : dev_config_type(parent, name, comment) {
+        }
         virtual bool isSignal() override { return true; }
     };
 
@@ -74,8 +75,8 @@ class types_pnp : public FileObject {
             setTypedef("soc_pnp_vector");
             setStrDepth("SOC_PNP_TOTAL");
         }
+        virtual bool isSignal() override { return true; }  // this vector is used only as signal, no need to create both types
         virtual bool isVector() override { return true; }
-        virtual bool isSignal() override { return true; }
     };
 
 
