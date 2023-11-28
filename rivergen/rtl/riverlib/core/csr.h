@@ -188,8 +188,8 @@ class CsrRegs : public ModuleObject {
 
     class RegModeType : public StructObject {
      public:
-        RegModeType(GenObject *parent, const char *name, const char *comment="")
-            : StructObject(parent, "RegModeType", name, comment),
+        RegModeType(GenObject *parent, const char *name, const char *comment)
+            : StructObject(parent, "RegModeType", name, "", comment),
             xepc(this, "xepc", "RISCV_ARCH", "0", ""),
             xpp(this, "xpp", "2", "0", "Previous Privildge mode. If x is not implemented, then xPP mus be 0"),
             xpie(this, "xpie", "1", "0", "Previous Privildge mode global interrupt enable"),
@@ -222,17 +222,17 @@ class CsrRegs : public ModuleObject {
         RegSignal xcounteren;
     } RegModeTypeDef_;
 
-    class ModeTableType : public TStructArray<RegModeType> {
+    class ModeTableType : public RegStructArray<RegModeType> {
      public:
         ModeTableType(GenObject *parent, const char *name)
-            : TStructArray<RegModeType>(parent, name, "4", true) {
+            : RegStructArray<RegModeType>(parent, name, "4", NO_COMMENT) {
         }
     };
 
     class PmpItemType : public StructObject {
      public:
-        PmpItemType(GenObject *parent, const char *name, const char *comment="")
-            : StructObject(parent, "PmpItemType", name, comment),
+        PmpItemType(GenObject *parent, const char *name, const char *comment)
+            : StructObject(parent, "PmpItemType", name, "", comment),
             cfg(this, "cfg", "8", "0", "pmpcfg bits without changes"),
             addr(this, "addr", "RISCV_ARCH", "0", "Maximal PMP address bits [55:2]"),
             mask(this, "mask", "RISCV_ARCH", "0", "NAPOT mask formed from address")
@@ -243,10 +243,10 @@ class CsrRegs : public ModuleObject {
         RegSignal mask;
     } PmpItemTypeDef_;
 
-    class PmpTableType : public TStructArray<PmpItemType> {
+    class PmpTableType : public RegStructArray<PmpItemType> {
      public:
         PmpTableType(GenObject *parent, const char *name)
-            : TStructArray<PmpItemType>(parent, name, "CFG_PMP_TBL_SIZE", true) {
+            : RegStructArray<PmpItemType>(parent, name, "CFG_PMP_TBL_SIZE", NO_COMMENT) {
         }
     };
 

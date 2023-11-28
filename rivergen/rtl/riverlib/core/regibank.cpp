@@ -69,7 +69,7 @@ RegIntBank::RegIntBank(GenObject *parent, const char *name) :
     o_t5(this, "o_t5", "RISCV_ARCH"),
     o_t6(this, "o_t6", "RISCV_ARCH"),
     // struct declaration
-    RegValueTypeDef_(this, "RegValueType"),
+    RegValueTypeDef_(this, "RegValueType", NO_COMMENT),
     // registers
     arr(this, "arr"),
     // process

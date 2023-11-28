@@ -31,7 +31,7 @@ sfifo::sfifo(GenObject *parent, const char *name) :
     DEPTH(this, "DEPTH", "POW2(1,log2_depth)"),
     // signals
     // registers
-    databuf(this, "databuf", "dbits", "DEPTH", true),
+    databuf(this, "databuf", "dbits", "DEPTH"),
     wr_cnt(this, "wr_cnt", "log2_depth"),
     rd_cnt(this, "rd_cnt", "log2_depth"),
     total_cnt(this, "total_cnt", "ADD(log2_depth,1)"),

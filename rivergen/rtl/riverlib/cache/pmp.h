@@ -65,8 +65,8 @@ class PMP : public ModuleObject {
 
     class PmpTableItemType : public StructObject {
      public:
-        PmpTableItemType(GenObject *parent, const char *name, const char *comment="")
-            : StructObject(parent, "PmpTableItemType", name, comment),
+        PmpTableItemType(GenObject *parent, const char *name, const char *comment)
+            : StructObject(parent, "PmpTableItemType", name, "", comment),
             start_addr(this, "start_addr", "RISCV_ARCH"),
             end_addr(this, "end_addr", "RISCV_ARCH"),
             flags(this, "flags", "CFG_PMP_FL_TOTAL", "0") {
@@ -77,10 +77,10 @@ class PMP : public ModuleObject {
         Signal flags;
     } PmpTableItemTypeDef_;
 
-    class PmpTableType : public TStructArray<PmpTableItemType> {
+    class PmpTableType : public RegStructArray<PmpTableItemType> {
      public:
         PmpTableType(GenObject *parent, const char *name) :
-            TStructArray<PmpTableItemType>(parent, name, "CFG_PMP_TBL_SIZE", true) {
+            RegStructArray<PmpTableItemType>(parent, name, "CFG_PMP_TBL_SIZE", NO_COMMENT) {
         }
     };
     PmpTableType tbl;

@@ -88,8 +88,8 @@ class InstrDecoder : public ModuleObject {
 
     class DecoderDataType : public StructObject {
      public:
-        DecoderDataType(GenObject *parent, const char *name, const char *comment="")
-            : StructObject(parent, "DecoderDataType", name, comment),
+        DecoderDataType(GenObject *parent, const char *name, const char *comment)
+            : StructObject(parent, "DecoderDataType", name, "", comment),
         pc(this, "pc", "RISCV_ARCH", "'1"),
         isa_type(this, "isa_type", "ISA_Total"),
         instr_vec(this, "instr_vec", "Instr_Total"),
@@ -137,10 +137,10 @@ class InstrDecoder : public ModuleObject {
         Signal progbuf_ena;
     } DecoderDataTypeDef_;
 
-    class DecTableType : public TStructArray<DecoderDataType> {
+    class DecTableType : public RegStructArray<DecoderDataType> {
      public:
         DecTableType(GenObject *parent, const char *name)
-            : TStructArray<DecoderDataType>(parent, name, "FULL_DEC_DEPTH", true) {
+            : RegStructArray<DecoderDataType>(parent, name, "FULL_DEC_DEPTH", NO_COMMENT) {
         }
     };
 
@@ -158,7 +158,7 @@ class InstrDecoder : public ModuleObject {
         virtual bool isSignal() override { return true; }
     };
 
-    TStructArray<DecoderDataType> wd;
+    StructArray<DecoderDataType> wd;
     DecTableType d;
     FetchedPcType wb_f_pc;
     FetchedInstrType wb_f_instr;

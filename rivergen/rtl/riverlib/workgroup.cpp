@@ -52,8 +52,8 @@ Workgroup::Workgroup(GenObject *parent, const char *name) :
     coherence_ena(this, "1", "coherence_ena", "GT(MUL(cpu_num,l2cache_ena),1)"),
     ACP_SLOT_IDX(this, "ACP_SLOT_IDX", "CFG_CPU_MAX"),
     // Singals:
-    coreo(this, "coreo"),
-    corei(this, "corei"),
+    coreo(this, "coreo", NO_COMMENT),
+    corei(this, "corei", NO_COMMENT),
     l2i(this, "l2i"),
     l2o(this, "l2o"),
     wb_dport_i(this, "wb_dport_i"),

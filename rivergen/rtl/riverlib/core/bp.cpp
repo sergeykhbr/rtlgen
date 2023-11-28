@@ -35,9 +35,9 @@ BranchPredictor::BranchPredictor(GenObject *parent, const char *name) :
     i_f_fetched_pc(this, "i_f_fetched_pc", "RISCV_ARCH", "already requested and fetched address"),
     i_d_pc(this, "i_d_pc", "RISCV_ARCH", "decoded instructions"),
     // struct declaration
-    PreDecTypeDef_(this, "PreDecType"),
+    PreDecTypeDef_(this, "PreDecType", NO_COMMENT),
     // Signals
-    wb_pd(this, "wb_pd", "2"),
+    wb_pd(this, "wb_pd", "2", NO_COMMENT),
     w_btb_e(this, "w_btb_e", "1"),
     w_btb_we(this, "w_btb_we", "1"),
     wb_btb_we_pc(this, "wb_btb_we_pc", "RISCV_ARCH"),

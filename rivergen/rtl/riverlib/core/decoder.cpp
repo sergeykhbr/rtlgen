@@ -51,14 +51,14 @@ InstrDecoder::InstrDecoder(GenObject *parent, const char *name) :
     o_instr_page_fault_x(this, "o_instr_page_fault_x", "1", "IMMU page fault signal"),
     o_progbuf_ena(this, "o_progbuf_ena", "1"),
     // struct declaration
-    DecoderDataTypeDef_(this, "DecoderDataType"),
+    DecoderDataTypeDef_(this, "DecoderDataType", NO_COMMENT),
     // parameters
     DEC_NUM(this, "DEC_NUM", "2"),
     DEC_BLOCK(this, "DEC_BLOCK", "MUL(2,DEC_NUM)", "2 rv + 2 rvc"),
     _1_(this, "shift registers depth to store previous decoded data"),
     FULL_DEC_DEPTH(this, "FULL_DEC_DEPTH", "MUL(DEC_BLOCK,ADD(SUB(CFG_DEC_DEPTH,1),CFG_BP_DEPTH))"),
     // Signals
-    wd(this, "wd", "ADD(FULL_DEC_DEPTH,DEC_BLOCK)"),
+    wd(this, "wd", "ADD(FULL_DEC_DEPTH,DEC_BLOCK)", NO_COMMENT),
     d(this, "d"),
     wb_f_pc(this, "wb_f_pc", "RISCV_ARCH", "DEC_NUM"),
     wb_f_instr(this, "wb_f_instr", "32", "DEC_NUM"),

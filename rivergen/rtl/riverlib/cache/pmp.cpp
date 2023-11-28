@@ -31,7 +31,7 @@ PMP::PMP(GenObject *parent, const char *name) :
     o_r(this, "o_r", "1"),
     o_w(this, "o_w", "1"),
     o_x(this, "o_x", "1"),
-    PmpTableItemTypeDef_(this, "PmpTableItemType"),
+    PmpTableItemTypeDef_(this, "PmpTableItemType", NO_COMMENT),
     // registers
     tbl(this, "tbl"),
     // process

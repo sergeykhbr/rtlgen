@@ -95,8 +95,8 @@ CsrRegs::CsrRegs(GenObject *parent, const char *name) :
     SATP_MODE_SV39(this, "4", "SATP_MODE_SV39", "8", "39-bits Page mode"),
     SATP_MODE_SV48(this, "4", "SATP_MODE_SV48", "9", "48-bits Page mode"),
     // struct definitions
-    RegModeTypeDef_(this, "RegModeType"),
-    PmpItemTypeDef_(this, "PmpItemType"),
+    RegModeTypeDef_(this, "RegModeType", NO_COMMENT),
+    PmpItemTypeDef_(this, "PmpItemType", NO_COMMENT),
     // registers
     xmode(this, "xmode"),
     pmp(this, "pmp"),

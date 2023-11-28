@@ -63,11 +63,10 @@ class Queue : public ModuleObject {
 
     ParamI32D DEPTH;
 
-     class MemType : public WireArray<Signal> {
+     class MemType : public RegArray {
      public:
         MemType(GenObject *parent, const char *name, const char *width, const char *depth)
-            : WireArray<Signal>(parent, name, width, depth, true) {}
-        virtual bool isSignal() override { return true; }
+            : RegArray(parent, name, width, depth) {}
     };
 
     RegSignal wcnt;

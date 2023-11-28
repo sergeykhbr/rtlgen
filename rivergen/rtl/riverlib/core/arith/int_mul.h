@@ -79,18 +79,16 @@ class IntMul : public ModuleObject {
     OutPort o_valid;
 
  protected:
-     class MulLevel1Type : public WireArray<RegSignal> {
+     class MulLevel1Type : public RegArray {
      public:
         MulLevel1Type(GenObject *parent, const char *name, const char *width, const char *depth)
-            : WireArray<RegSignal>(parent, name, width, depth, true) {}
-        virtual bool isSignal() override { return true; }
+            : RegArray(parent, name, width, depth) {}
     };
 
-     class MulLevel3Type : public WireArray<RegSignal> {
+     class MulLevel3Type : public RegArray {
      public:
         MulLevel3Type(GenObject *parent, const char *name, const char *width, const char *depth)
-            : WireArray<RegSignal>(parent, name, width, depth, true) {}
-        virtual bool isSignal() override { return true; }
+            : RegArray(parent, name, width, depth) {}
     };
 
     RegSignal busy;

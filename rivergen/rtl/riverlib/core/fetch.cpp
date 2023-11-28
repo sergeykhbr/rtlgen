@@ -47,8 +47,8 @@ InstrFetch::InstrFetch(GenObject *parent, const char *name) :
     WaitResp(this, "WaitResp", "2"),
     // registers
     state(this, "state", "2", "Idle"),
-    req_valid(this, "req_valid"),
-    resp_ready(this, "resp_ready"),
+    req_valid(this, "req_valid", "1"),
+    resp_ready(this, "resp_ready", "1"),
     req_addr(this, "req_addr", "RISCV_ARCH", "'1"),
     mem_resp_shadow(this, "mem_resp_shadow", "RISCV_ARCH", "'1", "the same as memory response but internal"),
     pc(this, "pc", "RISCV_ARCH", "'1"),

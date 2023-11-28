@@ -32,8 +32,8 @@ class axi_slv : public ModuleObject {
             ProcObject(parent, "comb"),
             vb_req_addr_next(this, "vb_req_addr_next", "12"),
             vb_req_len_next(this, "vb_req_len_next", "8"),
-            vcfg(this, "vcfg"),
-            vxslvo(this, "vxslvo") {
+            vcfg(this, "vcfg", NO_COMMENT),
+            vxslvo(this, "vxslvo", NO_COMMENT) {
         }
 
      public:

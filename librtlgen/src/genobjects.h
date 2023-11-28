@@ -21,6 +21,8 @@
 
 namespace sysvc {
 
+#define NO_COMMENT ""
+
 enum EIdType {
     ID_PROJECT = (1<<0),
     ID_FOLDER = (1<<1),
@@ -67,7 +69,7 @@ class GenObject {
 
     virtual std::string getFullPath();
     virtual std::string getFile();
-    virtual void registerCfgType(const char *name);
+    //virtual void registerCfgType(const char *name);
     virtual void add_entry(GenObject *p);
     virtual std::list<GenObject *> &getEntries() { return entries_; }
 
@@ -90,6 +92,8 @@ class GenObject {
     virtual bool isParam() { return false; }            // StrValue is its name, Method generate() to generate its value
     virtual bool isParamGeneric() { return false; }     // Parameter that is defined as argument of constructor
     virtual bool isParamTemplate() { return false; }    // Special type of ParamGeneric used in systemc, when in/out depend on it
+    virtual bool isValue() { return false; }            // scalara value
+    virtual bool isConst() { return false; }            // scalar value with the an empty name
     virtual bool isString() { return false; }
     virtual bool isFloat() { return false; }
     virtual bool isTypedef() { return false; }
@@ -135,10 +139,8 @@ class GenObject {
     virtual GenObject *getItem() { return this; }
     virtual GenObject *getItem(int idx)  { return this; }
     virtual GenObject *getItem(const char *name);
-    virtual bool isReg();// { return reg_; }       // posedge clock
-    virtual void setReg() { reg_ = true; }
-    virtual bool isNReg(); //{ return nreg_; }     // negedge clock
-    virtual void setNReg() { nreg_ = true; }
+    virtual bool isReg() { return false; }               // is register with posedge clock
+    virtual bool isNReg() { return false; }              // is register with negedge clock
     virtual void disableReset() { reset_disabled_ = true; }
     virtual bool isResetDisabled() { return reset_disabled_; }
     virtual void disableVcd() { vcd_enabled_ = false; }
@@ -176,8 +178,6 @@ class GenObject {
     GenObject *objDepth_;
 
     GenObject *sel_;        // selector when is array
-    bool reg_;              // Mark object (signal, value, port, structure) as a Flip-flop posedge clock
-    bool nreg_;             // Mark object (signal, value, port, structure) as a Flip-flop negedge clock
     bool reset_disabled_;   // register without reset (memory)
     bool vcd_enabled_;      // show instance in VCD trace file
     bool sv_api_;           // method readmemh or similar were used

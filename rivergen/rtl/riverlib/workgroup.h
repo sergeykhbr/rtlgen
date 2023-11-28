@@ -43,7 +43,7 @@ class Workgroup : public ModuleObject {
      public:
         CombProcess(GenObject* parent)
             : ProcObject(parent, "comb"),
-            vb_xmst_cfg(this, "vb_xmst_cfg"),
+            vb_xmst_cfg(this, "vb_xmst_cfg", NO_COMMENT),
             v_flush_l2(this, "v_flush_l2", "1"),
             vb_halted(this, "vb_halted", "CFG_CPU_MAX"),
             vb_available(this, "vb_available", "CFG_CPU_MAX"),

@@ -145,8 +145,8 @@ class Tracer : public ModuleObject {
  protected:
     class MemopActionType : public StructObject {
      public:
-        MemopActionType(GenObject *parent, const char *name, const char *comment="")
-            : StructObject(parent, "MemopActionType", name, comment),
+        MemopActionType(GenObject *parent, const char *name, const char *comment)
+            : StructObject(parent, "MemopActionType", name, "", comment),
             store(this, "store", "1", "0", "0=load;1=store"),
             size(this, "size", "2"),
             mask(this, "mask", "64"),
@@ -170,8 +170,8 @@ class Tracer : public ModuleObject {
 
     class RegActionType : public StructObject {
      public:
-        RegActionType(GenObject *parent, const char *name, const char *comment="")
-            : StructObject(parent, "RegActionType", name, comment),
+        RegActionType(GenObject *parent, const char *name, const char *comment)
+            : StructObject(parent, "RegActionType", name, "", comment),
         waddr(this, "waddr", "6"),
         wres(this, "wres", "64") {}
      public:
@@ -182,15 +182,15 @@ class Tracer : public ModuleObject {
 
     class TraceStepType : public StructObject {
      public:
-        TraceStepType(GenObject *parent, const char *name, const char *comment="")
-            : StructObject(parent, "TraceStepType", name, comment),
+        TraceStepType(GenObject *parent, const char *name, const char *comment)
+            : StructObject(parent, "TraceStepType", name, "", comment),
             exec_cnt(this, "exec_cnt", "64"),
             pc(this, "pc", "64"),
             instr(this, "instr", "32"),
             regactioncnt(this, "regactioncnt", "32"),
             memactioncnt(this, "memactioncnt", "32"),
-            regaction(this, "regaction", "TRACE_TBL_SZ", true),
-            memaction(this, "memaction", "TRACE_TBL_SZ", true),
+            regaction(this, "regaction", "TRACE_TBL_SZ", NO_COMMENT),
+            memaction(this, "memaction", "TRACE_TBL_SZ", NO_COMMENT),
             completed(this, "completed", "1") {
             }
      public:
@@ -199,15 +199,15 @@ class Tracer : public ModuleObject {
         Signal instr;
         Signal regactioncnt;
         Signal memactioncnt;
-        TStructArray<RegActionType> regaction;
-        TStructArray<MemopActionType> memaction;
+        RegStructArray<RegActionType> regaction;
+        RegStructArray<MemopActionType> memaction;
         Signal completed;
     } TraceStepTypeDef_;
 
-    class TraceTableType : public TStructArray<TraceStepType> {
+    class TraceTableType : public RegStructArray<TraceStepType> {
      public:
         TraceTableType(GenObject *parent, const char *name)
-        : TStructArray<TraceStepType>(parent, name, "TRACE_TBL_SZ", true) {
+            : RegStructArray<TraceStepType>(parent, name, "TRACE_TBL_SZ", NO_COMMENT) {
         }
     };
 

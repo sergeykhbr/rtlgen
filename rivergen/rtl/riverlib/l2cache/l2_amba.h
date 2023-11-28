@@ -36,7 +36,7 @@ class L2Amba : public ModuleObject {
             v_mem_er_load_fault(this, "v_mem_er_load_fault", "1"),
             v_mem_er_store_fault(this, "v_mem_er_store_fault", "1"),
             v_next_ready(this, "v_next_ready", "1"),
-            vmsto(this, "vmsto") {
+            vmsto(this, "vmsto", NO_COMMENT) {
         }
 
      public:

@@ -103,12 +103,12 @@ types_pnp::types_pnp(GenObject *parent) :
     _pnp3_(this, "@brief   Plug-n-play descriptor structure for connected device."),
     _pnp4_(this, "@details Each device must generates this datatype output that"),
     _pnp5_(this, "         is connected directly to the 'pnp' slave module on system bus."),
-    dev_config_type_def_(this, ""),
+    dev_config_type_def_(this, "dev_config_type", NO_COMMENT),
     _pnp6_(this),
     _pnp7_(this, "@brief Default config value for empty slot."),
-    dev_config_none(this, "dev_config_none"),
+    dev_config_none(this, "dev_config_none", NO_COMMENT),
     _pnp8_(this),
-    soc_pnp_vector_def_(this, "soc_pnp_vector"),
+    soc_pnp_vector_def_(this, "soc_pnp_vector", NO_COMMENT),
     _n_(this)
 {
     glob_pnp_cfg_ = this;

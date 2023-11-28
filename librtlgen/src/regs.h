@@ -17,36 +17,30 @@
 #pragma once
 
 #include "genobjects.h"
-#include "logic.h"
 #include "signals.h"
-#include <iostream>
 
 namespace sysvc {
 
 class RegSignal : public Signal {
  public:
-    RegSignal(const char *width,
-           const char *name,
-           const char *val,
-           GenObject *parent,
-           const char *comment);
+    RegSignal(const char *width, const char *name, const char *val,
+           GenObject *parent, const char *comment)
+           : Signal(width, name, val, parent, comment) {}
 
-    RegSignal(GenObject *parent,
-           const char *name,
-           const char *width="1",
-           const char *val="'0", // reset value
-           const char *comment="");
+    RegSignal(GenObject *parent, const char *name, const char *width,
+           const char *rstval="'0", const char *comment="")
+           : Signal(parent, name, width, rstval, comment) {}
  protected:
+    virtual bool isReg() override { return true; }
 };
 
 class NRegSignal : public Signal {
  public:
-    NRegSignal(GenObject *parent,
-           const char *name,
-           const char *width,
-           const char *val="'0", // reset value
-           const char *comment="");
+    NRegSignal(GenObject *parent, const char *name, const char *width,
+           const char *rstval="'0", const char *comment="")
+           : Signal(parent, name, width, rstval, comment) {}
  protected:
+    virtual bool isNReg() override { return true; }
 };
 
 }  // namespace sysvc

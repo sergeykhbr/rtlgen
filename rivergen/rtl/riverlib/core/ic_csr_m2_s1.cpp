@@ -51,8 +51,8 @@ ic_csr_m2_s1::ic_csr_m2_s1(GenObject *parent, const char *name) :
     i_s0_resp_data(this, "i_s0_resp_data", "RISCV_ARCH"),
     i_s0_resp_exception(this, "i_s0_resp_exception", "1"),
     // registers
-    midx(this, "midx"),
-    acquired(this, "acquired"),
+    midx(this, "midx", "1"),
+    acquired(this, "acquired", "1"),
    // process
     comb(this)
 {

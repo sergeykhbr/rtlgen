@@ -30,7 +30,7 @@ plic::plic(GenObject *parent, const char *name) :
     o_ip(this, "o_ip", "ctxmax"),
     // params
     // struct declaration
-    plic_context_type_def_(this, "plic_context_type"),
+    plic_context_type_def_(this, "plic_context_type", NO_COMMENT),
     // signals
     w_req_valid(this, "w_req_valid", "1"),
     wb_req_addr(this, "wb_req_addr", "CFG_SYSBUS_ADDR_BITS"),

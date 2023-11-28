@@ -76,11 +76,10 @@ class lrunway : public ModuleObject {
 
     RegSignal radr;
 
-    class MemTable : public WireArray<Signal> {
+    class MemTable : public RegArray {
      public:
         MemTable(GenObject *parent, const char *name, const char *width, const char *depth)
-            : WireArray<Signal>(parent, name, width, depth, true) {}
-        virtual bool isSignal() override { return true; }
+            : RegArray(parent, name, width, depth) {}
     } mem;
 
     // process should be intialized last to make all signals available

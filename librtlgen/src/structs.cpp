@@ -25,10 +25,20 @@ namespace sysvc {
 StructObject::StructObject(GenObject *parent,
                            const char *type,
                            const char *name,
-                           int idx,
+                           const char *val,
                            const char *comment)
     : GenObject(parent, type, ID_STRUCT, name, comment) {
-    zeroval_ = "";
+    strValue_ = std::string(val);   // do not calculate getValue()
+    //zeroval_ = std::string(val);
+    if (getName() == "") {
+        SHOW_ERROR("Unnamed structure of type %s", type_.c_str());
+    } else if (getName() == type_) {
+        SCV_set_cfg_type(this);
+    } else if (!isLocal()) {
+        SCV_set_cfg_parameter(this);   // global constant definition
+    } else {
+        SCV_get_cfg_parameter(type_);   // to trigger dependecy array
+    }
 }
 
 /** it is better to remove empty name */
@@ -36,29 +46,6 @@ bool StructObject::isTypedef() {
     return getName() == "" || getName() == getType();
 }
 
-/*bool StructObject::isReg() {
-    if (GenObject::isReg()) {
-        return true;
-    }
-    for (auto& p : getEntries()) {
-        if (p->isReg()) {
-            return true;
-        }
-    }
-    return false;
-}
-
-bool StructObject::isNReg() {
-    if (GenObject::isNReg()) {
-        return true;
-    }
-    for (auto& p : getEntries()) {
-        if (p->isNReg()) {
-            return true;
-        }
-    }
-    return false;
-}*/
 
 /*std::string StructObject::getName() {
     std::string ret = GenObject::getName();

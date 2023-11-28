@@ -19,6 +19,7 @@
 #include "genobjects.h"
 #include "values.h"
 #include "signals.h"
+#include "regs.h"
 #include "utils.h"
 #include "params.h"
 #include "modules.h"
@@ -78,24 +79,34 @@ class WireArray : public T {
         : T(width, name, "'0", parent, comment) {
         T::setStrDepth(depth);
     }
-    WireArray(GenObject *parent, const char *name, const char *width,
-        const char *depth, bool reg, const char *comment="")
-        : WireArray<T>(parent, name, width, depth, comment) {
-        T::setReg();
+};
+
+class RegArray : public RegSignal {
+ public:
+    RegArray(GenObject *parent, const char *name, const char *width,
+        const char *depth, const char *comment="")
+        : RegSignal(width, name, "'0", parent, comment) {
+        setStrDepth(depth);
     }
 };
 
 template<class T>
-class TStructArray : public T {
+class StructArray : public T {
     public:
-    TStructArray(GenObject *parent, const char *name, const char *depth,
-        const char *comment = "") : T(parent, name, comment) {
+    StructArray(GenObject *parent, const char *name, const char *depth,
+        const char *comment) : T(parent, name, comment) {
         T::setStrDepth(depth);
     }
-    TStructArray(GenObject *parent, const char *name, const char *depth, bool reg,
-        const char *comment = "") : TStructArray<T>(parent, name, depth, comment) {
-        T::setReg();
+};
+
+template<class T>
+class RegStructArray : public T {
+    public:
+    RegStructArray(GenObject *parent, const char *name, const char *depth,
+        const char *comment) : T(parent, name, comment) {
+        T::setStrDepth(depth);
     }
+    virtual bool isReg() override { return true; }
 };
 
 class StringArray : public ArrayObject<ParamString> {

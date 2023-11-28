@@ -29,8 +29,8 @@ using namespace sysvc;
 
 class input_mux_type : public StructObject {
  public:
-    input_mux_type(GenObject *parent, const char *name="", const char *comment="")
-        : StructObject(parent, "input_mux_type", name, -1, comment),
+    input_mux_type(GenObject *parent, const char *name, const char *comment)
+        : StructObject(parent, "input_mux_type", name, "", comment),
     radr1(this, "radr1", "6"),
     radr2(this, "radr2", "6"),
     waddr(this, "waddr", "6"),
@@ -132,7 +132,7 @@ class InstrExecute : public ModuleObject {
             v_dbg_mem_req_error(this, "v_dbg_mem_req_error", "1"),
             v_halted(this, "v_halted", "1"),
             v_idle(this, "v_idle", "1"),
-            mux(this, "mux"),
+            mux(this, "mux", NO_COMMENT),
             vb_o_npc(this, "vb_o_npc", "RISCV_ARCH"),
             t_radr1("0", "t_radr1", this),
             t_radr2("0", "t_radr2", this),
@@ -341,8 +341,8 @@ class InstrExecute : public ModuleObject {
 
     class select_type : public StructObject {
      public:
-        select_type(GenObject *parent, const char *name, const char *comment="")
-            : StructObject(parent, "select_type", name, comment),
+        select_type(GenObject *parent, const char *name, const char *comment)
+            : StructObject(parent, "select_type", name, "", comment),
         ena(this, "ena", "1"),
         valid(this, "valid", "1"),
         res(this, "res", "RISCV_ARCH") {}
@@ -361,7 +361,7 @@ class InstrExecute : public ModuleObject {
 
     input_mux_type input_mux_type_def_;
 
-    TStructArray<select_type> wb_select;
+    StructArray<select_type> wb_select;
     Signal wb_alu_mode;
     Signal wb_addsub_mode;
     Signal wb_shifter_mode;

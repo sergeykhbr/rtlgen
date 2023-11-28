@@ -46,11 +46,10 @@ class StackTraceBuffer : public ModuleObject {
     InPort i_wdata;
 
  protected:
-     class MemType : public WireArray<Signal> {
+     class MemType : public RegArray {
      public:
         MemType(GenObject *parent, const char *name, const char *width, const char *depth)
-            : WireArray<Signal>(parent, name, width, depth, true, "[pc, npc]") {}
-        virtual bool isSignal() override { return true; }
+            : RegArray(parent, name, width, depth, "[pc, npc]") {}
     };
 
 

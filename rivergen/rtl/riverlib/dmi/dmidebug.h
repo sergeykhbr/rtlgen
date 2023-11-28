@@ -33,8 +33,8 @@ class dmidebug : public ModuleObject {
      public:
         CombProcess(GenObject* parent)
             : ProcObject(parent, "comb"),
-            vcfg(this, "vcfg"),
-            vapbo(this, "vapbo"),
+            vcfg(this, "vcfg", NO_COMMENT),
+            vapbo(this, "vapbo", NO_COMMENT),
             vb_req_type(this, "vb_req_type", "DPortReq_Total"),
             vb_resp_data(this, "vb_resp_data", "32"),
             vb_hartselnext(this, "vb_hartselnext", "CFG_LOG2_CPU_MAX"),

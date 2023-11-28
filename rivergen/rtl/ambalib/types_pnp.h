@@ -26,8 +26,8 @@ class types_pnp : public FileObject {
 
     class dev_config_type : public StructObject {
      public:
-        dev_config_type(GenObject* parent, const char* name = "", const char* comment = "")
-            : StructObject(parent, "dev_config_type", name, comment),
+        dev_config_type(GenObject *parent, const char *name, const char *comment)
+            : StructObject(parent, "dev_config_type", name, "dev_config_none", comment),
             _0_(this, "Descriptor size in bytes."),
             descrsize("8", "descrsize", "PNP_CFG_DEV_DESCR_BYTES", this),
             _1_(this, "Descriptor type."),
@@ -40,10 +40,6 @@ class types_pnp : public FileObject {
             vid("16", "vid", "VENDOR_GNSSSENSOR", this),
             _5_(this, "Device ID."),
             did("16", "did", "SLV_DID_EMPTY", this) {
-            setZeroValue("dev_config_none");
-            registerCfgType(name);
-            std::string strtype = getType();
-            SCV_get_cfg_parameter(strtype);    // to trigger dependecy array
             disableVcd();
         }
 
@@ -65,7 +61,7 @@ class types_pnp : public FileObject {
     // SystemC signals representation (without definition):
     class dev_config_type_signal : public dev_config_type {
      public:
-        dev_config_type_signal(GenObject* parent, const char *name, const char *comment="")
+        dev_config_type_signal(GenObject* parent, const char *name, const char *comment)
             : dev_config_type(parent, name, comment) {}
         virtual bool isSignal() override { return true; }
     };
@@ -73,7 +69,7 @@ class types_pnp : public FileObject {
 
     class soc_pnp_vector : public dev_config_type {
      public:
-        soc_pnp_vector(GenObject *parent, const char *name, const char *descr="")
+        soc_pnp_vector(GenObject *parent, const char *name, const char *descr)
             : dev_config_type(parent, name, descr) {
             setTypedef("soc_pnp_vector");
             setStrDepth("SOC_PNP_TOTAL");

@@ -28,8 +28,8 @@ class types_river : public FileObject {
 
     class dport_in_type : public StructObject {
     public:
-        dport_in_type(GenObject* parent, const char* name = "", const char* comment = "")
-            : StructObject(parent, "dport_in_type", name, comment),
+        dport_in_type(GenObject* parent, const char* name, const char* comment)
+            : StructObject(parent, "dport_in_type", name, "dport_in_none", comment),
             haltreq("1", "haltreq", "0", this),
             resumereq("1", "resumereq", "0", this),
             resethaltreq("1", "resethaltreq", "0", this),
@@ -39,14 +39,7 @@ class types_river : public FileObject {
             addr("RISCV_ARCH", "addr", "0", this),
             wdata("RISCV_ARCH", "wdata", "0", this),
             size("3", "size", "0", this),
-            resp_ready("1", "resp_ready", "0", this) {
-            setZeroValue("dport_in_none");
-            registerCfgType(name);                  // will be registered if name == ""
-            if (name[0]) {
-                std::string strtype = getType();
-                SCV_get_cfg_parameter(strtype);   // to trigger dependecy array
-            }
-        }
+            resp_ready("1", "resp_ready", "0", this) {}
         
     public:
         Logic haltreq;
@@ -63,19 +56,12 @@ class types_river : public FileObject {
 
     class dport_out_type : public StructObject {
     public:
-        dport_out_type(GenObject* parent, const char* name = "", const char* comment = "")
-            : StructObject(parent, "dport_out_type", name, comment),
+        dport_out_type(GenObject* parent, const char* name, const char* comment)
+            : StructObject(parent, "dport_out_type", name, "dport_out_none", comment),
             req_ready("1", "req_ready", "1", this, "ready to accept request"),
             resp_valid("1", "resp_valid", "1", this, "rdata is valid"),
             resp_error("1", "resp_error", "0", this, "response error"),
-            rdata("RISCV_ARCH", "rdata", "0", this) {
-            setZeroValue("dport_out_none");
-            registerCfgType(name);                  // will be registered if name == ""
-            if (name[0]) {
-                std::string strtype = getType();
-                SCV_get_cfg_parameter(strtype);   // to trigger dependecy array
-            }
-        }
+            rdata("RISCV_ARCH", "rdata", "0", this) {}
 
     public:
         Logic req_ready;
@@ -108,10 +94,10 @@ class types_river : public FileObject {
 
     class axi4_l1_out_type : public StructObject {
      public:
-        axi4_l1_out_type(GenObject* parent, const char* name = "", const char* comment = "")
-            : StructObject(parent, "axi4_l1_out_type", name, comment),
+        axi4_l1_out_type(GenObject* parent, const char* name, const char* comment)
+            : StructObject(parent, "axi4_l1_out_type", name, "axi4_l1_out_none", comment),
             aw_valid("1", "aw_valid", "0", this),
-            aw_bits(this, "aw_bits"),
+            aw_bits(this, "aw_bits", NO_COMMENT),
             aw_id("CFG_CPU_ID_BITS", "aw_id", "0", this),
             aw_user("CFG_SYSBUS_USER_BITS", "aw_user", "0", this),
             w_valid("1", "w_valid", "0", this),
@@ -121,7 +107,7 @@ class types_river : public FileObject {
             w_user("CFG_CPU_USER_BITS", "w_user", "0", this),
             b_ready("1", "b_ready", "0", this),
             ar_valid("1", "ar_valid", "0", this),
-            ar_bits(this, "ar_bits"),
+            ar_bits(this, "ar_bits", NO_COMMENT),
             ar_id("CFG_CPU_ID_BITS", "ar_id", "0", this),
             ar_user("CFG_SYSBUS_USER_BITS", "ar_user", "0", this),
             r_ready("1", "r_ready", "0", this),
@@ -139,14 +125,7 @@ class types_river : public FileObject {
             cd_data("L1CACHE_LINE_BITS", "cd_data", "0", this),
             cd_last("1", "cd_last", "0", this),
             rack("1", "rack", "0", this),
-            wack("1", "wack", "0", this) {
-                setZeroValue("axi4_l1_out_none");
-                registerCfgType(name);                  // will be registered if name == ""
-                if (name[0]) {
-                    std::string strtype = getType();
-                    SCV_get_cfg_parameter(strtype);   // to trigger dependecy array
-                }
-            }
+            wack("1", "wack", "0", this) {}
 
      public:
         Logic aw_valid;
@@ -183,8 +162,8 @@ class types_river : public FileObject {
 
     class axi4_l1_in_type : public StructObject {
      public:
-        axi4_l1_in_type(GenObject* parent, const char* name = "", const char* comment = "")
-            : StructObject(parent, "axi4_l1_in_type", name, comment),
+        axi4_l1_in_type(GenObject* parent, const char* name, const char* comment)
+            : StructObject(parent, "axi4_l1_in_type", name, "axi4_l1_in_none", comment),
             aw_ready("1", "aw_ready", "0", this),
             w_ready("1", "w_ready", "0", this),
             b_valid("1", "b_valid", "0", this),
@@ -203,14 +182,7 @@ class types_river : public FileObject {
             ac_snoop("4", "ac_snoop", "0", this, "Table C3-19"),
             ac_prot("3", "ac_prot", "0", this),
             cr_ready("1", "cr_ready", "1", this),
-            cd_ready("1", "cd_ready", "1", this) {
-            setZeroValue("axi4_l1_in_none");
-            registerCfgType(name);                  // will be registered if name == ""
-            if (name[0]) {
-                std::string strtype = getType();
-                SCV_get_cfg_parameter(strtype);   // to trigger dependecy array
-            }
-        }
+            cd_ready("1", "cd_ready", "1", this) {}
 
      public:
         Logic aw_ready;
@@ -236,7 +208,7 @@ class types_river : public FileObject {
 
     class axi4_l1_in_vector : public axi4_l1_in_type {
         public:
-        axi4_l1_in_vector(GenObject *parent, const char *name, const char *comment="")
+        axi4_l1_in_vector(GenObject *parent, const char *name, const char *comment)
             : axi4_l1_in_type(parent, name, comment) {
             setTypedef("axi4_l1_in_vector");
             setStrDepth("CFG_SLOT_L1_TOTAL");
@@ -247,7 +219,7 @@ class types_river : public FileObject {
 
     class axi4_l1_out_vector : public axi4_l1_out_type {
         public:
-        axi4_l1_out_vector(GenObject *parent, const char *name, const char *descr="")
+        axi4_l1_out_vector(GenObject *parent, const char *name, const char *descr)
             : axi4_l1_out_type(parent, name, descr) {
             setTypedef("axi4_l1_out_vector");
             setStrDepth("CFG_SLOT_L1_TOTAL");
@@ -258,10 +230,10 @@ class types_river : public FileObject {
 
     class axi4_l2_out_type : public StructObject {
      public:
-        axi4_l2_out_type(GenObject* parent, const char* name = "", const char* comment = "")
-            : StructObject(parent, "axi4_l2_out_type", name, comment),
+        axi4_l2_out_type(GenObject* parent, const char* name, const char* comment)
+            : StructObject(parent, "axi4_l2_out_type", name, "axi4_l2_out_none", comment),
             aw_valid("1", "aw_valid", "0", this),
-            aw_bits(this, "aw_bits"),
+            aw_bits(this, "aw_bits", NO_COMMENT),
             aw_id("CFG_CPU_ID_BITS", "aw_id", "0", this),
             aw_user("CFG_SYSBUS_USER_BITS", "aw_user", "0", this),
             w_valid("1", "w_valid", "0", this),
@@ -271,17 +243,10 @@ class types_river : public FileObject {
             w_user("CFG_CPU_USER_BITS", "w_user", "0", this),
             b_ready("1", "b_ready", "0", this),
             ar_valid("1", "ar_valid", "0", this),
-            ar_bits(this, "ar_bits"),
+            ar_bits(this, "ar_bits", NO_COMMENT),
             ar_id("CFG_CPU_ID_BITS", "ar_id", "0", this),
             ar_user("CFG_SYSBUS_USER_BITS", "ar_user", "0", this),
-            r_ready("1", "r_ready", "0", this) {
-            setZeroValue("axi4_l2_out_none");
-            registerCfgType(name);                  // will be registered if name == ""
-            if (name[0]) {
-                std::string strtype = getType();
-                SCV_get_cfg_parameter(strtype);   // to trigger dependecy array
-            }
-        }
+            r_ready("1", "r_ready", "0", this) {}
 
      public:
         Logic aw_valid;
@@ -303,8 +268,8 @@ class types_river : public FileObject {
 
     class axi4_l2_in_type : public StructObject {
      public:
-        axi4_l2_in_type(GenObject* parent, const char* name = "", const char* comment = "")
-            : StructObject(parent, "axi4_l2_in_type", name, comment),
+        axi4_l2_in_type(GenObject* parent, const char* name, const char* comment)
+            : StructObject(parent, "axi4_l2_in_type", name, "axi4_l2_in_none", comment),
             aw_ready("1", "aw_ready", "0", this),
             w_ready("1", "w_ready", "0", this),
             b_valid("1", "b_valid", "0", this),
@@ -317,14 +282,7 @@ class types_river : public FileObject {
             r_data("L2CACHE_LINE_BITS", "r_data", "0", this),
             r_last("1", "r_last", "0", this),
             r_id("CFG_CPU_ID_BITS", "r_id", "0", this),
-            r_user("CFG_SYSBUS_USER_BITS", "r_user", "0", this) {
-            setZeroValue("axi4_l2_in_none");
-            registerCfgType(name);                  // will be registered if name == ""
-            if (name[0]) {
-                std::string strtype = getType();
-                SCV_get_cfg_parameter(strtype);   // to trigger dependecy array
-            }
-        }
+            r_user("CFG_SYSBUS_USER_BITS", "r_user", "0", this) {}
 
      public:
         Logic aw_ready;
@@ -351,7 +309,7 @@ class types_river : public FileObject {
         }
         virtual bool isTypedef() override { return getName() == getType(); } // type is empty for logic now
         virtual bool isVector() override { return true; }
-        virtual std::string getType() override { return type_; }
+        virtual std::string getType() override { return type_; }            // otherwise it will depends of bitwidth and system
     };
 
     class hart_irq_vector : public Signal {
@@ -363,7 +321,7 @@ class types_river : public FileObject {
         }
         virtual bool isTypedef() override { return getName() == getType(); }
         virtual bool isVector() override { return true; }
-        virtual std::string getType() override { return type_; }
+        virtual std::string getType() override { return type_; }            // otherwise it will depends of bitwidth and system
     };
 
  public:

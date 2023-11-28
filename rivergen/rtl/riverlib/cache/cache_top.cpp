@@ -88,14 +88,14 @@ CacheTop::CacheTop(GenObject *parent, const char *name) :
                                                     &o_req_mem_size,
                                                     &i_resp_mem_path)),
     // struct
-    CacheOutputTypeDef_(this),
+    CacheOutputTypeDef_(this, "CacheOutputType", NO_COMMENT),
     // Signals
     wb_i_req_ctrl_addr(this, "wb_i_req_ctrl_addr", "CFG_CPU_ADDR_BITS"),
     wb_i_req_data_addr(this, "wb_i_req_data_addr", "CFG_CPU_ADDR_BITS"),
     wb_i_flushi_addr(this, "wb_i_flushi_addr",  "CFG_CPU_ADDR_BITS"),
     wb_i_flushd_addr(this, "wb_i_flushd_addr",  "CFG_CPU_ADDR_BITS"),
-    i(this, "i"),
-    d(this, "d"),
+    i(this, "i", NO_COMMENT),
+    d(this, "d", NO_COMMENT),
     _iface0_(this, "Memory Control interface:"),
     w_ctrl_resp_mem_data_valid(this, "w_ctrl_resp_mem_data_valid", "1"),
     wb_ctrl_resp_mem_data(this, "wb_ctrl_resp_mem_data", "L1CACHE_LINE_BITS"),

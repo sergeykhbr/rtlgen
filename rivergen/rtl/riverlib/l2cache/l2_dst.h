@@ -30,8 +30,8 @@ class L2Destination : public ModuleObject {
      public:
         CombProcess(GenObject *parent) :
             ProcObject(parent, "comb"),
-            vcoreo(this, "vcoreo", "ADD(CFG_SLOT_L1_TOTAL,1)"),
-            vlxi(this, "vlxi", "CFG_SLOT_L1_TOTAL"),
+            vcoreo(this, "vcoreo", "ADD(CFG_SLOT_L1_TOTAL,1)", NO_COMMENT),
+            vlxi(this, "vlxi", "CFG_SLOT_L1_TOTAL", NO_COMMENT),
             vb_src_aw(this, "vb_src_aw", "CFG_SLOT_L1_TOTAL"),
             vb_src_ar(this, "vb_src_ar", "CFG_SLOT_L1_TOTAL"),
             vb_broadband_mask_full(this, "vb_broadband_mask_full", "ADD(CFG_SLOT_L1_TOTAL,1)"),
@@ -45,8 +45,8 @@ class L2Destination : public ModuleObject {
         }
 
      public:
-        TStructArray<types_river::axi4_l1_out_type> vcoreo;
-        TStructArray<types_river::axi4_l1_in_type> vlxi;
+        StructArray<types_river::axi4_l1_out_type> vcoreo;
+        StructArray<types_river::axi4_l1_in_type> vlxi;
         Logic vb_src_aw;
         Logic vb_src_ar;
         Logic vb_broadband_mask_full;

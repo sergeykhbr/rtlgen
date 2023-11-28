@@ -136,11 +136,11 @@ InstrExecute::InstrExecute(GenObject *parent, const char *name) :
     AmoState_Modify(this, "2", "AmoState_Modify", "2"),
     AmoState_Write(this, "2", "AmoState_Write", "3"),
     // structures
-    select_type_def_(this, "select_type"),
+    select_type_def_(this, "select_type", NO_COMMENT),
     irq2idx(this),
-    input_mux_type_def_(this),
+    input_mux_type_def_(this, "input_mux_type", NO_COMMENT),
     // signals
-    wb_select(this, "wb_select", "Res_Total"),
+    wb_select(this, "wb_select", "Res_Total", NO_COMMENT),
     wb_alu_mode(this, "wb_alu_mode", "3"),
     wb_addsub_mode(this, "wb_addsub_mode", "7"),
     wb_shifter_mode(this, "wb_shifter_mode", "4"),

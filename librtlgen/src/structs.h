@@ -29,19 +29,16 @@ class StructObject : public GenObject {
     StructObject(GenObject *parent,
                  const char *type,
                  const char *name,
-                 int idx = -1,
-                 const char *comment="");
-    StructObject(GenObject *parent,
-                 const char *type,
-                 const char *name,
-                 const char *comment="")
-                 : StructObject(parent, type, name, -1, comment) {}
+                 const char *val,
+                 const char *comment);
 
     /** GenObject generic methods */
     virtual bool isStruct() override { return true; }
     virtual bool isTypedef() override;
-    virtual void setZeroValue(const char *v) { zeroval_ = std::string(v); }
-    virtual std::string getStrValue() override { return zeroval_; }
+    //virtual void setZeroValue(const char *v) { strValue_ = std::string(v); }    // !!remove me
+    virtual void setStrValue(const char *v) override { strValue_ = std::string(v); }
+    virtual uint64_t getValue() override { return 0; }
+
     virtual std::string generate() override;
 
  protected:
@@ -55,8 +52,15 @@ class StructObject : public GenObject {
     virtual std::string generate_interface_op_bracket();    // operator [] for vector only
     virtual std::string generate_interface_sc_trace();      // sc_trace
     virtual std::string generate_const_none();
+};
 
-    std::string zeroval_;
+class RegStructObject : public StructObject {
+ public:
+    RegStructObject(GenObject *parent, const char *type, const char *name,
+                 const char *val, const char *comment)
+        : StructObject(parent, type, name, val, comment) {}
+
+    virtual bool isReg() override { return true; }
 };
 
 }  // namespace sysvc

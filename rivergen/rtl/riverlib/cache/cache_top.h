@@ -138,8 +138,8 @@ class CacheTop : public ModuleObject {
 
     class CacheOutputType : public StructObject {
      public:
-        CacheOutputType(GenObject *parent, const char *name="", const char *comment="")
-            : StructObject(parent, "CacheOutputType", name, -1, comment),
+        CacheOutputType(GenObject *parent, const char *name, const char *comment)
+            : StructObject(parent, "CacheOutputType", name, "", comment),
             req_mem_valid(this, "req_mem_valid", "1"),
             req_mem_type(this, "req_mem_type", "REQ_MEM_TYPE_BITS"),
             req_mem_size(this, "req_mem_size", "3"),

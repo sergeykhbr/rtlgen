@@ -34,4 +34,26 @@ Signal::Signal(GenObject *parent, const char *name, const char *width,
     : Logic(width, name, val, parent, comment) {
 }
 
+bool Signal::isReg() {
+    GenObject *p = getParent();
+    while (p && p->isStruct()) {
+        if (p->isReg()) {
+            return true;
+        }
+        p = p->getParent();
+    }
+    return false;
+}
+
+bool Signal::isNReg() {
+    GenObject *p = getParent();
+    while (p && p->isStruct()) {
+        if (p->isNReg()) {
+            return true;
+        }
+        p = p->getParent();
+    }
+    return false;
+}
+
 }

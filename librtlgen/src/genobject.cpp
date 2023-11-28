@@ -33,8 +33,6 @@ GenObject::GenObject(GenObject *parent, const char *type, EIdType id,
     objWidth_ = 0;
     objDepth_ = 0;
     sel_ = 0;
-    reg_ = false;
-    nreg_ = false;
     reset_disabled_ = false;
     vcd_enabled_ = true;
     sv_api_ = false;
@@ -79,7 +77,7 @@ std::string GenObject::getFile() {
     return ret;
 }
 
-void GenObject::registerCfgType(const char *name) {
+/*void GenObject::registerCfgType(const char *name) {
     if (name[0] != '\0') {
         // Variable definition (not a type declaration)
         return;
@@ -90,7 +88,7 @@ void GenObject::registerCfgType(const char *name) {
         return;
     }
     SCV_set_cfg_type(this);
-}
+}*/
 
 void GenObject::add_entry(GenObject *p) {
     entries_.push_back(p);
@@ -420,28 +418,6 @@ std::string GenObject::getLibName() {
         return getParent()->getLibName();
     }
     return std::string("work");
-}
-
-bool GenObject::isReg() {
-    if (reg_) {
-        return reg_;
-    }
-    GenObject *p = getParent();
-    if (p && p->isStruct() && p->isReg()) {
-        return true;
-    }
-    return reg_;
-}
-
-bool GenObject::isNReg() {
-    if (nreg_) {
-        return nreg_;
-    }
-    GenObject *p = getParent();
-    if (p && p->isStruct() && p->isNReg()) {
-        return true;
-    }
-    return nreg_;
 }
 
 void GenObject::setValue(uint64_t val) {

@@ -47,9 +47,9 @@ Tracer::Tracer(GenObject *parent, const char *name) :
     TRACE_TBL_SZ(this, "TRACE_TBL_SZ", "64"),
     rname(this),
     // struct declaration
-    MemopActionTypeDef_(this, "MemopActionType"),
-    RegActionTypeDef_(this, "RegActionType"),
-    TraceStepTypeDef_(this, "TraceStepType"),
+    MemopActionTypeDef_(this, "MemopActionType", NO_COMMENT),
+    RegActionTypeDef_(this, "RegActionType", NO_COMMENT),
+    TraceStepTypeDef_(this, "TraceStepType", NO_COMMENT),
     // registers
     trace_tbl(this, "trace_tbl"),
     tr_wcnt(this, "tr_wcnt", "TRACE_TBL_ABITS"),

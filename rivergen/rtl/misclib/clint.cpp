@@ -30,7 +30,7 @@ clint::clint(GenObject *parent, const char *name) :
     o_mtip(this, "o_mtip", "cpu_total", "Machine mode Timer Pending Interrupt"),
     // params
     // struct declaration
-    clint_cpu_type_def_(this, "clint_cpu_type"),
+    clint_cpu_type_def_(this, "clint_cpu_type", NO_COMMENT),
     // signals
     w_req_valid(this, "w_req_valid", "1"),
     wb_req_addr(this, "wb_req_addr", "CFG_SYSBUS_ADDR_BITS"),

@@ -29,7 +29,7 @@ BpBTB::BpBTB(GenObject *parent, const char *name) :
     o_bp_npc(this, "o_bp_npc", "MUL(CFG_BP_DEPTH,RISCV_ARCH)", "Predicted sequence"),
     o_bp_exec(this, "o_bp_exec", "CFG_BP_DEPTH", "Predicted value was jump-executed before"),
     // struct declaration
-    BtbEntryTypeDef_(this, "BtbEntryType"),
+    BtbEntryTypeDef_(this, "BtbEntryType", NO_COMMENT),
     // Signals
     btb(this, "btb"),
     dbg_npc(this, "dbg_npc", "RISCV_ARCH", "CFG_BP_DEPTH"),

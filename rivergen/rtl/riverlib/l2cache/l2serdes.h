@@ -42,8 +42,8 @@ class L2SerDes : public ModuleObject {
             vb_size(this, "vb_size", "3"),
             t_line(this, "t_line", "linew"),
             t_wstrb(this, "t_wstrb", "lineb"),
-            vl2i(this, "vl2i"),
-            vmsto(this, "vmsto") {
+            vl2i(this, "vl2i", NO_COMMENT),
+            vmsto(this, "vmsto", NO_COMMENT) {
         }
 
      public:

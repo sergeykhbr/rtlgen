@@ -39,16 +39,12 @@ class types_amba : public FileObject {
 
     class mapinfo_type : public StructObject {
      public:
-        mapinfo_type(GenObject* parent, const char* name = "", const char* comment = "")
-            : StructObject(parent, "mapinfo_type", name, comment),
+        mapinfo_type(GenObject* parent, const char* name, const char* comment)
+            : StructObject(parent, "mapinfo_type", name, "mapinfo_none", comment),
             _0_(this, "Base Address."),
             addr_start("0", "addr_start", this),
             _1_(this, "Maskable bits of the base address."),
             addr_end("0", "addr_end", this) {
-            setZeroValue("mapinfo_none");
-            registerCfgType(name);
-            std::string strtype = getType();
-            SCV_get_cfg_parameter(strtype);    // to trigger dependecy array
             disableVcd();
         }
         virtual bool isInitable() override { return true; }
@@ -63,7 +59,7 @@ class types_amba : public FileObject {
     // SystemC signals representation (without definition):
     class mapinfo_type_signal : public mapinfo_type {
      public:
-        mapinfo_type_signal(GenObject* parent, const char *name, const char *comment="")
+        mapinfo_type_signal(GenObject* parent, const char *name, const char *comment)
             : mapinfo_type(parent, name, comment) {}
         virtual bool isSignal() override { return true; }
     };
@@ -71,8 +67,8 @@ class types_amba : public FileObject {
 
     class axi4_metadata_type : public StructObject {
      public:
-        axi4_metadata_type(GenObject* parent, const char* name = "", const char* comment = "")
-            : StructObject(parent, "axi4_metadata_type", name, -1, comment),
+        axi4_metadata_type(GenObject* parent, const char* name, const char* comment)
+            : StructObject(parent, "axi4_metadata_type", name, "META_NONE", comment),
             addr("CFG_SYSBUS_ADDR_BITS", "addr", "0", this),
             _len0_(this, "@brief   Burst length."),
             _len1_(this, "@details This signal indicates the exact number of transfers in"),
@@ -123,7 +119,6 @@ class types_amba : public FileObject {
             _region3_(this, "         similar to the banks implementation in Leon3 without address"),
             _region4_(this, "         decoding."),
             region("4", "region", "0", this) {
-            setZeroValue("META_NONE");
         }
      public:
         Logic addr;
@@ -180,10 +175,10 @@ class types_amba : public FileObject {
 
     class axi4_master_out_type : public StructObject {
      public:
-        axi4_master_out_type(GenObject* parent, const char* name = "", const char* comment = "")
-            : StructObject(parent, "axi4_master_out_type", name, comment),
+        axi4_master_out_type(GenObject* parent, const char* name, const char* comment)
+            : StructObject(parent, "axi4_master_out_type", name, "axi4_master_out_none", comment),
             aw_valid("1", "aw_valid", "0", this),
-            aw_bits(this, "aw_bits"),
+            aw_bits(this, "aw_bits", NO_COMMENT),
             aw_id("CFG_SYSBUS_ID_BITS", "aw_id", "0", this),
             aw_user("CFG_SYSBUS_USER_BITS", "aw_user", "0", this),
             w_valid("1", "w_valid", "0", this),
@@ -193,14 +188,10 @@ class types_amba : public FileObject {
             w_user("CFG_SYSBUS_USER_BITS", "w_user", "0", this),
             b_ready("1", "b_ready", "0", this),
             ar_valid("1", "ar_valid", "0", this),
-            ar_bits(this, "ar_bits"),
+            ar_bits(this, "ar_bits", NO_COMMENT),
             ar_id("CFG_SYSBUS_ID_BITS", "ar_id", "0", this),
             ar_user("CFG_SYSBUS_USER_BITS", "ar_user", "0", this),
             r_ready("1", "r_ready", "0", this) {
-            setZeroValue("axi4_master_out_none");
-            registerCfgType(name);
-            std::string strtype = getType();
-            SCV_get_cfg_parameter(strtype);    // to trigger dependecy array
         }
 
     public:
@@ -224,7 +215,7 @@ class types_amba : public FileObject {
     // SystemC signals representation (without definition):
     class axi4_master_out_type_signal : public axi4_master_out_type {
      public:
-        axi4_master_out_type_signal(GenObject* parent, const char *name, const char *comment="")
+        axi4_master_out_type_signal(GenObject* parent, const char *name, const char *comment)
             : axi4_master_out_type(parent, name, comment) {}
         virtual bool isSignal() override { return true; }
     };
@@ -232,8 +223,8 @@ class types_amba : public FileObject {
 
     class axi4_master_in_type : public StructObject {
      public:
-        axi4_master_in_type(GenObject* parent, const char* name = "", const char* comment = "")
-            : StructObject(parent, "axi4_master_in_type", name, comment),
+        axi4_master_in_type(GenObject* parent, const char* name, const char* comment)
+            : StructObject(parent, "axi4_master_in_type", name, "axi4_master_in_none", comment),
             aw_ready("1", "aw_ready", "0", this),
             w_ready("1", "w_ready", "0", this),
             b_valid("1", "b_valid", "0", this),
@@ -247,10 +238,6 @@ class types_amba : public FileObject {
             r_last("1", "r_last", "0", this),
             r_id("CFG_SYSBUS_ID_BITS", "r_id", "0", this),
             r_user("CFG_SYSBUS_USER_BITS", "r_user", "0", this) {
-            setZeroValue("axi4_master_in_none");
-            registerCfgType(name);
-            std::string strtype = getType();
-            SCV_get_cfg_parameter(strtype);    // to trigger dependecy array
         }
 
      public:
@@ -272,7 +259,7 @@ class types_amba : public FileObject {
     // SystemC signals representation (without definition):
     class axi4_master_in_type_signal : public axi4_master_in_type {
      public:
-        axi4_master_in_type_signal(GenObject* parent, const char *name, const char *comment="")
+        axi4_master_in_type_signal(GenObject* parent, const char *name, const char *comment)
             : axi4_master_in_type(parent, name, comment) {}
         virtual bool isSignal() override { return true; }
     };
@@ -280,10 +267,10 @@ class types_amba : public FileObject {
 
     class axi4_slave_in_type : public StructObject {
      public:
-        axi4_slave_in_type(GenObject* parent, const char* name = "", const char* comment = "")
-            : StructObject(parent, "axi4_slave_in_type", name, comment),
+        axi4_slave_in_type(GenObject* parent, const char* name, const char* comment)
+            : StructObject(parent, "axi4_slave_in_type", name, "axi4_slave_in_none", comment),
             aw_valid("1", "aw_valid", "0", this),
-            aw_bits(this, "aw_bits"),
+            aw_bits(this, "aw_bits", NO_COMMENT),
             aw_id("CFG_SYSBUS_ID_BITS", "aw_id", "0", this),
             aw_user("CFG_SYSBUS_USER_BITS", "aw_user", "0", this),
             w_valid("1", "w_valid", "0", this),
@@ -293,14 +280,10 @@ class types_amba : public FileObject {
             w_user("CFG_SYSBUS_USER_BITS", "w_user", "0", this),
             b_ready("1", "b_ready", "0", this),
             ar_valid("1", "ar_valid", "0", this),
-            ar_bits(this, "ar_bits"),
+            ar_bits(this, "ar_bits", NO_COMMENT),
             ar_id("CFG_SYSBUS_ID_BITS", "ar_id", "0", this),
             ar_user("CFG_SYSBUS_USER_BITS", "ar_user", "0", this),
             r_ready("1", "r_ready", "0", this) {
-            setZeroValue("axi4_slave_in_none");
-            registerCfgType(name);
-            std::string strtype = getType();
-            SCV_get_cfg_parameter(strtype);    // to trigger dependecy array
         }
 
     public:
@@ -324,7 +307,7 @@ class types_amba : public FileObject {
     // SystemC signals representation (without definition):
     class axi4_slave_in_type_signal : public axi4_slave_in_type {
      public:
-        axi4_slave_in_type_signal(GenObject* parent, const char *name, const char *comment="")
+        axi4_slave_in_type_signal(GenObject* parent, const char *name, const char *comment)
             : axi4_slave_in_type(parent, name, comment) {}
         virtual bool isSignal() override { return true; }
     };
@@ -332,8 +315,8 @@ class types_amba : public FileObject {
 
     class axi4_slave_out_type : public StructObject {
      public:
-        axi4_slave_out_type(GenObject* parent, const char* name = "", const char* comment = "")
-            : StructObject(parent, "axi4_slave_out_type", name, comment),
+        axi4_slave_out_type(GenObject* parent, const char* name, const char* comment)
+            : StructObject(parent, "axi4_slave_out_type", name, "axi4_slave_out_none", comment),
             aw_ready("1", "aw_ready", "0", this),
             w_ready("1", "w_ready", "0", this),
             b_valid("1", "b_valid", "0", this),
@@ -346,12 +329,7 @@ class types_amba : public FileObject {
             r_data("CFG_SYSBUS_DATA_BITS", "r_data", "0", this),
             r_last("1", "r_last", "0", this),
             r_id("CFG_SYSBUS_ID_BITS", "r_id", "0", this),
-            r_user("CFG_SYSBUS_USER_BITS", "r_user", "0", this) {
-            setZeroValue("axi4_slave_out_none");
-            registerCfgType(name);
-            std::string strtype = getType();
-            SCV_get_cfg_parameter(strtype);    // to trigger dependecy array
-        }
+            r_user("CFG_SYSBUS_USER_BITS", "r_user", "0", this) {}
 
      public:
         Logic aw_ready;
@@ -372,27 +350,22 @@ class types_amba : public FileObject {
     // SystemC signals representation (without definition):
     class axi4_slave_out_type_signal : public axi4_slave_out_type {
      public:
-        axi4_slave_out_type_signal(GenObject* parent, const char *name, const char *comment="")
+        axi4_slave_out_type_signal(GenObject* parent, const char *name, const char *comment)
             : axi4_slave_out_type(parent, name, comment) {}
         virtual bool isSignal() override { return true; }
     };
 
     class apb_in_type : public StructObject {
      public:
-        apb_in_type(GenObject* parent, const char* name = "", const char* comment = "")
-            : StructObject(parent, "apb_in_type", name, comment),
+        apb_in_type(GenObject* parent, const char* name, const char* comment)
+            : StructObject(parent, "apb_in_type", name, "apb_in_none", comment),
             paddr("32", "paddr", "0", this),
             pprot("3", "pprot", "0", this),
             pselx("1", "pselx", "0", this),
             penable("1", "penable", "0", this),
             pwrite("1", "pwrite", "0", this),
             pstrb("4", "pstrb", "0", this),
-            pwdata("32", "pwdata", "0", this) {
-            setZeroValue("apb_in_none");
-            registerCfgType(name);
-            std::string strtype = getType();
-            SCV_get_cfg_parameter(strtype);    // to trigger dependecy array
-        }
+            pwdata("32", "pwdata", "0", this) {}
 
      public:
         Logic paddr;
@@ -407,7 +380,7 @@ class types_amba : public FileObject {
     // SystemC signals representation (without definition):
     class apb_in_type_signal : public apb_in_type {
      public:
-        apb_in_type_signal(GenObject* parent, const char *name, const char *comment="")
+        apb_in_type_signal(GenObject* parent, const char *name, const char *comment)
             : apb_in_type(parent, name, comment) {}
         virtual bool isSignal() override { return true; }
     };
@@ -415,16 +388,11 @@ class types_amba : public FileObject {
 
     class apb_out_type : public StructObject {
      public:
-        apb_out_type(GenObject* parent, const char* name = "", const char* comment = "")
-            : StructObject(parent, "apb_out_type", name, comment),
+        apb_out_type(GenObject* parent, const char* name, const char* comment)
+            : StructObject(parent, "apb_out_type", name, "apb_out_none", comment),
             pready("1", "pready", "0", this, "when 1 it breaks callback to functional model"),
             prdata("32", "prdata", "0", this),
-            pslverr("1", "pslverr", "0", this) {
-            setZeroValue("apb_out_none");
-            registerCfgType(name);
-            std::string strtype = getType();
-            SCV_get_cfg_parameter(strtype);    // to trigger dependecy array
-        }
+            pslverr("1", "pslverr", "0", this) {}
 
      public:
         Logic pready;
@@ -435,7 +403,7 @@ class types_amba : public FileObject {
     // SystemC signals representation (without definition):
     class apb_out_type_signal : public apb_out_type {
      public:
-        apb_out_type_signal(GenObject* parent, const char *name, const char *comment="")
+        apb_out_type_signal(GenObject* parent, const char *name, const char *comment)
             : apb_out_type(parent, name, comment) {}
         virtual bool isSignal() override { return true; }
     };
