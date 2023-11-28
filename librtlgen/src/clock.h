@@ -31,6 +31,7 @@ class Clock : public GenValue {
 
     virtual std::string getType();
     virtual bool isClock() override { return true; }
+    virtual bool isSignal() override { return true; }
 };
 
 

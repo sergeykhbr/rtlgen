@@ -48,12 +48,12 @@ std::string ModuleObject::generate_sysc_h_reg_struct(bool negedge) {
             continue;
         }
         ln = addspaces();
-        if (p->isSignal()) {
+        if (p->isSignal() && !p->isInput() && !p->isClock()) {
             // some structure are not defined as a signal but probably should be
             ln += "sc_signal<";
         }
         ln += p->getType();
-        if (p->isSignal()) {
+        if (p->isSignal() && !p->isInput() && !p->isClock()) {
             ln += ">";
         }
         ln += " " + p->getName();
@@ -374,11 +374,11 @@ std::string ModuleObject::generate_sysc_h() {
             text = "";
         }
         ln = addspaces();
-        if (p->isSignal() && !p->isVector()) {
+        if (p->isSignal() && !p->isInput() && !p->isClock() && !p->isVector()) {
             ln += "sc_signal<";
         }
         ln += p->getType();
-        if (p->isSignal() && !p->isVector()) {
+        if (p->isSignal() && !p->isInput() && !p->isClock() && !p->isVector()) {
             ln += ">";
         }
         ln += " " + p->getName();
@@ -492,11 +492,12 @@ std::string ModuleObject::generate_sysc_sensitivity(GenObject *obj,
     if (obj->isTypedef()
         || obj->getName() == "i_clk"
         || (obj->isOutput() && !obj->isInput())
+        || (obj->isStruct() && !obj->isInput() && !isSignalEntries(obj))         // Non signal structure can have signal variable
         || (!obj->isInput()
             && !obj->isClock()
             && !obj->isReg()
             && !obj->isNReg()
-            && !obj->isStruct()         // Non signal structure can have signal variable
+            && !obj->isStruct()
             && !obj->isSignal())) {
         return ret;
     }
@@ -555,13 +556,14 @@ std::string ModuleObject::generate_sysc_vcd_entries(GenObject *obj,
         return ret;
     }
 
-
-    std::string realname = obj->getName();
-    std::string fakename = obj->getName();
+    std::string objname = obj->getName();
     if (obj->getDepth() > 1) {
-        realname += "[" + i + "]";
+        if (i != "i") {
+            // Currently double layer structures are not supported (tracer regs)
+            return ret;
+        }
         loop = addspaces();
-        loop += "for (int " + i + " = 0; " + i + " < " + obj->getStrDepth() + "; " + i + "++) {\n";
+        loop += "for (int i = 0; i < " + obj->getStrDepth() + "; i++) {\n";
         pushspaces();
         loop += addspaces() + "char tstr[1024];\n";
     }
@@ -570,7 +572,7 @@ std::string ModuleObject::generate_sysc_vcd_entries(GenObject *obj,
         if (prefix.size()) {
             prefix += ".";
         }
-        prefix += realname;
+        prefix += objname;
         // VCD for each entry of the struct separetely
         const char tidx[2] = {i.c_str()[0] + static_cast<char>(1), 0};
         i = std::string(tidx);
@@ -585,29 +587,28 @@ std::string ModuleObject::generate_sysc_vcd_entries(GenObject *obj,
             ret += loop;
             loop = "";
         }
+        std::string r = "";
+        std::string r_ = "";
         if (obj->isReg()) {
-            realname = "r." + prefix + realname;
-            fakename = "pn + \".r_" + prefix + fakename + "\"";
+            r = "r.";
+            r_ = "r_";
         } else if (obj->isNReg()) {
-            realname = "nr." + prefix + realname;
-            fakename = "pn + \".nr_" + prefix + fakename + "\"";
-        } else {
-            realname = prefix + realname;
-            fakename = realname + ".name()";
+            r = "nr.";
+            r_ = "nr_";
         }
         if (obj->getDepth() > 1) {
             ret += addspaces();
-            ret += "RISCV_sprintf(tstr, sizeof(tstr),"
-                    " \"%s.r_" + prefix + fakename + "%d\", pn.c_str(), " + i + ");\n";
-            ret += addspaces() + "sc_trace(o_vcd, " + realname + ", tstr);\n";
+            ret += "RISCV_sprintf(tstr, sizeof(tstr), \"%s." + r_ + prefix + objname + "%d\", pn.c_str(), i);\n";
+            ret += addspaces() + "sc_trace(o_vcd, " + r + prefix + objname + "[i], tstr);\n";
         } else if (obj->getParent()
             && obj->getParent()->getDepth() > 1) {
             ret += addspaces();
-            ret += "RISCV_sprintf(tstr, sizeof(tstr),"
-                    " \"%s.r_" + prefix + fakename + "\", pn.c_str(), " + i + ");\n";
-            ret += addspaces() + "sc_trace(o_vcd, " + realname + ", tstr);\n";
+            ret += "RISCV_sprintf(tstr, sizeof(tstr), \"%s." + r_ + obj->getParent()->getName() + "%d_" + objname + "\", pn.c_str(), i);\n";
+            ret += addspaces() + "sc_trace(o_vcd, " + r + obj->getParent()->getName() + "[i]." + objname + ", tstr);\n";
+        } else if (r.size()) {
+            ret += addspaces() + "sc_trace(o_vcd, " + r + prefix + objname + ", pn + \"." + r_ + prefix + objname + "\");\n";
         } else {
-            ret += addspaces() + "sc_trace(o_vcd, " + realname + ", " + fakename + ");\n";
+            ret += addspaces() + "sc_trace(o_vcd, " + prefix + objname + ", " + prefix + objname + ".name());\n";
         }
     }
 

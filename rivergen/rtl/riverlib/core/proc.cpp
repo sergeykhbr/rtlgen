@@ -32,7 +32,7 @@ Processor::Processor(GenObject *parent, const char *name) :
     i_resp_ctrl_valid(this, "i_resp_ctrl_valid", "1", "ICache response is valid"),
     i_resp_ctrl_addr(this, "i_resp_ctrl_addr", "RISCV_ARCH", "Response address must be equal to the latest request address"),
     i_resp_ctrl_data(this, "i_resp_ctrl_data", "64", "Read value"),
-    i_resp_ctrl_load_fault(this, "i_resp_ctrl_load_fault"),
+    i_resp_ctrl_load_fault(this, "i_resp_ctrl_load_fault", "1"),
     o_resp_ctrl_ready(this, "o_resp_ctrl_ready", "1", "Core is ready to accept response from ICache"),
     _DataPath0_(this, "Data path:"),
     i_req_data_ready(this, "i_req_data_ready", "1", "DCache is ready to accept request"),

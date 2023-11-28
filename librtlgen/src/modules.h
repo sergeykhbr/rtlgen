@@ -50,6 +50,7 @@ class ModuleObject : public GenObject {
     virtual bool is2DimReg();
     virtual bool isSubModules();
     virtual bool isFileValue();
+    virtual bool isSignalEntries(GenObject *obj);
     virtual void getTmplParamList(std::list<GenObject *> &genlist);
     virtual void changeTmplParameter(const char *name, const char *val);
     virtual void getParamList(std::list<GenObject *> &genlist);

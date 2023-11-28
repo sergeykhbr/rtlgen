@@ -115,6 +115,22 @@ bool ModuleObject::isFileValue() {
     return false;
 }
 
+bool ModuleObject::isSignalEntries(GenObject *obj) {
+    if (obj->isSignal()) {
+        return true;
+    }
+    for (auto &p: obj->getEntries()) {
+        if (p->isSignal()) {
+            return true;
+        }
+        if (p->isStruct()) {
+            if (isSignalEntries(p)) {
+                return true;
+            }
+        }
+    }
+    return false;
+}
 
 void ModuleObject::getTmplParamList(std::list<GenObject *> &genlist) {
     for (auto &e : entries_) {

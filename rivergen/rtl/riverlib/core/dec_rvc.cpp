@@ -90,6 +90,9 @@ DecoderRvc::DecoderRvc(GenObject *parent, const char *name, const char *depth) :
     // process
     comb(this)
 {
+    o_instr_vec.disableVcd();
+    instr_vec.disableVcd();
+
     Operation::start(this);
 }
 

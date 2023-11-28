@@ -68,6 +68,8 @@ InstrDecoder::InstrDecoder(GenObject *parent, const char *name) :
     rv(this, "rv", "DEC_NUM"),
     rvc(this, "rvc", "DEC_NUM")
 {
+    d.disableVcd();
+
     Operation::start(this);
 
     // Create and connet Sub-modules:

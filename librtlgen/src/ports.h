@@ -34,7 +34,7 @@ class InPort : public Logic {
  public:
     InPort(GenObject *parent,
            const char *name,
-           const char *width="1",
+           const char *width,
            const char *comment="");
 
     InPort(GenObject *parent,
@@ -43,6 +43,7 @@ class InPort : public Logic {
            const char *comment="");
 
     virtual bool isInput() override { return true; }
+    virtual bool isSignal() override { return true; }
 };
 
 class OutPort : public Logic {
@@ -55,7 +56,7 @@ class OutPort : public Logic {
 
     OutPort(GenObject *parent,
            const char *name,
-           const char *width="1",
+           const char *width,
            const char *comment="");
 
     OutPort(GenObject *parent,
@@ -70,7 +71,7 @@ class IoPort : public Logic {
  public:
     IoPort(GenObject *parent,
            const char *name,
-           const char *width="1",
+           const char *width,
            const char *comment="");
 
     IoPort(GenObject *parent,
@@ -78,6 +79,7 @@ class IoPort : public Logic {
            GenValue *width,
            const char *comment="");
 
+    virtual bool isSignal() override { return true; }
     virtual bool isInput() override { return true; }
     virtual bool isOutput() override { return true; }
 };
@@ -101,6 +103,7 @@ class InStruct : public IoStruct<T> {
     InStruct(GenObject* parent, const char* name, const char* comment = "")
         : IoStruct<T>(parent, name, comment) { }
  protected:
+    virtual bool isSignal() override { return true; }
     virtual bool isInput() override { return true; }
     virtual bool isOutput() override { return false; }
 };
