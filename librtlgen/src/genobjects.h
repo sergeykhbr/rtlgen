@@ -40,7 +40,7 @@ enum EIdType {
     ID_STRUCT = (1<<15),
 //    ID_STRUCT_INST = (1<<16),
     ID_ARRAY_DEF = (1<<17),
-    ID_ARRAY_STRING = (1<<18),
+//    ID_ARRAY_STRING = (1<<18),
 //    ID_VECTOR = (1<<19),      // array of the fixed depth
     ID_PROCESS = (1<<20),
     ID_COMMENT = (1<<21),

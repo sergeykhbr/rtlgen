@@ -46,6 +46,65 @@ bool StructObject::isTypedef() {
     return getName() == "" || getName() == getType();
 }
 
+std::string StructObject::getStrValue() {
+    std::string ret = "";
+    if (!isParam()) {
+        return strValue_;
+    }
+    int d = getDepth();
+    if (SCV_is_sysc()) {
+        ret += "{";
+    } else if (SCV_is_sv()) {
+        ret += "'{";
+    } else if (SCV_is_vhdl()) {
+        ret += "(";
+    }
+
+    if (d > 1) {
+        if (getEntries().size() < d) {
+            SHOW_ERROR("Wrong struct param definition %d < %d",
+                        d, getEntries().size());
+        }
+        ret += "\n";
+        pushspaces();
+        int tcnt = 0;
+        std::string ln;
+        for (auto &p: getEntries()) {
+            if (p->getType() != getType()) {
+                // Only the same type entry should be generated
+                continue;
+            }
+            ln = addspaces() + p->getStrValue();
+            if (++tcnt < d) {
+                ln += ",";
+            }
+            p->addComment(ln);
+            ret += ln + "\n";
+        }
+        popspaces();
+    } else {
+        for (auto &p: getEntries()) {
+            if (!p->isValue() && !p->isStruct()) {
+                continue;
+            }
+            ret += p->getStrValue();
+            if (p != getEntries().back()) {
+                ret += ", ";
+            }
+        }
+    }
+
+
+    if (SCV_is_sysc()) {
+        ret += "}";
+    } else if (SCV_is_sv()) {
+        ret += "'}";
+    } else if (SCV_is_vhdl()) {
+        ret += ")";
+    }
+    return ret;
+}
+
 
 std::string StructObject::generate_interface_constructor() {
     std::string ret = "";
@@ -506,10 +565,24 @@ std::string StructObject::generate_vector_type() {
     return ret;
 }
 
+std::string StructObject::generate_param() {
+    std::string ret = "";
+    ret += addspaces();
+    ret += "static const " + getType() + " " + getName();
+    if (getDepth() > 1) {
+        ret += "[" + getStrDepth() + "]";
+    }
+    ret += " = " + getStrValue() + ";\n";
+    return ret;
+}
+
 std::string StructObject::generate() {
     std::string ret = "";
     std::string ln;
 
+    if (isParam()) {
+        return generate_param();
+    }
     if (isVector()) {
         return generate_vector_type();
     }

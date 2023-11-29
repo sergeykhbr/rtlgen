@@ -229,30 +229,12 @@ std::string ModuleObject::generate_vhdl_mod_param_strings() {
         if (!p->isLocal() || !p->isGenericDep()) {
             continue;
         }
-        if (p->isString()) {
-            // Vivado doesn't support string parameters
-            ret += "localparam " + p->getName();
-        } else {
-            ret += "localparam " + p->getType() + " " + p->getName();
+        ret += "constant " + p->getType() + " " + p->getName();
+        if (p->getDepth() > 1) {
+            ret += "(0 up " + p->getStrDepth() +"-1)";
         }
-        ret += " = " + p->generate() + ";\n";
+        ret += " := " + p->generate() + ";\n";
 
-        tcnt++;
-    }
-    for (auto &p: getEntries()) {
-        if (p->getId() != ID_ARRAY_STRING) {
-            continue;
-        }
-        ret += "localparam string " + p->getName() + "[0: " + p->getStrDepth() +"-1]";
-        ret += " = '{\n";
-        for (auto &e: p->getEntries()) {
-            ret += "    \"" + e->getName() + "\"";
-            if (e != p->getEntries().back()) {
-                ret += ",";
-            }
-            ret += "\n";
-        }
-        ret += "};\n";
         tcnt++;
     }
     if (tcnt) {

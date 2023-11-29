@@ -45,7 +45,7 @@ ram_bytes_tech::ram_bytes_tech(GenObject *parent, const char *name, const char *
     mem.changeTmplParameter("abits", "SUB(abits,log2_dbytes)");
     mem.changeTmplParameter("dbits", "8");
     GenObject &i = FORGEN("i", CONST("0"), dbytes, "++", new STRING("memgen"));
-        NEW(*mem.getItem(0), mem.getName().c_str(), &i);
+        NEW(mem, mem.getName().c_str(), &i);
             CONNECT(mem, &i, mem.i_clk, i_clk);
             CONNECT(mem, &i, mem.i_addr, wb_addr);
             CONNECT(mem, &i, mem.i_wena, ARRITEM(wb_wena, i, wb_wena));

@@ -58,10 +58,10 @@ class types_bus1 : public FileObject {
         virtual bool isSignal() override { return true; }
     };
 
-    class CONST_CFG_BUS1_MAP : public bus1_mapinfo_vector {
+    class CONST_CFG_BUS1_MAP : public ParamStruct<types_amba::mapinfo_type> {
      public:
         CONST_CFG_BUS1_MAP(GenObject *parent)
-            : bus1_mapinfo_vector(parent, "CFG_BUS1_MAP"),
+            : ParamStruct<types_amba::mapinfo_type>(parent, "CFG_BUS1_MAP", NO_COMMENT),
             uart1(this, "uart1", "0, uart1 4KB"),
             prci(this, "prci", "1, PRCI 4KB"),
             dmi(this, "dmi", "2, dmi 4KB. TODO: change base address"),
@@ -69,6 +69,7 @@ class types_bus1 : public FileObject {
             gpio(this, "gpio", "3, GPIO 4KB"),
             ddr(this, "ddr", "5, DDR MGMT 4KB"),
             pnp(this, "pnp", "6, Plug'n'Play 4KB") {
+            setStrDepth("CFG_BUS1_PSLV_TOTAL");
 
             uart1.addr_start.setStrValue("0x0000000010000");
             uart1.addr_end.setStrValue(  "0x0000000011000");
@@ -91,28 +92,13 @@ class types_bus1 : public FileObject {
             pnp.addr_start.setStrValue(  "0x00000000ff000");
             pnp.addr_end.setStrValue(    "0x0000000100000");
         }
-        virtual GenObject *getItem(int idx) override {
-            GenObject *ret = this;
-            switch (idx) {
-            case 0: ret = &uart1; break;
-            case 1: ret = &prci; break;
-            case 2: ret = &dmi; break;
-            case 3: ret = &spi; break;
-            case 4: ret = &gpio; break;
-            case 5: ret = &ddr; break;
-            case 6: ret = &pnp; break;
-            default: ret = &pnp;
-            }
-            return ret;
-        }
-
-        mapinfo_type uart1;
-        mapinfo_type prci;
-        mapinfo_type dmi;
-        mapinfo_type spi;
-        mapinfo_type gpio;
-        mapinfo_type ddr;
-        mapinfo_type pnp;
+        ParamStruct<types_amba::mapinfo_type> uart1;
+        ParamStruct<types_amba::mapinfo_type> prci;
+        ParamStruct<types_amba::mapinfo_type> dmi;
+        ParamStruct<types_amba::mapinfo_type> spi;
+        ParamStruct<types_amba::mapinfo_type> gpio;
+        ParamStruct<types_amba::mapinfo_type> ddr;
+        ParamStruct<types_amba::mapinfo_type> pnp;
     };
 
  public:

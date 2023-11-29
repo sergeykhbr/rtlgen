@@ -19,4 +19,40 @@
 
 namespace sysvc {
 
+std::string ParamString::generate() {
+    std::string ret = "";
+    int d = getDepth();
+    if (d <= 1) {
+        return STRING::generate();
+    }
+    ret += addspaces();
+    if (SCV_is_sysc()) {
+        ret += "{\n";
+    } else if (SCV_is_sv()) {
+        ret += "'{\n";
+    } else if (SCV_is_vhdl()) {
+        ret += "(\n";
+    }
+    pushspaces();
+
+    for (auto &s: getEntries()) {
+        ret += s->generate();
+        if (&s != &getEntries().back()) {
+            ret += ",";
+        }
+        ret += "  " + s->addComment();
+        ret += "\n";
+    }
+    popspaces();
+    ret += addspaces();
+    if (SCV_is_sysc()) {
+        ret += "}";
+    } else if (SCV_is_sv()) {
+        ret += "}";
+    } else if (SCV_is_vhdl()) {
+        ret += ")";
+    }
+    return ret;
+}
+
 }

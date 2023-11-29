@@ -44,7 +44,7 @@ class ParamString : public STRING {
     }
     virtual bool isParam() override { return true; }
     virtual std::string getStrValue() override { return getName(); }
-    virtual std::string generate() override { return STRING::getStrValue(); }
+    virtual std::string generate() override;
 };
 
 class ParamUI16D : public UI16D {
@@ -120,5 +120,16 @@ class ParamTIMESEC : public TIMESEC {
     virtual std::string getStrValue() override { return getName(); }
     virtual std::string generate() override { return TIMESEC::getStrValue(); }
 };
+
+template<class T>
+class ParamStruct : public T {
+    public:
+    ParamStruct(GenObject *parent, const char *name, const char *comment)
+        : T(parent, name, comment) {
+        T::setStrValue("");         // bullet proof clear default *_none value assigned by default
+    }
+    virtual bool isParam() override { return true; }
+};
+
 
 }  // namespace sysvc

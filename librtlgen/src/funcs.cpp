@@ -68,12 +68,23 @@ std::string FunctionObject::generate_sysc() {
 
     // process variables declaration
     if (getType() == "std::string" || getType() == "string") {
+        if (!isString()) {
+            bool st = true;
+        }
+    }
+
+    //if (isString()) {  // doesnot work
+    if (getType() == "std::string" || getType() == "string") {
         // return value is string
         ret += addspaces() + "char tstr[256];\n";
     }
     tcnt = 0;
     bool skiparg;
     for (auto &e: getEntries()) {
+        if (!e->isValue() && !e->isStruct()) { // no need to check typedef inside of function
+            continue;
+        }
+
         skiparg = false;
         for (auto &arg: argslist) {
             if (e->getName() == arg->getName()) {
@@ -85,18 +96,15 @@ std::string FunctionObject::generate_sysc() {
             continue;
         }
 
-        if (e->getId() == ID_VALUE) {
-            ret += addspaces() + e->getType() + " " + e->getName();
-            tcnt++;
-        } else if (e->getId() == ID_ARRAY_DEF) {
-            ret += addspaces() + e->getType() + " " + e->getName();
+        if (e->isConst()) {
+            SHOW_ERROR("constant defined inside of function: %s", getName());
+        }
+
+        ret += addspaces() + e->getType() + " " + e->getName();
+        if (e->getDepth() > 1) {
             ret += "[";
             ret += e->getStrDepth();
             ret += "]";
-        } else if (e->isStruct()) { // no need to check typedef inside of function
-            ret += addspaces() + e->getType() + " " + e->getName();
-        } else {
-            continue;
         }
         tcnt++;
         ret += ";\n";

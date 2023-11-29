@@ -20,7 +20,7 @@
 namespace sysvc {
 
 TextLine::TextLine(GenObject *parent, const char *comment)
-    : GenObject(parent, "", ID_COMMENT, comment, comment) {
+    : GenObject(parent, "TextLine", ID_COMMENT, comment, comment) {
     empty_ = false;
 }
 

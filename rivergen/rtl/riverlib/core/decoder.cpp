@@ -74,7 +74,7 @@ InstrDecoder::InstrDecoder(GenObject *parent, const char *name) :
 
     // Create and connet Sub-modules:
         GenObject *i = &FORGEN ("i", CONST("0"), CONST("DEC_NUM"), "++", new STRING("rvx"));
-        NEW(*rv.getItem(0), rv.getName().c_str(), i);
+        NEW(rv, rv.getName().c_str(), i);
             CONNECT(rv, i, rv.i_clk, i_clk);
             CONNECT(rv, i, rv.i_nrst, i_nrst);
             CONNECT(rv, i, rv.i_flush_pipeline, i_flush_pipeline);
@@ -110,7 +110,7 @@ InstrDecoder::InstrDecoder(GenObject *parent, const char *name) :
 
 TEXT();
     i = &FORGEN ("i", CONST("0"), CONST("DEC_NUM"), "++", new STRING("rvcx"));
-        NEW(*rvc.getItem(0), rvc.getName().c_str(), i);
+        NEW(rvc, rvc.getName().c_str(), i);
             CONNECT(rvc, i, rvc.i_clk, i_clk);
             CONNECT(rvc, i, rvc.i_nrst, i_nrst);
             CONNECT(rvc, i, rvc.i_flush_pipeline, i_flush_pipeline);

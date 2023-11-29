@@ -28,6 +28,8 @@ class Tracer : public ModuleObject {
     class FunctionTaskDisassembler : public FunctionObject {
      public:
         FunctionTaskDisassembler(GenObject *parent);
+
+        virtual bool isString() override { return true; }
         virtual std::string getType() override { return ostr.getType(); }
         virtual void getArgsList(std::list<GenObject *> &args) {
             args.push_back(&instr);
@@ -122,10 +124,12 @@ class Tracer : public ModuleObject {
  protected:
     ParamI32D TRACE_TBL_ABITS;
     ParamI32D TRACE_TBL_SZ;
-    class RegisterNameArray : public StringArray {
+
+    class RegisterNameArray : public ParamString {
      public:
         RegisterNameArray(GenObject *parent) :
-            StringArray(parent, "rname", "64") {
+            ParamString(parent, "rname", "", NO_COMMENT) {
+            setStrDepth("64");
             static const char *RNAMES[64] = {
                 "zero", "ra", "sp", "gp", "tp", "t0", "t1", "t2",
                 "s0", "s1", "a0", "a1", "a2", "a3", "a4", "a5",
@@ -136,8 +140,11 @@ class Tracer : public ModuleObject {
                 "fa6", "fa7", "fs2",  "fs3",  "fs4", "fs5", "fs6",  "fs7",
                 "fs8", "fs9", "fs10", "fs11", "ft8", "ft9", "ft10", "ft11"
             };
+            STRING *pitem;
+            char tstr[16];
             for (int i = 0; i < 64; i++) {
-                getItem(i)->setName(RNAMES[i]);
+                RISCV_sprintf(tstr, sizeof(tstr), "x%d", i);
+                pitem = new STRING(RNAMES[i], "", this, tstr);
             }
         }
     } rname;

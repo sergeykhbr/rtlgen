@@ -81,10 +81,10 @@ class types_bus0 : public FileObject {
         virtual bool isSignal() override { return true; }
     };
 
-    class CONST_CFG_BUS0_MAP : public bus0_mapinfo_vector {
+    class CONST_CFG_BUS0_MAP : public ParamStruct<types_amba::mapinfo_type> {
      public:
         CONST_CFG_BUS0_MAP(GenObject *parent)
-            : bus0_mapinfo_vector(parent, "CFG_BUS0_MAP"),
+            : ParamStruct<types_amba::mapinfo_type>(parent, "CFG_BUS0_MAP", NO_COMMENT),
             bootrom(this, "bootrom", "0, bootrom, 256 KB"),
             clint(this, "clint", "1, clint"),
             sram(this, "sram", "2, sram, 2MB"),
@@ -92,6 +92,7 @@ class types_bus0 : public FileObject {
             bus1(this, "bus1", "4, APB bridge: uart1"),
             ddr(this, "ddr", "5, ddr, 512 MB"),
             sdctrl(this, "sdctrl", "6, sdctrl, 32 GB") {
+            setStrDepth("CFG_BUS0_XSLV_TOTAL");
             bootrom.addr_start.setStrValue("0x0000000010000");
             bootrom.addr_end.setStrValue(  "0x0000000050000");
 
@@ -113,28 +114,16 @@ class types_bus0 : public FileObject {
             sdctrl.addr_start.setStrValue("0x0000800000000");
             sdctrl.addr_end.setStrValue(  "0x0001000000000");
         }
-        virtual GenObject *getItem(int idx) override {
-            GenObject *ret = this;
-            switch (idx) {
-            case 0: ret = &bootrom; break;
-            case 1: ret = &clint; break;
-            case 2: ret = &sram; break;
-            case 3: ret = &plic; break;
-            case 4: ret = &bus1; break;
-            case 5: ret = &ddr; break;
-            case 6: ret = &sdctrl; break;
-            default: ret = &sdctrl;
-            }
-            return ret;
-        }
+        virtual bool isParam() override { return true; }
 
-        mapinfo_type bootrom;
-        mapinfo_type clint;
-        mapinfo_type sram;
-        mapinfo_type plic;
-        mapinfo_type bus1;
-        mapinfo_type ddr;
-        mapinfo_type sdctrl;
+     protected:
+        ParamStruct<types_amba::mapinfo_type> bootrom;
+        ParamStruct<types_amba::mapinfo_type> clint;
+        ParamStruct<types_amba::mapinfo_type> sram;
+        ParamStruct<types_amba::mapinfo_type> plic;
+        ParamStruct<types_amba::mapinfo_type> bus1;
+        ParamStruct<types_amba::mapinfo_type> ddr;
+        ParamStruct<types_amba::mapinfo_type> sdctrl;
     };
 
 

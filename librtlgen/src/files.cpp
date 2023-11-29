@@ -216,7 +216,7 @@ std::string FileObject::generate_const(GenObject *obj) {
         } else {
             out += "}";
         }
-    } else if (obj->getId() == ID_CONST || obj->getId() == ID_VALUE) {
+    } else if (obj->isValue()) {
         out += obj->getStrValue();
     }
     return out;
@@ -288,9 +288,14 @@ void FileObject::generate_sysc() {
             out += addspaces() + "static " + p->getType() + " ";
             out += p->generate();
         } else if (p->isParam() && !p->isParamGeneric()) {
-            ln = addspaces() + "static const " + p->getType() + " ";
-            ln += p->getName() + " = " + p->generate() + ";";
-            p->addComment(ln);
+            if (p->isStruct()) {
+                // Do all others params in a such way
+                ln = p->generate();
+            } else {
+                ln = addspaces() + "static const " + p->getType() + " ";
+                ln += p->getName() + " = " + p->generate() + ";";
+                p->addComment(ln);
+            }
             out += ln + "\n";
         } else if (p->isTypedef()) {
             out += addspaces();

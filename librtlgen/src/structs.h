@@ -36,6 +36,7 @@ class StructObject : public GenObject {
     virtual bool isStruct() override { return true; }
     virtual bool isTypedef() override;
     virtual void setStrValue(const char *v) override { strValue_ = std::string(v); }
+    virtual std::string getStrValue() override;
     virtual uint64_t getValue() override { return 0; }
 
     virtual std::string generate() override;
@@ -43,6 +44,7 @@ class StructObject : public GenObject {
  protected:
     virtual std::string generate_interface();
     virtual std::string generate_vector_type();
+    virtual std::string generate_param();
     virtual std::string generate_interface_constructor();
     virtual std::string generate_interface_constructor_init();
     virtual std::string generate_interface_op_equal();      // operator ==

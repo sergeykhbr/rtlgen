@@ -168,7 +168,7 @@ TEXT();
         cpux.hartid.setObjValue(i);
         cpux.fpu_ena.setObjValue(&glob_river_cfg_->CFG_HW_FPU_ENABLE);
         cpux.tracer_ena.setObjValue(&glob_river_cfg_->CFG_TRACER_ENABLE);
-        NEW(*cpux.getItem(0), cpux.getName().c_str(), i);
+        NEW(cpux, cpux.getName().c_str(), i);
             CONNECT(cpux, i, cpux.i_nrst, i_cores_nrst);
             CONNECT(cpux, i, cpux.i_clk, i_clk);
             CONNECT(cpux, i, cpux.i_mtimer, i_mtimer);
@@ -186,7 +186,7 @@ TEXT();
 
 TEXT();
     i = &FORGEN("i", cpu_num,  glob_river_cfg_->CFG_CPU_MAX, "++", new STRING("xdummycpu"));
-        NEW(*dumx.getItem(0), dumx.getName().c_str(), i);
+        NEW(dumx, dumx.getName().c_str(), i);
             CONNECT(dumx, i, dumx.o_msto, ARRITEM(coreo, *i, coreo));
             CONNECT(dumx, i, dumx.o_dport, ARRITEM(wb_dport_o, *i, wb_dport_o));
             CONNECT(dumx, i, dumx.o_flush_l2, ARRITEM(vec_flush_l2, *i, vec_flush_l2));

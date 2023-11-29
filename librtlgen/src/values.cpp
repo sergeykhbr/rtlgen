@@ -132,6 +132,10 @@ std::string STRING::getType() {
     return ret;
 }
 
+std::string STRING::generate() {
+    return addspaces() + strValue_;
+}
+
 std::string FileValue::getType() {
     std::string ret = "";
     if (SCV_is_sysc()) {

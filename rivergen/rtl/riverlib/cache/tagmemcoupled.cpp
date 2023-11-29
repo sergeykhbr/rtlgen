@@ -69,7 +69,7 @@ TagMemCoupled::TagMemCoupled(GenObject *parent,
     memx.changeTmplParameter("flbits", "flbits");
     memx.changeTmplParameter("snoop", "0");
     GenObject &i = FORGEN ("i", CONST("0"), CONST("MemTotal"), "++", new STRING("memgen"));
-        NEW(*memx.getItem(0), memx.getName().c_str(), &i);
+        NEW(memx, memx.getName().c_str(), &i);
             CONNECT(memx, &i, memx.i_clk, i_clk);
             CONNECT(memx, &i, memx.i_nrst, i_nrst);
             CONNECT(memx, &i, memx.i_direct_access, ARRITEM(linei, i, linei.direct_access));

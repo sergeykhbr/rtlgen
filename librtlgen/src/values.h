@@ -64,7 +64,7 @@ class STRING : public GenValue {
 
     virtual bool isString() override { return true; }
     virtual std::string getType();
-    virtual std::string getStrValue() override { return strValue_; }
+    virtual std::string generate() override;
 };
 
 class FileValue : public GenValue {

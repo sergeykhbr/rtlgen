@@ -211,24 +211,10 @@ std::string ModuleObject::generate_sv_mod_param_strings() {
         } else {
             ret += "localparam " + p->getType() + " " + p->getName();
         }
+        if (p->getDepth() > 1) {
+            ret += "[0: " + p->getStrDepth() +"-1]";
+        }
         ret += " = " + p->generate() + ";\n";
-
-        tcnt++;
-    }
-    for (auto &p: getEntries()) {
-        if (p->getId() != ID_ARRAY_STRING) {
-            continue;
-        }
-        ret += "localparam string " + p->getName() + "[0: " + p->getStrDepth() +"-1]";
-        ret += " = '{\n";
-        for (auto &e: p->getEntries()) {
-            ret += "    \"" + e->getName() + "\"";
-            if (e != p->getEntries().back()) {
-                ret += ",";
-            }
-            ret += "\n";
-        }
-        ret += "};\n";
         tcnt++;
     }
     if (tcnt) {
@@ -318,8 +304,8 @@ std::string ModuleObject::generate_sv_mod_proc_nullify(GenObject *obj,
                                                        std::string prefix,
                                                        std::string i) {
     std::string ret = "";
-    if (obj->getId() != ID_VALUE
-        && !(obj->isStruct() && !obj->isTypedef())) {
+    if (((obj->isValue() && !obj->isConst())
+        || (obj->isStruct() && !obj->isTypedef())) == 0) {
         return ret;
     }
 
@@ -334,12 +320,10 @@ std::string ModuleObject::generate_sv_mod_proc_nullify(GenObject *obj,
         ret += "for (int " + i + " = 0; " + i + " < " + obj->getStrDepth() + "; " + i + "++) begin\n";
         pushspaces();
     }
-    if (obj->isStruct() && obj->getStrValue().size() == 0) {
-        // Initialization of struct each field separetly:
-        const char tidx[2] = {i.c_str()[0] + static_cast<char>(1), 0};
-        i = std::string(tidx);
-        for (auto &e: obj->getEntries()) {
-            ret += generate_sv_mod_proc_nullify(e, prefix, i);
+
+    if (obj->isStruct() && obj->getStrValue() == "") {
+        for (auto &p : obj->getEntries()) {
+            ret += generate_sv_mod_proc_nullify(p, prefix, i);
         }
     } else {
         ret += addspaces() + prefix + " = " + obj->getStrValue() + ";\n";

@@ -64,7 +64,6 @@ class types_amba : public FileObject {
         virtual bool isSignal() override { return true; }
     };
 
-
     class axi4_metadata_type : public StructObject {
      public:
         axi4_metadata_type(GenObject* parent, const char* name, const char* comment)

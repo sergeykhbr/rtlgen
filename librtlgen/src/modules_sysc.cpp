@@ -490,7 +490,6 @@ std::string ModuleObject::generate_sysc_sensitivity(GenObject *obj,
                                                     std::string i,
                                                     std::string &loop) {
     std::string ret = "";
-#if 1
     if (!obj->isSignal() && !obj->isStruct()) {
         return ret;
     }
@@ -499,25 +498,10 @@ std::string ModuleObject::generate_sysc_sensitivity(GenObject *obj,
         || obj->getName() == "i_clk") {
         return ret;
     }
-
-    if (obj->getName() == "o_cfg") {
-        obj->isSignal();
-        bool st = true;
-    }
-#else
-    // output port could be signal too:
-    if (obj->isTypedef()
-        || obj->getName() == "i_clk"
-        || (obj->isOutput() && !obj->isInput())
-        || (obj->isStruct() && !obj->isInput() && !isSignalEntries(obj))         // Non signal structure can have signal variable
-        || (!obj->isInput()
-            && !obj->isClock()
-            && !obj->isReg()
-            && !obj->isNReg()
-            && !obj->isStruct()
-            && !obj->isSignal())) {
-        return ret;
-    }
+#if 1
+if (obj->getName() == "i_xmsto") {
+bool st = true;
+}
 #endif
 
     if (prefix.size()) {
@@ -531,8 +515,8 @@ std::string ModuleObject::generate_sysc_sensitivity(GenObject *obj,
         loop += "for (int " + i + " = 0; " + i + " < " + obj->getStrDepth() + "; " + i + "++) {\n";
         pushspaces();
     }
-    if (obj->isStruct() && obj->getStrValue().size() == 0) {
-        // Initialization of struct each field separetly:
+
+    if (obj->isStruct() && !obj->isInput()) {    // all input structures are interfaces
         const char tidx[2] = {i.c_str()[0] + static_cast<char>(1), 0};
         i = std::string(tidx);
         for (auto &e: obj->getEntries()) {
@@ -550,6 +534,7 @@ std::string ModuleObject::generate_sysc_sensitivity(GenObject *obj,
     }
 
     if (obj->getDepth() > 1) {
+        // Insert end of 'for' loop if it was generated:
         if (loop == "") {
             popspaces();
             ret += addspaces() + "}\n";
@@ -710,25 +695,12 @@ std::string ModuleObject::generate_sysc_param_strings() {
         if (p->isParam() && !p->isParamGeneric() && p->isLocal() && p->isString()) {
             // Only string parameter defined inside of this module
             ret += "static " + p->getType() + " " + p->getName();
+            if (p->getDepth() > 1) {
+                ret += "[" + p->getStrDepth() + "]";
+            }
             ret += " = " + p->generate() + ";\n";
             tcnt++;
         }
-    }
-    for (auto &p: getEntries()) {
-        if (p->getId() != ID_ARRAY_STRING) {
-            continue;
-        }
-        ret += "static " + p->getType() + " " + p->getName() + "[" + p->getStrDepth() +"]";
-        ret += " = {\n";
-        for (auto &e: p->getEntries()) {
-            ret += "    \"" + e->getName() + "\"";
-            if (e != p->getEntries().back()) {
-                ret += ",";
-            }
-            ret += "\n";
-        }
-        ret += "};\n";
-        tcnt++;
     }
     if (tcnt) {
         ret += "\n";
@@ -1072,8 +1044,8 @@ std::string ModuleObject::generate_sysc_proc_nullify(GenObject *obj,
                                                      std::string prefix,
                                                      std::string i) {
     std::string ret = "";
-    if (obj->getId() != ID_VALUE
-        && !(obj->isStruct() && !obj->isTypedef())) {
+    if (((obj->isValue() && !obj->isConst())
+        || (obj->isStruct() && !obj->isTypedef())) == 0) {
         return ret;
     }
 
@@ -1087,13 +1059,13 @@ std::string ModuleObject::generate_sysc_proc_nullify(GenObject *obj,
         ret += addspaces();
         ret += "for (int " + i + " = 0; " + i + " < " + obj->getStrDepth() + "; " + i + "++) {\n";
         pushspaces();
-    }
-    if (obj->isStruct() && obj->getStrValue().size() == 0) {
-        // Initialization of struct each field separetly:
+
         const char tidx[2] = {i.c_str()[0] + static_cast<char>(1), 0};
         i = std::string(tidx);
-        for (auto &e: obj->getEntries()) {
-            ret += generate_sysc_proc_nullify(e, prefix, i);
+    }
+    if (obj->isStruct() && obj->getStrValue() == "") {
+        for (auto &p : obj->getEntries()) {
+            ret += generate_sysc_proc_nullify(p, prefix, i);
         }
     } else {
         ret += addspaces() + prefix + " = " + obj->getStrValue() + ";\n";
