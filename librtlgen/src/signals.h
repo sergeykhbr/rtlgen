@@ -34,11 +34,6 @@ class Signal : public Logic {
 
     Signal(GenObject *parent,
            const char *name,
-           GenValue *width,
-           const char *comment="");
-
-    Signal(GenObject *parent,
-           const char *name,
            const char *width,
            const char *val="'0",
            const char *comment="");
@@ -49,12 +44,6 @@ class Signal : public Logic {
 // Always use sc_biguint in SystemC
 class SignalBig : public Signal {
  public:
-    SignalBig(GenObject *parent,
-           const char *name,
-           GenValue *width,
-           const char *comment="")
-        : Signal(parent, name, width, comment) {}
-
     SignalBig(GenObject *parent,
            const char *name,
            const char *width,

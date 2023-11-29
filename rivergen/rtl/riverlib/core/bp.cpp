@@ -66,6 +66,7 @@ BranchPredictor::BranchPredictor(GenObject *parent, const char *name) :
         ENDNEW();
     ENDFORGEN(new STRING("predecx"));
 
+TEXT();
     NEW(btb, btb.getName().c_str());
         CONNECT(btb, 0, btb.i_clk, i_clk);
         CONNECT(btb, 0, btb.i_nrst, i_nrst);

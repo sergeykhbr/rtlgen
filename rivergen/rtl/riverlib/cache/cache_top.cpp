@@ -156,6 +156,7 @@ CacheTop::CacheTop(GenObject *parent, const char *name) :
         CONNECT(i1, 0, i1.i_flush_valid, i_flushi_valid);
     ENDNEW();
 
+TEXT();
     NEW(d0, d0.getName().c_str());
         CONNECT(d0, 0, d0.i_clk, i_clk);
         CONNECT(d0, 0, d0.i_nrst, i_nrst);
@@ -200,6 +201,7 @@ CacheTop::CacheTop(GenObject *parent, const char *name) :
         CONNECT(d0, 0, d0.o_flush_end, o_flushd_end);
     ENDNEW();
 
+TEXT();
     NEW(pma0, pma0.getName().c_str());
         CONNECT(pma0, 0, pma0.i_clk, i_clk);
         CONNECT(pma0, 0, pma0.i_iaddr, i.mpu_addr);
@@ -208,6 +210,7 @@ CacheTop::CacheTop(GenObject *parent, const char *name) :
         CONNECT(pma0, 0, pma0.o_dcached, w_pma_dcached);
     ENDNEW();
 
+TEXT();
     NEW(pmp0, pmp0.getName().c_str());
         CONNECT(pmp0, 0, pmp0.i_clk, i_clk);
         CONNECT(pmp0, 0, pmp0.i_nrst, i_nrst);
@@ -224,6 +227,7 @@ CacheTop::CacheTop(GenObject *parent, const char *name) :
         CONNECT(pmp0, 0, pmp0.o_x, w_pmp_x);
     ENDNEW();
 
+TEXT();
     NEW(queue0, queue0.getName().c_str());
         CONNECT(queue0, 0, queue0.i_clk, i_clk);
         CONNECT(queue0, 0, queue0.i_nrst, i_nrst);

@@ -26,23 +26,17 @@ class Param;
 
 class Logic : public GenValue {
  public:
-    Logic(const char *width="1",
-          const char *name="",
+    Logic(const char *width,
+          const char *name,
           const char *val="'0",
-          GenObject *parent=0,
-          const char *comment="");
-
-    Logic(GenValue *width,
-          const char *name="",
-          const char *val="'0",
-          GenObject *parent=0,
-          const char *comment="");
+          GenObject *parent = NO_PARENT,
+          const char *comment = NO_COMMENT);
 
     Logic(GenObject *parent,
           const char *name,
           const char *width,
           const char *val="'0",
-          const char *comment="") :
+          const char *comment = NO_COMMENT) :
         Logic(width, name, val, parent, comment) {}
 
     virtual bool isLogic() override { return true; }
@@ -52,15 +46,15 @@ class Logic : public GenValue {
 
 class Logic1 : public Logic {
  public:
-    Logic1(const char *name="",
+    Logic1(const char *name,
           const char *val="0",
-          GenObject *parent=0,
-          const char *comment="") :
+          GenObject *parent = NO_PARENT,
+          const char *comment = NO_COMMENT) :
         Logic("1", name, val, parent, comment) {}
 
     Logic1(GenObject *parent,
           const char *name,
-          const char *comment="") :
+          const char *comment = NO_COMMENT) :
         Logic("1", name, "0", parent, comment) {}
 
     virtual std::string getType() override;
@@ -73,7 +67,7 @@ class LogicBig : public Logic {
              const char *name,
              const char *width,
              const char *val="'0",
-             const char *comment="") :
+             const char *comment = NO_COMMENT) :
         Logic(width, name, val, parent, comment) {}
 
     virtual bool isBigSC() override { return true; }
@@ -85,7 +79,7 @@ class LogicBv : public Logic {
              const char *name,
              const char *width,
              const char *val="'0",
-             const char *comment="") :
+             const char *comment = NO_COMMENT) :
         Logic(width, name, val, parent, comment) {}
 
     virtual bool isBvSC() override { return true; }

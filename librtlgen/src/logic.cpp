@@ -29,15 +29,6 @@ Logic::Logic(const char *width,
 }
 
 
-Logic::Logic(GenValue *width,
-              const char *name,
-              const char *val,
-              GenObject *parent,
-              const char *comment)
-    : GenValue(width, val, name, parent, comment) {
-}
-
-
 std::string Logic::getType() {
     std::string ret = "";
     std::string strw = getStrWidth();

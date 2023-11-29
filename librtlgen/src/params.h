@@ -104,11 +104,6 @@ class ParamLogic : public Logic {
         : Logic(width, name, val, parent, comment) {
         SCV_set_cfg_parameter(this);
     }
-    ParamLogic(GenObject *parent, GenValue *width, const char *name,
-               const char *val, const char *comment="")
-        : Logic(width, name, val, parent, comment) {
-        SCV_set_cfg_parameter(this);
-    }
     virtual bool isParam() override { return true; }
     virtual std::string getStrValue() override { return getName(); }
     virtual std::string generate() override { return Logic::getStrValue(); }

@@ -25,10 +25,6 @@ Signal::Signal(const char *width, const char *name, const char *val,
 }
 
 
-Signal::Signal(GenObject *parent, const char *name, GenValue *width, 
-    const char *comment) : Logic(width, name, "'0", parent, comment) {
-}
-
 Signal::Signal(GenObject *parent, const char *name, const char *width,
     const char *val, const char *comment)
     : Logic(width, name, val, parent, comment) {

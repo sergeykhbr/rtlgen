@@ -73,6 +73,7 @@ TagMem::TagMem(GenObject *parent,
         CONNECT(data0, 0, data0.o_rdata, o_rdata);
     ENDNEW();
 
+TEXT();
     NEW(tag0, tag0.getName().c_str());
         CONNECT(tag0, 0, tag0.i_clk, i_clk);
         CONNECT(tag0, 0, tag0.i_addr, wb_index);
@@ -81,6 +82,7 @@ TagMem::TagMem(GenObject *parent,
         CONNECT(tag0, 0, tag0.o_rdata, wb_tago_rdata);
     ENDNEW();
 
+TEXT();
     GENERATE("snoop_gen");
         IFGEN (snoop, new STRING("snoop_en"));
             NEW(tagsnoop0 , tagsnoop0.getName().c_str());

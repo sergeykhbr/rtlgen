@@ -110,6 +110,7 @@ asic_top::asic_top(GenObject *parent, const char *name) :
         CONNECT(iclk0, 0, iclk0.o_clk, ib_clk_tcxo);
     ENDNEW();
 
+TEXT();
     NEW(iosdcmd0, iosdcmd0.getName().c_str());
         CONNECT(iosdcmd0, 0, iosdcmd0.io, io_sd_cmd);
         CONNECT(iosdcmd0, 0, iosdcmd0.o, ib_sd_cmd);
@@ -117,6 +118,7 @@ asic_top::asic_top(GenObject *parent, const char *name) :
         CONNECT(iosdcmd0, 0, iosdcmd0.t, ob_sd_cmd_direction);
     ENDNEW();
 
+TEXT();
     NEW(iosddat0, iosddat0.getName().c_str());
         CONNECT(iosddat0, 0, iosddat0.io, io_sd_dat0);
         CONNECT(iosddat0, 0, iosddat0.o, ib_sd_dat0);
@@ -124,6 +126,7 @@ asic_top::asic_top(GenObject *parent, const char *name) :
         CONNECT(iosddat0, 0, iosddat0.t, ob_sd_dat0_direction);
     ENDNEW();
 
+TEXT();
     NEW(iosddat1, iosddat1.getName().c_str());
         CONNECT(iosddat1, 0, iosddat1.io, io_sd_dat1);
         CONNECT(iosddat1, 0, iosddat1.o, ib_sd_dat1);
@@ -131,6 +134,7 @@ asic_top::asic_top(GenObject *parent, const char *name) :
         CONNECT(iosddat1, 0, iosddat1.t, ob_sd_dat1_direction);
     ENDNEW();
 
+TEXT();
     NEW(iosddat2, iosddat2.getName().c_str());
         CONNECT(iosddat2, 0, iosddat2.io, io_sd_dat2);
         CONNECT(iosddat2, 0, iosddat2.o, ib_sd_dat2);
@@ -138,6 +142,7 @@ asic_top::asic_top(GenObject *parent, const char *name) :
         CONNECT(iosddat2, 0, iosddat2.t, ob_sd_dat2_direction);
     ENDNEW();
 
+TEXT();
     NEW(iosddat3, iosddat3.getName().c_str());
         CONNECT(iosddat3, 0, iosddat3.io, io_sd_cd_dat3);
         CONNECT(iosddat3, 0, iosddat3.o, ib_sd_cd_dat3);
@@ -145,6 +150,7 @@ asic_top::asic_top(GenObject *parent, const char *name) :
         CONNECT(iosddat3, 0, iosddat3.t, ob_sd_cd_dat3_direction);
     ENDNEW();
 
+TEXT();
     NEW(pll0, pll0.getName().c_str());
         CONNECT(pll0, 0, pll0.i_reset, i_rst);
         CONNECT(pll0, 0, pll0.i_clk_tcxo, ib_clk_tcxo);
@@ -153,6 +159,7 @@ asic_top::asic_top(GenObject *parent, const char *name) :
         CONNECT(pll0, 0, pll0.o_locked, w_pll_lock);
     ENDNEW();
 
+TEXT();
     NEW(prci0, prci0.getName().c_str());
         CONNECT(prci0, 0, prci0.i_clk, ib_clk_tcxo);
         CONNECT(prci0, 0, prci0.i_pwrreset, i_rst);
@@ -168,7 +175,7 @@ asic_top::asic_top(GenObject *parent, const char *name) :
         CONNECT(prci0, 0, prci0.o_apbo, prci_apbo);
     ENDNEW();
 
-
+TEXT();
     soc0.sim_uart_speedup_rate.setObjValue(&sim_uart_speedup_rate);
     NEW(soc0, soc0.getName().c_str());
         CONNECT(soc0, 0, soc0.i_sys_nrst, w_sys_nrst);

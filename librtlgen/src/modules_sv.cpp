@@ -686,10 +686,9 @@ std::string ModuleObject::generate_sv_mod() {
     }
 
     // Sub-module instantiation
-    for (auto &p: entries_) {
+    for (auto &p: getEntries()) {
         if (p->isOperation()) {
             ret += p->generate();
-            ret += "\n";        // No need in this.
         }
     }
 
@@ -709,10 +708,12 @@ std::string ModuleObject::generate_sv_mod() {
         if (p->getName() == "registers") {
             continue;
         }
+        ret += "\n";
         ret += generate_sv_mod_proc(p);
     }
 
     if (isRegProcess()) {
+        ret += "\n";
         ret += generate_sv_mod_proc_registers();
     }
 

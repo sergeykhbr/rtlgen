@@ -69,6 +69,7 @@ axi_rom::axi_rom(GenObject *parent, const char *name) :
         CONNECT(xslv0, 0, xslv0.i_resp_err, wb_resp_err);
     ENDNEW();
 
+TEXT();
     tech0.changeTmplParameter("abits", "abits");
     tech0.changeTmplParameter("log2_dbytes", "CFG_LOG2_SYSBUS_DATA_BYTES");
     NEW(tech0, tech0.getName().c_str());

@@ -117,6 +117,7 @@ MemAccess::MemAccess(GenObject *parent, const char *name) :
     queue0(this, "queue0", "CFG_MEMACCESS_QUEUE_DEPTH", "QUEUE_WIDTH")
 {
     Operation::start(this);
+
     NEW(queue0, queue0.getName().c_str());
     CONNECT(queue0, 0, queue0.i_clk, i_clk);
     CONNECT(queue0, 0, queue0.i_nrst, i_nrst);
@@ -126,7 +127,6 @@ MemAccess::MemAccess(GenObject *parent, const char *name) :
     CONNECT(queue0, 0, queue0.o_rdata, queue_data_o);
     CONNECT(queue0, 0, queue0.o_full, queue_full);
     CONNECT(queue0, 0, queue0.o_nempty, queue_nempty);
-
 
     Operation::start(&comb);
     proc_comb();

@@ -77,6 +77,7 @@ vip_uart_top::vip_uart_top(GenObject *parent, const char *name) :
         CONNECT(clk0, 0, clk0.o_clk, w_clk);
     ENDNEW();
 
+TEXT();
     rx0.scaler.setObjValue(&scaler);
     NEW(rx0, rx0.getName().c_str());
         CONNECT(rx0, 0, rx0.i_nrst, i_nrst);
@@ -87,6 +88,7 @@ vip_uart_top::vip_uart_top(GenObject *parent, const char *name) :
         CONNECT(rx0, 0, rx0.o_data, wb_rdata);
     ENDNEW();
 
+TEXT();
     tx0.scaler.setObjValue(&scaler);
     NEW(tx0, tx0.getName().c_str());
         CONNECT(tx0, 0, tx0.i_nrst, i_nrst);

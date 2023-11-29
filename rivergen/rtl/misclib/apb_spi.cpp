@@ -109,6 +109,7 @@ apb_spi::apb_spi(GenObject *parent, const char *name) :
         CONNECT(pslv0, 0, pslv0.i_resp_err, resp_err);
     ENDNEW();
 
+TEXT();
     rxfifo.dbits.setObjValue(&fifo_dbits);
     rxfifo.log2_depth.setObjValue(&log2_fifosz);
     NEW(rxfifo, rxfifo.getName().c_str());
@@ -121,6 +122,7 @@ apb_spi::apb_spi(GenObject *parent, const char *name) :
         CONNECT(rxfifo, 0, rxfifo.o_count, wb_rxfifo_count);
     ENDNEW();
 
+TEXT();
     txfifo.dbits.setObjValue(&fifo_dbits);
     txfifo.log2_depth.setObjValue(&log2_fifosz);
     NEW(txfifo, txfifo.getName().c_str());

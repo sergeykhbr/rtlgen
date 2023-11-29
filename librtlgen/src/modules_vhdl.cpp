@@ -474,10 +474,9 @@ std::string ModuleObject::generate_vhdl_mod() {
 
 
     // Sub-module instantiation
-    for (auto &p: entries_) {
+    for (auto &p: getEntries()) {
         if (p->isOperation()) {
             ret += p->generate();
-            ret += "\n";
         }
     }
 /*

@@ -128,6 +128,7 @@ Workgroup::Workgroup(GenObject *parent, const char *name) :
         CONNECT(dmi0, 0, dmi0.o_progbuf, wb_progbuf);
     ENDNEW();
 
+TEXT();
     NEW(dport_ic0, dport_ic0.getName().c_str());
         CONNECT(dport_ic0, 0, dport_ic0.i_clk, i_clk);
         CONNECT(dport_ic0, 0, dport_ic0.i_nrst, i_dmi_nrst);
@@ -150,6 +151,7 @@ Workgroup::Workgroup(GenObject *parent, const char *name) :
         CONNECT(dport_ic0, 0, dport_ic0.i_dporto, wb_dport_o);
     ENDNEW();
 
+TEXT();
     NEW(acp_bridge, acp_bridge.getName().c_str());
         CONNECT(acp_bridge, 0, acp_bridge.i_clk, i_clk);
         CONNECT(acp_bridge, 0, acp_bridge.i_nrst, i_cores_nrst);
@@ -159,6 +161,7 @@ Workgroup::Workgroup(GenObject *parent, const char *name) :
         CONNECT(acp_bridge, 0, acp_bridge.o_l1o, ARRITEM(coreo, ACP_SLOT_IDX, coreo));
     ENDNEW();
 
+TEXT();
     GENERATE("hartgen");
     GenObject *i;
     i = &FORGEN("i", CONST("0"), cpu_num, "++", new STRING("xslotcpu"));
@@ -179,8 +182,9 @@ Workgroup::Workgroup(GenObject *parent, const char *name) :
             CONNECT(cpux, i, cpux.o_available, ARRITEM(vec_available, *i, vec_available));
             CONNECT(cpux, i, cpux.i_progbuf, wb_progbuf);
         ENDNEW();
-
     ENDFORGEN(new STRING("xslotcpu"));
+
+TEXT();
     i = &FORGEN("i", cpu_num,  glob_river_cfg_->CFG_CPU_MAX, "++", new STRING("xdummycpu"));
         NEW(*dumx.getItem(0), dumx.getName().c_str(), i);
             CONNECT(dumx, i, dumx.o_msto, ARRITEM(coreo, *i, coreo));
@@ -192,6 +196,7 @@ Workgroup::Workgroup(GenObject *parent, const char *name) :
     ENDFORGEN(new STRING("xdummycpu"));
     ENDGENERATE("hartgen");
 
+TEXT();
     IFGEN(EQ(l2cache_ena, CONST("1")), new STRING("l2_en"));
         NEW(l2cache, l2cache.getName().c_str());
             CONNECT(l2cache, 0, l2cache.i_clk, i_clk);
@@ -214,6 +219,7 @@ Workgroup::Workgroup(GenObject *parent, const char *name) :
         ENDNEW();
     ENDIFGEN(new STRING("l2_dis"));
 
+TEXT();
     NEW(l2serdes0, l2serdes0.getName().c_str());
         CONNECT(l2serdes0, 0, l2serdes0.i_clk, i_clk);
         CONNECT(l2serdes0, 0, l2serdes0.i_nrst, i_cores_nrst);

@@ -63,6 +63,7 @@ vip_spi_top::vip_spi_top(GenObject *parent, const char *name) :
         CONNECT(clk0, 0, clk0.o_clk, w_clk);
     ENDNEW();
 
+TEXT();
     tx0.scaler.setObjValue(&scaler);
     NEW(tx0, tx0.getName().c_str());
         CONNECT(tx0, 0, tx0.i_nrst, i_nrst);

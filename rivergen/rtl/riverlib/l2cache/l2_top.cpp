@@ -84,7 +84,7 @@ TEXT();
         CONNECT(dst0, 0, dst0.o_req_wstrb, wb_req_wstrb);
     ENDNEW();
 
-
+TEXT();
     NEW(cache0, cache0.getName().c_str());
         CONNECT(cache0, 0, cache0.i_clk, i_clk);
         CONNECT(cache0, 0, cache0.i_nrst, i_nrst);
@@ -117,6 +117,7 @@ TEXT();
         CONNECT(cache0, 0, cache0.o_flush_end, w_flush_end);
     ENDNEW();
 
+TEXT();
     NEW(amba0, amba0.getName().c_str());
         CONNECT(amba0, 0, amba0.i_clk, i_clk);
         CONNECT(amba0, 0, amba0.i_nrst, i_nrst);

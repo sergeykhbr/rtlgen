@@ -23,10 +23,6 @@ InPort::InPort(GenObject *parent, const char *name, const char *width,
     const char *comment) : Logic(width, name, "", parent, comment) {
 }
 
-InPort::InPort(GenObject *parent, const char *name, GenValue *width, 
-    const char *comment) : Logic(width, name, "", parent, comment) {
-}
-
 OutPort::OutPort(const char *width, const char *name, const char *val,
         GenObject *parent, const char *comment)
         : Logic(width, name, val, parent, comment) {
@@ -35,15 +31,7 @@ OutPort::OutPort(const char *width, const char *name, const char *val,
 OutPort::OutPort(GenObject *parent, const char *name, const char *width,
     const char *comment) : OutPort(width, name, "0", parent, comment) {}
 
-OutPort::OutPort(GenObject *parent, const char *name, GenValue *width, 
-    const char *comment) : Logic(width, name, "0", parent, comment) {
-}
-
 IoPort::IoPort(GenObject *parent, const char *name, const char *width,
-    const char *comment) : Logic(width, name, "", parent, comment) {
-}
-
-IoPort::IoPort(GenObject *parent, const char *name, GenValue *width, 
     const char *comment) : Logic(width, name, "", parent, comment) {
 }
 

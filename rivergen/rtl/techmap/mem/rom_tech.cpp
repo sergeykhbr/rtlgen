@@ -23,7 +23,7 @@ rom_tech::rom_tech(GenObject *parent, const char *name, const char *gen_abits, c
     dbits(this, "dbits", "MUL(8,POW2(1,log2_dbytes))"),
     filename(this, "filename", ""),
     i_clk(this, "i_clk", "1", "CPU clock"),
-    i_addr(this, "i_addr", &abits),
+    i_addr(this, "i_addr", "abits"),
     o_rdata(this, "o_rdata", "MUL(8,POW2(1,log2_dbytes))"),
     // signals
     wb_addr(this, "wb_addr", "SUB(abits,log2_dbytes)"),

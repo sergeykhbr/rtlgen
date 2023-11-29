@@ -107,6 +107,7 @@ vip_sdcard_top::vip_sdcard_top(GenObject *parent, const char *name) :
         CONNECT(iobufcmd0, 0, iobufcmd0.t, w_cmd_dir);
     ENDNEW();
 
+TEXT();
     NEW(iobufdat0, iobufdat0.getName().c_str());
         CONNECT(iobufdat0, 0, iobufdat0.io, io_dat0);
         CONNECT(iobufdat0, 0, iobufdat0.o, w_dat0_in);
@@ -114,6 +115,7 @@ vip_sdcard_top::vip_sdcard_top(GenObject *parent, const char *name) :
         CONNECT(iobufdat0, 0, iobufdat0.t, w_dat0_dir);
     ENDNEW();
 
+TEXT();
     NEW(iobufdat1, iobufdat1.getName().c_str());
         CONNECT(iobufdat1, 0, iobufdat1.io, io_dat1);
         CONNECT(iobufdat1, 0, iobufdat1.o, w_dat1_in);
@@ -121,6 +123,7 @@ vip_sdcard_top::vip_sdcard_top(GenObject *parent, const char *name) :
         CONNECT(iobufdat1, 0, iobufdat1.t, w_dat1_dir);
     ENDNEW();
 
+TEXT();
     NEW(iobufdat2, iobufdat2.getName().c_str());
         CONNECT(iobufdat2, 0, iobufdat2.io, io_dat2);
         CONNECT(iobufdat2, 0, iobufdat2.o, w_dat2_in);
@@ -128,6 +131,7 @@ vip_sdcard_top::vip_sdcard_top(GenObject *parent, const char *name) :
         CONNECT(iobufdat2, 0, iobufdat2.t, w_dat2_dir);
     ENDNEW();
 
+TEXT();
     NEW(iobufdat3, iobufdat3.getName().c_str());
         CONNECT(iobufdat3, 0, iobufdat3.io, io_cd_dat3);
         CONNECT(iobufdat3, 0, iobufdat3.o, w_dat3_in);
@@ -135,6 +139,7 @@ vip_sdcard_top::vip_sdcard_top(GenObject *parent, const char *name) :
         CONNECT(iobufdat3, 0, iobufdat3.t, w_dat3_dir);
     ENDNEW();
 
+TEXT();
     NEW(cmdio0, cmdio0.getName().c_str());
         CONNECT(cmdio0, 0, cmdio0.i_clk, i_sclk);
         CONNECT(cmdio0, 0, cmdio0.i_nrst, i_nrst);
@@ -171,6 +176,7 @@ vip_sdcard_top::vip_sdcard_top(GenObject *parent, const char *name) :
         CONNECT(cmdio0, 0, cmdio0.o_busy, w_cmdio_busy);
     ENDNEW();
 
+TEXT();
     NEW(ctrl0, ctrl0.getName().c_str());
         CONNECT(ctrl0, 0, ctrl0.i_clk, i_sclk);
         CONNECT(ctrl0, 0, ctrl0.i_nrst, i_nrst);

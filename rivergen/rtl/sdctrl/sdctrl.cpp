@@ -207,6 +207,7 @@ sdctrl::sdctrl(GenObject *parent, const char *name) :
         CONNECT(xslv0, 0, xslv0.i_resp_err, w_cache_resp_err);
     ENDNEW();
 
+TEXT();
     NEW(regs0, regs0.getName().c_str());
         CONNECT(regs0, 0, regs0.i_clk, i_clk);
         CONNECT(regs0, 0, regs0.i_nrst, i_nrst);
@@ -241,6 +242,7 @@ sdctrl::sdctrl(GenObject *parent, const char *name) :
         CONNECT(regs0, 0, regs0.i_cmd_resp_crc7_calc, wb_cmd_resp_crc7_calc);
     ENDNEW();
 
+TEXT();
     NEW(wdog0, wdog0.getName().c_str());
         CONNECT(wdog0, 0, wdog0.i_clk, i_clk);
         CONNECT(wdog0, 0, wdog0.i_nrst, i_nrst);
@@ -249,6 +251,7 @@ sdctrl::sdctrl(GenObject *parent, const char *name) :
         CONNECT(wdog0, 0, wdog0.o_trigger, w_wdog_trigger);
     ENDNEW();
 
+TEXT();
     NEW(err0, err0.getName().c_str());
         CONNECT(err0, 0, err0.i_clk, i_clk);
         CONNECT(err0, 0, err0.i_nrst, i_nrst);
@@ -259,6 +262,7 @@ sdctrl::sdctrl(GenObject *parent, const char *name) :
         CONNECT(err0, 0, err0.o_err_pending, w_err_pending);
     ENDNEW();
 
+TEXT();
     NEW(crcdat0, crcdat0.getName().c_str());
         CONNECT(crcdat0, 0, crcdat0.i_clk, i_clk);
         CONNECT(crcdat0, 0, crcdat0.i_nrst, i_nrst);
@@ -268,6 +272,7 @@ sdctrl::sdctrl(GenObject *parent, const char *name) :
         CONNECT(crcdat0, 0, crcdat0.o_crc16, wb_crc16_0);
     ENDNEW();
 
+TEXT();
     NEW(crcdat1, crcdat1.getName().c_str());
         CONNECT(crcdat1, 0, crcdat1.i_clk, i_clk);
         CONNECT(crcdat1, 0, crcdat1.i_nrst, i_nrst);
@@ -277,6 +282,7 @@ sdctrl::sdctrl(GenObject *parent, const char *name) :
         CONNECT(crcdat1, 0, crcdat1.o_crc16, wb_crc16_1);
     ENDNEW();
 
+TEXT();
     NEW(crcdat2, crcdat2.getName().c_str());
         CONNECT(crcdat2, 0, crcdat2.i_clk, i_clk);
         CONNECT(crcdat2, 0, crcdat2.i_nrst, i_nrst);
@@ -286,6 +292,7 @@ sdctrl::sdctrl(GenObject *parent, const char *name) :
         CONNECT(crcdat2, 0, crcdat2.o_crc16, wb_crc16_2);
     ENDNEW();
 
+TEXT();
     NEW(crcdat3, crcdat3.getName().c_str());
         CONNECT(crcdat3, 0, crcdat3.i_clk, i_clk);
         CONNECT(crcdat3, 0, crcdat3.i_nrst, i_nrst);
@@ -295,6 +302,7 @@ sdctrl::sdctrl(GenObject *parent, const char *name) :
         CONNECT(crcdat3, 0, crcdat3.o_crc16, wb_crc16_3);
     ENDNEW();
 
+TEXT();
     NEW(spimode0, spimode0.getName().c_str());
         CONNECT(spimode0, 0, spimode0.i_clk, i_clk);
         CONNECT(spimode0, 0, spimode0.i_nrst, nrst_spimode);
@@ -336,6 +344,7 @@ sdctrl::sdctrl(GenObject *parent, const char *name) :
         CONNECT(spimode0, 0, spimode0.o_sdtype, wb_spi_sdtype);
     ENDNEW();
 
+TEXT();
     NEW(sdmode0, sdmode0.getName().c_str());
         CONNECT(sdmode0, 0, sdmode0.i_clk, i_clk);
         CONNECT(sdmode0, 0, sdmode0.i_nrst, nrst_sdmode);
@@ -389,6 +398,7 @@ sdctrl::sdctrl(GenObject *parent, const char *name) :
         CONNECT(sdmode0, 0, sdmode0.o_sdtype, wb_sd_sdtype);
     ENDNEW();
 
+TEXT();
     NEW(cmdtrx0, cmdtrx0.getName().c_str());
         CONNECT(cmdtrx0, 0, cmdtrx0.i_clk, i_clk);
         CONNECT(cmdtrx0, 0, cmdtrx0.i_nrst, i_nrst);
@@ -419,6 +429,7 @@ sdctrl::sdctrl(GenObject *parent, const char *name) :
         CONNECT(cmdtrx0, 0, cmdtrx0.o_err_setcode, wb_trx_err_setcode);
     ENDNEW();
 
+TEXT();
     NEW(cache0, cache0.getName().c_str());
         CONNECT(cache0, 0, cache0.i_clk, i_clk);
         CONNECT(cache0, 0, cache0.i_nrst, i_nrst);

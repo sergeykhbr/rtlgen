@@ -64,6 +64,7 @@ IntDiv::IntDiv(GenObject *parent, const char *name) :
         CONNECT(stage0, 0, stage0.o_resid, wb_resid0_o);
     ENDNEW();
 
+TEXT();
     NEW(stage1, stage1.getName().c_str());
         CONNECT(stage1, 0, stage1.i_divident, wb_resid0_o);
         CONNECT(stage1, 0, stage1.i_divisor, wb_divisor1_i);

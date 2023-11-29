@@ -267,7 +267,7 @@ std::string ModuleObject::generate_sysc_h() {
     // Generic parameter local storage:
     tcnt = 0;
     if (getAsyncReset() && getEntryByName("async_reset") == 0) {
-        out += addspaces() + (new Logic())->getType() + " async_reset_;\n";
+        out += addspaces() + (new Logic("1", "async_reset"))->getType() + " async_reset_;\n";
         tcnt++;
     }
     for (auto &p: entries_) {
@@ -352,7 +352,9 @@ std::string ModuleObject::generate_sysc_h() {
             || p->isOutput()
             || p->isOperation()
             || p->isTypedef()
-            || p->isParam()) {
+            || p->isParam()
+            || p->isReg()
+            || p->isNReg()) {
             text = "";
             continue;
         }
@@ -361,12 +363,10 @@ std::string ModuleObject::generate_sysc_h() {
             text = "";
             continue;
         }
-        if (p->isReg() || p->isNReg()
-            || (!p->isSignal()
+        if (!p->isSignal()
                 && p->getId() != ID_VALUE
                 && !p->isStruct()
-                && p->getId() != ID_CLOCK
-                && p->getId() != ID_ARRAY_DEF)) {
+                && !p->isClock()) {
                 text = "";
             continue;
         }
@@ -807,7 +807,7 @@ std::string ModuleObject::generate_sysc_constructor() {
     }
     // Clock generators
     for (auto &p: getEntries()) {
-        if (p->getId() != ID_CLOCK) {
+        if (!p->isClock()) {
             continue;
         }
         ret += ",\n    " + p->getName() + "(\"" + p->getName() + "\"";
@@ -834,7 +834,7 @@ std::string ModuleObject::generate_sysc_constructor() {
     if (getAsyncReset() && getEntryByName("async_reset") == 0) {
         ret += addspaces() + "async_reset_ = async_reset;\n";
     }
-    for (auto &p: entries_) {
+    for (auto &p: getEntries()) {
         if (p->isParamTemplate()) {
             // do nothing
         } else if (p->isParamGeneric()) {
@@ -849,7 +849,6 @@ std::string ModuleObject::generate_sysc_constructor() {
     for (auto &p: getEntries()) {
         if (p->isOperation()) {
             ret += p->generate();
-            ret += "\n";
         }
     }
 

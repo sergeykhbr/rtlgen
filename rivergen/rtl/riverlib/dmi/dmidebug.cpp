@@ -153,6 +153,7 @@ dmidebug::dmidebug(GenObject *parent, const char *name) :
         CONNECT(tap, 0, tap.o_dmi_hardreset, w_tap_dmi_hardreset);
     ENDNEW();
 
+TEXT();
     NEW(cdc, cdc.getName().c_str());
         CONNECT(cdc, 0, cdc.i_nrst, i_nrst);
         CONNECT(cdc, 0, cdc.i_clk, i_clk);

@@ -113,6 +113,7 @@ FpuTop::FpuTop(GenObject *parent, const char *name) :
         CONNECT(fadd_d0, 0, fadd_d0.o_busy, w_busy_fadd);
     ENDNEW();
 
+TEXT();
     NEW(fdiv_d0, fdiv_d0.getName().c_str());
         CONNECT(fdiv_d0, 0, fdiv_d0.i_clk, i_clk);
         CONNECT(fdiv_d0, 0, fdiv_d0.i_nrst, i_nrst);
@@ -128,6 +129,7 @@ FpuTop::FpuTop(GenObject *parent, const char *name) :
         CONNECT(fdiv_d0, 0, fdiv_d0.o_busy, w_busy_fdiv);
     ENDNEW();
 
+TEXT();
     NEW(fmul_d0, fmul_d0.getName().c_str());
         CONNECT(fmul_d0, 0, fmul_d0.i_clk, i_clk);
         CONNECT(fmul_d0, 0, fmul_d0.i_nrst, i_nrst);
@@ -141,6 +143,7 @@ FpuTop::FpuTop(GenObject *parent, const char *name) :
         CONNECT(fmul_d0, 0, fmul_d0.o_busy, w_busy_fmul);
     ENDNEW();
 
+TEXT();
     NEW(d2l_d0, d2l_d0.getName().c_str());
         CONNECT(d2l_d0, 0, d2l_d0.i_clk, i_clk);
         CONNECT(d2l_d0, 0, d2l_d0.i_nrst, i_nrst);
@@ -155,6 +158,7 @@ FpuTop::FpuTop(GenObject *parent, const char *name) :
         CONNECT(d2l_d0, 0, d2l_d0.o_busy, w_busy_d2l);
     ENDNEW();
 
+TEXT();
     NEW(l2d_d0, l2d_d0.getName().c_str());
         CONNECT(l2d_d0, 0, l2d_d0.i_clk, i_clk);
         CONNECT(l2d_d0, 0, l2d_d0.i_nrst, i_nrst);

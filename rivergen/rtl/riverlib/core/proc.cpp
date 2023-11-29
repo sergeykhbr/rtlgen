@@ -200,6 +200,7 @@ Processor::Processor(GenObject *parent, const char *name) :
         CONNECT(immu0, 0, immu0.i_fence_addr, csr.flush_addr);
     ENDNEW();
 
+TEXT();
     NEW(fetch0, fetch0.getName().c_str());
         CONNECT(fetch0, 0, fetch0.i_clk, i_clk);
         CONNECT(fetch0, 0, fetch0.i_nrst, i_nrst);
@@ -226,6 +227,7 @@ Processor::Processor(GenObject *parent, const char *name) :
         CONNECT(fetch0, 0, fetch0.o_instr, w.f.instr);
     ENDNEW();
 
+TEXT();
     NEW(dec0, dec0.getName().c_str());
         CONNECT(dec0, 0, dec0.i_clk, i_clk);
         CONNECT(dec0, 0, dec0.i_nrst, i_nrst);
@@ -260,6 +262,7 @@ Processor::Processor(GenObject *parent, const char *name) :
         CONNECT(dec0, 0, dec0.o_progbuf_ena, w.d.progbuf_ena);
     ENDNEW();
 
+TEXT();
     NEW(exec0, exec0.getName().c_str());
         CONNECT(exec0, 0, exec0.i_clk, i_clk);
         CONNECT(exec0, 0, exec0.i_nrst, i_nrst);
@@ -347,6 +350,7 @@ Processor::Processor(GenObject *parent, const char *name) :
         CONNECT(exec0, 0, exec0.o_halted, w.e.halted);
     ENDNEW();
 
+TEXT();
     NEW(mem0, mem0.getName().c_str());
         CONNECT(mem0, 0, mem0.i_clk, i_clk);
         CONNECT(mem0, 0, mem0.i_nrst, i_nrst);
@@ -393,7 +397,7 @@ Processor::Processor(GenObject *parent, const char *name) :
         CONNECT(mem0, 0, mem0.o_debug_valid, w.m.debug_valid);
     ENDNEW();
 
-
+TEXT();
     NEW(dmmu0, dmmu0.getName().c_str());
         CONNECT(dmmu0, 0, dmmu0.i_clk, i_clk);
         CONNECT(dmmu0, 0, dmmu0.i_nrst, i_nrst);
@@ -438,7 +442,7 @@ Processor::Processor(GenObject *parent, const char *name) :
         CONNECT(dmmu0, 0, dmmu0.i_fence_addr, csr.flush_addr);
     ENDNEW();
 
-
+TEXT();
     NEW(predic0, predic0.getName().c_str());
         CONNECT(predic0, 0, predic0.i_clk, i_clk);
         CONNECT(predic0, 0, predic0.i_nrst, i_nrst);
@@ -458,6 +462,7 @@ Processor::Processor(GenObject *parent, const char *name) :
         CONNECT(predic0, 0, predic0.i_d_pc, w.d.pc);
     ENDNEW();
 
+TEXT();
     NEW(iregs0, iregs0.getName().c_str());
         CONNECT(iregs0, 0, iregs0.i_clk, i_clk);
         CONNECT(iregs0, 0, iregs0.i_nrst, i_nrst);
@@ -511,6 +516,7 @@ Processor::Processor(GenObject *parent, const char *name) :
         CONNECT(iregs0, 0, iregs0.o_t6, ireg.t6);
     ENDNEW();
 
+TEXT();
     NEW(iccsr0, iccsr0.getName().c_str());
         CONNECT(iccsr0, 0, iccsr0.i_clk, i_clk);
         CONNECT(iccsr0, 0, iccsr0.i_nrst, i_nrst);
@@ -543,6 +549,7 @@ Processor::Processor(GenObject *parent, const char *name) :
         CONNECT(iccsr0, 0, iccsr0.i_s0_resp_exception, csr.resp_exception);
     ENDNEW();
 
+TEXT();
     NEW(csr0, csr0.getName().c_str());
         CONNECT(csr0, 0, csr0.i_clk, i_clk);
         CONNECT(csr0, 0, csr0.i_nrst, i_nrst);
@@ -595,6 +602,7 @@ Processor::Processor(GenObject *parent, const char *name) :
         CONNECT(csr0, 0, csr0.o_sum, csr.sum);
     ENDNEW();
 
+TEXT();
     NEW(dbg0, dbg0.getName().c_str());
         CONNECT(dbg0, 0, dbg0.i_clk, i_clk);
         CONNECT(dbg0, 0, dbg0.i_nrst, i_nrst);
@@ -646,6 +654,7 @@ Processor::Processor(GenObject *parent, const char *name) :
         CONNECT(dbg0, 0, dbg0.i_m_valid, w.m.valid);
     ENDNEW();
 
+TEXT();
     GENERATE("trgen");
     IFGEN (tracer_ena, new STRING("tr_en"));
         NEW(trace0, trace0.getName().c_str());

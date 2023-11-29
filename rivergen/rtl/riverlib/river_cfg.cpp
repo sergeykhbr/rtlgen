@@ -41,7 +41,7 @@ river_cfg::river_cfg(GenObject *parent) :
     CFG_SLOT_L1_TOTAL(this, "CFG_SLOT_L1_TOTAL", "ADD(CFG_CPU_MAX,1)"),
     _7_(this),
     _8_(this, "Power-on start address can be free changed"),
-    CFG_RESET_VECTOR(this, &CFG_CPU_ADDR_BITS, "CFG_RESET_VECTOR", "0x10000"),
+    CFG_RESET_VECTOR(this, "CFG_CPU_ADDR_BITS", "CFG_RESET_VECTOR", "0x10000"),
     _9_(this),
     _bp0_(this, ""),
     _bp1_(this, "Branch Predictor Branch Target Buffer (BTB) size"),

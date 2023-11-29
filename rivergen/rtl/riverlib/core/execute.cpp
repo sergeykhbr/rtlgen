@@ -234,6 +234,7 @@ InstrExecute::InstrExecute(GenObject *parent, const char *name) :
         CONNECT(alu0, 0, alu0.o_res, ARRITEM(wb_select, Res_Alu, wb_select.res));
     ENDNEW();
 
+TEXT();
     NEW(addsub0, addsub0.getName().c_str());
         CONNECT(addsub0, 0, addsub0.i_clk, i_clk);
         CONNECT(addsub0, 0, addsub0.i_nrst, i_nrst);
@@ -243,6 +244,7 @@ InstrExecute::InstrExecute(GenObject *parent, const char *name) :
         CONNECT(addsub0, 0, addsub0.o_res, ARRITEM(wb_select, Res_AddSub, wb_select.res));
     ENDNEW();
 
+TEXT();
     NEW(mul0, mul0.getName().c_str());
         CONNECT(mul0, 0, mul0.i_clk, i_clk);
         CONNECT(mul0, 0, mul0.i_nrst, i_nrst);
@@ -257,6 +259,7 @@ InstrExecute::InstrExecute(GenObject *parent, const char *name) :
         CONNECT(mul0, 0, mul0.o_valid, ARRITEM(wb_select, Res_IMul, wb_select.valid));
     ENDNEW();
 
+TEXT();
     NEW(div0, div0.getName().c_str());
         CONNECT(div0, 0, div0.i_clk, i_clk);
         CONNECT(div0, 0, div0.i_nrst, i_nrst);
@@ -270,6 +273,7 @@ InstrExecute::InstrExecute(GenObject *parent, const char *name) :
         CONNECT(div0, 0, div0.o_valid, ARRITEM(wb_select, Res_IDiv, wb_select.valid));
     ENDNEW();
 
+TEXT();
     NEW(sh0, sh0.getName().c_str());
         CONNECT(sh0, 0, sh0.i_clk, i_clk);
         CONNECT(sh0, 0, sh0.i_nrst, i_nrst);
@@ -279,6 +283,7 @@ InstrExecute::InstrExecute(GenObject *parent, const char *name) :
         CONNECT(sh0, 0, sh0.o_res, ARRITEM(wb_select, Res_Shifter, wb_select.res));
     ENDNEW();
 
+TEXT();
     GENERATE("fpu");
         IFGEN (fpu_ena, new STRING("fpu_en"));
             NEW(fpu0, fpu0.getName().c_str());

@@ -24,7 +24,7 @@ ram_bytes_tech::ram_bytes_tech(GenObject *parent, const char *name, const char *
     dbytes(this, "dbytes", "POW2(1,log2_dbytes)"),
     dbits(this, "dbits", "MUL(8,POW2(1,log2_dbytes))"),
     i_clk(this, "i_clk", "1", "CPU clock"),
-    i_addr(this, "i_addr", &abits),
+    i_addr(this, "i_addr", "abits"),
     i_wena(this, "i_wena", "1"),
     i_wstrb(this, "i_wstrb", "POW2(1,log2_dbytes)"),
     i_wdata(this, "i_wdata", "MUL(8,POW2(1,log2_dbytes))"),

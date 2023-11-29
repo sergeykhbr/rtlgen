@@ -98,6 +98,7 @@ TagMemNWay::TagMemNWay(GenObject *parent,
         ENDNEW();
     ENDFORGEN(new STRING("waygen"));
 
+TEXT();
     NEW(lru0, lru0.getName().c_str());
         CONNECT(lru0, 0, lru0.i_clk, i_clk);
         CONNECT(lru0, 0, lru0.i_init, w_lrui_init);

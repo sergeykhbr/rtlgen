@@ -148,6 +148,7 @@ riscv_soc::riscv_soc(GenObject *parent, const char *name) :
         CONNECT(bus0, 0, bus0.o_mapinfo, bus0_mapinfo);
     ENDNEW();
 
+TEXT();
     NEW(bus1, bus1.getName().c_str());
         CONNECT(bus1, 0, bus1.i_clk, i_sys_clk);
         CONNECT(bus1, 0, bus1.i_nrst, i_sys_nrst);
@@ -160,6 +161,7 @@ riscv_soc::riscv_soc(GenObject *parent, const char *name) :
         CONNECT(bus1, 0, bus1.o_mapinfo, bus1_mapinfo);
     ENDNEW();
 
+TEXT();
     group0.cpu_num.setObjValue(&glob_target_cfg_->CFG_CPU_NUM);
     group0.l2cache_ena.setObjValue(&glob_target_cfg_->CFG_L2CACHE_ENA);
     NEW(group0, group0.getName().c_str());
@@ -188,6 +190,7 @@ riscv_soc::riscv_soc(GenObject *parent, const char *name) :
         CONNECT(group0, 0, group0.o_dmreset, o_dmreset);
     ENDNEW();
 
+TEXT();
     rom0.abits.setObjValue(&glob_target_cfg_->CFG_BOOTROM_LOG2_SIZE);
     rom0.filename.setObjValue(&glob_target_cfg_->CFG_BOOTROM_FILE_HEX);
     NEW(rom0, rom0.getName().c_str());
@@ -199,6 +202,7 @@ riscv_soc::riscv_soc(GenObject *parent, const char *name) :
         CONNECT(rom0, 0, rom0.o_xslvo, ARRITEM(axiso, glob_bus0_cfg_->CFG_BUS0_XSLV_BOOTROM, axiso));
     ENDNEW();
 
+TEXT();
     sram0.abits.setObjValue(&glob_target_cfg_->CFG_SRAM_LOG2_SIZE);
     NEW(sram0, sram0.getName().c_str());
         CONNECT(sram0, 0, sram0.i_clk, i_sys_clk);
@@ -209,6 +213,7 @@ riscv_soc::riscv_soc(GenObject *parent, const char *name) :
         CONNECT(sram0, 0, sram0.o_xslvo, ARRITEM(axiso, glob_bus0_cfg_->CFG_BUS0_XSLV_SRAM, axiso));
     ENDNEW();
 
+TEXT();
     plic0.ctxmax.setObjValue(&SOC_PLIC_CONTEXT_TOTAL);
     clint0.cpu_total.setObjValue(&glob_river_cfg_->CFG_CPU_MAX);
     NEW(clint0, clint0.getName().c_str());
@@ -223,6 +228,7 @@ riscv_soc::riscv_soc(GenObject *parent, const char *name) :
         CONNECT(clint0, 0, clint0.o_mtip, wb_clint_mtip);
     ENDNEW();
 
+TEXT();
     plic0.irqmax.setObjValue(&SOC_PLIC_IRQ_TOTAL);
     NEW(plic0, plic0.getName().c_str());
         CONNECT(plic0, 0, plic0.i_clk, i_sys_clk);
@@ -235,6 +241,7 @@ riscv_soc::riscv_soc(GenObject *parent, const char *name) :
         CONNECT(plic0, 0, plic0.o_ip, wb_plic_xeip);
     ENDNEW();
 
+TEXT();
     NEW(u_cdc_ddr0, u_cdc_ddr0.getName().c_str());
         CONNECT(u_cdc_ddr0, 0, u_cdc_ddr0.i_xslv_clk, i_sys_clk);
         CONNECT(u_cdc_ddr0, 0, u_cdc_ddr0.i_xslv_nrst, i_sys_nrst);
@@ -246,6 +253,7 @@ riscv_soc::riscv_soc(GenObject *parent, const char *name) :
         CONNECT(u_cdc_ddr0, 0, u_cdc_ddr0.i_xmsti, i_ddr_xslvo);
     ENDNEW();
 
+TEXT();
     uart1.log2_fifosz.setObjValue(&SOC_UART1_LOG2_FIFOSZ);
     uart1.sim_speedup_rate.setObjValue(&sim_uart_speedup_rate);
     NEW(uart1, uart1.getName().c_str());
@@ -260,6 +268,7 @@ riscv_soc::riscv_soc(GenObject *parent, const char *name) :
         CONNECT(uart1, 0, uart1.o_irq, w_irq_uart1);
     ENDNEW();
 
+TEXT();
     gpio0.width.setObjValue(&SOC_GPIO0_WIDTH);
     NEW(gpio0, gpio0.getName().c_str());
         CONNECT(gpio0, 0, gpio0.i_clk, i_sys_clk);
@@ -274,6 +283,7 @@ riscv_soc::riscv_soc(GenObject *parent, const char *name) :
         CONNECT(gpio0, 0, gpio0.o_irq, wb_irq_gpio);
     ENDNEW();
 
+TEXT();
     NEW(sdctrl0, sdctrl0.getName().c_str());
         CONNECT(sdctrl0, 0, sdctrl0.i_clk, i_sys_clk);
         CONNECT(sdctrl0, 0, sdctrl0.i_nrst, i_sys_nrst);
@@ -305,6 +315,7 @@ riscv_soc::riscv_soc(GenObject *parent, const char *name) :
         CONNECT(sdctrl0, 0, sdctrl0.i_protect, i_sd_protect);
     ENDNEW();
 
+TEXT();
     pnp0.cfg_slots.setObjValue(&glob_pnp_cfg_->SOC_PNP_TOTAL);
     pnp0.hw_id.setObjValue(&SOC_HW_ID);
     pnp0.cpu_max.setObjValue(&glob_target_cfg_->CFG_CPU_NUM);

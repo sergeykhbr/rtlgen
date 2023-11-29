@@ -37,11 +37,6 @@ class InPort : public Logic {
            const char *width,
            const char *comment="");
 
-    InPort(GenObject *parent,
-           const char *name,
-           GenValue *width,
-           const char *comment="");
-
     virtual bool isSignal() override { return true; }
     virtual bool isInput() override { return true; }
 };
@@ -59,11 +54,6 @@ class OutPort : public Logic {
            const char *width,
            const char *comment="");
 
-    OutPort(GenObject *parent,
-           const char *name,
-           GenValue *width,
-           const char *comment="");
-
     virtual bool isSignal() override { return false; }
     virtual bool isOutput() override { return true; }
 };
@@ -73,11 +63,6 @@ class IoPort : public Logic {
     IoPort(GenObject *parent,
            const char *name,
            const char *width,
-           const char *comment="");
-
-    IoPort(GenObject *parent,
-           const char *name,
-           GenValue *width,
            const char *comment="");
 
     virtual bool isSignal() override { return true; }
