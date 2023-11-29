@@ -28,9 +28,9 @@ axictrl_bus0::axictrl_bus0(GenObject *parent, const char *name) :
     o_mapinfo(this, "o_mapinfo", "AXI devices memory mapping information"),
     // params
     // signals
-    wb_def_mapinfo(this, "wb_def_mapinfo"),
-    wb_def_xslvi(this, "wb_def_xslvi"),
-    wb_def_xslvo(this, "wb_def_xslvo"),
+    wb_def_mapinfo(this, "wb_def_mapinfo", NO_COMMENT),
+    wb_def_xslvi(this, "wb_def_xslvi", NO_COMMENT),
+    wb_def_xslvo(this, "wb_def_xslvo", NO_COMMENT),
     w_def_req_valid(this, "w_def_req_valid", "1"),
     wb_def_req_addr(this, "wb_def_req_addr", "CFG_SYSBUS_ADDR_BITS"),
     wb_def_req_size(this, "wb_def_req_size", "8"),

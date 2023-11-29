@@ -120,25 +120,10 @@ public:
     ParamLogic coherence_ena;
     ParamUI32D ACP_SLOT_IDX;
 
-    // Signals:
-    class axi4_l2_in_type_signal : public types_river::axi4_l2_in_type {
-     public:
-        axi4_l2_in_type_signal(GenObject* parent, const char *name, const char *comment="")
-            : types_river::axi4_l2_in_type(parent, name, comment) {}
-        virtual bool isSignal() override { return true; }
-    };
-
-    class axi4_l2_out_type_signal : public types_river::axi4_l2_out_type {
-     public:
-        axi4_l2_out_type_signal(GenObject* parent, const char *name, const char *comment="")
-            : types_river::axi4_l2_out_type(parent, name, comment) {}
-        virtual bool isSignal() override { return true; }
-    };
-
     types_river::axi4_l1_out_vector coreo;
     types_river::axi4_l1_in_vector corei;
-    axi4_l2_in_type_signal l2i;
-    axi4_l2_out_type_signal l2o;
+    SignalStruct<types_river::axi4_l2_in_type> l2i;
+    SignalStruct<types_river::axi4_l2_out_type> l2o;
     types_river::dport_in_vector wb_dport_i;
     types_river::dport_out_vector wb_dport_o;
     types_river::hart_irq_vector vec_irq;

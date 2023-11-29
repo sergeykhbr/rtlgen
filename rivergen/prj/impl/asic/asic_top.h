@@ -36,20 +36,6 @@ class asic_top : public ModuleObject {
     virtual bool getResetActive() override { return true; }
     virtual bool isTop() override { return true; }
 
-    /*class gpio_signal_vector : public Signal {
-     public:
-        gpio_signal_vector(GenObject *parent, const char *name) :
-            Signal(parent, name, "1") {
-            type_ = std::string("gpio_signal_vector");
-            strDepth_ = std::string("12");
-        }
-        virtual bool isTypedef() override { return getName() == ""; }
-        virtual bool isVector() override { return true; }
-        virtual std::string getType() override { return type_; }
-        virtual std::string generate() override { return Signal::getType(); }
-    };*/
-
-
 public:
     ParamBOOL async_reset;
     DefParamI32D sim_uart_speedup_rate;
@@ -113,24 +99,24 @@ public:
     Signal w_ddr_clk;
     Signal w_pll_lock;
 
-    types_amba::mapinfo_type_signal ddr_xmapinfo;
-    types_pnp::dev_config_type_signal ddr_xdev_cfg;
-    types_amba::axi4_slave_out_type_signal ddr_xslvo;
-    types_amba::axi4_slave_in_type_signal ddr_xslvi;
+    SignalStruct<types_amba::mapinfo_type> ddr_xmapinfo;
+    SignalStruct<types_pnp::dev_config_type> ddr_xdev_cfg;
+    SignalStruct<types_amba::axi4_slave_out_type> ddr_xslvo;
+    SignalStruct<types_amba::axi4_slave_in_type> ddr_xslvi;
 
-    types_amba::mapinfo_type_signal ddr_pmapinfo;
-    types_pnp::dev_config_type_signal ddr_pdev_cfg;
-    types_amba::apb_in_type_signal ddr_apbi;
-    types_amba::apb_out_type_signal ddr_apbo;
+    SignalStruct<types_amba::mapinfo_type> ddr_pmapinfo;
+    SignalStruct<types_pnp::dev_config_type> ddr_pdev_cfg;
+    SignalStruct<types_amba::apb_in_type> ddr_apbi;
+    SignalStruct<types_amba::apb_out_type> ddr_apbo;
 
     Signal w_ddr_ui_nrst;
     Signal w_ddr_ui_clk;
     Signal w_ddr3_init_calib_complete;
 
-    types_amba::mapinfo_type_signal prci_pmapinfo;
-    types_pnp::dev_config_type_signal prci_dev_cfg;
-    types_amba::apb_in_type_signal prci_apbi;
-    types_amba::apb_out_type_signal prci_apbo;
+    SignalStruct<types_amba::mapinfo_type> prci_pmapinfo;
+    SignalStruct<types_pnp::dev_config_type> prci_dev_cfg;
+    SignalStruct<types_amba::apb_in_type> prci_apbi;
+    SignalStruct<types_amba::apb_out_type> prci_apbo;
 
     // Sub-module instances:
     ids_tech iclk0;

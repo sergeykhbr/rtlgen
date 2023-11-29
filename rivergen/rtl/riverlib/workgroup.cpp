@@ -54,8 +54,8 @@ Workgroup::Workgroup(GenObject *parent, const char *name) :
     // Singals:
     coreo(this, "coreo", NO_COMMENT),
     corei(this, "corei", NO_COMMENT),
-    l2i(this, "l2i"),
-    l2o(this, "l2o"),
+    l2i(this, "l2i", NO_COMMENT),
+    l2o(this, "l2o", NO_COMMENT),
     wb_dport_i(this, "wb_dport_i"),
     wb_dport_o(this, "wb_dport_o"),
     vec_irq(this, "vec_irq"),

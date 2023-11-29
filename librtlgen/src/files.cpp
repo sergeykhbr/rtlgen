@@ -290,13 +290,13 @@ void FileObject::generate_sysc() {
         } else if (p->isParam() && !p->isParamGeneric()) {
             if (p->isStruct()) {
                 // Do all others params in a such way
-                ln = p->generate();
+                out += p->generate();
             } else {
                 ln = addspaces() + "static const " + p->getType() + " ";
                 ln += p->getName() + " = " + p->generate() + ";";
                 p->addComment(ln);
+                out += ln + "\n";
             }
-            out += ln + "\n";
         } else if (p->isTypedef()) {
             out += addspaces();
             out += p->generate();
@@ -443,15 +443,20 @@ void FileObject::generate_sysv() {
             out += "function automatic ";
             out += p->generate();
         } else if (p->isParam() && !p->isParamGeneric()) {
-            ln = addspaces() + "localparam ";
-            if (p->isString()) {
-                // Vivado doesn't support string parameters. Skip type definition
+            if (p->isStruct()) {
+                // Do all others params in a such way
+                out += p->generate();
             } else {
-                ln += p->getType() + " ";
+                ln = addspaces() + "localparam ";
+                if (p->isString()) {
+                    // Vivado doesn't support string parameters. Skip type definition
+                } else {
+                    ln += p->getType() + " ";
+                }
+                ln += p->getName() + " = " + p->generate() + ";";
+                p->addComment(ln);
+                out += ln + "\n";
             }
-            ln += p->getName() + " = " + p->generate() + ";";
-            p->addComment(ln);
-            out += ln + "\n";
         } else if (p->isTypedef()) {
             out += p->generate();
         } else if (p->isVector()) {
@@ -529,33 +534,36 @@ void FileObject::generate_vhdl() {
                 SCV_select_local(strtype);
                 out += mod->generate_vhdl_pkg();
             }
-        } else {
-            if (p->getId() == ID_FUNCTION) {
-                out += "function ";
-            } else if (p->isParam() && !p->isParamGeneric()) {
+        } else if (p->getId() == ID_FUNCTION) {
+            out += "function ";
+        } else if (p->isParam() && !p->isParamGeneric()) {
+            if (p->isStruct()) {
+                // Do all others params in a such way
+                out += p->generate();
+            } else {
                 ln = addspaces() + "constant " + p->getName() + " : ";
                 ln += p->getType() + " := " + p->generate() + ";";
                 p->addComment(ln);
                 out += ln + "\n";
-                continue;
-            } else if (p->isTypedef()) {
-                if (p->isVector()) {
-                    out += p->generate();
-                } else if (p->getName().size() == 0) {
-                    out += "type " + p->getType();
-                    out += " is array (0 to " + p->getStrDepth() + " - 1) of ";
-                    out += p->generate() + ";\n";
-                }
-                continue;
-            } else if (p->isVector() && p->getName().size()) {
-                out += "constant " + p->getName();
-                out += " : " + p->getType() + " := ";
-                out += generate_const(p);
-                out += ";\n";
-                continue;
             }
-            out += p->generate();
+            continue;
+        } else if (p->isTypedef()) {
+            if (p->isVector()) {
+                out += p->generate();
+            } else if (p->getName().size() == 0) {
+                out += "type " + p->getType();
+                out += " is array (0 to " + p->getStrDepth() + " - 1) of ";
+                out += p->generate() + ";\n";
+            }
+            continue;
+        } else if (p->isVector() && p->getName().size()) {
+            out += "constant " + p->getName();
+            out += " : " + p->getType() + " := ";
+            out += generate_const(p);
+            out += ";\n";
+            continue;
         }
+        out += p->generate();
     }
 
     out += "end;  -- " + getName() + " package body\n";

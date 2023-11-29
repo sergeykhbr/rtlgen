@@ -81,10 +81,10 @@ class types_bus0 : public FileObject {
         virtual bool isSignal() override { return true; }
     };
 
-    class CONST_CFG_BUS0_MAP : public ParamStruct<types_amba::mapinfo_type> {
+    class CONST_CFG_BUS0_MAP : public ParamStruct<bus0_mapinfo_vector> {
      public:
         CONST_CFG_BUS0_MAP(GenObject *parent)
-            : ParamStruct<types_amba::mapinfo_type>(parent, "CFG_BUS0_MAP", NO_COMMENT),
+            : ParamStruct<bus0_mapinfo_vector>(parent, "CFG_BUS0_MAP", NO_COMMENT),
             bootrom(this, "bootrom", "0, bootrom, 256 KB"),
             clint(this, "clint", "1, clint"),
             sram(this, "sram", "2, sram, 2MB"),
@@ -92,7 +92,7 @@ class types_bus0 : public FileObject {
             bus1(this, "bus1", "4, APB bridge: uart1"),
             ddr(this, "ddr", "5, ddr, 512 MB"),
             sdctrl(this, "sdctrl", "6, sdctrl, 32 GB") {
-            setStrDepth("CFG_BUS0_XSLV_TOTAL");
+
             bootrom.addr_start.setStrValue("0x0000000010000");
             bootrom.addr_end.setStrValue(  "0x0000000050000");
 

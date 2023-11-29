@@ -54,4 +54,14 @@ class SignalBig : public Signal {
     virtual bool isBigSC() override { return true; }
 };
 
+template<class T>
+class SignalStruct : public T {
+ public:
+    SignalStruct(GenObject *parent, const char *name, const char *comment)
+        : T(parent, name, comment) {
+    }
+    virtual bool isSignal() override { return true; }
+};
+
+
 }  // namespace sysvc

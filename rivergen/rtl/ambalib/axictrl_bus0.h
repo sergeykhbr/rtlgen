@@ -97,26 +97,9 @@ class axictrl_bus0 : public ModuleObject {
     OutStruct<types_bus0::bus0_xslv_in_vector> o_xslvi;
     OutStruct<types_bus0::bus0_mapinfo_vector> o_mapinfo;
 
-    class mapinfo_type_signal : public types_amba::mapinfo_type {
-     public:
-        mapinfo_type_signal(GenObject* parent, const char *name, const char *comment="")
-            : types_amba::mapinfo_type(parent, name, comment) {}
-        virtual bool isSignal() override { return true; }
-    } wb_def_mapinfo;
-    
-    class axi4_slave_in_type_signal : public types_amba::axi4_slave_in_type {
-     public:
-        axi4_slave_in_type_signal(GenObject* parent, const char *name, const char *comment="")
-            : types_amba::axi4_slave_in_type(parent, name, comment) {}
-        virtual bool isSignal() override { return true; }
-    } wb_def_xslvi;
-    
-    class axi4_slave_out_type_signal : public types_amba::axi4_slave_out_type {
-     public:
-        axi4_slave_out_type_signal(GenObject* parent, const char *name, const char *comment="")
-            : types_amba::axi4_slave_out_type(parent, name, comment) {}
-        virtual bool isSignal() override { return true; }
-    } wb_def_xslvo;
+    SignalStruct<types_amba::mapinfo_type> wb_def_mapinfo;
+    SignalStruct<types_amba::axi4_slave_in_type> wb_def_xslvi;
+    SignalStruct<types_amba::axi4_slave_out_type> wb_def_xslvo;
     Signal w_def_req_valid;
     Signal wb_def_req_addr;
     Signal wb_def_req_size;

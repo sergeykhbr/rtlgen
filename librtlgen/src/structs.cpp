@@ -60,8 +60,13 @@ std::string StructObject::getStrValue() {
         ret += "(";
     }
 
+    std::string checktype = getType();
+    if (isVector()) {
+        checktype = getTypedef();
+    }
     if (d > 1) {
-        if (getEntries().size() < d) {
+        if (getEntries().back()->getType() != checktype
+            || getEntries().size() < d) {
             SHOW_ERROR("Wrong struct param definition %d < %d",
                         d, getEntries().size());
         }
@@ -70,7 +75,7 @@ std::string StructObject::getStrValue() {
         int tcnt = 0;
         std::string ln;
         for (auto &p: getEntries()) {
-            if (p->getType() != getType()) {
+            if (p->getType() != checktype) {
                 // Only the same type entry should be generated
                 continue;
             }
@@ -98,7 +103,7 @@ std::string StructObject::getStrValue() {
     if (SCV_is_sysc()) {
         ret += "}";
     } else if (SCV_is_sv()) {
-        ret += "'}";
+        ret += "}";
     } else if (SCV_is_vhdl()) {
         ret += ")";
     }
@@ -568,11 +573,29 @@ std::string StructObject::generate_vector_type() {
 std::string StructObject::generate_param() {
     std::string ret = "";
     ret += addspaces();
-    ret += "static const " + getType() + " " + getName();
-    if (getDepth() > 1) {
-        ret += "[" + getStrDepth() + "]";
+    if (SCV_is_sysc()) {
+        ret += "static const ";
+        if (isVector()) {
+            ret += getTypedef();
+        } else {
+            ret += getType();
+        }
+        ret += " " + getName();
+        if (getDepth() > 1) {
+            ret += "[" + getStrDepth() + "]";
+        }
+        ret += " = ";
+    } else if (SCV_is_sv()) {
+        ret += "const " + getType() + " " + getName();
+        if (!isVector() && getDepth() > 1) {
+            ret += "[" + getStrDepth() + "]";
+        }
+        ret += " = ";
+    } else if (SCV_is_vhdl()) {
+        ret += "constant " + getName() + "of " + getType() + " := ";
     }
-    ret += " = " + getStrValue() + ";\n";
+
+    ret += getStrValue() + ";\n";
     return ret;
 }
 

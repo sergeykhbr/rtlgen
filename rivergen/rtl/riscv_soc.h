@@ -138,8 +138,8 @@ public:
     TextLine _plic3_;
     ParamI32D SOC_PLIC_IRQ_TOTAL;
 
-    types_amba::axi4_master_out_type_signal acpo;
-    types_amba::axi4_master_in_type_signal acpi;
+    SignalStruct<types_amba::axi4_master_out_type> acpo;
+    SignalStruct<types_amba::axi4_master_in_type> acpi;
     types_bus0::bus0_mapinfo_vector   bus0_mapinfo;
     types_bus0::bus0_xmst_in_vector   aximi;
     types_bus0::bus0_xmst_out_vector  aximo;
