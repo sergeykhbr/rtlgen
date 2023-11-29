@@ -70,9 +70,9 @@ class clint : public ModuleObject {
             mtip(this, "mtip", "1", "0"),
             mtimecmp(this, "mtimecmp", "64", "0") {}
      public:
-        Logic msip;
-        Logic mtip;
-        Logic mtimecmp;
+        Signal msip;
+        Signal mtip;
+        Signal mtimecmp;
     };
 
 

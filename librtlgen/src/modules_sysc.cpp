@@ -490,19 +490,20 @@ std::string ModuleObject::generate_sysc_sensitivity(GenObject *obj,
                                                     std::string i,
                                                     std::string &loop) {
     std::string ret = "";
-    if (!obj->isSignal() && !obj->isStruct()) {
+    if (!obj->isSignal()
+        && !obj->isStruct()
+        && !obj->isReg()
+        && !obj->isNReg()) {
         return ret;
     }
-    if (obj->isTypedef()
-        || (obj->isOutput() && !obj->isInput())     // ignore out structures
-        || obj->getName() == "i_clk") {
-        return ret;
+    if (prefix == "") {
+        // Check exceptions only on first level
+        if (obj->isTypedef()
+            || (obj->isOutput() && !obj->isInput())     // ignore out structures
+            || obj->getName() == "i_clk") {
+            return ret;
+        }
     }
-#if 1
-if (obj->getName() == "i_xmsto") {
-bool st = true;
-}
-#endif
 
     if (prefix.size()) {
         prefix += ".";
@@ -516,21 +517,31 @@ bool st = true;
         pushspaces();
     }
 
-    if (obj->isStruct() && !obj->isInput()) {    // all input structures are interfaces
+    if (obj->isStruct() && !obj->isInterface()) {
         const char tidx[2] = {i.c_str()[0] + static_cast<char>(1), 0};
         i = std::string(tidx);
         for (auto &e: obj->getEntries()) {
             ret += generate_sysc_sensitivity(e, prefix, i, loop);
         }
     } else {
-        ret += loop;
-        loop = "";
         if (obj->isReg()) {
             prefix = "r." + prefix;
+            if (!obj->isSignal()) {
+                SCV_printf("warning: non signal '%s' used as a trigger, "
+                    "skip in the sensitivity list.", obj->getName().c_str());
+                return ret;
+            }
         } else if (obj->isNReg()) {
             prefix = "nr." + prefix;
+            if (!obj->isSignal()) {
+                SCV_printf("warning: non signal '%s' used as a trigger, "
+                    "skip in the sensitivity list.", obj->getName().c_str());
+                return ret;
+            }
         }
+        ret += loop;
         ret += addspaces() + "sensitive << " + prefix + ";\n";
+        loop = "";
     }
 
     if (obj->getDepth() > 1) {
@@ -551,17 +562,23 @@ std::string ModuleObject::generate_sysc_vcd_entries(GenObject *obj,
                                                     std::string i,
                                                     std::string &loop) {    // do not print empty for loop cycle
     std::string ret = "";
-    if (!obj->isVcd()
-        || obj->isTypedef()
-        || (obj->getName() == "i_clk" || obj->getName() == "i_nrst") && !isTop()
-        || obj->isVector()
-        || (!obj->isInput()
-            && !obj->isOutput()
-            && !obj->isReg()
-            && !obj->isNReg()
-            && !obj->isStruct())) {
+    if (!obj->isInput()
+        && !obj->isOutput()
+        && !obj->isStruct()
+        && !obj->isReg()
+        && !obj->isNReg()) {
         return ret;
     }
+    if (prefix == "") {
+        // Check exceptions only on first level
+        if (!obj->isVcd()
+            || obj->isTypedef()
+            || obj->isVector()  // just to reduce number of traced data
+            || (obj->getName() == "i_clk" || obj->getName() == "i_nrst") && !isTop()) {
+            return ret;
+        }
+    }
+
 
     std::string objname = obj->getName();
     if (obj->getDepth() > 1) {
@@ -587,13 +604,6 @@ std::string ModuleObject::generate_sysc_vcd_entries(GenObject *obj,
             ret += generate_sysc_vcd_entries(e, prefix, i, loop);
         }
     } else {
-        if (prefix.size()) {
-            prefix += ".";
-        }
-        if (loop.size()) {
-            ret += loop;
-            loop = "";
-        }
         std::string r = "";
         std::string r_ = "";
         if (obj->isReg()) {
@@ -602,6 +612,14 @@ std::string ModuleObject::generate_sysc_vcd_entries(GenObject *obj,
         } else if (obj->isNReg()) {
             r = "nr.";
             r_ = "nr_";
+        }
+
+        if (prefix.size()) {
+            prefix += ".";
+        }
+        if (loop.size()) {
+            ret += loop;
+            loop = "";
         }
         if (obj->getDepth() > 1) {
             ret += addspaces();

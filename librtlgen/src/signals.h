@@ -23,6 +23,10 @@
 #include <iostream>
 
 namespace sysvc {
+/**
+    Variable or structure without signal flag won't get into sensitivity
+    list of a process.
+*/
 
 class Signal : public Logic {
  public:
