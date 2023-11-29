@@ -50,6 +50,7 @@ void popspaces();
 
 void SCV_set_generator(EGenerateType v);
 int SCV_is_sysc();
+int SCV_is_sysc_h();
 int SCV_is_sv();
 int SCV_is_sv_pkg();
 int SCV_is_vhdl();

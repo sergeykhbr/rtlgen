@@ -47,7 +47,6 @@ class FileObject : public GenObject,
     void generate_sysv();
     void generate_vhdl();
 
-    std::string generate_const(GenObject *obj);
  private:
     void fullPath2vector(const char *fullpath, std::vector<std::string> &subs);
     std::string fullPath2fileRelative(const char *fullpath);

@@ -183,7 +183,7 @@ std::string Operation::copyreg_entry(char *idx, std::string dst, std::string src
             }
             if (src.size() == 0) {
                 // reset
-                ret += p->getItem()->getStrValue();
+                ret += p->getStrValue();
             } else {
                 // copy data
                 ret += src + "." + p->getName() + "["+i+"]";

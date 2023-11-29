@@ -428,7 +428,7 @@ void GenObject::setWidth(int w) {
     setStrWidth(tstr);
 }
 
-GenObject *GenObject::getItem(const char *name) {
+/*GenObject *GenObject::getItem(const char *name) {
     GenObject *ret = 0;
     for (auto &e : getEntries()) {
         if (e->getName() == name) {
@@ -437,7 +437,7 @@ GenObject *GenObject::getItem(const char *name) {
     }
     SHOW_ERROR("Cannot find child with name %s", name);
     return ret;
-}
+}*/
 
 
 uint64_t GenObject::parse_to_u64(const char *val, size_t &pos) {

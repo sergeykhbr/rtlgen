@@ -30,7 +30,8 @@ class ModuleObject : public GenObject {
     ModuleObject(GenObject *parent, const char *type,
         const char *name="", const char *depth="");
 
-    virtual std::string getType() { return type_; }
+    virtual std::string generate() override;
+
     virtual std::string generate_sysc_h();
     virtual std::string generate_sysc_cpp();
     virtual std::string generate_sv_pkg();

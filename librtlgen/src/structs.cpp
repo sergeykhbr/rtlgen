@@ -116,23 +116,21 @@ std::string StructObject::generate_interface_constructor() {
 
     ret += addspaces() + getType() + "() {\n";
     pushspaces();
-    std::list<GenObject *> *pentries = &getEntries();
     std::string prefix = "";
     if (isVector()) {
-        pentries = &getItem()->getEntries();
         prefix = getEntries().front()->getName() + "[i].";
 
         ret += addspaces();
         ret += "for (int i = 0; i < " + getEntries().front()->getStrDepth() + "; i++) {\n";
         pushspaces();
     }
-    for (auto& p : *pentries) {
-        if (p->getId() == ID_COMMENT) {
+    for (auto& p : getEntries()) {
+        if (p->isComment()) {
             ret += p->generate();
         } else if (p->isStruct() && !p->isTypedef()) {
             // 1 level of sub structures without recursive implementation
             for (auto &p2 : p->getEntries()) {
-                if (p2->getId() == ID_COMMENT) {
+                if (p2->isComment()) {
                     continue;
                 }
                 ret += addspaces();
@@ -190,6 +188,9 @@ std::string StructObject::generate_interface_constructor_init() {
     return ret;
 }
 
+/**
+    Redefine operator ==
+*/
 std::string StructObject::generate_interface_op_equal() {
     std::string ret = "";
     int tcnt = 0;
@@ -198,10 +199,8 @@ std::string StructObject::generate_interface_op_equal() {
     pushspaces();
     ret += addspaces() + "bool ret = true;\n";
 
-    std::list<GenObject *> *pentries = &getEntries();
     std::string prefix = "";
     if (isVector()) {
-        pentries = &getItem()->getEntries();
         prefix = getEntries().front()->getName() + "[i].";
 
         ret += addspaces();
@@ -211,12 +210,12 @@ std::string StructObject::generate_interface_op_equal() {
 
     ret += addspaces() + "ret = ret";
     pushspaces();
-    for (auto& p : *pentries) {
-        if (p->getId() == ID_COMMENT) {
+    for (auto& p : getEntries()) {
+        if (p->isComment()) {
         } else if (p->isStruct() && !p->isTypedef()) {
             // 1 level of sub structures without recursive implementation
             for (auto &p2 : p->getEntries()) {
-                if (p2->getId() == ID_COMMENT) {
+                if (p2->isComment()) {
                     continue;
                 }
                 ret += "\n" + addspaces() + "&& ";
@@ -242,28 +241,29 @@ std::string StructObject::generate_interface_op_equal() {
     return ret;
 }
 
+/**
+    Redefine operator =
+ */
 std::string StructObject::generate_interface_op_assign() {
     std::string ret = "";
 
     ret += addspaces() + "inline " + getType() + "& operator = (const " + getType() + " &rhs) {\n";
     pushspaces();
 
-    std::list<GenObject *> *pentries = &getEntries();
     std::string prefix = "";
     if (isVector()) {
-        pentries = &getItem()->getEntries();
         prefix = getEntries().front()->getName() + "[i].";
 
         ret += addspaces();
         ret += "for (int i = 0; i < " + getEntries().front()->getStrDepth() + "; i++) {\n";
         pushspaces();
     }
-    for (auto& p : *pentries) {
-        if (p->getId() == ID_COMMENT) {
+    for (auto& p : getEntries()) {
+        if (p->isComment()) {
         } else if (p->isStruct() && !p->isTypedef()) {
             // 1 level of sub structures without recursive implementation
             for (auto &p2 : p->getEntries()) {
-                if (p2->getId() == ID_COMMENT) {
+                if (p2->isComment()) {
                     continue;
                 }
                 ret += addspaces();
@@ -301,6 +301,9 @@ std::string StructObject::generate_interface_op_bracket() {
     return ret;
 }
 
+/**
+    Redefine operator <<
+ */
 std::string StructObject::generate_interface_op_stream() {
     std::string ret = "";
     int tcnt = 0;
@@ -317,10 +320,8 @@ std::string StructObject::generate_interface_op_stream() {
     ret += ln + getType() + " const &v) {\n";
     pushspaces();
 
-    std::list<GenObject *> *pentries = &getEntries();
     std::string prefix = "";
     if (isVector()) {
-        pentries = &getItem()->getEntries();
         prefix = getEntries().front()->getName() + "[i].";
 
         ret += addspaces();
@@ -328,13 +329,13 @@ std::string StructObject::generate_interface_op_stream() {
         pushspaces();
     }
     ret += addspaces() + "os << \"(\"\n";
-    for (auto& p : *pentries) {
-        if (p->getId() == ID_COMMENT) {
+    for (auto& p : getEntries()) {
+        if (p->isComment()) {
             // do nothing
         } else if (p->isStruct() && !p->isTypedef()) {
             // 1 level of sub structures without recursive implementation
             for (auto &p2 : p->getEntries()) {
-                if (p2->getId() == ID_COMMENT) {
+                if (p2->isComment()) {
                     continue;
                 }
                 if (tcnt++) {
@@ -364,6 +365,9 @@ std::string StructObject::generate_interface_op_stream() {
     return ret;
 }
 
+/**
+    Redefine method sc_trace(..)
+ */
 std::string StructObject::generate_interface_sc_trace() {
     std::string ret = "";
     std::string ln;
@@ -380,11 +384,9 @@ std::string StructObject::generate_interface_sc_trace() {
     ret += ln + "const std::string &NAME) {\n";
     pushspaces();
 
-    std::list<GenObject *> *pentries = &getEntries();
     std::string prefix = "";
     std::string N_plus = "";
     if (isVector()) {
-        pentries = &getItem()->getEntries();
         prefix = getEntries().front()->getName() + "[i].";
         N_plus = "N + ";
 
@@ -394,13 +396,13 @@ std::string StructObject::generate_interface_sc_trace() {
         pushspaces();
         ret += addspaces() + "sprintf(N, \"(%d)\", i);\n";
     }
-    for (auto& p : *pentries) {
-        if (p->getId() == ID_COMMENT) {
+    for (auto& p : getEntries()) {
+        if (p->isComment()) {
             // do nothing
         } else if (p->isStruct() && !p->isTypedef()) {
             // 1 level of sub structures without recursive implementation
             for (auto &p2 : p->getEntries()) {
-                if (p2->getId() == ID_COMMENT) {
+                if (p2->isComment()) {
                     continue;
                 }
                 ret += addspaces();

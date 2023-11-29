@@ -158,70 +158,6 @@ std::string FileObject::generate() {
     return GenObject::generate();
 }
 
-std::string FileObject::generate_const(GenObject *obj) {
-    std::string out = "";
-    int tcnt = 0;
-    std::string ln;
-    GenObject *item;
-    if (obj->getDepth() > 1) {
-        if (SCV_is_sysc()) {
-            out += "{\n";
-        } else if (SCV_is_sv()) {
-            out += "'{\n";
-        } else if (SCV_is_vhdl()) {
-            out += "(\n";
-        }
-        pushspaces();
-        for (int i = 0; i < obj->getDepth(); i++) {
-            item = obj->getItem(i);
-            ln = generate_const(item);
-            if (i < (obj->getDepth() - 1)) {
-                ln += ",";
-            }
-            if (item->getComment().size()) {
-                while (ln.size() < 60) {
-                    ln += " ";
-                }
-                ln += item->addComment();
-            }
-            out += ln + "\n";
-        }
-        popspaces();
-        out += addspaces();
-        if (SCV_is_vhdl()) {
-            out += ")";
-        } else {
-            out += "}";
-        }
-    } else if (obj->isStruct()) {
-        out += addspaces();
-        if (SCV_is_sysc()) {
-            out += "{";
-        } else if (SCV_is_sv()) {
-            out += "'{";
-        } else if (SCV_is_vhdl()) {
-            out += "(";
-        }
-        for (auto &m: obj->getEntries()) {
-            ln = generate_const(m);
-            if (ln.size()) {
-                if (tcnt++) {
-                    out += ", ";
-                }
-            }
-            out += ln;
-        }
-        if (SCV_is_vhdl()) {
-            out += ")";
-        } else {
-            out += "}";
-        }
-    } else if (obj->isValue()) {
-        out += obj->getStrValue();
-    }
-    return out;
-}
-
 void FileObject::generate_sysc() {
     std::list<GenObject *> modlistcpp;      // list of modules with the cpp files (without template parameters)
     std::string out = "";
@@ -280,9 +216,10 @@ void FileObject::generate_sysc() {
         "\n";
 
     // header
+    SCV_set_generator(SYSC_H);
     for (auto &p: getEntries()) {
-        if (p->isModule() && p->isTypedef()) {
-            out += static_cast<ModuleObject *>(p)->generate_sysc_h();
+        if (p->isModule()) {
+            out += p->generate();
         } else if (p->getId() == ID_FUNCTION) {
             // for global functions only
             out += addspaces() + "static " + p->getType() + " ";
@@ -297,14 +234,6 @@ void FileObject::generate_sysc() {
                 p->addComment(ln);
                 out += ln + "\n";
             }
-        } else if (p->isTypedef()) {
-            out += addspaces();
-            out += p->generate();
-        } else if (p->isVector()) {
-            // mapinfo array initializaion:
-            out += addspaces() + "static const " + p->getTypedef();
-            out += " " + p->getName() + "[" + p->getStrDepth() + "] = ";
-            out += generate_const(p) + ";\n";
         } else {
             out += p->generate();
         }
@@ -312,32 +241,37 @@ void FileObject::generate_sysc() {
     out += 
         "}  // namespace debugger\n"
         "\n";
-
+    SCV_set_generator(SYSC_ALL);
     SCV_write_file(filename.c_str(), out.c_str(), out.size());
 
-    // source file if any module defined in this file
-    for (auto &p: modlistcpp) {
-        out = "";
-        filename = getFullPath();
-        filename = filename + ".cpp";
-
-        out += CommentLicense().generate();
-        out += 
-            "\n"
-            "#include \"" + getName() + ".h\"\n"
-            "#include \"api_core.h\"\n"
-            "\n";
-        out += 
-            "namespace debugger {\n"
-            "\n";
-
-        out += static_cast<ModuleObject *>(p)->generate_sysc_cpp();
-        out += 
-            "}  // namespace debugger\n"
-            "\n";
-
-        SCV_write_file(filename.c_str(), out.c_str(), out.size());
+    if (modlistcpp.size() == 0)  {
+        return;
     }
+
+    // source file if any module defined in this file
+    filename = getFullPath();
+    filename = filename + ".cpp";
+    out = CommentLicense().generate();
+    SCV_set_generator(SYSC_CPP);
+
+    out += 
+        "\n"
+        "#include \"" + getName() + ".h\"\n"
+        "#include \"api_core.h\"\n"
+        "\n";
+    out += 
+        "namespace debugger {\n"
+        "\n";
+
+    for (auto &p: modlistcpp) {
+        out += p->generate();
+    }
+    out += 
+        "}  // namespace debugger\n"
+        "\n";
+
+    SCV_write_file(filename.c_str(), out.c_str(), out.size());
+    SCV_set_generator(SYSC_ALL);
 }
 
 void FileObject::getDepList(std::list<std::string> &lst) {
@@ -457,14 +391,6 @@ void FileObject::generate_sysv() {
                 p->addComment(ln);
                 out += ln + "\n";
             }
-        } else if (p->isTypedef()) {
-            out += p->generate();
-        } else if (p->isVector()) {
-            // Device mapping constants generation:
-            out += "const " + p->getType();
-            out += " " + p->getName() + " = ";
-            out += generate_const(p);
-            out += ";\n";
         } else {
             out += p->generate();
         }
@@ -546,21 +472,6 @@ void FileObject::generate_vhdl() {
                 p->addComment(ln);
                 out += ln + "\n";
             }
-            continue;
-        } else if (p->isTypedef()) {
-            if (p->isVector()) {
-                out += p->generate();
-            } else if (p->getName().size() == 0) {
-                out += "type " + p->getType();
-                out += " is array (0 to " + p->getStrDepth() + " - 1) of ";
-                out += p->generate() + ";\n";
-            }
-            continue;
-        } else if (p->isVector() && p->getName().size()) {
-            out += "constant " + p->getName();
-            out += " : " + p->getType() + " := ";
-            out += generate_const(p);
-            out += ";\n";
             continue;
         }
         out += p->generate();

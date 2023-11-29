@@ -35,6 +35,16 @@ ModuleObject::ModuleObject(GenObject *parent, const char *type,
     }
 }
 
+std::string ModuleObject::generate() {
+    std::string ret = "";
+    if (SCV_is_sysc_h()) {
+        return generate_sysc_h();
+    } else if (SCV_is_sysc()) {
+        return generate_sysc_cpp();
+    }
+    return ret;
+}
+
 bool ModuleObject::isCombProcess() {
     for (auto &e: entries_) {
         if (e->getId() == ID_PROCESS

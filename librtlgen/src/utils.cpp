@@ -290,7 +290,14 @@ void SCV_set_generator(EGenerateType v) {
 }
 
 int SCV_is_sysc() {
-    if (gentype_ == SYSC_ALL || gentype_ == SYSC_ALL || gentype_ == SYSC_ALL) {
+    if (gentype_ == SYSC_ALL || gentype_ == SYSC_H || gentype_ == SYSC_CPP) {
+        return gentype_;
+    }
+    return 0;
+}
+
+int SCV_is_sysc_h() {
+    if (gentype_ == SYSC_H) {
         return gentype_;
     }
     return 0;

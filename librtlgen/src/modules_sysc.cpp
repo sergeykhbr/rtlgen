@@ -790,8 +790,8 @@ std::string ModuleObject::generate_sysc_constructor() {
             continue;
         }
         ret += ",\n    " + p->getName() + "(\"" + p->getName() + "\"";
-        if (p->getItem()->isVector()) {
-            ret += ", " + p->getItem()->getStrDepth();
+        if (p->isVector()) {
+            ret += ", " + p->getStrDepth();
         }
         ret += ")";
     }
@@ -801,7 +801,7 @@ std::string ModuleObject::generate_sysc_constructor() {
             continue;
         }
         ret += ",\n    " + p->getName() + "(\"" + p->getName() + "\"";
-        ret += ", " + p->getItem()->getStrValue();
+        ret += ", " + p->getStrValue();
         ret += ", SC_SEC";
         ret += ")";
     }

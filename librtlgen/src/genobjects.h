@@ -139,9 +139,6 @@ class GenObject {
 
     virtual void setSelector(GenObject *sel) { sel_ = sel; }
     virtual GenObject *getSelector() { return sel_; }
-    virtual GenObject *getItem() { return this; }
-    virtual GenObject *getItem(int idx)  { return this; }
-    virtual GenObject *getItem(const char *name);
     virtual bool isReg() { return false; }               // is register with posedge clock
     virtual bool isNReg() { return false; }              // is register with negedge clock
     virtual void disableReset() { reset_disabled_ = true; }
