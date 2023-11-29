@@ -259,7 +259,9 @@ std::string ModuleObject::generate_sv_mod_signals() {
             || p->isOutput()
             || p->isOperation()
             || p->isTypedef()
-            || p->isParam()) {
+            || p->isParam()
+            || p->isReg()
+            || p->isNReg()) {
             text = "";
             continue;
         }
@@ -269,12 +271,10 @@ std::string ModuleObject::generate_sv_mod_signals() {
             text = "";
             continue;
         }
-        if (p->isReg() || p->isNReg()
-            || (!p->isSignal()
+        if (!p->isSignal()
                 && p->getId() != ID_VALUE
                 && !p->isStruct()
-                && p->getId() != ID_CLOCK
-                && p->getId() != ID_ARRAY_DEF)) {
+                && !p->isClock()) {
             text = "";
             continue;
         }

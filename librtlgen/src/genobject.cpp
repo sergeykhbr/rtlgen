@@ -160,11 +160,7 @@ std::string GenObject::addComment() {
     } else {
         ret += "// ";
     }
-    if (getId() == ID_COMMENT) {    
-        ret += getName();
-    } else {
-        ret += getComment();
-    }
+    ret += getComment();
     return ret;
 }
 
@@ -176,6 +172,16 @@ void GenObject::addComment(std::string &out) {
         out += " ";
     }
     out += addComment();
+}
+
+bool GenObject::isIgnoreSignal() {
+    if (isInput()
+        || isClock() 
+        || isVector()
+        || (isStruct() && !isInterface())) {
+        return true;
+    }
+    return false;
 }
 
 // Not local struct is an interface

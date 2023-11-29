@@ -44,9 +44,6 @@ class Signal : public Logic {
            const char *comment="");
 
     virtual bool isSignal() override { return true; }
-    /** Signal could be a register when it inside of register struct */
-    virtual bool isReg() override;
-    virtual bool isNReg() override;
 };
 
 // Always use sc_biguint in SystemC

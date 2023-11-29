@@ -30,8 +30,9 @@ class TextLine : public GenObject {
     TextLine(GenObject *parent, const char *comment);
     TextLine(GenObject *parent);
 
-    virtual std::string getType() { return std::string(""); }
-    virtual std::string generate() override;
+    virtual bool isComment() override { return true; }  // pure text without '// or --' symbols
+    virtual std::string getStrValue() override;         // text with commenting symbol
+    virtual std::string generate() override;  // full line with commenting symbols and line ending protected:
  protected:
     bool empty_;
 };
@@ -40,7 +41,6 @@ class CommentLicense : public GenObject {
  public:
     CommentLicense();
 
-    virtual std::string getType() { return std::string(""); }
     virtual std::string generate() override;
  protected:
     TextLine str01;

@@ -40,7 +40,6 @@ std::string ModuleObject::generate_sysc_h_reg_struct(bool negedge) {
     }
     out += " {\n";
     pushspaces();
-    bool ignore_struct;
     for (auto &p: getEntries()) {
         if (!negedge && !p->isReg()) {
             continue;
@@ -50,13 +49,12 @@ std::string ModuleObject::generate_sysc_h_reg_struct(bool negedge) {
         }
         ln = addspaces();
 
-        ignore_struct = p->isStruct() && p->isSignal() && !p->isInterface();
-        if (p->isSignal() && !p->isInput() && !p->isClock() && !ignore_struct) {
+        if (p->isSignal() && !p->isIgnoreSignal()) {
             // some structure are not defined as a signal but probably should be
             ln += "sc_signal<";
         }
         ln += p->getType();
-        if (p->isSignal() && !p->isInput() && !p->isClock() && !ignore_struct) {
+        if (p->isSignal() && !p->isIgnoreSignal()) {
             ln += ">";
         }
         ln += " " + p->getName();
@@ -377,12 +375,11 @@ std::string ModuleObject::generate_sysc_h() {
             text = "";
         }
         ln = addspaces();
-        bool ignore_struct = p->isStruct() && p->isSignal() && !p->isInterface();
-        if (p->isSignal() && !p->isInput() && !p->isClock() && !p->isVector() && !ignore_struct) {
+        if (p->isSignal() && !p->isIgnoreSignal()) {
             ln += "sc_signal<";
         }
         ln += p->getType();
-        if (p->isSignal() && !p->isInput() && !p->isClock() && !p->isVector() && !ignore_struct) {
+        if (p->isSignal() && !p->isIgnoreSignal()) {
             ln += ">";
         }
         ln += " " + p->getName();
@@ -490,7 +487,8 @@ std::string ModuleObject::generate_sysc_proc_registers(bool clkpos) {
 
 std::string ModuleObject::generate_sysc_sensitivity(GenObject *obj,
                                                     std::string prefix,
-                                                    std::string i) {
+                                                    std::string i,
+                                                    std::string &loop) {
     std::string ret = "";
 #if 1
     if (!obj->isSignal() && !obj->isStruct()) {
@@ -529,8 +527,8 @@ std::string ModuleObject::generate_sysc_sensitivity(GenObject *obj,
 
     if (obj->getDepth() > 1) {
         prefix += "[" + i + "]";
-        ret += addspaces();
-        ret += "for (int " + i + " = 0; " + i + " < " + obj->getStrDepth() + "; " + i + "++) {\n";
+        loop = addspaces();
+        loop += "for (int " + i + " = 0; " + i + " < " + obj->getStrDepth() + "; " + i + "++) {\n";
         pushspaces();
     }
     if (obj->isStruct() && obj->getStrValue().size() == 0) {
@@ -538,12 +536,11 @@ std::string ModuleObject::generate_sysc_sensitivity(GenObject *obj,
         const char tidx[2] = {i.c_str()[0] + static_cast<char>(1), 0};
         i = std::string(tidx);
         for (auto &e: obj->getEntries()) {
-            ret += generate_sysc_sensitivity(e, prefix, i);
+            ret += generate_sysc_sensitivity(e, prefix, i, loop);
         }
     } else {
-        if (prefix == "tbl[i].start_addr") {
-            bool st = true;
-        }
+        ret += loop;
+        loop = "";
         if (obj->isReg()) {
             prefix = "r." + prefix;
         } else if (obj->isNReg()) {
@@ -553,8 +550,13 @@ std::string ModuleObject::generate_sysc_sensitivity(GenObject *obj,
     }
 
     if (obj->getDepth() > 1) {
-        popspaces();
-        ret += addspaces() + "}\n";
+        if (loop == "") {
+            popspaces();
+            ret += addspaces() + "}\n";
+        } else {
+            popspaces();
+            loop = "";
+        }
     }
     return ret;
 }
@@ -853,6 +855,7 @@ std::string ModuleObject::generate_sysc_constructor() {
 
     // Process sensitivity list:
     std::string prefix1 = "";
+    std::string loop = "";
     for (auto &p: getEntries()) {
         if (p->getId() != ID_PROCESS) {
             continue;
@@ -865,7 +868,7 @@ std::string ModuleObject::generate_sysc_constructor() {
 
         ln = std::string("i");
         for (auto &s: getEntries()) {
-            ret += generate_sysc_sensitivity(s, prefix1, ln);
+            ret += generate_sysc_sensitivity(s, prefix1, ln, loop);
         }
     }
     if (isRegProcess()) {

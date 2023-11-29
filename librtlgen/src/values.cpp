@@ -50,6 +50,28 @@ GenValue::GenValue(int val) : GenObject(0, "", ID_CONST, "", "") {
     setStrWidth("32");
 }
 
+bool GenValue::isReg() {
+    GenObject *p = getParent();
+    while (p && p->isStruct()) {
+        if (p->isReg()) {
+            return true;
+        }
+        p = p->getParent();
+    }
+    return false;
+}
+
+bool GenValue::isNReg() {
+    GenObject *p = getParent();
+    while (p && p->isStruct()) {
+        if (p->isNReg()) {
+            return true;
+        }
+        p = p->getParent();
+    }
+    return false;
+}
+
 std::string GenValue::v_name(std::string v) {
     std::string ret = "";
     if (getId() == ID_CONST) {

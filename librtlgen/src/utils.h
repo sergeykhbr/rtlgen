@@ -64,6 +64,8 @@ std::string SCV_get_cfg_fullname(std::string &name);
 uint64_t SCV_get_cfg_parameter(std::string &name);
 GenObject *SCV_get_cfg_obj(std::string &name);
 
+const char *SCV_get_unique_name();
+
 void SCV_register_module(GenObject *m);
 GenObject *SCV_get_module(const char *name);
 

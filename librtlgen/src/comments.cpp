@@ -20,25 +20,33 @@
 namespace sysvc {
 
 TextLine::TextLine(GenObject *parent, const char *comment)
-    : GenObject(parent, "", ID_COMMENT, comment) {
+    : GenObject(parent, "", ID_COMMENT, comment, comment) {
     empty_ = false;
 }
 
 TextLine::TextLine(GenObject *parent)
-    : GenObject(parent, "", ID_COMMENT, "") {
+    : TextLine(parent, NO_COMMENT) {
     empty_ = true;
+}
+
+std::string TextLine::getStrValue() {
+    std::string ret = "";
+    if (!empty_) {
+        if (SCV_is_vhdl()) {
+            ret += "-- ";
+        } else {
+            ret += "// ";
+        }
+        ret += getComment();
+    }
+    return ret;
 }
 
 std::string TextLine::generate() {
     std::string ret = "";
     if (!empty_) {
         ret += addspaces();
-        if (SCV_is_vhdl()) {
-            ret += "-- ";
-        } else {
-            ret += "// ";
-        }
-        ret += getName();
+        ret += getStrValue();
     }
     ret += "\n";
     return ret;
@@ -66,13 +74,8 @@ CommentLicense::CommentLicense()
 
 std::string CommentLicense::generate() {
     std::string ret = "";
-    for (auto &p: entries_) {
-        if (SCV_is_vhdl()) {
-            ret += "-- ";
-        } else {
-            ret += "// ";
-        }
-        ret += p->getName() + "\n";
+    for (auto &p: getEntries()) {
+        ret += p->generate();
     }
     return ret;
 }

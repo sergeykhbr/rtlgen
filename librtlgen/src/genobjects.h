@@ -89,6 +89,7 @@ class GenObject {
     virtual std::string getType() { return type_; }
     virtual std::string getTypedef() { return typedef_; }
     virtual void setTypedef(const char *n);
+    virtual bool isComment() { return false; }
     virtual bool isParam() { return false; }            // StrValue is its name, Method generate() to generate its value
     virtual bool isParamGeneric() { return false; }     // Parameter that is defined as argument of constructor
     virtual bool isParamTemplate() { return false; }    // Special type of ParamGeneric used in systemc, when in/out depend on it
@@ -99,6 +100,7 @@ class GenObject {
     virtual bool isTypedef() { return false; }
     virtual bool isLogic() { return false; }
     virtual bool isSignal() { return false; }
+    virtual bool isIgnoreSignal();
     virtual bool isBigSC() { return false; }    // Use sc_biguint in systemc always
     virtual bool isBvSC() { return false; }    // Use sc_bv in systemc always (for bitwidth > 512)
     virtual bool isInput() { return false; }

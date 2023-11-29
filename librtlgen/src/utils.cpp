@@ -42,6 +42,8 @@ AccessListener *accessListener_ = 0;
 static EGenerateType gentype_ = GEN_UNDEFINED;
 static std::string localname_ = "";
 int spaces_ = 0;
+int unique_idx_ = 0;
+char namebuf_[64];
 
 std::string addspaces() {
     std::string ret = "";
@@ -170,6 +172,11 @@ uint64_t SCV_get_cfg_parameter(std::string &name) {
         accessListener_->notifyAccess(info->lib, info->path);
     }
     return info->value;
+}
+
+const char *SCV_get_unique_name() {
+    RISCV_sprintf(namebuf_, sizeof(namebuf_), "obj%d", ++unique_idx_);
+    return namebuf_;
 }
 
 void SCV_register_module(GenObject *m) {

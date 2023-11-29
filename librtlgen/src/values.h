@@ -37,6 +37,10 @@ class GenValue : public GenObject {
     virtual bool isValue() override { return true; }
     virtual bool isConst() override { return getName() == ""; }
 
+    /** Signal could be a register when it inside of register struct */
+    virtual bool isReg() override;
+    virtual bool isNReg() override;
+
     virtual std::string v_name(std::string v) override;
     virtual std::string r_name(std::string v) override;
 };

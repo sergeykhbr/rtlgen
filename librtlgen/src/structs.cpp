@@ -545,11 +545,11 @@ std::string StructObject::generate() {
             if (p->isVector()) {
                 ln += "sc_vector<";
             }
-            if (p->isSignal()) {
+            if (p->isSignal() && !p->isIgnoreSignal()) {
                 ln += "sc_signal<";
             }
             ln += p->getType();
-            if (p->isSignal()) {
+            if (p->isSignal() && !p->isIgnoreSignal()) {
                 ln += ">";
             }
             if (p->isVector()) {
