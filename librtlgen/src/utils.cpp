@@ -27,23 +27,22 @@
 
 namespace sysvc {
 
-struct CfgParameterInfo {
+/*struct CfgParameterInfo {
     GenObject *obj;
     std::string path;
     std::string file;
     std::string lib;
     uint64_t value;
-};
+};*/
 
-static std::map<std::string, CfgParameterInfo> cfgParamters_;           // global parameters
-static std::map<std::string, std::map<std::string, CfgParameterInfo>> cfgLocalParamters_;     // local paramater visible only inside of module
-static std::list<GenObject *> modules_;
-AccessListener *accessListener_ = 0;
+static GenObject globalNamespace_(0, "global", ID_COMMENT, "global", NO_COMMENT);
+static std::map<GenObject *, std::list<GenObject *>> cfgParamters_;
+static AccessListener *accessListener_ = 0;
 static EGenerateType gentype_ = GEN_UNDEFINED;
 static std::string localname_ = "";
-int spaces_ = 0;
-int unique_idx_ = 0;
-char namebuf_[64];
+static int spaces_ = 0;
+static int unique_idx_ = 0;
+static char namebuf_[64];
 
 std::string addspaces() {
     std::string ret = "";
@@ -65,67 +64,71 @@ void popspaces() {
     }
 }
 
+GenObject *SCV_get_namespace(GenObject *obj) {
+    GenObject *ns = 0;
+    while (obj) {
+        if (obj->isFile()) {
+            // Global config type
+            ns = &globalNamespace_;
+            break;
+        } else if (obj->isModule()) {
+            // Local config type
+            ns = obj;
+            break;
+        }
+        obj = obj->getParent();
+    }
+    return ns;
+}
 
-void SCV_set_cfg_parameter(GenObject *obj) {
-    std::string path = obj->getFullPath();
+void SCV_set_cfg_type(GenObject *obj) {
+    /*std::string path = obj->getFullPath();
     std::string file = obj->getFile();
 
     CfgParameterInfo cfg;
     cfg.obj = obj;
     cfg.path = path;
     cfg.file = file;
-    cfg.lib = obj->getLibName();
-    if (!obj->isString()) { //    // FIX get Value for strings!!! Now it is not available
-        cfg.value = obj->getValue();    // Remove me:
+    cfg.lib = obj->getLibName();*/
+
+    GenObject *ns = SCV_get_namespace(obj);
+    if (ns == 0) {
+        return;
     }
-    if (obj->isLocal()) {
-        // Parent of the paramter is module
+
 #if 1
-    if (localname_ == "ram_cache_bwe_tech") {
+    if (ns->getType() == "ram_cache_bwe_tech") {
         std::string t1 = obj->getName();
         bool st = true;
     }
 #endif
-        cfgLocalParamters_[localname_][obj->getName()] = cfg;
-    } else {
-        // Parent of the parameter if file
-        cfgParamters_[obj->getName()] = cfg;
-    }
+    cfgParamters_[ns].push_back(obj);
 }
 
-void SCV_set_cfg_type(GenObject *obj) {
-    std::string path = obj->getFullPath();
-    std::string file = obj->getFile();
-
-    CfgParameterInfo cfg;
-    cfg.obj = obj;
-    cfg.path = path;
-    cfg.file = file;
-    cfg.lib = obj->getLibName();
-    cfg.value = 0;
-    if (obj->isLocal()) {
-        cfgLocalParamters_[localname_][obj->getType()] = cfg;
-    } else {
-        cfgParamters_[obj->getType()] = cfg;
-    }
-}
-
-void SCV_select_local(std::string &modname) {
-    localname_ = modname;
-}
-
-int SCV_is_cfg_parameter(std::string &name) {
-    // search first local parameters
-    if (cfgLocalParamters_[localname_].find(name) != cfgLocalParamters_[localname_].end()) {
-        return 1;
-    }
-    if (cfgParamters_.find(name) == cfgParamters_.end()) {
-        // not found
+GenObject *SCV_get_cfg_type(GenObject *obj, std::string &name) {
+    GenObject *ns = SCV_get_namespace(obj);
+    if (obj->getParent() == 0) {
+        // Temporary variable
         return 0;
     }
-    return 1;
+    if (ns == 0) {
+        SHOW_ERROR("Config %s not found", obj->getName().c_str());
+        return 0;
+    }
+
+    if (cfgParamters_.find(ns) != cfgParamters_.end()) {
+        //SHOW_ERROR("Namespace %s not found", ns->getName().c_str());
+        return 0;
+    }
+    for (auto &p: cfgParamters_[ns]) {
+        if (p->getName() == name) {
+            return p;
+        }
+    }
+    return 0;
 }
 
+/*
 std::string SCV_get_cfg_file(std::string &name) {
     // search first local parameters
     if (cfgLocalParamters_[localname_].find(name) != cfgLocalParamters_[localname_].end()) {
@@ -179,13 +182,14 @@ uint64_t SCV_get_cfg_parameter(std::string &name) {
     }
     return info->value;
 }
+*/
 
 const char *SCV_get_unique_name() {
     RISCV_sprintf(namebuf_, sizeof(namebuf_), "obj%d", ++unique_idx_);
     return namebuf_;
 }
 
-void SCV_register_module(GenObject *m) {
+/*void SCV_register_module(GenObject *m) {
     std::string strtype = m->getType();
     modules_.push_back(m);
     SCV_select_local(strtype);
@@ -200,7 +204,7 @@ GenObject *SCV_get_module(const char *name) {
     }
     return 0;
 }
-
+*/
 
 void SCV_set_access_listener(AccessListener *p) {
     accessListener_ = p;

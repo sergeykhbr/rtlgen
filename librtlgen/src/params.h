@@ -28,10 +28,9 @@ class ParamBOOL : public BOOL {
     ParamBOOL(GenObject *parent, const char *name,
                 const char *val, const char *comment="")
         : BOOL(val, name, parent, comment) {
-        SCV_set_cfg_parameter(this);
+        SCV_set_cfg_type(this);
     }
     virtual bool isParam() override { return true; }
-//    virtual std::string getStrValue() override { return getName(); }
     virtual std::string generate() override { return BOOL::getStrValue(); }
 };
 
@@ -40,10 +39,9 @@ class ParamString : public STRING {
     ParamString(GenObject *parent, const char *name,
                 const char *val, const char *comment="")
         : STRING(val, name, parent, comment) {
-        SCV_set_cfg_parameter(this);
+        SCV_set_cfg_type(this);
     }
     virtual bool isParam() override { return true; }
-//    virtual std::string getStrValue() override { return getName(); }
     virtual std::string generate() override;
 };
 
@@ -52,10 +50,9 @@ class ParamUI16D : public UI16D {
     ParamUI16D(GenObject *parent, const char *name, const char *val,
         const char *comment="")
         : UI16D(val, name, parent, comment) {
-            SCV_set_cfg_parameter(this);
+            SCV_set_cfg_type(this);
     }
     virtual bool isParam() override { return true; }
-//    virtual std::string getStrValue() override { return getName(); }
     virtual std::string generate() override { return UI16D::getStrValue(); }
 };
 
@@ -63,14 +60,13 @@ class ParamI32D : public I32D {
  public:
     ParamI32D(GenObject *parent, const char *name, const char *val,
         const char *comment="") : I32D(val, name, parent, comment) {
-            SCV_set_cfg_parameter(this);
+            SCV_set_cfg_type(this);
     }
     ParamI32D(GenObject *parent, const char *name, GenObject *val,
         const char *comment="") : I32D(val, name, parent, comment) {
-            SCV_set_cfg_parameter(this);
+            SCV_set_cfg_type(this);
     }
     virtual bool isParam() override { return true; }
-//    virtual std::string getStrValue() override { return getName(); }
     virtual std::string generate() override { return I32D::getStrValue(); }
 };
 
@@ -79,10 +75,9 @@ class ParamUI32D : public UI32D {
  public:
     ParamUI32D(GenObject *parent, const char *name, const char *val,
         const char *comment="") : UI32D(val, name, parent, comment) {
-            SCV_set_cfg_parameter(this);
+            SCV_set_cfg_type(this);
     }
     virtual bool isParam() override { return true; }
-//    virtual std::string getStrValue() override { return getName(); }
     virtual std::string generate() override { return UI32D::getStrValue(); }
 };
 
@@ -90,10 +85,9 @@ class ParamUI64H : public UI64H {
  public:
     ParamUI64H(GenObject *parent, const char *name, const char *val,
         const char *comment="") : UI64H(val, name, parent, comment) {
-            SCV_set_cfg_parameter(this);
+            SCV_set_cfg_type(this);
     }
     virtual bool isParam() override { return true; }
-//    virtual std::string getStrValue() override { return getName(); }
     virtual std::string generate() override { return UI64H::getStrValue(); }
 };
 
@@ -102,10 +96,9 @@ class ParamLogic : public Logic {
     ParamLogic(GenObject *parent, const char *width, const char *name,
                 const char *val, const char *comment="")
         : Logic(width, name, val, parent, comment) {
-        SCV_set_cfg_parameter(this);
+        SCV_set_cfg_type(this);
     }
     virtual bool isParam() override { return true; }
-//    virtual std::string getStrValue() override { return getName(); }
     virtual std::string generate() override { return Logic::getStrValue(); }
 };
 
@@ -114,10 +107,9 @@ class ParamTIMESEC : public TIMESEC {
     ParamTIMESEC(GenObject *parent, const char *name,
                    const char *val, const char *comment="")
         : TIMESEC(val, name, parent, comment) {
-            SCV_set_cfg_parameter(this);
+            SCV_set_cfg_type(this);
     }
     virtual bool isParam() override { return true; }
-//    virtual std::string getStrValue() override { return getName(); }
     virtual std::string generate() override { return TIMESEC::getStrValue(); }
 };
 
@@ -127,9 +119,9 @@ class ParamStruct : public T {
     ParamStruct(GenObject *parent, const char *name, const char *comment)
         : T(parent, name, comment) {
         T::setStrValue("");         // bullet proof clear default *_none value assigned by default
+        SCV_set_cfg_type(this);
     }
     virtual bool isParam() override { return true; }
 };
-
 
 }  // namespace sysvc

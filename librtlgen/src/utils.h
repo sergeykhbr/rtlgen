@@ -56,19 +56,17 @@ int SCV_is_sv_pkg();
 int SCV_is_vhdl();
 int SCV_is_vhdl_pkg();
 
-void SCV_select_local(std::string &modname);
-void SCV_set_cfg_parameter(GenObject *obj);
 void SCV_set_cfg_type(GenObject *obj);
-int SCV_is_cfg_parameter(std::string &name);
-std::string SCV_get_cfg_file(std::string &name);
-std::string SCV_get_cfg_fullname(std::string &name);
-uint64_t SCV_get_cfg_parameter(std::string &name);
-GenObject *SCV_get_cfg_obj(std::string &name);
+//int SCV_is_cfg_type(std::string &name);
+//uint64_t SCV_get_cfg_parameter(std::string &name);
+GenObject *SCV_get_cfg_type(GenObject *obj, std::string &name);
+//std::string SCV_get_cfg_file(std::string &name);
+//std::string SCV_get_cfg_fullname(std::string &name);
 
 const char *SCV_get_unique_name();
 
-void SCV_register_module(GenObject *m);
-GenObject *SCV_get_module(const char *name);
+//void SCV_register_module(GenObject *m);
+//GenObject *SCV_get_module(const char *name);
 
 //
 // To track dependency parameters and properly form include files list

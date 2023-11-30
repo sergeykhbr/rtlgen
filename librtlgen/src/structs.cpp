@@ -28,22 +28,18 @@ StructObject::StructObject(GenObject *parent,
                            const char *val,
                            const char *comment)
     : GenObject(parent, type, ID_STRUCT, name, comment) {
-    strValue_ = std::string(val);   // do not calculate getValue()
-    //zeroval_ = std::string(val);
+    strValue_ = std::string(val);
     if (getName() == "") {
         SHOW_ERROR("Unnamed structure of type %s", type_.c_str());
-    } else if (getName() == type_) {
+    }
+    if (getName() == type_) {
         SCV_set_cfg_type(this);
-    } else if (!isLocal()) {
-        SCV_set_cfg_parameter(this);   // global constant definition
-    } else {
-        SCV_get_cfg_parameter(type_);   // to trigger dependecy array
     }
 }
 
 /** it is better to remove empty name */
 bool StructObject::isTypedef() {
-    return getName() == "" || getName() == getType();
+    return getName() == getType();
 }
 
 std::string StructObject::getStrValue() {

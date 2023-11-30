@@ -131,7 +131,7 @@ void GenObject::setTypedef(const char *n) {
     type_ = std::string(n);
      
     if (typedef_.size()) {
-        SCV_get_cfg_parameter(typedef_);   // to trigger dependecy array
+        SCV_get_cfg_type(this, typedef_);   // to trigger dependecy array
     } else {
         // simple logic vector, nothing to trigger
     }
@@ -176,7 +176,7 @@ bool GenObject::isInterface() {
     if (isStruct()) {
         GenObject *p;
         if (!isTypedef()) {
-            p = SCV_get_cfg_obj(type_);
+            p = SCV_get_cfg_type(this, type_);
             if (p) {
                 p = p->getParent();  // Maybe it is easy to implement isInterface() method?
             }
@@ -485,9 +485,9 @@ uint64_t GenObject::parse_to_u64(const char *val, size_t &pos) {
         return ret;
     }
     m = std::string(buf);
-    if (SCV_is_cfg_parameter(m)) {
-        ret = SCV_get_cfg_parameter(m);
-        return ret;
+    GenObject *cfgobj = SCV_get_cfg_type(this, m);
+    if (cfgobj) {
+        return cfgobj->getValue();
     }
 
     if (val[pos] != '(') {
@@ -496,13 +496,6 @@ uint64_t GenObject::parse_to_u64(const char *val, size_t &pos) {
     }
     pos++;
 
-#if 1
-    if (type_ == "ram_tech") {
-        if (name_ == "rx") {
-            bool st = true;
-        }
-    }
-#endif
     // Dual operation op(a,b):
     std::string op = m;
     uint64_t arg1, arg2;
@@ -574,13 +567,11 @@ std::string GenObject::parse_to_str(const char *val, size_t &pos) {
     }
 
     m = std::string(buf);
-    if (SCV_is_cfg_parameter(m)) {
-        GenObject *obj = SCV_get_cfg_obj(m);
+    GenObject *cfgobj = SCV_get_cfg_type(this, m);
+    if (cfgobj) {
         ret = m;
-        if (SCV_is_sv_pkg() && !obj->isParamGeneric()) {
-            if (SCV_get_cfg_file(m).size()) {
-                ret = SCV_get_cfg_file(m) + "_pkg::" + m;
-            }
+        if (SCV_is_sv_pkg() && !cfgobj->isParamGeneric()) {
+            ret = cfgobj->getFile() + "_pkg::" + m;
         }
         return ret;
     }
@@ -666,8 +657,9 @@ size_t GenObject::parse_to_objlist(const char *val, size_t pos, std::list<GenObj
         return pos;
     }
     m = std::string(buf);
-    if (SCV_is_cfg_parameter(m)) {
-        objlist.push_back(SCV_get_cfg_obj(m));
+    GenObject *cfgobj = SCV_get_cfg_type(this, m);
+    if (cfgobj) {
+        objlist.push_back(cfgobj);
         return pos;
     }
 

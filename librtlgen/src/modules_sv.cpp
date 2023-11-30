@@ -614,9 +614,10 @@ std::string ModuleObject::generate_sv_mod() {
         }
         SCV_set_generator(SV_PKG);  // to generate with package name
         strtype = p->getType();
-        if (SCV_is_cfg_parameter(strtype) && SCV_get_cfg_file(strtype).size()) {
+        GenObject *cfgobj = SCV_get_cfg_type(this, strtype);
+        if (cfgobj) {
             // whole types (like vectors or typedef)
-            ln += SCV_get_cfg_file(strtype) + "_pkg::" + strtype;
+            ln += cfgobj->getFile() + "_pkg::" + strtype;
         } else {
             // Width or depth definitions
             ln += strtype;

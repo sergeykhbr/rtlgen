@@ -30,10 +30,6 @@ ModuleObject::ModuleObject(GenObject *parent,
                            const char *name,
                            const char *comment) :
     GenObject(parent, type, ID_MODULE, name, comment) {
-    // Cannot call virtual method from constructor
-    if (name[0] == 0 || strcmp(name, type) == 0) {
-        SCV_register_module(this);
-    }
 }
 
 std::string ModuleObject::generate() {
