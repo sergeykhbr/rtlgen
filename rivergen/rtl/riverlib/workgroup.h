@@ -34,7 +34,7 @@ using namespace sysvc;
 
 class Workgroup : public ModuleObject {
  public:
-    Workgroup(GenObject *parent, const char *name);
+    Workgroup(GenObject *parent, const char *name, const char *comment=NO_COMMENT);
 
     virtual GenObject *getResetPort() override { return &i_cores_nrst; }
     virtual bool isTop() override { return true; }
@@ -154,8 +154,8 @@ public:
     dmidebug dmi0;
     ic_dport dport_ic0;
     ic_axi4_to_l1 acp_bridge;
-    RiverAmba cpux;
-    DummyCpu dumx;
+    ModuleArray<RiverAmba> cpux;
+    ModuleArray<DummyCpu> dumx;
     L2Top l2cache;
     L2Dummy l2dummy;
     L2SerDes l2serdes0;

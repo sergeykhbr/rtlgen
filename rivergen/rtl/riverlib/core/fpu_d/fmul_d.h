@@ -24,7 +24,7 @@ using namespace sysvc;
 
 class DoubleMul : public ModuleObject {
  public:
-    DoubleMul(GenObject *parent, const char *name);
+    DoubleMul(GenObject *parent, const char *name, const char *comment=NO_COMMENT);
 
     class CombProcess : public ProcObject {
      public:

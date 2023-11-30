@@ -16,8 +16,8 @@
 
 #include "apb_ddr.h"
 
-apb_ddr::apb_ddr(GenObject *parent, const char *name) :
-    ModuleObject(parent, "apb_ddr", name),
+apb_ddr::apb_ddr(GenObject *parent, const char *name, const char *comment) :
+    ModuleObject(parent, "apb_ddr", name, comment),
     i_clk(this, "i_clk", "1", "APB clock"),
     i_nrst(this, "i_nrst", "1", "Reset: active LOW"),
     i_mapinfo(this, "i_mapinfo", "interconnect slot information"),
@@ -48,7 +48,7 @@ apb_ddr::apb_ddr(GenObject *parent, const char *name) :
     resp_err(this, "resp_err", "1"),
     //
     comb(this),
-    pslv0(this, "pslv0")
+    pslv0(this, "pslv0", NO_COMMENT)
 {
     Operation::start(this);
 

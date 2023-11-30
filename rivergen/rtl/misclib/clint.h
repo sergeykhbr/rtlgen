@@ -25,7 +25,7 @@ using namespace sysvc;
 
 class clint : public ModuleObject {
  public:
-    clint(GenObject *parent, const char *name);
+    clint(GenObject *parent, const char *name, const char *comment=NO_COMMENT);
 
  protected:
     class CombProcess : public ProcObject {

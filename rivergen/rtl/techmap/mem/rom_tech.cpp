@@ -16,10 +16,10 @@
 
 #include "rom_tech.h"
 
-rom_tech::rom_tech(GenObject *parent, const char *name, const char *gen_abits, const char *log2_dbytes) :
-    ModuleObject(parent, "rom_tech", name),
-    abits(this, "abits", gen_abits),
-    log2_dbytes(this, "log2_dbytes", log2_dbytes),
+rom_tech::rom_tech(GenObject *parent, const char *name, const char *comment) :
+    ModuleObject(parent, "rom_tech", name, comment),
+    abits(this, "abits", "6"),
+    log2_dbytes(this, "log2_dbytes", "3"),
     dbits(this, "dbits", "MUL(8,POW2(1,log2_dbytes))"),
     filename(this, "filename", ""),
     i_clk(this, "i_clk", "1", "CPU clock"),
@@ -37,7 +37,7 @@ rom_tech::rom_tech(GenObject *parent, const char *name, const char *gen_abits, c
     TEXT("    TODO: GENERATE assert");
     TEXT("else");
 
-    inf0.changeTmplParameter("abits", "SUB(abits,log2_dbytes)");
+    inf0.abits.setObjValue(&SUB2(abits, log2_dbytes));
     NEW(inf0, inf0.getName().c_str());
         CONNECT(inf0, 0, inf0.i_clk, i_clk);
         CONNECT(inf0, 0, inf0.i_addr, wb_addr);

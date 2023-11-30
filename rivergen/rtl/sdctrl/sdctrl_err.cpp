@@ -16,8 +16,8 @@
 
 #include "sdctrl_err.h"
 
-sdctrl_err::sdctrl_err(GenObject *parent, const char *name) :
-    ModuleObject(parent, "sdctrl_err", name),
+sdctrl_err::sdctrl_err(GenObject *parent, const char *name, const char *comment) :
+    ModuleObject(parent, "sdctrl_err", name, comment),
     i_clk(this, "i_clk", "1", "CPU clock"),
     i_nrst(this, "i_nrst", "1", "Reset: active LOW"),
     i_err_valid(this, "i_err_valid", "1"),

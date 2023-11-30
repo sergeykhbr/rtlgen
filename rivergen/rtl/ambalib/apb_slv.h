@@ -24,7 +24,7 @@ using namespace sysvc;
 
 class apb_slv : public ModuleObject {
  public:
-    apb_slv(GenObject *parent, const char *name);
+    apb_slv(GenObject *parent, const char *name, const char *comment=NO_COMMENT);
 
     class CombProcess : public ProcObject {
      public:

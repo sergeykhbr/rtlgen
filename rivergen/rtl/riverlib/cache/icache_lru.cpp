@@ -17,8 +17,8 @@
 #include "../../../prj/impl/asic/target_cfg.h"
 #include "icache_lru.h"
 
-ICacheLru::ICacheLru(GenObject *parent, const char *name) :
-    ModuleObject(parent, "ICacheLru", name),
+ICacheLru::ICacheLru(GenObject *parent, const char *name, const char *comment) :
+    ModuleObject(parent, "ICacheLru", name, comment),
     i_clk(this, "i_clk", "1", "CPU clock"),
     i_nrst(this, "i_nrst", "1", "Reset: active LOW"),
     _ctrl0_(this, "Control path:"),
@@ -101,13 +101,16 @@ ICacheLru::ICacheLru(GenObject *parent, const char *name) :
     cache_line_i(this, "cache_line_i", "L1CACHE_LINE_BITS"),
     // process
     comb(this),
-    mem0(this, "mem0", "abus", "CFG_ILOG2_NWAYS", "CFG_ILOG2_LINES_PER_WAY", "lnbits", "flbits")
+    mem0(this, "mem0")
 {
     Operation::start(this);
 
     // Generic paramters to template parameters assignment
+    mem0.abus.setObjValue(&abus);
     mem0.waybits.setObjValue(&glob_target_cfg_->CFG_ILOG2_NWAYS);
     mem0.ibits.setObjValue(&glob_target_cfg_->CFG_ILOG2_LINES_PER_WAY);
+    mem0.lnbits.setObjValue(&lnbits);
+    mem0.flbits.setObjValue(&flbits);
     NEW(mem0, mem0.getName().c_str());
         CONNECT(mem0, 0, mem0.i_clk, i_clk);
         CONNECT(mem0, 0, mem0.i_nrst, i_nrst);

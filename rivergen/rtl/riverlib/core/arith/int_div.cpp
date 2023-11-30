@@ -16,8 +16,8 @@
 
 #include "int_div.h"
 
-IntDiv::IntDiv(GenObject *parent, const char *name) :
-    ModuleObject(parent, "IntDiv", name),
+IntDiv::IntDiv(GenObject *parent, const char *name, const char *comment) :
+    ModuleObject(parent, "IntDiv", name, comment),
     i_clk(this, "i_clk", "1", "CPU clock"),
     i_nrst(this, "i_nrst", "1", "Reset: active LOW"),
     i_ena(this, "i_ena", "1", "Enable bit"),

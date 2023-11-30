@@ -16,8 +16,8 @@
 
 #include "apb_gpio.h"
 
-apb_gpio::apb_gpio(GenObject *parent, const char *name) :
-    ModuleObject(parent, "apb_gpio", name),
+apb_gpio::apb_gpio(GenObject *parent, const char *name, const char *comment) :
+    ModuleObject(parent, "apb_gpio", name, comment),
     width(this, "width", "12"),
     i_clk(this, "i_clk", "1", "CPU clock"),
     i_nrst(this, "i_nrst", "1", "Reset: active LOW"),
@@ -47,7 +47,7 @@ apb_gpio::apb_gpio(GenObject *parent, const char *name) :
     resp_err(this, "resp_err", "1"),
     //
     comb(this),
-    pslv0(this, "pslv0")
+    pslv0(this, "pslv0", NO_COMMENT)
 {
     Operation::start(this);
 

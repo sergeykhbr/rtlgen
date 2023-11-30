@@ -24,7 +24,7 @@ using namespace sysvc;
 
 class idiv53 : public ModuleObject {
  public:
-    idiv53(GenObject *parent, const char *name);
+    idiv53(GenObject *parent, const char *name, const char *comment=NO_COMMENT);
 
     class CombProcess : public ProcObject {
      public:

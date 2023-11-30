@@ -24,7 +24,7 @@ using namespace sysvc;
 
 class L2Dummy : public ModuleObject {
  public:
-    L2Dummy(GenObject *parent, const char *name);
+    L2Dummy(GenObject *parent, const char *name, const char *comment=NO_COMMENT);
 
     class CombProcess : public ProcObject {
      public:

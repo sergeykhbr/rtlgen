@@ -17,8 +17,8 @@
 #include "../../../prj/impl/asic/target_cfg.h"
 #include "dcache_lru.h"
 
-DCacheLru::DCacheLru(GenObject *parent, const char *name) :
-    ModuleObject(parent, "DCacheLru", name),
+DCacheLru::DCacheLru(GenObject *parent, const char *name, const char *comment) :
+    ModuleObject(parent, "DCacheLru", name, comment),
     coherence_ena(this, "coherence_ena", "false"),
     i_clk(this, "i_clk", "1", "CPU clock"),
     i_nrst(this, "i_nrst", "1", "Reset: active LOW"),
@@ -142,8 +142,12 @@ DCacheLru::DCacheLru(GenObject *parent, const char *name) :
     Operation::start(this);
 
     // Generic paramters to template parameters assignment
+    mem0.abus.setObjValue(&abus);
     mem0.waybits.setObjValue(&glob_target_cfg_->CFG_DLOG2_NWAYS);
     mem0.ibits.setObjValue(&glob_target_cfg_->CFG_DLOG2_LINES_PER_WAY);
+    mem0.lnbits.setObjValue(&lnbits);
+    mem0.flbits.setObjValue(&flbits);
+    mem0.snoop.setObjValue(&CONST("1"));//coherence_ena); need to check before changing on coherence_ena
     NEW(mem0, mem0.getName().c_str());
         CONNECT(mem0, 0, mem0.i_clk, i_clk);
         CONNECT(mem0, 0, mem0.i_nrst, i_nrst);

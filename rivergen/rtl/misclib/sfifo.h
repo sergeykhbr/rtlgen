@@ -22,7 +22,7 @@ using namespace sysvc;
 
 class sfifo : public ModuleObject {
  public:
-    sfifo(GenObject *parent, const char *name);
+    sfifo(GenObject *parent, const char *name, const char *comment=NO_COMMENT);
 
     class CombProcess : public ProcObject {
      public:

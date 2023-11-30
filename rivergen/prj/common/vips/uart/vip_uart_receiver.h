@@ -22,7 +22,7 @@ using namespace sysvc;
 
 class vip_uart_receiver : public ModuleObject {
  public:
-    vip_uart_receiver(GenObject *parent, const char *name);
+    vip_uart_receiver(GenObject *parent, const char *name, const char *comment);
 
     class CombProcess : public ProcObject {
      public:
@@ -72,7 +72,7 @@ class vip_uart_receiver_file : public FileObject {
  public:
     vip_uart_receiver_file(GenObject *parent) :
         FileObject(parent, "vip_uart_receiver"),
-        vip_uart_receiver_(this, "") {}
+        vip_uart_receiver_(this, "", NO_COMMENT) {}
 
  private:
     vip_uart_receiver vip_uart_receiver_;

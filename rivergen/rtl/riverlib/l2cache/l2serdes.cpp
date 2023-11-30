@@ -16,8 +16,8 @@
 
 #include "l2serdes.h"
 
-L2SerDes::L2SerDes(GenObject *parent, const char *name) :
-    ModuleObject(parent, "L2SerDes", name),
+L2SerDes::L2SerDes(GenObject *parent, const char *name, const char *comment) :
+    ModuleObject(parent, "L2SerDes", name, comment),
     i_clk(this, "i_clk", "1", "CPU clock"),
     i_nrst(this, "i_nrst", "1", "Reset: active LOW"),
     o_l2i(this, "o_l2i"),

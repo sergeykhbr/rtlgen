@@ -16,8 +16,8 @@
 
 #include "jtagcdc.h"
 
-jtagcdc::jtagcdc(GenObject *parent, const char *name) :
-    ModuleObject(parent, "jtagcdc", name),
+jtagcdc::jtagcdc(GenObject *parent, const char *name, const char *comment) :
+    ModuleObject(parent, "jtagcdc", name, comment),
     // Ports
     i_clk(this, "i_clk", "1"),
     i_nrst(this, "i_nrst", "1", "full reset including dmi (usually via reset button)"),

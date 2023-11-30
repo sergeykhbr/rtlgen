@@ -23,7 +23,7 @@ using namespace sysvc;
 
 class Shifter : public ModuleObject {
  public:
-    Shifter(GenObject *parent, const char *name);
+    Shifter(GenObject *parent, const char *name, const char *comment=NO_COMMENT);
 
     class CombProcess : public ProcObject {
      public:

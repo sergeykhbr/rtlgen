@@ -16,8 +16,8 @@
 
 #include "plic.h"
 
-plic::plic(GenObject *parent, const char *name) :
-    ModuleObject(parent, "plic", name),
+plic::plic(GenObject *parent, const char *name, const char *comment) :
+    ModuleObject(parent, "plic", name, comment),
     ctxmax(this, "ctxmax", "8"),
     irqmax(this, "irqmax", "128"),
     i_clk(this, "i_clk", "1", "CPU clock"),

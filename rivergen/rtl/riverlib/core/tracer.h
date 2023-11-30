@@ -23,7 +23,7 @@ using namespace sysvc;
 
 class Tracer : public ModuleObject {
  public:
-    Tracer(GenObject *parent, const char *name);
+    Tracer(GenObject *parent, const char *name, const char *comment=NO_COMMENT);
 
     class FunctionTaskDisassembler : public FunctionObject {
      public:

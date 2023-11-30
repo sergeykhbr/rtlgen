@@ -16,8 +16,8 @@
 
 #include "stacktrbuf.h"
 
-StackTraceBuffer::StackTraceBuffer(GenObject *parent, const char *name) :
-    ModuleObject(parent, "StackTraceBuffer", name),
+StackTraceBuffer::StackTraceBuffer(GenObject *parent, const char *name, const char *comment) :
+    ModuleObject(parent, "StackTraceBuffer", name, comment),
     i_clk(this, "i_clk", "1", "CPU clock"),
     i_raddr(this, "i_raddr", "CFG_LOG2_STACK_TRACE_ADDR"),
     o_rdata(this, "o_rdata", "MUL(2,RISCV_ARCH)"),

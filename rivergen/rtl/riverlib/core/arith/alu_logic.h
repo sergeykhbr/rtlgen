@@ -23,7 +23,7 @@ using namespace sysvc;
 
 class AluLogic : public ModuleObject {
  public:
-    AluLogic(GenObject *parent, const char *name);
+    AluLogic(GenObject *parent, const char *name, const char *comment=NO_COMMENT);
 
     class CombProcess : public ProcObject {
      public:

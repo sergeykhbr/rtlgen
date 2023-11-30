@@ -16,8 +16,8 @@
 
 #include "axi_rom.h"
 
-axi_rom::axi_rom(GenObject *parent, const char *name) :
-    ModuleObject(parent, "axi_rom", name),
+axi_rom::axi_rom(GenObject *parent, const char *name, const char *comment) :
+    ModuleObject(parent, "axi_rom", name, comment),
     abits(this, "abits", "17"),
     filename(this, "filename", ""),
     i_clk(this, "i_clk", "1", "CPU clock"),
@@ -43,7 +43,7 @@ axi_rom::axi_rom(GenObject *parent, const char *name) :
     //
     comb(this),
     xslv0(this, "xslv0"),
-    tech0(this, "tech0", "abits", "CFG_LOG2_SYSBUS_DATA_BYTES")
+    tech0(this, "tech0")
 {
     Operation::start(this);
 
@@ -70,8 +70,8 @@ axi_rom::axi_rom(GenObject *parent, const char *name) :
     ENDNEW();
 
 TEXT();
-    tech0.changeTmplParameter("abits", "abits");
-    tech0.changeTmplParameter("log2_dbytes", "CFG_LOG2_SYSBUS_DATA_BYTES");
+    tech0.abits.setObjValue(&abits);
+    tech0.log2_dbytes.setObjValue(&glob_types_amba_->CFG_LOG2_SYSBUS_DATA_BYTES);
     NEW(tech0, tech0.getName().c_str());
         CONNECT(tech0, 0, tech0.i_clk, i_clk);
         CONNECT(tech0, 0, tech0.i_addr, wb_req_addr_abits);

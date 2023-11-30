@@ -16,8 +16,8 @@
 
 #include "mmu.h"
 
-Mmu::Mmu(GenObject *parent, const char *name) :
-    ModuleObject(parent, "Mmu", name),
+Mmu::Mmu(GenObject *parent, const char *name, const char *comment) :
+    ModuleObject(parent, "Mmu", name, comment),
     i_clk(this, "i_clk", "1", "CPU clock"),
     i_nrst(this, "i_nrst", "1", "Reset: active LOW"),
     // core <-> mmu interface
@@ -116,9 +116,11 @@ Mmu::Mmu(GenObject *parent, const char *name) :
     // process
     comb(this),
     // sub-modules
-    tlb(this, "tlb", "CFG_MMU_TLB_AWIDTH", "CFG_MMU_PTE_DWIDTH")
+    tlb(this, "tlb")
 {
     Operation::start(this);
+    tlb.abits.setObjValue(&glob_river_cfg_->CFG_MMU_TLB_AWIDTH);
+    tlb.dbits.setObjValue(&glob_river_cfg_->CFG_MMU_PTE_DWIDTH);
     NEW(tlb, tlb.getName().c_str());
         CONNECT(tlb, 0, tlb.i_clk, i_clk);
         CONNECT(tlb, 0, tlb.i_addr, wb_tlb_adr);

@@ -25,7 +25,7 @@ using namespace sysvc;
 
 class plic : public ModuleObject {
  public:
-    plic(GenObject *parent, const char *name);
+    plic(GenObject *parent, const char *name, const char *comment=NO_COMMENT);
 
  protected:
      class plic_context_type : public StructObject {

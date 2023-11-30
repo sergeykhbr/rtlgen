@@ -24,7 +24,7 @@ using namespace sysvc;
 
 class imul53 : public ModuleObject {
  public:
-    imul53(GenObject *parent, const char *name);
+    imul53(GenObject *parent, const char *name, const char *comment=NO_COMMENT);
 
     class CombProcess : public ProcObject {
      public:

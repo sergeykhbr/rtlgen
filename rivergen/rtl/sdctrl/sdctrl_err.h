@@ -23,7 +23,7 @@ using namespace sysvc;
 
 class sdctrl_err : public ModuleObject {
  public:
-    sdctrl_err(GenObject *parent, const char *name);
+    sdctrl_err(GenObject *parent, const char *name, const char *comment=NO_COMMENT);
 
     class CombProcess : public ProcObject {
      public:

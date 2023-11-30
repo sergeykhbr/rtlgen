@@ -24,7 +24,7 @@ using namespace sysvc;
 
 class Mmu : public ModuleObject {
  public:
-    Mmu(GenObject *parent, const char *name);
+    Mmu(GenObject *parent, const char *name, const char *comment=NO_COMMENT);
 
     class CombProcess : public ProcObject {
      public:

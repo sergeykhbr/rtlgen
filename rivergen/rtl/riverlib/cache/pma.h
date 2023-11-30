@@ -23,7 +23,7 @@ using namespace sysvc;
 
 class PMA : public ModuleObject {
  public:
-    PMA(GenObject *parent, const char *name);
+    PMA(GenObject *parent, const char *name, const char *comment=NO_COMMENT);
 
     class CombProcess : public ProcObject {
      public:

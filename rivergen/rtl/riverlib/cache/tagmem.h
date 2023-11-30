@@ -25,14 +25,7 @@ using namespace sysvc;
 
 class TagMem : public ModuleObject {
  public:
-    TagMem(GenObject *parent, 
-            const char *name,
-            const char *depth,
-            const char *gen_abus = "64", 
-            const char *gen_ibits = "6", 
-            const char *gen_lnbits = "5", 
-            const char *gen_flbits = "4",
-            const char *gen_snoop = "0");
+    TagMem(GenObject *parent, const char *name, const char *comment=NO_COMMENT);
 
     class CombProcess : public ProcObject {
      public:
@@ -106,7 +99,7 @@ class tagmem_file : public FileObject {
  public:
     tagmem_file(GenObject *parent) :
         FileObject(parent, "tagmem"),
-        TagMem_(this, "TagMem", "0") {}
+        TagMem_(this, "TagMem") {}
 
  private:
     TagMem TagMem_;

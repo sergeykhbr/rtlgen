@@ -16,8 +16,8 @@
 
 #include "axi_slv.h"
 
-axi_slv::axi_slv(GenObject *parent, const char *name) :
-    ModuleObject(parent, "axi_slv", name),
+axi_slv::axi_slv(GenObject *parent, const char *name, const char *comment) :
+    ModuleObject(parent, "axi_slv", name, comment),
     vid(this, "vid", "0", "Vendor ID"),
     did(this, "did", "0", "Device ID"),
     i_clk(this, "i_clk", "1", "CPU clock"),

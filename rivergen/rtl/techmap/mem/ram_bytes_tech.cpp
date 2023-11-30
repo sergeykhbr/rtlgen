@@ -16,11 +16,10 @@
 
 #include "ram_bytes_tech.h"
 
-ram_bytes_tech::ram_bytes_tech(GenObject *parent, const char *name, const char *depth,
-    const char *gen_abits, const char *log2_dbytes) :
-    ModuleObject(parent, "ram_bytes_tech", name, depth),
-    abits(this, "abits", gen_abits),
-    log2_dbytes(this, "log2_dbytes", log2_dbytes),
+ram_bytes_tech::ram_bytes_tech(GenObject *parent, const char *name, const char *comment) :
+    ModuleObject(parent, "ram_bytes_tech", name, comment),
+    abits(this, "abits", "16"),
+    log2_dbytes(this, "log2_dbytes", "3"),
     dbytes(this, "dbytes", "POW2(1,log2_dbytes)"),
     dbits(this, "dbits", "MUL(8,POW2(1,log2_dbytes))"),
     i_clk(this, "i_clk", "1", "CPU clock"),
@@ -36,14 +35,14 @@ ram_bytes_tech::ram_bytes_tech(GenObject *parent, const char *name, const char *
     wb_rdata(this, "wb_rdata", "8", "dbytes"),
     // process
     comb(this),
-    mem(this, "mem", "dbytes")
+    mem(this, "mem", "dbytes", NO_COMMENT)
 {
     Operation::start(this);
     mem.disableReset();
     disableVcd();
 
-    mem.changeTmplParameter("abits", "SUB(abits,log2_dbytes)");
-    mem.changeTmplParameter("dbits", "8");
+    mem.abits.setObjValue(&SUB2(abits, log2_dbytes));
+    mem.dbits.setObjValue(&CONST("8"));
     GenObject &i = FORGEN("i", CONST("0"), dbytes, "++", new STRING("memgen"));
         NEW(mem, mem.getName().c_str(), &i);
             CONNECT(mem, &i, mem.i_clk, i_clk);

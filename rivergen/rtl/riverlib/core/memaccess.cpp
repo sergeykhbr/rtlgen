@@ -16,8 +16,8 @@
 
 #include "memaccess.h"
 
-MemAccess::MemAccess(GenObject *parent, const char *name) :
-    ModuleObject(parent, "MemAccess", name),
+MemAccess::MemAccess(GenObject *parent, const char *name, const char *comment) :
+    ModuleObject(parent, "MemAccess", name, comment),
     i_clk(this, "i_clk", "1", "CPU clock"),
     i_nrst(this, "i_nrst", "1", "Reset: active LOW"),
     i_e_pc(this, "i_e_pc", "RISCV_ARCH", "Execution stage instruction pointer"),
@@ -114,19 +114,22 @@ MemAccess::MemAccess(GenObject *parent, const char *name) :
     queue_nempty(this, "queue_nempty", "1"),
     queue_full(this, "queue_full", "1"),
     // Sub-module
-    queue0(this, "queue0", "CFG_MEMACCESS_QUEUE_DEPTH", "QUEUE_WIDTH")
+    queue0(this, "queue0")
 {
     Operation::start(this);
 
+    queue0.abits.setObjValue(&glob_river_cfg_->CFG_MEMACCESS_QUEUE_DEPTH);
+    queue0.dbits.setObjValue(&QUEUE_WIDTH);
     NEW(queue0, queue0.getName().c_str());
-    CONNECT(queue0, 0, queue0.i_clk, i_clk);
-    CONNECT(queue0, 0, queue0.i_nrst, i_nrst);
-    CONNECT(queue0, 0, queue0.i_re, queue_re);
-    CONNECT(queue0, 0, queue0.i_we, queue_we);
-    CONNECT(queue0, 0, queue0.i_wdata, queue_data_i);
-    CONNECT(queue0, 0, queue0.o_rdata, queue_data_o);
-    CONNECT(queue0, 0, queue0.o_full, queue_full);
-    CONNECT(queue0, 0, queue0.o_nempty, queue_nempty);
+        CONNECT(queue0, 0, queue0.i_clk, i_clk);
+        CONNECT(queue0, 0, queue0.i_nrst, i_nrst);
+        CONNECT(queue0, 0, queue0.i_re, queue_re);
+        CONNECT(queue0, 0, queue0.i_we, queue_we);
+        CONNECT(queue0, 0, queue0.i_wdata, queue_data_i);
+        CONNECT(queue0, 0, queue0.o_rdata, queue_data_o);
+        CONNECT(queue0, 0, queue0.o_full, queue_full);
+        CONNECT(queue0, 0, queue0.o_nempty, queue_nempty);
+    ENDNEW();
 
     Operation::start(&comb);
     proc_comb();

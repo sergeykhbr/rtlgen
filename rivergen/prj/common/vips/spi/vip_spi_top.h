@@ -24,7 +24,7 @@ using namespace sysvc;
 
 class vip_spi_top : public ModuleObject {
  public:
-    vip_spi_top(GenObject *parent, const char *name);
+    vip_spi_top(GenObject *parent, const char *name, const char *comment);
 
     virtual GenObject *getClockPort() override { return &w_clk; }
 
@@ -87,7 +87,7 @@ class vip_spi_top_file : public FileObject {
  public:
     vip_spi_top_file(GenObject *parent) :
         FileObject(parent, "vip_spi_top"),
-        vip_spi_top_(this, "") {}
+        vip_spi_top_(this, "", NO_COMMENT) {}
 
  private:
     vip_spi_top vip_spi_top_;

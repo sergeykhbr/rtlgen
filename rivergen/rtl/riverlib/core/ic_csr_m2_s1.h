@@ -23,7 +23,7 @@ using namespace sysvc;
 
 class ic_csr_m2_s1 : public ModuleObject {
  public:
-    ic_csr_m2_s1(GenObject *parent, const char *name);
+    ic_csr_m2_s1(GenObject *parent, const char *name, const char *comment=NO_COMMENT);
 
     class CombProcess : public ProcObject {
      public:

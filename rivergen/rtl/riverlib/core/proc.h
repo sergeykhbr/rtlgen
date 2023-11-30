@@ -34,7 +34,7 @@ using namespace sysvc;
 
 class Processor : public ModuleObject {
  public:
-    Processor(GenObject *parent, const char *name);
+    Processor(GenObject *parent, const char *name, const char *comment=NO_COMMENT);
 
     DefParamUI32D hartid;
     DefParamBOOL fpu_ena;

@@ -27,7 +27,7 @@ using namespace sysvc;
 
 class dmidebug : public ModuleObject {
  public:
-    dmidebug(GenObject *parent, const char *name);
+    dmidebug(GenObject *parent, const char *name, const char *comment=NO_COMMENT);
 
     class CombProcess : public ProcObject {
      public:

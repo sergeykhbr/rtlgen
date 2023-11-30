@@ -24,7 +24,7 @@ using namespace sysvc;
 
 class ICacheLru : public ModuleObject {
  public:
-    ICacheLru(GenObject *parent, const char *name);
+    ICacheLru(GenObject *parent, const char *name, const char *comment=NO_COMMENT);
 
     class CombProcess : public ProcObject {
      public:

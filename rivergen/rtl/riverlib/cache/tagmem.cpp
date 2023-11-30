@@ -16,20 +16,13 @@
 
 #include "tagmem.h"
 
-TagMem::TagMem(GenObject *parent,
-               const char *name,
-               const char *depth,
-               const char *gen_abus, 
-               const char *gen_ibits, 
-               const char *gen_lnbits, 
-               const char *gen_flbits,
-               const char *gen_snoop) :
-    ModuleObject(parent, "TagMem", name, depth),
-    abus(this, "abus", gen_abus, "system bus address width (64 or 32 bits)"),
-    ibits(this, "ibits", gen_ibits, "lines memory address width (usually 6..8)"),
-    lnbits(this, "lnbits", gen_lnbits, "One line bits: log2(bytes_per_line)"),
-    flbits(this, "flbits", gen_flbits, "total flags number saved with address tag"),
-    snoop(this, "snoop", gen_snoop, "0 Snoop port disabled; 1 Enabled (L2 caching)"),
+TagMem::TagMem(GenObject *parent, const char *name, const char *comment) :
+    ModuleObject(parent, "TagMem", name, comment),
+    abus(this, "abus", "64", "system bus address width (64 or 32 bits)"),
+    ibits(this, "ibits", "6", "lines memory address width (usually 6..8)"),
+    lnbits(this, "lnbits", "5", "One line bits: log2(bytes_per_line)"),
+    flbits(this, "flbits", "4", "total flags number saved with address tag"),
+    snoop(this, "snoop", "0", "0 Snoop port disabled; 1 Enabled (L2 caching)"),
     i_clk(this, "i_clk", "1", "CPU clock"),
     i_nrst(this, "i_nrst", "1", "Reset: active LOW"),
     i_addr(this, "i_addr", "abus"),
@@ -57,14 +50,16 @@ TagMem::TagMem(GenObject *parent,
     snoop_tagaddr(this, "snoop_tagaddr", "TAG_BITS", "0"),
     // process
     comb(this),
-    data0(this, "data0", "0", "ibits", "MUL(8,POW2(1,lnbits))"),
-    tag0(this, "tag0", "0", "ibits", "TAG_WITH_FLAGS"),
-    tagsnoop0(this, "tagsnoop0", "0", "ibits", "TAG_WITH_FLAGS")
+    data0(this, "data0", NO_COMMENT),
+    tag0(this, "tag0", NO_COMMENT),
+    tagsnoop0(this, "tagsnoop0", NO_COMMENT)
 {
     Operation::start(this);
 
     // Create and connet Sub-modules:
     TEXT("bwe = byte write enable");
+    data0.abits.setObjValue(&ibits);
+    data0.dbits.setObjValue(&CONST("MUL(8,POW2(1,lnbits))"));
     NEW(data0, data0.getName().c_str());
         CONNECT(data0, 0, data0.i_clk, i_clk);
         CONNECT(data0, 0, data0.i_addr, wb_index);
@@ -74,6 +69,8 @@ TagMem::TagMem(GenObject *parent,
     ENDNEW();
 
 TEXT();
+    tag0.abits.setObjValue(&ibits);
+    tag0.dbits.setObjValue(&TAG_WITH_FLAGS);
     NEW(tag0, tag0.getName().c_str());
         CONNECT(tag0, 0, tag0.i_clk, i_clk);
         CONNECT(tag0, 0, tag0.i_addr, wb_index);
@@ -85,7 +82,9 @@ TEXT();
 TEXT();
     GENERATE("snoop_gen");
         IFGEN (snoop, new STRING("snoop_en"));
-            NEW(tagsnoop0 , tagsnoop0.getName().c_str());
+        tagsnoop0.abits.setObjValue(&ibits);
+        tagsnoop0.dbits.setObjValue(&TAG_WITH_FLAGS);
+            NEW(tagsnoop0, tagsnoop0.getName().c_str());
                 CONNECT(tagsnoop0, 0, tagsnoop0.i_clk, i_clk);
                 CONNECT(tagsnoop0, 0, tagsnoop0.i_addr, wb_snoop_index);
                 CONNECT(tagsnoop0, 0, tagsnoop0.i_wena, w_tagi_we);

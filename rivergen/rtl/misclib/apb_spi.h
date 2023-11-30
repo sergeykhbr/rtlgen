@@ -26,7 +26,7 @@ using namespace sysvc;
 
 class apb_spi : public ModuleObject {
  public:
-    apb_spi(GenObject *parent, const char *name);
+    apb_spi(GenObject *parent, const char *name, const char *comment);
 
     class CombProcess : public ProcObject {
      public:
@@ -146,7 +146,7 @@ class apb_spi_file : public FileObject {
  public:
     apb_spi_file(GenObject *parent) :
         FileObject(parent, "apb_spi"),
-        apb_spi_(this, "") {}
+        apb_spi_(this, "", NO_COMMENT) {}
 
  private:
     apb_spi apb_spi_;

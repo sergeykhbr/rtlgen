@@ -16,8 +16,8 @@
 
 #include "fdiv_d.h"
 
-DoubleDiv::DoubleDiv(GenObject *parent, const char *name) :
-    ModuleObject(parent, "DoubleDiv", name),
+DoubleDiv::DoubleDiv(GenObject *parent, const char *name, const char *comment) :
+    ModuleObject(parent, "DoubleDiv", name, comment),
     i_clk(this, "i_clk", "1", "CPU clock"),
     i_nrst(this, "i_nrst", "1", "Reset: active LOW"),
     i_ena(this, "i_ena", "1"),

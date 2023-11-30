@@ -24,7 +24,7 @@ using namespace sysvc;
 
 class vip_sdcard_cmdio : public ModuleObject {
  public:
-    vip_sdcard_cmdio(GenObject *parent, const char *name);
+    vip_sdcard_cmdio(GenObject *parent, const char *name, const char *comment);
 
     class CombProcess : public ProcObject {
      public:
@@ -131,7 +131,7 @@ class vip_sdcard_cmdio_file : public FileObject {
  public:
     vip_sdcard_cmdio_file(GenObject *parent) :
         FileObject(parent, "vip_sdcard_cmdio"),
-        vip_sdcard_cmdio_(this, "") {}
+        vip_sdcard_cmdio_(this, "", NO_COMMENT) {}
 
  private:
     vip_sdcard_cmdio vip_sdcard_cmdio_;

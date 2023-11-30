@@ -24,7 +24,7 @@ using namespace sysvc;
 
 class MemAccess : public ModuleObject {
  public:
-    MemAccess(GenObject *parent, const char *name);
+    MemAccess(GenObject *parent, const char *name, const char *comment=NO_COMMENT);
 
     class CombProcess : public ProcObject {
      public:

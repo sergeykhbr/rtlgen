@@ -80,6 +80,12 @@ void SCV_set_cfg_parameter(GenObject *obj) {
     }
     if (obj->isLocal()) {
         // Parent of the paramter is module
+#if 1
+    if (localname_ == "ram_cache_bwe_tech") {
+        std::string t1 = obj->getName();
+        bool st = true;
+    }
+#endif
         cfgLocalParamters_[localname_][obj->getName()] = cfg;
     } else {
         // Parent of the parameter if file

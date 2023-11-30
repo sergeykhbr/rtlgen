@@ -16,8 +16,8 @@
 
 #include "apb_slv.h"
 
-apb_slv::apb_slv(GenObject *parent, const char *name) :
-    ModuleObject(parent, "apb_slv", name),
+apb_slv::apb_slv(GenObject *parent, const char *name, const char *comment) :
+    ModuleObject(parent, "apb_slv", name, comment),
     vid(this, "vid", "0", "Vendor ID"),
     did(this, "did", "0", "Device ID"),
     i_clk(this, "i_clk", "1", "CPU clock"),

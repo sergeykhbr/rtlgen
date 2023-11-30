@@ -28,8 +28,7 @@ using namespace sysvc;
 
 class L2Top : public ModuleObject {
  public:
-    L2Top(GenObject *parent, const char *name);
-
+    L2Top(GenObject *parent, const char *name, const char *comment=NO_COMMENT);
 
  public:
     // io:

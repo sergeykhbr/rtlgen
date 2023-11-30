@@ -16,8 +16,8 @@
 
 #include "apb_spi.h"
 
-apb_spi::apb_spi(GenObject *parent, const char *name) :
-    ModuleObject(parent, "apb_spi", name),
+apb_spi::apb_spi(GenObject *parent, const char *name, const char *comment) :
+    ModuleObject(parent, "apb_spi", name, comment),
     log2_fifosz(this, "log2_fifosz", "9"),
     fifo_dbits(this, "fifo_dbits", "8"),
     i_clk(this, "i_clk", "1", "CPU clock"),
@@ -85,9 +85,9 @@ apb_spi::apb_spi(GenObject *parent, const char *name) :
     resp_err(this, "resp_err", "1"),
     //
     comb(this),
-    pslv0(this, "pslv0"),
-    rxfifo(this, "rxfifo"),
-    txfifo(this, "txfifo")
+    pslv0(this, "pslv0", NO_COMMENT),
+    rxfifo(this, "rxfifo", NO_COMMENT),
+    txfifo(this, "txfifo", NO_COMMENT)
 {
     Operation::start(this);
 

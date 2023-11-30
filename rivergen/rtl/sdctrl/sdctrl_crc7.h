@@ -22,7 +22,7 @@ using namespace sysvc;
 
 class sdctrl_crc7 : public ModuleObject {
  public:
-    sdctrl_crc7(GenObject *parent, const char *name);
+    sdctrl_crc7(GenObject *parent, const char *name, const char *comment=NO_COMMENT);
 
     class CombProcess : public ProcObject {
      public:

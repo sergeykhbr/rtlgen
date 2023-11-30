@@ -16,8 +16,8 @@
 
 #include "apb_pnp.h"
 
-apb_pnp::apb_pnp(GenObject *parent, const char *name) :
-    ModuleObject(parent, "apb_pnp", name),
+apb_pnp::apb_pnp(GenObject *parent, const char *name, const char *comment) :
+    ModuleObject(parent, "apb_pnp", name, comment),
     cfg_slots(this, "cfg_slots", "1"),
     hw_id(this, "32", "hwid", "0x20221123"),
     cpu_max(this, "cpu_max", "1"),
@@ -57,7 +57,7 @@ apb_pnp::apb_pnp(GenObject *parent, const char *name) :
     resp_err(this, "resp_err", "1"),
     //
     comb(this),
-    pslv0(this, "pslv0")
+    pslv0(this, "pslv0", NO_COMMENT)
 {
     Operation::start(this);
 

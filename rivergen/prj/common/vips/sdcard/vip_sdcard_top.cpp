@@ -16,8 +16,8 @@
 
 #include "vip_sdcard_top.h"
 
-vip_sdcard_top::vip_sdcard_top(GenObject *parent, const char *name) :
-    ModuleObject(parent, "vip_sdcard_top", name),
+vip_sdcard_top::vip_sdcard_top(GenObject *parent, const char *name, const char *comment) :
+    ModuleObject(parent, "vip_sdcard_top", name, comment),
     i_nrst(this, "i_nrst", "1", "To avoid undefined states of registers (xxx)"),
     i_sclk(this, "i_sclk", "1"),
     io_cmd(this, "io_cmd", "1"),
@@ -96,8 +96,8 @@ vip_sdcard_top::vip_sdcard_top(GenObject *parent, const char *name) :
     iobufdat1(this, "iobufdat1"),
     iobufdat2(this, "iobufdat2"),
     iobufdat3(this, "iobufdat3"),
-    cmdio0(this, "cmdio0"),
-    ctrl0(this, "ctrl0")
+    cmdio0(this, "cmdio0", NO_COMMENT),
+    ctrl0(this, "ctrl0", NO_COMMENT)
 {
     Operation::start(this);
     NEW(iobufcmd0, iobufcmd0.getName().c_str());

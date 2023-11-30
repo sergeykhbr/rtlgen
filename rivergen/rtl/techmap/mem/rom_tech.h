@@ -23,7 +23,7 @@ using namespace sysvc;
 
 class rom_tech : public ModuleObject {
  public:
-    rom_tech(GenObject *parent, const char *name, const char *gen_abits="6", const char *log2_dbytes="3");
+    rom_tech(GenObject *parent, const char *name, const char *comment=NO_COMMENT);
 
     class CombProcess : public ProcObject {
      public:

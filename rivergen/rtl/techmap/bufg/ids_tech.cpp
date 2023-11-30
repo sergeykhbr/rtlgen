@@ -16,8 +16,8 @@
 
 #include "ids_tech.h"
 
-ids_tech::ids_tech(GenObject *parent, const char *name) :
-    ModuleObject(parent, "ids_tech", name),
+ids_tech::ids_tech(GenObject *parent, const char *name, const char *comment) :
+    ModuleObject(parent, "ids_tech", name, comment),
     i_clk_p(this, "i_clk_p", "1"),
     i_clk_n(this, "i_clk_n", "1"),
     o_clk(this, "o_clk", "1"),

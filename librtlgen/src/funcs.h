@@ -29,6 +29,7 @@ class FunctionObject : public GenObject {
                    const char *name,
                    const char *comment="");
 
+    virtual bool isFunction() override { return true; }
     virtual std::string getType() { return std::string(""); }
     virtual std::string generate();
     virtual void getArgsList(std::list<GenObject *> &args) {}

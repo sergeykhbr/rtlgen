@@ -22,7 +22,7 @@ using namespace sysvc;
 
 class SysPLL_tech : public ModuleObject {
  public:
-    SysPLL_tech(GenObject *parent, const char *name);
+    SysPLL_tech(GenObject *parent, const char *name, const char *comment=NO_COMMENT);
 
     virtual GenObject *getResetPort() override { return &i_reset; }
     virtual bool getResetActive() override { return true; }

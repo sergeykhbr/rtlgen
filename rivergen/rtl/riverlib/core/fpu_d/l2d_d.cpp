@@ -16,8 +16,8 @@
 
 #include "l2d_d.h"
 
-Long2Double::Long2Double(GenObject *parent, const char *name) :
-    ModuleObject(parent, "Long2Double", name),
+Long2Double::Long2Double(GenObject *parent, const char *name, const char *comment) :
+    ModuleObject(parent, "Long2Double", name, comment),
     i_clk(this, "i_clk", "1", "CPU clock"),
     i_nrst(this, "i_nrst", "1", "Reset: active LOW"),
     i_ena(this, "i_ena", "1"),

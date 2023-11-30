@@ -23,7 +23,7 @@ using namespace sysvc;
 
 class divstage64 : public ModuleObject {
  public:
-    divstage64(GenObject *parent, const char *name);
+    divstage64(GenObject *parent, const char *name, const char *comment=NO_COMMENT);
 
     class CombProcess : public ProcObject {
      public:

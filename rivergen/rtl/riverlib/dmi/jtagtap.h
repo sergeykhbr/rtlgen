@@ -22,7 +22,7 @@ using namespace sysvc;
 
 class jtagtap : public ModuleObject {
  public:
-    jtagtap(GenObject *parent, const char *name);
+    jtagtap(GenObject *parent, const char *name, const char *comment=NO_COMMENT);
 
     virtual GenObject *getAsyncReset() override { return 0; }
     virtual GenObject *getResetPort() override { return &i_trst; }

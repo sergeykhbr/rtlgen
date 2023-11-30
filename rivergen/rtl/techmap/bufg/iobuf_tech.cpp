@@ -16,8 +16,8 @@
 
 #include "iobuf_tech.h"
 
-iobuf_tech::iobuf_tech(GenObject *parent, const char *name) :
-    ModuleObject(parent, "iobuf_tech", name),
+iobuf_tech::iobuf_tech(GenObject *parent, const char *name, const char *comment) :
+    ModuleObject(parent, "iobuf_tech", name, comment),
     io(this, "io", "1", "bi-drectional port"),
     o(this, "o", "1", "Output signal is valid when t=0"),
     i(this, "i", "1", "Input signal is valid when t=1"),

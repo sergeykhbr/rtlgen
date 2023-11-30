@@ -16,19 +16,13 @@
 
 #include "tagmemcoupled.h"
 
-TagMemCoupled::TagMemCoupled(GenObject *parent,
-                             const char *name,
-                             const char *gen_abus,
-                             const char *gen_waybits,
-                             const char *gen_ibits, 
-                             const char *gen_lnbits, 
-                             const char *gen_flbits) :
-    ModuleObject(parent, "TagMemCoupled", name),
-    abus(this, "abus", gen_abus, "system bus address width (64 or 32 bits)"),
-    waybits(this, "waybits", gen_waybits, "log2 of number of ways bits (2 for 4 ways cache; 3 for 8 ways)"),
-    ibits(this, "ibits", gen_ibits, "lines memory address width (usually 6..8)"),
-    lnbits(this, "lnbits", gen_lnbits, "One line bits: log2(bytes_per_line)"),
-    flbits(this, "flbits", gen_flbits, "total flags number saved with address tag"),
+TagMemCoupled::TagMemCoupled(GenObject *parent, const char *name, const char *comment) :
+    ModuleObject(parent, "TagMemCoupled", name, comment),
+    abus(this, "abus", "64", "system bus address width (64 or 32 bits)"),
+    waybits(this, "waybits", "2", "log2 of number of ways bits (2 for 4 ways cache; 3 for 8 ways)"),
+    ibits(this, "ibits", "6", "lines memory address width (usually 6..8)"),
+    lnbits(this, "lnbits", "5", "One line bits: log2(bytes_per_line)"),
+    flbits(this, "flbits", "4", "total flags number saved with address tag"),
     i_clk(this, "i_clk", "1", "CPU clock"),
     i_nrst(this, "i_nrst", "1", "Reset: active LOW"),
     i_direct_access(this, "i_direct_access", "1"),
@@ -56,18 +50,18 @@ TagMemCoupled::TagMemCoupled(GenObject *parent,
     req_addr(this, "req_addr", "abus"),
     // process
     comb(this),
-    memx(this, "memx", "MemTotal")
+    memx(this, "memx", "MemTotal", NO_COMMENT)
 {
     Operation::start(this);
     disableVcd();
 
     // Create and connet Sub-modules:
-    memx.changeTmplParameter("abus", "abus");
-    memx.changeTmplParameter("waybits", "waybits"),
-    memx.changeTmplParameter("ibits", "SUB(ibits,1)"),
-    memx.changeTmplParameter("lnbits", "lnbits");
-    memx.changeTmplParameter("flbits", "flbits");
-    memx.changeTmplParameter("snoop", "0");
+    memx.abus.setObjValue(&abus);
+    memx.waybits.setObjValue(&waybits),
+    memx.ibits.setObjValue(&DEC(ibits)),
+    memx.lnbits.setObjValue(&lnbits);
+    memx.flbits.setObjValue(&flbits);
+    memx.snoop.setObjValue(&CONST("0"));
     GenObject &i = FORGEN ("i", CONST("0"), CONST("MemTotal"), "++", new STRING("memgen"));
         NEW(memx, memx.getName().c_str(), &i);
             CONNECT(memx, &i, memx.i_clk, i_clk);

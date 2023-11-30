@@ -16,8 +16,8 @@
 
 #include "SysPLL_tech.h"
 
-SysPLL_tech::SysPLL_tech(GenObject *parent, const char *name) :
-    ModuleObject(parent, "SysPLL_tech", name),
+SysPLL_tech::SysPLL_tech(GenObject *parent, const char *name, const char *comment) :
+    ModuleObject(parent, "SysPLL_tech", name, comment),
     i_reset(this, "i_reset", "1", "Active HIGH"),
     i_clk_tcxo(this, "i_clk_tcxo", "1"),
     o_clk_sys(this, "o_clk_sys", "1", "Bus clock 40 MHz"),

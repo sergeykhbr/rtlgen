@@ -23,7 +23,7 @@ using namespace sysvc;
 
 class DoubleAdd : public ModuleObject {
  public:
-    DoubleAdd(GenObject *parent, const char *name);
+    DoubleAdd(GenObject *parent, const char *name, const char *comment=NO_COMMENT);
 
     class CombProcess : public ProcObject {
      public:

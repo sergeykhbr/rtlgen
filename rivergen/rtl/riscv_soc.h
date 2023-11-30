@@ -41,7 +41,7 @@ using namespace sysvc;
 
 class riscv_soc : public ModuleObject {
  public:
-    riscv_soc(GenObject *parent, const char *name);
+    riscv_soc(GenObject *parent, const char *name, const char *comment=NO_COMMENT);
 
     virtual GenObject *getResetPort() override { return &i_sys_nrst; }
 

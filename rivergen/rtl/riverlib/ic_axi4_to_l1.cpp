@@ -16,8 +16,8 @@
 
 #include "ic_axi4_to_l1.h"
 
-ic_axi4_to_l1::ic_axi4_to_l1(GenObject *parent, const char *name) :
-    ModuleObject(parent, "ic_axi4_to_l1", name),
+ic_axi4_to_l1::ic_axi4_to_l1(GenObject *parent, const char *name, const char *comment) :
+    ModuleObject(parent, "ic_axi4_to_l1", name, comment),
     // Ports
     i_clk(this, "i_clk", "1", "CPU clock"),
     i_nrst(this, "i_nrst", "1", "Reset: active LOW"),

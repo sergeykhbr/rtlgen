@@ -16,8 +16,8 @@
 
 #include "vip_spi_top.h"
 
-vip_spi_top::vip_spi_top(GenObject *parent, const char *name) :
-    ModuleObject(parent, "vip_spi_top", name),
+vip_spi_top::vip_spi_top(GenObject *parent, const char *name, const char *comment) :
+    ModuleObject(parent, "vip_spi_top", name, comment),
     instnum(this, "instnum", "0"),
     baudrate(this, "baudrate", "2000000"),
     scaler(this, "scaler", "8"),
@@ -51,8 +51,8 @@ vip_spi_top::vip_spi_top(GenObject *parent, const char *name) :
     gpio_out(this, "gpio_out", "16"),
     gpio_dir(this, "gpio_dir", "16"),
     //
-    clk0(this, "clk0"),
-    tx0(this, "tx0"),
+    clk0(this, "clk0", NO_COMMENT),
+    tx0(this, "tx0", NO_COMMENT),
     comb(this)
 {
     Operation::start(this);

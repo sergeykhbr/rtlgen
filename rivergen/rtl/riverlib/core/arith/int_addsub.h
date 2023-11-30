@@ -23,7 +23,7 @@ using namespace sysvc;
 
 class IntAddSub : public ModuleObject {
  public:
-    IntAddSub(GenObject *parent, const char *name);
+    IntAddSub(GenObject *parent, const char *name, const char *comment=NO_COMMENT);
 
     class CombProcess : public ProcObject {
      public:

@@ -150,7 +150,7 @@ class TagMemNWay : public ModuleObject {
     // process should be intialized last to make all signals available
     CombProcess comb;
     // sub-modules
-    TagMem wayx;
+    ModuleArray<TagMem> wayx;
     lrunway lru0;
 };
 

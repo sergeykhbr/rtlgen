@@ -26,7 +26,7 @@ using namespace sysvc;
 
 class axi_rom : public ModuleObject {
  public:
-    axi_rom(GenObject *parent, const char *name);
+    axi_rom(GenObject *parent, const char *name, const char *comment=NO_COMMENT);
 
     class CombProcess : public ProcObject {
      public:

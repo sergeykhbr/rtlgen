@@ -23,7 +23,7 @@ using namespace sysvc;
 
 class PMP : public ModuleObject {
  public:
-    PMP(GenObject *parent, const char *name);
+    PMP(GenObject *parent, const char *name, const char *comment=NO_COMMENT);
 
     class CombProcess : public ProcObject {
      public:

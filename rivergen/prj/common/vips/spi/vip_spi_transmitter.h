@@ -22,7 +22,7 @@ using namespace sysvc;
 
 class vip_spi_transmitter : public ModuleObject {
  public:
-    vip_spi_transmitter(GenObject *parent, const char *name);
+    vip_spi_transmitter(GenObject *parent, const char *name, const char *comment);
 
     class CombProcess : public ProcObject {
      public:
@@ -84,7 +84,7 @@ class vip_spi_transmitter_file : public FileObject {
  public:
     vip_spi_transmitter_file(GenObject *parent) :
         FileObject(parent, "vip_spi_transmitter"),
-        vip_spi_transmitter_(this, "") {}
+        vip_spi_transmitter_(this, "", NO_COMMENT) {}
 
  private:
     vip_spi_transmitter vip_spi_transmitter_;

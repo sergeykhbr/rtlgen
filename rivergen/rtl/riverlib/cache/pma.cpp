@@ -16,8 +16,8 @@
 
 #include "pma.h"
 
-PMA::PMA(GenObject *parent, const char *name) :
-    ModuleObject(parent, "PMA", name),
+PMA::PMA(GenObject *parent, const char *name, const char *comment) :
+    ModuleObject(parent, "PMA", name, comment),
     i_clk(this, "i_clk", "1", "CPU clock"),
     i_iaddr(this, "i_iaddr", "CFG_CPU_ADDR_BITS"),
     i_daddr(this, "i_daddr", "CFG_CPU_ADDR_BITS"),

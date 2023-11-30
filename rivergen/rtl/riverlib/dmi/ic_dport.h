@@ -24,7 +24,7 @@ using namespace sysvc;
 
 class ic_dport : public ModuleObject {
  public:
-    ic_dport(GenObject *parent, const char *name);
+    ic_dport(GenObject *parent, const char *name, const char *comment=NO_COMMENT);
 
     class CombProcess : public ProcObject {
      public:

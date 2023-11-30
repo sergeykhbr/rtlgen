@@ -24,7 +24,7 @@ using namespace sysvc;
 
 class IntDiv : public ModuleObject {
  public:
-    IntDiv(GenObject *parent, const char *name);
+    IntDiv(GenObject *parent, const char *name, const char *comment=NO_COMMENT);
 
     class CombProcess : public ProcObject {
      public:

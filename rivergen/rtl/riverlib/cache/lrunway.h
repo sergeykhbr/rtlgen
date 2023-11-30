@@ -23,10 +23,7 @@ using namespace sysvc;
 
 class lrunway : public ModuleObject {
  public:
-    lrunway(GenObject *parent, 
-            const char *name,
-            const char *gen_abits="6",
-            const char *gen_waybits="2");
+    lrunway(GenObject *parent, const char *name, const char *comment=NO_COMMENT);
 
     class CombProcess : public ProcObject {
      public:

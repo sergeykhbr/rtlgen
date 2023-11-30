@@ -66,7 +66,7 @@ class input_mux_type : public StructObject {
 
 class InstrExecute : public ModuleObject {
  public:
-    InstrExecute(GenObject *parent, const char *name);
+    InstrExecute(GenObject *parent, const char *name, const char *comment=NO_COMMENT);
 
     class irq2idx_func : public FunctionObject {
      public:

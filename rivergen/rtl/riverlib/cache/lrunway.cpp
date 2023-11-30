@@ -16,13 +16,10 @@
 
 #include "lrunway.h"
 
-lrunway::lrunway(GenObject *parent,
-                 const char *name,
-                 const char *gen_abits,
-                 const char *gen_waybits) :
-    ModuleObject(parent, "lrunway", name),
-    abits(this, "abits", gen_abits, "Cache line address bus (usually 6..8)"),
-    waybits(this, "waybits", gen_waybits, "Number of way bitwidth (=2 for 4 ways cache)"),
+lrunway::lrunway(GenObject *parent, const char *name, const char *comment) :
+    ModuleObject(parent, "lrunway", name, comment),
+    abits(this, "abits", "6", "Cache line address bus (usually 6..8)"),
+    waybits(this, "waybits", "2", "Number of way bitwidth (=2 for 4 ways cache)"),
     i_clk(this, "i_clk", "1", "CPU clock"),
     i_init(this, "i_init", "1"),
     i_raddr(this, "i_raddr", "abits"),

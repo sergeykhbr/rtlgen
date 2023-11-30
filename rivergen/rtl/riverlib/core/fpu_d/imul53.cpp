@@ -16,8 +16,8 @@
 
 #include "imul53.h"
 
-imul53::imul53(GenObject *parent, const char *name) :
-    ModuleObject(parent, "imul53", name),
+imul53::imul53(GenObject *parent, const char *name, const char *comment) :
+    ModuleObject(parent, "imul53", name, comment),
     i_clk(this, "i_clk", "1", "CPU clock"),
     i_nrst(this, "i_nrst", "1", "Reset: active LOW"),
     i_ena(this, "i_ena", "1", "enable pulse (1 clock)"),
@@ -44,6 +44,8 @@ imul53::imul53(GenObject *parent, const char *name) :
 {
     Operation::start(this);
 
+    enc0.iwidth.setObjValue(&CONST("105"));
+    enc0.shiftwidth.setObjValue(&CONST("7"));
     NEW(enc0, enc0.getName().c_str());
         CONNECT(enc0, 0, enc0.i_value, wb_sumInv);
         CONNECT(enc0, 0, enc0.o_shift, wb_lshift);

@@ -16,8 +16,8 @@
 
 #include "int_addsub.h"
 
-IntAddSub::IntAddSub(GenObject *parent, const char *name) :
-    ModuleObject(parent, "IntAddSub", name),
+IntAddSub::IntAddSub(GenObject *parent, const char *name, const char *comment) :
+    ModuleObject(parent, "IntAddSub", name, comment),
     i_clk(this, "i_clk", "1", "CPU clock"),
     i_nrst(this, "i_nrst", "1", "Reset: active LOW"),
     i_mode(this, "i_mode", "7", "[0]0=rv64;1=rv32;[1]0=sign;1=unsign[2]Add[3]Sub[4]less[5]min[6]max"),

@@ -24,7 +24,7 @@ using namespace sysvc;
 
 class L2CacheLru : public ModuleObject {
  public:
-    L2CacheLru(GenObject *parent, const char *name);
+    L2CacheLru(GenObject *parent, const char *name, const char *comment=NO_COMMENT);
 
     class CombProcess : public ProcObject {
      public:

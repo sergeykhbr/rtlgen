@@ -23,7 +23,7 @@ using namespace sysvc;
 
 class Queue : public ModuleObject {
  public:
-    Queue(GenObject *parent, const char *name, const char *gen_abits="6", const char *gen_dbits="128");
+    Queue(GenObject *parent, const char *name, const char *comment=NO_COMMENT);
 
     class CombProcess : public ProcObject {
      public:

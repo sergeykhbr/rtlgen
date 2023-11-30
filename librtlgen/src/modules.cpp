@@ -25,10 +25,11 @@
 
 namespace sysvc {
 
-ModuleObject::ModuleObject(GenObject *parent, const char *type,
-    const char *name, const char *depth) :
-    GenObject(parent, type, ID_MODULE, name) {
-    setStrDepth(depth);
+ModuleObject::ModuleObject(GenObject *parent,
+                           const char *type,
+                           const char *name,
+                           const char *comment) :
+    GenObject(parent, type, ID_MODULE, name, comment) {
     // Cannot call virtual method from constructor
     if (name[0] == 0 || strcmp(name, type) == 0) {
         SCV_register_module(this);
@@ -149,19 +150,6 @@ void ModuleObject::getTmplParamList(std::list<GenObject *> &genlist) {
         }
     }
 }
-
-void ModuleObject::changeTmplParameter(const char *name, const char *val) {
-    std::string tname = std::string(name);
-    std::list<GenObject *> genlist;
-    getTmplParamList(genlist);
-    for (auto &e : genlist) {
-        if (e->getName() != tname) {
-            continue;
-        }
-        static_cast<TmplParamI32D *>(e)->setStrValue(val);
-    }
-}
-
 
 void ModuleObject::getParamList(std::list<GenObject *> &genlist) {
     for (auto &e : entries_) {

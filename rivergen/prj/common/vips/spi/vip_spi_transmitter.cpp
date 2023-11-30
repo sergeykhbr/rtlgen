@@ -16,8 +16,8 @@
 
 #include "vip_spi_transmitter.h"
 
-vip_spi_transmitter::vip_spi_transmitter(GenObject *parent, const char *name) :
-    ModuleObject(parent, "vip_spi_transmitter", name),
+vip_spi_transmitter::vip_spi_transmitter(GenObject *parent, const char *name, const char *comment) :
+    ModuleObject(parent, "vip_spi_transmitter", name, comment),
     scaler(this, "scaler", "8"),
     scaler_max(this, "scaler_max", "SUB(MUL(2,scaler),1)"),
     scaler_mid(this, "scaler_mid", "scaler"),

@@ -16,8 +16,8 @@
 
 #include "l2_dst.h"
 
-L2Destination::L2Destination(GenObject *parent, const char *name) :
-    ModuleObject(parent, "L2Destination", name),
+L2Destination::L2Destination(GenObject *parent, const char *name, const char *comment) :
+    ModuleObject(parent, "L2Destination", name, comment),
     i_clk(this, "i_clk", "1", "CPU clock"),
     i_nrst(this, "i_nrst", "1", "Reset: active LOW"),
     i_resp_valid(this, "i_resp_valid", "1"),

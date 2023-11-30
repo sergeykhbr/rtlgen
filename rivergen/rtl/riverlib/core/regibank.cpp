@@ -16,8 +16,8 @@
 
 #include "regibank.h"
 
-RegIntBank::RegIntBank(GenObject *parent, const char *name) :
-    ModuleObject(parent, "RegIntBank", name),
+RegIntBank::RegIntBank(GenObject *parent, const char *name, const char *comment) :
+    ModuleObject(parent, "RegIntBank", name, comment),
     i_clk(this, "i_clk", "1", "CPU clock"),
     i_nrst(this, "i_nrst", "1", "Reset: active LOW"),
     i_radr1(this, "i_radr1", "6", "Port 1 read address"),

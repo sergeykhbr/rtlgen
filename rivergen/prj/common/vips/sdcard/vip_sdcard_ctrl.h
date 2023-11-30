@@ -22,7 +22,7 @@ using namespace sysvc;
 
 class vip_sdcard_ctrl : public ModuleObject {
  public:
-    vip_sdcard_ctrl(GenObject *parent, const char *name);
+    vip_sdcard_ctrl(GenObject *parent, const char *name, const char *comment);
 
     class CombProcess : public ProcObject {
      public:
@@ -128,7 +128,7 @@ class vip_sdcard_ctrl_file : public FileObject {
  public:
     vip_sdcard_ctrl_file(GenObject *parent) :
         FileObject(parent, "vip_sdcard_ctrl"),
-        vip_sdcard_ctrl_(this, "") {}
+        vip_sdcard_ctrl_(this, "", NO_COMMENT) {}
 
  private:
     vip_sdcard_ctrl vip_sdcard_ctrl_;

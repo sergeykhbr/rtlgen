@@ -16,8 +16,8 @@
 
 #include "sdctrl_regs.h"
 
-sdctrl_regs::sdctrl_regs(GenObject *parent, const char *name) :
-    ModuleObject(parent, "sdctrl_regs", name),
+sdctrl_regs::sdctrl_regs(GenObject *parent, const char *name, const char *comment) :
+    ModuleObject(parent, "sdctrl_regs", name, comment),
     i_clk(this, "i_clk", "1", "CPU clock"),
     i_nrst(this, "i_nrst", "1", "Reset: active LOW"),
     i_pmapinfo(this, "i_pmapinfo", "APB interconnect slot information"),

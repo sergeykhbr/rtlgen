@@ -16,8 +16,8 @@
 
 #include "d2l_d.h"
 
-Double2Long::Double2Long(GenObject *parent, const char *name) :
-    ModuleObject(parent, "Double2Long", name),
+Double2Long::Double2Long(GenObject *parent, const char *name, const char *comment) :
+    ModuleObject(parent, "Double2Long", name, comment),
     i_clk(this, "i_clk", "1", "CPU clock"),
     i_nrst(this, "i_nrst", "1", "Reset: active LOW"),
     i_ena(this, "i_ena", "1"),

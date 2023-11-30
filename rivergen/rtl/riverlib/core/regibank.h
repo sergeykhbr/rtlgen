@@ -23,7 +23,7 @@ using namespace sysvc;
 
 class RegIntBank : public ModuleObject {
  public:
-    RegIntBank(GenObject *parent, const char *name);
+    RegIntBank(GenObject *parent, const char *name, const char *comment=NO_COMMENT);
 
     class CombProcess : public ProcObject {
      public:

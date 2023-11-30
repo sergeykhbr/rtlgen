@@ -16,8 +16,8 @@
 
 #include "vip_sdcard_cmdio.h"
 
-vip_sdcard_cmdio::vip_sdcard_cmdio(GenObject *parent, const char *name) :
-    ModuleObject(parent, "vip_sdcard_cmdio", name),
+vip_sdcard_cmdio::vip_sdcard_cmdio(GenObject *parent, const char *name, const char *comment) :
+    ModuleObject(parent, "vip_sdcard_cmdio", name, comment),
     i_nrst(this, "i_nrst", "1"),
     i_clk(this, "i_clk", "1"),
     i_cs(this, "i_cs", "1", "dat3 in SPI mode."),
@@ -91,7 +91,7 @@ vip_sdcard_cmdio::vip_sdcard_cmdio(GenObject *parent, const char *name) :
     cmd_resp_ready(this, "cmd_resp_ready", "1"),
     //
     comb(this),
-    crccmd0(this, "crccmd0")
+    crccmd0(this, "crccmd0", NO_COMMENT)
 {
     Operation::start(this);
 

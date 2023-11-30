@@ -22,7 +22,7 @@ using namespace sysvc;
 
 class zeroenc : public ModuleObject {
  public:
-    zeroenc(GenObject *parent, const char *name);
+    zeroenc(GenObject *parent, const char *name, const char *comment=NO_COMMENT);
 
     class GenerateProcess : public ProcObject {
      public:

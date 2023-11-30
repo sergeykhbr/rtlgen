@@ -16,10 +16,10 @@
 
 #include "ram_mmu_tech.h"
 
-ram_mmu_tech::ram_mmu_tech(GenObject *parent, const char *name, const char *gen_abits, const char *gen_dbits) :
-    ModuleObject(parent, "ram_mmu_tech", name),
-    abits(this, "abits", gen_abits),
-    dbits(this, "dbits", gen_dbits),
+ram_mmu_tech::ram_mmu_tech(GenObject *parent, const char *name, const char *comment) :
+    ModuleObject(parent, "ram_mmu_tech", name, comment),
+    abits(this, "abits", "6"),
+    dbits(this, "dbits", "104"),
     i_clk(this, "i_clk", "1", "CPU clock"),
     i_addr(this, "i_addr", "abits"),
     i_wena(this, "i_wena", "1"),

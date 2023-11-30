@@ -16,8 +16,8 @@
 
 #include "zeroenc.h"
 
-zeroenc::zeroenc(GenObject *parent, const char *name) :
-    ModuleObject(parent, "zeroenc", name),
+zeroenc::zeroenc(GenObject *parent, const char *name, const char *comment) :
+    ModuleObject(parent, "zeroenc", name, comment),
     iwidth(this, "iwidth", "105", "Input bus width"),
     shiftwidth(this, "shiftwidth", "7", "Encoded value width"),
     i_value(this, "i_value", "iwidth", "Input value to encode"),

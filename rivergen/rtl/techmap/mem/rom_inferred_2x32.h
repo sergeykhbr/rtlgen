@@ -22,7 +22,7 @@ using namespace sysvc;
 
 class rom_inferred_2x32 : public ModuleObject {
  public:
-    rom_inferred_2x32(GenObject *parent, const char *name, const char *gen_abits="6");
+    rom_inferred_2x32(GenObject *parent, const char *name, const char *comment=NO_COMMENT);
 
     class RegistersProcess : public ProcObject {
      public:

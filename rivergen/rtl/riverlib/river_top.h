@@ -25,7 +25,7 @@ using namespace sysvc;
 
 class RiverTop : public ModuleObject {
  public:
-    RiverTop(GenObject *parent, const char *name);
+    RiverTop(GenObject *parent, const char *name, const char *comment=NO_COMMENT);
 
     class CombProcess : public ProcObject {
     public:

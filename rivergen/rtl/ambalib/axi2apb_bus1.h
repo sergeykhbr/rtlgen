@@ -26,7 +26,7 @@ using namespace sysvc;
 
 class axi2apb_bus1 : public ModuleObject {
  public:
-    axi2apb_bus1(GenObject *parent, const char *name);
+    axi2apb_bus1(GenObject *parent, const char *name, const char *comment=NO_COMMENT);
 
     class CombProcess : public ProcObject {
      public:

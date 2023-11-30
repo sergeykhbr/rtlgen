@@ -16,8 +16,8 @@
 
 #include "fpu_top.h"
 
-FpuTop::FpuTop(GenObject *parent, const char *name) :
-    ModuleObject(parent, "FpuTop", name),
+FpuTop::FpuTop(GenObject *parent, const char *name, const char *comment) :
+    ModuleObject(parent, "FpuTop", name, comment),
     i_clk(this, "i_clk", "1", "CPU clock"),
     i_nrst(this, "i_nrst", "1", "Reset: active LOW"),
     i_ena(this, "i_ena", "1"),

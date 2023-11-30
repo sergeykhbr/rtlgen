@@ -25,7 +25,7 @@ using namespace sysvc;
 
 class BranchPredictor : public ModuleObject {
  public:
-    BranchPredictor(GenObject *parent, const char *name);
+    BranchPredictor(GenObject *parent, const char *name, const char *comment=NO_COMMENT);
 
     class CombProcess : public ProcObject {
      public:
@@ -110,7 +110,7 @@ class BranchPredictor : public ModuleObject {
 
     // Sub-module instances:
     BpBTB btb;
-    BpPreDecoder predec;
+    ModuleArray<BpPreDecoder> predec;
 };
 
 class bp_file : public FileObject {

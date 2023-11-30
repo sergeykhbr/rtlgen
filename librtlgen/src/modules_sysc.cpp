@@ -134,22 +134,20 @@ std::string ModuleObject::generate_sysc_h() {
     int tcnt = 0;
 
     getTmplParamList(tmpllist);
-    if (tmpllist.size()) {
-        ln = "template<";
-        for (auto &e: tmpllist) {
-            if (e != tmpllist.front()) {
-                ln += "         ";
-            }
-            ln += e->getType() + " " + e->getName() + " = " + e->generate();
-            if (e != tmpllist.back()) {
-                ln += ",";
-            } else {
-                ln += ">";
-            }
-            e->addComment(ln);
-            out += ln + "\n";
-            ln = "";
+    ln = "template<";
+    for (auto &e: tmpllist) {
+        if (e != tmpllist.front()) {
+            ln += "         ";
         }
+        ln += e->getType() + " " + e->getName() + " = " + e->getStrValue();
+        if (e != tmpllist.back()) {
+            ln += ",";
+        } else {
+            ln += ">";
+        }
+        e->addComment(ln);
+        out += ln + "\n";
+        ln = "";
     }
 
     tcnt = 0;
@@ -158,9 +156,9 @@ std::string ModuleObject::generate_sysc_h() {
     pushspaces();
 
     // Input/Output signal declaration
-    for (auto &p: entries_) {
+    for (auto &p: getEntries()) {
         if (!p->isInput() && !p->isOutput()) {
-            if (p->getId() == ID_COMMENT) {
+            if (p->isComment()) {
                 text += p->generate();
             } else {
                 text = "";
@@ -403,6 +401,11 @@ std::string ModuleObject::generate_sysc_h() {
         tcnt = 0;
     }
 
+#if 1
+if (getType() == "ram_cache_bwe_tech") {
+bool st = true;
+}
+#endif
     // Sub-module list
     for (auto &p: getEntries()) {
         if (p->isModule()) {
@@ -652,17 +655,36 @@ std::string ModuleObject::generate_sysc_vcd_entries(GenObject *obj,
 std::string ModuleObject::generate_sysc_template_param(GenObject *p) {
     std::string ret = "";
     int tcnt = 0;
-    std::list<GenObject *> tmpllist;
+    GenObject *pthis;
 
-    static_cast<ModuleObject *>(p)->getTmplParamList(tmpllist);
-    if (tmpllist.size()) {
-        ret += "<";
-        for (auto &e: tmpllist) {
-            if (tcnt++) {
-                ret += ", ";
-            }
-            ret += e->generate();
+    for (auto &e: p->getEntries()) {
+        if (!e->isParamTemplate()) {
+            continue;
         }
+
+        // Additional check that all template\generic parameters are explictly connected
+        if (e->getObjValue() == 0) {
+            SCV_printf("warning: %s::%s::%s parameter is not assigned",
+                        getType().c_str(),
+                        p->getName().c_str(),
+                        e->getName().c_str());
+        }
+
+        if (tcnt == 0) {
+            ret += "<";
+        }
+        if (tcnt++) {
+            ret += ", ";
+        }
+        // Check this module for the same name parameter (that was not changed):
+        pthis = getEntryByName(e->getName().c_str());
+        if (pthis && pthis->isParam() && e->getObjValue() == 0) {
+            ret += e->getName();
+        } else {
+            ret += e->getStrValue();
+        }
+    }
+    if (tcnt) {
         ret += ">";
     }
     return ret;
@@ -783,39 +805,23 @@ std::string ModuleObject::generate_sysc_constructor() {
     }
     ret += ")\n";
     ret += "    : sc_module(name)";
-    // Input/Output signal declaration
+    // Sub-item constructors:
     tcnt = 0;
     for (auto &p: getEntries()) {
-        if (!p->isInput() && !p->isOutput()) {
-            continue;
+        if (p->isInput()
+            || p->isOutput()
+            || p->isClock()
+            || p->isVector()) {
+            ret += ",\n    " + p->getName() + "(\"" + p->getName() + "\"";
+            if (p->isVector()) {
+                ret += ", " + p->getStrDepth();
+            }
+            if (p->isClock()) {
+                ret += ", " + p->getStrValue();
+                ret += ", SC_SEC";
+            }
+            ret += ")";
         }
-        ret += ",\n    " + p->getName() + "(\"" + p->getName() + "\"";
-        if (p->isVector()) {
-            ret += ", " + p->getStrDepth();
-        }
-        ret += ")";
-    }
-    // Clock generators
-    for (auto &p: getEntries()) {
-        if (!p->isClock()) {
-            continue;
-        }
-        ret += ",\n    " + p->getName() + "(\"" + p->getName() + "\"";
-        ret += ", " + p->getStrValue();
-        ret += ", SC_SEC";
-        ret += ")";
-    }
-    // Signal Vectors (simple signals not initialized) also should be initialized
-    for (auto &p: getEntries()) {
-        if (p->isInput() || p->isOutput()) {
-            continue;
-        }
-        if (!p->isVector() || p->getName() == "") {
-            continue;
-        }
-        ret += ",\n    " + p->getName() + "(\"" + p->getName() + "\"";
-        ret += ", " + p->getStrDepth();
-        ret += ")";
     }
     ret += " {\n";
     ret += "\n";
@@ -830,7 +836,7 @@ std::string ModuleObject::generate_sysc_constructor() {
         } else if (p->isParamGeneric()) {
             ret += addspaces() + p->getName() + "_ = " + p->getName() + ";\n";
         } else if (p->isParam() && p->isGenericDep() && tmpllist.size() == 0) {
-            ret += addspaces() + p->getName() + " = " + p->generate() + ";\n";
+            ret += addspaces() + p->getName() + " = " + p->getStrValue() + ";\n";
         }
     }
 

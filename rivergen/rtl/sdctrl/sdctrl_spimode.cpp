@@ -16,8 +16,8 @@
 
 #include "sdctrl_spimode.h"
 
-sdctrl_spimode::sdctrl_spimode(GenObject *parent, const char *name) :
-    ModuleObject(parent, "sdctrl_spimode", name),
+sdctrl_spimode::sdctrl_spimode(GenObject *parent, const char *name, const char *comment) :
+    ModuleObject(parent, "sdctrl_spimode", name, comment),
     i_clk(this, "i_clk", "1", "CPU clock"),
     i_nrst(this, "i_nrst", "1", "Reset: active LOW"),
     i_posedge(this, "i_posedge", "1", "SPI clock posedge pulse"),

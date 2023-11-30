@@ -22,7 +22,7 @@ using namespace sysvc;
 
 class iobuf_tech : public ModuleObject {
  public:
-    iobuf_tech(GenObject *parent, const char *name);
+    iobuf_tech(GenObject *parent, const char *name, const char *comment=NO_COMMENT);
 
  protected:
     class CombProcess : public ProcObject {

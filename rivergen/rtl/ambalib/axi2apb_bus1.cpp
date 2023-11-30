@@ -16,8 +16,8 @@
 
 #include "axi2apb_bus1.h"
 
-axi2apb_bus1::axi2apb_bus1(GenObject *parent, const char *name) :
-    ModuleObject(parent, "axi2apb_bus1", name),
+axi2apb_bus1::axi2apb_bus1(GenObject *parent, const char *name, const char *comment) :
+    ModuleObject(parent, "axi2apb_bus1", name, comment),
     i_clk(this, "i_clk", "1", "CPU clock"),
     i_nrst(this, "i_nrst", "1", "Reset: active LOW"),
     i_mapinfo(this, "i_mapinfo", "Base address information from the interconnect port"),
@@ -56,7 +56,7 @@ axi2apb_bus1::axi2apb_bus1(GenObject *parent, const char *name) :
     pslverr(this, "pslverr", "1"),
     size(this, "size", "8"),
     // modules
-    axi0(this, "axi0"),
+    axi0(this, "axi0", NO_COMMENT),
     // process
     comb(this)
 {

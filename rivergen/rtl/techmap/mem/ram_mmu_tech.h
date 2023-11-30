@@ -22,7 +22,7 @@ using namespace sysvc;
 
 class ram_mmu_tech : public ModuleObject {
  public:
-    ram_mmu_tech(GenObject *parent, const char *name, const char *gen_abits="6", const char *gen_dbits="104");
+    ram_mmu_tech(GenObject *parent, const char *name, const char *comment=NO_COMMENT);
 
     class RegistersProcess : public ProcObject {
      public:

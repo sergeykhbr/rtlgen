@@ -16,8 +16,8 @@
 
 #include "cdc_axi_sync_tech.h"
 
-cdc_axi_sync_tech::cdc_axi_sync_tech(GenObject *parent, const char *name) :
-    ModuleObject(parent, "cdc_axi_sync_tech", name),
+cdc_axi_sync_tech::cdc_axi_sync_tech(GenObject *parent, const char *name, const char *comment) :
+    ModuleObject(parent, "cdc_axi_sync_tech", name, comment),
     i_xslv_clk(this, "i_xslv_clk", "1", "system clock"),
     i_xslv_nrst(this, "i_xslv_nrst", "1", "system reset"),
     i_xslvi(this, "i_xslvi", "system clock"),

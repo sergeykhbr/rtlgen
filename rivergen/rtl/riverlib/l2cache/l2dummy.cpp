@@ -16,8 +16,8 @@
 
 #include "l2dummy.h"
 
-L2Dummy::L2Dummy(GenObject *parent, const char *name) :
-    ModuleObject(parent, "L2Dummy", name),
+L2Dummy::L2Dummy(GenObject *parent, const char *name, const char *comment) :
+    ModuleObject(parent, "L2Dummy", name, comment),
     i_clk(this, "i_clk", "1", "CPU clock"),
     i_nrst(this, "i_nrst", "1", "Reset: active LOW"),
     i_l1o(this, "i_l1o"),

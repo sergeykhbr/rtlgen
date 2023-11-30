@@ -28,7 +28,7 @@ namespace sysvc {
 class ModuleObject : public GenObject {
  public:
     ModuleObject(GenObject *parent, const char *type,
-        const char *name="", const char *depth="");
+                 const char *name, const char *comment);
 
     virtual std::string generate() override;
 
@@ -53,7 +53,6 @@ class ModuleObject : public GenObject {
     virtual bool isFileValue();
     virtual bool isSignalEntries(GenObject *obj);
     virtual void getTmplParamList(std::list<GenObject *> &genlist);
-    virtual void changeTmplParameter(const char *name, const char *val);
     virtual void getParamList(std::list<GenObject *> &genlist);
     virtual void getIoList(std::list<GenObject *> &genlist);
  protected:

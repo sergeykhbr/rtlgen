@@ -16,11 +16,11 @@
 
 #include "ram_cache_bwe_tech.h"
 
-ram_cache_bwe_tech::ram_cache_bwe_tech(GenObject *parent, const char *name,
-    const char *depth, const char *gen_abits, const char *gen_dbits) :
-    ModuleObject(parent, "ram_cache_bwe_tech", name, depth),
-    abits(this, "abits", gen_abits),
-    dbits(this, "dbits", gen_dbits),
+ram_cache_bwe_tech::ram_cache_bwe_tech(GenObject *parent, const char *name, const char *comment) :
+    ModuleObject(parent, "ram_cache_bwe_tech", name, comment),
+    abits(this, "abits", "6"),
+    dbits(this, "dbits", "128"),
+    //bytes_total(this, "bytes_total", "DIV(dbits,8)"),
     i_clk(this, "i_clk", "1", "CPU clock"),
     i_addr(this, "i_addr", "abits"),
     i_wena(this, "i_wena", "DIV(dbits,8)"),
@@ -32,14 +32,15 @@ ram_cache_bwe_tech::ram_cache_bwe_tech(GenObject *parent, const char *name,
     wb_rdata(this, "wb_rdata", "8", "DIV(dbits,8)"),
     // process
     comb(this),
-    rx(this, "rx", "DIV(dbits,8)")
+    rx(this, "rx", "DIV(dbits,8)", NO_COMMENT)
 {
     Operation::start(this);
     rx.disableReset();
     disableVcd();
 
     // Create and connet Sub-modules:
-    rx.changeTmplParameter("abits", "abits");
+    rx.abits.setObjValue(&abits);
+    rx.dbits.setObjValue(&CONST("8"));
     GenObject &i = FORGEN ("i", CONST("0"), CONST("DIV(dbits,8)"), "++", new STRING("rxgen"));
         NEW(rx, rx.getName().c_str(), &i);
             CONNECT(rx, &i, rx.i_clk, i_clk);

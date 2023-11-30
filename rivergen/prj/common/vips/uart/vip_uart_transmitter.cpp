@@ -16,8 +16,8 @@
 
 #include "vip_uart_transmitter.h"
 
-vip_uart_transmitter::vip_uart_transmitter(GenObject *parent, const char *name) :
-    ModuleObject(parent, "vip_uart_transmitter", name),
+vip_uart_transmitter::vip_uart_transmitter(GenObject *parent, const char *name, const char *comment) :
+    ModuleObject(parent, "vip_uart_transmitter", name, comment),
     scaler(this, "scaler", "8"),
     scaler_max(this, "scaler_max", "SUB(MUL(2,scaler),1)"),
     i_nrst(this, "i_nrst", "1"),

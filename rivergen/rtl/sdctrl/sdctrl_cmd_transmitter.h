@@ -23,7 +23,7 @@ using namespace sysvc;
 
 class sdctrl_cmd_transmitter : public ModuleObject {
  public:
-    sdctrl_cmd_transmitter(GenObject *parent, const char *name);
+    sdctrl_cmd_transmitter(GenObject *parent, const char *name, const char *comment=NO_COMMENT);
 
     class CombProcess : public ProcObject {
      public:

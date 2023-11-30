@@ -16,8 +16,8 @@
 
 #include "vip_uart_top.h"
 
-vip_uart_top::vip_uart_top(GenObject *parent, const char *name) :
-    ModuleObject(parent, "vip_uart_top", name),
+vip_uart_top::vip_uart_top(GenObject *parent, const char *name, const char *comment) :
+    ModuleObject(parent, "vip_uart_top", name, comment),
     instnum(this, "instnum", "0"),
     baudrate(this, "baudrate", "115200"),
     scaler(this, "scaler", "8"),
@@ -49,9 +49,9 @@ vip_uart_top::vip_uart_top(GenObject *parent, const char *name) :
     initdone(this, "initdone", "2"),
     // registers
     //
-    clk0(this, "clk0"),
-    rx0(this, "rx0"),
-    tx0(this, "tx0"),
+    clk0(this, "clk0", NO_COMMENT),
+    rx0(this, "rx0", NO_COMMENT),
+    tx0(this, "tx0", NO_COMMENT),
     U8ToString(this),
     comb(this),
     reg(this)

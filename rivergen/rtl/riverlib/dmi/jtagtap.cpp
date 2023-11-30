@@ -16,8 +16,8 @@
 
 #include "jtagtap.h"
 
-jtagtap::jtagtap(GenObject *parent, const char *name) :
-    ModuleObject(parent, "jtagtap", name),
+jtagtap::jtagtap(GenObject *parent, const char *name, const char *comment) :
+    ModuleObject(parent, "jtagtap", name, comment),
     abits(this, "abits", "7"),
     irlen(this, "irlen", "5"),
     idcode(this, "32", "idcode", "0x10e31913"),

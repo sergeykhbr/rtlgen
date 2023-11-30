@@ -16,11 +16,11 @@
 
 #include "vip_clk.h"
 
-vip_clk::vip_clk(GenObject *parent, const char *name) :
-    ModuleObject(parent, "vip_clk", name),
+vip_clk::vip_clk(GenObject *parent, const char *name, const char *comment) :
+    ModuleObject(parent, "vip_clk", name, comment),
     period(this, "period", "1.0"),
-    pll(this, "pll", "period"),
     o_clk(this, "o_clk", "1"),
+    pll(this, "pll", "period"),
     //
     comb(this)
 {

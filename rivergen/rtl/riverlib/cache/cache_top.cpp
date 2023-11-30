@@ -16,8 +16,8 @@
 
 #include "cache_top.h"
 
-CacheTop::CacheTop(GenObject *parent, const char *name) :
-    ModuleObject(parent, "CacheTop", name),
+CacheTop::CacheTop(GenObject *parent, const char *name, const char *comment) :
+    ModuleObject(parent, "CacheTop", name, comment),
     coherence_ena(this, "coherence_ena", "false"),
     i_clk(this, "i_clk", "1", "CPU clock"),
     i_nrst(this, "i_nrst", "1", "Reset: active LOW"),
@@ -125,7 +125,7 @@ CacheTop::CacheTop(GenObject *parent, const char *name) :
     d0(this, "d0"),
     pma0(this, "pma0"),
     pmp0(this, "pmp0"),
-    queue0(this, "queue0", "2", "QUEUE_WIDTH")
+    queue0(this, "queue0")
 {
     Operation::start(this);
     NEW(i1, i1.getName().c_str());
@@ -228,6 +228,8 @@ TEXT();
     ENDNEW();
 
 TEXT();
+    queue0.abits.setObjValue(&CONST("2"));
+    queue0.dbits.setObjValue(&QUEUE_WIDTH);
     NEW(queue0, queue0.getName().c_str());
         CONNECT(queue0, 0, queue0.i_clk, i_clk);
         CONNECT(queue0, 0, queue0.i_nrst, i_nrst);

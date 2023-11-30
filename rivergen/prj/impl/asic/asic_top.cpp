@@ -16,8 +16,8 @@
 
 #include "asic_top.h"
 
-asic_top::asic_top(GenObject *parent, const char *name) :
-    ModuleObject(parent, "asic_top", name),
+asic_top::asic_top(GenObject *parent, const char *name, const char *comment) :
+    ModuleObject(parent, "asic_top", name, comment),
     async_reset(this, "async_reset", "0"),
     sim_uart_speedup_rate(this, "sim_uart_speedup_rate", "0", "simulation UART speed-up: 0=no speed up, 1=2x, 2=4x, etc"),
     // Ports
@@ -91,15 +91,15 @@ asic_top::asic_top(GenObject *parent, const char *name) :
     prci_apbi(this, "prci_apbi", NO_COMMENT),
     prci_apbo(this, "prci_apbo", NO_COMMENT),
     // submodules:
-    iclk0(this, "iclk0"),
-    iosdcmd0(this, "iosdcmd0"),
-    iosddat0(this, "iosddat0"),
-    iosddat1(this, "iosddat1"),
-    iosddat2(this, "iosddat2"),
-    iosddat3(this, "iosddat3"),
-    pll0(this, "pll0"),
-    prci0(this, "prci0"),
-    soc0(this, "soc0")
+    iclk0(this, "iclk0", NO_COMMENT),
+    iosdcmd0(this, "iosdcmd0", NO_COMMENT),
+    iosddat0(this, "iosddat0", NO_COMMENT),
+    iosddat1(this, "iosddat1", NO_COMMENT),
+    iosddat2(this, "iosddat2", NO_COMMENT),
+    iosddat3(this, "iosddat3", NO_COMMENT),
+    pll0(this, "pll0", NO_COMMENT),
+    prci0(this, "prci0", NO_COMMENT),
+    soc0(this, "soc0", NO_COMMENT)
 {
     Operation::start(this);
 

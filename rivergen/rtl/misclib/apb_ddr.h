@@ -25,7 +25,7 @@ using namespace sysvc;
 
 class apb_ddr : public ModuleObject {
  public:
-    apb_ddr(GenObject *parent, const char *name);
+    apb_ddr(GenObject *parent, const char *name, const char *comment);
 
     class CombProcess : public ProcObject {
      public:
@@ -79,7 +79,7 @@ class apb_ddr_file : public FileObject {
  public:
     apb_ddr_file(GenObject *parent) :
         FileObject(parent, "apb_ddr"),
-        apb_ddr_(this, "") {}
+        apb_ddr_(this, "", NO_COMMENT) {}
 
  private:
     apb_ddr apb_ddr_;

@@ -25,7 +25,7 @@ using namespace sysvc;
 
 class L2SerDes : public ModuleObject {
  public:
-    L2SerDes(GenObject *parent, const char *name);
+    L2SerDes(GenObject *parent, const char *name, const char *comment=NO_COMMENT);
 
     class CombProcess : public ProcObject {
      public:

@@ -25,7 +25,7 @@ using namespace sysvc;
 
 class apb_uart : public ModuleObject {
  public:
-    apb_uart(GenObject *parent, const char *name);
+    apb_uart(GenObject *parent, const char *name, const char *comment=NO_COMMENT);
 
     class CombProcess : public ProcObject {
      public:

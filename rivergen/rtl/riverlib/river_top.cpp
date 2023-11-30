@@ -16,8 +16,8 @@
 
 #include "river_top.h"
 
-RiverTop::RiverTop(GenObject *parent, const char *name) :
-    ModuleObject(parent, "RiverTop", name),
+RiverTop::RiverTop(GenObject *parent, const char *name, const char *comment) :
+    ModuleObject(parent, "RiverTop", name, comment),
     // Generic parameters
     hartid(this, "hartid", "0"),
     fpu_ena(this, "fpu_ena", "true"),

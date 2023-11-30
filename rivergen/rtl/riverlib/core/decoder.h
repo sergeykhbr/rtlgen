@@ -25,7 +25,7 @@ using namespace sysvc;
 
 class InstrDecoder : public ModuleObject {
  public:
-    InstrDecoder(GenObject *parent, const char *name);
+    InstrDecoder(GenObject *parent, const char *name, const char *comment=NO_COMMENT);
 
     class CombProcess : public ProcObject {
      public:
@@ -167,8 +167,8 @@ class InstrDecoder : public ModuleObject {
     CombProcess comb;
 
     // Sub-module instances:
-    DecoderRv rv;
-    DecoderRvc rvc;
+    ModuleArray<DecoderRv> rv;
+    ModuleArray<DecoderRvc> rvc;
 };
 
 class decoder_file : public FileObject {

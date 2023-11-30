@@ -25,7 +25,7 @@ using namespace sysvc;
 
 class apb_pnp : public ModuleObject {
  public:
-    apb_pnp(GenObject *parent, const char *name);
+    apb_pnp(GenObject *parent, const char *name, const char *comment=NO_COMMENT);
 
  protected:
     class CombProcess : public ProcObject {

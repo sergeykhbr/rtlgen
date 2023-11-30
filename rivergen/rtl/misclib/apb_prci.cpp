@@ -16,8 +16,8 @@
 
 #include "apb_prci.h"
 
-apb_prci::apb_prci(GenObject *parent, const char *name) :
-    ModuleObject(parent, "apb_prci", name),
+apb_prci::apb_prci(GenObject *parent, const char *name, const char *comment) :
+    ModuleObject(parent, "apb_prci", name, comment),
     i_clk(this, "i_clk", "1", "CPU clock"),
     i_pwrreset(this, "i_pwrreset", "1", "Power-on reset, external button. Active HIGH"),
     i_dmireset(this, "i_dmireset", "1", "Debug reset: system reset except DMI interface"),
@@ -47,7 +47,7 @@ apb_prci::apb_prci(GenObject *parent, const char *name) :
     resp_err(this, "resp_err", "1"),
     //
     comb(this),
-    pslv0(this, "pslv0")
+    pslv0(this, "pslv0", NO_COMMENT)
 {
     Operation::start(this);
 

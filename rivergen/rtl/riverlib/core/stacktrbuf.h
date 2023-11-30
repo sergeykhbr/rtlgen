@@ -23,7 +23,7 @@ using namespace sysvc;
 
 class StackTraceBuffer : public ModuleObject {
  public:
-    StackTraceBuffer(GenObject *parent, const char *name);
+    StackTraceBuffer(GenObject *parent, const char *name, const char *comment=NO_COMMENT);
 
     class CombProcess : public ProcObject {
      public:

@@ -16,8 +16,8 @@
 
 #include "shift.h"
 
-Shifter::Shifter(GenObject *parent, const char *name) :
-    ModuleObject(parent, "Shifter", name),
+Shifter::Shifter(GenObject *parent, const char *name, const char *comment) :
+    ModuleObject(parent, "Shifter", name, comment),
     i_clk(this, "i_clk", "1", "CPU clock"),
     i_nrst(this, "i_nrst", "1", "Reset: active LOW"),
     i_mode(this, "i_mode", "4", "operation type: [0]0=rv64;1=rv32;[1]=sll;[2]=srl;[3]=sra"),

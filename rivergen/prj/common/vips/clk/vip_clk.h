@@ -22,7 +22,7 @@ using namespace sysvc;
 
 class vip_clk : public ModuleObject {
  public:
-    vip_clk(GenObject *parent, const char *name);
+    vip_clk(GenObject *parent, const char *name, const char *comment);
 
  protected:
     class CombProcess : public ProcObject {
@@ -39,9 +39,10 @@ class vip_clk : public ModuleObject {
  public:
     DefParamTIMESEC period;
 
-    Clock pll;
     // io:
     OutPort o_clk;
+    Clock pll;
+
     CombProcess comb;
 };
 
@@ -49,7 +50,7 @@ class vip_clk_file : public FileObject {
  public:
     vip_clk_file(GenObject *parent) :
         FileObject(parent, "vip_clk"),
-        vip_clk_(this, "") {}
+        vip_clk_(this, "", NO_COMMENT) {}
 
  private:
     vip_clk vip_clk_;

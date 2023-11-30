@@ -28,7 +28,7 @@ using namespace sysvc;
 
 class FpuTop : public ModuleObject {
  public:
-    FpuTop(GenObject *parent, const char *name);
+    FpuTop(GenObject *parent, const char *name, const char *comment=NO_COMMENT);
 
     class CombProcess : public ProcObject {
      public:

@@ -16,8 +16,8 @@
 
 #include "int_mul.h"
 
-IntMul::IntMul(GenObject *parent, const char *name) :
-    ModuleObject(parent, "IntMul", name),
+IntMul::IntMul(GenObject *parent, const char *name, const char *comment) :
+    ModuleObject(parent, "IntMul", name, comment),
     i_clk(this, "i_clk", "1", "CPU clock"),
     i_nrst(this, "i_nrst", "1", "Reset: active LOW"),
     i_ena(this, "i_ena", "1", "Enable bit"),

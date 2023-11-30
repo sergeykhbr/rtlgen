@@ -16,8 +16,8 @@
 
 #include "vip_sdcard_crc7.h"
 
-vip_sdcard_crc7::vip_sdcard_crc7(GenObject *parent, const char *name) :
-    ModuleObject(parent, "vip_sdcard_crc7", name),
+vip_sdcard_crc7::vip_sdcard_crc7(GenObject *parent, const char *name, const char *comment) :
+    ModuleObject(parent, "vip_sdcard_crc7", name, comment),
     i_clk(this, "i_clk", "1", "CPU clock"),
     i_nrst(this, "i_nrst", "1", "Reset: active LOW"),
     i_clear(this, "i_clear", "1", "Clear CRC register;"),

@@ -22,7 +22,7 @@ using namespace sysvc;
 
 class ids_tech : public ModuleObject {
  public:
-    ids_tech(GenObject *parent, const char *name);
+    ids_tech(GenObject *parent, const char *name, const char *comment=NO_COMMENT);
 
  protected:
     class CombProcess : public ProcObject {

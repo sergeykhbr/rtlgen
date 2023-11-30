@@ -16,8 +16,8 @@
 
 #include "bp.h"
 
-BranchPredictor::BranchPredictor(GenObject *parent, const char *name) :
-    ModuleObject(parent, "BranchPredictor", name),
+BranchPredictor::BranchPredictor(GenObject *parent, const char *name, const char *comment) :
+    ModuleObject(parent, "BranchPredictor", name, comment),
     i_clk(this, "i_clk", "1", "CPU clock"),
     i_nrst(this, "i_nrst", "1", "Reset: active LOW"),
     i_flush_pipeline(this, "i_flush_pipeline", "1", "sync reset BTB"),
@@ -45,7 +45,7 @@ BranchPredictor::BranchPredictor(GenObject *parent, const char *name) :
     wb_start_pc(this, "wb_start_pc", "RISCV_ARCH"),
     wb_npc(this, "wb_npc", "MUL(CFG_BP_DEPTH,RISCV_ARCH)"),
     wb_bp_exec(this, "wb_bp_exec", "CFG_BP_DEPTH", "0", "Predicted value was jump-executed before"),
-    predec(this, "predec", "2"),
+    predec(this, "predec", "2", NO_COMMENT),
     btb(this, "btb"),
     // registers
     // process

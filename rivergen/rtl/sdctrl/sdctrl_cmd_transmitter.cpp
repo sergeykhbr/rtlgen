@@ -17,8 +17,8 @@
 #include "sdctrl_cfg.h"
 #include "sdctrl_cmd_transmitter.h"
 
-sdctrl_cmd_transmitter::sdctrl_cmd_transmitter(GenObject *parent, const char *name) :
-    ModuleObject(parent, "sdctrl_cmd_transmitter", name),
+sdctrl_cmd_transmitter::sdctrl_cmd_transmitter(GenObject *parent, const char *name, const char *comment) :
+    ModuleObject(parent, "sdctrl_cmd_transmitter", name, comment),
     i_clk(this, "i_clk", "1", "CPU clock"),
     i_nrst(this, "i_nrst", "1", "Reset: active LOW"),
     i_sclk_posedge(this, "i_sclk_posedge", "1"),

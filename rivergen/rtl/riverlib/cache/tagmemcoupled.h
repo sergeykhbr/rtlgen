@@ -24,13 +24,7 @@ using namespace sysvc;
 
 class TagMemCoupled : public ModuleObject {
  public:
-    TagMemCoupled(GenObject *parent, 
-            const char *name,
-            const char *gen_abus = "64", 
-            const char *gen_waybits = "2",
-            const char *gen_ibits = "6", 
-            const char *gen_lnbits = "5", 
-            const char *gen_flbits = "4");
+    TagMemCoupled(GenObject *parent, const char *name, const char *comment=NO_COMMENT);
 
     class CombProcess : public ProcObject {
      public:
@@ -155,7 +149,7 @@ class TagMemCoupled : public ModuleObject {
     // process should be intialized last to make all signals available
     CombProcess comb;
     // sub-modules
-    TagMemNWay memx;
+    ModuleArray<TagMemNWay> memx;
 };
 
 class tagmemcoupled_file : public FileObject {

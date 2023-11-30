@@ -25,7 +25,7 @@ using namespace sysvc;
 
 class ic_axi4_to_l1 : public ModuleObject {
  public:
-    ic_axi4_to_l1(GenObject *parent, const char *name);
+    ic_axi4_to_l1(GenObject *parent, const char *name, const char *comment=NO_COMMENT);
 
     class CombProcess : public ProcObject {
      public:

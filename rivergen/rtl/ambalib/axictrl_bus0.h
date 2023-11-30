@@ -26,7 +26,7 @@ using namespace sysvc;
 
 class axictrl_bus0 : public ModuleObject {
  public:
-    axictrl_bus0(GenObject *parent, const char *name);
+    axictrl_bus0(GenObject *parent, const char *name, const char *comment=NO_COMMENT);
 
     class CombProcess : public ProcObject {
      public:

@@ -23,7 +23,7 @@ using namespace sysvc;
 
 class BpBTB : public ModuleObject {
  public:
-    BpBTB(GenObject *parent, const char *name);
+    BpBTB(GenObject *parent, const char *name, const char *comment=NO_COMMENT);
 
     class CombProcess : public ProcObject {
      public:

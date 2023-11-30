@@ -16,8 +16,8 @@
 
 #include "csr.h"
 
-CsrRegs::CsrRegs(GenObject *parent, const char *name) :
-    ModuleObject(parent, "CsrRegs", name),
+CsrRegs::CsrRegs(GenObject *parent, const char *name, const char *comment) :
+    ModuleObject(parent, "CsrRegs", name, comment),
     hartid(this, "hartid", "0"),
     i_clk(this, "i_clk", "1", "CPU clock"),
     i_nrst(this, "i_nrst", "1", "Reset: active LOW"),

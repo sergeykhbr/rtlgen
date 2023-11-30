@@ -69,17 +69,17 @@ TagMemNWay::TagMemNWay(GenObject *parent,
     re(this, "re", "1"),
     // process
     comb(this),
-    wayx(this, "wayx", "NWAYS"),
-    lru0(this, "lru0", "ibits", "waybits")
+    wayx(this, "wayx", "NWAYS", NO_COMMENT),
+    lru0(this, "lru0")
 {
     Operation::start(this);
 
     // Create and connet Sub-modules:
-    wayx.changeTmplParameter("abus", "abus");
-    wayx.changeTmplParameter("ibits", "ibits");
-    wayx.changeTmplParameter("lnbits", "lnbits");
-    wayx.changeTmplParameter("flbits", "flbits");
-    wayx.changeTmplParameter("snoop", "snoop");
+    wayx.abus.setObjValue(&abus);
+    wayx.ibits.setObjValue(&ibits);
+    wayx.lnbits.setObjValue(&lnbits);
+    wayx.flbits.setObjValue(&flbits);
+    wayx.snoop.setObjValue(&snoop);
     GenObject &i = FORGEN ("i", CONST("0"), CONST("NWAYS"), "++", new STRING("waygen"));
         NEW(wayx, wayx.getName().c_str(), &i);
             CONNECT(wayx, &i, wayx.i_clk, i_clk);
@@ -99,6 +99,8 @@ TagMemNWay::TagMemNWay(GenObject *parent,
     ENDFORGEN(new STRING("waygen"));
 
 TEXT();
+    lru0.abits.setObjValue(&ibits);
+    lru0.waybits.setObjValue(&waybits);
     NEW(lru0, lru0.getName().c_str());
         CONNECT(lru0, 0, lru0.i_clk, i_clk);
         CONNECT(lru0, 0, lru0.i_init, w_lrui_init);

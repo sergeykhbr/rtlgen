@@ -286,7 +286,10 @@ int GenObject::getDepth() {
 std::string GenObject::getStrValue() {
     size_t tpos = 0;
     if (objValue_) {
-        return objValue_->getStrValue();
+        if (objValue_->isConst()) {
+            return objValue_->getStrValue();
+        }
+        return objValue_->getName();
     }
     std::string ret = parse_to_str(strValue_.c_str(), tpos);
     if (!isNumber(ret)) {
@@ -493,6 +496,13 @@ uint64_t GenObject::parse_to_u64(const char *val, size_t &pos) {
     }
     pos++;
 
+#if 1
+    if (type_ == "ram_tech") {
+        if (name_ == "rx") {
+            bool st = true;
+        }
+    }
+#endif
     // Dual operation op(a,b):
     std::string op = m;
     uint64_t arg1, arg2;

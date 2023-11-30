@@ -24,7 +24,7 @@ using namespace sysvc;
 
 class axi_slv : public ModuleObject {
  public:
-    axi_slv(GenObject *parent, const char *name);
+    axi_slv(GenObject *parent, const char *name, const char *comment=NO_COMMENT);
 
     class CombProcess : public ProcObject {
      public:

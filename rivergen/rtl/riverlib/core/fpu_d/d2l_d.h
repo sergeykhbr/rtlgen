@@ -23,7 +23,7 @@ using namespace sysvc;
 
 class Double2Long : public ModuleObject {
  public:
-    Double2Long(GenObject *parent, const char *name);
+    Double2Long(GenObject *parent, const char *name, const char *comment=NO_COMMENT);
 
     class CombProcess : public ProcObject {
      public:

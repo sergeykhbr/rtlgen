@@ -23,7 +23,7 @@ using namespace sysvc;
 
 class cdc_axi_sync_tech : public ModuleObject {
  public:
-    cdc_axi_sync_tech(GenObject *parent, const char *name);
+    cdc_axi_sync_tech(GenObject *parent, const char *name, const char *comment=NO_COMMENT);
 
  protected:
     class CombProcess : public ProcObject {

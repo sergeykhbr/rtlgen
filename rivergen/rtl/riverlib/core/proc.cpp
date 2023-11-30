@@ -16,8 +16,8 @@
 
 #include "proc.h"
 
-Processor::Processor(GenObject *parent, const char *name) :
-    ModuleObject(parent, "Processor", name),
+Processor::Processor(GenObject *parent, const char *name, const char *comment) :
+    ModuleObject(parent, "Processor", name, comment),
     hartid(this, "hartid", "0"),
     fpu_ena(this, "fpu_ena", "true"),
     tracer_ena(this, "tracer_ena", "true"),

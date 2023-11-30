@@ -24,7 +24,7 @@ using namespace sysvc;
 
 class DbgPort : public ModuleObject {
  public:
-    DbgPort(GenObject *parent, const char *name);
+    DbgPort(GenObject *parent, const char *name, const char *comment=NO_COMMENT);
 
     class CombProcess : public ProcObject {
      public:

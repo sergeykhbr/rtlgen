@@ -28,7 +28,7 @@ using namespace sysvc;
 
 class CacheTop : public ModuleObject {
  public:
-    CacheTop(GenObject *parent, const char *name);
+    CacheTop(GenObject *parent, const char *name, const char *comment=NO_COMMENT);
 
     class CombProcess : public ProcObject {
      public:

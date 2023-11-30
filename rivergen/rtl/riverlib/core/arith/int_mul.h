@@ -23,7 +23,7 @@ using namespace sysvc;
 
 class IntMul : public ModuleObject {
  public:
-    IntMul(GenObject *parent, const char *name);
+    IntMul(GenObject *parent, const char *name, const char *comment=NO_COMMENT);
 
     class CombProcess : public ProcObject {
      public:

@@ -16,8 +16,8 @@
 
 #include "sdctrl_cache.h"
 
-sdctrl_cache::sdctrl_cache(GenObject *parent, const char *name) :
-    ModuleObject(parent, "sdctrl_cache", name),
+sdctrl_cache::sdctrl_cache(GenObject *parent, const char *name, const char *comment) :
+    ModuleObject(parent, "sdctrl_cache", name, comment),
     i_clk(this, "i_clk", "1", "CPU clock"),
     i_nrst(this, "i_nrst", "1", "Reset: active LOW"),
     _ctrl0_(this, "Data path:"),
@@ -95,11 +95,16 @@ sdctrl_cache::sdctrl_cache(GenObject *parent, const char *name) :
     cache_line_o(this, "cache_line_o", "SDCACHE_LINE_BITS"),
     // process
     comb(this),
-    mem0(this, "mem0", "0", "abus", "ibits", "lnbits", "flbits", "0")
+    mem0(this, "mem0")
 {
     Operation::start(this);
 
     // Generic paramters to template parameters assignment
+    mem0.abus.setObjValue(&abus);
+    mem0.ibits.setObjValue(&ibits);
+    mem0.lnbits.setObjValue(&lnbits);
+    mem0.flbits.setObjValue(&flbits);
+    mem0.snoop.setObjValue(&CONST("0"));
     NEW(mem0, mem0.getName().c_str());
         CONNECT(mem0, 0, mem0.i_clk, i_clk);
         CONNECT(mem0, 0, mem0.i_nrst, i_nrst);

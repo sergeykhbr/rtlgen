@@ -16,8 +16,8 @@
 
 #include "idiv53.h"
 
-idiv53::idiv53(GenObject *parent, const char *name) :
-    ModuleObject(parent, "idiv53", name),
+idiv53::idiv53(GenObject *parent, const char *name, const char *comment) :
+    ModuleObject(parent, "idiv53", name, comment),
     i_clk(this, "i_clk", "1", "CPU clock"),
     i_nrst(this, "i_nrst", "1", "Reset: active LOW"),
     i_ena(this, "i_ena", "1", "divider enable pulse (1 clock)"),

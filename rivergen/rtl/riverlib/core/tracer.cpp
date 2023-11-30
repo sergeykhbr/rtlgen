@@ -16,8 +16,8 @@
 
 #include "tracer.h"
 
-Tracer::Tracer(GenObject *parent, const char *name) :
-    ModuleObject(parent, "Tracer", name),
+Tracer::Tracer(GenObject *parent, const char *name, const char *comment) :
+    ModuleObject(parent, "Tracer", name, comment),
     hartid(this, "hartid", "0"),
     trace_file(this, "trace_file", "trace_river_sysc"),
     i_clk(this, "i_clk", "1", "CPU clock"),

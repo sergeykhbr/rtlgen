@@ -16,8 +16,8 @@
 
 #include "workgroup.h"
 
-Workgroup::Workgroup(GenObject *parent, const char *name) :
-    ModuleObject(parent, "Workgroup", name),
+Workgroup::Workgroup(GenObject *parent, const char *name, const char *comment) :
+    ModuleObject(parent, "Workgroup", name, comment),
     // Generic parameters
     cpu_num(this, "cpu_num", "1"),
     l2cache_ena(this, "l2cache_ena", "1"),
@@ -85,8 +85,8 @@ Workgroup::Workgroup(GenObject *parent, const char *name) :
     dmi0(this, "dmi0"),
     dport_ic0(this, "dport_ic0"),
     acp_bridge(this, "acp_bridge"),
-    cpux(this, "cpux", "CFG_CPU_MAX"),
-    dumx(this, "dumx", "CFG_CPU_MAX"),
+    cpux(this, "cpux", "CFG_CPU_MAX", NO_COMMENT),
+    dumx(this, "dumx", "CFG_CPU_MAX", NO_COMMENT),
     l2cache(this, "l2cache"),
     l2dummy(this, "l2dummy"),
     l2serdes0(this, "l2serdes0"),

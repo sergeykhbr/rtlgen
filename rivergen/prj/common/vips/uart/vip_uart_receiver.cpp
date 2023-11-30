@@ -16,8 +16,8 @@
 
 #include "vip_uart_receiver.h"
 
-vip_uart_receiver::vip_uart_receiver(GenObject *parent, const char *name) :
-    ModuleObject(parent, "vip_uart_receiver", name),
+vip_uart_receiver::vip_uart_receiver(GenObject *parent, const char *name, const char *comment) :
+    ModuleObject(parent, "vip_uart_receiver", name, comment),
     scaler(this, "scaler", "8"),
     scaler_max(this, "scaler_max", "SUB(MUL(2,scaler),1)"),
     scaler_mid(this, "scaler_mid", "scaler"),

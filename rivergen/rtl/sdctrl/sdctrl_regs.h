@@ -25,7 +25,7 @@ using namespace sysvc;
 
 class sdctrl_regs : public ModuleObject {
  public:
-    sdctrl_regs(GenObject *parent, const char *name);
+    sdctrl_regs(GenObject *parent, const char *name, const char *comment=NO_COMMENT);
 
     class CombProcess : public ProcObject {
      public:

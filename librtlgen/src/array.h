@@ -68,4 +68,13 @@ class RegStructArray : public T {
     virtual bool isReg() override { return true; }
 };
 
+template<class T>
+class ModuleArray : public T {
+ public:
+    ModuleArray(GenObject *parent, const char *name, const char *depth,
+        const char *comment) : T(parent, name, comment) {
+        T::setStrDepth(depth);
+    }
+};
+
 }  // namespace sysvc

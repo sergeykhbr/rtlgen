@@ -16,8 +16,8 @@
 
 #include "alu_logic.h"
 
-AluLogic::AluLogic(GenObject *parent, const char *name) :
-    ModuleObject(parent, "AluLogic", name),
+AluLogic::AluLogic(GenObject *parent, const char *name, const char *comment) :
+    ModuleObject(parent, "AluLogic", name, comment),
     i_clk(this, "i_clk", "1", "CPU clock"),
     i_nrst(this, "i_nrst", "1", "Reset: active LOW"),
     i_mode(this, "i_mode", "3", "operation type: [0]AND;[1]=OR;[2]XOR"),

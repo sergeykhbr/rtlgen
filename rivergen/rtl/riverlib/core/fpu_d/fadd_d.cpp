@@ -16,8 +16,8 @@
 
 #include "fadd_d.h"
 
-DoubleAdd::DoubleAdd(GenObject *parent, const char *name) :
-    ModuleObject(parent, "DoubleAdd", name),
+DoubleAdd::DoubleAdd(GenObject *parent, const char *name, const char *comment) :
+    ModuleObject(parent, "DoubleAdd", name, comment),
     i_clk(this, "i_clk", "1", "CPU clock"),
     i_nrst(this, "i_nrst", "1", "Reset: active LOW"),
     i_ena(this, "i_ena", "1"),

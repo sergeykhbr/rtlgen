@@ -16,8 +16,8 @@
 
 #include "decoder.h"
 
-InstrDecoder::InstrDecoder(GenObject *parent, const char *name) :
-    ModuleObject(parent, "InstrDecoder", name),
+InstrDecoder::InstrDecoder(GenObject *parent, const char *name, const char *comment) :
+    ModuleObject(parent, "InstrDecoder", name, comment),
     fpu_ena(this, "fpu_ena", "true"),
     i_clk(this, "i_clk", "1", "CPU clock"),
     i_nrst(this, "i_nrst", "1", "Reset: active LOW"),
@@ -65,8 +65,8 @@ InstrDecoder::InstrDecoder(GenObject *parent, const char *name) :
     // registers
     // process
     comb(this),
-    rv(this, "rv", "DEC_NUM"),
-    rvc(this, "rvc", "DEC_NUM")
+    rv(this, "rv", "DEC_NUM", NO_COMMENT),
+    rvc(this, "rvc", "DEC_NUM", NO_COMMENT)
 {
     d.disableVcd();
 

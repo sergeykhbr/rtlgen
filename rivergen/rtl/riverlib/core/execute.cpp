@@ -16,8 +16,8 @@
 
 #include "execute.h"
 
-InstrExecute::InstrExecute(GenObject *parent, const char *name) :
-    ModuleObject(parent, "InstrExecute", name),
+InstrExecute::InstrExecute(GenObject *parent, const char *name, const char *comment) :
+    ModuleObject(parent, "InstrExecute", name, comment),
     fpu_ena(this, "fpu_ena", "true"),
     i_clk(this, "i_clk", "1", "CPU clock"),
     i_nrst(this, "i_nrst", "1", "Reset: active LOW"),

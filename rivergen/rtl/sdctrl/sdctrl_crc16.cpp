@@ -16,8 +16,8 @@
 
 #include "sdctrl_crc16.h"
 
-sdctrl_crc16::sdctrl_crc16(GenObject *parent, const char *name) :
-    ModuleObject(parent, "sdctrl_crc16", name),
+sdctrl_crc16::sdctrl_crc16(GenObject *parent, const char *name, const char *comment) :
+    ModuleObject(parent, "sdctrl_crc16", name, comment),
     i_clk(this, "i_clk", "1", "CPU clock"),
     i_nrst(this, "i_nrst", "1", "Reset: active LOW"),
     i_clear(this, "i_clear", "1", "Clear CRC register;"),

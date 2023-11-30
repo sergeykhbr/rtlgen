@@ -16,8 +16,8 @@
 
 #include "l2_top.h"
 
-L2Top::L2Top(GenObject *parent, const char *name) :
-    ModuleObject(parent, "L2Top", name),
+L2Top::L2Top(GenObject *parent, const char *name, const char *comment) :
+    ModuleObject(parent, "L2Top", name, comment),
     i_clk(this, "i_clk", "1", "CPU clock"),
     i_nrst(this, "i_nrst", "1", "Reset: active LOW"),
     i_l1o(this, "i_l1o"),

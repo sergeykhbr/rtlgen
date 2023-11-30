@@ -17,8 +17,8 @@
 #include "riscv_soc.h"
 #include "../prj/impl/asic/target_cfg.h"
 
-riscv_soc::riscv_soc(GenObject *parent, const char *name) :
-    ModuleObject(parent, "riscv_soc", name),
+riscv_soc::riscv_soc(GenObject *parent, const char *name, const char *comment) :
+    ModuleObject(parent, "riscv_soc", name, comment),
     // simulation parameters
     sim_uart_speedup_rate(this, "sim_uart_speedup_rate", "0", "simulation UART speed-up: 0=no speed up, 1=2x, 2=4x, etc"),
     // Generic parameters

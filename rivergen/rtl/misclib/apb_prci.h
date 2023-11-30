@@ -25,7 +25,7 @@ using namespace sysvc;
 
 class apb_prci : public ModuleObject {
  public:
-    apb_prci(GenObject *parent, const char *name);
+    apb_prci(GenObject *parent, const char *name, const char *comment);
 
     virtual GenObject *getResetPort() override { return &i_pwrreset; }
     virtual bool getResetActive() override { return true; }
@@ -81,7 +81,7 @@ class apb_prci_file : public FileObject {
  public:
     apb_prci_file(GenObject *parent) :
         FileObject(parent, "apb_prci"),
-        apb_prci_(this, "") {}
+        apb_prci_(this, "", NO_COMMENT) {}
 
  private:
     apb_prci apb_prci_;

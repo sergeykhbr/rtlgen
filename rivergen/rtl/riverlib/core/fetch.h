@@ -23,7 +23,7 @@ using namespace sysvc;
 
 class InstrFetch : public ModuleObject {
  public:
-    InstrFetch(GenObject *parent, const char *name);
+    InstrFetch(GenObject *parent, const char *name, const char *comment=NO_COMMENT);
 
     class CombProcess : public ProcObject {
      public:

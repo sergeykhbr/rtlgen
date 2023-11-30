@@ -16,8 +16,8 @@
 
 #include "divstage53.h"
 
-divstage53::divstage53(GenObject *parent, const char *name) :
-    ModuleObject(parent, "divstage53", name),
+divstage53::divstage53(GenObject *parent, const char *name, const char *comment) :
+    ModuleObject(parent, "divstage53", name, comment),
     i_mux_ena(this, "i_mux_ena", "1", "find first non-zero bit"),
     i_muxind(this, "i_muxind", "56", "bits indexes 8x7 bits bus"),
     i_divident(this, "i_divident", "61", "integer value"),

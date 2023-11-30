@@ -16,8 +16,8 @@
 
 #include "ic_dport.h"
 
-ic_dport::ic_dport(GenObject *parent, const char *name) :
-    ModuleObject(parent, "ic_dport", name),
+ic_dport::ic_dport(GenObject *parent, const char *name, const char *comment) :
+    ModuleObject(parent, "ic_dport", name, comment),
     // Ports
     i_clk(this, "i_clk", "1", "CPU clock"),
     i_nrst(this, "i_nrst", "1", "Reset: active LOW"),

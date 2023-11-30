@@ -25,7 +25,7 @@ using namespace sysvc;
 
 class vip_sdcard_top : public ModuleObject {
  public:
-    vip_sdcard_top(GenObject *parent, const char *name);
+    vip_sdcard_top(GenObject *parent, const char *name, const char *comment);
 
     virtual GenObject *getClockPort() override { return &i_sclk; }
 
@@ -136,7 +136,7 @@ class vip_sdcard_top_file : public FileObject {
  public:
     vip_sdcard_top_file(GenObject *parent) :
         FileObject(parent, "vip_sdcard_top"),
-        vip_sdcard_top_(this, "") {}
+        vip_sdcard_top_(this, "", NO_COMMENT) {}
 
  private:
     vip_sdcard_top vip_sdcard_top_;

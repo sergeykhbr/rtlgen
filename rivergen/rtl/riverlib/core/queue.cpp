@@ -16,10 +16,10 @@
 
 #include "queue.h"
 
-Queue::Queue(GenObject *parent, const char *name, const char *gen_abits, const char *gen_dbits) :
-    ModuleObject(parent, "Queue", name),
-    abits(this, "abits", gen_abits),
-    dbits(this, "dbits", gen_dbits),
+Queue::Queue(GenObject *parent, const char *name, const char *comment) :
+    ModuleObject(parent, "Queue", name, comment),
+    abits(this, "abits", "6"),
+    dbits(this, "dbits", "128"),
     i_clk(this, "i_clk", "1", "CPU clock"),
     i_nrst(this, "i_nrst", "1", "Reset: active LOW"),
     i_re(this, "i_re", "1"),

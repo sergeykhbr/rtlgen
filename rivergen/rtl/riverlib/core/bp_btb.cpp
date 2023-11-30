@@ -16,8 +16,8 @@
 
 #include "bp_btb.h"
 
-BpBTB::BpBTB(GenObject *parent, const char *name) :
-    ModuleObject(parent, "BpBTB", name),
+BpBTB::BpBTB(GenObject *parent, const char *name, const char *comment) :
+    ModuleObject(parent, "BpBTB", name, comment),
     i_clk(this, "i_clk", "1", "CPU clock"),
     i_nrst(this, "i_nrst", "1", "Reset: active LOW"),
     i_flush_pipeline(this, "i_flush_pipeline", "1", "sync reset BTB"),

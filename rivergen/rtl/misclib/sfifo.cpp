@@ -16,8 +16,8 @@
 
 #include "sfifo.h"
 
-sfifo::sfifo(GenObject *parent, const char *name) :
-    ModuleObject(parent, "sfifo", name),
+sfifo::sfifo(GenObject *parent, const char *name, const char *comment) :
+    ModuleObject(parent, "sfifo", name, comment),
     dbits(this, "dbits", "8", "Data width bits"),
     log2_depth(this, "log2_depth", "4", "Fifo depth"),
     i_clk(this, "i_clk", "1", "CPU clock"),

@@ -16,8 +16,8 @@
 
 #include "dbg_port.h"
 
-DbgPort::DbgPort(GenObject *parent, const char *name) :
-    ModuleObject(parent, "DbgPort", name),
+DbgPort::DbgPort(GenObject *parent, const char *name, const char *comment) :
+    ModuleObject(parent, "DbgPort", name, comment),
     i_clk(this, "i_clk", "1", "CPU clock"),
     i_nrst(this, "i_nrst", "1", "Reset: active LOW"),
     _idbg0_(this, "\"RIVER\" Debug interface"),

@@ -16,8 +16,8 @@
 
 #include "vip_sdcard_ctrl.h"
 
-vip_sdcard_ctrl::vip_sdcard_ctrl(GenObject *parent, const char *name) :
-    ModuleObject(parent, "vip_sdcard_ctrl", name),
+vip_sdcard_ctrl::vip_sdcard_ctrl(GenObject *parent, const char *name, const char *comment) :
+    ModuleObject(parent, "vip_sdcard_ctrl", name, comment),
     CFG_SDCARD_POWERUP_DONE_DELAY(this, "CFG_SDCARD_POWERUP_DONE_DELAY", "450", "Delay of busy bits in ACMD41 response"),
     CFG_SDCARD_HCS(this, "1", "CFG_SDCARD_HCS", "0x1", "High Capacity Support"),
     CFG_SDCARD_VHS(this, "4", "CFG_SDCARD_VHS", "0x1", "CMD8 Voltage supply mask"),

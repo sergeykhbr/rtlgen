@@ -16,8 +16,8 @@
 
 #include "dmidebug.h"
 
-dmidebug::dmidebug(GenObject *parent, const char *name) :
-    ModuleObject(parent, "dmidebug", name),
+dmidebug::dmidebug(GenObject *parent, const char *name, const char *comment) :
+    ModuleObject(parent, "dmidebug", name, comment),
     // Ports
     i_clk(this, "i_clk", "1"),
     i_nrst(this, "i_nrst", "1", "full reset including dmi (usually via reset button)"),
@@ -136,6 +136,8 @@ dmidebug::dmidebug(GenObject *parent, const char *name) :
 {
     Operation::start(this);
 
+    tap.abits.setObjValue(&CONST("7"));
+    tap.irlen.setObjValue(&CONST("5"));
     tap.idcode.setObjValue(&glob_river_cfg_->CFG_DMI_TAP_ID);
     NEW(tap, tap.getName().c_str());
         CONNECT(tap, 0, tap.i_trst, i_trst);

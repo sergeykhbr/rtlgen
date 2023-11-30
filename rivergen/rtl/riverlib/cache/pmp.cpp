@@ -16,8 +16,8 @@
 
 #include "pmp.h"
 
-PMP::PMP(GenObject *parent, const char *name) :
-    ModuleObject(parent, "PMP", name),
+PMP::PMP(GenObject *parent, const char *name, const char *comment) :
+    ModuleObject(parent, "PMP", name, comment),
     i_clk(this, "i_clk", "1", "CPU clock"),
     i_nrst(this, "i_nrst", "1", "Reset: active LOW"),
     i_ena(this, "i_ena", "1", "PMP is active in S or U modes or if L/MPRV bit is set in M-mode"),

@@ -16,8 +16,8 @@
 
 #include "axictrl_bus0.h"
 
-axictrl_bus0::axictrl_bus0(GenObject *parent, const char *name) :
-    ModuleObject(parent, "axictrl_bus0", name),
+axictrl_bus0::axictrl_bus0(GenObject *parent, const char *name, const char *comment) :
+    ModuleObject(parent, "axictrl_bus0", name, comment),
     i_clk(this, "i_clk", "1", "CPU clock"),
     i_nrst(this, "i_nrst", "1", "Reset: active LOW"),
     o_cfg(this, "o_cfg", "Slave config descriptor"),
@@ -50,7 +50,7 @@ axictrl_bus0::axictrl_bus0(GenObject *parent, const char *name) :
     b_midx(this, "b_midx", "CFG_BUS0_XMST_LOG2_TOTAL", "CFG_BUS0_XMST_TOTAL"),
     b_sidx(this, "b_sidx", "CFG_BUS0_XSLV_LOG2_TOTAL", "CFG_BUS0_XSLV_TOTAL"),
     // modules
-    xdef0(this, "xdef0"),
+    xdef0(this, "xdef0", NO_COMMENT),
     // process
     comb(this)
 {

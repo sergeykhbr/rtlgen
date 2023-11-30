@@ -17,8 +17,6 @@
 #pragma once
 
 #include "genobjects.h"
-#include "logic.h"
-#include <iostream>
 
 namespace sysvc {
 
@@ -28,8 +26,7 @@ class ProcObject : public GenObject {
                const char *name,
                const char *comment="");
 
-    virtual std::string getType() { return std::string(""); }
- protected:
+    virtual bool isProcess() override { return true; }
 };
 
 }  // namespace sysvc

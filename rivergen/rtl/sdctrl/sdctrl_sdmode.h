@@ -23,7 +23,7 @@ using namespace sysvc;
 
 class sdctrl_sdmode : public ModuleObject {
  public:
-    sdctrl_sdmode(GenObject *parent, const char *name);
+    sdctrl_sdmode(GenObject *parent, const char *name, const char *comment=NO_COMMENT);
 
     class CombProcess : public ProcObject {
      public:

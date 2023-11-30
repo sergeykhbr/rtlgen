@@ -30,7 +30,7 @@ using namespace sysvc;
 
 class asic_top : public ModuleObject {
  public:
-    asic_top(GenObject *parent, const char *name);
+    asic_top(GenObject *parent, const char *name, const char *comment=NO_COMMENT);
 
     virtual GenObject *getResetPort() override { return &i_rst; }
     virtual bool getResetActive() override { return true; }

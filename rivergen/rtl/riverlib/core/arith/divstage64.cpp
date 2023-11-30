@@ -16,8 +16,8 @@
 
 #include "divstage64.h"
 
-divstage64::divstage64(GenObject *parent, const char *name) :
-    ModuleObject(parent, "divstage64", name),
+divstage64::divstage64(GenObject *parent, const char *name, const char *comment) :
+    ModuleObject(parent, "divstage64", name, comment),
     i_divident(this, "i_divident", "64", "integer value"),
     i_divisor(this, "i_divisor", "124", "integer value"),
     o_resid(this, "o_resid", "64", "residual"),
