@@ -193,8 +193,7 @@ void FileObject::generate_sysc() {
     std::list<GenObject *> tmpllist;
     for (auto &p: getEntries()) {
         if (p->isModule() && p->isTypedef()) {
-            std::string strtype = p->getType();
-//            SCV_select_local(strtype);
+            SCV_set_local_module(p);
 
             static_cast<ModuleObject *>(p)->getTmplParamList(tmpllist);
             // Template modules do not require cpp-files
@@ -362,8 +361,7 @@ void FileObject::generate_sysv() {
     for (auto &p: getEntries()) {
         if (p->isModule() && p->isTypedef()) {
             is_module = true;
-            std::string strtype = p->getType();
-//            SCV_select_local(strtype);
+            SCV_set_local_module(p);
 
             mod = dynamic_cast<ModuleObject *>(p);
             mod->getTmplParamList(tmplparlist);
@@ -417,8 +415,7 @@ void FileObject::generate_sysv() {
         // module definition
         for (auto &p: getEntries()) {
             if (p->isModule() && p->isTypedef()) {
-                std::string strtype = p->getType();
-//                SCV_select_local(strtype);
+                SCV_set_local_module(p);
                 out += static_cast<ModuleObject *>(p)->generate_sv_mod();
             } else {
                 out += p->generate();  // REMOVE ME: No entries except module in file
@@ -456,8 +453,7 @@ void FileObject::generate_vhdl() {
                 // do not create package for template modules: queue, ram,  etc.
                 skip_pkg = true;
             } else {
-                std::string strtype = p->getType();
-//                SCV_select_local(strtype);
+                SCV_set_local_module(p);
                 out += mod->generate_vhdl_pkg();
             }
         } else if (p->getId() == ID_FUNCTION) {
@@ -496,7 +492,7 @@ void FileObject::generate_vhdl() {
             if (p->getId() == ID_MODULE) {
                 is_module = true;
                 std::string strtype = p->getType();
-//                SCV_select_local(strtype);
+                SCV_set_local_module(p);
                 out += static_cast<ModuleObject *>(p)->generate_vhdl_mod();
             } else {
                 out += p->generate();

@@ -30,6 +30,7 @@ ModuleObject::ModuleObject(GenObject *parent,
                            const char *name,
                            const char *comment) :
     GenObject(parent, type, ID_MODULE, name, comment) {
+    SCV_set_local_module(this);
 }
 
 std::string ModuleObject::generate() {

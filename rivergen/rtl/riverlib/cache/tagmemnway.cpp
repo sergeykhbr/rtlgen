@@ -16,22 +16,14 @@
 
 #include "tagmemnway.h"
 
-TagMemNWay::TagMemNWay(GenObject *parent,
-               const char *name,
-               const char *depth,
-               const char *gen_abus, 
-               const char *gen_waybits, 
-               const char *gen_ibits, 
-               const char *gen_lnbits, 
-               const char *gen_flbits,
-               const char *gen_snoop) :
-    ModuleObject(parent, "TagMemNWay", name, depth),
-    abus(this, "abus", gen_abus, "system bus address width (64 or 32 bits)"),
-    waybits(this, "waybits", gen_waybits, "log2 of number of ways bits (2 for 4 ways cache; 3 for 8 ways)"),
-    ibits(this, "ibits", gen_ibits, "lines memory address width (usually 6..8)"),
-    lnbits(this, "lnbits", gen_lnbits, "One line bits: log2(bytes_per_line)"),
-    flbits(this, "flbits", gen_flbits, "total flags number saved with address tag"),
-    snoop(this, "snoop", gen_snoop, "0 Snoop port disabled; 1 Enabled (L2 caching)"),
+TagMemNWay::TagMemNWay(GenObject *parent, const char *name, const char *comment) :
+    ModuleObject(parent, "TagMemNWay", name, comment),
+    abus(this, "abus", "64", "system bus address width (64 or 32 bits)"),
+    waybits(this, "waybits", "2", "log2 of number of ways bits (2 for 4 ways cache; 3 for 8 ways)"),
+    ibits(this, "ibits", "6", "lines memory address width (usually 6..8)"),
+    lnbits(this, "lnbits", "5", "One line bits: log2(bytes_per_line)"),
+    flbits(this, "flbits", "4", "total flags number saved with address tag"),
+    snoop(this, "snoop", "0", "0 Snoop port disabled; 1 Enabled (L2 caching)"),
     i_clk(this, "i_clk", "1", "CPU clock"),
     i_nrst(this, "i_nrst", "1", "Reset: active LOW"),
     i_direct_access(this, "i_direct_access", "1", "lsb bits of address forms way index to access"),

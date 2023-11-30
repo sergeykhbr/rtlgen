@@ -25,15 +25,7 @@ using namespace sysvc;
 
 class TagMemNWay : public ModuleObject {
  public:
-    TagMemNWay(GenObject *parent, 
-            const char *name,
-            const char *depth,
-            const char *gen_abus = "64", 
-            const char *gen_waybits = "2", 
-            const char *gen_ibits = "6", 
-            const char *gen_lnbits = "5", 
-            const char *gen_flbits = "4",
-            const char *gen_snoop = "0");
+    TagMemNWay(GenObject *parent, const char *name, const char *comment = NO_COMMENT);
 
     class CombProcess : public ProcObject {
      public:
@@ -158,7 +150,7 @@ class tagmemnway_file : public FileObject {
  public:
     tagmemnway_file(GenObject *parent) :
         FileObject(parent, "tagmemnway"),
-        TagMemNWay_(this, "TagMemNWay", "0") {}
+        TagMemNWay_(this, "TagMemNWay") {}
 
  private:
     TagMemNWay TagMemNWay_;

@@ -113,7 +113,7 @@ L2CacheLru::L2CacheLru(GenObject *parent, const char *name, const char *comment)
     cache_line_o(this, "cache_line_o", "L2CACHE_LINE_BITS"),
     // process
     comb(this),
-    mem0(this, "mem0", "0", "abus", "CFG_L2_LOG2_NWAYS", "CFG_L2_LOG2_LINES_PER_WAY", "lnbits", "flbits", "0")
+    mem0(this, "mem0")
 {
     Operation::start(this);
 

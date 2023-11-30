@@ -485,7 +485,12 @@ uint64_t GenObject::parse_to_u64(const char *val, size_t &pos) {
         return ret;
     }
     m = std::string(buf);
-    GenObject *cfgobj = SCV_get_cfg_type(this, m);
+#if 1
+    if (m == "dbytes") {
+        bool s = true;
+    }
+#endif
+    GenObject *cfgobj = SCV_get_cfg_type(getParent(), m);
     if (cfgobj) {
         return cfgobj->getValue();
     }

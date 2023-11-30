@@ -43,6 +43,7 @@ static std::string localname_ = "";
 static int spaces_ = 0;
 static int unique_idx_ = 0;
 static char namebuf_[64];
+static GenObject *localmodule_ = 0;
 
 std::string addspaces() {
     std::string ret = "";
@@ -62,6 +63,10 @@ void popspaces() {
     } else {
         SHOW_ERROR("spaces = %d", spaces_);
     }
+}
+
+void SCV_set_local_module(GenObject *m) {
+    localmodule_ = m;
 }
 
 GenObject *SCV_get_namespace(GenObject *obj) {
@@ -106,23 +111,44 @@ void SCV_set_cfg_type(GenObject *obj) {
 }
 
 GenObject *SCV_get_cfg_type(GenObject *obj, std::string &name) {
-    GenObject *ns = SCV_get_namespace(obj);
+    GenObject *ns;
+    if (name == "") {
+        return 0;
+    }
+    if (obj == 0) {
+        // temporary value or constant
+        obj = localmodule_;
+    }
+    ns = SCV_get_namespace(obj);
     if (obj->getParent() == 0) {
         // Temporary variable
         return 0;
     }
     if (ns == 0) {
-        SHOW_ERROR("Config %s not found", obj->getName().c_str());
+        SHOW_ERROR("Namespace %s not found", obj->getName().c_str());
         return 0;
     }
 
-    if (cfgParamters_.find(ns) != cfgParamters_.end()) {
-        //SHOW_ERROR("Namespace %s not found", ns->getName().c_str());
-        return 0;
+    if (cfgParamters_.find(ns) == cfgParamters_.end()) {
+        if (ns != &globalNamespace_) {
+            ns = &globalNamespace_;
+        }
     }
+    // search in current namespace (global or local)
     for (auto &p: cfgParamters_[ns]) {
         if (p->getName() == name) {
+            if (obj == p) {
+                bool st = true;
+            }
             return p;
+        }
+    }
+    if (ns != &globalNamespace_) {
+        // Search parmeter in global namespace
+        for (auto &p: cfgParamters_[&globalNamespace_]) {
+            if (p->getName() == name) {
+                return p;
+            }
         }
     }
     return 0;

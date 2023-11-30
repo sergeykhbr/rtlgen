@@ -37,6 +37,7 @@ Operation::Operation(GenObject *parent, const char *comment)
 void Operation::start(GenObject *owner) {
     stackcnt_ = 0;
     stackobj_[stackcnt_] = owner;
+    SCV_set_local_module(owner);
 }
 
 void Operation::push_obj(GenObject *obj) {

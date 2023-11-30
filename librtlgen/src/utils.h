@@ -57,7 +57,7 @@ int SCV_is_vhdl();
 int SCV_is_vhdl_pkg();
 
 void SCV_set_cfg_type(GenObject *obj);
-//int SCV_is_cfg_type(std::string &name);
+void SCV_set_local_module(GenObject *m);
 //uint64_t SCV_get_cfg_parameter(std::string &name);
 GenObject *SCV_get_cfg_type(GenObject *obj, std::string &name);
 //std::string SCV_get_cfg_file(std::string &name);
