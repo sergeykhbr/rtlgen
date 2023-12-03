@@ -35,7 +35,7 @@ StructObject::StructObject(GenObject *parent,
     if (getName() == type_) {
         SCV_set_cfg_type(this);
     } else {
-        SCV_get_cfg_type(this, getType());
+        SCV_get_cfg_type(this, type_);
     }
 }
 

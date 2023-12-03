@@ -293,7 +293,7 @@ int GenObject::getDepth() {
 std::string GenObject::getStrValue() {
     size_t tpos = 0;
     if (objValue_) {
-        if (objValue_->isConst()) {
+        if (objValue_->isConst() || objValue_->isOperation()) {
             return objValue_->getStrValue();
         }
         return objValue_->getName();
