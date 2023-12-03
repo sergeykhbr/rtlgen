@@ -64,7 +64,7 @@ class IntAddSub : public ModuleObject {
 class int_addsub_file : public FileObject {
  public:
     int_addsub_file(GenObject *parent) : FileObject(parent, "int_addsub"),
-    m_(this, "") {}
+    m_(this, "IntAddSub") {}
 
  private:
     IntAddSub m_;

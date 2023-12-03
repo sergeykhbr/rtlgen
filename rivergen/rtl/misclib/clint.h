@@ -109,7 +109,7 @@ class clint_file : public FileObject {
  public:
     clint_file(GenObject *parent) :
         FileObject(parent, "clint"),
-        clint_(this, "") {}
+        clint_(this, "clint") {}
 
  private:
     clint clint_;

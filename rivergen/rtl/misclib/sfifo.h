@@ -65,7 +65,7 @@ class sfifo_file : public FileObject {
  public:
     sfifo_file(GenObject *parent) :
         FileObject(parent, "sfifo"),
-        sfifo_(this, "") {}
+        sfifo_(this, "sfifo") {}
 
  private:
     sfifo sfifo_;

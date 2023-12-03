@@ -27,23 +27,13 @@
 
 namespace sysvc {
 
-/*struct CfgParameterInfo {
-    GenObject *obj;
-    std::string path;
-    std::string file;
-    std::string lib;
-    uint64_t value;
-};*/
-
-static GenObject globalNamespace_(0, "global", ID_COMMENT, "global", NO_COMMENT);
-static std::map<GenObject *, std::list<GenObject *>> cfgParamters_;
-static AccessListener *accessListener_ = 0;
+//static std::map<GenObject *, std::list<GenObject *>> Namespaces_;
+static std::list<GenObject *> listGlobalTypes_;
+static GenObject *localmodule_ = 0;
 static EGenerateType gentype_ = GEN_UNDEFINED;
-static std::string localname_ = "";
 static int spaces_ = 0;
 static int unique_idx_ = 0;
 static char namebuf_[64];
-static GenObject *localmodule_ = 0;
 
 std::string addspaces() {
     std::string ret = "";
@@ -65,175 +55,125 @@ void popspaces() {
     }
 }
 
+void SCV_init() {
+}
+
 void SCV_set_local_module(GenObject *m) {
     localmodule_ = m;
 }
 
-GenObject *SCV_get_namespace(GenObject *obj) {
-    GenObject *ns = 0;
-    while (obj) {
-        if (obj->isFile()) {
-            // Global config type
-            ns = &globalNamespace_;
-            break;
-        } else if (obj->isModule()) {
-            // Local config type
-            ns = obj;
-            break;
-        }
-        obj = obj->getParent();
+void SCV_add_module(GenObject *m) {
+    if (!m->isModule()) {
+        SHOW_ERROR("%s wrong object type", m->getName().c_str());
+        return;
     }
-    return ns;
+    if (m->isTypedef()) {
+        listGlobalTypes_.push_back(m);
+
+        GenObject *pfile = m->getParent();
+        if (!pfile->isFile()) {
+            SHOW_ERROR("Module %s defined out of file",
+                        m->getName().c_str());
+        }
+    }
+
+    // Use the last created module as a local while in constructor stage:
+    SCV_set_local_module(m);
+}
+
+GenObject *SCV_get_module_class(GenObject *m) {
+    if (!m->isModule()) {
+        SHOW_ERROR("%s is not a module", m->getName().c_str());
+        return 0;
+    }
+    if (m->isTypedef()) {
+        return m;
+    }
+    for (auto &p: listGlobalTypes_) {
+        if (!p->isModule()) {
+            continue;
+        }
+        if (m->getType() == p->getType()) {
+            return p;
+        }
+    }
+    SHOW_ERROR("Module class %s not found", m->getType().c_str());
+    return 0;
 }
 
 void SCV_set_cfg_type(GenObject *obj) {
-    /*std::string path = obj->getFullPath();
-    std::string file = obj->getFile();
-
-    CfgParameterInfo cfg;
-    cfg.obj = obj;
-    cfg.path = path;
-    cfg.file = file;
-    cfg.lib = obj->getLibName();*/
-
-    GenObject *ns = SCV_get_namespace(obj);
-    if (ns == 0) {
-        return;
+    GenObject *p = obj;
+    while (p) {
+        if (p->isFile()) {
+            listGlobalTypes_.push_back(obj);
+            break;
+        } else if (p->isModule()) {
+            //Namespaces_[p].push_back(obj);
+            break;
+        }
+        p = p->getParent();
     }
-
-#if 1
-    if (ns->getType() == "ram_cache_bwe_tech") {
-        std::string t1 = obj->getName();
-        bool st = true;
-    }
-#endif
-    cfgParamters_[ns].push_back(obj);
 }
 
+/**
+    Important:
+    The same module could be used in a different parent modules with a different
+    generic/template parameters, so we have to create independent namespace
+    for each module instance to properly computes values (width and depth).
+*/
 GenObject *SCV_get_cfg_type(GenObject *obj, std::string &name) {
-    GenObject *ns;
     if (name == "") {
         return 0;
     }
     if (obj == 0) {
-        // temporary value or constant
+        // temporary constant
         obj = localmodule_;
     }
-    ns = SCV_get_namespace(obj);
-    if (obj->getParent() == 0) {
-        // Temporary variable
-        return 0;
+    while (!obj->isModule() && !obj->isFile()) {
+        obj = obj->getParent();
     }
-    if (ns == 0) {
-        SHOW_ERROR("Namespace %s not found", obj->getName().c_str());
-        return 0;
+    if (!obj->isModule() && !obj->isFile()) {
+        SHOW_ERROR("Wrong inheritance %s", obj->getName().c_str());
     }
 
-    if (cfgParamters_.find(ns) == cfgParamters_.end()) {
-        if (ns != &globalNamespace_) {
-            ns = &globalNamespace_;
+    GenObject *pdepfile = obj;
+    if (obj->isModule()) {
+        pdepfile = SCV_get_module_class(obj)->getParent();
+    }
+#if 1
+    if (obj->getType() == "apb_slv") {
+        if (pdepfile->getName() == "river_cfg") {
+            bool st = true;
         }
     }
+#endif
+
     // search in current namespace (global or local)
-    for (auto &p: cfgParamters_[ns]) {
+    for (auto &p: obj->getEntries()) {
         if (p->getName() == name) {
-            if (obj == p) {
-                bool st = true;
-            }
             return p;
         }
     }
-    if (ns != &globalNamespace_) {
+    
+    for (auto &p: listGlobalTypes_) {
         // Search parmeter in global namespace
-        for (auto &p: cfgParamters_[&globalNamespace_]) {
-            if (p->getName() == name) {
-                return p;
+        if (p->getName() == name) {
+            GenObject *incfile = p;
+            while (!incfile->isFile()) {
+                incfile = incfile->getParent();
             }
+            pdepfile->add_dependency(incfile);
+            return p;
         }
     }
     return 0;
 }
 
-/*
-std::string SCV_get_cfg_file(std::string &name) {
-    // search first local parameters
-    if (cfgLocalParamters_[localname_].find(name) != cfgLocalParamters_[localname_].end()) {
-        return cfgLocalParamters_[localname_][name].file;
-    }
-    if (cfgParamters_.find(name) == cfgParamters_.end()) {
-        // not found
-        SHOW_ERROR("cfg file %s not found", name.c_str());
-        return 0;
-    }
-    return cfgParamters_[name].file;
-}
 
-std::string SCV_get_cfg_fullname(std::string &name) {
-    if (cfgLocalParamters_[localname_].find(name) != cfgLocalParamters_[localname_].end()) {
-        return cfgLocalParamters_[localname_][name].path;
-    }
-    if (cfgParamters_.find(name) == cfgParamters_.end()) {
-        // not found
-        SHOW_ERROR("cfg file %s not found", name.c_str());
-        return 0;
-    }
-    return cfgParamters_[name].path;
-}
-
-GenObject *SCV_get_cfg_obj(std::string &name) {
-    if (cfgLocalParamters_[localname_].find(name) != cfgLocalParamters_[localname_].end()) {
-        return cfgLocalParamters_[localname_][name].obj;
-    }
-    if (cfgParamters_.find(name) == cfgParamters_.end()) {
-        // not found
-        SHOW_ERROR("cfg file %s not found", name.c_str());
-        return 0;
-    }
-    if (accessListener_) {
-        accessListener_->notifyAccess(cfgParamters_[name].lib, cfgParamters_[name].path);
-    }
-    return cfgParamters_[name].obj;
-}
-
-uint64_t SCV_get_cfg_parameter(std::string &name) {
-    CfgParameterInfo *info;
-    if (cfgLocalParamters_[localname_].find(name) != cfgLocalParamters_[localname_].end()) {
-        info = &cfgLocalParamters_[localname_][name];
-        return info->value;
-    }
-
-    info = &cfgParamters_[name];
-    if (accessListener_) {
-        accessListener_->notifyAccess(info->lib, info->path);
-    }
-    return info->value;
-}
-*/
 
 const char *SCV_get_unique_name() {
     RISCV_sprintf(namebuf_, sizeof(namebuf_), "obj%d", ++unique_idx_);
     return namebuf_;
-}
-
-/*void SCV_register_module(GenObject *m) {
-    std::string strtype = m->getType();
-    modules_.push_back(m);
-    SCV_select_local(strtype);
-}
-
-GenObject *SCV_get_module(const char *name) {
-    for (auto &m: modules_) {
-        if (m->getType() == std::string(name)) {
-            return m;
-            break;
-        }
-    }
-    return 0;
-}
-*/
-
-void SCV_set_access_listener(AccessListener *p) {
-    accessListener_ = p;
 }
 
 int SCV_is_dir_exists(const char *path) {

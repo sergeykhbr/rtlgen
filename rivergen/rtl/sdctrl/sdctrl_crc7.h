@@ -57,7 +57,7 @@ class sdctrl_crc7_file : public FileObject {
  public:
     sdctrl_crc7_file(GenObject *parent) :
         FileObject(parent, "sdctrl_crc7"),
-        sdctrl_crc7_(this, "") {}
+        sdctrl_crc7_(this, "sdctrl_crc7") {}
 
  private:
     sdctrl_crc7 sdctrl_crc7_;

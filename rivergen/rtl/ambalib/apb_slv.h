@@ -82,7 +82,7 @@ class apb_slv_file : public FileObject {
  public:
     apb_slv_file(GenObject *parent) :
         FileObject(parent, "apb_slv"),
-        apb_slv_(this, "") {}
+        apb_slv_(this, "apb_slv") {}
 
  private:
     apb_slv apb_slv_;

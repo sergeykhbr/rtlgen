@@ -127,7 +127,7 @@ class sdctrl_cmd_transmitter_file : public FileObject {
  public:
     sdctrl_cmd_transmitter_file(GenObject *parent) :
         FileObject(parent, "sdctrl_cmd_transmitter"),
-        sdctrl_cmd_transmitter_(this, "") {}
+        sdctrl_cmd_transmitter_(this, "sdctrl_cmd_transmitter") {}
 
  private:
     sdctrl_cmd_transmitter sdctrl_cmd_transmitter_;

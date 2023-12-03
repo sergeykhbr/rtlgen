@@ -92,7 +92,7 @@ class divstage64 : public ModuleObject {
 class divstage64_file : public FileObject {
  public:
     divstage64_file(GenObject *parent) : FileObject(parent, "divstage64"),
-    divstage64_(this, "") {}
+    divstage64_(this, "divstage64") {}
 
  private:
     divstage64 divstage64_;

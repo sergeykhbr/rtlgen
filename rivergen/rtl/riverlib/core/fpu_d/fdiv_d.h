@@ -143,7 +143,7 @@ class DoubleDiv : public ModuleObject {
 class fdiv_d_file : public FileObject {
  public:
     fdiv_d_file(GenObject *parent) : FileObject(parent, "fdiv_d"),
-    m_(this, "") {}
+    m_(this, "DoubleDiv") {}
 
  private:
     DoubleDiv m_;

@@ -84,7 +84,7 @@ class vip_spi_transmitter_file : public FileObject {
  public:
     vip_spi_transmitter_file(GenObject *parent) :
         FileObject(parent, "vip_spi_transmitter"),
-        vip_spi_transmitter_(this, "", NO_COMMENT) {}
+        vip_spi_transmitter_(this, "vip_spi_transmitter", NO_COMMENT) {}
 
  private:
     vip_spi_transmitter vip_spi_transmitter_;

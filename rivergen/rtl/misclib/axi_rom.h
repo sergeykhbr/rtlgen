@@ -73,7 +73,7 @@ class axi_rom_file : public FileObject {
  public:
     axi_rom_file(GenObject *parent) :
         FileObject(parent, "axi_rom"),
-        axi_rom_(this, "") {}
+        axi_rom_(this, "axi_rom") {}
 
  private:
     axi_rom axi_rom_;

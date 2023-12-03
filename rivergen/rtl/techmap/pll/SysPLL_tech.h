@@ -55,7 +55,7 @@ class SysPLL_tech_file : public FileObject {
  public:
     SysPLL_tech_file(GenObject *parent) :
         FileObject(parent, "SysPLL_tech"),
-        SysPLL_tech_(this, "") {}
+        SysPLL_tech_(this, "SysPLL_tech") {}
 
  private:
     SysPLL_tech SysPLL_tech_;

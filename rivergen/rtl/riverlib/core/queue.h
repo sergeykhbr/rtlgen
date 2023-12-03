@@ -80,7 +80,7 @@ class queue_file : public FileObject {
  public:
     queue_file(GenObject *parent) :
         FileObject(parent, "queue"),
-        queue_(this, "") {}
+        queue_(this, "Queue") {}
 
  private:
     Queue queue_;

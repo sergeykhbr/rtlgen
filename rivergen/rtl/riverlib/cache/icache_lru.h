@@ -166,7 +166,7 @@ class icache_lru_file : public FileObject {
  public:
     icache_lru_file(GenObject *parent) :
         FileObject(parent, "icache_lru"),
-        icache_(this, "") {}
+        icache_(this, "ICacheLru") {}
 
  private:
     ICacheLru icache_;

@@ -61,7 +61,7 @@ class pma_file : public FileObject {
  public:
     pma_file(GenObject *parent) :
         FileObject(parent, "pma"),
-        pma_(this, "") {}
+        pma_(this, "PMA") {}
 
  private:
     PMA pma_;

@@ -134,7 +134,7 @@ class river_top : public FileObject {
  public:
     river_top(GenObject *parent) :
         FileObject(parent, "river_top"),
-        top_(this, "") { }
+        top_(this, "RiverTop") { }
 
  private:
     RiverTop top_;

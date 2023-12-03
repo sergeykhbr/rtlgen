@@ -53,7 +53,7 @@ class zeroenc : public ModuleObject {
 class zeroenc_file : public FileObject {
  public:
     zeroenc_file(GenObject *parent) : FileObject(parent, "zeroenc"),
-    m_(this, "") {}
+    m_(this, "zeroenc") {}
 
  private:
     zeroenc m_;

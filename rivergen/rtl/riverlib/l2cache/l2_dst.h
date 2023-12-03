@@ -109,7 +109,7 @@ class l2_dst_file : public FileObject {
  public:
     l2_dst_file(GenObject *parent) :
         FileObject(parent, "l2_dst"),
-        l2_dst_(this, "") {}
+        l2_dst_(this, "L2Destination") {}
 
  private:
     L2Destination l2_dst_;

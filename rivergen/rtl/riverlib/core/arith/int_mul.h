@@ -115,7 +115,7 @@ class IntMul : public ModuleObject {
 class int_mul_file : public FileObject {
  public:
     int_mul_file(GenObject *parent) : FileObject(parent, "int_mul"),
-    m_(this, "") {}
+    m_(this, "IntMul") {}
 
  private:
     IntMul m_;

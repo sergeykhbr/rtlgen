@@ -85,7 +85,7 @@ class fetch_file : public FileObject {
  public:
     fetch_file(GenObject *parent) :
         FileObject(parent, "fetch"),
-        InstrFetch_(this, "") {}
+        InstrFetch_(this, "InstrFetch") {}
 
  private:
     InstrFetch InstrFetch_;

@@ -275,7 +275,7 @@ class sdctrl_file : public FileObject {
  public:
     sdctrl_file(GenObject *parent) :
         FileObject(parent, "sdctrl"),
-        sdctrl_(this, "") {}
+        sdctrl_(this, "sdctrl") {}
 
  private:
     sdctrl sdctrl_;

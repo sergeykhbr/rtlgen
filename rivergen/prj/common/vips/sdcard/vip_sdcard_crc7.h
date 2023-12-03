@@ -57,7 +57,7 @@ class vip_sdcard_crc7_file : public FileObject {
  public:
     vip_sdcard_crc7_file(GenObject *parent) :
         FileObject(parent, "vip_sdcard_crc7"),
-        vip_sdcard_crc7_(this, "", NO_COMMENT) {}
+        vip_sdcard_crc7_(this, "vip_sdcard_crc7", NO_COMMENT) {}
 
  private:
     vip_sdcard_crc7 vip_sdcard_crc7_;

@@ -75,7 +75,7 @@ class Shifter : public ModuleObject {
 class shift_file : public FileObject {
  public:
     shift_file(GenObject *parent) : FileObject(parent, "shift"),
-    m_(this, "") {}
+    m_(this, "Shifter") {}
 
  private:
     Shifter m_;

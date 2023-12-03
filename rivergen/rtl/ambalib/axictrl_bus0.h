@@ -128,7 +128,7 @@ class axictrl_bus0_file : public FileObject {
  public:
     axictrl_bus0_file(GenObject *parent) :
         FileObject(parent, "axictrl_bus0"),
-        axictrl_bus0_(this, "") {}
+        axictrl_bus0_(this, "axictrl_bus0") {}
 
  private:
     axictrl_bus0 axictrl_bus0_;

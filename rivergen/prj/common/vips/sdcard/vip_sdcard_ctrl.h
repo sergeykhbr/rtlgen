@@ -128,7 +128,7 @@ class vip_sdcard_ctrl_file : public FileObject {
  public:
     vip_sdcard_ctrl_file(GenObject *parent) :
         FileObject(parent, "vip_sdcard_ctrl"),
-        vip_sdcard_ctrl_(this, "", NO_COMMENT) {}
+        vip_sdcard_ctrl_(this, "vip_sdcard_ctrl", NO_COMMENT) {}
 
  private:
     vip_sdcard_ctrl vip_sdcard_ctrl_;

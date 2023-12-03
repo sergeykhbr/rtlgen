@@ -109,7 +109,7 @@ class vip_uart_top_file : public FileObject {
  public:
     vip_uart_top_file(GenObject *parent) :
         FileObject(parent, "vip_uart_top"),
-        vip_uart_top_(this, "", NO_COMMENT) {}
+        vip_uart_top_(this, "vip_uart_top", NO_COMMENT) {}
 
  private:
     vip_uart_top vip_uart_top_;

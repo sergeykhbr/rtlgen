@@ -68,7 +68,7 @@ class vip_uart_transmitter_file : public FileObject {
  public:
     vip_uart_transmitter_file(GenObject *parent) :
         FileObject(parent, "vip_uart_transmitter"),
-        vip_uart_transmitter_(this, "", NO_COMMENT) {}
+        vip_uart_transmitter_(this, "vip_uart_transmitter", NO_COMMENT) {}
 
  private:
     vip_uart_transmitter vip_uart_transmitter_;

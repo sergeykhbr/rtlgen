@@ -104,7 +104,7 @@ class BpBTB : public ModuleObject {
 class bp_btb_file : public FileObject {
  public:
     bp_btb_file(GenObject *parent) : FileObject(parent, "bp_btb"),
-    bp_btb_(this, "") {}
+    bp_btb_(this, "BpBTB") {}
 
  private:
     BpBTB bp_btb_;

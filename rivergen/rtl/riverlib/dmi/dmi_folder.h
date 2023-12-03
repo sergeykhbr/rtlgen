@@ -26,16 +26,16 @@ class dmi_folder : public FolderObject {
  public:
     dmi_folder(GenObject *parent) :
         FolderObject(parent, "dmi"),
-        ic_dport_file_(this),
-        dmidebug_file_(this),
         jtagcdc_file_(this),
-        jtagtap_file_(this)
+        jtagtap_file_(this),
+        ic_dport_file_(this),
+        dmidebug_file_(this)
         {}
 
  protected:
     // files
-    ic_dport_file ic_dport_file_;
-    dmidebug_file dmidebug_file_;
     jtagcdc_file jtagcdc_file_;
     jtagtap_file jtagtap_file_;
+    ic_dport_file ic_dport_file_;
+    dmidebug_file dmidebug_file_;
 };

@@ -451,7 +451,7 @@ class execute_file : public FileObject {
  public:
     execute_file(GenObject *parent) :
         FileObject(parent, "execute"),
-        InstrExecute_(this, "") {}
+        InstrExecute_(this, "InstrExecute") {}
 
  private:
     InstrExecute InstrExecute_;

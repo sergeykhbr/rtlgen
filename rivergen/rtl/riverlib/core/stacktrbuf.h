@@ -64,7 +64,7 @@ class stacktrbuf_file : public FileObject {
  public:
     stacktrbuf_file(GenObject *parent) :
         FileObject(parent, "stacktrbuf"),
-        StackTraceBuffer_(this, "") {}
+        StackTraceBuffer_(this, "StackTraceBuffer") {}
 
  private:
     StackTraceBuffer StackTraceBuffer_;

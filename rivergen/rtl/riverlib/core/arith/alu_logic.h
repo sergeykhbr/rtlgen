@@ -54,7 +54,7 @@ class AluLogic : public ModuleObject {
 class alu_logic_file : public FileObject {
  public:
     alu_logic_file(GenObject *parent) : FileObject(parent, "alu_logic"),
-    alu_(this, "") {}
+    alu_(this, "AluLogic") {}
 
  private:
     AluLogic alu_;

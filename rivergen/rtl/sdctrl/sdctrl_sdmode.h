@@ -173,7 +173,7 @@ class sdctrl_sdmode_file : public FileObject {
  public:
     sdctrl_sdmode_file(GenObject *parent) :
         FileObject(parent, "sdctrl_sdmode"),
-        sdctrl_sdmode_(this, "") {}
+        sdctrl_sdmode_(this, "sdctrl_sdmode") {}
 
  private:
     sdctrl_sdmode sdctrl_sdmode_;

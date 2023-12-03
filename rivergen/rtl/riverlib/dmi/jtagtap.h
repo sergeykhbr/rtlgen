@@ -130,7 +130,7 @@ class jtagtap_file : public FileObject {
  public:
     jtagtap_file(GenObject *parent) :
         FileObject(parent, "jtagtap"),
-        jtagtap_(this, "") { }
+        jtagtap_(this, "jtagtap") { }
 
  private:
     jtagtap jtagtap_;

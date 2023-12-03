@@ -221,7 +221,7 @@ class mmu_file : public FileObject {
  public:
     mmu_file(GenObject *parent) :
         FileObject(parent, "mmu"),
-        Mmu_(this, "") {}
+        Mmu_(this, "Mmu") {}
 
  private:
     Mmu Mmu_;

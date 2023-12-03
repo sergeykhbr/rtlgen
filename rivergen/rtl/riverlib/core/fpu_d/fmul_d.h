@@ -138,7 +138,7 @@ class DoubleMul : public ModuleObject {
 class fmul_d_file : public FileObject {
  public:
     fmul_d_file(GenObject *parent) : FileObject(parent, "fmul_d"),
-    m_(this, "") {}
+    m_(this, "DoubleMul") {}
 
  private:
     DoubleMul m_;

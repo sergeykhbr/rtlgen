@@ -127,7 +127,7 @@ class plic_file : public FileObject {
  public:
     plic_file(GenObject *parent) :
         FileObject(parent, "plic"),
-        plic_(this, "") {}
+        plic_(this, "plic") {}
 
  private:
     plic plic_;

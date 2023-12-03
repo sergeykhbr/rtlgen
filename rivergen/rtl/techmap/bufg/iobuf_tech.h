@@ -51,7 +51,7 @@ class iobuf_tech_file : public FileObject {
  public:
     iobuf_tech_file(GenObject *parent) :
         FileObject(parent, "iobuf_tech"),
-        iobuf_tech_(this, "") {}
+        iobuf_tech_(this, "iobuf_tech") {}
 
  private:
     iobuf_tech iobuf_tech_;

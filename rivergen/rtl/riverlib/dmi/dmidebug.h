@@ -193,7 +193,7 @@ class dmidebug_file : public FileObject {
  public:
     dmidebug_file(GenObject *parent) :
         FileObject(parent, "dmidebug"),
-        dmidebug_(this, "") { }
+        dmidebug_(this, "dmidebug") { }
 
  private:
     dmidebug dmidebug_;

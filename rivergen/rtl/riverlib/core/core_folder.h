@@ -42,6 +42,7 @@ class core_folder : public FolderObject {
  public:
     core_folder(GenObject *parent) :
         FolderObject(parent, "core"),
+        queue_(this),
         bp_predec_(this),
         bp_btb_(this),
         bp_(this),
@@ -57,7 +58,6 @@ class core_folder : public FolderObject {
         memaccess_(this),
         mmu_(this),
         ic_(this),
-        queue_(this),
         regint_(this),
         csr_(this),
         tracer_(this),
@@ -66,6 +66,7 @@ class core_folder : public FolderObject {
  protected:
     // subfolders:
     // files
+    queue_file queue_;
     bp_predec_file bp_predec_;
     bp_btb_file bp_btb_;
     bp_file bp_;
@@ -81,7 +82,6 @@ class core_folder : public FolderObject {
     memaccess_file memaccess_;
     mmu_file mmu_;
     ic_csr_m2_s1_file ic_;
-    queue_file queue_;
     regibank_file regint_;
     csr_file csr_;
     tracer_file tracer_;

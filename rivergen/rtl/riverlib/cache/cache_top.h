@@ -203,7 +203,7 @@ class cache_top_file : public FileObject {
  public:
     cache_top_file(GenObject *parent) :
         FileObject(parent, "cache_top"),
-        cache_(this, "") {}
+        cache_(this, "CacheTop") {}
 
  private:
     CacheTop cache_;

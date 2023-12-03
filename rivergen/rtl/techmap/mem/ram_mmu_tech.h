@@ -56,7 +56,7 @@ class ram_mmu_tech_file : public FileObject {
  public:
     ram_mmu_tech_file(GenObject *parent) :
         FileObject(parent, "ram_mmu_tech"),
-        ram_mmu_tech_(this, "") {}
+        ram_mmu_tech_(this, "ram_mmu_tech") {}
 
  private:
     ram_mmu_tech ram_mmu_tech_;

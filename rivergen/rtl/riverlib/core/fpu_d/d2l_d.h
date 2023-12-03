@@ -98,9 +98,9 @@ class Double2Long : public ModuleObject {
 class d2l_d_file : public FileObject {
  public:
     d2l_d_file(GenObject *parent) : FileObject(parent, "d2l_d"),
-    m_(this, "") {}
+    Double2Long_(this, "Double2Long") {}
 
  private:
-    Double2Long m_;
+    Double2Long Double2Long_;
 };
 

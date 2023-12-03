@@ -93,7 +93,7 @@ class apb_pnp_file : public FileObject {
  public:
     apb_pnp_file(GenObject *parent) :
         FileObject(parent, "apb_pnp"),
-        apb_pnp_(this, "") {}
+        apb_pnp_(this, "apb_pnp") {}
 
  private:
     apb_pnp apb_pnp_;

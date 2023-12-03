@@ -173,7 +173,7 @@ class dbg_port_file : public FileObject {
  public:
     dbg_port_file(GenObject *parent) :
         FileObject(parent, "dbg_port"),
-        DbgPort_(this, "") {}
+        DbgPort_(this, "DbgPort") {}
 
  private:
     DbgPort DbgPort_;

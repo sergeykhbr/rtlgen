@@ -53,7 +53,7 @@ class sdctrl_wdog_file : public FileObject {
  public:
     sdctrl_wdog_file(GenObject *parent) :
         FileObject(parent, "sdctrl_wdog"),
-        sdctrl_wdog_(this, "") {}
+        sdctrl_wdog_(this, "sdctrl_wdog") {}
 
  private:
     sdctrl_wdog sdctrl_wdog_;

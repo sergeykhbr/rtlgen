@@ -58,7 +58,7 @@ class rom_inferred_2x32_file : public FileObject {
  public:
     rom_inferred_2x32_file(GenObject *parent) :
         FileObject(parent, "rom_inferred_2x32"),
-        rom_inferred_2x32_(this, "") {}
+        rom_inferred_2x32_(this, "rom_inferred_2x32") {}
 
  private:
     rom_inferred_2x32 rom_inferred_2x32_;

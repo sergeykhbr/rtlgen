@@ -39,15 +39,11 @@ int RISCV_sprintf(char *s, size_t len, const char *fmt, ...);
     #define RV_PRI64 "ll"
 #endif
 
-class AccessListener {
- public:
-    virtual void notifyAccess(std::string &libname, std::string &file) = 0;
-};
-
 std::string addspaces();
 void pushspaces();
 void popspaces();
 
+void SCV_init();
 void SCV_set_generator(EGenerateType v);
 int SCV_is_sysc();
 int SCV_is_sysc_h();
@@ -58,20 +54,11 @@ int SCV_is_vhdl_pkg();
 
 void SCV_set_cfg_type(GenObject *obj);
 void SCV_set_local_module(GenObject *m);
-//uint64_t SCV_get_cfg_parameter(std::string &name);
+void SCV_add_module(GenObject *m);
+GenObject *SCV_get_module_class(GenObject *m);
 GenObject *SCV_get_cfg_type(GenObject *obj, std::string &name);
-//std::string SCV_get_cfg_file(std::string &name);
-//std::string SCV_get_cfg_fullname(std::string &name);
 
 const char *SCV_get_unique_name();
-
-//void SCV_register_module(GenObject *m);
-//GenObject *SCV_get_module(const char *name);
-
-//
-// To track dependency parameters and properly form include files list
-// call registered listener on each "get parameter" or "get module" call
-void SCV_set_access_listener(AccessListener *p);
 
 int SCV_is_dir_exists(const char *path);
 void SCV_create_dir(const char *path);

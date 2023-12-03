@@ -100,7 +100,7 @@ class ic_dport_file : public FileObject {
  public:
     ic_dport_file(GenObject *parent) :
         FileObject(parent, "ic_dport"),
-        ic_dport_(this, "") { }
+        ic_dport_(this, "ic_dport") { }
 
  private:
     ic_dport ic_dport_;

@@ -102,7 +102,7 @@ class IntDiv : public ModuleObject {
 class int_div_file : public FileObject {
  public:
     int_div_file(GenObject *parent) : FileObject(parent, "int_div"),
-    m_(this, "") {}
+    m_(this, "IntDiv") {}
 
  private:
     IntDiv m_;

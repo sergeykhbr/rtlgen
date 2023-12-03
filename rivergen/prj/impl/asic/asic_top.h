@@ -135,7 +135,7 @@ class asic_top_file : public FileObject {
  public:
     asic_top_file(GenObject *parent) :
         FileObject(parent, "asic_top"),
-        asic_top_(this, "") { }
+        asic_top_(this, "asic_top") { }
 
  private:
     asic_top asic_top_;

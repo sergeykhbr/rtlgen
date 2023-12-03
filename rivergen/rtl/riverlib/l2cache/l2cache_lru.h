@@ -191,7 +191,7 @@ class l2cache_lru_file : public FileObject {
  public:
     l2cache_lru_file(GenObject *parent) :
         FileObject(parent, "l2cache_lru"),
-        l2cache_(this, "") {}
+        l2cache_(this, "L2CacheLru") {}
 
  private:
     L2CacheLru l2cache_;

@@ -156,7 +156,7 @@ class tagmemcoupled_file : public FileObject {
  public:
     tagmemcoupled_file(GenObject *parent) :
         FileObject(parent, "tagmemcoupled"),
-        TagMemCoupled_(this, "") {}
+        TagMemCoupled_(this, "TagMemCoupled") {}
 
  private:
     TagMemCoupled TagMemCoupled_;

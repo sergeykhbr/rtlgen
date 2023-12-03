@@ -79,7 +79,7 @@ class l2_top_file : public FileObject {
  public:
     l2_top_file(GenObject *parent) :
         FileObject(parent, "l2_top"),
-        l2_top_(this, "") {}
+        l2_top_(this, "L2Top") {}
 
  private:
     L2Top l2_top_;

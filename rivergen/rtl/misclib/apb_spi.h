@@ -146,7 +146,7 @@ class apb_spi_file : public FileObject {
  public:
     apb_spi_file(GenObject *parent) :
         FileObject(parent, "apb_spi"),
-        apb_spi_(this, "", NO_COMMENT) {}
+        apb_spi_(this, "apb_spi", NO_COMMENT) {}
 
  private:
     apb_spi apb_spi_;

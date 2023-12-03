@@ -116,7 +116,7 @@ class BranchPredictor : public ModuleObject {
 class bp_file : public FileObject {
  public:
     bp_file(GenObject *parent) : FileObject(parent, "bp"),
-    bp_(this, "") {}
+    bp_(this, "BranchPredictor") {}
 
  private:
     BranchPredictor bp_;

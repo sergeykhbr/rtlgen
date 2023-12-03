@@ -129,7 +129,7 @@ class FpuTop : public ModuleObject {
 class fpu_top_file : public FileObject {
  public:
     fpu_top_file(GenObject *parent) : FileObject(parent, "fpu_top"),
-    m_(this, "") {}
+    m_(this, "FpuTop") {}
 
  private:
     FpuTop m_;

@@ -86,7 +86,7 @@ class Long2Double : public ModuleObject {
 class l2d_d_file : public FileObject {
  public:
     l2d_d_file(GenObject *parent) : FileObject(parent, "l2d_d"),
-    m_(this, "") {}
+    m_(this, "Long2Double") {}
 
  private:
     Long2Double m_;

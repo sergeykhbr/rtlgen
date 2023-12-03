@@ -24,16 +24,17 @@
 
 namespace sysvc {
 
-typedef std::map<std::string, std::list<std::string>>::const_iterator depit;
+typedef std::map<std::string, std::list<GenObject *>>::const_iterator depit;
 
 FileObject::FileObject(GenObject *parent,
                            const char *name)
     : GenObject(parent, "", ID_FILE, name) {
-    SCV_set_access_listener(static_cast<AccessListener *>(this));
 }
 
-void FileObject::notifyAccess(std::string &libname, std::string &file) {
+void FileObject::add_dependency(GenObject *reqobj) {
     bool found = false;
+    std::string &libname = reqobj->getLibName();
+    GenObject *file = reqobj->getFile();
     for (depit it = depfiles_.begin(); it != depfiles_.end(); ++it) {
         for (auto &f: it->second) {
             if (f == file) {
@@ -42,6 +43,14 @@ void FileObject::notifyAccess(std::string &libname, std::string &file) {
             }
         }
     }
+#if 1
+    if (getName() == "asic_top") {
+        if (file->getName() == "jtagcdc") {
+            bool s = true;
+        }
+        bool st = true;
+    }
+#endif
     if (!found) {
         depfiles_[libname].push_back(file);
     }
@@ -100,7 +109,7 @@ std::string FileObject::fullPath2fileRelative(const char *fullpath) {
     return ret;
 }
 
-void FileObject::list_of_modules(GenObject *p, std::list<std::string> &fpath) {
+/*void FileObject::list_of_modules(GenObject *p, std::list<std::string> &fpath) {
     GenObject *f = 0;
     if (!p) {
         return;
@@ -145,7 +154,7 @@ void FileObject::list_of_modules(GenObject *p, std::list<std::string> &fpath) {
             list_of_modules(e, fpath);
         }
     }
-}
+}*/
 
 std::string FileObject::generate() {
     if (SCV_is_sysc()) {
@@ -276,17 +285,15 @@ void FileObject::generate_sysc() {
 void FileObject::getDepList(std::list<std::string> &lst) {
     std::string tstr;
     std::vector<std::string> subs;
-    std::list<std::string> submodlist;
-    std::string thisfile = getFullPath();
     for (depit it = depfiles_.begin(); it != depfiles_.end(); ++it) {
         for (auto &f : it->second) {
-            if (f == thisfile) {
+            if (f == this) {
                 continue;
             }
             if (SCV_is_sysc()) {
-                tstr = fullPath2fileRelative(f.c_str()) + ".h";
+                tstr = fullPath2fileRelative(f->getFullPath().c_str()) + ".h";
             } else {
-                fullPath2vector(f.c_str(), subs);
+                fullPath2vector(f->getFullPath().c_str(), subs);
                 tstr = subs.back() + "_pkg";
             }
             lst.push_back(tstr);
@@ -294,21 +301,32 @@ void FileObject::getDepList(std::list<std::string> &lst) {
     }
     if (SCV_is_sysc()) {
         // Add submodules include files (Child modules):
-        list_of_modules(this, submodlist);
-        for (auto &f : submodlist) {
-            if (f == thisfile) {
+        GenObject *pcls;
+        for (auto &m : getEntries()) {
+            if (!m->isModule() || !m->isTypedef()) {
                 continue;
             }
-            tstr = fullPath2fileRelative(f.c_str()) + ".h";
-            bool exist = false;
-            for (auto &e: lst) {
-                if (e == tstr) {
-                    exist = true;
-                    break;
+
+            for (auto &subm : m->getEntries()) {
+                if (!subm->isModule()) {
+                    continue;
                 }
-            }
-            if (!exist) {
-                lst.push_back(tstr);
+                if (subm->isTypedef()) {
+                    SCV_printf("warning: module %s declared inside of another module",
+                                subm->getName().c_str());
+                }
+                pcls = SCV_get_module_class(subm);
+                tstr = fullPath2fileRelative(pcls->getFullPath().c_str()) + ".h";
+                bool exist = false;
+                for (auto &e: lst) {
+                    if (e == tstr) {
+                        exist = true;
+                        break;
+                    }
+                }
+                if (!exist) {
+                    lst.push_back(tstr);
+                }
             }
         }
     }
@@ -316,7 +334,7 @@ void FileObject::getDepList(std::list<std::string> &lst) {
 
 // Package per libraries (VHDL only)
 void FileObject::getDepLibList(std::map<std::string, std::list<std::string>> &liblst) {
-    std::string tstr;
+    /*std::string tstr;
     std::vector<std::string> subs;
     std::string thisfile = getFullPath();
     for (depit it = depfiles_.begin(); it != depfiles_.end(); ++it) {
@@ -332,7 +350,7 @@ void FileObject::getDepLibList(std::map<std::string, std::list<std::string>> &li
             }
             liblst[it->first].push_back(tstr);
         }
-    }
+    }*/
 }
 
 void FileObject::generate_sysv() {

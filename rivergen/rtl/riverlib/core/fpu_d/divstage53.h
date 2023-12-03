@@ -67,9 +67,9 @@ class divstage53 : public ModuleObject {
 class divstage53_file : public FileObject {
  public:
     divstage53_file(GenObject *parent) : FileObject(parent, "divstage53"),
-    m_(this, "") {}
+    divstage53_(this, "divstage53") {}
 
  private:
-    divstage53 m_;
+    divstage53 divstage53_;
 };
 

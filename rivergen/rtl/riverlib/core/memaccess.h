@@ -196,7 +196,7 @@ class MemAccess : public ModuleObject {
 class memaccess_file : public FileObject {
  public:
     memaccess_file(GenObject *parent) : FileObject(parent, "memaccess"),
-    ma_(this, "") {}
+    ma_(this, "MemAccess") {}
 
  private:
     MemAccess ma_;

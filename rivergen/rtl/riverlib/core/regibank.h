@@ -130,7 +130,7 @@ class regibank_file : public FileObject {
  public:
     regibank_file(GenObject *parent) :
         FileObject(parent, "regibank"),
-        mod_(this, "") { }
+        mod_(this, "RegIntBank") { }
 
  private:
     RegIntBank mod_;

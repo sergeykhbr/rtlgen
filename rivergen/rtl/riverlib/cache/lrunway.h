@@ -87,7 +87,7 @@ class lrunway_file : public FileObject {
  public:
     lrunway_file(GenObject *parent) :
         FileObject(parent, "lrunway"),
-        lrunway_(this, "") {}
+        lrunway_(this, "lrunway") {}
 
  private:
     lrunway lrunway_;

@@ -608,7 +608,7 @@ class proc_file : public FileObject {
  public:
     proc_file(GenObject *parent) :
         FileObject(parent, "proc"),
-        proc_(this, "") {}
+        proc_(this, "Processor") {}
 
  private:
     Processor proc_;

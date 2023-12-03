@@ -116,7 +116,7 @@ class sdctrl_regs_file : public FileObject {
  public:
     sdctrl_regs_file(GenObject *parent) :
         FileObject(parent, "sdctrl_regs"),
-        sdctrl_regs_(this, "") {}
+        sdctrl_regs_(this, "sdctrl_regs") {}
 
  private:
     sdctrl_regs sdctrl_regs_;

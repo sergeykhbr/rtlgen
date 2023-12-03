@@ -50,7 +50,7 @@ class ids_tech_file : public FileObject {
  public:
     ids_tech_file(GenObject *parent) :
         FileObject(parent, "ids_tech"),
-        ids_tech_(this, "") {}
+        ids_tech_(this, "ids_tech") {}
 
  private:
     ids_tech ids_tech_;

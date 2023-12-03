@@ -79,7 +79,7 @@ class apb_ddr_file : public FileObject {
  public:
     apb_ddr_file(GenObject *parent) :
         FileObject(parent, "apb_ddr"),
-        apb_ddr_(this, "", NO_COMMENT) {}
+        apb_ddr_(this, "apb_ddr", NO_COMMENT) {}
 
  private:
     apb_ddr apb_ddr_;

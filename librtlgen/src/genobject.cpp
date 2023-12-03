@@ -60,7 +60,7 @@ std::string GenObject::getFullPath() {
 
 GenObject *GenObject::getParentFile() {
     GenObject *ret = 0;
-    if (getId() == ID_FILE) {
+    if (isFile()) {
         ret = this;
     } else if (parent_) {
         ret = parent_->getParentFile();
@@ -68,13 +68,16 @@ GenObject *GenObject::getParentFile() {
     return ret;
 }
 
-std::string GenObject::getFile() {
+GenObject *GenObject::getFile() {
     std::string ret = "";
-    GenObject *pfile = getParentFile();
-    if (pfile) {
-        return pfile->getName();
+    GenObject *pfile = this;
+    while (!pfile->isFile()) {
+        pfile = pfile->getParent();
     }
-    return ret;
+    if (pfile == 0) {
+        SHOW_ERROR("object '%s' without parent file", getName().c_str());
+    }
+    return pfile;
 }
 
 void GenObject::add_entry(GenObject *p) {
@@ -135,7 +138,11 @@ void GenObject::setTypedef(const char *n) {
     } else {
         // simple logic vector, nothing to trigger
     }
-    if (getName() == "" || getName() == type_) {
+    if (getName() == type_) {
+        if (getName() == "") {
+            SHOW_ERROR("typedef %s cannot be with empty name", n);
+            return;
+        }
         SCV_set_cfg_type(this);
     }
 }
@@ -431,17 +438,6 @@ void GenObject::setWidth(int w) {
     setStrWidth(tstr);
 }
 
-/*GenObject *GenObject::getItem(const char *name) {
-    GenObject *ret = 0;
-    for (auto &e : getEntries()) {
-        if (e->getName() == name) {
-            return e;
-        }
-    }
-    SHOW_ERROR("Cannot find child with name %s", name);
-    return ret;
-}*/
-
 
 uint64_t GenObject::parse_to_u64(const char *val, size_t &pos) {
     uint64_t ret = 0;
@@ -572,11 +568,11 @@ std::string GenObject::parse_to_str(const char *val, size_t &pos) {
     }
 
     m = std::string(buf);
-    GenObject *cfgobj = SCV_get_cfg_type(this, m);
+    GenObject *cfgobj = SCV_get_cfg_type(getParent(), m);
     if (cfgobj) {
         ret = m;
         if (SCV_is_sv_pkg() && !cfgobj->isParamGeneric()) {
-            ret = cfgobj->getFile() + "_pkg::" + m;
+            ret = cfgobj->getFile()->getName() + "_pkg::" + m;
         }
         return ret;
     }

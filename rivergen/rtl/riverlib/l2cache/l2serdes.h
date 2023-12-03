@@ -124,7 +124,7 @@ class l2serdes_file : public FileObject {
  public:
     l2serdes_file(GenObject *parent) :
         FileObject(parent, "l2serdes"),
-        l2serdes_(this, "") {}
+        l2serdes_(this, "L2SerDes") {}
 
  private:
     L2SerDes l2serdes_;

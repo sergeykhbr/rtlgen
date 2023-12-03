@@ -78,7 +78,7 @@ class imul53 : public ModuleObject {
 class imul53_file : public FileObject {
  public:
     imul53_file(GenObject *parent) : FileObject(parent, "imul53"),
-    m_(this, "") {}
+    m_(this, "imul53") {}
 
  private:
     imul53 m_;

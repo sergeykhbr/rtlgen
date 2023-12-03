@@ -137,7 +137,7 @@ class sdctrl_spimode_file : public FileObject {
  public:
     sdctrl_spimode_file(GenObject *parent) :
         FileObject(parent, "sdctrl_spimode"),
-        sdctrl_spimode_(this, "") {}
+        sdctrl_spimode_(this, "sdctrl_spimode") {}
 
  private:
     sdctrl_spimode sdctrl_spimode_;

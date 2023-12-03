@@ -77,7 +77,7 @@ class jtagcdc_file : public FileObject {
  public:
     jtagcdc_file(GenObject *parent) :
         FileObject(parent, "jtagcdc"),
-        jtagcdc_(this, "") { }
+        jtagcdc_(this, "jtagcdc") { }
 
  private:
     jtagcdc jtagcdc_;

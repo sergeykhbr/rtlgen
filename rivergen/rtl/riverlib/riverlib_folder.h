@@ -35,8 +35,8 @@ class riverlib_folder : public FolderObject {
         FolderObject(parent, "riverlib"),
         river_cfg_(this),
         types_river_(this),
-        cache_(this),
         core_(this),
+        cache_(this),
         l2cache_(this),
         dmi_(this),
         river_top_(this),
@@ -50,8 +50,8 @@ class riverlib_folder : public FolderObject {
  protected:
     river_cfg river_cfg_;
     types_river types_river_;
-    cache_folder cache_;
     core_folder core_;
+    cache_folder cache_;
     l2cache_folder l2cache_;
     dmi_folder dmi_;
     river_top river_top_;

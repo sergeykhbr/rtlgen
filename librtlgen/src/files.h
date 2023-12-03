@@ -25,15 +25,13 @@
 
 namespace sysvc {
 
-class FileObject : public GenObject,
-                   public AccessListener {
+class FileObject : public GenObject {
  public:
     FileObject(GenObject *parent,
                  const char *name);
 
     virtual bool isFile() override { return true; }
-    // Access Listener
-    virtual void notifyAccess(std::string &libname, std::string &file);
+    virtual void add_dependency(GenObject *p) override;
 
     virtual std::string getFullPath() override;
     virtual std::string getType() { return std::string(""); }
@@ -50,10 +48,10 @@ class FileObject : public GenObject,
  private:
     void fullPath2vector(const char *fullpath, std::vector<std::string> &subs);
     std::string fullPath2fileRelative(const char *fullpath);
-    void list_of_modules(GenObject *p, std::list<std::string> &fpath);
+    //void list_of_modules(GenObject *p, std::list<std::string> &fpath);
 
  private:
-    std::map<std::string, std::list<std::string>> depfiles_;
+    std::map<std::string, std::list<GenObject *>> depfiles_;
 };
 
 }  // namespace sysvc

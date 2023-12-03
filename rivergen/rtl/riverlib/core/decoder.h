@@ -174,7 +174,7 @@ class InstrDecoder : public ModuleObject {
 class decoder_file : public FileObject {
  public:
     decoder_file(GenObject *parent) : FileObject(parent, "decoder"),
-    dec_(this, "") {}
+    dec_(this, "InstrDecoder") {}
 
  private:
     InstrDecoder dec_;

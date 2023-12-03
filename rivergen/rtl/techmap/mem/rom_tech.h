@@ -55,7 +55,7 @@ class rom_tech_file : public FileObject {
  public:
     rom_tech_file(GenObject *parent) :
         FileObject(parent, "rom_tech"),
-        rom_tech_(this, "") {}
+        rom_tech_(this, "rom_tech") {}
 
  private:
     rom_tech rom_tech_;

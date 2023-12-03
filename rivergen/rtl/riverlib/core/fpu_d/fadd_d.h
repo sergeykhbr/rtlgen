@@ -187,7 +187,7 @@ class DoubleAdd : public ModuleObject {
 class fadd_d_file : public FileObject {
  public:
     fadd_d_file(GenObject *parent) : FileObject(parent, "fadd_d"),
-    m_(this, "") {}
+    m_(this, "DoubleAdd") {}
 
  private:
     DoubleAdd m_;

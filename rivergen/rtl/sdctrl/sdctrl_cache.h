@@ -160,7 +160,7 @@ class sdctrl_cache_file : public FileObject {
  public:
     sdctrl_cache_file(GenObject *parent) :
         FileObject(parent, "sdctrl_cache"),
-        sdctrl_cache_(this, "") {}
+        sdctrl_cache_(this, "sdctrl_cache") {}
 
  private:
     sdctrl_cache sdctrl_cache_;

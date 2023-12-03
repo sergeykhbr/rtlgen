@@ -101,7 +101,7 @@ class axi_slv_file : public FileObject {
  public:
     axi_slv_file(GenObject *parent) :
         FileObject(parent, "axi_slv"),
-        axi_slv_(this, "") {}
+        axi_slv_(this, "axi_slv") {}
 
  private:
     axi_slv axi_slv_;

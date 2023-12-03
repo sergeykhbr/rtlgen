@@ -91,7 +91,7 @@ class pmp_file : public FileObject {
  public:
     pmp_file(GenObject *parent) :
         FileObject(parent, "pmp"),
-        pmp_(this, "") {}
+        pmp_(this, "PMP") {}
 
  private:
     PMP pmp_;

@@ -240,7 +240,7 @@ class tracer_file : public FileObject {
  public:
     tracer_file(GenObject *parent) :
         FileObject(parent, "tracer"),
-        m_(this, "") { }
+        m_(this, "Tracer") { }
 
  private:
     Tracer m_;

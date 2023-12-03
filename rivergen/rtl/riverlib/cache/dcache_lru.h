@@ -223,7 +223,7 @@ class dcache_lru_file : public FileObject {
  public:
     dcache_lru_file(GenObject *parent) :
         FileObject(parent, "dcache_lru"),
-        dcache_(this, "") {}
+        dcache_(this, "DCacheLru") {}
 
  private:
     DCacheLru dcache_;

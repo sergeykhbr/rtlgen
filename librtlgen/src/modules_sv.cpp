@@ -617,7 +617,7 @@ std::string ModuleObject::generate_sv_mod() {
         GenObject *cfgobj = SCV_get_cfg_type(this, strtype);
         if (cfgobj) {
             // whole types (like vectors or typedef)
-            ln += cfgobj->getFile() + "_pkg::" + strtype;
+            ln += cfgobj->getFile()->getName() + "_pkg::" + strtype;
         } else {
             // Width or depth definitions
             ln += strtype;

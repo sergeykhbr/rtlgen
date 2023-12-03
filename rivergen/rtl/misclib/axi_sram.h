@@ -72,7 +72,7 @@ class axi_sram_file : public FileObject {
  public:
     axi_sram_file(GenObject *parent) :
         FileObject(parent, "axi_sram"),
-        axi_sram_(this, "") {}
+        axi_sram_(this, "axi_sram") {}
 
  private:
     axi_sram axi_sram_;

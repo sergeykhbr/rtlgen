@@ -81,7 +81,7 @@ class apb_prci_file : public FileObject {
  public:
     apb_prci_file(GenObject *parent) :
         FileObject(parent, "apb_prci"),
-        apb_prci_(this, "", NO_COMMENT) {}
+        apb_prci_(this, "apb_prci", NO_COMMENT) {}
 
  private:
     apb_prci apb_prci_;

@@ -167,7 +167,7 @@ class workgroup_file : public FileObject {
  public:
     workgroup_file(GenObject *parent) :
         FileObject(parent, "workgroup"),
-        workgroup_(this, "") { }
+        workgroup_(this, "Workgroup") { }
 
  private:
     Workgroup workgroup_;

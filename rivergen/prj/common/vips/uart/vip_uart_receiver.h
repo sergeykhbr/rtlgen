@@ -72,7 +72,7 @@ class vip_uart_receiver_file : public FileObject {
  public:
     vip_uart_receiver_file(GenObject *parent) :
         FileObject(parent, "vip_uart_receiver"),
-        vip_uart_receiver_(this, "", NO_COMMENT) {}
+        vip_uart_receiver_(this, "vip_uart_receiver", NO_COMMENT) {}
 
  private:
     vip_uart_receiver vip_uart_receiver_;

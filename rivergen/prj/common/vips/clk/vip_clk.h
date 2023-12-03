@@ -50,7 +50,7 @@ class vip_clk_file : public FileObject {
  public:
     vip_clk_file(GenObject *parent) :
         FileObject(parent, "vip_clk"),
-        vip_clk_(this, "", NO_COMMENT) {}
+        vip_clk_(this, "vip_clk", NO_COMMENT) {}
 
  private:
     vip_clk vip_clk_;

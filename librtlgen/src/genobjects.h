@@ -77,8 +77,9 @@ class GenObject {
     virtual std::string getTypedef() { return typedef_; }
 
     virtual std::string getFullPath();
-    virtual std::string getFile();
+    virtual GenObject *getFile();
     virtual void add_entry(GenObject *p);
+    virtual void add_dependency(GenObject *p) {}
 
     virtual GenObject *getParentFile();
     virtual GenObject *getAsyncReset();

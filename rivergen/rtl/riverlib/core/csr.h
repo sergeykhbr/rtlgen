@@ -314,7 +314,7 @@ class csr_file : public FileObject {
  public:
     csr_file(GenObject *parent) :
         FileObject(parent, "csr"),
-        CsrRegs_(this, "") {}
+        CsrRegs_(this, "CsrRegs") {}
 
  private:
     CsrRegs CsrRegs_;

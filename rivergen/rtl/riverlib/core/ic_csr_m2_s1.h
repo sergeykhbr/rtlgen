@@ -82,7 +82,7 @@ class ic_csr_m2_s1_file : public FileObject {
  public:
     ic_csr_m2_s1_file(GenObject *parent) :
         FileObject(parent, "ic_csr_m2_s1"),
-        ic_(this, "") {}
+        ic_(this, "ic_csr_m2_s1") {}
 
  private:
     ic_csr_m2_s1 ic_;

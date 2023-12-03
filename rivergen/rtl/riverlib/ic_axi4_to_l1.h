@@ -100,7 +100,7 @@ class ic_axi4_to_l1_file : public FileObject {
  public:
     ic_axi4_to_l1_file(GenObject *parent) :
         FileObject(parent, "ic_axi4_to_l1"),
-        ic_axi4_to_l1_(this, "") { }
+        ic_axi4_to_l1_(this, "ic_axi4_to_l1") { }
 
  private:
     ic_axi4_to_l1 ic_axi4_to_l1_;

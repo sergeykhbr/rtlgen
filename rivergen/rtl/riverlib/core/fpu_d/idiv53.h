@@ -85,7 +85,7 @@ class idiv53 : public ModuleObject {
 class idiv53_file : public FileObject {
  public:
     idiv53_file(GenObject *parent) : FileObject(parent, "idiv53"),
-    m_(this, "") {}
+    m_(this, "idiv53") {}
 
  private:
     idiv53 m_;

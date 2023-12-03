@@ -93,7 +93,7 @@ class l2dummy_file : public FileObject {
  public:
     l2dummy_file(GenObject *parent) :
         FileObject(parent, "l2dummy"),
-        l2dummy_(this, "") {}
+        l2dummy_(this, "L2Dummy") {}
 
  private:
     L2Dummy l2dummy_;

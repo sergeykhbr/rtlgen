@@ -55,7 +55,7 @@ class sdctrl_err_file : public FileObject {
  public:
     sdctrl_err_file(GenObject *parent) :
         FileObject(parent, "sdctrl_err"),
-        sdctrl_err_(this, "") {}
+        sdctrl_err_(this, "sdctrl_err") {}
 
  private:
     sdctrl_err sdctrl_err_;

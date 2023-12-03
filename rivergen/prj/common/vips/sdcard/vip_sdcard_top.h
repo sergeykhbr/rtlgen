@@ -136,7 +136,7 @@ class vip_sdcard_top_file : public FileObject {
  public:
     vip_sdcard_top_file(GenObject *parent) :
         FileObject(parent, "vip_sdcard_top"),
-        vip_sdcard_top_(this, "", NO_COMMENT) {}
+        vip_sdcard_top_(this, "vip_sdcard_top", NO_COMMENT) {}
 
  private:
     vip_sdcard_top vip_sdcard_top_;

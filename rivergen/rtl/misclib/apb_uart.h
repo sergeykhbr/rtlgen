@@ -147,7 +147,7 @@ class apb_uart_file : public FileObject {
  public:
     apb_uart_file(GenObject *parent) :
         FileObject(parent, "apb_uart"),
-        apb_uart_(this, "") {}
+        apb_uart_(this, "apb_uart") {}
 
  private:
     apb_uart apb_uart_;

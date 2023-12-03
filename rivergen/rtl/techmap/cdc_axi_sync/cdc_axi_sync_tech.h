@@ -56,7 +56,7 @@ class cdc_axi_sync_tech_file : public FileObject {
  public:
     cdc_axi_sync_tech_file(GenObject *parent) :
         FileObject(parent, "cdc_axi_sync_tech"),
-        cdc_axi_sync_tech_(this, "") {}
+        cdc_axi_sync_tech_(this, "cdc_axi_sync_tech") {}
 
  private:
     cdc_axi_sync_tech cdc_axi_sync_tech_;

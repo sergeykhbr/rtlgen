@@ -181,7 +181,7 @@ class riscv_soc_file : public FileObject {
  public:
     riscv_soc_file(GenObject *parent) :
         FileObject(parent, "riscv_soc"),
-        riscv_soc_(this, "") { }
+        riscv_soc_(this, "riscv_soc") { }
 
  private:
     riscv_soc riscv_soc_;

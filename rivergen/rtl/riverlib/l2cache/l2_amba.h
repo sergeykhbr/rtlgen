@@ -85,7 +85,7 @@ class l2_amba_file : public FileObject {
  public:
     l2_amba_file(GenObject *parent) :
         FileObject(parent, "l2_amba"),
-        l2_amba_(this, "") {}
+        l2_amba_(this, "L2Amba") {}
 
  private:
     L2Amba l2_amba_;
