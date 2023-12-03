@@ -33,7 +33,7 @@ FileObject::FileObject(GenObject *parent,
 
 void FileObject::add_dependency(GenObject *reqobj) {
     bool found = false;
-    std::string &libname = reqobj->getLibName();
+    std::string libname = reqobj->getLibName();
     GenObject *file = reqobj->getFile();
     for (depit it = depfiles_.begin(); it != depfiles_.end(); ++it) {
         for (auto &f: it->second) {
@@ -43,14 +43,6 @@ void FileObject::add_dependency(GenObject *reqobj) {
             }
         }
     }
-#if 1
-    if (getName() == "asic_top") {
-        if (file->getName() == "jtagcdc") {
-            bool s = true;
-        }
-        bool st = true;
-    }
-#endif
     if (!found) {
         depfiles_[libname].push_back(file);
     }

@@ -3385,8 +3385,12 @@ std::string NewOperation::generate_sv() {
         for (auto &e : genlist) {
             ret += addspaces() + "." + e->getName();
             if (e->getObjValue()) {
-                // parameter is connected to some config parameter:
-                ret += "(" + e->getObjValue()->getName() + ")";
+                if (e->getObjValue()->getName() == "") {
+                    ret += "(" + e->getObjValue()->getStrValue() + ")";
+                } else {
+                    // parameter is connected to some config parameter:
+                    ret += "(" + e->getObjValue()->getName() + ")";
+                }
             } else if (e->isParamTemplate()) {
                 ret += "(" + e->generate() + ")";
             } else {

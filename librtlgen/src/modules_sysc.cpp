@@ -401,11 +401,6 @@ std::string ModuleObject::generate_sysc_h() {
         tcnt = 0;
     }
 
-#if 1
-if (getType() == "ram_cache_bwe_tech") {
-bool st = true;
-}
-#endif
     // Sub-module list
     for (auto &p: getEntries()) {
         if (p->isModule()) {
