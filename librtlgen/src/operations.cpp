@@ -640,17 +640,17 @@ Operation &BITSW(GenObject &a, GenObject &start, GenObject &width, const char *c
 
 
 // CONST
-GenObject &CONST(const char *val) {
-    GenObject *p = new I32D(val);
+GenValue &CONST(const char *val) {
+    GenValue *p = new I32D(val);
     return *p;
 }
 
-GenObject &CONST(const char *val, const char *width) {
-    GenObject *p = new Logic(width, "", val);
+GenValue &CONST(const char *val, const char *width) {
+    GenValue *p = new Logic(width, "", val);
     return *p;
 }
 
-GenObject &CONST(const char *val, int width) {
+GenValue &CONST(const char *val, int width) {
     char tstr[64];
     RISCV_sprintf(tstr, sizeof(tstr), "%d", width);
     return CONST(val, tstr);

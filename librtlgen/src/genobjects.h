@@ -123,11 +123,11 @@ class GenObject {
 
     virtual std::string v_name(std::string v);
     virtual std::string r_name(std::string v);
-    virtual uint64_t getValue();
-    virtual double getFloatValue();
-    virtual std::string getStrValue();
-    virtual void setStrValue(const char *val);
-    virtual void setValue(uint64_t val);                // used in a operations
+    virtual uint64_t getValue() { return 0; }
+    virtual double getFloatValue() { return 0; }
+    virtual std::string getStrValue() { return std::string(""); }
+    virtual void setStrValue(const char *val) {}
+    virtual void setValue(uint64_t val) {}                // used in a operations
     virtual void setObjValue(GenObject *obj) { objValue_ = obj; }
     virtual GenObject *getObjValue() { return objValue_; }
     virtual int getWidth();
@@ -152,9 +152,10 @@ class GenObject {
     virtual void setSvApiUsed() { sv_api_ = true; }
 
     virtual std::string generate() { return std::string(""); }
-    virtual uint64_t parse_to_u64(const char *val, size_t &pos);
-    virtual std::string parse_to_str(const char *val, size_t &pos);
-    size_t parse_to_objlist(const char *val, size_t pos, std::list<GenObject *> &objlist);
+    //virtual uint64_t parse_to_u64(const char *val, size_t &pos);
+    virtual GenObject *parse_to_obj(const char *val, size_t &pos) { return 0; }
+    //virtual std::string parse_to_str(const char *val, size_t &pos);
+    //size_t parse_to_objlist(const char *val, size_t pos, std::list<GenObject *> &objlist);
 
     virtual bool isNumber(std::string &s) {
         const char *pch = s.c_str();

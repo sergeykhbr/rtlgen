@@ -36,6 +36,8 @@ class GenValue : public GenObject {
 
     virtual bool isValue() override { return true; }
     virtual bool isConst() override { return getName() == ""; }
+    virtual GenObject *parse_to_obj(const char *val, size_t &pos) override;
+    virtual std::string getStrValue() override;
 
     /** Signal could be a register when it inside of register struct */
     virtual bool isReg() override;
@@ -43,6 +45,12 @@ class GenValue : public GenObject {
 
     virtual std::string v_name(std::string v) override;
     virtual std::string r_name(std::string v) override;
+ protected:
+    union const_value_type {
+        uint64_t ui64;
+        double f64;
+    } u_;
+    bool hex_;
 };
 
 class BOOL : public GenValue {

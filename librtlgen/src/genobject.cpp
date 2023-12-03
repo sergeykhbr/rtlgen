@@ -213,18 +213,18 @@ bool GenObject::isLocal() {
 }
 
 bool GenObject::isGenericDep() {
-    if (isString()) {
+    if (isString() || objValue_ == 0) {
         // String value shouldn't be parsed. Use value as is.
         return false;
     }
-    std::list<GenObject *> objlist;
-    parse_to_objlist(strValue_.c_str(), 0, objlist);
+    //std::list<GenObject *> objlist;
+    //parse_to_objlist(strValue_.c_str(), 0, objlist);
+    if (objValue_->isParamGeneric()) {
+        return true;
+    }
 
-    for (auto &e: objlist) {
-//        if (e->isGenericDep()) {   // trigger stack overflow, todo: why?
-//            return true;
-//        }
-        if (e->isParamGeneric()) {
+    for (auto &e: objValue_->getEntries()) {
+        if (e->isGenericDep()) {
             return true;
         }
     }
@@ -255,25 +255,6 @@ std::string GenObject::r_name(std::string v) {
 }
 
 
-uint64_t GenObject::getValue() {
-    if (objValue_) {
-        return objValue_->getValue();
-    } else {
-        size_t tpos = 0;
-        return parse_to_u64(strValue_.c_str(), tpos);
-    }
-}
-
-double GenObject::getFloatValue() {
-    if (objValue_) {
-        return objValue_->getFloatValue();
-    } else {
-        size_t tpos = 0;
-        uint64_t t = parse_to_u64(strValue_.c_str(), tpos);
-        return *reinterpret_cast<double *>(&t);
-    }
-}
-
 int GenObject::getWidth() {
     if (objWidth_) {
         return static_cast<int>(objWidth_->getValue());
@@ -290,6 +271,7 @@ int GenObject::getDepth() {
     }
 }
 
+#if 0
 std::string GenObject::getStrValue() {
     size_t tpos = 0;
     if (objValue_) {
@@ -371,6 +353,7 @@ std::string GenObject::getStrValue() {
     }
     return ret;
 }
+#endif
 
 std::string GenObject::getStrWidth() {
     size_t tpos = 0;
@@ -481,11 +464,6 @@ uint64_t GenObject::parse_to_u64(const char *val, size_t &pos) {
         return ret;
     }
     m = std::string(buf);
-#if 1
-    if (m == "dbytes") {
-        bool s = true;
-    }
-#endif
     GenObject *cfgobj = SCV_get_cfg_type(getParent(), m);
     if (cfgobj) {
         return cfgobj->getValue();

@@ -14,6 +14,7 @@
 //  limitations under the License.
 // 
 
+#include "api_rtlgen.h"
 #include "values.h"
 #include "utils.h"
 #include <cstring>
@@ -209,6 +210,117 @@ std::string TIMESEC::getType() {
     }
     return ret;
 }
+
+std::string GenValue::getStrValue() {
+    char tstr[64] = "";
+    if (objValue_) {
+        return objValue_->generate();
+    } else if (isFloat()) {
+        RISCV_sprintf(tstr, sizeof(tstr), "%.f", u_.f64);
+    } else if (hex_) {
+        RISCV_sprintf(tstr, sizeof(tstr), "0x%" RV_PRI64 "x", u_.ui64);
+    } else {
+        RISCV_sprintf(tstr, sizeof(tstr), "%" RV_PRI64 "d", u_.ui64);
+    }
+    return std::string(tstr);
+}
+
+uint64_t GenValue::getValue() {
+    if (objValue_) {
+        return objValue_->getValue();
+    } else {
+        return u_.ui64;
+    }
+}
+
+GenObject *GenValue::parse_to_obj(const char *val, size_t &pos) {
+    GenObject *ret = 0;
+    char buf[64] = "";
+    size_t cnt = 0;
+    std::string m = "";
+    bool is_float = false;
+    // Check macro:
+    while (val[pos] && val[pos] != ',' && val[pos] != '(' && val[pos] != ')') {
+        if (val[pos] == '.') {
+            is_float = true;
+        }
+        buf[cnt++] = val[pos];
+        buf[cnt] = '\0';
+        pos++;
+    }
+
+    if (buf[0] == '\0' || buf[0] == '"') {
+        return ret;
+    }
+    if (is_float) {
+        u_.f64 = strtod(buf, 0);
+        return ret;
+    } else if (buf[0] >= '0' && buf[0] <= '9') {
+        int base = buf[1] == 'x' ? 16: 10;
+        hex_ = base / 16;
+        u_.ui64 = strtoll(buf, 0, base);
+        return ret;
+    }
+    if (buf[0] == '\'' && buf[1] == '1') {
+        ret = &ALLONES();
+        return ret;
+    }
+    if (buf[0] == '\'' && buf[1] == '0') {
+        ret = &ALLZEROS();
+        return ret;
+    }
+    if (strcmp(buf, "true") == 0 || strcmp(buf, "false") == 0) {
+        u_.ui64 = buf[0] == 't' ? 1 : 0;
+        return ret;
+    }
+    m = std::string(buf);
+    GenObject *cfgobj = SCV_get_cfg_type(getParent(), m);
+    if (cfgobj) {
+        return cfgobj;
+    }
+
+    if (val[pos] != '(') {
+        SHOW_ERROR("%s", "wrong parse format");
+        return ret;
+    }
+    pos++;
+
+    // Dual operation op(a,b):
+    std::string op = m;
+    GenObject *arg1, *arg2;
+    arg1 = parse_to_obj(val, pos);
+    if (val[pos] != ',') {
+        SHOW_ERROR("%s", "wrong parse format");
+        return ret;
+    } else {
+        pos++;
+    }
+    arg2 = parse_to_obj(val, pos);
+    if (val[pos] != ')') {
+        SHOW_ERROR("%s", "wrong parse format");
+        return ret;
+    } else {
+        pos++;
+    }
+
+    if (op == "POW2") {
+        ret = &LSH(CONST("1"), *arg2);
+    } else if (op == "ADD") {
+        ret = &ADD2(*arg1, *arg2);
+    } else if (op == "SUB") {
+        ret = &SUB2(*arg1, *arg2);
+    } else if (op == "MUL") {
+        ret = &MUL2(*arg1, *arg2);
+    } else if (op == "DIV") {
+        ret = &DIV2(*arg1, *arg2);
+    } else if (op == "GT") {
+        ret = &GT(*arg1, *arg2);
+    } else {
+        SHOW_ERROR("%s", "wrong parse format");
+    }
+    return ret;
+}
+
 
 }  // namespace sysvc
 
