@@ -61,6 +61,16 @@ Operation &ALLZEROS(const char *comment="");
  */
 Operation &ALLONES(const char *comment="");
 
+/** Simple number in different format (including allzeros/allones)
+    sysc: 1234, 0xABC, true, 3.2, "str", '1, '0
+    sv:   1234
+    vhdl: 1234
+ */
+GenObject &CONST(const char *val);
+GenObject &CONST(const char *val, const char *width);
+GenObject &CONST(const char *val, int width);
+
+
 /** Write 0 into variable:
     sysc: a = 0;
     sv:   a = 1'b0;     or '0

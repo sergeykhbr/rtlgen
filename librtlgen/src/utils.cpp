@@ -62,6 +62,10 @@ void SCV_set_local_module(GenObject *m) {
     localmodule_ = m;
 }
 
+GenObject *SCV_get_local_module() {
+    return localmodule_;
+}
+
 void SCV_add_module(GenObject *m) {
     if (!m->isModule()) {
         SHOW_ERROR("%s wrong object type", m->getName().c_str());
@@ -121,8 +125,8 @@ void SCV_set_cfg_type(GenObject *obj) {
     generic/template parameters, so we have to create independent namespace
     for each module instance to properly computes values (width and depth).
 */
-GenObject *SCV_get_cfg_type(GenObject *obj, std::string &name) {
-    if (name == "") {
+GenObject *SCV_get_cfg_type(GenObject *obj, const char *name) {
+    if (name[0] == 0) {
         return 0;
     }
     if (obj == 0) {
@@ -140,13 +144,6 @@ GenObject *SCV_get_cfg_type(GenObject *obj, std::string &name) {
     if (obj->isModule()) {
         pdepfile = SCV_get_module_class(obj)->getParent();
     }
-#if 1
-    if (obj->getType() == "apb_slv") {
-        if (pdepfile->getName() == "river_cfg") {
-            bool st = true;
-        }
-    }
-#endif
 
     // search in current namespace (global or local)
     for (auto &p: obj->getEntries()) {

@@ -24,7 +24,7 @@ Clock::Clock(GenObject *parent,
              const char *name,
              const char *period,
              const char *comment)
-    : GenValue("1", period, name, parent, comment) {
+    : GenValue(parent, name, period, comment) {
     id_ = ID_CLOCK;
 }
 

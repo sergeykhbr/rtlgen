@@ -134,7 +134,7 @@ void GenObject::setTypedef(const char *n) {
     type_ = std::string(n);
      
     if (typedef_.size()) {
-        SCV_get_cfg_type(this, typedef_);   // to trigger dependecy array
+        SCV_get_cfg_type(this, typedef_.c_str());   // to trigger dependecy array
     } else {
         // simple logic vector, nothing to trigger
     }
@@ -183,7 +183,7 @@ bool GenObject::isInterface() {
     if (isStruct()) {
         GenObject *p;
         if (!isTypedef()) {
-            p = SCV_get_cfg_type(this, type_);
+            p = SCV_get_cfg_type(this, type_.c_str());
             if (p) {
                 p = p->getParent();  // Maybe it is easy to implement isInterface() method?
             }
@@ -356,6 +356,12 @@ std::string GenObject::getStrValue() {
 #endif
 
 std::string GenObject::getStrWidth() {
+#if 1
+    if (objWidth_) {
+        return objWidth_->getStrValue();
+    }
+    return std::string("");
+#else
     size_t tpos = 0;
     if (objWidth_) {
         if (objWidth_->getId() == ID_CONST) {
@@ -366,9 +372,16 @@ std::string GenObject::getStrWidth() {
     } else {
         return parse_to_str(strWidth_.c_str(), tpos);
     }
+#endif
 }
 
 std::string GenObject::getStrDepth() {
+#if 1
+    if (objDepth_) {
+        return objDepth_->getStrValue();
+    }
+    return std::string("");
+#else
     size_t tpos = 0;
     if (objDepth_) {
         if (objDepth_->getId() == ID_CONST) {
@@ -379,27 +392,40 @@ std::string GenObject::getStrDepth() {
     } else {
         return parse_to_str(strDepth_.c_str(), tpos);
     }
+#endif
 }
 
 void GenObject::setStrValue(const char *val) {
+#if 1
+    objValue_ = SCV_parse_to_obj(val);
+#else
     objValue_ = 0;
     strValue_ = std::string(val);
     size_t pos = 0;
     parse_to_u64(val, pos);     // just to trigger dependecies
+#endif
 }
 
 void GenObject::setStrWidth(const char *val) {
+#if 1
+    objWidth_ = SCV_parse_to_obj(val);
+#else
     objWidth_ = 0;
     strWidth_ = std::string(val);
     size_t pos = 0;
     width_ = static_cast<int>(parse_to_u64(val, pos));
+#endif
 }
 
 void GenObject::setStrDepth(const char *val) {
+#if 1
+    objDepth_ = SCV_parse_to_obj(val);
+#else
     objDepth_ = 0;
     strDepth_ = std::string(val);
     size_t pos = 0;
     depth_ = static_cast<int>(parse_to_u64(val, pos));
+#endif
 }
 
 std::string GenObject::getLibName() {
@@ -409,11 +435,13 @@ std::string GenObject::getLibName() {
     return std::string("work");
 }
 
+#if 0
 void GenObject::setValue(uint64_t val) {
     char tstr[256];
     RISCV_sprintf(tstr, sizeof(tstr), "%" RV_PRI64 "d", val);
     setStrValue(tstr);
 }
+#endif
 
 void GenObject::setWidth(int w) {
     char tstr[256];
@@ -421,7 +449,7 @@ void GenObject::setWidth(int w) {
     setStrWidth(tstr);
 }
 
-
+#if 0
 uint64_t GenObject::parse_to_u64(const char *val, size_t &pos) {
     uint64_t ret = 0;
     char buf[64] = "";
@@ -666,5 +694,6 @@ size_t GenObject::parse_to_objlist(const char *val, size_t pos, std::list<GenObj
     }
     return pos;
 }
+#endif
 
 }

@@ -25,7 +25,8 @@ Logic::Logic(const char *width,
               const char *val,
               GenObject *parent,
               const char *comment)
-    : GenValue(width, val, name, parent, comment) {
+    : GenValue(parent, name, val, comment) {
+    objWidth_ = SCV_parse_to_obj(width);
 }
 
 

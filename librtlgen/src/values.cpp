@@ -22,33 +22,14 @@
 namespace sysvc {
 
 
-GenValue::GenValue(const char *width, const char *val, const char *name,
-                    GenObject *parent, const char *comment)
-    : GenObject(parent, "", (name[0] ? ID_VALUE : ID_CONST), name, comment) {
-    setStrValue(val);
-    setStrWidth(width);
+GenValue::GenValue(GenObject *parent, const char *name, const char *val, const char *comment)
+    : GenObject(parent, "", ID_VALUE, name, comment) {
+    objValue_ = SCV_parse_to_obj(val);
 }
 
-GenValue::GenValue(GenValue *width, const char *val, const char *name,
-                   GenObject *parent, const char *comment)
-    : GenObject(parent, "", (name[0] ? ID_VALUE : ID_CONST), name, comment) {
-    setStrValue(val);
-    objWidth_ = width;
-}
-
-GenValue::GenValue(const char *width, GenObject *val, const char *name,
-                   GenObject *parent, const char *comment)
-    : GenObject(parent, "", (name[0] ? ID_VALUE : ID_CONST), name, comment) {
+GenValue::GenValue(GenObject *parent, const char *name, GenObject *val, const char *comment)
+    : GenObject(parent, "", ID_VALUE, name, comment) {
     objValue_ = val;
-    setStrWidth(width);
-}
-
-GenValue::GenValue(int val) : GenObject(0, "", ID_CONST, "", "") {
-    char tstr[32];
-    objValue_ = 0;
-    RISCV_sprintf(tstr, sizeof(tstr), "%d", val);
-    strValue_ = std::string(tstr);
-    setStrWidth("32");
 }
 
 bool GenValue::isReg() {
@@ -121,6 +102,29 @@ std::string BOOL::getType() {
     return ret;
 }
 
+std::string BOOL::getStrValue() {
+    char tstr[32] = "";
+    if (SCV_is_sysc()) {
+        RISCV_sprintf(tstr, sizeof(tstr), "%d", static_cast<int>(u_.ui64));
+    } else if (SCV_is_sv()) {
+        RISCV_sprintf(tstr, sizeof(tstr), "1'b%d", static_cast<int>(u_.ui64));
+    } else if (SCV_is_vhdl()) {
+        RISCV_sprintf(tstr, sizeof(tstr), "'%d'", static_cast<int>(u_.ui64));
+    }
+    return std::string(tstr);
+}
+
+uint64_t BOOL::getValue() {
+    return u_.ui64;
+}
+
+std::string BOOL::generate() {
+    std::string ret = getType();
+    ret += " = " + getStrValue() + ";\n";
+    return ret;
+}
+
+
 std::string STRING::getType() {
     std::string ret = "";
     if (SCV_is_sysc()) {
@@ -134,7 +138,9 @@ std::string STRING::getType() {
 }
 
 std::string STRING::generate() {
-    return addspaces() + strValue_;
+    std::string ret = addspaces();
+    ret += getType() + " " + getName() + " = " + strValue_ + ";\n";
+    return ret;
 }
 
 std::string FileValue::getType() {
@@ -211,7 +217,7 @@ std::string TIMESEC::getType() {
     return ret;
 }
 
-std::string GenValue::getStrValue() {
+/*std::string GenValue::getStrValue() {
     char tstr[64] = "";
     if (objValue_) {
         return objValue_->generate();
@@ -232,95 +238,6 @@ uint64_t GenValue::getValue() {
         return u_.ui64;
     }
 }
-
-GenObject *GenValue::parse_to_obj(const char *val, size_t &pos) {
-    GenObject *ret = 0;
-    char buf[64] = "";
-    size_t cnt = 0;
-    std::string m = "";
-    bool is_float = false;
-    // Check macro:
-    while (val[pos] && val[pos] != ',' && val[pos] != '(' && val[pos] != ')') {
-        if (val[pos] == '.') {
-            is_float = true;
-        }
-        buf[cnt++] = val[pos];
-        buf[cnt] = '\0';
-        pos++;
-    }
-
-    if (buf[0] == '\0' || buf[0] == '"') {
-        return ret;
-    }
-    if (is_float) {
-        u_.f64 = strtod(buf, 0);
-        return ret;
-    } else if (buf[0] >= '0' && buf[0] <= '9') {
-        int base = buf[1] == 'x' ? 16: 10;
-        hex_ = base / 16;
-        u_.ui64 = strtoll(buf, 0, base);
-        return ret;
-    }
-    if (buf[0] == '\'' && buf[1] == '1') {
-        ret = &ALLONES();
-        return ret;
-    }
-    if (buf[0] == '\'' && buf[1] == '0') {
-        ret = &ALLZEROS();
-        return ret;
-    }
-    if (strcmp(buf, "true") == 0 || strcmp(buf, "false") == 0) {
-        u_.ui64 = buf[0] == 't' ? 1 : 0;
-        return ret;
-    }
-    m = std::string(buf);
-    GenObject *cfgobj = SCV_get_cfg_type(getParent(), m);
-    if (cfgobj) {
-        return cfgobj;
-    }
-
-    if (val[pos] != '(') {
-        SHOW_ERROR("%s", "wrong parse format");
-        return ret;
-    }
-    pos++;
-
-    // Dual operation op(a,b):
-    std::string op = m;
-    GenObject *arg1, *arg2;
-    arg1 = parse_to_obj(val, pos);
-    if (val[pos] != ',') {
-        SHOW_ERROR("%s", "wrong parse format");
-        return ret;
-    } else {
-        pos++;
-    }
-    arg2 = parse_to_obj(val, pos);
-    if (val[pos] != ')') {
-        SHOW_ERROR("%s", "wrong parse format");
-        return ret;
-    } else {
-        pos++;
-    }
-
-    if (op == "POW2") {
-        ret = &LSH(CONST("1"), *arg2);
-    } else if (op == "ADD") {
-        ret = &ADD2(*arg1, *arg2);
-    } else if (op == "SUB") {
-        ret = &SUB2(*arg1, *arg2);
-    } else if (op == "MUL") {
-        ret = &MUL2(*arg1, *arg2);
-    } else if (op == "DIV") {
-        ret = &DIV2(*arg1, *arg2);
-    } else if (op == "GT") {
-        ret = &GT(*arg1, *arg2);
-    } else {
-        SHOW_ERROR("%s", "wrong parse format");
-    }
-    return ret;
-}
-
-
+*/
 }  // namespace sysvc
 

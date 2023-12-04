@@ -614,7 +614,7 @@ std::string ModuleObject::generate_sv_mod() {
         }
         SCV_set_generator(SV_PKG);  // to generate with package name
         strtype = p->getType();
-        GenObject *cfgobj = SCV_get_cfg_type(this, strtype);
+        GenObject *cfgobj = SCV_get_cfg_type(this, strtype.c_str());
         if (cfgobj) {
             // whole types (like vectors or typedef)
             ln += cfgobj->getFile()->getName() + "_pkg::" + strtype;

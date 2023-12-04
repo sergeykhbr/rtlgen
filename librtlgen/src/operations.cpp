@@ -532,7 +532,9 @@ Operation &BIT(GenObject &a, const char *b, const char *comment) {
 }
 
 Operation &BIT(GenObject &a, int b, const char *comment) {
-    GenObject *t1 = new I32D(b);
+    char tstr[64];
+    RISCV_sprintf(tstr, sizeof(tstr), "%d", b);
+    GenObject *t1 = new I32D(tstr);
     return (BIT(a, *t1, comment));
 }
 
@@ -639,23 +641,6 @@ Operation &BITSW(GenObject &a, GenObject &start, GenObject &width, const char *c
 }
 
 
-// CONST
-GenValue &CONST(const char *val) {
-    GenValue *p = new I32D(val);
-    return *p;
-}
-
-GenValue &CONST(const char *val, const char *width) {
-    GenValue *p = new Logic(width, "", val);
-    return *p;
-}
-
-GenValue &CONST(const char *val, int width) {
-    char tstr[64];
-    RISCV_sprintf(tstr, sizeof(tstr), "%d", width);
-    return CONST(val, tstr);
-}
-
 std::string SetConstOperation::generate() {
     std::string ret = addspaces();
     char tstr[32];
@@ -676,7 +661,7 @@ std::string SetConstOperation::generate() {
         Logic b(tw, "", tstr);
         ret += obj2varname(&b);
     } else {
-        GenValue b(tw, tstr, "", 0);
+        GenValue b(0, "", tstr);
         ret += obj2varname(&b);
     }
     ret += ";";
