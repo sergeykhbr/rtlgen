@@ -116,41 +116,53 @@ GenObject *SCV_parse_to_obj(const char *val) {
     GenObject *ret = 0;
     const char *pstr = val;
     char opcode[256] = "";
-    char str1[256] = "";
-    char str2[256] = "";
+    char strarg[256] = "";
     size_t cnt = 0;
     size_t pos = 0;
     int bracecnt = 0;
+
+    if (val[0] == '\0') {
+        return ret;
+    }
 
     while (val[pos] && val[pos] != '(' && val[pos] != ')' && val[pos] != ',') {
         opcode[cnt++] = val[pos++];
         opcode[cnt] = 0;
     }
+#if 1
+if (strcmp(val, "dbytes") == 0) {
+bool st = true;
+}
+#endif
     if (val[pos] != '(') {
         // No operations:
-        bool isfloat = isfloat;
+        bool isfloat = false;
         GenObject *cfgobj;
         pstr = opcode;
         while (*pstr) {
             if (*pstr == '.' && !isfloat) {
                 isfloat = true;
+            } else if (*pstr < '0' || *pstr > '9') {
+                // File path string contains '.' symbols
+                isfloat = false;
+                break;
             }
             pstr++;
         }
         if (isfloat) {
-            ret = new TIMESEC(val);
+            ret = new FloatNumber(strtod(opcode, NULL));
         } else if (val[0] == '0' && val[1] == 'x') {
-            ret = new UI64H(val);
+            ret = new HexNumber(static_cast<uint64_t>(strtoll(val, 0, 16)));
         } else if (val[0] == '\'' && val[1] == '0') {
             ret = &ALLZEROS();
         } else if (val[0] == '\'' && val[1] == '1') {
             ret = &ALLONES();
         } else if (val[0] == 't' && val[1] == 'r' && val[2] == 'u' && val[3] == 'e') {
-            ret = new BOOL(val);
+            ret = new DecNumber(1ull);
         } else if (val[0] == 'f' && val[1] == 'a' && val[2] == 'l' && val[3] == 's' && val[4] == 'e') {
-            ret = new BOOL(val);
+            ret = new DecNumber(0ull);
         } else if (val[0] >= '0' && val[0] <= '9') {
-            ret = new I32D(val);
+            ret = new DecNumber(static_cast<uint64_t>(strtoll(val, 0, 10)));
         } else if (cfgobj = SCV_get_cfg_type(SCV_get_local_module(), val)) {
             ret = cfgobj;
         } else {
@@ -163,48 +175,44 @@ GenObject *SCV_parse_to_obj(const char *val) {
         return ret;
     }
     pos++;                  // skip '(' symbol
-    cnt = 0;
-    while (val[pos] && val[pos] != ',') {
-        str1[cnt++] = val[pos++];
-        str1[cnt] = 0;
-    }
-    if (val[pos++] != ',') {
-        SHOW_ERROR("parse error: argument%d", 1);
-        return ret;
-    }
-
-    cnt = 0;
-    bracecnt = 0;
-    while (val[pos] && bracecnt == 0 && val[pos] != ')') {
-        if (val[pos] == '(') {
-            bracecnt++;
-        } else if (val[pos] == ')') {
-            bracecnt--;
-        }
-        str2[cnt++] = val[pos++];
-        str2[cnt] = 0;
-    }
-    if (val[pos++] != ')') {
-        SHOW_ERROR("parse error: argument%d", 2);
-        return ret;
-    }
 
     // Dual operation op(a,b):
-    GenObject *arg1 = SCV_parse_to_obj(str1);
-    GenObject *arg2 = SCV_parse_to_obj(str2);
+    GenObject *args[2];
+    for (int i = 0; i < 2; i++) {
+        cnt = 0;
+        bracecnt = 0;
+        while (val[pos] 
+            && ((bracecnt == 0 && val[pos] != ',' && val[pos] != ')'))
+                || bracecnt) {
+            if (val[pos] == '(') {
+                bracecnt++;
+            } else if (val[pos] == ')') {
+                bracecnt--;
+            }
+            strarg[cnt++] = val[pos++];
+            strarg[cnt] = 0;
+        }
+        if ((i == 0 && val[pos] != ',')
+            || (i == 1 && val[pos] != ')')) {
+            SHOW_ERROR("parse error: argument%d", i);
+            return ret;
+        }
+        args[i] = SCV_parse_to_obj(strarg);
+        pos++;
+    }
 
     if (strcmp(opcode, "POW2") == 0) {
-        ret = &LSH(CONST("1"), *arg2);
+        ret = &LSH(*args[0], *args[1]);
     } else if (strcmp(opcode, "ADD") == 0) {
-        ret = &ADD2(*arg1, *arg2);
+        ret = &ADD2(*args[0], *args[1]);
     } else if (strcmp(opcode, "SUB") == 0) {
-        ret = &SUB2(*arg1, *arg2);
+        ret = &SUB2(*args[0], *args[1]);
     } else if (strcmp(opcode, "MUL") == 0) {
-        ret = &MUL2(*arg1, *arg2);
+        ret = &MUL2(*args[0], *args[1]);
     } else if (strcmp(opcode, "DIV") == 0) {
-        ret = &DIV2(*arg1, *arg2);
+        ret = &DIV2(*args[0], *args[1]);
     } else if (strcmp(opcode, "GT") == 0) {
-        ret = &GT(*arg1, *arg2);
+        ret = &GT(*args[0], *args[1]);
     } else {
         SHOW_ERROR("%s", "wrong parse format");
     }

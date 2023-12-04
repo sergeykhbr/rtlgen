@@ -126,29 +126,32 @@ void SCV_set_cfg_type(GenObject *obj) {
     for each module instance to properly computes values (width and depth).
 */
 GenObject *SCV_get_cfg_type(GenObject *obj, const char *name) {
+    GenObject *pdepfile = 0;
     if (name[0] == 0) {
         return 0;
     }
-    if (obj == 0) {
-        // temporary constant
-        obj = localmodule_;
-    }
-    while (!obj->isModule() && !obj->isFile()) {
-        obj = obj->getParent();
-    }
-    if (!obj->isModule() && !obj->isFile()) {
-        SHOW_ERROR("Wrong inheritance %s", obj->getName().c_str());
-    }
+    if (localmodule_) {
+        if (obj == 0) {
+            // temporary constant
+            obj = localmodule_;
+        }
+        while (!obj->isModule() && !obj->isFile()) {
+            obj = obj->getParent();
+        }
+        if (!obj->isModule() && !obj->isFile()) {
+            SHOW_ERROR("Wrong inheritance %s", obj->getName().c_str());
+        }
 
-    GenObject *pdepfile = obj;
-    if (obj->isModule()) {
-        pdepfile = SCV_get_module_class(obj)->getParent();
-    }
+        pdepfile = obj;
+        if (obj->isModule()) {
+            pdepfile = SCV_get_module_class(obj)->getParent();
+        }
 
-    // search in current namespace (global or local)
-    for (auto &p: obj->getEntries()) {
-        if (p->getName() == name) {
-            return p;
+        // search in current namespace (global or local)
+        for (auto &p: obj->getEntries()) {
+            if (p->getName() == name) {
+                return p;
+            }
         }
     }
     
@@ -159,7 +162,9 @@ GenObject *SCV_get_cfg_type(GenObject *obj, const char *name) {
             while (!incfile->isFile()) {
                 incfile = incfile->getParent();
             }
-            pdepfile->add_dependency(incfile);
+            if (pdepfile) {
+                pdepfile->add_dependency(incfile);
+            }
             return p;
         }
     }

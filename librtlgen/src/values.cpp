@@ -21,6 +21,11 @@
 
 namespace sysvc {
 
+STRING::STRING(const char *val, const char *name, GenObject *parent, const char *comment)
+    : GenObject(parent, name, ID_VALUE, val, comment) {
+    strValue_ = "\"" + std::string(val) + "\"";
+}
+
 
 GenValue::GenValue(GenObject *parent, const char *name, const char *val, const char *comment)
     : GenObject(parent, "", ID_VALUE, name, comment) {
@@ -105,17 +110,20 @@ std::string BOOL::getType() {
 std::string BOOL::getStrValue() {
     char tstr[32] = "";
     if (SCV_is_sysc()) {
-        RISCV_sprintf(tstr, sizeof(tstr), "%d", static_cast<int>(u_.ui64));
+        RISCV_sprintf(tstr, sizeof(tstr), "%d",
+            static_cast<int>(objValue_->getValue()));
     } else if (SCV_is_sv()) {
-        RISCV_sprintf(tstr, sizeof(tstr), "1'b%d", static_cast<int>(u_.ui64));
+        RISCV_sprintf(tstr, sizeof(tstr), "1'b%d",
+            static_cast<int>(objValue_->getValue()));
     } else if (SCV_is_vhdl()) {
-        RISCV_sprintf(tstr, sizeof(tstr), "'%d'", static_cast<int>(u_.ui64));
+        RISCV_sprintf(tstr, sizeof(tstr), "'%d'",
+            static_cast<int>(objValue_->getValue()));
     }
     return std::string(tstr);
 }
 
 uint64_t BOOL::getValue() {
-    return u_.ui64;
+    return objValue_->getValue();
 }
 
 std::string BOOL::generate() {

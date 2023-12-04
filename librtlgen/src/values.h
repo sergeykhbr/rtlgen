@@ -23,6 +23,55 @@
 
 namespace sysvc {
 
+class DecNumber : public GenObject {
+ public:
+    DecNumber(uint64_t v)
+        : GenObject(0, "", ID_VALUE, "", NO_COMMENT), ui64_(v) {}
+    DecNumber(int v) : GenObject(0, "", ID_VALUE, "", NO_COMMENT),
+        ui64_(static_cast<uint64_t>(v)) {}
+
+    virtual uint64_t getValue() override { return ui64_; }
+
+ protected:
+    uint64_t ui64_;
+};
+
+class HexNumber : public GenObject {
+ public:
+    HexNumber(uint64_t v)
+        : GenObject(0, "", ID_VALUE, "", NO_COMMENT), ui64_(v) {}
+
+    virtual bool isHex() override { return true; }
+    virtual uint64_t getValue() override { return ui64_; }
+
+ protected:
+    uint64_t ui64_;
+};
+
+class FloatNumber : public GenObject {
+ public:
+    FloatNumber(double v)
+        : GenObject(0, "", ID_VALUE, "", NO_COMMENT), f64_(v) {}
+
+    virtual bool isFloat() override { return true; }
+    virtual double getFloatValue() override { return f64_; }
+
+ protected:
+    double f64_;
+};
+
+class STRING : public GenObject {
+ public:
+    STRING(const char *val, const char *name="",
+        GenObject *parent=0, const char *comment="");
+
+    virtual bool isString() override { return true; }
+    virtual std::string getType();
+    virtual std::string getStrValue() override { return strValue_; }
+    virtual std::string generate() override;
+};
+
+
 class GenValue : public GenObject {
  public:
     GenValue(GenObject *parent, const char *name, const char *val,
@@ -39,11 +88,6 @@ class GenValue : public GenObject {
 
     virtual std::string v_name(std::string v) override;
     virtual std::string r_name(std::string v) override;
- protected:
-    union const_value_type {
-        uint64_t ui64;
-        double f64;
-    } u_;
 };
 
 class BOOL : public GenValue {
@@ -55,20 +99,6 @@ class BOOL : public GenValue {
     virtual std::string getType() override;
     virtual std::string getStrValue() override;
     virtual uint64_t getValue() override;
-    virtual std::string generate() override;
-};
-
-class STRING : public GenValue {
- public:
-    STRING(const char *val, const char *name="",
-        GenObject *parent=0, const char *comment=""):
-        GenValue(parent, name, val, comment) {
-        strValue_ = "\"" + std::string(val) + "\"";
-    }
-
-    virtual bool isString() override { return true; }
-    virtual std::string getType();
-    virtual std::string getStrValue() override { return strValue_; }
     virtual std::string generate() override;
 };
 
