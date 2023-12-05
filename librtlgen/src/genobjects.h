@@ -28,7 +28,7 @@ enum EIdType {
     ID_PROJECT = (1<<0),
     ID_FOLDER = (1<<1),
     ID_FILE = (1<<2),
-    ID_CONST = (1<<3),
+//    ID_CONST = (1<<3),
     ID_VALUE = (1<<4),
     ID_ENUM = (1<<5),
 //    ID_PARAM = (1<<6),
@@ -67,6 +67,7 @@ class GenObject {
  public:
     GenObject(GenObject *parent, const char *type, EIdType id,
               const char *name, const char *comment=NO_COMMENT);
+    GenObject(GenObject *parent, const char *comment);       // 
 
     virtual std::list<GenObject *> &getEntries() { return entries_; }
     virtual EIdType getId() { return id_; }
@@ -132,6 +133,7 @@ class GenObject {
     virtual void setObjValue(GenObject *obj) { objValue_ = obj; }
     virtual GenObject *getObjValue() { return objValue_; }
     virtual int getWidth();
+    virtual GenObject *getObjWidth() { return 0; }
     virtual std::string getStrWidth();
     virtual void setStrWidth(const char *val);
     virtual void setWidth(int w);
@@ -171,7 +173,6 @@ class GenObject {
     std::string type_;
     std::string name_;
 
-    int width_;                                         // FIXME and remove: we should calc these integer, because local parameter becomes unavailable after module is created
     int depth_;
     std::string strValue_;
     std::string strWidth_;

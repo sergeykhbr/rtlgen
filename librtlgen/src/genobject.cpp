@@ -20,11 +20,14 @@
 
 namespace sysvc {
 
+GenObject::GenObject(GenObject *parent, const char *comment) :
+    GenObject(parent, "", ID_VALUE, "", comment) {
+}
+
 GenObject::GenObject(GenObject *parent, const char *type, EIdType id,
                      const char *name, const char *comment) {
     id_ = id;
     parent_ = parent;
-    width_ = 0;
     depth_ = 0;
     strValue_ = "";
     strWidth_ = "";
@@ -259,7 +262,7 @@ int GenObject::getWidth() {
     if (objWidth_) {
         return static_cast<int>(objWidth_->getValue());
     } else {
-        return width_;
+        return 0;
     }
 }
 
@@ -356,43 +359,17 @@ std::string GenObject::getStrValue() {
 #endif
 
 std::string GenObject::getStrWidth() {
-#if 1
     if (objWidth_) {
         return objWidth_->getStrValue();
     }
     return std::string("");
-#else
-    size_t tpos = 0;
-    if (objWidth_) {
-        if (objWidth_->getId() == ID_CONST) {
-            return objWidth_->getStrValue();
-        } else {
-            return objWidth_->getName();
-        }
-    } else {
-        return parse_to_str(strWidth_.c_str(), tpos);
-    }
-#endif
 }
 
 std::string GenObject::getStrDepth() {
-#if 1
     if (objDepth_) {
         return objDepth_->getStrValue();
     }
     return std::string("");
-#else
-    size_t tpos = 0;
-    if (objDepth_) {
-        if (objDepth_->getId() == ID_CONST) {
-            return objDepth_->getStrValue();
-        } else {
-            return objDepth_->getName();
-        }
-    } else {
-        return parse_to_str(strDepth_.c_str(), tpos);
-    }
-#endif
 }
 
 void GenObject::setStrValue(const char *val) {

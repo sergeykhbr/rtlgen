@@ -82,7 +82,7 @@ std::string Operation::fullname(const char *prefix, std::string name, GenObject 
     if (p && p->getId() == ID_ARRAY_DEF) {
         curname = fullname(prefix, name, p);
         // Do not add 'name' to avoid double adding
-    } else if (obj->getId() == ID_CONST) {
+    } else if (obj->isConst()) {
         curname = obj->getStrValue();
     } else if (obj->isOperation()) {
         curname = obj->generate();
@@ -576,7 +576,7 @@ std::string BITS_gen(GenObject **args) {
 
 Operation &BITS(GenObject &a, GenObject &h, GenObject &l, const char *comment) {
     Operation *p = new Operation(0, comment);
-//    p->setWidth(static_cast<int>(h.getValue() - l.getValue()) + 1);
+    p->setWidth(static_cast<int>(h.getValue() - l.getValue()) + 1);
     p->igen_ = BITS_gen;
     p->add_arg(p);
     p->add_arg(&a);
@@ -588,14 +588,11 @@ Operation &BITS(GenObject &a, GenObject &h, GenObject &l, const char *comment) {
 Operation &BITS(GenObject &a, int h, int l, const char *comment) {
     Operation *p = new Operation(0, comment);
     p->setWidth(h - l + 1);
-    char tstr[64];
     p->igen_ = BITS_gen;
     p->add_arg(p);
     p->add_arg(&a);
-    RISCV_sprintf(tstr, sizeof(tstr), "%d", h);
-    p->add_arg(new I32D(tstr));
-    RISCV_sprintf(tstr, sizeof(tstr), "%d", l);
-    p->add_arg(new I32D(tstr));
+    p->add_arg(new DecConst(h));
+    p->add_arg(new DecConst(l));
     return *p;
 }
 
@@ -640,14 +637,22 @@ Operation &BITSW(GenObject &a, GenObject &start, GenObject &width, const char *c
     return *p;
 }
 
+/**
+    Used to set 0 or 1, not ued with other values (but possible)
+    todo: rename to SetDec..
+ */
+SetConstOperation::SetConstOperation(GenObject &a, uint64_t v, const char *comment)
+    : Operation(comment), a_(&a) {
+    if (a_->isLogic()) {
+        b_ = new DecLogicConst(a_->getObjWidth(), v);
+    } else {
+        b_ = new DecConst(v);
+    }
+}
 
 std::string SetConstOperation::generate() {
     std::string ret = addspaces();
-    char tstr[32];
-    char tw[16];
-    RISCV_sprintf(tstr, sizeof(tstr), "%" RV_PRI64 "d", v_);
-
-    if (SCV_is_sysc() && a_->getId() == ID_CLOCK) {
+    if (SCV_is_sysc() && a_->isClock()) {
         ret += "// ";   // do not clear clock module
     }
     ret += obj2varname(a_, "v");
@@ -656,15 +661,7 @@ std::string SetConstOperation::generate() {
     } else {
         ret += " = ";
     }
-    RISCV_sprintf(tw, sizeof(tw), "%d", a_->getWidth());
-    if (a_->isLogic()) {
-        Logic b(tw, "", tstr);
-        ret += obj2varname(&b);
-    } else {
-        GenValue b(0, "", tstr);
-        ret += obj2varname(&b);
-    }
-    ret += ";";
+    ret += b_->getStrValue() + ";";
     ret += addtext(this, ret.size());
     ret += "\n";
     return ret;
@@ -945,7 +942,7 @@ std::string SETVAL_gen(GenObject **args) {
     if (SCV_is_sv() && args[2]->isString()) {
         ret += "{";
     }
-    if (args[2]->getId() == ID_CONST) {
+    if (args[2]->isConst()) {
         ret += args[2]->getStrValue();
     } else if (args[2]->getId() == ID_VALUE
             || args[2]->getId() == ID_CLOCK
@@ -2205,7 +2202,7 @@ std::string CC2_gen(GenObject **args) {
     std::string A = Operation::obj2varname(args[1], "r", true);
     std::string B = Operation::obj2varname(args[2], "r", true);
     if (SCV_is_sysc()) {
-        if (args[2]->getId() == ID_CONST) {
+        if (args[2]->isConst()) {
             int w = args[2]->getWidth();
             A = "(" + A + " << " + args[2]->getStrWidth() + ")";
             if (args[2]->getValue() != 0) {
@@ -2236,8 +2233,8 @@ std::string CC3_gen(GenObject **args) {
     std::string B = Operation::obj2varname(args[2]);
     std::string C = Operation::obj2varname(args[3]);
     if (SCV_is_sysc()) {
-        if (args[1]->getId() == ID_CONST && args[1]->getValue() == 0
-            && args[3]->getId() == ID_CONST) {
+        if (args[1]->isConst() && args[1]->getValue() == 0
+            && args[3]->isConst()) {
             int w = args[2]->getWidth();
             A = "(" + B + " << " + args[3]->getStrWidth() + ")";
             if (args[3]->getValue() != 0) {
@@ -2296,7 +2293,7 @@ std::string LSH_gen(GenObject **args) {
     if (SCV_is_sysc()) {
         A = "(" + A + " << " + B + ")";
     } else if (SCV_is_sv()) {
-        if (args[2]->isParam() || args[2]->getId() == ID_CONST) {
+        if (args[2]->isParam() || args[2]->isConst()) {
             A = "{" + A + ", {" + B + "{1'b0}}}";
         } else {
             A = "(" + A + " << " + B + ")";
@@ -3565,7 +3562,7 @@ void GENERATE(const char *name, const char *comment) {
     Operation::push_obj(p);
     p->igen_ = GENERATE_gen;
     p->add_arg(p);
-    p->add_arg(new STRING(name));
+    p->add_arg(new StringConst(name));
 }
 
 // ENDGENERATE
@@ -3585,7 +3582,7 @@ void ENDGENERATE(const char *name, const char *comment) {
     Operation *p = new Operation(comment);
     p->igen_ = ENDGENERATE_gen;
     p->add_arg(p);
-    p->add_arg(new STRING(name));
+    p->add_arg(new StringConst(name));
 }
 
 /**

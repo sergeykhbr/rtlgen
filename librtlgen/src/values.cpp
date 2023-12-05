@@ -21,12 +21,6 @@
 
 namespace sysvc {
 
-STRING::STRING(const char *val, const char *name, GenObject *parent, const char *comment)
-    : GenObject(parent, name, ID_VALUE, val, comment) {
-    strValue_ = "\"" + std::string(val) + "\"";
-}
-
-
 GenValue::GenValue(GenObject *parent, const char *name, const char *val, const char *comment)
     : GenObject(parent, "", ID_VALUE, name, comment) {
     objValue_ = SCV_parse_to_obj(val);
@@ -36,6 +30,21 @@ GenValue::GenValue(GenObject *parent, const char *name, GenObject *val, const ch
     : GenObject(parent, "", ID_VALUE, name, comment) {
     objValue_ = val;
 }
+
+std::string GenValue::getName() {
+    if (name_ == "") {
+        return getStrValue();
+    }
+    return name_;
+}
+
+std::string GenValue::getStrValue() {
+    if (objValue_ == 0) {
+        return std::string("");
+    }
+    return objValue_->getStrValue();
+}
+
 
 bool GenValue::isReg() {
     GenObject *p = getParent();
@@ -61,11 +70,7 @@ bool GenValue::isNReg() {
 
 std::string GenValue::v_name(std::string v) {
     std::string ret = "";
-    if (getId() == ID_CONST) {
-        ret = getStrValue();
-    } else {
-        ret = getName();
-    }
+    ret = getName();
     if (v.size()) {
         ret += "." + v;
     }
@@ -77,11 +82,7 @@ std::string GenValue::v_name(std::string v) {
 
 std::string GenValue::r_name(std::string v) {
     std::string ret = "";
-    if (getId() == ID_CONST) {
-        ret = getStrValue();
-    } else {
-        ret = getName();
-    }
+    ret = getName();
     if (SCV_is_sysc() && (isInput() || isSignal())) {
         ret += ".read()";
     }
@@ -126,13 +127,6 @@ uint64_t BOOL::getValue() {
     return objValue_->getValue();
 }
 
-std::string BOOL::generate() {
-    std::string ret = getType();
-    ret += " = " + getStrValue() + ";\n";
-    return ret;
-}
-
-
 std::string STRING::getType() {
     std::string ret = "";
     if (SCV_is_sysc()) {
@@ -150,6 +144,14 @@ std::string STRING::generate() {
     ret += getType() + " " + getName() + " = " + strValue_ + ";\n";
     return ret;
 }
+
+
+std::string BOOL::generate() {
+    std::string ret = getType();
+    ret += " = " + getStrValue() + ";\n";
+    return ret;
+}
+
 
 std::string FileValue::getType() {
     std::string ret = "";

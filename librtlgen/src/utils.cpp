@@ -153,6 +153,14 @@ GenObject *SCV_get_cfg_type(GenObject *obj, const char *name) {
                 return p;
             }
         }
+        // Check parameter in a parent module namespace
+        if (obj->isModule() && obj->getParent()->isModule()) {
+            for (auto &p: obj->getParent()->getEntries()) {
+                if (p->getName() == name) {
+                    return p;
+                }
+            }
+        }
     }
     
     for (auto &p: listGlobalTypes_) {

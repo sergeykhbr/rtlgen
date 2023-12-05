@@ -39,8 +39,15 @@ class Logic : public GenValue {
           const char *comment = NO_COMMENT) :
         Logic(width, name, val, parent, comment) {}
 
+//    Logic(GenObject *parent,
+//          const char *name,
+//          GenObject *width,
+//          GenObject *val,
+//          const char *comment);
+
     virtual bool isLogic() override { return true; }
     virtual std::string getType();
+    virtual GenObject *getObjWidth() { return objWidth_; }
     virtual std::string generate() override;
 };
 

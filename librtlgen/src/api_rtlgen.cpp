@@ -15,6 +15,7 @@
 // 
 
 #include "api_rtlgen.h"
+#include <string.h>
 
 namespace sysvc {
 
@@ -32,52 +33,30 @@ Operation &ALLONES(const char *comment) {
 
 // CONST
 GenObject &CONST(const char *val) {
-    GenObject *p = 0;
-    GenObject *cfgobj;
-    bool isfloat = false;
-    bool isparse = false;
-    const char *pstr = val;
-    while (*pstr) {
-        if (*pstr == '.' && !isfloat) {
-            isfloat = true;
-        } else if (*pstr == '(') {
-            isparse = true;
-        }
-        pstr++;
-    }
-    if (isfloat) {
-        p = new TIMESEC(val);
-    } else if (val[0] == '0' && val[1] == 'x') {
-        p = new UI64H(val);
-    } else if (val[0] == '\'' && val[1] == '0') {
-        p = &ALLZEROS();
-    } else if (val[0] == '\'' && val[1] == '1') {
-        p = &ALLONES();
-    } else if (val[0] == 't' && val[1] == 'r' && val[2] == 'u' && val[3] == 'e') {
-        p = new BOOL(val);
-    } else if (val[0] == 'f' && val[1] == 'a' && val[2] == 'l' && val[3] == 's' && val[4] == 'e') {
-        p = new BOOL(val);
-    } else if (val[0] >= '0' && val[0] <= '9') {
-        p = new I32D(val);
-    } else if (isparse) {
-        p = SCV_parse_to_obj(val);
-    } else if (cfgobj = SCV_get_cfg_type(SCV_get_local_module(), val)) {
-        p = cfgobj;
-    } else {
-        p = new STRING(val);
-    }
+    GenObject *p = SCV_parse_to_obj(val);
     return *p;
 }
 
 GenObject &CONST(const char *val, const char *width) {
-    GenObject *p = new Logic(width, "", val);
+    GenObject *w = SCV_parse_to_obj(width);
+    GenObject *p;
+    if (val[0] == '0' && val[1] == 'x') {
+        p = new HexLogicConst(w, SCV_parse_to_obj(val)->getValue());
+    } else {
+        p = new DecLogicConst(w, SCV_parse_to_obj(val)->getValue());
+    }
     return *p;
 }
 
 GenObject &CONST(const char *val, int width) {
-    char tstr[64];
-    RISCV_sprintf(tstr, sizeof(tstr), "%d", width);
-    return CONST(val, tstr);
+    GenObject *w = new DecConst(width);
+    GenObject *p;
+    if (val[0] == '0' && val[1] == 'x') {
+        p = new HexLogicConst(w, SCV_parse_to_obj(val)->getValue());
+    } else {
+        p = new DecLogicConst(w, SCV_parse_to_obj(val)->getValue());
+    }
+    return *p;
 }
 
 
@@ -121,19 +100,29 @@ GenObject *SCV_parse_to_obj(const char *val) {
     size_t pos = 0;
     int bracecnt = 0;
 
+#if 1
+    if (strcmp(val, "((2 * RISCV_ARCH) - 12)") == 0) {
+        bool st = true;
+    }
+#endif
     if (val[0] == '\0') {
         return ret;
     }
+    // Skip spaces:
+    while (val[pos] == ' ') {
+        pos++;
+    }
 
-    while (val[pos] && val[pos] != '(' && val[pos] != ')' && val[pos] != ',') {
+    while (val[pos] && val[pos] != '(' && val[pos] != ')'
+        && val[pos] != ',' && val[pos] != ' ') {
         opcode[cnt++] = val[pos++];
         opcode[cnt] = 0;
     }
-#if 1
-if (strcmp(val, "dbytes") == 0) {
-bool st = true;
-}
-#endif
+    // Skip spaces:
+    while (val[pos] == ' ') {
+        pos++;
+    }
+
     if (val[pos] != '(') {
         // No operations:
         bool isfloat = false;
@@ -149,24 +138,25 @@ bool st = true;
             }
             pstr++;
         }
+
         if (isfloat) {
-            ret = new FloatNumber(strtod(opcode, NULL));
+            ret = new FloatConst(strtod(opcode, NULL));
         } else if (val[0] == '0' && val[1] == 'x') {
-            ret = new HexNumber(static_cast<uint64_t>(strtoll(val, 0, 16)));
+            ret = new HexConst(static_cast<uint64_t>(strtoll(val, 0, 16)));
         } else if (val[0] == '\'' && val[1] == '0') {
             ret = &ALLZEROS();
         } else if (val[0] == '\'' && val[1] == '1') {
             ret = &ALLONES();
         } else if (val[0] == 't' && val[1] == 'r' && val[2] == 'u' && val[3] == 'e') {
-            ret = new DecNumber(1ull);
+            ret = new DecConst(1ull);
         } else if (val[0] == 'f' && val[1] == 'a' && val[2] == 'l' && val[3] == 's' && val[4] == 'e') {
-            ret = new DecNumber(0ull);
+            ret = new DecConst(0ull);
         } else if (val[0] >= '0' && val[0] <= '9') {
-            ret = new DecNumber(static_cast<uint64_t>(strtoll(val, 0, 10)));
+            ret = new DecConst(static_cast<uint64_t>(strtoll(val, 0, 10)));
         } else if (cfgobj = SCV_get_cfg_type(SCV_get_local_module(), val)) {
             ret = cfgobj;
         } else {
-            ret = new STRING(val);
+            ret = new StringConst(val);
         }
 
         if (val[pos]) {     // skip ')' or ',' symbols
@@ -181,9 +171,17 @@ bool st = true;
     for (int i = 0; i < 2; i++) {
         cnt = 0;
         bracecnt = 0;
+        // Skip spaces:
+        while (val[pos] == ' ') {
+            pos++;
+        }
         while (val[pos] 
-            && ((bracecnt == 0 && val[pos] != ',' && val[pos] != ')'))
+            && ((bracecnt == 0 && val[pos] != ',' && val[pos] != ')' && val[pos] != ' '))
                 || bracecnt) {
+            // Skip spaces:
+            while (val[pos] == ' ') {
+                pos++;
+            }
             if (val[pos] == '(') {
                 bracecnt++;
             } else if (val[pos] == ')') {
@@ -191,6 +189,10 @@ bool st = true;
             }
             strarg[cnt++] = val[pos++];
             strarg[cnt] = 0;
+            // Skip spaces:
+            while (val[pos] == ' ') {
+                pos++;
+            }
         }
         if ((i == 0 && val[pos] != ',')
             || (i == 1 && val[pos] != ')')) {
@@ -199,6 +201,10 @@ bool st = true;
         }
         args[i] = SCV_parse_to_obj(strarg);
         pos++;
+        // Skip spaces:
+        while (val[pos] == ' ') {
+            pos++;
+        }
     }
 
     if (strcmp(opcode, "POW2") == 0) {

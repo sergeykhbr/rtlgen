@@ -40,4 +40,8 @@ std::string Clock::getType() {
     return ret;
 }
 
+std::string Clock::getStrValue() {
+    return objValue_->getName();
+}
+
 }

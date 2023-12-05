@@ -17,6 +17,7 @@
 #pragma once
 
 #include "genobjects.h"
+#include "const.h"
 #include "values.h"
 #include "params.h"
 #include "logic.h"
@@ -102,12 +103,15 @@ class AllConstOperation : public Operation {
  */
 class SetConstOperation : public Operation {
  public:
-    SetConstOperation(GenObject &a, uint64_t v, const char *comment)
-        : Operation(comment), a_(&a), v_(v) {}
+    SetConstOperation(GenObject &a, uint64_t v, const char *comment);
+
+    virtual uint64_t getValue() override { return b_->getValue(); }
+    virtual int getWidth() override { return b_->getWidth(); }
     virtual std::string generate() override;
+
  protected:
     GenObject *a_;
-    uint64_t v_;
+    GenObject *b_;
 };
 
 Operation &BIT(GenObject &a, GenObject &b, const char *comment="");
