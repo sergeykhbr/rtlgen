@@ -177,6 +177,12 @@ TEXT();
     ENDNEW();
 
 TEXT();
+    ctrl0.CFG_SDCARD_POWERUP_DONE_DELAY.setObjValue(&CFG_SDCARD_POWERUP_DONE_DELAY);
+    ctrl0.CFG_SDCARD_HCS.setObjValue(&CFG_SDCARD_HCS);
+    ctrl0.CFG_SDCARD_VHS.setObjValue(&CFG_SDCARD_VHS);
+    ctrl0.CFG_SDCARD_PCIE_1_2V.setObjValue(&CFG_SDCARD_PCIE_1_2V);
+    ctrl0.CFG_SDCARD_PCIE_AVAIL.setObjValue(&CFG_SDCARD_PCIE_AVAIL);
+    ctrl0.CFG_SDCARD_VDD_VOLTAGE_WINDOW.setObjValue(&CFG_SDCARD_VDD_VOLTAGE_WINDOW);
     NEW(ctrl0, ctrl0.getName().c_str());
         CONNECT(ctrl0, 0, ctrl0.i_clk, i_sclk);
         CONNECT(ctrl0, 0, ctrl0.i_nrst, i_nrst);

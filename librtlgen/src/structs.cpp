@@ -506,14 +506,7 @@ std::string StructObject::generate_const_none() {
             if (p->getId() == ID_COMMENT) {
                 continue;
             }
-            ret += addspaces();
-            std::string strvalue = p->getStrValue();
-            if (p->isNumber(strvalue)
-                && p->getWidth() > 1 && p->getValue() == 0) {
-                ret += "'0";
-            } else {
-                ret += strvalue;
-            }
+            ret += addspaces() + p->getStrValue();
             if (p != entries_.back()) {
                 ret += ",";
             }
@@ -529,14 +522,7 @@ std::string StructObject::generate_const_none() {
             if (p->getId() == ID_COMMENT) {
                 continue;
             }
-            ret += addspaces();
-            std::string strvalue = p->getStrValue();
-            if (p->isNumber(strvalue)
-                && p->getWidth() > 1 && p->getValue() == 0) {
-                ret += "(others => '0')";
-            } else {
-                ret += strvalue;
-            }
+            ret += addspaces() + p->getStrValue();
             if (p != entries_.back()) {
                 ret += ",";
             }

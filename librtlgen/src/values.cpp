@@ -42,7 +42,7 @@ std::string GenValue::getStrValue() {
     if (objValue_ == 0) {
         return std::string("");
     }
-    return objValue_->getStrValue();
+    return objValue_->getName();
 }
 
 

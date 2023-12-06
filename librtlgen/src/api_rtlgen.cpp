@@ -31,6 +31,42 @@ Operation &ALLONES(const char *comment) {
     return *new AllConstOperation(1, comment);
 }
 
+// BIT
+Operation &BIT(GenObject &a, GenObject &b, const char *comment) {
+    Operation *p = new BitOperation(&a, &b, comment);
+    return *p;
+}
+
+Operation &BIT(GenObject &a, const char *b, const char *comment) {
+    GenObject *idx = new I32D(b);
+    Operation *p = new BitOperation(&a, idx, comment);
+    return *p;
+}
+
+Operation &BIT(GenObject &a, int b, const char *comment) {
+    GenObject *idx = new DecConst(b);
+    Operation *p = new BitOperation(&a, idx, comment);
+    return *p;
+}
+
+// BITS
+Operation &BITS(GenObject &a, GenObject &h, GenObject &l, const char *comment) {
+    Operation *p = new BitsOperation(&a, &h, &l, comment);
+    return *p;
+}
+
+Operation &BITS(GenObject &a, int h, int l, const char *comment) {
+    Operation *p = new BitsOperation(&a, new DecConst(h), new DecConst(l), comment);
+    return *p;
+}
+
+// BITSW
+Operation &BITSW(GenObject &a, GenObject &start, GenObject &width, const char *comment) {
+    Operation *p = new BitswOperation(&a, &start, &width, comment);
+    return *p;
+}
+
+
 // CONST
 GenObject &CONST(const char *val) {
     GenObject *p = SCV_parse_to_obj(val);
@@ -56,6 +92,162 @@ GenObject &CONST(const char *val, int width) {
     } else {
         p = new DecLogicConst(w, SCV_parse_to_obj(val)->getValue());
     }
+    return *p;
+}
+
+// TO_BIG
+Operation &TO_BIG(size_t sz, GenObject &a) {
+    Operation *p = new ToBigOperation(&a, sz, NO_COMMENT);
+    return *p;
+}
+
+
+// INV (arithemtic, logical)
+Operation &INV_L(GenObject &a, const char *comment) {
+    Operation *p = new InvOperation(&a, true, comment);
+    return *p;
+}
+
+Operation &INV(GenObject &a, const char *comment) {
+    Operation *p = new InvOperation(&a, false, comment);
+    return *p;
+}
+
+
+// AND_REDUCE
+Operation &AND_REDUCE(GenObject &a, const char *comment) {
+    Operation *p = new AndReduceOperation(&a, comment);
+    return *p;
+}
+
+// OR_REDUCE
+Operation &OR_REDUCE(GenObject &a, const char *comment) {
+    Operation *p = new OrReduceOperation(&a, comment);
+    return *p;
+}
+
+// DEC
+Operation &DEC(GenObject &a, const char *comment) {
+    GenObject *p1;
+    if (a.isLogic()) {
+        p1 = new DecLogicConst(a.getObjWidth(), 1);
+    } else {
+        p1 = new DecConst(1);
+    }
+    Operation *p = new Sub2Operation(&a, p1, comment);
+    return *p;
+}
+
+// INC
+Operation &INC(GenObject &a, const char *comment) {
+    GenObject *p1;
+    if (a.isLogic()) {
+        p1 = new DecLogicConst(a.getObjWidth(), 1);
+    } else {
+        p1 = new DecConst(1);
+    }
+    Operation *p = new Add2Operation(&a, p1, comment);
+    return *p;
+}
+
+// ADD2
+Operation &ADD2(GenObject &a, GenObject &b, const char *comment) {
+    Operation *p = new Add2Operation(&a, &b, comment);
+    return *p;
+}
+
+// SUB2
+Operation &SUB2(GenObject &a, GenObject &b, const char *comment) {
+    Operation *p = new Sub2Operation(&a, &b, comment);
+    return *p;
+}
+
+// MUL2
+
+Operation &MUL2(GenObject &a, GenObject &b, const char *comment) {
+    Operation *p = new Mul2Operation(&a, &b, comment);
+    return *p;
+}
+
+// DIV2
+Operation &DIV2(GenObject &a, GenObject &b, const char *comment) {
+    Operation *p = new Div2Operation(&a, &b, comment);
+    return *p;
+}
+
+
+// AND2_L
+Operation &AND2_L(GenObject &a, GenObject &b, const char *comment) {
+    Operation *p = new And2Operation(&a, &b, true, comment);
+    return *p;
+}
+
+// AND2
+Operation &AND2(GenObject &a, GenObject &b, const char *comment) {
+    Operation *p = new And2Operation(&a, &b, false, comment);
+    return *p;
+}
+
+// CC2
+Operation &CC2(GenObject &a, GenObject &b, const char *comment) {
+    CCxOperation *p = new CCxOperation(true, comment);      // oneline = true
+    p->addArgument(&a);
+    p->addArgument(&b);
+    return *p;
+}
+
+// CC3
+Operation &CC3(GenObject &a, GenObject &b, GenObject &c, const char *comment) {
+    CCxOperation *p = new CCxOperation(true, comment);      // oneline = true
+    p->addArgument(&a);
+    p->addArgument(&b);
+    p->addArgument(&c);
+    return *p;
+}
+
+// CC4
+Operation &CC4(GenObject &a, GenObject &b, GenObject &c, GenObject &d, const char *comment) {
+    CCxOperation *p = new CCxOperation(true, comment);      // oneline = true
+    p->addArgument(&a);
+    p->addArgument(&b);
+    p->addArgument(&c);
+    p->addArgument(&d);
+    return *p;
+}
+
+// CCx
+Operation &CCx(size_t cnt, ...) {
+    CCxOperation *p = new CCxOperation(false, "");          // false = oneline for each argument
+    GenObject *obj;
+    va_list arg;
+    va_start(arg, cnt);
+    for (int i = 0; i < cnt; i++) {
+        obj = va_arg(arg, GenObject *);
+        p->addArgument(obj);
+    }
+    va_end(arg);
+    return *p;
+}
+
+// LSH
+Operation &LSH(GenObject &a, GenObject &sz, const char *comment) {
+    Operation *p = new LshOperation(&a, &sz, comment);
+    return *p;
+}
+
+Operation &LSH(GenObject &a, int sz, const char *comment) {
+    Operation *p = new LshOperation(&a, new DecConst(sz), comment);
+    return *p;
+}
+
+// RSH
+Operation &RSH(GenObject &a, GenObject &sz, const char *comment) {
+    Operation *p = new RshOperation(&a, &sz, comment);
+    return *p;
+}
+
+Operation &RSH(GenObject &a, int sz, const char *comment) {
+    Operation *p = new RshOperation(&a, new DecConst(sz), comment);
     return *p;
 }
 

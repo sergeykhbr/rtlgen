@@ -132,11 +132,9 @@ class GenObject {
     virtual void setValue(uint64_t val) {}                // used in a operations
     virtual void setObjValue(GenObject *obj) { objValue_ = obj; }
     virtual GenObject *getObjValue() { return objValue_; }
-    virtual int getWidth();
+    virtual uint64_t getWidth() { return 0; }
     virtual GenObject *getObjWidth() { return 0; }
-    virtual std::string getStrWidth();
-    virtual void setStrWidth(const char *val);
-    virtual void setWidth(int w);
+    virtual std::string getStrWidth() { return std::string(""); }
     virtual int getDepth();                             // two-dimensional object
     virtual std::string getStrDepth();
     virtual void setStrDepth(const char *val);
@@ -155,16 +153,13 @@ class GenObject {
     virtual void setSvApiUsed() { sv_api_ = true; }
 
     virtual std::string generate() { return std::string(""); }
-    //virtual uint64_t parse_to_u64(const char *val, size_t &pos);
-    //virtual std::string parse_to_str(const char *val, size_t &pos);
-    //size_t parse_to_objlist(const char *val, size_t pos, std::list<GenObject *> &objlist);
 
-    virtual bool isNumber(std::string &s) {
+/*    virtual bool isNumber(std::string &s) {
         const char *pch = s.c_str();
         return (pch[0] >= '0' && pch[0] <= '9')
             || (pch[0] == '\'' && pch[1] == '1')        // all ones
             || (pch[0] == '\'' && pch[1] == '0');       // all zeros
-    }
+    }*/
 
  protected:
     EIdType id_;
@@ -175,10 +170,8 @@ class GenObject {
 
     int depth_;
     std::string strValue_;
-    std::string strWidth_;
     std::string strDepth_;
     GenObject *objValue_;
-    GenObject *objWidth_;
     GenObject *objDepth_;
 
     GenObject *sel_;                                    // selector when is array

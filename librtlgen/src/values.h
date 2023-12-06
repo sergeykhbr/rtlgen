@@ -52,7 +52,7 @@ class BOOL : public GenValue {
     virtual std::string getType() override;
     virtual std::string getStrValue() override;
     virtual uint64_t getValue() override;
-    virtual int getWidth() override { return 1; }
+    virtual uint64_t getWidth() override { return 1; }
     virtual std::string generate() override;
 };
 
@@ -86,7 +86,7 @@ class UI16D : public GenValue {
         GenValue(parent, name, val, comment) {}
 
     virtual std::string getType();
-    virtual int getWidth() override { return 16; }
+    virtual uint64_t getWidth() override { return 16; }
 };
 
 class I32D : public GenValue {
@@ -99,7 +99,7 @@ class I32D : public GenValue {
         GenValue(parent, name, val, comment) {}
 
     virtual std::string getType();
-    virtual int getWidth() override { return 32; }
+    virtual uint64_t getWidth() override { return 32; }
 };
 
 class UI32D : public GenValue {
@@ -109,7 +109,7 @@ class UI32D : public GenValue {
         GenValue(parent, name, val, comment) {}
 
     virtual std::string getType();
-    virtual int getWidth() override { return 32; }
+    virtual uint64_t getWidth() override { return 32; }
 };
 
 class UI64H : public GenValue {
@@ -120,7 +120,7 @@ class UI64H : public GenValue {
 
     virtual bool isHex() override { return true; }
     virtual std::string getType();
-    virtual int getWidth() override { return 64; }
+    virtual uint64_t getWidth() override { return 64; }
 };
 
 class TIMESEC : public GenValue {

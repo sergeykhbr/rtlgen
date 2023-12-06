@@ -30,10 +30,8 @@ GenObject::GenObject(GenObject *parent, const char *type, EIdType id,
     parent_ = parent;
     depth_ = 0;
     strValue_ = "";
-    strWidth_ = "";
     strDepth_ = "";
     objValue_ = 0;
-    objWidth_ = 0;
     objDepth_ = 0;
     sel_ = 0;
     reset_disabled_ = false;
@@ -258,14 +256,6 @@ std::string GenObject::r_name(std::string v) {
 }
 
 
-int GenObject::getWidth() {
-    if (objWidth_) {
-        return static_cast<int>(objWidth_->getValue());
-    } else {
-        return 0;
-    }
-}
-
 int GenObject::getDepth() {
     if (objDepth_) {
         return static_cast<int>(objDepth_->getValue());
@@ -358,13 +348,6 @@ std::string GenObject::getStrValue() {
 }
 #endif
 
-std::string GenObject::getStrWidth() {
-    if (objWidth_) {
-        return objWidth_->getStrValue();
-    }
-    return std::string("");
-}
-
 std::string GenObject::getStrDepth() {
     if (objDepth_) {
         return objDepth_->getStrValue();
@@ -373,36 +356,11 @@ std::string GenObject::getStrDepth() {
 }
 
 void GenObject::setStrValue(const char *val) {
-#if 1
     objValue_ = SCV_parse_to_obj(val);
-#else
-    objValue_ = 0;
-    strValue_ = std::string(val);
-    size_t pos = 0;
-    parse_to_u64(val, pos);     // just to trigger dependecies
-#endif
-}
-
-void GenObject::setStrWidth(const char *val) {
-#if 1
-    objWidth_ = SCV_parse_to_obj(val);
-#else
-    objWidth_ = 0;
-    strWidth_ = std::string(val);
-    size_t pos = 0;
-    width_ = static_cast<int>(parse_to_u64(val, pos));
-#endif
 }
 
 void GenObject::setStrDepth(const char *val) {
-#if 1
     objDepth_ = SCV_parse_to_obj(val);
-#else
-    objDepth_ = 0;
-    strDepth_ = std::string(val);
-    size_t pos = 0;
-    depth_ = static_cast<int>(parse_to_u64(val, pos));
-#endif
 }
 
 std::string GenObject::getLibName() {
@@ -411,266 +369,5 @@ std::string GenObject::getLibName() {
     }
     return std::string("work");
 }
-
-#if 0
-void GenObject::setValue(uint64_t val) {
-    char tstr[256];
-    RISCV_sprintf(tstr, sizeof(tstr), "%" RV_PRI64 "d", val);
-    setStrValue(tstr);
-}
-#endif
-
-void GenObject::setWidth(int w) {
-    char tstr[256];
-    RISCV_sprintf(tstr, sizeof(tstr), "%d", w);
-    setStrWidth(tstr);
-}
-
-#if 0
-uint64_t GenObject::parse_to_u64(const char *val, size_t &pos) {
-    uint64_t ret = 0;
-    char buf[64] = "";
-    size_t cnt = 0;
-    std::string m = "";
-    bool is_float = false;
-    // Check macro:
-    while (val[pos] && val[pos] != ',' && val[pos] != '(' && val[pos] != ')') {
-        if (val[pos] == '.') {
-            is_float = true;
-        }
-        buf[cnt++] = val[pos];
-        buf[cnt] = '\0';
-        pos++;
-    }
-
-    if (buf[0] == '\0' || buf[0] == '"') {
-        ret = 0;
-        return ret;
-    }
-    if (is_float) {
-        double dt = strtod(buf, 0);
-        ret = *reinterpret_cast<uint64_t *>(&dt);
-        return ret;
-    } else if (buf[0] >= '0' && buf[0] <= '9') {
-        int base = buf[1] == 'x' ? 16: 10;
-        ret = strtoll(buf, 0, base);
-        return ret;
-    }
-    if (buf[0] == '\'' && buf[1] == '1') {
-        ret = ~0ull;
-        return ret;
-    }
-    if (buf[0] == '\'' && buf[1] == '0') {
-        ret = 0ull;
-        return ret;
-    }
-    if (strcmp(buf, "true") == 0 || strcmp(buf, "false") == 0) {
-        ret = buf[0] == 't' ? 1 : 0;
-        return ret;
-    }
-    m = std::string(buf);
-    GenObject *cfgobj = SCV_get_cfg_type(getParent(), m);
-    if (cfgobj) {
-        return cfgobj->getValue();
-    }
-
-    if (val[pos] != '(') {
-        SHOW_ERROR("%s", "wrong parse format");
-        return ret;
-    }
-    pos++;
-
-    // Dual operation op(a,b):
-    std::string op = m;
-    uint64_t arg1, arg2;
-    arg1 = parse_to_u64(val, pos);
-    if (val[pos] != ',') {
-        SHOW_ERROR("%s", "wrong parse format");
-        return ret;
-    } else {
-        pos++;
-    }
-    arg2 = parse_to_u64(val, pos);
-    if (val[pos] != ')') {
-        SHOW_ERROR("%s", "wrong parse format");
-        return ret;
-    } else {
-        pos++;
-    }
-
-    if (op == "POW2") {
-        ret = arg1 << arg2;
-    } else if (op == "ADD") {
-        ret = arg1 + arg2;
-    } else if (op == "SUB") {
-        ret = arg1 - arg2;
-    } else if (op == "MUL") {
-        ret = arg1 * arg2;
-    } else if (op == "DIV") {
-        ret = arg1 / arg2;
-    } else if (op == "GT") {
-        ret = arg1 > arg2 ? 1: 0;
-    } else {
-        SHOW_ERROR("%s", "wrong parse format");
-    }
-    return ret;
-}
-
-std::string GenObject::parse_to_str(const char *val, size_t &pos) {
-    std::string ret = "";
-    char buf[64] = "";
-    size_t cnt = 0;
-    std::string m = "";
-    // Check macro:
-    while (val[pos] && val[pos] != ',' && val[pos] != '(' && val[pos] != ')') {
-        buf[cnt++] = val[pos];
-        buf[cnt] = '\0';
-        pos++;
-    }
-
-    if (buf[0] == '\0') {
-        return ret;
-    }
-    if (buf[0] == '"') {
-        ret = std::string(buf);
-        return ret;
-    }
-    if ((buf[0] >= '0' && buf[0] <= '9')
-        || (buf[0] == '\'' && buf[1] == '1')
-        || (buf[0] == '\'' && buf[1] == '0')) {
-        ret = std::string(buf);
-        return ret;
-    }
-    if (strcmp(buf, "true") == 0) {
-        ret = std::string("1");
-        return ret;
-    }
-    if (strcmp(buf, "false") == 0) {
-        ret = std::string("0");
-        return ret;
-    }
-
-    m = std::string(buf);
-    GenObject *cfgobj = SCV_get_cfg_type(getParent(), m);
-    if (cfgobj) {
-        ret = m;
-        if (SCV_is_sv_pkg() && !cfgobj->isParamGeneric()) {
-            ret = cfgobj->getFile()->getName() + "_pkg::" + m;
-        }
-        return ret;
-    }
-
-    if (val[pos] != '(') {
-        SHOW_ERROR("%s", "wrong parse format");
-        return ret;
-    }
-    pos++;
-
-    // Dual operation op(a,b):
-    std::string op = m;
-    std::string arg1, arg2;
-    arg1 = parse_to_str(val, pos);
-    if (val[pos] != ',') {
-        SHOW_ERROR("%s", "wrong parse format");
-        return ret;
-    } else {
-        pos++;
-    }
-    arg2 = parse_to_str(val, pos);
-    if (val[pos] != ')') {
-        SHOW_ERROR("%s", "wrong parse format");
-        return ret;
-    } else {
-        pos++;
-    }
-
-    if (op == "POW2") {
-        if (SCV_is_sysc()) {
-            ret = "(" + arg1 + " << " + arg2 + ")";
-        } else if (SCV_is_sv()) {
-            ret = "(2**" + arg2 + ")";
-        } else if (SCV_is_vhdl()) {
-            ret = "(2**" + arg2 + ")";
-        }
-    } else if (op == "ADD") {
-        ret = "(" + arg1 + " + " + arg2 + ")";
-    } else if (op == "SUB") {
-        ret = "(" + arg1 + " - " + arg2 + ")";
-    } else if (op == "MUL") {
-        ret = "(" + arg1 + " * " + arg2 + ")";
-    } else if (op == "DIV") {
-        ret = "(" + arg1 + " / " + arg2 + ")";
-    } else if (op == "GT") {
-        if (SCV_is_sysc()) {
-            ret = "(" + arg1 + " > " + arg2 + " ? 1: 0)";
-        } else if (SCV_is_sv()) {
-            ret = "(" + arg1 + " > " + arg2 + " ? 1: 0)";
-        } else if (SCV_is_vhdl()) {
-            ret = "('1' if " + arg1 + " > " + arg2 + " '0' otherwise)";
-        }
-    } else {
-        SHOW_ERROR("%s", "wrong parse format");
-    }
-    return ret;
-}
-
-size_t GenObject::parse_to_objlist(const char *val, size_t pos, std::list<GenObject *> &objlist) {
-    char buf[64] = "";
-    size_t cnt = 0;
-    std::string m = "";
-    // Check macro:
-    while (val[pos] && val[pos] != ',' && val[pos] != '(' && val[pos] != ')') {
-        buf[cnt++] = val[pos];
-        buf[cnt] = '\0';
-        pos++;
-    }
-
-    if (buf[0] == '\0') {
-        return pos;
-    }
-    if (buf[0] == '"') {
-        return pos;
-    }
-    if (buf[0] >= '0' && buf[0] <= '9') {
-        return pos;
-    }
-    if (buf[0] == '-' && buf[1] == '1') {
-        return pos;
-    }
-    if (strcmp(buf, "true") == 0 || strcmp(buf, "false") == 0) {
-        return pos;
-    }
-    m = std::string(buf);
-    GenObject *cfgobj = SCV_get_cfg_type(this, m);
-    if (cfgobj) {
-        objlist.push_back(cfgobj);
-        return pos;
-    }
-
-    if (val[pos] != '(') {
-        return pos;
-    }
-    pos++;
-
-    // Dual operation op(a,b):
-    std::string op = m;
-    std::string arg1, arg2;
-    pos = parse_to_objlist(val, pos, objlist);
-    if (val[pos] != ',') {
-        SHOW_ERROR("%s", "wrong parse format");
-        return pos;
-    } else {
-        pos++;
-    }
-    pos = parse_to_objlist(val, pos, objlist);
-    if (val[pos] != ')') {
-        SHOW_ERROR("%s", "wrong parse format");
-        return pos;
-    } else {
-        pos++;
-    }
-    return pos;
-}
-#endif
 
 }

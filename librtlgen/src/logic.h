@@ -48,7 +48,12 @@ class Logic : public GenValue {
     virtual bool isLogic() override { return true; }
     virtual std::string getType();
     virtual GenObject *getObjWidth() { return objWidth_; }
+    virtual uint64_t getWidth() override { return objWidth_->getValue(); }
+    virtual std::string getStrWidth() override { return objWidth_->getStrValue(); }
     virtual std::string generate() override;
+
+ protected:
+    GenObject *objWidth_;
 };
 
 class Logic1 : public Logic {

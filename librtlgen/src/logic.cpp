@@ -52,7 +52,7 @@ std::string Logic::getType() {
                 ret += "sc_bv<" + strw + ">";
             } else if (getWidth() > 64 || isBigSC()) {
                 ret += "sc_biguint<" + strw + ">";
-            } else if (getWidth() <= 1 && isNumber(strw)) {
+            } else if (getWidth() <= 1) {
                 ret += "bool";
             } else {
                 ret += "sc_uint<" + strw + ">";
@@ -64,9 +64,9 @@ std::string Logic::getType() {
         } else {
             ret = std::string("logic");
         }
-        if (!isNumber(strw) || getWidth() > 1) {
+        if (getWidth() > 1) {
             ret += " [";
-            if (isNumber(strw)) {
+            if (isConst()) {
                 char tstr[256];
                 RISCV_sprintf(tstr, sizeof(tstr), "%d", getWidth() - 1);
                 ret += tstr;
@@ -80,7 +80,7 @@ std::string Logic::getType() {
             ret = std::string("std_logic");
         } else {
             ret += "std_logic_vector(";
-            if (isNumber(strw)) {
+            if (isConst()) {
                 char tstr[256];
                 RISCV_sprintf(tstr, sizeof(tstr), "%d", getWidth() - 1);
                 ret += tstr;
@@ -113,7 +113,7 @@ std::string Logic::generate() {
             ret += "sc_bv<" + strw + ">";
         } else if (getWidth() > 64 || isBigSC()) {
             ret += "sc_biguint<" + strw + ">";
-            } else if (getWidth() <= 1 && isNumber(strw)) {
+            } else if (getWidth() <= 1) {
                 ret += "bool";
         } else {
             ret += "sc_uint<" + strw + ">";

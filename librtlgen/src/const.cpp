@@ -31,7 +31,8 @@ std::string HexConst::getStrValue() {
     std::string ret;
     char tstr[64];
     char fmt[32];
-    RISCV_sprintf(fmt, sizeof(fmt), "%%0%d" RV_PRI64 "X", (getWidth() + 3) / 4);
+    RISCV_sprintf(fmt, sizeof(fmt), "%%0%d" RV_PRI64 "X",
+                    static_cast<int>(getWidth() + 3) / 4);
     RISCV_sprintf(tstr, sizeof(tstr), fmt, ui64_);
     ret = std::string(tstr);
     if (SCV_is_sysc()) {

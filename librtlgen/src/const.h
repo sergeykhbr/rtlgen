@@ -33,7 +33,7 @@ class DecConst : public GenObject {
     virtual uint64_t getValue() override { return ui64_; }
     virtual std::string getName() override { return getStrValue(); }
     virtual std::string getStrValue() override;
-    virtual int getWidth() override { return 32; }
+    virtual uint64_t getWidth() override { return 32; }
 
  protected:
     uint64_t ui64_;
@@ -48,7 +48,7 @@ class HexConst : public GenObject {
     virtual uint64_t getValue() override { return ui64_; }
     virtual std::string getName() override { return getStrValue(); }
     virtual std::string getStrValue() override;
-    virtual int getWidth() override { return 64; }
+    virtual uint64_t getWidth() override { return 64; }
 
  protected:
     uint64_t ui64_;
@@ -64,7 +64,7 @@ class FloatConst : public GenObject {
     virtual double getFloatValue() override { return f64_; }
     virtual std::string getName() override { return getStrValue(); }
     virtual std::string getStrValue() override;
-    virtual int getWidth() override { return 64; }
+    virtual uint64_t getWidth() override { return 64; }
 
  protected:
     double f64_;
@@ -89,11 +89,10 @@ class DecLogicConst : public DecConst {
     DecLogicConst(GenObject *width, uint64_t val);
 
     virtual bool isLogic() override { return true; }
-    virtual int getWidth() override {
-        return static_cast<int>(objWidth_->getValue());
-    }
+    virtual uint64_t getWidth() override { return objWidth_->getValue(); }
 
  protected:
+    GenObject *objWidth_;
 };
 
 class HexLogicConst : public HexConst {
@@ -101,11 +100,10 @@ class HexLogicConst : public HexConst {
     HexLogicConst(GenObject *width, uint64_t val);
 
     virtual bool isLogic() override { return true; }
-    virtual int getWidth() override {
-        return static_cast<int>(objWidth_->getValue());
-    }
+    virtual uint64_t getWidth() override { return objWidth_->getValue(); }
 
  protected:
+    GenObject *objWidth_;
 };
 
 

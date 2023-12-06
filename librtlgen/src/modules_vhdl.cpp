@@ -115,17 +115,7 @@ std::string ModuleObject::generate_vhdl_pkg_reg_struct(bool negedge) {
                 || (!p->isNReg() && negedge == true)) {
                 continue;
             }
-            ln = addspaces();
-            tstr = p->getStrValue();    // to provide compatibility with gcc
-            if (p->isNumber(tstr) && p->getValue() == 0) {
-                if (p->getWidth() == 1) {
-                    ln += "'0'";
-                } else {
-                    ln += "(others => '0')";
-                }
-            } else {
-                ln += p->getStrValue();
-            }
+            ln = addspaces() + p->getStrValue();
             if (--tcnt) {
                 ln += ",";
             }

@@ -92,7 +92,7 @@ std::string ModuleObject::generate_sysc_h_reg_struct(bool negedge) {
             }
             out += addspaces() + "iv." + p->getName() + " = ";
             out += p->getStrValue();
-            // TODO: add "_" for Generic value
+            // TODO: add "_" for Generic value. Right now can not use generic param value as reset.
             out += ";\n";
         }
         popspaces();
@@ -1082,6 +1082,7 @@ std::string ModuleObject::generate_sysc_proc_nullify(GenObject *obj,
         const char tidx[2] = {i.c_str()[0] + static_cast<char>(1), 0};
         i = std::string(tidx);
     }
+
     if (obj->isStruct() && obj->getStrValue() == "") {
         for (auto &p : obj->getEntries()) {
             ret += generate_sysc_proc_nullify(p, prefix, i);
