@@ -60,10 +60,13 @@ class STRING : public GenValue {
  public:
     STRING(const char *val, const char *name="",
         GenObject *parent=0, const char *comment="")
-        : GenValue(parent, name, val, comment) {}
+        : GenValue(parent, name, "", comment) {
+        strValue_ = std::string(val);
+    }
 
     virtual bool isString() override { return true; }
     virtual std::string getType();
+    virtual std::string getStrValue() override { return strValue_; }
     virtual std::string generate() override;
 };
 

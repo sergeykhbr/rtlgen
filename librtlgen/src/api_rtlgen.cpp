@@ -340,9 +340,9 @@ GenObject *SCV_parse_to_obj(const char *val) {
         } else if (val[0] == '\'' && val[1] == '1') {
             ret = &ALLONES();
         } else if (val[0] == 't' && val[1] == 'r' && val[2] == 'u' && val[3] == 'e') {
-            ret = new DecConst(1ull);
+            ret = new DecConst(1);
         } else if (val[0] == 'f' && val[1] == 'a' && val[2] == 'l' && val[3] == 's' && val[4] == 'e') {
-            ret = new DecConst(0ull);
+            ret = new DecConst(0);
         } else if (val[0] >= '0' && val[0] <= '9') {
             ret = new DecConst(static_cast<uint64_t>(strtoll(val, 0, 10)));
         } else if (cfgobj = SCV_get_cfg_type(SCV_get_local_module(), val)) {

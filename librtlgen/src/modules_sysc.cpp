@@ -516,7 +516,7 @@ std::string ModuleObject::generate_sysc_sensitivity(GenObject *obj,
     }
 
     if (obj->isStruct() && !obj->isInterface()) {
-        const char tidx[2] = {i.c_str()[0] + static_cast<char>(1), 0};
+        const char tidx[2] = {static_cast<char>(static_cast<int>(i.c_str()[0]) + 1), 0};
         i = std::string(tidx);
         for (auto &e: obj->getEntries()) {
             ret += generate_sysc_sensitivity(e, prefix, i, loop);
@@ -596,7 +596,7 @@ std::string ModuleObject::generate_sysc_vcd_entries(GenObject *obj,
         }
         prefix += objname;
         // VCD for each entry of the struct separetely
-        const char tidx[2] = {i.c_str()[0] + static_cast<char>(1), 0};
+        const char tidx[2] = {static_cast<char>(static_cast<int>(i.c_str()[0]) + 1), 0};
         i = std::string(tidx);
         for (auto &e: obj->getEntries()) {
             ret += generate_sysc_vcd_entries(e, prefix, i, loop);
@@ -1079,7 +1079,7 @@ std::string ModuleObject::generate_sysc_proc_nullify(GenObject *obj,
         ret += "for (int " + i + " = 0; " + i + " < " + obj->getStrDepth() + "; " + i + "++) {\n";
         pushspaces();
 
-        const char tidx[2] = {i.c_str()[0] + static_cast<char>(1), 0};
+        const char tidx[2] = {static_cast<char>(static_cast<int>(i.c_str()[0]) + 1), 0};
         i = std::string(tidx);
     }
 

@@ -920,7 +920,7 @@ std::string SETSTRF_gen(GenObject **args) {
         }
     }
     ret += fmt;
-    size_t cnt = reinterpret_cast<size_t>(args[3]);
+    size_t cnt = args[3]->getValue();
     pushspaces();
     pushspaces();
     if (cnt > 1) {
@@ -959,7 +959,7 @@ Operation &SETSTRF(GenObject &a, const char *fmt, size_t cnt, ...) {
     p->add_arg(p);  // 0
     p->add_arg(&a); // 1
     p->add_arg(new StringConst(fmt)); // 2
-    p->add_arg(reinterpret_cast<GenObject *>(cnt)); // 3
+    p->add_arg(new DecConst(cnt)); // 3
     p->add_arg(0); // 4
     va_list arg;
     va_start(arg, cnt);
@@ -978,8 +978,8 @@ Operation &ADDSTRF(GenObject &a, const char *fmt, size_t cnt, ...) {
     p->add_arg(p);  // 0
     p->add_arg(&a); // 1
     p->add_arg(new StringConst(fmt));    // 2
-    p->add_arg(reinterpret_cast<GenObject *>(cnt)); // 3
-    p->add_arg(reinterpret_cast<GenObject *>(1));   // 4
+    p->add_arg(new DecConst(cnt)); // 3
+    p->add_arg(new DecConst(1));   // 4
     va_list arg;
     va_start(arg, cnt);
     for (int i = 0; i < cnt; i++) {
