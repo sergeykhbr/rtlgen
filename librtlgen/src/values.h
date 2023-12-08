@@ -157,16 +157,16 @@ class StructVar : public T {
  public:
     StructVar(GenObject *parent, const char *name, const char *val, const char *comment)
         : T(parent, name, comment) {
-        objValue_ = SCV_parse_to_obj(val);
+        objValue_ = ::SCV_parse_to_obj(val);
     }
     virtual bool isValue() override { return true; }
-    virtual bool isConst() override { return getName() == ""; }
+    virtual bool isConst() override { return T::getName() == ""; }
 
     virtual std::string getName() override {
-        if (name_ == "") {
-            return getStrValue();
+        if (this->name_ == "") {
+            return T::getStrValue();
         }
-        return name_;
+        return this->name_;
     }
     virtual uint64_t getValue() override { return objValue_->getValue(); }
     virtual double getFloatValue() override { return objValue_->getFloatValue(); }
