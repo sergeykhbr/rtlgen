@@ -223,7 +223,7 @@ std::string ModuleObject::generate_sysc_h() {
     // Constructor declaration:
     std::string space1 = addspaces() + getType() + "(";
     out += space1 + "sc_module_name name";
-    if (getAsyncReset() && getEntryByName("async_reset") == 0) {
+    if (getAsyncReset()) {
         ln = "";
         while (ln.size() < space1.size()) {
             ln += " ";
@@ -264,7 +264,7 @@ std::string ModuleObject::generate_sysc_h() {
 
     // Generic parameter local storage:
     tcnt = 0;
-    if (getAsyncReset() && getEntryByName("async_reset") == 0) {
+    if (getAsyncReset()) {
         out += addspaces() + (new Logic("1", "async_reset"))->getType() + " async_reset_;\n";
         tcnt++;
     }
@@ -288,7 +288,7 @@ std::string ModuleObject::generate_sysc_h() {
     // Local paramaters visible inside of module
     std::string comment = "";
     for (auto &p: entries_) {
-        if (p->getId() == ID_COMMENT) {
+        if (p->isComment()) {
             comment += p->generate();
             continue;
         } else if (p->isParam() && !p->isParamGeneric()) {
@@ -299,7 +299,7 @@ std::string ModuleObject::generate_sysc_h() {
             } else {
                 out += comment;
                 out += addspaces() + "static const " + p->getType() + " ";
-                out += p->getName() + " = " + p->generate() + ";\n";
+                out += p->getName() + " = " + p->getStrValue() + ";\n";
                 tcnt++;
             }
         }
@@ -650,7 +650,7 @@ std::string ModuleObject::generate_sysc_vcd_entries(GenObject *obj,
 std::string ModuleObject::generate_sysc_template_param(GenObject *p) {
     std::string ret = "";
     int tcnt = 0;
-    GenObject *pthis;
+    //GenObject *pthis;
 
     for (auto &e: p->getEntries()) {
         if (!e->isParamTemplate()) {
@@ -658,12 +658,12 @@ std::string ModuleObject::generate_sysc_template_param(GenObject *p) {
         }
 
         // Additional check that all template\generic parameters are explictly connected
-        if (e->getObjValue() == 0) {
+        /*if (e->getObjValue() == 0) {
             SCV_printf("warning: %s::%s::%s parameter is not assigned",
                         getType().c_str(),
                         p->getName().c_str(),
                         e->getName().c_str());
-        }
+        }*/
 
         if (tcnt == 0) {
             ret += "<";
@@ -671,13 +671,19 @@ std::string ModuleObject::generate_sysc_template_param(GenObject *p) {
         if (tcnt++) {
             ret += ", ";
         }
+#if 0
         // Check this module for the same name parameter (that was not changed):
         pthis = getEntryByName(e->getName().c_str());
-        if (pthis && pthis->isParam() && e->getObjValue() == 0) {
+        if (pthis && pthis->isParam()
+            //&& e->getObjValue() == 0
+            ) {
             ret += e->getName();
         } else {
             ret += e->getStrValue();
         }
+#else
+        ret += e->getName();
+#endif
     }
     if (tcnt) {
         ret += ">";
@@ -733,7 +739,7 @@ std::string ModuleObject::generate_sysc_param_strings() {
             if (p->getDepth() > 1) {
                 ret += "[" + p->getStrDepth() + "]";
             }
-            ret += " = " + p->generate() + ";\n";
+            ret += " = " + p->getStrValue() + ";\n";
             tcnt++;
         }
     }
@@ -777,7 +783,7 @@ std::string ModuleObject::generate_sysc_constructor() {
     }
     space1 += "::" + getType() + "(";
     ret += space1 + "sc_module_name name";
-    if (getAsyncReset() && getEntryByName("async_reset") == 0) {
+    if (getAsyncReset()) {
         ln = "";
         while (ln.size() < space1.size()) {
             ln += " ";
@@ -822,7 +828,7 @@ std::string ModuleObject::generate_sysc_constructor() {
     ret += "\n";
     pushspaces();
     // local copy of the generic parameters:
-    if (getAsyncReset() && getEntryByName("async_reset") == 0) {
+    if (getAsyncReset()) {
         ret += addspaces() + "async_reset_ = async_reset;\n";
     }
     for (auto &p: getEntries()) {

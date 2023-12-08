@@ -70,26 +70,26 @@ class types_bus1 : public FileObject {
             ddr(this, "ddr", "5, DDR MGMT 4KB"),
             pnp(this, "pnp", "6, Plug'n'Play 4KB") {
 
-            uart1.addr_start.setStrValue("0x0000000010000");
-            uart1.addr_end.setStrValue(  "0x0000000011000");
+            uart1.addr_start.setObjValue(new HexConst(0x0000000010000));
+            uart1.addr_end.setObjValue(new HexConst(0x0000000011000));
 
-            prci.addr_start.setStrValue( "0x0000000012000");
-            prci.addr_end.setStrValue(   "0x0000000013000");
+            prci.addr_start.setObjValue(new HexConst(0x0000000012000));
+            prci.addr_end.setObjValue(new HexConst(0x0000000013000));
 
-            dmi.addr_start.setStrValue(  "0x000000001E000");
-            dmi.addr_end.setStrValue(    "0x000000001F000");
+            dmi.addr_start.setObjValue(new HexConst(0x000000001E000));
+            dmi.addr_end.setObjValue(new HexConst(0x000000001F000));
 
-            spi.addr_start.setStrValue(  "0x0000000050000");
-            spi.addr_end.setStrValue(    "0x0000000051000");
+            spi.addr_start.setObjValue(new HexConst(0x0000000050000));
+            spi.addr_end.setObjValue(new HexConst(0x0000000051000));
 
-            gpio.addr_start.setStrValue( "0x0000000060000");
-            gpio.addr_end.setStrValue(   "0x0000000061000");
+            gpio.addr_start.setObjValue(new HexConst(0x0000000060000));
+            gpio.addr_end.setObjValue(new HexConst(0x0000000061000));
 
-            ddr.addr_start.setStrValue(  "0x00000000C0000");
-            ddr.addr_end.setStrValue(    "0x00000000C1000");
+            ddr.addr_start.setObjValue(new HexConst(0x00000000C0000));
+            ddr.addr_end.setObjValue(new HexConst(0x00000000C1000));
 
-            pnp.addr_start.setStrValue(  "0x00000000ff000");
-            pnp.addr_end.setStrValue(    "0x0000000100000");
+            pnp.addr_start.setObjValue(new HexConst(0x00000000ff000));
+            pnp.addr_end.setObjValue(new HexConst(0x0000000100000));
         }
         ParamStruct<types_amba::mapinfo_type> uart1;
         ParamStruct<types_amba::mapinfo_type> prci;

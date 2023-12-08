@@ -20,6 +20,7 @@
 #include <iostream>
 #include <vector>
 #include "genobjects.h"
+#include "const.h"
 
 namespace sysvc {
 
@@ -61,13 +62,12 @@ class STRING : public GenValue {
     STRING(const char *val, const char *name="",
         GenObject *parent=0, const char *comment="")
         : GenValue(parent, name, "", comment) {
-        strValue_ = std::string(val);
+        objValue_ = new StringConst(val);
     }
 
     virtual bool isString() override { return true; }
     virtual std::string getType();
-    virtual std::string getStrValue() override { return strValue_; }
-    virtual std::string generate() override;
+//    virtual std::string generate() override;
 };
 
 class FileValue : public GenValue {

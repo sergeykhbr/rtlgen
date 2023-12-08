@@ -199,6 +199,23 @@ Operation &CC3(GenObject &a, GenObject &b, GenObject &c, const char *comment=NO_
 Operation &CC4(GenObject &a, GenObject &b, GenObject &c, GenObject &d, const char *comment=NO_COMMENT);
 Operation &CCx(size_t cnt, ...);
 
+/** Calculate total width of the bus after concatation
+    sysc: (a, b, c, ..) compute bitwidth
+    sv:   {a, b, c, ..) compute bitwidth
+    vhdl: (a & b & c &...) compute bitwidth
+    
+ */
+Operation &CALCWIDTHx(size_t cnt, ...);
+
+/** Split bus on a set of signals:
+    sysc: x1 = a(7,0); x2=a[8]; x3=a(10,9) etc
+    sv:   {x1, x2, x3, ..} = a
+    vhdl: (x1 & x2 & x3 &...) := a
+    
+ */
+Operation &SPLx(GenObject &a, size_t cnt, ...);     // cplit concatated bus
+
+
 
 /** Left shift:
     sysc: (a << sz)

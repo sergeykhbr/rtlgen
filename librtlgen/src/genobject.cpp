@@ -29,7 +29,6 @@ GenObject::GenObject(GenObject *parent, const char *type, EIdType id,
     id_ = id;
     parent_ = parent;
     depth_ = 0;
-    strValue_ = "";
     strDepth_ = "";
     objValue_ = 0;
     objDepth_ = 0;
@@ -42,11 +41,6 @@ GenObject::GenObject(GenObject *parent, const char *type, EIdType id,
     name_ = std::string(name);
     comment_ = std::string(comment);
     if (parent_) {
-#if 1
-    if (parent_->isModule() && parent_->getName() == "apb_gpio") {
-        bool st = true;
-    }
-#endif
         parent_->add_entry(this);
     }
 }
@@ -115,15 +109,6 @@ GenObject *GenObject::getResetPort() {
 GenObject *GenObject::getClockPort() {
     for (auto &e: entries_) {
         if (e->getName() == "i_clk") {
-            return e;
-        }
-    }
-    return 0;
-}
-
-GenObject *GenObject::getEntryByName(const char *name) {
-    for (auto &e: entries_) {
-        if (e->getName() == name) {
             return e;
         }
     }
@@ -202,10 +187,10 @@ bool GenObject::isLocal() {
     bool local = false;
     GenObject *p = getParent();
     while (p) {
-        if (p->getId() == ID_MODULE) {
+        if (p->isModule()) {
             local = true;
             break;
-        } else if (p->getId() == ID_FILE) {
+        } else if (p->isFile()) {
             break;
         }
         p = p->getParent();
@@ -213,24 +198,12 @@ bool GenObject::isLocal() {
     return local;
 }
 
-bool GenObject::isGenericDep() {
-    if (isString() || objValue_ == 0) {
-        // String value shouldn't be parsed. Use value as is.
+/*bool GenObject::isGenericDep() {
+    if (objValue_ == 0) {
         return false;
     }
-    //std::list<GenObject *> objlist;
-    //parse_to_objlist(strValue_.c_str(), 0, objlist);
-    if (objValue_->isParamGeneric()) {
-        return true;
-    }
-
-    for (auto &e: objValue_->getEntries()) {
-        if (e->isGenericDep()) {
-            return true;
-        }
-    }
-    return false;
-}
+    return objValue_->isGenericDep();
+}*/
 
 
 std::string GenObject::v_name(std::string v) {
@@ -264,99 +237,11 @@ int GenObject::getDepth() {
     }
 }
 
-#if 0
-std::string GenObject::getStrValue() {
-    size_t tpos = 0;
-    if (objValue_) {
-        if (objValue_->isConst() || objValue_->isOperation()) {
-            return objValue_->getStrValue();
-        }
-        return objValue_->getName();
-    }
-    std::string ret = parse_to_str(strValue_.c_str(), tpos);
-    if (!isNumber(ret)) {
-        return ret;
-    }
-
-    char tstr[515];
-    char fmt[64];
-    int w = getWidth();
-    if (SCV_is_sysc()) {
-        if (ret == "'1") {
-            if (w <= 32) {
-                RISCV_sprintf(tstr, sizeof(tstr), "%s", "~0ul");
-            } else {
-                RISCV_sprintf(tstr, sizeof(tstr), "%s", "~0ull");
-            }
-            ret = std::string(tstr);
-        } else if (ret == "'0") {
-            RISCV_sprintf(tstr, sizeof(tstr), "%s", "0");
-            ret = std::string(tstr);
-        } else if (w > 32) {
-            ret += "ull";
-        }
-    } else if (SCV_is_sv()) {
-        uint64_t v = getValue();
-        if (isFloat()) {
-            RISCV_sprintf(tstr, sizeof(tstr), "%.f", getFloatValue());
-        } else if (w == 1) {
-            // One bit value (logic/bit)
-            RISCV_sprintf(tstr, sizeof(tstr), "1'b%" RV_PRI64 "x", v);
-        } else if (ret == "'1") {
-            RISCV_sprintf(tstr, sizeof(tstr), "%s", "'1");
-        } else if (ret == "'0") {
-            RISCV_sprintf(tstr, sizeof(tstr), "%s", "'0");
-        } else if (ret.c_str()[1] == 'x') {
-            // HEX numbers always with bus width (logic and integer)
-            RISCV_sprintf(fmt, sizeof(fmt), "%%d'h%%0%d" RV_PRI64 "x", (w+3)/4);
-            RISCV_sprintf(tstr, sizeof(tstr), fmt, w, v);
-        } else if (!isLogic()) {
-            // integer numbers
-            RISCV_sprintf(tstr, sizeof(tstr), "%" RV_PRI64 "d", v);
-        } else {
-            // DEC Logic always with the bus width
-            RISCV_sprintf(tstr, sizeof(tstr), "%d'd%" RV_PRI64 "d", w, v);
-        }
-        return std::string(tstr);
-    } else if (SCV_is_vhdl()) {
-        uint64_t v = getValue();
-        if (isFloat()) {
-            RISCV_sprintf(tstr, sizeof(tstr), "%.f", getFloatValue());
-        } else if (w == 1) {
-            RISCV_sprintf(tstr, sizeof(tstr), "'%" RV_PRI64 "X'", v);
-        } else if (ret == "'1") {
-            RISCV_sprintf(tstr, sizeof(tstr), "%s", "(others => '1')");
-        } else if (ret == "'0") {
-            RISCV_sprintf(tstr, sizeof(tstr), "%s", "(others => '0')");
-        } else if ((w & 0x3) == 0) {
-            RISCV_sprintf(fmt, sizeof(fmt), "X\"%%0%d" RV_PRI64 "X\"", w / 4);
-            RISCV_sprintf(tstr, sizeof(tstr), fmt, v);
-        } else if (!isLogic()) {
-            // integer numbers
-            RISCV_sprintf(tstr, sizeof(tstr), "%" RV_PRI64 "d", v);
-        } else {
-            tstr[0] = '\"';
-            for (int i = 0; i < w; i++) {
-                tstr[1 + i] = '0' + static_cast<char>((v >> (w - i - 1)) & 0x1);
-            }
-            tstr[w + 1] = '\"';
-            tstr[w + 2] = '\0';
-        }
-        return std::string(tstr);
-    }
-    return ret;
-}
-#endif
-
 std::string GenObject::getStrDepth() {
     if (objDepth_) {
         return objDepth_->getStrValue();
     }
     return std::string("");
-}
-
-void GenObject::setStrValue(const char *val) {
-    objValue_ = SCV_parse_to_obj(val);
 }
 
 void GenObject::setStrDepth(const char *val) {

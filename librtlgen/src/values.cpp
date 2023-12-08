@@ -139,12 +139,6 @@ std::string STRING::getType() {
     return ret;
 }
 
-std::string STRING::generate() {
-    std::string ret = addspaces();
-    ret += getType() + " " + getName() + " = " + strValue_ + ";\n";
-    return ret;
-}
-
 
 std::string BOOL::generate() {
     std::string ret = getType();

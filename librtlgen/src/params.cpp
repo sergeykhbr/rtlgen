@@ -23,7 +23,13 @@ std::string ParamString::generate() {
     std::string ret = "";
     int d = getDepth();
     if (d <= 1) {
-        return STRING::generate();
+
+        ret += addspaces();
+        if (SCV_is_sysc()) {
+            ret += "static const ";
+        }
+        ret += getType() + " " + getName() + " = " + getStrValue() + ";\n";
+        return ret;
     }
     ret += addspaces();
     if (SCV_is_sysc()) {

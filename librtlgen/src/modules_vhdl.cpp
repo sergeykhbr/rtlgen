@@ -184,7 +184,7 @@ std::string ModuleObject::generate_vhdl_mod_genparam() {
     ret += addspaces() + "generic (\n";
     pushspaces();
 
-    if (getAsyncReset() && getEntryByName("async_reset") == 0) {
+    if (getAsyncReset()) {
         ret += addspaces() + "async_reset : boolean := '0'";           // Mandatory generic parameter
         if (genparam.size()) {
             ret += ";";

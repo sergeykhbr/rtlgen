@@ -28,7 +28,7 @@ StructObject::StructObject(GenObject *parent,
                            const char *val,
                            const char *comment)
     : GenObject(parent, type, ID_STRUCT, name, comment) {
-    strValue_ = std::string(val);
+    objValue_ = SCV_parse_to_obj(val);
     if (getName() == "") {
         SHOW_ERROR("Unnamed structure of type %s", type_.c_str());
     }
@@ -46,8 +46,8 @@ bool StructObject::isTypedef() {
 
 std::string StructObject::getStrValue() {
     std::string ret = "";
-    if (!isParam()) {
-        return strValue_;
+    if (objValue_) {
+        return objValue_->getName();
     }
     int d = getDepth();
     if (SCV_is_sysc()) {

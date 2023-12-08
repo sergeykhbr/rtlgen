@@ -89,7 +89,9 @@ class DecLogicConst : public DecConst {
     DecLogicConst(GenObject *width, uint64_t val);
 
     virtual bool isLogic() override { return true; }
+    virtual std::string getStrValue() override;
     virtual uint64_t getWidth() override { return objWidth_->getValue(); }
+    virtual std::string getStrWidth() override { return objWidth_->getStrValue(); }
 
  protected:
     GenObject *objWidth_;
@@ -100,7 +102,9 @@ class HexLogicConst : public HexConst {
     HexLogicConst(GenObject *width, uint64_t val);
 
     virtual bool isLogic() override { return true; }
+    virtual std::string getStrValue() override;
     virtual uint64_t getWidth() override { return objWidth_->getValue(); }
+    virtual std::string getStrWidth() override { return objWidth_->getStrValue(); }
 
  protected:
     GenObject *objWidth_;

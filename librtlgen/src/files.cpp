@@ -225,7 +225,7 @@ void FileObject::generate_sysc() {
             out += addspaces() + "static " + p->getType() + " ";
             out += p->generate();
         } else if (p->isParam() && !p->isParamGeneric()) {
-            if (p->isStruct()) {
+            if (p->isStruct() || p->isString()) {
                 // Do all others params in a such way
                 out += p->generate();
             } else {

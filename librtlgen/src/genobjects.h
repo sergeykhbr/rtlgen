@@ -86,7 +86,6 @@ class GenObject {
     virtual GenObject *getAsyncReset();
     virtual GenObject *getResetPort();
     virtual GenObject *getClockPort();
-    virtual GenObject *getEntryByName(const char *name);
     virtual bool getResetActive() { return false; }
     virtual std::string addComment();                   // comment at current position
     virtual void addComment(std::string &out);          // comment after 60 spaces
@@ -95,6 +94,7 @@ class GenObject {
     virtual bool isParam() { return false; }            // StrValue is its name, Method generate() to generate its value
     virtual bool isParamGeneric() { return false; }     // Parameter that is defined as argument of constructor
     virtual bool isParamTemplate() { return false; }    // Special type of ParamGeneric used in systemc, when in/out depend on it
+    virtual bool isGenericDep() { return false; }       // depend on generic parameters (but not a template parameter)
     virtual bool isValue() { return false; }            // scalara value
     virtual bool isConst() { return false; }            // scalar value with the an empty name
     virtual bool isString() { return false; }
@@ -128,10 +128,7 @@ class GenObject {
     virtual uint64_t getValue() { return 0; }
     virtual double getFloatValue() { return 0; }
     virtual std::string getStrValue() { return std::string(""); }
-    virtual void setStrValue(const char *val);
-    virtual void setValue(uint64_t val) {}                // used in a operations
-    virtual void setObjValue(GenObject *obj) { objValue_ = obj; }
-    virtual GenObject *getObjValue() { return objValue_; }
+    virtual void setObjValue(GenObject *obj) {}         // used to connect parameters without Operation
     virtual uint64_t getWidth() { return 0; }
     virtual GenObject *getObjWidth() { return 0; }
     virtual std::string getStrWidth() { return std::string(""); }
@@ -148,18 +145,10 @@ class GenObject {
     virtual bool isResetDisabled() { return reset_disabled_; }
     virtual void disableVcd() { vcd_enabled_ = false; }
     virtual bool isVcd() { return vcd_enabled_; }
-    virtual bool isGenericDep();                        // depend on generic parameters
     virtual bool isSvApiUsed() { return sv_api_; }      // readmemh or similar methods used
     virtual void setSvApiUsed() { sv_api_ = true; }
 
     virtual std::string generate() { return std::string(""); }
-
-/*    virtual bool isNumber(std::string &s) {
-        const char *pch = s.c_str();
-        return (pch[0] >= '0' && pch[0] <= '9')
-            || (pch[0] == '\'' && pch[1] == '1')        // all ones
-            || (pch[0] == '\'' && pch[1] == '0');       // all zeros
-    }*/
 
  protected:
     EIdType id_;
@@ -169,7 +158,6 @@ class GenObject {
     std::string name_;
 
     int depth_;
-    std::string strValue_;
     std::string strDepth_;
     GenObject *objValue_;
     GenObject *objDepth_;
@@ -180,7 +168,6 @@ class GenObject {
     bool sv_api_;                                       // method readmemh or similar were used
     std::string comment_;
     std::list<GenObject *> entries_;
-
 };
 
 }  // namespace sysvc

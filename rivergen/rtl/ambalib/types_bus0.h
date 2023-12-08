@@ -93,26 +93,27 @@ class types_bus0 : public FileObject {
             ddr(this, "ddr", "5, ddr, 512 MB"),
             sdctrl(this, "sdctrl", "6, sdctrl, 32 GB") {
 
-            bootrom.addr_start.setStrValue("0x0000000010000");
-            bootrom.addr_end.setStrValue(  "0x0000000050000");
+            // It is possible now to do Logic definition:
+            bootrom.addr_start.setObjValue(new HexConst(0x0000000010000));
+            bootrom.addr_end.setObjValue(new HexConst(0x0000000050000));
 
-            clint.addr_start.setStrValue("0x0000002000000");
-            clint.addr_end.setStrValue(  "0x0000002010000");
+            clint.addr_start.setObjValue(new HexConst(0x0000002000000));
+            clint.addr_end.setObjValue(new HexConst(0x0000002010000));
 
-            sram.addr_start.setStrValue( "0x0000008000000");
-            sram.addr_end.setStrValue(   "0x0000008200000");
+            sram.addr_start.setObjValue(new HexConst(0x0000008000000));
+            sram.addr_end.setObjValue(new HexConst(0x0000008200000));
 
-            plic.addr_start.setStrValue( "0x000000C000000");
-            plic.addr_end.setStrValue(   "0x0000010000000");
+            plic.addr_start.setObjValue(new HexConst(0x000000C000000));
+            plic.addr_end.setObjValue(new HexConst(0x0000010000000));
 
-            bus1.addr_start.setStrValue( "0x0000010000000");
-            bus1.addr_end.setStrValue(   "0x0000010100000");
+            bus1.addr_start.setObjValue(new HexConst(0x0000010000000));
+            bus1.addr_end.setObjValue(new HexConst(0x0000010100000));
 
-            ddr.addr_start.setStrValue(  "0x0000080000000");
-            ddr.addr_end.setStrValue(    "0x00000C0000000");
+            ddr.addr_start.setObjValue(new HexConst(0x0000080000000));
+            ddr.addr_end.setObjValue(new HexConst(0x00000C0000000));
 
-            sdctrl.addr_start.setStrValue("0x0000800000000");
-            sdctrl.addr_end.setStrValue(  "0x0001000000000");
+            sdctrl.addr_start.setObjValue(new HexConst(0x0000800000000));
+            sdctrl.addr_end.setObjValue(new HexConst(0x0001000000000));
         }
         virtual bool isParam() override { return true; }
 

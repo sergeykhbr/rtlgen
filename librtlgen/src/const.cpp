@@ -52,7 +52,7 @@ std::string FloatConst::getStrValue() {
 }
 
 StringConst::StringConst(const char *v) : GenObject(NO_PARENT, NO_COMMENT) {
-    strval_ = std::string(v);
+    strval_ = "\"" + std::string(v) + "\"";
 }
 
 DecLogicConst::DecLogicConst(GenObject *width, uint64_t val)
@@ -60,11 +60,90 @@ DecLogicConst::DecLogicConst(GenObject *width, uint64_t val)
     objWidth_ = width;
 }
 
+std::string DecLogicConst::getStrValue() {
+    char tstr[64] = "";
+    char fmt[32];
+    int w = static_cast<int>(getWidth());
+
+    if (w > 64) {
+        if (ui64_) {
+            SHOW_ERROR("Unsupported constant %" RV_PRI64 "x", ui64_);
+        }
+        if (SCV_is_sysc()) {
+            RISCV_sprintf(tstr, sizeof(tstr), "%dull", 0);
+        } else if (SCV_is_sv()) {
+            RISCV_sprintf(tstr, sizeof(tstr), "'%d", 0);
+        } else if (SCV_is_vhdl()) {
+            RISCV_sprintf(tstr, sizeof(tstr), "(others => '%d'", 0);
+        }
+    } else if (w > 1) {
+        if (SCV_is_sysc()) {
+            RISCV_sprintf(tstr, sizeof(tstr), "%" RV_PRI64 "d", ui64_);
+        } else if (SCV_is_sv()) {
+            RISCV_sprintf(tstr, sizeof(tstr), "%d'd%" RV_PRI64 "d", w, ui64_);
+        } else if (SCV_is_vhdl()) {
+            RISCV_sprintf(fmt, sizeof(fmt), "\"%%0%d" RV_PRI64 "X\"",
+                            (w + 3) / 4);
+            RISCV_sprintf(tstr, sizeof(tstr), fmt, ui64_);
+        }
+    } else {
+        if (SCV_is_sysc()) {
+            RISCV_sprintf(tstr, sizeof(tstr), "%" RV_PRI64 "d", ui64_);
+        } else if (SCV_is_sv()) {
+            RISCV_sprintf(tstr, sizeof(tstr), "1'b%" RV_PRI64 "d", getValue());
+        } else if (SCV_is_vhdl()) {
+            RISCV_sprintf(tstr, sizeof(tstr), "'%" RV_PRI64 "d'", getValue());
+        }
+    }
+    return std::string(tstr);
+}
+
 HexLogicConst::HexLogicConst(GenObject *width, uint64_t val)
     : HexConst(val) {
     objWidth_ = width;
 }
 
+std::string HexLogicConst::getStrValue() {
+    char tstr[64] = "";
+    char fmt[32];
+    int w = static_cast<int>(getWidth());
+
+    if (w > 64) {
+        if (ui64_) {
+            SHOW_ERROR("Unsupported constant %" RV_PRI64 "x", ui64_);
+        }
+        if (SCV_is_sysc()) {
+            RISCV_sprintf(tstr, sizeof(tstr), "%dull", 0);
+        } else if (SCV_is_sv()) {
+            RISCV_sprintf(tstr, sizeof(tstr), "'%d", 0);
+        } else if (SCV_is_vhdl()) {
+            RISCV_sprintf(tstr, sizeof(tstr), "(others => '%d'", 0);
+        }
+    } else if (w > 1) {
+        if (SCV_is_sysc()) {
+            RISCV_sprintf(fmt, sizeof(fmt), "0x%%0%d" RV_PRI64 "X",
+                            (w + 3) / 4);
+            RISCV_sprintf(tstr, sizeof(tstr), fmt, getValue());
+        } else if (SCV_is_sv()) {
+            RISCV_sprintf(fmt, sizeof(fmt), "%d'h%%0%d" RV_PRI64 "X",
+                            w, (w + 3) / 4);
+            RISCV_sprintf(tstr, sizeof(tstr), fmt, getValue());
+        } else if (SCV_is_vhdl()) {
+            RISCV_sprintf(fmt, sizeof(fmt), "\"%%0%d" RV_PRI64 "X\"",
+                            (w + 3) / 4);
+            RISCV_sprintf(tstr, sizeof(tstr), fmt, getValue());
+        }
+    } else {
+        if (SCV_is_sysc()) {
+            RISCV_sprintf(tstr, sizeof(tstr), "%" RV_PRI64 "d", getValue());
+        } else if (SCV_is_sv()) {
+            RISCV_sprintf(tstr, sizeof(tstr), "1'b%" RV_PRI64 "d", getValue());
+        } else if (SCV_is_vhdl()) {
+            RISCV_sprintf(tstr, sizeof(tstr), "'%" RV_PRI64 "d'", getValue());
+        }
+    }
+    return std::string(tstr);
+}
 
 }  // namespace sysvc
 

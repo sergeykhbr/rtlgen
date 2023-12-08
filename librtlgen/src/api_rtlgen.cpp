@@ -191,27 +191,27 @@ Operation &AND2(GenObject &a, GenObject &b, const char *comment) {
 // CC2
 Operation &CC2(GenObject &a, GenObject &b, const char *comment) {
     CCxOperation *p = new CCxOperation(true, comment);      // oneline = true
-    p->addArgument(&a);
-    p->addArgument(&b);
+    p->add_entry(&a);
+    p->add_entry(&b);
     return *p;
 }
 
 // CC3
 Operation &CC3(GenObject &a, GenObject &b, GenObject &c, const char *comment) {
     CCxOperation *p = new CCxOperation(true, comment);      // oneline = true
-    p->addArgument(&a);
-    p->addArgument(&b);
-    p->addArgument(&c);
+    p->add_entry(&a);
+    p->add_entry(&b);
+    p->add_entry(&c);
     return *p;
 }
 
 // CC4
 Operation &CC4(GenObject &a, GenObject &b, GenObject &c, GenObject &d, const char *comment) {
     CCxOperation *p = new CCxOperation(true, comment);      // oneline = true
-    p->addArgument(&a);
-    p->addArgument(&b);
-    p->addArgument(&c);
-    p->addArgument(&d);
+    p->add_entry(&a);
+    p->add_entry(&b);
+    p->add_entry(&c);
+    p->add_entry(&d);
     return *p;
 }
 
@@ -223,11 +223,40 @@ Operation &CCx(size_t cnt, ...) {
     va_start(arg, cnt);
     for (int i = 0; i < cnt; i++) {
         obj = va_arg(arg, GenObject *);
-        p->addArgument(obj);
+        p->add_entry(obj);
     }
     va_end(arg);
     return *p;
 }
+
+// SPLx
+Operation &SPLx(GenObject &a, size_t cnt, ...) {
+    Operation *p = new SplitOperation(&a, NO_COMMENT);
+    GenObject *obj;
+    va_list arg;
+    va_start(arg, cnt);
+    for (int i = 0; i < cnt; i++) {
+        obj = va_arg(arg, GenObject *);
+        p->add_arg(obj);
+    }
+    va_end(arg);
+    return *p;
+}
+
+// CALCWIDTHx
+Operation &CALCWIDTHx(size_t cnt, ...) {
+    GenObject *obj;
+    Operation *p = new CalcWidthOperation(NO_COMMENT);
+    va_list arg;
+    va_start(arg, cnt);
+    for (int i = 0; i < cnt; i++) {
+        obj = va_arg(arg, GenObject *);
+        p->add_arg(obj);
+    }
+    va_end(arg);
+    return *p;
+}
+
 
 // LSH
 Operation &LSH(GenObject &a, GenObject &sz, const char *comment) {
@@ -292,11 +321,6 @@ GenObject *SCV_parse_to_obj(const char *val) {
     size_t pos = 0;
     int bracecnt = 0;
 
-#if 1
-    if (strcmp(val, "((2 * RISCV_ARCH) - 12)") == 0) {
-        bool st = true;
-    }
-#endif
     if (val[0] == '\0') {
         return ret;
     }

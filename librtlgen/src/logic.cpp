@@ -25,8 +25,15 @@ Logic::Logic(const char *width,
               const char *val,
               GenObject *parent,
               const char *comment)
-    : GenValue(parent, name, val, comment) {
+    : GenValue(parent, name, "", comment) {
     objWidth_ = SCV_parse_to_obj(width);
+    if (val[0] < '0' || val[0] > '9') {
+        objValue_ = SCV_parse_to_obj(val);
+    } else if (val[1] == 'x') {
+        objValue_ = new HexLogicConst(objWidth_, strtoll(val, 0, 16));
+    } else {
+        objValue_ = new DecLogicConst(objWidth_, strtoll(val, 0, 10));
+    }
 }
 
 
