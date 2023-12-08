@@ -34,6 +34,18 @@ class RegSignal : public Signal {
     virtual bool isReg() override { return true; }
 };
 
+/**
+    Force to use sc_uint<1> instead of bool in SystemC even when width=1
+ */
+class RegSignal1 : public Signal1 {
+ public:
+    RegSignal1(GenObject *parent, const char *name, const char *width,
+        const char *val, const char *comment)
+        : Signal1(parent, name, width, val, comment) {}
+ protected:
+    virtual bool isReg() override { return true; }
+};
+
 class NRegSignal : public Signal {
  public:
     NRegSignal(GenObject *parent, const char *name, const char *width,

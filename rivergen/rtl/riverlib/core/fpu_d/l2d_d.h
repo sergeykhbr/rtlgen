@@ -29,7 +29,7 @@ class Long2Double : public ModuleObject {
      public:
         CombProcess(GenObject *parent) :
             ProcObject(parent, "comb"),
-            v_ena(this, "v_ena"),
+            v_ena(this, "v_ena", "1", "0", NO_COMMENT),
             mantAlign(this, "mantAlign", "64"),
             lshift(this, "lshift", "6"),
             expAlign(this, "expAlign", "11"),

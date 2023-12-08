@@ -33,8 +33,12 @@ class GenValue : public GenObject {
 
     virtual bool isValue() override { return true; }
     virtual bool isConst() override { return getName() == ""; }
+
     virtual std::string getName() override;
-    virtual std::string getStrValue() override;
+    virtual uint64_t getValue() override { return objValue_->getValue(); }
+    virtual double getFloatValue() override { return objValue_->getFloatValue(); }
+    virtual std::string getStrValue() override { return objValue_->getName(); }
+    virtual GenObject *getObjValue() override { return objValue_; }
 
     /** Signal could be a register when it inside of register struct */
     virtual bool isReg() override;
@@ -42,6 +46,9 @@ class GenValue : public GenObject {
 
     virtual std::string v_name(std::string v) override;
     virtual std::string r_name(std::string v) override;
+
+ protected:
+    GenObject *objValue_;
 };
 
 class BOOL : public GenValue {
@@ -51,9 +58,6 @@ class BOOL : public GenValue {
         GenValue(parent, name, val, comment) {}
 
     virtual std::string getType() override;
-    virtual std::string getStrValue() override;
-    virtual uint64_t getValue() override;
-    virtual uint64_t getWidth() override { return 1; }
     virtual std::string generate() override;
 };
 
@@ -145,6 +149,38 @@ class GenVar : public I32D {
 
     virtual bool isGenVar() override { return true; }
     virtual std::string getStrValue() override { return getName(); }
+};
+
+/** Use this template if you want to assign a constant value to structure META_NONE or similar*/
+template<class T>
+class StructVar : public T {
+ public:
+    StructVar(GenObject *parent, const char *name, const char *val, const char *comment)
+        : T(parent, name, comment) {
+        objValue_ = SCV_parse_to_obj(val);
+    }
+    virtual bool isValue() override { return true; }
+    virtual bool isConst() override { return getName() == ""; }
+
+    virtual std::string getName() override {
+        if (name_ == "") {
+            return getStrValue();
+        }
+        return name_;
+    }
+    virtual uint64_t getValue() override { return objValue_->getValue(); }
+    virtual double getFloatValue() override { return objValue_->getFloatValue(); }
+    virtual std::string getStrValue() override {
+        if (objValue_) {
+            return objValue_->getName();
+        } else {
+            return T::getStrValue();
+        }
+    }
+    virtual GenObject *getObjValue() override { return objValue_; }
+
+ protected:
+    GenObject *objValue_;
 };
 
 }  // namespace sysvc

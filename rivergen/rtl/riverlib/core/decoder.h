@@ -89,7 +89,7 @@ class InstrDecoder : public ModuleObject {
     class DecoderDataType : public StructObject {
      public:
         DecoderDataType(GenObject *parent, const char *name, const char *comment)
-            : StructObject(parent, "DecoderDataType", name, "", comment),
+            : StructObject(parent, "DecoderDataType", name, comment),
         pc(this, "pc", "RISCV_ARCH", "'1"),
         isa_type(this, "isa_type", "ISA_Total"),
         instr_vec(this, "instr_vec", "Instr_Total"),

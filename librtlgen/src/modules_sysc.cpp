@@ -223,7 +223,7 @@ std::string ModuleObject::generate_sysc_h() {
     // Constructor declaration:
     std::string space1 = addspaces() + getType() + "(";
     out += space1 + "sc_module_name name";
-    if (getAsyncReset()) {
+    if (isAsyncResetParam() && getAsyncResetParam() == 0) {
         ln = "";
         while (ln.size() < space1.size()) {
             ln += " ";
@@ -264,7 +264,7 @@ std::string ModuleObject::generate_sysc_h() {
 
     // Generic parameter local storage:
     tcnt = 0;
-    if (getAsyncReset()) {
+    if (isAsyncResetParam() && getAsyncResetParam() == 0) {
         out += addspaces() + (new Logic("1", "async_reset"))->getType() + " async_reset_;\n";
         tcnt++;
     }
@@ -342,7 +342,7 @@ std::string ModuleObject::generate_sysc_h() {
     // Signals list
     text = "";
     for (auto &p: getEntries()) {
-        if (p->getId() == ID_COMMENT) {
+        if (p->isComment()) {
             text += p->generate();
             continue;
         }
@@ -783,7 +783,7 @@ std::string ModuleObject::generate_sysc_constructor() {
     }
     space1 += "::" + getType() + "(";
     ret += space1 + "sc_module_name name";
-    if (getAsyncReset()) {
+    if (isAsyncResetParam() && getAsyncResetParam() == 0) {
         ln = "";
         while (ln.size() < space1.size()) {
             ln += " ";
@@ -816,8 +816,7 @@ std::string ModuleObject::generate_sysc_constructor() {
             ret += ",\n    " + p->getName() + "(\"" + p->getName() + "\"";
             if (p->isVector()) {
                 ret += ", " + p->getStrDepth();
-            }
-            if (p->isClock()) {
+            } else if (p->isClock()) {
                 ret += ", " + p->getStrValue();
                 ret += ", SC_SEC";
             }
@@ -828,7 +827,7 @@ std::string ModuleObject::generate_sysc_constructor() {
     ret += "\n";
     pushspaces();
     // local copy of the generic parameters:
-    if (getAsyncReset()) {
+    if (isAsyncResetParam() && getAsyncResetParam() == 0) {
         ret += addspaces() + "async_reset_ = async_reset;\n";
     }
     for (auto &p: getEntries()) {

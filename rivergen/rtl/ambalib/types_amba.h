@@ -40,7 +40,7 @@ class types_amba : public FileObject {
     class mapinfo_type : public StructObject {
      public:
         mapinfo_type(GenObject* parent, const char* name, const char* comment)
-            : StructObject(parent, "mapinfo_type", name, "mapinfo_none", comment),
+            : StructObject(parent, "mapinfo_type", name, comment),
             _0_(this, "Base Address."),
             addr_start("0", "addr_start", this),
             _1_(this, "Maskable bits of the base address."),
@@ -59,7 +59,7 @@ class types_amba : public FileObject {
     class axi4_metadata_type : public StructObject {
      public:
         axi4_metadata_type(GenObject* parent, const char* name, const char* comment)
-            : StructObject(parent, "axi4_metadata_type", name, "META_NONE", comment),
+            : StructObject(parent, "axi4_metadata_type", name, comment),
             addr("CFG_SYSBUS_ADDR_BITS", "addr", "0", this),
             _len0_(this, "@brief   Burst length."),
             _len1_(this, "@details This signal indicates the exact number of transfers in"),
@@ -167,9 +167,9 @@ class types_amba : public FileObject {
     class axi4_master_out_type : public StructObject {
      public:
         axi4_master_out_type(GenObject* parent, const char* name, const char* comment)
-            : StructObject(parent, "axi4_master_out_type", name, "axi4_master_out_none", comment),
+            : StructObject(parent, "axi4_master_out_type", name, comment),
             aw_valid("1", "aw_valid", "0", this),
-            aw_bits(this, "aw_bits", NO_COMMENT),
+            aw_bits(this, "aw_bits", "META_NONE", NO_COMMENT),
             aw_id("CFG_SYSBUS_ID_BITS", "aw_id", "0", this),
             aw_user("CFG_SYSBUS_USER_BITS", "aw_user", "0", this),
             w_valid("1", "w_valid", "0", this),
@@ -179,7 +179,7 @@ class types_amba : public FileObject {
             w_user("CFG_SYSBUS_USER_BITS", "w_user", "0", this),
             b_ready("1", "b_ready", "0", this),
             ar_valid("1", "ar_valid", "0", this),
-            ar_bits(this, "ar_bits", NO_COMMENT),
+            ar_bits(this, "ar_bits", "META_NONE", NO_COMMENT),
             ar_id("CFG_SYSBUS_ID_BITS", "ar_id", "0", this),
             ar_user("CFG_SYSBUS_USER_BITS", "ar_user", "0", this),
             r_ready("1", "r_ready", "0", this) {
@@ -187,7 +187,7 @@ class types_amba : public FileObject {
 
     public:
         Logic aw_valid;
-        axi4_metadata_type aw_bits;
+        StructVar<axi4_metadata_type> aw_bits;
         Logic  aw_id;
         Logic aw_user;
         Logic w_valid;
@@ -197,7 +197,7 @@ class types_amba : public FileObject {
         Logic w_user;
         Logic b_ready;
         Logic ar_valid;
-        axi4_metadata_type ar_bits;
+        StructVar<axi4_metadata_type> ar_bits;
         Logic ar_id;
         Logic ar_user;
         Logic r_ready;
@@ -206,7 +206,7 @@ class types_amba : public FileObject {
     class axi4_master_in_type : public StructObject {
      public:
         axi4_master_in_type(GenObject* parent, const char* name, const char* comment)
-            : StructObject(parent, "axi4_master_in_type", name, "axi4_master_in_none", comment),
+            : StructObject(parent, "axi4_master_in_type", name, comment),
             aw_ready("1", "aw_ready", "0", this),
             w_ready("1", "w_ready", "0", this),
             b_valid("1", "b_valid", "0", this),
@@ -241,9 +241,9 @@ class types_amba : public FileObject {
     class axi4_slave_in_type : public StructObject {
      public:
         axi4_slave_in_type(GenObject* parent, const char* name, const char* comment)
-            : StructObject(parent, "axi4_slave_in_type", name, "axi4_slave_in_none", comment),
+            : StructObject(parent, "axi4_slave_in_type", name, comment),
             aw_valid("1", "aw_valid", "0", this),
-            aw_bits(this, "aw_bits", NO_COMMENT),
+            aw_bits(this, "aw_bits", "META_NONE", NO_COMMENT),
             aw_id("CFG_SYSBUS_ID_BITS", "aw_id", "0", this),
             aw_user("CFG_SYSBUS_USER_BITS", "aw_user", "0", this),
             w_valid("1", "w_valid", "0", this),
@@ -253,7 +253,7 @@ class types_amba : public FileObject {
             w_user("CFG_SYSBUS_USER_BITS", "w_user", "0", this),
             b_ready("1", "b_ready", "0", this),
             ar_valid("1", "ar_valid", "0", this),
-            ar_bits(this, "ar_bits", NO_COMMENT),
+            ar_bits(this, "ar_bits", "META_NONE", NO_COMMENT),
             ar_id("CFG_SYSBUS_ID_BITS", "ar_id", "0", this),
             ar_user("CFG_SYSBUS_USER_BITS", "ar_user", "0", this),
             r_ready("1", "r_ready", "0", this) {
@@ -261,7 +261,7 @@ class types_amba : public FileObject {
 
     public:
         Logic aw_valid;
-        axi4_metadata_type aw_bits;
+        StructVar<axi4_metadata_type> aw_bits;
         Logic aw_id;
         Logic aw_user;
         Logic w_valid;
@@ -271,7 +271,7 @@ class types_amba : public FileObject {
         Logic w_user;
         Logic b_ready;
         Logic ar_valid;
-        axi4_metadata_type ar_bits;
+        StructVar<axi4_metadata_type> ar_bits;
         Logic ar_id;
         Logic ar_user;
         Logic r_ready;
@@ -280,7 +280,7 @@ class types_amba : public FileObject {
     class axi4_slave_out_type : public StructObject {
      public:
         axi4_slave_out_type(GenObject* parent, const char* name, const char* comment)
-            : StructObject(parent, "axi4_slave_out_type", name, "axi4_slave_out_none", comment),
+            : StructObject(parent, "axi4_slave_out_type", name, comment),
             aw_ready("1", "aw_ready", "0", this),
             w_ready("1", "w_ready", "0", this),
             b_valid("1", "b_valid", "0", this),
@@ -315,7 +315,7 @@ class types_amba : public FileObject {
     class apb_in_type : public StructObject {
      public:
         apb_in_type(GenObject* parent, const char* name, const char* comment)
-            : StructObject(parent, "apb_in_type", name, "apb_in_none", comment),
+            : StructObject(parent, "apb_in_type", name, comment),
             paddr("32", "paddr", "0", this),
             pprot("3", "pprot", "0", this),
             pselx("1", "pselx", "0", this),
@@ -338,7 +338,7 @@ class types_amba : public FileObject {
     class apb_out_type : public StructObject {
      public:
         apb_out_type(GenObject* parent, const char* name, const char* comment)
-            : StructObject(parent, "apb_out_type", name, "apb_out_none", comment),
+            : StructObject(parent, "apb_out_type", name, comment),
             pready("1", "pready", "0", this, "when 1 it breaks callback to functional model"),
             prdata("32", "prdata", "0", this),
             pslverr("1", "pslverr", "0", this) {}
@@ -362,7 +362,7 @@ class types_amba : public FileObject {
     mapinfo_type mapinfo_typedef_;
     TextLine _map3_;
     TextLine _map4_;
-    mapinfo_type mapinfo_none;
+    ParamStruct<mapinfo_type> mapinfo_none;
     TextLine _xsize0_;
     TextLine _xsize1_;
     ParamI32D XSIZE_TOTAL;
@@ -435,7 +435,7 @@ class types_amba : public FileObject {
     TextLine _meta0_;
     axi4_metadata_type axi4_metadata_type_def;
     TextLine _meta1_;
-    axi4_metadata_type META_NONE;
+    ParamStruct<axi4_metadata_type> META_NONE;
     TextLine _xmst0_;
     TextLine _xmst1_;
     axi4_master_out_type axi4_master_out_type_def;
@@ -443,30 +443,30 @@ class types_amba : public FileObject {
     TextLine _xmst3_;
     TextLine _xmst4_;
     TextLine _xmst5_;
-    axi4_master_out_type axi4_master_out_none;
+    ParamStruct<axi4_master_out_type> axi4_master_out_none;
     TextLine _xmst6_;
     TextLine _xmst7_;
     axi4_master_in_type axi4_master_in_type_def;
     TextLine _xmst8_;
-    axi4_master_in_type axi4_master_in_none;
+    ParamStruct<axi4_master_in_type> axi4_master_in_none;
     TextLine _xslv0_;
     TextLine _xslv1_;
     axi4_slave_in_type axi4_slave_in_type_def;
     TextLine _xslv2_;
-    axi4_slave_in_type axi4_slave_in_none;
+    ParamStruct<axi4_slave_in_type> axi4_slave_in_none;
     TextLine _xslv3_;
     axi4_slave_out_type axi4_slave_out_type_def;
     TextLine _xslv4_;
-    axi4_slave_out_type axi4_slave_out_none;
+    ParamStruct<axi4_slave_out_type> axi4_slave_out_none;
     TextLine _apb0;
     TextLine _apb1;
     apb_in_type apb_in_type_def;
     TextLine _apb2;
-    apb_in_type apb_in_none;
+    ParamStruct<apb_in_type> apb_in_none;
     TextLine _apb3;
     apb_out_type apb_out_type_def;
     TextLine _apb4;
-    apb_out_type apb_out_none;
+    ParamStruct<apb_out_type> apb_out_none;
     TextLine _n_;
 };
 

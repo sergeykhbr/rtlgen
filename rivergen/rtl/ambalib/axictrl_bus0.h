@@ -32,11 +32,11 @@ class axictrl_bus0 : public ModuleObject {
      public:
         CombProcess(GenObject *parent) :
             ProcObject(parent, "comb"),
-            vmsti(this, "vmsti", "ADD(CFG_BUS0_XMST_TOTAL,1)", NO_COMMENT),
-            vmsto(this, "vmsto", "ADD(CFG_BUS0_XMST_TOTAL,1)", NO_COMMENT),
-            vslvi(this, "vslvi", "ADD(CFG_BUS0_XSLV_TOTAL,1)", NO_COMMENT),
-            vslvo(this, "vslvo", "ADD(CFG_BUS0_XSLV_TOTAL,1)", NO_COMMENT),
-            vb_def_mapinfo(this, "vb_def_mapinfo", NO_COMMENT),
+            vmsti(this, "vmsti", "ADD(CFG_BUS0_XMST_TOTAL,1)", "axi4_master_in_none", NO_COMMENT),
+            vmsto(this, "vmsto", "ADD(CFG_BUS0_XMST_TOTAL,1)", "axi4_master_out_none", NO_COMMENT),
+            vslvi(this, "vslvi", "ADD(CFG_BUS0_XSLV_TOTAL,1)", "axi4_slave_in_none", NO_COMMENT),
+            vslvo(this, "vslvo", "ADD(CFG_BUS0_XSLV_TOTAL,1)", "axi4_slave_out_none", NO_COMMENT),
+            vb_def_mapinfo(this, "vb_def_mapinfo", "mapinfo_none", NO_COMMENT),
             i_ar_midx("0", "i_ar_midx", this),
             i_aw_midx("0", "i_aw_midx", this),
             i_ar_sidx("0", "i_ar_sidx", this),
@@ -58,11 +58,11 @@ class axictrl_bus0 : public ModuleObject {
         }
 
      public:
-        StructArray<types_amba::axi4_master_in_type> vmsti;
-        StructArray<types_amba::axi4_master_out_type> vmsto;
-        StructArray<types_amba::axi4_slave_in_type> vslvi;
-        StructArray<types_amba::axi4_slave_out_type> vslvo;
-        types_amba::mapinfo_type vb_def_mapinfo;
+        StructVarArray<types_amba::axi4_master_in_type> vmsti;
+        StructVarArray<types_amba::axi4_master_out_type> vmsto;
+        StructVarArray<types_amba::axi4_slave_in_type> vslvi;
+        StructVarArray<types_amba::axi4_slave_out_type> vslvo;
+        StructVar<types_amba::mapinfo_type> vb_def_mapinfo;
         I32D i_ar_midx;
         I32D i_aw_midx;
         I32D i_ar_sidx;

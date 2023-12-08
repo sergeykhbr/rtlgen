@@ -189,7 +189,7 @@ class CsrRegs : public ModuleObject {
     class RegModeType : public StructObject {
      public:
         RegModeType(GenObject *parent, const char *name, const char *comment)
-            : StructObject(parent, "RegModeType", name, "", comment),
+            : StructObject(parent, "RegModeType", name, comment),
             xepc(this, "xepc", "RISCV_ARCH", "0", ""),
             xpp(this, "xpp", "2", "0", "Previous Privildge mode. If x is not implemented, then xPP mus be 0"),
             xpie(this, "xpie", "1", "0", "Previous Privildge mode global interrupt enable"),
@@ -232,7 +232,7 @@ class CsrRegs : public ModuleObject {
     class PmpItemType : public StructObject {
      public:
         PmpItemType(GenObject *parent, const char *name, const char *comment)
-            : StructObject(parent, "PmpItemType", name, "", comment),
+            : StructObject(parent, "PmpItemType", name, comment),
             cfg(this, "cfg", "8", "0", "pmpcfg bits without changes"),
             addr(this, "addr", "RISCV_ARCH", "0", "Maximal PMP address bits [55:2]"),
             mask(this, "mask", "RISCV_ARCH", "0", "NAPOT mask formed from address")

@@ -47,7 +47,7 @@ plic::plic(GenObject *parent, const char *name, const char *comment) :
     src_priority(this, "src_priority", "MUL(4,1024)"),
     pending(this, "pending", "1024"),
     ip(this, "ip", "ctxmax"),
-    ctx(this, "ctx"),
+    ctx(this, "ctx", NO_COMMENT),
     rdata(this, "rdata", "64"),
     //
     comb(this),

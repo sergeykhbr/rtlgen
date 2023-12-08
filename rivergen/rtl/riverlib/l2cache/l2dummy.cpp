@@ -42,7 +42,7 @@ L2Dummy::L2Dummy(GenObject *parent, const char *name, const char *comment) :
     req_prot(this, "req_prot", "3"),
     req_lock(this, "req_lock", "1"),
     req_id(this, "req_id", "CFG_CPU_ID_BITS"),
-    req_user(this, "req_user", "CFG_CPU_USER_BITS"),
+    req_user(this, "req_user", "CFG_CPU_USER_BITS", "'0", NO_COMMENT),
     req_wdata(this, "req_wdata", "L1CACHE_LINE_BITS"),
     req_wstrb(this, "req_wstrb", "L1CACHE_BYTES_PER_LINE"),
     rdata(this, "rdata", "L1CACHE_LINE_BITS"),

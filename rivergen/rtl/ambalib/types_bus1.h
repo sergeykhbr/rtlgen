@@ -25,34 +25,31 @@ class types_bus1 : public FileObject {
  public:
     types_bus1(GenObject *parent);
 
-    class bus1_apb_in_vector : public types_amba::apb_in_type {
+    class bus1_apb_in_vector : public StructArray<types_amba::apb_in_type> {
      public:
         bus1_apb_in_vector(GenObject *parent, const char *name, const char *descr="")
-            : apb_in_type(parent, name, descr) {
+            : StructArray<apb_in_type>(parent, name, "CFG_BUS1_PSLV_TOTAL", descr) {
             setTypedef("bus1_apb_in_vector");
-            setStrDepth("CFG_BUS1_PSLV_TOTAL");
         }
         virtual bool isVector() override { return true; }
         virtual bool isSignal() override { return true; }
     };
 
-    class bus1_apb_out_vector : public types_amba::apb_out_type {
+    class bus1_apb_out_vector : public StructArray<types_amba::apb_out_type> {
      public:
         bus1_apb_out_vector(GenObject *parent, const char *name, const char *descr="")
-            : apb_out_type(parent, name, descr) {
+            : StructArray<apb_out_type>(parent, name, "CFG_BUS1_PSLV_TOTAL", descr) {
             setTypedef("bus1_apb_out_vector");
-            setStrDepth("CFG_BUS1_PSLV_TOTAL");
         }
         virtual bool isVector() override { return true; }
         virtual bool isSignal() override { return true; }
     };
 
-    class bus1_mapinfo_vector : public types_amba::mapinfo_type {
+    class bus1_mapinfo_vector : public StructArray<types_amba::mapinfo_type> {
      public:
         bus1_mapinfo_vector(GenObject *parent, const char *name, const char *descr="")
-            : mapinfo_type(parent, name, descr) {
+            : StructArray<mapinfo_type>(parent, name, "CFG_BUS1_PSLV_TOTAL", descr) {
             setTypedef("bus1_mapinfo_vector");
-            setStrDepth("CFG_BUS1_PSLV_TOTAL");
         }
         virtual bool isVector() override { return true; }
         virtual bool isSignal() override { return true; }
@@ -61,14 +58,14 @@ class types_bus1 : public FileObject {
     class CONST_CFG_BUS1_MAP : public ParamStruct<bus1_mapinfo_vector> {
      public:
         CONST_CFG_BUS1_MAP(GenObject *parent)
-            : ParamStruct<bus1_mapinfo_vector>(parent, "CFG_BUS1_MAP", NO_COMMENT),
-            uart1(this, "uart1", "0, uart1 4KB"),
-            prci(this, "prci", "1, PRCI 4KB"),
-            dmi(this, "dmi", "2, dmi 4KB. TODO: change base address"),
-            spi(this, "spi", "4, SPI SD-card 4KB"),
-            gpio(this, "gpio", "3, GPIO 4KB"),
-            ddr(this, "ddr", "5, DDR MGMT 4KB"),
-            pnp(this, "pnp", "6, Plug'n'Play 4KB") {
+            : ParamStruct<bus1_mapinfo_vector>(parent, "CFG_BUS1_MAP", "", NO_COMMENT),
+            uart1(this, "uart1", "", "0, uart1 4KB"),
+            prci(this, "prci", "", "1, PRCI 4KB"),
+            dmi(this, "dmi", "", "2, dmi 4KB. TODO: change base address"),
+            spi(this, "spi", "", "4, SPI SD-card 4KB"),
+            gpio(this, "gpio", "", "3, GPIO 4KB"),
+            ddr(this, "ddr", "", "5, DDR MGMT 4KB"),
+            pnp(this, "pnp", "", "6, Plug'n'Play 4KB") {
 
             uart1.addr_start.setObjValue(new HexConst(0x0000000010000));
             uart1.addr_end.setObjValue(new HexConst(0x0000000011000));
@@ -91,13 +88,13 @@ class types_bus1 : public FileObject {
             pnp.addr_start.setObjValue(new HexConst(0x00000000ff000));
             pnp.addr_end.setObjValue(new HexConst(0x0000000100000));
         }
-        ParamStruct<types_amba::mapinfo_type> uart1;
-        ParamStruct<types_amba::mapinfo_type> prci;
-        ParamStruct<types_amba::mapinfo_type> dmi;
-        ParamStruct<types_amba::mapinfo_type> spi;
-        ParamStruct<types_amba::mapinfo_type> gpio;
-        ParamStruct<types_amba::mapinfo_type> ddr;
-        ParamStruct<types_amba::mapinfo_type> pnp;
+        StructVar<types_amba::mapinfo_type> uart1;
+        StructVar<types_amba::mapinfo_type> prci;
+        StructVar<types_amba::mapinfo_type> dmi;
+        StructVar<types_amba::mapinfo_type> spi;
+        StructVar<types_amba::mapinfo_type> gpio;
+        StructVar<types_amba::mapinfo_type> ddr;
+        StructVar<types_amba::mapinfo_type> pnp;
     };
 
  public:

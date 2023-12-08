@@ -31,14 +31,14 @@ class apb_slv : public ModuleObject {
         CombProcess(GenObject *parent) :
             ProcObject(parent, "comb"),
             vb_rdata(this, "vb_rdata", "32"),
-            vcfg(this, "vcfg", NO_COMMENT),
-            vapbo(this, "vapbo", NO_COMMENT) {
+            vcfg(this, "vcfg", "dev_config_none", NO_COMMENT),
+            vapbo(this, "vapbo", "apb_out_none", NO_COMMENT) {
         }
 
      public:
         Logic vb_rdata;
-        types_pnp::dev_config_type vcfg;
-        types_amba::apb_out_type vapbo;
+        StructVar<types_pnp::dev_config_type> vcfg;
+        StructVar<types_amba::apb_out_type> vapbo;
     };
 
     void proc_comb();

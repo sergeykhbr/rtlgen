@@ -25,10 +25,8 @@ namespace sysvc {
 StructObject::StructObject(GenObject *parent,
                            const char *type,
                            const char *name,
-                           const char *val,
                            const char *comment)
     : GenObject(parent, type, ID_STRUCT, name, comment) {
-    objValue_ = SCV_parse_to_obj(val);
     if (getName() == "") {
         SHOW_ERROR("Unnamed structure of type %s", type_.c_str());
     }
@@ -46,10 +44,6 @@ bool StructObject::isTypedef() {
 
 std::string StructObject::getStrValue() {
     std::string ret = "";
-    if (objValue_) {
-        return objValue_->getName();
-    }
-    int d = getDepth();
     if (SCV_is_sysc()) {
         ret += "{";
     } else if (SCV_is_sv()) {
@@ -62,7 +56,8 @@ std::string StructObject::getStrValue() {
     if (isVector()) {
         checktype = getTypedef();
     }
-    if (d > 1) {
+    if (getObjDepth()) {
+        int d = static_cast<int>(getDepth());
         if (getEntries().back()->getType() != checktype
             || getEntries().size() < d) {
             SHOW_ERROR("Wrong struct param definition %d < %d",
@@ -77,7 +72,7 @@ std::string StructObject::getStrValue() {
                 // Only the same type entry should be generated
                 continue;
             }
-            ln = addspaces() + p->getStrValue();
+            ln = addspaces() + p->getName();
             if (++tcnt < d) {
                 ln += ",";
             }
@@ -87,10 +82,10 @@ std::string StructObject::getStrValue() {
         popspaces();
     } else {
         for (auto &p: getEntries()) {
-            if (!p->isValue() && !p->isStruct()) {
+            if (!p->isValue()) {
                 continue;
             }
-            ret += p->getStrValue();
+            ret += p->getName();
             if (p != getEntries().back()) {
                 ret += ", ";
             }
@@ -159,7 +154,7 @@ std::string StructObject::generate_interface_constructor_init() {
     ret += addspaces() + getType() + "(";
     aligncnt = static_cast<int>(ret.size());
     for (auto& p : getEntries()) {
-        if (p->getId() == ID_COMMENT) {
+        if (p->isComment()) {
             continue;
         }
         if (argcnt++) {
@@ -173,7 +168,7 @@ std::string StructObject::generate_interface_constructor_init() {
     ret += ") {\n";
     pushspaces();
     for (auto& p : getEntries()) {
-        if (p->getId() == ID_COMMENT) {
+        if (p->isComment()) {
             continue;
         }
         ret += addspaces();
@@ -458,7 +453,7 @@ std::string StructObject::generate_interface() {
     pushspaces();
     for (auto& p : getEntries()) {
         ln = addspaces();
-        if (p->getId() == ID_COMMENT) {
+        if (p->isComment()) {
             ret += p->generate();
             continue;
         }
@@ -503,7 +498,7 @@ std::string StructObject::generate_const_none() {
         ret += "const " + getType() + " " + getName() + " = '{\n";
         pushspaces();
         for (auto& p : entries_) {
-            if (p->getId() == ID_COMMENT) {
+            if (p->isComment()) {
                 continue;
             }
             ret += addspaces() + p->getStrValue();
@@ -519,7 +514,7 @@ std::string StructObject::generate_const_none() {
         ret += "constant " + getName() + " : " + getType() + " := (\n";
         pushspaces();
         for (auto& p : entries_) {
-            if (p->getId() == ID_COMMENT) {
+            if (p->isComment()) {
                 continue;
             }
             ret += addspaces() + p->getStrValue();
@@ -595,7 +590,7 @@ std::string StructObject::generate() {
     if (isVector()) {
         return generate_vector_type();
     }
-    if (getParent()->getId() == ID_FILE) {
+    if (getParent()->isFile()) {
         if (!isTypedef()) {
             ret = generate_const_none();
         } else {
@@ -619,7 +614,7 @@ std::string StructObject::generate() {
     pushspaces();
     for (auto &p: entries_) {
         ln = addspaces();
-        if (p->getId() == ID_COMMENT) {
+        if (p->isComment()) {
             ret += p->generate();
             continue;
         }

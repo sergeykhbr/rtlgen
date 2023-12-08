@@ -42,7 +42,7 @@ class IntMul : public ModuleObject {
             vb_a2s(this, "vb_a2s", "64"),
             v_a1s_nzero(this, "v_a1s_nzero", "1"),
             v_a2s_nzero(this, "v_a2s_nzero", "1"),
-            v_ena(this, "v_ena")
+            v_ena(this, "v_ena", "1", "0", NO_COMMENT)
         {
         }
 

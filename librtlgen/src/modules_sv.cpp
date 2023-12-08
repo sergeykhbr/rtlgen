@@ -36,7 +36,7 @@ std::string ModuleObject::generate_sv_pkg_localparam() {
     int tcnt = 0;
     // Local paramaters visible inside of module
     for (auto &p: entries_) {
-        if (p->getId() == ID_COMMENT) {
+        if (p->isComment()) {
             comment += p->generate();
             continue;
         } else if (p->isParam() && !p->isParamGeneric() && p->isLocal() && !p->isGenericDep()) {
@@ -169,7 +169,7 @@ std::string ModuleObject::generate_sv_mod_genparam() {
     getTmplParamList(genparam);
     getParamList(genparam);
 
-    if (getAsyncReset()) {
+    if (isAsyncResetParam() && getAsyncResetParam() == 0) {
         ret += "    parameter bit async_reset = 1'b0";           // Mandatory generic parameter
         if (genparam.size()) {
             ret += ",";
@@ -237,7 +237,7 @@ std::string ModuleObject::generate_sv_mod_signals() {
     tcnt = 0;
     text = "";
     for (auto &p: getEntries()) {
-        if (p->getId() == ID_COMMENT) {
+        if (p->isComment()) {
             text += p->generate();
             continue;
         }
@@ -382,7 +382,7 @@ std::string ModuleObject::generate_sv_mod_proc(GenObject *proc) {
                 ln += "[0: " + e->getStrDepth() + "-1]";
             }
             tcnt++;
-        } else if (e->getId() == ID_ARRAY_DEF) {
+        } else if (e->getObjDepth()) {
             // DELME:
             ln += addspaces() + e->getType() + " " + e->getName();
             ln += "[0: ";
@@ -513,53 +513,51 @@ std::string ModuleObject::generate_sv_mod_always_ops() {
 std::string ModuleObject::generate_sv_mod_proc_registers() {
     std::string out = "";
     std::string xrst = "";
-
-    if (getAsyncReset() && getResetPort()) {
-        // Need to generate both cases: always with and without reset
-        out += "generate\n";
-        pushspaces();
-        out += addspaces() + "if (async_reset) begin: async_rst_gen\n";
-        pushspaces();
-        out += "\n";
-    }
-    if (getResetPort()) {
-        out += generate_sv_mod_always_ff_rst(true);
-        out += "\n";
-        if (isNRegProcess()) {
-            out += generate_sv_mod_always_ff_rst(false);
-            out += "\n";
-        }
-    }
-    if (getAsyncReset() && getResetPort()) {
-        popspaces();
-        out += "\n";
-        out += addspaces() + "end: async_rst_gen\n";
-        out += addspaces() + "else begin: no_rst_gen\n";
-        pushspaces();
-        out += "\n";
+    if (!isRegs()) {
+        return out;
     }
 
-    if (getAsyncReset() || getResetPort() == 0) {
-        out += addspaces() + "always_ff @(posedge ";
-        out += getClockPort()->getName();
-        out += ") begin: rg_proc\n";
-        pushspaces();
-        if (isRegs() && isCombProcess()) {
-            out += Operation::copyreg("r", "rin", this);
-        }
-        out += generate_sv_mod_always_ops();   // additional operation on posedge clock events
-        popspaces();
-        out += addspaces() + "end: rg_proc\n";
-        out += "\n";
-    }
+    // Need to generate both cases: always with and without reset
+    out += "generate\n";
+    pushspaces();
+    out += addspaces() + "if (async_reset) begin: async_rst_gen\n";
 
-    if (getAsyncReset() && getResetPort()) {
-        popspaces();
-        out += addspaces() + "end: no_rst_gen\n";
-        popspaces();
-        out += "endgenerate\n";
+    pushspaces();
+    out += "\n";
+    out += generate_sv_mod_always_ff_rst(true);
+    out += "\n";
+    if (isNRegProcess()) {
+        out += generate_sv_mod_always_ff_rst(false);
         out += "\n";
     }
+    popspaces();
+
+    out += "\n";
+    out += addspaces() + "end: async_rst_gen\n";
+    out += addspaces() + "else begin: no_rst_gen\n";
+
+    pushspaces();
+    out += "\n";
+    out += addspaces() + "always_ff @(posedge ";
+    out += getClockPort()->getName();
+    out += ") begin: rg_proc\n";
+
+    pushspaces();
+    if (isRegs() && isCombProcess()) {
+        out += Operation::copyreg("r", "rin", this);
+    }
+    out += generate_sv_mod_always_ops();   // additional operation on posedge clock events
+    popspaces();
+
+    out += addspaces() + "end: rg_proc\n";
+    out += "\n";
+    popspaces();
+
+    out += addspaces() + "end: no_rst_gen\n";
+    popspaces();
+
+    out += "endgenerate\n";
+    out += "\n";
     return out;
 }
 
@@ -595,7 +593,7 @@ std::string ModuleObject::generate_sv_mod() {
     std::string strtype;
     for (auto &p: entries_) {
         if (!p->isInput() && !p->isOutput()) {
-            if (p->getId() == ID_COMMENT) {
+            if (p->isComment()) {
                 text += p->generate();
             } else {
                 text = "";
@@ -679,7 +677,7 @@ std::string ModuleObject::generate_sv_mod() {
 
     // Clock process
     for (auto &p: entries_) {
-        if (p->getId() != ID_CLOCK) {
+        if (!p->isClock()) {
             continue;
         }
         ret += generate_sv_mod_clock(p);

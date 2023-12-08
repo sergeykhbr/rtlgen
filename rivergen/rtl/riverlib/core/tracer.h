@@ -128,8 +128,7 @@ class Tracer : public ModuleObject {
     class RegisterNameArray : public ParamString {
      public:
         RegisterNameArray(GenObject *parent) :
-            ParamString(parent, "rname", "", NO_COMMENT) {
-            setStrDepth("64");
+            ParamString(parent, "rname", "", NO_COMMENT), objDepth_(64) {
             static const char *RNAMES[64] = {
                 "zero", "ra", "sp", "gp", "tp", "t0", "t1", "t2",
                 "s0", "s1", "a0", "a1", "a2", "a3", "a4", "a5",
@@ -147,13 +146,20 @@ class Tracer : public ModuleObject {
                 pitem = new STRING(RNAMES[i], "", this, tstr);
             }
         }
+
+        virtual uint64_t getDepth() override { return objDepth_.getValue(); }
+        virtual GenObject *getObjDepth() { return &objDepth_; }
+        virtual std::string getStrDepth() { return objDepth_.getStrValue(); }
+
+     protected:
+        DecConst objDepth_;
     } rname;
 
  protected:
     class MemopActionType : public StructObject {
      public:
         MemopActionType(GenObject *parent, const char *name, const char *comment)
-            : StructObject(parent, "MemopActionType", name, "", comment),
+            : StructObject(parent, "MemopActionType", name, comment),
             store(this, "store", "1", "0", "0=load;1=store"),
             size(this, "size", "2"),
             mask(this, "mask", "64"),
@@ -178,7 +184,7 @@ class Tracer : public ModuleObject {
     class RegActionType : public StructObject {
      public:
         RegActionType(GenObject *parent, const char *name, const char *comment)
-            : StructObject(parent, "RegActionType", name, "", comment),
+            : StructObject(parent, "RegActionType", name, comment),
         waddr(this, "waddr", "6"),
         wres(this, "wres", "64") {}
      public:
@@ -190,7 +196,7 @@ class Tracer : public ModuleObject {
     class TraceStepType : public StructObject {
      public:
         TraceStepType(GenObject *parent, const char *name, const char *comment)
-            : StructObject(parent, "TraceStepType", name, "", comment),
+            : StructObject(parent, "TraceStepType", name, comment),
             exec_cnt(this, "exec_cnt", "64"),
             pc(this, "pc", "64"),
             instr(this, "instr", "32"),

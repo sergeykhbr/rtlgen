@@ -80,7 +80,7 @@ class L2Dummy : public ModuleObject {
     RegSignal req_prot;
     RegSignal req_lock;
     RegSignal req_id;
-    RegSignal req_user;
+    RegSignal1 req_user;
     RegSignal req_wdata;
     RegSignal req_wstrb;
     RegSignal rdata;

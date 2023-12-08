@@ -187,7 +187,7 @@ std::string FunctionObject::generate_sysv() {
         if (e->getId() == ID_VALUE) {
             ret += addspaces() + e->getType() + " " + e->getName();
             tcnt++;
-        } else if (e->getId() == ID_ARRAY_DEF) {
+        } else if (e->getObjDepth()) {
             ret += addspaces() + e->getType() + " " + e->getName();
             ret += "[";
             ret += e->getStrDepth();

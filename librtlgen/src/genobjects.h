@@ -39,7 +39,7 @@ enum EIdType {
 //    ID_MODULE_INST = (1<<11),
     ID_STRUCT = (1<<15),
 //    ID_STRUCT_INST = (1<<16),
-    ID_ARRAY_DEF = (1<<17),
+//    ID_ARRAY_DEF = (1<<17),
 //    ID_ARRAY_STRING = (1<<18),
 //    ID_VECTOR = (1<<19),      // array of the fixed depth
     ID_PROCESS = (1<<20),
@@ -83,9 +83,10 @@ class GenObject {
     virtual void add_dependency(GenObject *p) {}
 
     virtual GenObject *getParentFile();
-    virtual GenObject *getAsyncReset();
-    virtual GenObject *getResetPort();
-    virtual GenObject *getClockPort();
+    virtual bool isAsyncResetParam() { return false; }       // jtagtap has its own trst signal but does not have async_reset
+    virtual GenObject *getAsyncResetParam() { return 0; } // async_reset declared as a local parameter at asic_top, no need to autogenerate it
+    virtual GenObject *getResetPort() { return 0; }     // reset port object
+    virtual GenObject *getClockPort() { return 0; }
     virtual bool getResetActive() { return false; }
     virtual std::string addComment();                   // comment at current position
     virtual void addComment(std::string &out);          // comment after 60 spaces
@@ -125,18 +126,22 @@ class GenObject {
 
     virtual std::string v_name(std::string v);
     virtual std::string r_name(std::string v);
+
     virtual uint64_t getValue() { return 0; }
     virtual double getFloatValue() { return 0; }
     virtual std::string getStrValue() { return std::string(""); }
+    virtual GenObject *getObjValue() { return 0; }
     virtual void setObjValue(GenObject *obj) {}         // used to connect parameters without Operation
-    virtual uint64_t getWidth() { return 0; }
-    virtual GenObject *getObjWidth() { return 0; }
-    virtual std::string getStrWidth() { return std::string(""); }
-    virtual int getDepth();                             // two-dimensional object
-    virtual std::string getStrDepth();
-    virtual void setStrDepth(const char *val);
-    virtual std::string getLibName();                   // VHDL library. Default is "work"
 
+    virtual uint64_t getWidth() { return 0; }
+    virtual std::string getStrWidth() { return std::string(""); }
+    virtual GenObject *getObjWidth() { return 0; }
+    
+    virtual uint64_t getDepth() { return 0; }           // two-dimensional object
+    virtual GenObject *getObjDepth() { return 0; }
+    virtual std::string getStrDepth() { return std::string(""); }
+
+    virtual std::string getLibName();                   // VHDL library. Default is "work"
     virtual void setSelector(GenObject *sel) { sel_ = sel; }
     virtual GenObject *getSelector() { return sel_; }
     virtual bool isReg() { return false; }              // is register with posedge clock
@@ -156,11 +161,6 @@ class GenObject {
     std::string typedef_;                               // original structure type after was re-typed
     std::string type_;
     std::string name_;
-
-    int depth_;
-    std::string strDepth_;
-    GenObject *objValue_;
-    GenObject *objDepth_;
 
     GenObject *sel_;                                    // selector when is array
     bool reset_disabled_;                               // register without reset (memory)

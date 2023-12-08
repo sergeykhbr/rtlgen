@@ -36,7 +36,7 @@ std::string ModuleObject::generate_vhdl_pkg_localparam() {
     int tcnt = 0;
     // Local paramaters visible inside of module
     for (auto &p: entries_) {
-        if (p->getId() == ID_COMMENT) {
+        if (p->isComment()) {
             comment += p->generate();
             continue;
         } else if (p->isParam() && !p->isParamGeneric() && p->isLocal() && !p->isGenericDep()) {
@@ -178,13 +178,13 @@ std::string ModuleObject::generate_vhdl_mod_genparam() {
     getTmplParamList(genparam);
     getParamList(genparam);
 
-    if (genparam.size() == 0 && !getAsyncReset()) {
+    if (genparam.size() == 0 && !isAsyncResetParam()) {
         return ret;
     }
     ret += addspaces() + "generic (\n";
     pushspaces();
 
-    if (getAsyncReset()) {
+    if (isAsyncResetParam() && getAsyncResetParam() == 0) {
         ret += addspaces() + "async_reset : boolean := '0'";           // Mandatory generic parameter
         if (genparam.size()) {
             ret += ";";
@@ -247,7 +247,7 @@ std::string ModuleObject::generate_vhdl_mod_signals() {
     tcnt = 0;
     text = "";
     for (auto &p: getEntries()) {
-        if (p->getId() == ID_COMMENT) {
+        if (p->isComment()) {
             text += p->generate();
             continue;
         }
@@ -268,8 +268,7 @@ std::string ModuleObject::generate_vhdl_mod_signals() {
             || (!p->isSignal()
                 && p->getId() != ID_VALUE
                 && !p->isStruct()
-                && p->getId() != ID_CLOCK
-                && p->getId() != ID_ARRAY_DEF)) {
+                && !p->isClock())) {
             text = "";
             continue;
         }
@@ -371,7 +370,7 @@ std::string ModuleObject::generate_vhdl_mod() {
     std::string strtype;
     for (auto &p: entries_) {
         if (!p->isInput() && !p->isOutput()) {
-            if (p->getId() == ID_COMMENT) {
+            if (p->isComment()) {
                 text += p->generate();
             } else {
                 text = "";

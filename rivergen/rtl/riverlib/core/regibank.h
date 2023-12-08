@@ -105,7 +105,7 @@ class RegIntBank : public ModuleObject {
     class RegValueType : public StructObject {
      public:
         RegValueType(GenObject *parent, const char *name, const char *comment)
-            : StructObject(parent, "RegValueType", name, "", comment),
+            : StructObject(parent, "RegValueType", name, comment),
             val(this, "val", "RISCV_ARCH"),
             tag(this, "tag", "CFG_REG_TAG_WIDTH") {}
      public:

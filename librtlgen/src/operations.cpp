@@ -79,10 +79,7 @@ std::string Operation::fullname(const char *prefix, std::string name, GenObject 
     std::string read = "";
     GenObject *p = obj->getParent();
     std::string curname = "";
-    if (p && p->getId() == ID_ARRAY_DEF) {
-        curname = fullname(prefix, name, p);
-        // Do not add 'name' to avoid double adding
-    } else if (obj->isConst()) {
+    if (obj->isConst()) {
         curname = obj->getStrValue();
     } else if (obj->isOperation()) {
         curname = obj->generate();
@@ -159,58 +156,8 @@ std::string Operation::obj2varname(GenObject *obj, const char *prefix, bool read
 std::string Operation::copyreg_entry(char *idx, std::string dst, std::string src, GenObject *p) {
     std::string ret = "";
     std::string i = std::string(idx);
-    if (p->getId() == ID_ARRAY_DEF) {
-        // DELME:
-        ret += addspaces();
-        ret += "for (int "+i+" = 0; "+i+" < " + p->getStrDepth() + "; "+i+"++) ";
-        if (SCV_is_sysc()) {
-            ret += "{\n";
-        } else {
-            ret += "begin\n";
-        }
-        pushspaces();
-        std::list<GenObject *>::iterator it = p->getEntries().begin();  // element[0]
-        if ((*it)->getEntries().size() == 0) {
-            ret += addspaces();
-            ret +=  std::string(dst) + "." + p->getName() + "["+i+"]";
-            if (SCV_is_sysc()) {
-                ret += " = ";
-            } else {
-                if (dst[0] == 'r' && (dst[1] == '\0' || dst[1] == '.')) {
-                    ret += " <= ";
-                } else {
-                    ret += " = ";
-                }
-            }
-            if (src.size() == 0) {
-                // reset
-                ret += p->getStrValue();
-            } else {
-                // copy data
-                ret += src + "." + p->getName() + "["+i+"]";
-            }
-            ret +=  ";\n";
-        } else {
-            std::string tdst = dst;
-            std::string tsrc = src;
-            tdst += "." + p->getName() + "["+i+"]";
-            if (tsrc.size()) {
-                tsrc += "." + p->getName() + "["+i+"]";
-            }
-            idx[0]++;
-            for (auto &s: (*it)->getEntries()) {
-                ret += copyreg_entry(idx, tdst, tsrc, s);
-            }
-            idx[0]--;
-        }
-        popspaces();
-        ret += addspaces();
-        if (SCV_is_sysc()) {
-            ret += "}\n";
-        } else {
-            ret += "end\n";
-        }
-    } else if (p->getDepth() > 1) {
+
+    if (p->getObjDepth()) {
         ret += addspaces();
         ret += "for (int " + i + " = 0; " + i + " < " + p->getStrDepth() + "; " + i + "++) ";
         if (SCV_is_sysc()) {
@@ -351,7 +298,7 @@ std::string Operation::reset(const char *dst, const char *src, ModuleObject *m, 
             ret += " {\n";
         } else {
             ret += "if (";
-            if (m->getAsyncReset()) {
+            if (m->getResetPort()) {
                 ret += "async_reset_ && ";
             }
             ret += m->getResetPort()->getName() + ".read() == ";
@@ -867,7 +814,7 @@ std::string SETVAL_gen(GenObject **args) {
     if (args[2]->isConst()) {
         ret += args[2]->getStrValue();
     } else if (args[2]->getId() == ID_VALUE
-            || args[2]->getId() == ID_CLOCK
+            || args[2]->isClock()
             || args[2]->isParam()
             || args[2]->isStruct()) {
         ret += Operation::obj2varname(args[2]);
@@ -2941,7 +2888,12 @@ std::string NewOperation::generate_sc() {
     } else {
         ret += "\"" + instname_ + "\"";
     }
-    if (m_->getAsyncReset()) {
+#if 1
+    if (m_->getName() == "pll0") {
+        bool st = true;
+    }
+#endif
+    if (m_->isAsyncResetParam() && m_->getAsyncResetParam() == 0) {
         ret += ", async_reset";
     }
     std::list<GenObject *>genlist;
@@ -2986,10 +2938,10 @@ std::string NewOperation::generate_sv() {
     m_->getTmplParamList(genlist);
     m_->getParamList(genlist);    
     tcnt = 0;
-    if (m_->getAsyncReset() || genlist.size()) {
+    if ((m_->isAsyncResetParam() && m_->getAsyncResetParam() == 0) || genlist.size()) {
         ret += "#(\n";
         pushspaces();
-        if (m_->getAsyncReset()) {
+        if (m_->isAsyncResetParam() && m_->getAsyncResetParam() == 0) {
             ret += addspaces() + ".async_reset(async_reset)";
             if (genlist.size()) {
                 ret += ",";
@@ -3058,10 +3010,10 @@ std::string NewOperation::generate_vhdl() {
     m_->getTmplParamList(tmpllist);
     m_->getParamList(tmpllist);    
     tcnt = 0;
-    if (m_->getAsyncReset() || tmpllist.size()) {
+    if ((m_->isAsyncResetParam() && m_->getAsyncResetParam() == 0) || tmpllist.size()) {
         ret += "generic map (\n";
         pushspaces();
-        if (m_->getAsyncReset()) {
+        if (m_->isAsyncResetParam() && m_->getAsyncResetParam() == 0) {
             ret += addspaces() + "async_reset => async_reset";
             if (tmpllist.size()) {
                 ret += ",";

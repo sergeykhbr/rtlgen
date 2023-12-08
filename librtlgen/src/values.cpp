@@ -38,12 +38,6 @@ std::string GenValue::getName() {
     return name_;
 }
 
-std::string GenValue::getStrValue() {
-    if (objValue_ == 0) {
-        return std::string("");
-    }
-    return objValue_->getName();
-}
 
 
 bool GenValue::isReg() {
@@ -106,25 +100,6 @@ std::string BOOL::getType() {
         ret = std::string("boolean");
     }
     return ret;
-}
-
-std::string BOOL::getStrValue() {
-    char tstr[32] = "";
-    if (SCV_is_sysc()) {
-        RISCV_sprintf(tstr, sizeof(tstr), "%d",
-            static_cast<int>(objValue_->getValue()));
-    } else if (SCV_is_sv()) {
-        RISCV_sprintf(tstr, sizeof(tstr), "1'b%d",
-            static_cast<int>(objValue_->getValue()));
-    } else if (SCV_is_vhdl()) {
-        RISCV_sprintf(tstr, sizeof(tstr), "'%d'",
-            static_cast<int>(objValue_->getValue()));
-    }
-    return std::string(tstr);
-}
-
-uint64_t BOOL::getValue() {
-    return objValue_->getValue();
 }
 
 std::string STRING::getType() {
@@ -221,27 +196,5 @@ std::string TIMESEC::getType() {
     return ret;
 }
 
-/*std::string GenValue::getStrValue() {
-    char tstr[64] = "";
-    if (objValue_) {
-        return objValue_->generate();
-    } else if (isFloat()) {
-        RISCV_sprintf(tstr, sizeof(tstr), "%.f", u_.f64);
-    } else if (hex_) {
-        RISCV_sprintf(tstr, sizeof(tstr), "0x%" RV_PRI64 "x", u_.ui64);
-    } else {
-        RISCV_sprintf(tstr, sizeof(tstr), "%" RV_PRI64 "d", u_.ui64);
-    }
-    return std::string(tstr);
-}
-
-uint64_t GenValue::getValue() {
-    if (objValue_) {
-        return objValue_->getValue();
-    } else {
-        return u_.ui64;
-    }
-}
-*/
 }  // namespace sysvc
 

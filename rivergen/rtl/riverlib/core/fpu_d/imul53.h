@@ -30,7 +30,7 @@ class imul53 : public ModuleObject {
      public:
         CombProcess(GenObject *parent) :
             ProcObject(parent, "comb"),
-            v_ena(this, "v_ena"),
+            v_ena(this, "v_ena", "1", "0", NO_COMMENT),
             vb_mux(this, "vb_mux", "57", "17"),
             vb_sel(this, "vb_sel", "57"),
             vb_shift(this, "vb_shift", "7"),

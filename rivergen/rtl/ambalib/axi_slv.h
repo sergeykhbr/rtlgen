@@ -32,15 +32,15 @@ class axi_slv : public ModuleObject {
             ProcObject(parent, "comb"),
             vb_req_addr_next(this, "vb_req_addr_next", "12"),
             vb_req_len_next(this, "vb_req_len_next", "8"),
-            vcfg(this, "vcfg", NO_COMMENT),
-            vxslvo(this, "vxslvo", NO_COMMENT) {
+            vcfg(this, "vcfg", "dev_config_none", NO_COMMENT),
+            vxslvo(this, "vxslvo", "axi4_slave_out_none", NO_COMMENT) {
         }
 
      public:
         Logic vb_req_addr_next;
         Logic vb_req_len_next;
-        types_pnp::dev_config_type vcfg;
-        types_amba::axi4_slave_out_type vxslvo;
+        StructVar<types_pnp::dev_config_type> vcfg;
+        StructVar<types_amba::axi4_slave_out_type> vxslvo;
     };
 
     void proc_comb();
@@ -83,7 +83,7 @@ class axi_slv : public ModuleObject {
     RegSignal req_wstrb;
     RegSignal req_xsize;
     RegSignal req_len;
-    RegSignal req_user;
+    RegSignal1 req_user;
     RegSignal req_id;
     RegSignal req_burst;
     RegSignal req_last_a;

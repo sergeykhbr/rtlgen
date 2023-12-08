@@ -158,16 +158,14 @@ std::string Logic::generate() {
 std::string Logic1::getType() {
     std::string ret = "";
 
-    if (SCV_is_sysc()) {
+    if (getWidth() == 1 && SCV_is_sysc()) {
         if (isParam() && !isParamGeneric()) {
             ret += "bool";
         } else {
-            ret += "sc_uint<1>";
+            ret += "sc_uint<" + getStrWidth() + ">";
         }
-    } else if (SCV_is_sv()) {
-        ret = std::string("logic");
-    } else if (SCV_is_vhdl()) {
-        ret = std::string("std_logic");
+    } else {
+        return Logic::getType();
     }
     return ret;
 }

@@ -455,7 +455,7 @@ void FileObject::generate_vhdl() {
     ModuleObject *mod;
     std::list <GenObject *> tmplparlist;
     for (auto &p: entries_) {
-        if (p->getId() == ID_MODULE) {
+        if (p->isModule()) {
             is_module = true;
             mod = static_cast<ModuleObject *>(p);
             mod->getTmplParamList(tmplparlist);
@@ -499,7 +499,7 @@ void FileObject::generate_vhdl() {
 
         // module definition
         for (auto &p: entries_) {
-            if (p->getId() == ID_MODULE) {
+            if (p->isModule()) {
                 is_module = true;
                 std::string strtype = p->getType();
                 SCV_set_local_module(p);

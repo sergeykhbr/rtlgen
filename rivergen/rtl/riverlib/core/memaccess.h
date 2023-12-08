@@ -62,7 +62,7 @@ class MemAccess : public ModuleObject {
             vb_o_wtag(this, "vb_o_wtag", "CFG_REG_TAG_WIDTH"),
             v_valid(this, "v_valid", "1"),
             v_idle(this, "v_idle", "1"),
-            t_memop_debug(this, "t_memop_debug")
+            t_memop_debug(this, "t_memop_debug", "1", "0", NO_COMMENT)
         {
         }
 

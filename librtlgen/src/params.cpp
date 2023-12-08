@@ -21,8 +21,7 @@ namespace sysvc {
 
 std::string ParamString::generate() {
     std::string ret = "";
-    int d = getDepth();
-    if (d <= 1) {
+    if (getObjDepth() == 0) {
 
         ret += addspaces();
         if (SCV_is_sysc()) {

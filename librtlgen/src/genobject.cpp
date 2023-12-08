@@ -28,10 +28,6 @@ GenObject::GenObject(GenObject *parent, const char *type, EIdType id,
                      const char *name, const char *comment) {
     id_ = id;
     parent_ = parent;
-    depth_ = 0;
-    strDepth_ = "";
-    objValue_ = 0;
-    objDepth_ = 0;
     sel_ = 0;
     reset_disabled_ = false;
     vcd_enabled_ = true;
@@ -77,42 +73,6 @@ GenObject *GenObject::getFile() {
 
 void GenObject::add_entry(GenObject *p) {
     entries_.push_back(p);
-}
-
-GenObject *GenObject::getAsyncReset() {
-    GenObject *rst_port = getResetPort();
-    if (!rst_port) {
-        return rst_port;
-    }
-    for (auto &e: entries_) {
-        if (e->isModule()) {
-            if (e->getAsyncReset()) {
-                return rst_port;
-            }
-        } else if (e->isReg() || e->isNReg()) {
-            return rst_port;
-        }
-    }
-    rst_port = 0;    // no registers to reset in this module
-    return rst_port;
-}
-
-GenObject *GenObject::getResetPort() {
-    for (auto &e: entries_) {
-        if (e->getName() == "i_nrst") {
-            return e;
-        }
-    }
-    return 0;
-}
-
-GenObject *GenObject::getClockPort() {
-    for (auto &e: entries_) {
-        if (e->getName() == "i_clk") {
-            return e;
-        }
-    }
-    return 0;
 }
 
 void GenObject::setTypedef(const char *n) {
@@ -198,14 +158,6 @@ bool GenObject::isLocal() {
     return local;
 }
 
-/*bool GenObject::isGenericDep() {
-    if (objValue_ == 0) {
-        return false;
-    }
-    return objValue_->isGenericDep();
-}*/
-
-
 std::string GenObject::v_name(std::string v) {
     if (v.size()) {
         if (isReg()) {
@@ -228,25 +180,6 @@ std::string GenObject::r_name(std::string v) {
     return v;
 }
 
-
-int GenObject::getDepth() {
-    if (objDepth_) {
-        return static_cast<int>(objDepth_->getValue());
-    } else {
-        return depth_;
-    }
-}
-
-std::string GenObject::getStrDepth() {
-    if (objDepth_) {
-        return objDepth_->getStrValue();
-    }
-    return std::string("");
-}
-
-void GenObject::setStrDepth(const char *val) {
-    objDepth_ = SCV_parse_to_obj(val);
-}
 
 std::string GenObject::getLibName() {
     if (getParent()) {

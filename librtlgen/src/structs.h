@@ -29,14 +29,12 @@ class StructObject : public GenObject {
     StructObject(GenObject *parent,
                  const char *type,
                  const char *name,
-                 const char *val,
                  const char *comment);
 
     /** GenObject generic methods */
     virtual bool isStruct() override { return true; }
     virtual bool isTypedef() override;
     virtual std::string getStrValue() override;
-    virtual uint64_t getValue() override { return 0; }
 
     virtual std::string generate() override;
 
@@ -57,8 +55,8 @@ class StructObject : public GenObject {
 class RegStructObject : public StructObject {
  public:
     RegStructObject(GenObject *parent, const char *type, const char *name,
-                 const char *val, const char *comment)
-        : StructObject(parent, type, name, val, comment) {}
+                 const char *comment)
+        : StructObject(parent, type, name, comment) {}
 
     virtual bool isSignal() override { return true; }
     virtual bool isReg() override { return true; }
