@@ -72,7 +72,7 @@ std::string StructObject::getStrValue() {
                 // Only the same type entry should be generated
                 continue;
             }
-            ln = addspaces() + p->getName();
+            ln = addspaces() + p->getStrValue();
             if (++tcnt < d) {
                 ln += ",";
             }
@@ -85,7 +85,7 @@ std::string StructObject::getStrValue() {
             if (!p->isValue()) {
                 continue;
             }
-            ret += p->getName();
+            ret += p->getStrValue();
             if (p != getEntries().back()) {
                 ret += ", ";
             }

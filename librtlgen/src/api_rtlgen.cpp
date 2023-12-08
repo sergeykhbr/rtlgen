@@ -329,7 +329,8 @@ GenObject *SCV_parse_to_obj(const char *val) {
         pos++;
     }
 
-    while (val[pos] && val[pos] != '(' && val[pos] != ')'
+    while (val[pos] && val[pos] != '(' && val[pos] != ')' 
+        && val[pos] != '{' && val[pos] != '}'
         && val[pos] != ',' && val[pos] != ' ') {
         opcode[cnt++] = val[pos++];
         opcode[cnt] = 0;
@@ -339,7 +340,9 @@ GenObject *SCV_parse_to_obj(const char *val) {
         pos++;
     }
 
-    if (val[pos] != '(') {
+    if (val[pos] == '{') {
+        // TODO: structure initialization
+    } else if (val[pos] != '(') {
         // No operations:
         bool isfloat = false;
         GenObject *cfgobj;

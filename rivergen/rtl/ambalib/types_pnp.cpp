@@ -106,7 +106,7 @@ types_pnp::types_pnp(GenObject *parent) :
     dev_config_type_def_(this, "dev_config_type", NO_COMMENT),
     _pnp6_(this),
     _pnp7_(this, "@brief Default config value for empty slot."),
-    dev_config_none(this, "dev_config_none", "", NO_COMMENT),
+    dev_config_none(this, "dev_config_none", NO_COMMENT),
     _pnp8_(this),
     soc_pnp_vector_def_(this, "soc_pnp_vector", NO_COMMENT),
     _n_(this)

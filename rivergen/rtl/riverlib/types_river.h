@@ -97,7 +97,7 @@ class types_river : public FileObject {
             aw_valid("1", "aw_valid", "0", this),
             aw_bits(this, "aw_bits", "META_NONE", NO_COMMENT),
             aw_id("CFG_CPU_ID_BITS", "aw_id", "0", this),
-            aw_user("CFG_SYSBUS_USER_BITS", "aw_user", "0", this),
+            aw_user(this, "aw_user", "CFG_SYSBUS_USER_BITS", "'0", NO_COMMENT),
             w_valid("1", "w_valid", "0", this),
             w_data("L1CACHE_LINE_BITS", "w_data", "0", this),
             w_last("1", "w_last", "0", this),
@@ -107,7 +107,7 @@ class types_river : public FileObject {
             ar_valid("1", "ar_valid", "0", this),
             ar_bits(this, "ar_bits", "META_NONE", NO_COMMENT),
             ar_id("CFG_CPU_ID_BITS", "ar_id", "0", this),
-            ar_user("CFG_SYSBUS_USER_BITS", "ar_user", "0", this),
+            ar_user(this, "ar_user", "CFG_SYSBUS_USER_BITS", "'0", NO_COMMENT),
             r_ready("1", "r_ready", "0", this),
             _ac0_(this, "ACE signals"),
             ar_domain("2", "ar_domain", "0", this, "00=Non-shareable (single master in domain)"),
@@ -128,8 +128,8 @@ class types_river : public FileObject {
      public:
         Logic aw_valid;
         StructVar<types_amba::axi4_metadata_type> aw_bits;
-        Logic  aw_id;
-        Logic aw_user;
+        Logic aw_id;
+        Logic1 aw_user;
         Logic w_valid;
         Logic w_data;
         Logic w_last;
@@ -139,7 +139,7 @@ class types_river : public FileObject {
         Logic ar_valid;
         StructVar<types_amba::axi4_metadata_type> ar_bits;
         Logic ar_id;
-        Logic ar_user;
+        Logic1 ar_user;
         Logic r_ready;
         TextLine _ac0_;
         Logic ar_domain;
@@ -167,14 +167,14 @@ class types_river : public FileObject {
             b_valid("1", "b_valid", "0", this),
             b_resp("2", "b_resp", "0", this),
             b_id("CFG_CPU_ID_BITS", "b_id", "0", this),
-            b_user("CFG_SYSBUS_USER_BITS", "b_user", "0", this),
+            b_user(this, "b_user", "CFG_SYSBUS_USER_BITS", "'0", NO_COMMENT),
             ar_ready("1", "ar_ready", "0", this),
             r_valid("1", "r_valid", "0", this),
             r_resp("4", "r_resp", "0", this),
             r_data("L1CACHE_LINE_BITS", "r_data", "0", this),
             r_last("1", "r_last", "0", this),
             r_id("CFG_CPU_ID_BITS", "r_id", "0", this),
-            r_user("CFG_SYSBUS_USER_BITS", "r_user", "0", this),
+            r_user(this, "r_user", "CFG_SYSBUS_USER_BITS", "'0", NO_COMMENT),
             ac_valid("1", "ac_valid", "0", this),
             ac_addr("CFG_CPU_ADDR_BITS", "ac_addr", "0", this),
             ac_snoop("4", "ac_snoop", "0", this, "Table C3-19"),
@@ -188,14 +188,14 @@ class types_river : public FileObject {
         Logic b_valid;
         Logic b_resp;
         Logic b_id;
-        Logic b_user;
+        Logic1 b_user;
         Logic ar_ready;
         Logic r_valid;
         Logic r_resp;
         Logic r_data;
         Logic r_last;
         Logic r_id;
-        Logic r_user;
+        Logic1 r_user;
         Logic ac_valid;
         Logic ac_addr;
         Logic ac_snoop;
@@ -231,34 +231,34 @@ class types_river : public FileObject {
             aw_valid("1", "aw_valid", "0", this),
             aw_bits(this, "aw_bits", "META_NONE", NO_COMMENT),
             aw_id("CFG_CPU_ID_BITS", "aw_id", "0", this),
-            aw_user("CFG_SYSBUS_USER_BITS", "aw_user", "0", this),
+            aw_user(this, "aw_user", "CFG_SYSBUS_USER_BITS", "'0", NO_COMMENT),
             w_valid("1", "w_valid", "0", this),
             w_data("L2CACHE_LINE_BITS", "w_data", "0", this),
             w_last("1", "w_last", "0", this),
             w_strb("L2CACHE_BYTES_PER_LINE", "w_strb", "0", this),
-            w_user("CFG_CPU_USER_BITS", "w_user", "0", this),
+            w_user(this, "w_user", "CFG_CPU_USER_BITS", "'0", NO_COMMENT),
             b_ready("1", "b_ready", "0", this),
             ar_valid("1", "ar_valid", "0", this),
             ar_bits(this, "ar_bits", "META_NONE", NO_COMMENT),
             ar_id("CFG_CPU_ID_BITS", "ar_id", "0", this),
-            ar_user("CFG_SYSBUS_USER_BITS", "ar_user", "0", this),
+            ar_user(this, "ar_user", "CFG_SYSBUS_USER_BITS", "'0", NO_COMMENT),
             r_ready("1", "r_ready", "0", this) {}
 
      public:
         Logic aw_valid;
         StructVar<types_amba::axi4_metadata_type> aw_bits;
-        Logic  aw_id;
-        Logic aw_user;
+        Logic aw_id;
+        Logic1 aw_user;
         Logic w_valid;
         Logic w_data;
         Logic w_last;
         Logic w_strb;
-        Logic w_user;
+        Logic1 w_user;
         Logic b_ready;
         Logic ar_valid;
         StructVar<types_amba::axi4_metadata_type> ar_bits;
         Logic ar_id;
-        Logic ar_user;
+        Logic1 ar_user;
         Logic r_ready;
     };
 
@@ -271,14 +271,14 @@ class types_river : public FileObject {
             b_valid("1", "b_valid", "0", this),
             b_resp("2", "b_resp", "0", this),
             b_id("CFG_CPU_ID_BITS", "b_id", "0", this, "create ID for L2?"),
-            b_user("CFG_SYSBUS_USER_BITS", "b_user", "0", this),
+            b_user(this, "b_user", "CFG_SYSBUS_USER_BITS", "'0", NO_COMMENT),
             ar_ready("1", "ar_ready", "0", this),
             r_valid("1", "r_valid", "0", this),
             r_resp("2", "r_resp", "0", this),
             r_data("L2CACHE_LINE_BITS", "r_data", "0", this),
             r_last("1", "r_last", "0", this),
             r_id("CFG_CPU_ID_BITS", "r_id", "0", this),
-            r_user("CFG_SYSBUS_USER_BITS", "r_user", "0", this) {}
+            r_user(this, "r_user", "CFG_SYSBUS_USER_BITS", "'0", NO_COMMENT) {}
 
      public:
         Logic aw_ready;
@@ -286,14 +286,14 @@ class types_river : public FileObject {
         Logic b_valid;
         Logic b_resp;
         Logic b_id;
-        Logic b_user;
+        Logic1 b_user;
         Logic ar_ready;
         Logic r_valid;
         Logic r_resp;
         Logic r_data;
         Logic r_last;
         Logic r_id;
-        Logic r_user;
+        Logic1 r_user;
     };
 
     class hart_signal_vector : public WireArray<Signal> {

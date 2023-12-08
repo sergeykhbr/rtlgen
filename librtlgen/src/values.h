@@ -21,6 +21,7 @@
 #include <vector>
 #include "genobjects.h"
 #include "const.h"
+#include "utils.h"
 
 namespace sysvc {
 
@@ -157,7 +158,7 @@ class StructVar : public T {
  public:
     StructVar(GenObject *parent, const char *name, const char *val, const char *comment)
         : T(parent, name, comment) {
-        objValue_ = ::sysvc::SCV_parse_to_obj(val);
+        objValue_ = SCV_parse_to_obj(val);
     }
     virtual bool isValue() override { return true; }
     virtual bool isConst() override { return T::getName() == ""; }

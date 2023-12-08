@@ -58,7 +58,7 @@ class types_bus1 : public FileObject {
     class CONST_CFG_BUS1_MAP : public ParamStruct<bus1_mapinfo_vector> {
      public:
         CONST_CFG_BUS1_MAP(GenObject *parent)
-            : ParamStruct<bus1_mapinfo_vector>(parent, "CFG_BUS1_MAP", "", NO_COMMENT),
+            : ParamStruct<bus1_mapinfo_vector>(parent, "CFG_BUS1_MAP", NO_COMMENT),
             uart1(this, "uart1", "", "0, uart1 4KB"),
             prci(this, "prci", "", "1, PRCI 4KB"),
             dmi(this, "dmi", "", "2, dmi 4KB. TODO: change base address"),

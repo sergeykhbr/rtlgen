@@ -122,10 +122,10 @@ class ParamTIMESEC : public TIMESEC {
 };
 
 template<class T>
-class ParamStruct : public StructVar<T> {
+class ParamStruct : public T {
     public:
-    ParamStruct(GenObject *parent, const char *name, const char *val, const char *comment)
-        : StructVar<T>(parent, name, val, comment) {
+    ParamStruct(GenObject *parent, const char *name, const char *comment)
+        : T(parent, name, comment) {
         SCV_set_cfg_type(this);
     }
     virtual bool isParam() override { return true; }

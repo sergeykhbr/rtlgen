@@ -79,7 +79,7 @@ class types_bus0 : public FileObject {
     class CONST_CFG_BUS0_MAP : public ParamStruct<bus0_mapinfo_vector> {
      public:
         CONST_CFG_BUS0_MAP(GenObject *parent)
-            : ParamStruct<bus0_mapinfo_vector>(parent, "CFG_BUS0_MAP", "", NO_COMMENT),
+            : ParamStruct<bus0_mapinfo_vector>(parent, "CFG_BUS0_MAP", NO_COMMENT),
             bootrom(this, "bootrom", "", "0, bootrom, 256 KB"),     // TODO: parsing of structure values
             clint(this, "clint", "", "1, clint"),
             sram(this, "sram", "", "2, sram, 2MB"),
