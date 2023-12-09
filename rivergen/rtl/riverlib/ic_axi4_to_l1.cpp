@@ -41,7 +41,7 @@ ic_axi4_to_l1::ic_axi4_to_l1(GenObject *parent, const char *name, const char *co
     state(this, "state", "4", "Idle"),
     req_addr(this, "req_addr", "CFG_SYSBUS_ADDR_BITS"),
     req_id(this, "req_id", "CFG_SYSBUS_ID_BITS"),
-    req_user(this, "req_user", "CFG_SYSBUS_USER_BITS"),
+    req_user(this, "req_user", "CFG_SYSBUS_USER_BITS", "'0", NO_COMMENT),
     req_wstrb(this, "req_wstrb", "8"),
     req_wdata(this, "req_wdata", "64"),
     req_len(this, "req_len", "8"),

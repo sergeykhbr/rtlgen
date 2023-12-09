@@ -25,34 +25,31 @@ class types_bus1 : public FileObject {
  public:
     types_bus1(GenObject *parent);
 
-    class bus1_apb_in_vector : public types_amba::apb_in_type {
+    class bus1_apb_in_vector : public StructArray<types_amba::apb_in_type> {
      public:
         bus1_apb_in_vector(GenObject *parent, const char *name, const char *descr="")
-            : apb_in_type(parent, name, descr) {
+            : StructArray<apb_in_type>(parent, name, "CFG_BUS1_PSLV_TOTAL", descr) {
             setTypedef("bus1_apb_in_vector");
-            setStrDepth("CFG_BUS1_PSLV_TOTAL");
         }
         virtual bool isVector() override { return true; }
         virtual bool isSignal() override { return true; }
     };
 
-    class bus1_apb_out_vector : public types_amba::apb_out_type {
+    class bus1_apb_out_vector : public StructArray<types_amba::apb_out_type> {
      public:
         bus1_apb_out_vector(GenObject *parent, const char *name, const char *descr="")
-            : apb_out_type(parent, name, descr) {
+            : StructArray<apb_out_type>(parent, name, "CFG_BUS1_PSLV_TOTAL", descr) {
             setTypedef("bus1_apb_out_vector");
-            setStrDepth("CFG_BUS1_PSLV_TOTAL");
         }
         virtual bool isVector() override { return true; }
         virtual bool isSignal() override { return true; }
     };
 
-    class bus1_mapinfo_vector : public types_amba::mapinfo_type {
+    class bus1_mapinfo_vector : public StructArray<types_amba::mapinfo_type> {
      public:
         bus1_mapinfo_vector(GenObject *parent, const char *name, const char *descr="")
-            : mapinfo_type(parent, name, descr) {
+            : StructArray<mapinfo_type>(parent, name, "CFG_BUS1_PSLV_TOTAL", descr) {
             setTypedef("bus1_mapinfo_vector");
-            setStrDepth("CFG_BUS1_PSLV_TOTAL");
         }
         virtual bool isVector() override { return true; }
         virtual bool isSignal() override { return true; }
@@ -62,42 +59,42 @@ class types_bus1 : public FileObject {
      public:
         CONST_CFG_BUS1_MAP(GenObject *parent)
             : ParamStruct<bus1_mapinfo_vector>(parent, "CFG_BUS1_MAP", NO_COMMENT),
-            uart1(this, "uart1", "0, uart1 4KB"),
-            prci(this, "prci", "1, PRCI 4KB"),
-            dmi(this, "dmi", "2, dmi 4KB. TODO: change base address"),
-            spi(this, "spi", "4, SPI SD-card 4KB"),
-            gpio(this, "gpio", "3, GPIO 4KB"),
-            ddr(this, "ddr", "5, DDR MGMT 4KB"),
-            pnp(this, "pnp", "6, Plug'n'Play 4KB") {
+            uart1(this, "uart1", "", "0, uart1 4KB"),
+            prci(this, "prci", "", "1, PRCI 4KB"),
+            dmi(this, "dmi", "", "2, dmi 4KB. TODO: change base address"),
+            spi(this, "spi", "", "4, SPI SD-card 4KB"),
+            gpio(this, "gpio", "", "3, GPIO 4KB"),
+            ddr(this, "ddr", "", "5, DDR MGMT 4KB"),
+            pnp(this, "pnp", "", "6, Plug'n'Play 4KB") {
 
-            uart1.addr_start.setStrValue("0x0000000010000");
-            uart1.addr_end.setStrValue(  "0x0000000011000");
+            uart1.addr_start.setObjValue(new HexConst(0x0000000010000));
+            uart1.addr_end.setObjValue(new HexConst(0x0000000011000));
 
-            prci.addr_start.setStrValue( "0x0000000012000");
-            prci.addr_end.setStrValue(   "0x0000000013000");
+            prci.addr_start.setObjValue(new HexConst(0x0000000012000));
+            prci.addr_end.setObjValue(new HexConst(0x0000000013000));
 
-            dmi.addr_start.setStrValue(  "0x000000001E000");
-            dmi.addr_end.setStrValue(    "0x000000001F000");
+            dmi.addr_start.setObjValue(new HexConst(0x000000001E000));
+            dmi.addr_end.setObjValue(new HexConst(0x000000001F000));
 
-            spi.addr_start.setStrValue(  "0x0000000050000");
-            spi.addr_end.setStrValue(    "0x0000000051000");
+            spi.addr_start.setObjValue(new HexConst(0x0000000050000));
+            spi.addr_end.setObjValue(new HexConst(0x0000000051000));
 
-            gpio.addr_start.setStrValue( "0x0000000060000");
-            gpio.addr_end.setStrValue(   "0x0000000061000");
+            gpio.addr_start.setObjValue(new HexConst(0x0000000060000));
+            gpio.addr_end.setObjValue(new HexConst(0x0000000061000));
 
-            ddr.addr_start.setStrValue(  "0x00000000C0000");
-            ddr.addr_end.setStrValue(    "0x00000000C1000");
+            ddr.addr_start.setObjValue(new HexConst(0x00000000C0000));
+            ddr.addr_end.setObjValue(new HexConst(0x00000000C1000));
 
-            pnp.addr_start.setStrValue(  "0x00000000ff000");
-            pnp.addr_end.setStrValue(    "0x0000000100000");
+            pnp.addr_start.setObjValue(new HexConst(0x00000000ff000));
+            pnp.addr_end.setObjValue(new HexConst(0x0000000100000));
         }
-        ParamStruct<types_amba::mapinfo_type> uart1;
-        ParamStruct<types_amba::mapinfo_type> prci;
-        ParamStruct<types_amba::mapinfo_type> dmi;
-        ParamStruct<types_amba::mapinfo_type> spi;
-        ParamStruct<types_amba::mapinfo_type> gpio;
-        ParamStruct<types_amba::mapinfo_type> ddr;
-        ParamStruct<types_amba::mapinfo_type> pnp;
+        StructVar<types_amba::mapinfo_type> uart1;
+        StructVar<types_amba::mapinfo_type> prci;
+        StructVar<types_amba::mapinfo_type> dmi;
+        StructVar<types_amba::mapinfo_type> spi;
+        StructVar<types_amba::mapinfo_type> gpio;
+        StructVar<types_amba::mapinfo_type> ddr;
+        StructVar<types_amba::mapinfo_type> pnp;
     };
 
  public:

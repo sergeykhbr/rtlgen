@@ -32,7 +32,7 @@ class plic : public ModuleObject {
      public:
         // Structure definition
         plic_context_type(GenObject *parent, const char *name, const char *comment)
-            : StructObject(parent, "plic_context_type", name, "", comment),
+            : StructObject(parent, "plic_context_type", name, comment),
             priority_th(this, "priority_th", "4", "0"),
             ie(this, "ie", "1024", "0", "interrupt enable per context"),
             ip_prio(this, "ip_prio", "MUL(4,1024)", "0", "interrupt pending priority per context"),
@@ -94,8 +94,8 @@ class plic : public ModuleObject {
 
     class PlicContextTableType : public RegStructArray<plic_context_type> {
      public:
-        PlicContextTableType(GenObject *parent, const char *name)
-            : RegStructArray<plic_context_type>(parent, name, "ctxmax", NO_COMMENT) {
+        PlicContextTableType(GenObject *parent, const char *name, const char *comment)
+            : RegStructArray<plic_context_type>(parent, name, "ctxmax", comment) {
         }
     };
 

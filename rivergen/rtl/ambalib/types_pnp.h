@@ -27,7 +27,7 @@ class types_pnp : public FileObject {
     class dev_config_type : public StructObject {
      public:
         dev_config_type(GenObject *parent, const char *name, const char *comment)
-            : StructObject(parent, "dev_config_type", name, "dev_config_none", comment),
+            : StructObject(parent, "dev_config_type", name, comment),
             _0_(this, "Descriptor size in bytes."),
             descrsize("8", "descrsize", "PNP_CFG_DEV_DESCR_BYTES", this),
             _1_(this, "Descriptor type."),
@@ -59,12 +59,11 @@ class types_pnp : public FileObject {
     };
 
 
-    class soc_pnp_vector : public dev_config_type {
+    class soc_pnp_vector : public StructArray<dev_config_type> {
      public:
         soc_pnp_vector(GenObject *parent, const char *name, const char *descr)
-            : dev_config_type(parent, name, descr) {
+            : StructArray<dev_config_type>(parent, name, "SOC_PNP_TOTAL", descr) {
             setTypedef("soc_pnp_vector");
-            setStrDepth("SOC_PNP_TOTAL");
         }
         virtual bool isSignal() override { return true; }  // this vector is used only as signal, no need to create both types
         virtual bool isVector() override { return true; }
@@ -158,7 +157,7 @@ class types_pnp : public FileObject {
     dev_config_type dev_config_type_def_;
     TextLine _pnp6_;
     TextLine _pnp7_;
-    dev_config_type dev_config_none;
+    ParamStruct<dev_config_type> dev_config_none;
     TextLine _pnp8_;
     soc_pnp_vector soc_pnp_vector_def_;
     TextLine _n_;

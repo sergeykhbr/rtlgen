@@ -78,7 +78,7 @@ class BranchPredictor : public ModuleObject {
     class PreDecType : public StructObject {
      public:
         PreDecType(GenObject *parent, const char *name, const char *comment)
-            : StructObject(parent, "PreDecType", name, "", comment),
+            : StructObject(parent, "PreDecType", name, comment),
             c_valid(this, "c_valid", "1"),
             addr(this, "addr", "RISCV_ARCH"),
             data(this, "data", "32"),

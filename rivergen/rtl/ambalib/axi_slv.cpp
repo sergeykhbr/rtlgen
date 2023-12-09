@@ -55,7 +55,7 @@ axi_slv::axi_slv(GenObject *parent, const char *name, const char *comment) :
     req_wstrb(this, "req_wstrb", "CFG_SYSBUS_DATA_BYTES"),
     req_xsize(this, "req_xsize", "8"),
     req_len(this, "req_len", "8"),
-    req_user(this, "req_user", "CFG_SYSBUS_USER_BITS"),
+    req_user(this, "req_user", "CFG_SYSBUS_USER_BITS", "'0", NO_COMMENT),
     req_id(this, "req_id", "CFG_SYSBUS_ID_BITS"),
     req_burst(this, "req_burst", "2"),
     req_last_a(this, "req_last_a", "1"),

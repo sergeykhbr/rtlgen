@@ -29,7 +29,7 @@ class Double2Long : public ModuleObject {
      public:
         CombProcess(GenObject *parent) :
             ProcObject(parent, "comb"),
-            v_ena(this, "v_ena"),
+            v_ena(this, "v_ena", "1", "0", NO_COMMENT),
             mantA(this, "mantA", "53"),
             expDif_gr(this, "expDif_gr", "1", "0", "greater than 1023 + 63"),
             expDif_lt(this, "expDif_lt", "1", "0", "less than 1023"),

@@ -31,6 +31,7 @@ class ParamBOOL : public BOOL {
         SCV_set_cfg_type(this);
     }
     virtual bool isParam() override { return true; }
+    virtual bool isGenericDep() override { return objValue_->isGenericDep(); }
     virtual std::string generate() override { return BOOL::getStrValue(); }
 };
 
@@ -42,6 +43,7 @@ class ParamString : public STRING {
         SCV_set_cfg_type(this);
     }
     virtual bool isParam() override { return true; }
+    virtual bool isGenericDep() override { return objValue_->isGenericDep(); }
     virtual std::string generate() override;
 };
 
@@ -53,6 +55,7 @@ class ParamUI16D : public UI16D {
             SCV_set_cfg_type(this);
     }
     virtual bool isParam() override { return true; }
+    virtual bool isGenericDep() override { return objValue_->isGenericDep(); }
     virtual std::string generate() override { return UI16D::getStrValue(); }
 };
 
@@ -67,6 +70,7 @@ class ParamI32D : public I32D {
             SCV_set_cfg_type(this);
     }
     virtual bool isParam() override { return true; }
+    virtual bool isGenericDep() override { return objValue_->isGenericDep(); }
     virtual std::string generate() override { return I32D::getStrValue(); }
 };
 
@@ -78,6 +82,7 @@ class ParamUI32D : public UI32D {
             SCV_set_cfg_type(this);
     }
     virtual bool isParam() override { return true; }
+    virtual bool isGenericDep() override { return objValue_->isGenericDep(); }
     virtual std::string generate() override { return UI32D::getStrValue(); }
 };
 
@@ -88,6 +93,7 @@ class ParamUI64H : public UI64H {
             SCV_set_cfg_type(this);
     }
     virtual bool isParam() override { return true; }
+    virtual bool isGenericDep() override { return objValue_->isGenericDep(); }
     virtual std::string generate() override { return UI64H::getStrValue(); }
 };
 
@@ -99,6 +105,7 @@ class ParamLogic : public Logic {
         SCV_set_cfg_type(this);
     }
     virtual bool isParam() override { return true; }
+    virtual bool isGenericDep() override { return objValue_->isGenericDep(); }
     virtual std::string generate() override { return Logic::getStrValue(); }
 };
 
@@ -110,6 +117,7 @@ class ParamTIMESEC : public TIMESEC {
             SCV_set_cfg_type(this);
     }
     virtual bool isParam() override { return true; }
+    virtual bool isGenericDep() override { return objValue_->isGenericDep(); }
     virtual std::string generate() override { return TIMESEC::getStrValue(); }
 };
 
@@ -118,7 +126,6 @@ class ParamStruct : public T {
     public:
     ParamStruct(GenObject *parent, const char *name, const char *comment)
         : T(parent, name, comment) {
-        T::setStrValue("");         // bullet proof clear default *_none value assigned by default
         SCV_set_cfg_type(this);
     }
     virtual bool isParam() override { return true; }

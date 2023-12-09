@@ -28,10 +28,64 @@ namespace sysvc {
 ModuleObject::ModuleObject(GenObject *parent,
                            const char *type,
                            const char *name,
-                           const char *comment) :
-    GenObject(parent, type, ID_MODULE, name, comment) {
+                           const char *comment)
+    : GenObject(parent, type, ID_MODULE, name, comment) {
+
     SCV_add_module(this);
 }
+
+GenObject *ModuleObject::getAsyncResetParam() {
+    for (auto &p: getEntries()) {
+        if (p->isParam()) {
+            if (p->getName() == "async_reset") {
+                return p;
+            }
+        }
+    }
+    return 0;
+}
+
+GenObject *ModuleObject::getResetPort() {
+    for (auto &p: getEntries()) {
+        if (p->isInput()) {
+            if (p->getName() == "i_nrst") {
+                return p;
+            }
+        }
+    }
+    return 0;
+}
+
+GenObject *ModuleObject::getClockPort() {
+    for (auto &p: getEntries()) {
+        if (p->isInput()) {
+            if (p->getName() == "i_clk") {
+                return p;
+            }
+        }
+    }
+    return 0;
+}
+
+
+/*GenObject *ModuleObject::getAsyncReset() {
+    GenObject *rst_port = getResetPort();
+    if (!rst_port) {
+        return rst_port;
+    }
+    for (auto &e: entries_) {
+        if (e->isModule()) {
+            if (e->getAsyncReset()) {
+                return rst_port;
+            }
+        } else if (e->isReg() || e->isNReg()) {
+            return rst_port;
+        }
+    }
+    rst_port = 0;    // no registers to reset in this module
+    return rst_port;
+}*/
+
 
 std::string ModuleObject::generate() {
     std::string ret = "";

@@ -72,6 +72,7 @@ axi_rom::axi_rom(GenObject *parent, const char *name, const char *comment) :
 TEXT();
     tech0.abits.setObjValue(&abits);
     tech0.log2_dbytes.setObjValue(&glob_types_amba_->CFG_LOG2_SYSBUS_DATA_BYTES);
+    tech0.filename.setObjValue(&filename);
     NEW(tech0, tech0.getName().c_str());
         CONNECT(tech0, 0, tech0.i_clk, i_clk);
         CONNECT(tech0, 0, tech0.i_addr, wb_req_addr_abits);

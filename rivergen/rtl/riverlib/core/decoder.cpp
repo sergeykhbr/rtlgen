@@ -73,7 +73,8 @@ InstrDecoder::InstrDecoder(GenObject *parent, const char *name, const char *comm
     Operation::start(this);
 
     // Create and connet Sub-modules:
-        GenObject *i = &FORGEN ("i", CONST("0"), CONST("DEC_NUM"), "++", new STRING("rvx"));
+    rv.fpu_ena.setObjValue(&fpu_ena);
+    GenObject *i = &FORGEN ("i", CONST("0"), CONST("DEC_NUM"), "++", new STRING("rvx"));
         NEW(rv, rv.getName().c_str(), i);
             CONNECT(rv, i, rv.i_clk, i_clk);
             CONNECT(rv, i, rv.i_nrst, i_nrst);

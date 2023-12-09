@@ -43,6 +43,11 @@ void FileObject::add_dependency(GenObject *reqobj) {
             }
         }
     }
+#if 1
+    if (getName() == "types_amba") {
+        bool st = true;
+    }
+#endif
     if (!found) {
         depfiles_[libname].push_back(file);
     }
@@ -225,7 +230,7 @@ void FileObject::generate_sysc() {
             out += addspaces() + "static " + p->getType() + " ";
             out += p->generate();
         } else if (p->isParam() && !p->isParamGeneric()) {
-            if (p->isStruct()) {
+            if (p->isStruct() || p->isString()) {
                 // Do all others params in a such way
                 out += p->generate();
             } else {
@@ -455,7 +460,7 @@ void FileObject::generate_vhdl() {
     ModuleObject *mod;
     std::list <GenObject *> tmplparlist;
     for (auto &p: entries_) {
-        if (p->getId() == ID_MODULE) {
+        if (p->isModule()) {
             is_module = true;
             mod = static_cast<ModuleObject *>(p);
             mod->getTmplParamList(tmplparlist);
@@ -499,7 +504,7 @@ void FileObject::generate_vhdl() {
 
         // module definition
         for (auto &p: entries_) {
-            if (p->getId() == ID_MODULE) {
+            if (p->isModule()) {
                 is_module = true;
                 std::string strtype = p->getType();
                 SCV_set_local_module(p);

@@ -36,7 +36,7 @@ class L2Amba : public ModuleObject {
             v_mem_er_load_fault(this, "v_mem_er_load_fault", "1"),
             v_mem_er_store_fault(this, "v_mem_er_store_fault", "1"),
             v_next_ready(this, "v_next_ready", "1"),
-            vmsto(this, "vmsto", NO_COMMENT) {
+            vmsto(this, "vmsto", "axi4_l2_out_none", NO_COMMENT) {
         }
 
      public:
@@ -46,7 +46,7 @@ class L2Amba : public ModuleObject {
         Logic v_mem_er_load_fault;
         Logic v_mem_er_store_fault;
         Logic v_next_ready;
-        types_river::axi4_l2_out_type vmsto;
+        StructVar<types_river::axi4_l2_out_type> vmsto;
     };
 
     void proc_comb();

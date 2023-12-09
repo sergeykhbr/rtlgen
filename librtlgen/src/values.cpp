@@ -14,41 +14,31 @@
 //  limitations under the License.
 // 
 
+#include "api_rtlgen.h"
 #include "values.h"
 #include "utils.h"
 #include <cstring>
 
 namespace sysvc {
 
-
-GenValue::GenValue(const char *width, const char *val, const char *name,
-                    GenObject *parent, const char *comment)
-    : GenObject(parent, "", (name[0] ? ID_VALUE : ID_CONST), name, comment) {
-    setStrValue(val);
-    setStrWidth(width);
+GenValue::GenValue(GenObject *parent, const char *name, const char *val, const char *comment)
+    : GenObject(parent, "", ID_VALUE, name, comment) {
+    objValue_ = SCV_parse_to_obj(this, val);
 }
 
-GenValue::GenValue(GenValue *width, const char *val, const char *name,
-                   GenObject *parent, const char *comment)
-    : GenObject(parent, "", (name[0] ? ID_VALUE : ID_CONST), name, comment) {
-    setStrValue(val);
-    objWidth_ = width;
-}
-
-GenValue::GenValue(const char *width, GenObject *val, const char *name,
-                   GenObject *parent, const char *comment)
-    : GenObject(parent, "", (name[0] ? ID_VALUE : ID_CONST), name, comment) {
+GenValue::GenValue(GenObject *parent, const char *name, GenObject *val, const char *comment)
+    : GenObject(parent, "", ID_VALUE, name, comment) {
     objValue_ = val;
-    setStrWidth(width);
 }
 
-GenValue::GenValue(int val) : GenObject(0, "", ID_CONST, "", "") {
-    char tstr[32];
-    objValue_ = 0;
-    RISCV_sprintf(tstr, sizeof(tstr), "%d", val);
-    strValue_ = std::string(tstr);
-    setStrWidth("32");
+std::string GenValue::getName() {
+    if (name_ == "") {
+        return getStrValue();
+    }
+    return name_;
 }
+
+
 
 bool GenValue::isReg() {
     GenObject *p = getParent();
@@ -74,11 +64,7 @@ bool GenValue::isNReg() {
 
 std::string GenValue::v_name(std::string v) {
     std::string ret = "";
-    if (getId() == ID_CONST) {
-        ret = getStrValue();
-    } else {
-        ret = getName();
-    }
+    ret = getName();
     if (v.size()) {
         ret += "." + v;
     }
@@ -90,11 +76,7 @@ std::string GenValue::v_name(std::string v) {
 
 std::string GenValue::r_name(std::string v) {
     std::string ret = "";
-    if (getId() == ID_CONST) {
-        ret = getStrValue();
-    } else {
-        ret = getName();
-    }
+    ret = getName();
     if (SCV_is_sysc() && (isInput() || isSignal())) {
         ret += ".read()";
     }
@@ -132,9 +114,13 @@ std::string STRING::getType() {
     return ret;
 }
 
-std::string STRING::generate() {
-    return addspaces() + strValue_;
+
+std::string BOOL::generate() {
+    std::string ret = getType();
+    ret += " = " + getStrValue() + ";\n";
+    return ret;
 }
+
 
 std::string FileValue::getType() {
     std::string ret = "";

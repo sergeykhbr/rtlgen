@@ -28,7 +28,7 @@ enum EIdType {
     ID_PROJECT = (1<<0),
     ID_FOLDER = (1<<1),
     ID_FILE = (1<<2),
-    ID_CONST = (1<<3),
+//    ID_CONST = (1<<3),
     ID_VALUE = (1<<4),
     ID_ENUM = (1<<5),
 //    ID_PARAM = (1<<6),
@@ -39,7 +39,7 @@ enum EIdType {
 //    ID_MODULE_INST = (1<<11),
     ID_STRUCT = (1<<15),
 //    ID_STRUCT_INST = (1<<16),
-    ID_ARRAY_DEF = (1<<17),
+//    ID_ARRAY_DEF = (1<<17),
 //    ID_ARRAY_STRING = (1<<18),
 //    ID_VECTOR = (1<<19),      // array of the fixed depth
     ID_PROCESS = (1<<20),
@@ -67,6 +67,7 @@ class GenObject {
  public:
     GenObject(GenObject *parent, const char *type, EIdType id,
               const char *name, const char *comment=NO_COMMENT);
+    GenObject(GenObject *parent, const char *comment);       // 
 
     virtual std::list<GenObject *> &getEntries() { return entries_; }
     virtual EIdType getId() { return id_; }
@@ -82,10 +83,10 @@ class GenObject {
     virtual void add_dependency(GenObject *p) {}
 
     virtual GenObject *getParentFile();
-    virtual GenObject *getAsyncReset();
-    virtual GenObject *getResetPort();
-    virtual GenObject *getClockPort();
-    virtual GenObject *getEntryByName(const char *name);
+    virtual bool isAsyncResetParam() { return false; }       // jtagtap has its own trst signal but does not have async_reset
+    virtual GenObject *getAsyncResetParam() { return 0; } // async_reset declared as a local parameter at asic_top, no need to autogenerate it
+    virtual GenObject *getResetPort() { return 0; }     // reset port object
+    virtual GenObject *getClockPort() { return 0; }
     virtual bool getResetActive() { return false; }
     virtual std::string addComment();                   // comment at current position
     virtual void addComment(std::string &out);          // comment after 60 spaces
@@ -94,9 +95,11 @@ class GenObject {
     virtual bool isParam() { return false; }            // StrValue is its name, Method generate() to generate its value
     virtual bool isParamGeneric() { return false; }     // Parameter that is defined as argument of constructor
     virtual bool isParamTemplate() { return false; }    // Special type of ParamGeneric used in systemc, when in/out depend on it
+    virtual bool isGenericDep() { return false; }       // depend on generic parameters (but not a template parameter)
     virtual bool isValue() { return false; }            // scalara value
     virtual bool isConst() { return false; }            // scalar value with the an empty name
     virtual bool isString() { return false; }
+    virtual bool isHex() { return false; }
     virtual bool isFloat() { return false; }
     virtual bool isTypedef() { return false; }
     virtual bool isLogic() { return false; }
@@ -123,22 +126,22 @@ class GenObject {
 
     virtual std::string v_name(std::string v);
     virtual std::string r_name(std::string v);
-    virtual uint64_t getValue();
-    virtual double getFloatValue();
-    virtual std::string getStrValue();
-    virtual void setStrValue(const char *val);
-    virtual void setValue(uint64_t val);                // used in a operations
-    virtual void setObjValue(GenObject *obj) { objValue_ = obj; }
-    virtual GenObject *getObjValue() { return objValue_; }
-    virtual int getWidth();
-    virtual std::string getStrWidth();
-    virtual void setStrWidth(const char *val);
-    virtual void setWidth(int w);
-    virtual int getDepth();                             // two-dimensional object
-    virtual std::string getStrDepth();
-    virtual void setStrDepth(const char *val);
-    virtual std::string getLibName();                   // VHDL library. Default is "work"
 
+    virtual uint64_t getValue() { return 0; }
+    virtual double getFloatValue() { return 0; }
+    virtual std::string getStrValue() { return std::string(""); }
+    virtual GenObject *getObjValue() { return 0; }
+    virtual void setObjValue(GenObject *obj) {}         // used to connect parameters without Operation
+
+    virtual uint64_t getWidth() { return 0; }
+    virtual std::string getStrWidth() { return std::string(""); }
+    virtual GenObject *getObjWidth() { return 0; }
+    
+    virtual uint64_t getDepth() { return 0; }           // two-dimensional object
+    virtual GenObject *getObjDepth() { return 0; }
+    virtual std::string getStrDepth() { return std::string(""); }
+
+    virtual std::string getLibName();                   // VHDL library. Default is "work"
     virtual void setSelector(GenObject *sel) { sel_ = sel; }
     virtual GenObject *getSelector() { return sel_; }
     virtual bool isReg() { return false; }              // is register with posedge clock
@@ -147,21 +150,10 @@ class GenObject {
     virtual bool isResetDisabled() { return reset_disabled_; }
     virtual void disableVcd() { vcd_enabled_ = false; }
     virtual bool isVcd() { return vcd_enabled_; }
-    virtual bool isGenericDep();                        // depend on generic parameters
     virtual bool isSvApiUsed() { return sv_api_; }      // readmemh or similar methods used
     virtual void setSvApiUsed() { sv_api_ = true; }
 
     virtual std::string generate() { return std::string(""); }
-    virtual uint64_t parse_to_u64(const char *val, size_t &pos);
-    virtual std::string parse_to_str(const char *val, size_t &pos);
-    size_t parse_to_objlist(const char *val, size_t pos, std::list<GenObject *> &objlist);
-
-    virtual bool isNumber(std::string &s) {
-        const char *pch = s.c_str();
-        return (pch[0] >= '0' && pch[0] <= '9')
-            || (pch[0] == '\'' && pch[1] == '1')        // all ones
-            || (pch[0] == '\'' && pch[1] == '0');       // all zeros
-    }
 
  protected:
     EIdType id_;
@@ -170,22 +162,12 @@ class GenObject {
     std::string type_;
     std::string name_;
 
-    int width_;                                         // FIXME and remove: we should calc these integer, because local parameter becomes unavailable after module is created
-    int depth_;
-    std::string strValue_;
-    std::string strWidth_;
-    std::string strDepth_;
-    GenObject *objValue_;
-    GenObject *objWidth_;
-    GenObject *objDepth_;
-
     GenObject *sel_;                                    // selector when is array
     bool reset_disabled_;                               // register without reset (memory)
     bool vcd_enabled_;                                  // show instance in VCD trace file
     bool sv_api_;                                       // method readmemh or similar were used
     std::string comment_;
     std::list<GenObject *> entries_;
-
 };
 
 }  // namespace sysvc

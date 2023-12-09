@@ -45,6 +45,20 @@ class Signal : public Logic {
     virtual bool isSignal() override { return true; }
 };
 
+/**
+    Force to use sc_uint<1> instead of bool in SystemC even when width=1
+ */
+class Signal1 : public Logic1 {
+ public:
+    Signal1(GenObject *parent,
+           const char *name,
+           const char *width,
+           const char *val,
+           const char *comment);
+
+    virtual bool isSignal() override { return true; }
+};
+
 // Always use sc_biguint in SystemC
 class SignalBig : public Signal {
  public:

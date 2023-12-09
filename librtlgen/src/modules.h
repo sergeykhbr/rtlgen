@@ -30,6 +30,11 @@ class ModuleObject : public GenObject {
     ModuleObject(GenObject *parent, const char *type,
                  const char *name, const char *comment);
 
+    virtual bool isAsyncResetParam() override { return getResetPort() ? true: false; }
+    virtual GenObject *getAsyncResetParam() override;
+    virtual GenObject *getResetPort() override;
+    virtual GenObject *getClockPort() override;
+
     virtual std::string generate() override;
 
     virtual std::string generate_sysc_h();

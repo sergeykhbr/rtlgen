@@ -66,7 +66,7 @@ class PMP : public ModuleObject {
     class PmpTableItemType : public StructObject {
      public:
         PmpTableItemType(GenObject *parent, const char *name, const char *comment)
-            : StructObject(parent, "PmpTableItemType", name, "", comment),
+            : StructObject(parent, "PmpTableItemType", name, comment),
             start_addr(this, "start_addr", "RISCV_ARCH"),
             end_addr(this, "end_addr", "RISCV_ARCH"),
             flags(this, "flags", "CFG_PMP_FL_TOTAL", "0") {

@@ -31,8 +31,8 @@ class ic_axi4_to_l1 : public ModuleObject {
      public:
         CombProcess(GenObject* parent)
             : ProcObject(parent, "comb"),
-            vb_xmsti(this, "vb_xmsti", NO_COMMENT),
-            vb_l1o(this, "vb_l1o", NO_COMMENT),
+            vb_xmsti(this, "vb_xmsti", "axi4_master_in_none", NO_COMMENT),
+            vb_l1o(this, "vb_l1o", "axi4_l1_out_none", NO_COMMENT),
             idx(this, "idx", "SUB(CFG_LOG2_L1CACHE_BYTES_PER_LINE,3)", "0", "request always 64 bits"),
             vb_req_xbytes(this, "vb_req_xbytes", "XSIZE_TOTAL"),
             vb_req_mask(this, "vb_req_mask", "64"),
@@ -42,8 +42,8 @@ class ic_axi4_to_l1 : public ModuleObject {
             t_req_addr(this, "t_req_addr", "CFG_SYSBUS_ADDR_BITS") {
         }
      public:
-        types_amba::axi4_master_in_type vb_xmsti;
-        types_river::axi4_l1_out_type vb_l1o;
+        StructVar<types_amba::axi4_master_in_type> vb_xmsti;
+        StructVar<types_river::axi4_l1_out_type> vb_l1o;
         Logic idx;
         Logic vb_req_xbytes;
         Logic vb_req_mask;
@@ -80,7 +80,7 @@ public:
     RegSignal state;
     RegSignal req_addr;
     RegSignal req_id;
-    RegSignal req_user;
+    RegSignal1 req_user;
     RegSignal req_wstrb;
     RegSignal req_wdata;
     RegSignal req_len;

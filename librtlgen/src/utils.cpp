@@ -62,6 +62,10 @@ void SCV_set_local_module(GenObject *m) {
     localmodule_ = m;
 }
 
+GenObject *SCV_get_local_module() {
+    return localmodule_;
+}
+
 void SCV_add_module(GenObject *m) {
     if (!m->isModule()) {
         SHOW_ERROR("%s wrong object type", m->getName().c_str());
@@ -121,37 +125,45 @@ void SCV_set_cfg_type(GenObject *obj) {
     generic/template parameters, so we have to create independent namespace
     for each module instance to properly computes values (width and depth).
 */
-GenObject *SCV_get_cfg_type(GenObject *obj, std::string &name) {
-    if (name == "") {
+GenObject *SCV_get_cfg_type(GenObject *obj, const char *name) {
+    GenObject *pdepfile = 0;
+    if (name[0] == 0) {
         return 0;
     }
-    if (obj == 0) {
-        // temporary constant
-        obj = localmodule_;
-    }
-    while (!obj->isModule() && !obj->isFile()) {
-        obj = obj->getParent();
-    }
-    if (!obj->isModule() && !obj->isFile()) {
-        SHOW_ERROR("Wrong inheritance %s", obj->getName().c_str());
-    }
-
-    GenObject *pdepfile = obj;
-    if (obj->isModule()) {
-        pdepfile = SCV_get_module_class(obj)->getParent();
-    }
-#if 1
-    if (obj->getType() == "apb_slv") {
-        if (pdepfile->getName() == "river_cfg") {
-            bool st = true;
+    if (localmodule_) {
+        if (obj == 0) {
+            // temporary constant
+            obj = localmodule_;
         }
-    }
-#endif
+        while (!obj->isModule() && !obj->isFile()) {
+            obj = obj->getParent();
+            if (obj == 0) {
+                // temporary constant
+                obj = localmodule_;
+            }
+        }
+        if (!obj->isModule() && !obj->isFile()) {
+            SHOW_ERROR("Wrong inheritance %s", obj->getName().c_str());
+        }
 
-    // search in current namespace (global or local)
-    for (auto &p: obj->getEntries()) {
-        if (p->getName() == name) {
-            return p;
+        pdepfile = obj;
+        if (obj->isModule()) {
+            pdepfile = SCV_get_module_class(obj)->getParent();
+        }
+
+        // search in current namespace (global or local)
+        for (auto &p: obj->getEntries()) {
+            if (p->getName() == name) {
+                return p;
+            }
+        }
+        // Check parameter in a parent module namespace
+        if (obj->isModule() && obj->getParent()->isModule()) {
+            for (auto &p: obj->getParent()->getEntries()) {
+                if (p->getName() == name) {
+                    return p;
+                }
+            }
         }
     }
     
@@ -162,7 +174,9 @@ GenObject *SCV_get_cfg_type(GenObject *obj, std::string &name) {
             while (!incfile->isFile()) {
                 incfile = incfile->getParent();
             }
-            pdepfile->add_dependency(incfile);
+            if (pdepfile) {
+                pdepfile->add_dependency(incfile);
+            }
             return p;
         }
     }

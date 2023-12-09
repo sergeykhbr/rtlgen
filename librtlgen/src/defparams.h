@@ -26,6 +26,8 @@ class DefParamBOOL : public ParamBOOL {
                 const char *comment="")
                 : ParamBOOL(parent, name, val, comment) {}
     virtual bool isParamGeneric() override { return true; }
+    virtual bool isGenericDep() override { return true; }
+    virtual void setObjValue(GenObject *v) override { objValue_ = v; }
 };
 
 class DefParamString : public ParamString {
@@ -34,6 +36,8 @@ class DefParamString : public ParamString {
                 const char *comment="")
                 : ParamString(parent, name, val, comment) {}
     virtual bool isParamGeneric() override { return true; }
+    virtual bool isGenericDep() override { return true; }
+    virtual void setObjValue(GenObject *v) override { objValue_ = v; }
 };
 
 class DefParamUI16D : public ParamUI16D {
@@ -42,6 +46,8 @@ class DefParamUI16D : public ParamUI16D {
                 const char *comment="")
                 : ParamUI16D(parent, name, val, comment) {}
     virtual bool isParamGeneric() override { return true; }
+    virtual bool isGenericDep() override { return true; }
+    virtual void setObjValue(GenObject *v) override { objValue_ = v; }
 };
 
 class DefParamI32D : public ParamI32D {
@@ -50,6 +56,8 @@ class DefParamI32D : public ParamI32D {
                 const char *comment="")
                 : ParamI32D(parent, name, val, comment) {}
     virtual bool isParamGeneric() override { return true; }
+    virtual bool isGenericDep() override { return true; }
+    virtual void setObjValue(GenObject *v) override { objValue_ = v; }
 };
 
 class DefParamUI32D : public ParamUI32D {
@@ -58,6 +66,8 @@ class DefParamUI32D : public ParamUI32D {
                 const char *comment="")
                 : ParamUI32D(parent, name, val, comment) {}
     virtual bool isParamGeneric() override { return true; }
+    virtual bool isGenericDep() override { return true; }
+    virtual void setObjValue(GenObject *v) override { objValue_ = v; }
 };
 
 class DefParamUI64H : public ParamUI64H {
@@ -66,6 +76,8 @@ class DefParamUI64H : public ParamUI64H {
                 const char *comment="")
                 : ParamUI64H(parent, name, val, comment) {}
     virtual bool isParamGeneric() override { return true; }
+    virtual bool isGenericDep() override { return true; }
+    virtual void setObjValue(GenObject *v) override { objValue_ = v; }
 };
 
 class DefParamLogic : public ParamLogic {
@@ -74,6 +86,8 @@ class DefParamLogic : public ParamLogic {
                 const char *comment="")
                 : ParamLogic(parent, width, name, val, comment) {}
     virtual bool isParamGeneric() override { return true; }
+    virtual bool isGenericDep() override { return true; }
+    virtual void setObjValue(GenObject *v) override { objValue_ = v; }
 };
 
 class DefParamTIMESEC : public ParamTIMESEC {
@@ -82,6 +96,8 @@ class DefParamTIMESEC : public ParamTIMESEC {
                 const char *comment="")
                 : ParamTIMESEC(parent, name, val, comment) {}
     virtual bool isParamGeneric() override { return true; }
+    virtual bool isGenericDep() override { return true; }
+    virtual void setObjValue(GenObject *v) override { objValue_ = v; }
 };
 
 /** Template paramaters is special key in sytemc. For SV and VHDL it is
@@ -92,6 +108,7 @@ class TmplParamI32D : public DefParamI32D {
                   const char *comment="")
         : DefParamI32D(parent, name, val, comment) {}
     virtual bool isParamTemplate() override { return true; }
+    virtual void setObjValue(GenObject *v) override { objValue_ = v; }
 };
 
 class TmplParamLogic : public DefParamLogic {
@@ -100,6 +117,7 @@ class TmplParamLogic : public DefParamLogic {
                    const char *val, const char *comment="")
         : DefParamLogic(parent, width, name, val, comment) { }
     virtual bool isParamTemplate() override { return true; }
+    virtual void setObjValue(GenObject *v) override { objValue_ = v; }
 };
 
 }  // namespace sysvc

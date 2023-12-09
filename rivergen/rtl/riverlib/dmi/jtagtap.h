@@ -24,7 +24,7 @@ class jtagtap : public ModuleObject {
  public:
     jtagtap(GenObject *parent, const char *name, const char *comment=NO_COMMENT);
 
-    virtual GenObject *getAsyncReset() override { return 0; }
+    virtual bool isAsyncResetParam() override { return false; }
     virtual GenObject *getResetPort() override { return &i_trst; }
     virtual bool getResetActive() override { return true; }
     virtual GenObject *getClockPort() override { return &i_tck; }

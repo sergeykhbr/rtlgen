@@ -25,57 +25,52 @@ class types_bus0 : public FileObject {
  public:
     types_bus0(GenObject *parent);
 
-    class bus0_xmst_in_vector : public types_amba::axi4_master_in_type {
+    class bus0_xmst_in_vector : public StructArray<types_amba::axi4_master_in_type> {
      public:
         bus0_xmst_in_vector(GenObject *parent, const char *name, const char *descr="")
-            : axi4_master_in_type(parent, name, descr) {
+            : StructArray<axi4_master_in_type>(parent, name, "CFG_BUS0_XMST_TOTAL", descr) {
             setTypedef("bus0_xmst_in_vector");
-            setStrDepth("CFG_BUS0_XMST_TOTAL");
         }
         virtual bool isVector() override { return true; }
         virtual bool isSignal() override { return true; }
     };
 
-    class bus0_xmst_out_vector : public types_amba::axi4_master_out_type {
+    class bus0_xmst_out_vector : public StructArray<types_amba::axi4_master_out_type> {
      public:
         bus0_xmst_out_vector(GenObject *parent, const char *name, const char *descr="")
-            : axi4_master_out_type(parent, name, descr) {
+            : StructArray<axi4_master_out_type>(parent, name, "CFG_BUS0_XMST_TOTAL", descr) {
             setTypedef("bus0_xmst_out_vector");
-            setStrDepth("CFG_BUS0_XMST_TOTAL");
         }
         virtual bool isVector() override { return true; }
         virtual bool isSignal() override { return true; }
     };
 
 
-    class bus0_xslv_in_vector : public types_amba::axi4_slave_in_type {
+    class bus0_xslv_in_vector : public StructArray<types_amba::axi4_slave_in_type> {
      public:
         bus0_xslv_in_vector(GenObject *parent, const char *name, const char *descr="")
-            : axi4_slave_in_type(parent, name, descr) {
+            : StructArray<axi4_slave_in_type>(parent, name, "CFG_BUS0_XSLV_TOTAL", descr) {
             setTypedef("bus0_xslv_in_vector");
-            setStrDepth("CFG_BUS0_XSLV_TOTAL");
         }
         virtual bool isVector() override { return true; }
         virtual bool isSignal() override { return true; }
     };
 
-    class bus0_xslv_out_vector : public types_amba::axi4_slave_out_type {
+    class bus0_xslv_out_vector : public StructArray<types_amba::axi4_slave_out_type> {
      public:
         bus0_xslv_out_vector(GenObject *parent, const char *name, const char *descr="")
-            : axi4_slave_out_type(parent, name, descr) {
+            : StructArray<axi4_slave_out_type>(parent, name, "CFG_BUS0_XSLV_TOTAL", descr) {
             setTypedef("bus0_xslv_out_vector");
-            setStrDepth("CFG_BUS0_XSLV_TOTAL");
         }
         virtual bool isVector() override { return true; }
         virtual bool isSignal() override { return true; }
     };
 
-    class bus0_mapinfo_vector : public types_amba::mapinfo_type {
+    class bus0_mapinfo_vector : public StructArray<types_amba::mapinfo_type> {
      public:
         bus0_mapinfo_vector(GenObject *parent, const char *name, const char *descr="")
-            : mapinfo_type(parent, name, descr) {
+            : StructArray<mapinfo_type>(parent, name, "CFG_BUS0_XSLV_TOTAL", descr) {
             setTypedef("bus0_mapinfo_vector");
-            setStrDepth("CFG_BUS0_XSLV_TOTAL");
         }
         virtual bool isVector() override { return true; }
         virtual bool isSignal() override { return true; }
@@ -85,45 +80,46 @@ class types_bus0 : public FileObject {
      public:
         CONST_CFG_BUS0_MAP(GenObject *parent)
             : ParamStruct<bus0_mapinfo_vector>(parent, "CFG_BUS0_MAP", NO_COMMENT),
-            bootrom(this, "bootrom", "0, bootrom, 256 KB"),
-            clint(this, "clint", "1, clint"),
-            sram(this, "sram", "2, sram, 2MB"),
-            plic(this, "plic", "3, plic"),
-            bus1(this, "bus1", "4, APB bridge: uart1"),
-            ddr(this, "ddr", "5, ddr, 512 MB"),
-            sdctrl(this, "sdctrl", "6, sdctrl, 32 GB") {
+            bootrom(this, "bootrom", "", "0, bootrom, 256 KB"),     // TODO: parsing of structure values
+            clint(this, "clint", "", "1, clint"),
+            sram(this, "sram", "", "2, sram, 2MB"),
+            plic(this, "plic", "", "3, plic"),
+            bus1(this, "bus1", "", "4, APB bridge: uart1"),
+            ddr(this, "ddr", "", "5, ddr, 512 MB"),
+            sdctrl(this, "sdctrl", "", "6, sdctrl, 32 GB") {
 
-            bootrom.addr_start.setStrValue("0x0000000010000");
-            bootrom.addr_end.setStrValue(  "0x0000000050000");
+            // It is possible now to do Logic definition:
+            bootrom.addr_start.setObjValue(new HexConst(0x0000000010000));
+            bootrom.addr_end.setObjValue(new HexConst(0x0000000050000));
 
-            clint.addr_start.setStrValue("0x0000002000000");
-            clint.addr_end.setStrValue(  "0x0000002010000");
+            clint.addr_start.setObjValue(new HexConst(0x0000002000000));
+            clint.addr_end.setObjValue(new HexConst(0x0000002010000));
 
-            sram.addr_start.setStrValue( "0x0000008000000");
-            sram.addr_end.setStrValue(   "0x0000008200000");
+            sram.addr_start.setObjValue(new HexConst(0x0000008000000));
+            sram.addr_end.setObjValue(new HexConst(0x0000008200000));
 
-            plic.addr_start.setStrValue( "0x000000C000000");
-            plic.addr_end.setStrValue(   "0x0000010000000");
+            plic.addr_start.setObjValue(new HexConst(0x000000C000000));
+            plic.addr_end.setObjValue(new HexConst(0x0000010000000));
 
-            bus1.addr_start.setStrValue( "0x0000010000000");
-            bus1.addr_end.setStrValue(   "0x0000010100000");
+            bus1.addr_start.setObjValue(new HexConst(0x0000010000000));
+            bus1.addr_end.setObjValue(new HexConst(0x0000010100000));
 
-            ddr.addr_start.setStrValue(  "0x0000080000000");
-            ddr.addr_end.setStrValue(    "0x00000C0000000");
+            ddr.addr_start.setObjValue(new HexConst(0x0000080000000));
+            ddr.addr_end.setObjValue(new HexConst(0x00000C0000000));
 
-            sdctrl.addr_start.setStrValue("0x0000800000000");
-            sdctrl.addr_end.setStrValue(  "0x0001000000000");
+            sdctrl.addr_start.setObjValue(new HexConst(0x0000800000000));
+            sdctrl.addr_end.setObjValue(new HexConst(0x0001000000000));
         }
         virtual bool isParam() override { return true; }
 
      protected:
-        ParamStruct<types_amba::mapinfo_type> bootrom;
-        ParamStruct<types_amba::mapinfo_type> clint;
-        ParamStruct<types_amba::mapinfo_type> sram;
-        ParamStruct<types_amba::mapinfo_type> plic;
-        ParamStruct<types_amba::mapinfo_type> bus1;
-        ParamStruct<types_amba::mapinfo_type> ddr;
-        ParamStruct<types_amba::mapinfo_type> sdctrl;
+        StructVar<types_amba::mapinfo_type> bootrom;
+        StructVar<types_amba::mapinfo_type> clint;
+        StructVar<types_amba::mapinfo_type> sram;
+        StructVar<types_amba::mapinfo_type> plic;
+        StructVar<types_amba::mapinfo_type> bus1;
+        StructVar<types_amba::mapinfo_type> ddr;
+        StructVar<types_amba::mapinfo_type> sdctrl;
     };
 
 

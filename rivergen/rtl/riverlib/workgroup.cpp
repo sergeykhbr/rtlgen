@@ -167,6 +167,7 @@ TEXT();
     i = &FORGEN("i", CONST("0"), cpu_num, "++", new STRING("xslotcpu"));
         cpux.hartid.setObjValue(i);
         cpux.fpu_ena.setObjValue(&glob_river_cfg_->CFG_HW_FPU_ENABLE);
+        cpux.coherence_ena.setObjValue(&coherence_ena);
         cpux.tracer_ena.setObjValue(&glob_river_cfg_->CFG_TRACER_ENABLE);
         NEW(cpux, cpux.getName().c_str(), i);
             CONNECT(cpux, i, cpux.i_nrst, i_cores_nrst);

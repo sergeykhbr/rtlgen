@@ -21,11 +21,22 @@ namespace sysvc {
 
 std::string ParamString::generate() {
     std::string ret = "";
-    int d = getDepth();
-    if (d <= 1) {
-        return STRING::generate();
-    }
     ret += addspaces();
+    if (SCV_is_sysc()) {
+        ret += "static const ";
+    } else if (SCV_is_sv()) {
+        ret += "localparam ";
+    } else if (SCV_is_vhdl()) {
+        ret += "constant ";
+    }
+    ret += getType() + " " + getName();
+    if (getObjDepth() == 0) {
+        ret += " = " + getStrValue() + ";\n";
+        return ret;
+    }
+
+    ret += "[" + getStrDepth() + "] = ";
+
     if (SCV_is_sysc()) {
         ret += "{\n";
     } else if (SCV_is_sv()) {
@@ -36,7 +47,7 @@ std::string ParamString::generate() {
     pushspaces();
 
     for (auto &s: getEntries()) {
-        ret += s->generate();
+        ret += addspaces() + s->getStrValue();
         if (&s != &getEntries().back()) {
             ret += ",";
         }
@@ -52,6 +63,7 @@ std::string ParamString::generate() {
     } else if (SCV_is_vhdl()) {
         ret += ")";
     }
+    ret += ";\n";
     return ret;
 }
 

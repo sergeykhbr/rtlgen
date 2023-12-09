@@ -36,10 +36,10 @@ std::string ModuleObject::generate_sv_pkg_localparam() {
     int tcnt = 0;
     // Local paramaters visible inside of module
     for (auto &p: entries_) {
-        if (p->getId() == ID_COMMENT) {
+        if (p->isComment()) {
             comment += p->generate();
             continue;
-        } else if (p->isParam() && !p->isParamGeneric() && p->isLocal() && !p->isGenericDep()) {
+        } else if (p->isParam() && !p->isParamGeneric() && !p->isGenericDep()) {
             ret += comment;
             if (p->isString()) {
                 // Vivado doesn't support string parameters, skip type
@@ -75,7 +75,7 @@ std::string ModuleObject::generate_sv_pkg_reg_struct(bool negedge) {
             continue;
         }
         ln = addspaces() + p->getType() + " " + p->getName();
-        if (p->getDepth() > 1) {
+        if (p->getObjDepth()) {
             generate_struct_rst = false;
             ln += "[0: " + p->getStrDepth() + " - 1]";
         }
@@ -169,7 +169,7 @@ std::string ModuleObject::generate_sv_mod_genparam() {
     getTmplParamList(genparam);
     getParamList(genparam);
 
-    if (getAsyncReset() && getEntryByName("async_reset") == 0) {
+    if (isAsyncResetParam() && getAsyncResetParam() == 0) {
         ret += "    parameter bit async_reset = 1'b0";           // Mandatory generic parameter
         if (genparam.size()) {
             ret += ",";
@@ -211,7 +211,7 @@ std::string ModuleObject::generate_sv_mod_param_strings() {
         } else {
             ret += "localparam " + p->getType() + " " + p->getName();
         }
-        if (p->getDepth() > 1) {
+        if (p->getObjDepth()) {
             ret += "[0: " + p->getStrDepth() +"-1]";
         }
         ret += " = " + p->generate() + ";\n";
@@ -237,7 +237,7 @@ std::string ModuleObject::generate_sv_mod_signals() {
     tcnt = 0;
     text = "";
     for (auto &p: getEntries()) {
-        if (p->getId() == ID_COMMENT) {
+        if (p->isComment()) {
             text += p->generate();
             continue;
         }
@@ -314,7 +314,7 @@ std::string ModuleObject::generate_sv_mod_proc_nullify(GenObject *obj,
     }
     prefix += obj->getName();
 
-    if (obj->getDepth() > 1) {
+    if (obj->getObjDepth()) {
         prefix += "[" + i + "]";
         ret += addspaces();
         ret += "for (int " + i + " = 0; " + i + " < " + obj->getStrDepth() + "; " + i + "++) begin\n";
@@ -329,7 +329,7 @@ std::string ModuleObject::generate_sv_mod_proc_nullify(GenObject *obj,
         ret += addspaces() + prefix + " = " + obj->getStrValue() + ";\n";
     }
 
-    if (obj->getDepth() > 1) {
+    if (obj->getObjDepth()) {
         popspaces();
         ret += addspaces() + "end\n";
     }
@@ -378,11 +378,11 @@ std::string ModuleObject::generate_sv_mod_proc(GenObject *proc) {
         if (e->getId() == ID_VALUE
             || e->isStruct()) {    // no structure inside of process, typedef can be removed
             ln += addspaces() + e->getType() + " " + e->getName();
-            if (e->getDepth() > 1) {
+            if (e->getObjDepth()) {
                 ln += "[0: " + e->getStrDepth() + "-1]";
             }
             tcnt++;
-        } else if (e->getId() == ID_ARRAY_DEF) {
+        } else if (e->getObjDepth()) {
             // DELME:
             ln += addspaces() + e->getType() + " " + e->getName();
             ln += "[0: ";
@@ -513,53 +513,51 @@ std::string ModuleObject::generate_sv_mod_always_ops() {
 std::string ModuleObject::generate_sv_mod_proc_registers() {
     std::string out = "";
     std::string xrst = "";
-
-    if (getAsyncReset() && getResetPort()) {
-        // Need to generate both cases: always with and without reset
-        out += "generate\n";
-        pushspaces();
-        out += addspaces() + "if (async_reset) begin: async_rst_gen\n";
-        pushspaces();
-        out += "\n";
-    }
-    if (getResetPort()) {
-        out += generate_sv_mod_always_ff_rst(true);
-        out += "\n";
-        if (isNRegProcess()) {
-            out += generate_sv_mod_always_ff_rst(false);
-            out += "\n";
-        }
-    }
-    if (getAsyncReset() && getResetPort()) {
-        popspaces();
-        out += "\n";
-        out += addspaces() + "end: async_rst_gen\n";
-        out += addspaces() + "else begin: no_rst_gen\n";
-        pushspaces();
-        out += "\n";
+    if (!isRegs()) {
+        return out;
     }
 
-    if (getAsyncReset() || getResetPort() == 0) {
-        out += addspaces() + "always_ff @(posedge ";
-        out += getClockPort()->getName();
-        out += ") begin: rg_proc\n";
-        pushspaces();
-        if (isRegs() && isCombProcess()) {
-            out += Operation::copyreg("r", "rin", this);
-        }
-        out += generate_sv_mod_always_ops();   // additional operation on posedge clock events
-        popspaces();
-        out += addspaces() + "end: rg_proc\n";
-        out += "\n";
-    }
+    // Need to generate both cases: always with and without reset
+    out += "generate\n";
+    pushspaces();
+    out += addspaces() + "if (async_reset) begin: async_rst_gen\n";
 
-    if (getAsyncReset() && getResetPort()) {
-        popspaces();
-        out += addspaces() + "end: no_rst_gen\n";
-        popspaces();
-        out += "endgenerate\n";
+    pushspaces();
+    out += "\n";
+    out += generate_sv_mod_always_ff_rst(true);
+    out += "\n";
+    if (isNRegProcess()) {
+        out += generate_sv_mod_always_ff_rst(false);
         out += "\n";
     }
+    popspaces();
+
+    out += "\n";
+    out += addspaces() + "end: async_rst_gen\n";
+    out += addspaces() + "else begin: no_rst_gen\n";
+
+    pushspaces();
+    out += "\n";
+    out += addspaces() + "always_ff @(posedge ";
+    out += getClockPort()->getName();
+    out += ") begin: rg_proc\n";
+
+    pushspaces();
+    if (isRegs() && isCombProcess()) {
+        out += Operation::copyreg("r", "rin", this);
+    }
+    out += generate_sv_mod_always_ops();   // additional operation on posedge clock events
+    popspaces();
+
+    out += addspaces() + "end: rg_proc\n";
+    out += "\n";
+    popspaces();
+
+    out += addspaces() + "end: no_rst_gen\n";
+    popspaces();
+
+    out += "endgenerate\n";
+    out += "\n";
     return out;
 }
 
@@ -595,7 +593,7 @@ std::string ModuleObject::generate_sv_mod() {
     std::string strtype;
     for (auto &p: entries_) {
         if (!p->isInput() && !p->isOutput()) {
-            if (p->getId() == ID_COMMENT) {
+            if (p->isComment()) {
                 text += p->generate();
             } else {
                 text = "";
@@ -614,7 +612,7 @@ std::string ModuleObject::generate_sv_mod() {
         }
         SCV_set_generator(SV_PKG);  // to generate with package name
         strtype = p->getType();
-        GenObject *cfgobj = SCV_get_cfg_type(this, strtype);
+        GenObject *cfgobj = SCV_get_cfg_type(this, strtype.c_str());
         if (cfgobj) {
             // whole types (like vectors or typedef)
             ln += cfgobj->getFile()->getName() + "_pkg::" + strtype;
@@ -679,7 +677,7 @@ std::string ModuleObject::generate_sv_mod() {
 
     // Clock process
     for (auto &p: entries_) {
-        if (p->getId() != ID_CLOCK) {
+        if (!p->isClock()) {
             continue;
         }
         ret += generate_sv_mod_clock(p);

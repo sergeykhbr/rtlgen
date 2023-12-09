@@ -69,7 +69,7 @@ class BpBTB : public ModuleObject {
      public:
         // Structure definition
         BtbEntryType(GenObject *parent, const char *name, const char *comment)
-            : StructObject(parent, "BtbEntryType", name, "", comment),
+            : StructObject(parent, "BtbEntryType", name, comment),
             pc(this, "pc", "RISCV_ARCH", "'1"),
             npc(this, "npc", "RISCV_ARCH"),
             exec(this, "exec", "1", "0", "0=predec; 1=exec (high priority)") {}

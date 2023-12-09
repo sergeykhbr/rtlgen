@@ -30,7 +30,7 @@ using namespace sysvc;
 class input_mux_type : public StructObject {
  public:
     input_mux_type(GenObject *parent, const char *name, const char *comment)
-        : StructObject(parent, "input_mux_type", name, "", comment),
+        : StructObject(parent, "input_mux_type", name, comment),
     radr1(this, "radr1", "6"),
     radr2(this, "radr2", "6"),
     waddr(this, "waddr", "6"),
@@ -342,7 +342,7 @@ class InstrExecute : public ModuleObject {
     class select_type : public StructObject {
      public:
         select_type(GenObject *parent, const char *name, const char *comment)
-            : StructObject(parent, "select_type", name, "", comment),
+            : StructObject(parent, "select_type", name, comment),
         ena(this, "ena", "1"),
         valid(this, "valid", "1"),
         res(this, "res", "RISCV_ARCH") {}

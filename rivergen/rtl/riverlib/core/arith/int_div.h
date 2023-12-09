@@ -38,7 +38,7 @@ class IntDiv : public ModuleObject {
             vb_div(this, "vb_div", "64"),
             v_a1_m0(this, "v_a1_m0", "1", "0", "a1 == -0ll"),
             v_a2_m1(this, "v_a2_m1", "1", "0", "a2 == -1ll"),
-            v_ena(this, "v_ena"),
+            v_ena(this, "v_ena", "1", "0", NO_COMMENT),
             t_divisor(this, "t_divisor", "120") {
         }
 

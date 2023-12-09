@@ -29,4 +29,10 @@ Signal::Signal(GenObject *parent, const char *name, const char *width,
     const char *val, const char *comment)
     : Logic(width, name, val, parent, comment) {
 }
+
+Signal1::Signal1(GenObject *parent, const char *name, const char *width,
+    const char *val, const char *comment)
+    : Logic1(parent, name, width, val, comment) {
+}
+
 }

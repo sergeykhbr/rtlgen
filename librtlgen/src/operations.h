@@ -17,6 +17,7 @@
 #pragma once
 
 #include "genobjects.h"
+#include "const.h"
 #include "values.h"
 #include "params.h"
 #include "logic.h"
@@ -57,7 +58,7 @@ class Operation : public GenObject {
     }
     virtual bool isGen(generate_type t) { return t == igen_; }
     virtual GenObject *getArg(int cnt) { return args[cnt]; }
-//    virtual std::string getName() override { return generate(); }
+    virtual std::string getName() override { return getStrValue(); }
     virtual std::string getStrValue() override { return generate(); }
     virtual std::string generate() override {
         std::string ret = igen_(args);
@@ -75,13 +76,74 @@ class Operation : public GenObject {
     int argcnt_;
 };
 
+class TwoStandardOperandsOperation : public Operation {
+ public:
+    TwoStandardOperandsOperation(GenObject *a, GenObject *b, const char *comment)
+        : Operation(NO_PARENT, comment), a_(a), b_(b) {}
+
+    virtual bool isGenericDep() override { return a_->isGenericDep() || b_->isGenericDep(); }
+    virtual std::string getOperand() = 0;
+    virtual uint64_t getValue() = 0;
+    virtual std::string getStrValue() override;
+    virtual uint64_t getWidth() override;
+    virtual std::string generate() override { return getStrValue(); }
+
+ protected:
+    GenObject *a_;
+    GenObject *b_;
+};
+
+class TwoStandardLogicOperation : public TwoStandardOperandsOperation {
+ public:
+    TwoStandardLogicOperation(GenObject *a, GenObject *b, const char *comment)
+        : TwoStandardOperandsOperation(a, b, comment), objWidth_(1) {}
+
+    virtual uint64_t getWidth() override { return objWidth_.getValue(); }
+
+ protected:
+    DecConst objWidth_;
+};
+
+class NStandardOperandsOperation : public Operation {
+ public:
+    NStandardOperandsOperation(bool oneline, const char *comment)
+        : Operation(NO_PARENT, comment), oneline_(oneline) {}
+
+    virtual std::string getOpeningBrace() { return std::string("("); }
+    virtual std::string getClosingBrace() { return std::string(")"); }
+    virtual std::string getOperand() = 0;
+    virtual uint64_t getValue() = 0;
+    virtual std::string getStrValue() override;
+    virtual uint64_t getWidth() override { return (*getEntries().begin())->getWidth(); }
+    virtual std::string generate() override { return getStrValue(); }
+
+ protected:
+    bool oneline_;          // output in one line
+};
+
+class ReduceOperation : public Operation {
+ public:
+    ReduceOperation(GenObject *a, const char *comment)
+        : Operation(NO_PARENT, comment), a_(a), objWidth_(1) {}
+
+    virtual uint64_t getValue() = 0;
+    virtual std::string getStrValue() = 0;
+    virtual uint64_t getWidth() override { return objWidth_.getValue(); }
+    virtual std::string generate() override { return getStrValue(); }
+
+ protected:
+    GenObject *a_;
+    DecConst objWidth_;
+};
+
+
 /**
     Generate commenting string:
         // text
  */
 class TextOperation : public Operation {
  public:
-    TextOperation(const char *comment) : Operation(comment) {}
+    TextOperation(const char *comment) : Operation(top_obj(), comment) {}
     virtual std::string generate() override;
 };
 
@@ -90,10 +152,60 @@ class TextOperation : public Operation {
  */
 class AllConstOperation : public Operation {
  public:
-    AllConstOperation(int v, const char *comment) : Operation(0, comment), v_(v) {}
-    virtual std::string generate() override;
+    AllConstOperation(int v, const char *comment)
+        : Operation(NO_PARENT, comment), v_(v) {}
+
+    virtual std::string getStrValue() override;
+    virtual std::string generate() override { return getStrValue(); }
  protected:
     int v_;
+};
+
+/**
+    Bit selection a[idx].
+ */
+class BitOperation : public Operation {
+ public:
+    BitOperation(GenObject *a, GenObject *idx, const char *comment)
+        : Operation(NO_PARENT, comment), a_(a), idx_(idx) {}
+    virtual std::string getStrValue() override { return generate(); }
+    virtual uint64_t getWidth() override { return 1; }
+    virtual std::string generate() override;
+ protected:
+    GenObject *a_;
+    GenObject *idx_;
+};
+
+/**
+    Bits selection by range: a[h:l]
+ */
+class BitsOperation : public Operation {
+ public:
+    BitsOperation(GenObject *a, GenObject *h, GenObject *l, const char *comment)
+        : Operation(NO_PARENT, comment), a_(a), h_(h), l_(l) {}
+    virtual std::string getStrValue() override { return generate(); }
+    virtual uint64_t getWidth() override { return h_->getValue() - l_->getValue() + 1; }
+    virtual std::string generate() override;
+ protected:
+    GenObject *a_;
+    GenObject *h_;
+    GenObject *l_;
+};
+
+/**
+    Bits selection by width: a[start +: width]
+ */
+class BitswOperation : public Operation {
+ public:
+    BitswOperation(GenObject *a, GenObject *start, GenObject *width, const char *comment)
+        : Operation(NO_PARENT, comment), a_(a), start_(start), width_(width) {}
+    virtual std::string getStrValue() override { return generate(); }
+    virtual uint64_t getWidth() override { return width_->getValue(); }
+    virtual std::string generate() override;
+ protected:
+    GenObject *a_;
+    GenObject *start_;
+    GenObject *width_;
 };
 
 /**
@@ -102,23 +214,15 @@ class AllConstOperation : public Operation {
  */
 class SetConstOperation : public Operation {
  public:
-    SetConstOperation(GenObject &a, uint64_t v, const char *comment)
-        : Operation(comment), a_(&a), v_(v) {}
+    SetConstOperation(GenObject &a, uint64_t v, const char *comment);
+
     virtual std::string generate() override;
+
  protected:
     GenObject *a_;
-    uint64_t v_;
+    GenObject *b_;
 };
 
-Operation &BIT(GenObject &a, GenObject &b, const char *comment="");
-Operation &BIT(GenObject &a, const char *b, const char *comment="");
-Operation &BIT(GenObject &a, int b, const char *comment="");
-Operation &BITS(GenObject &a, GenObject &h, GenObject &l, const char *comment="");
-Operation &BITS(GenObject &a, int h, int l, const char *comment="");
-Operation &BITSW(GenObject &a, GenObject &start, GenObject &width, const char *comment="");
-GenObject &CONST(const char *val);
-GenObject &CONST(const char *val, const char *width);
-GenObject &CONST(const char *val, int width);
 Operation &SETBIT(GenObject &a, GenObject &b, GenObject &val, const char *comment="");
 Operation &SETBIT(GenObject &a, int b, GenObject &val, const char *comment="");
 Operation &SETBITONE(GenObject &a, GenObject &b, const char *comment="");
@@ -141,52 +245,249 @@ Operation &TO_U32(GenObject &a, const char *comment="");
 Operation &TO_U64(GenObject &a, const char *comment="");
 Operation &TO_CSTR(GenObject &a, const char *comment="");
 Operation &BIG_TO_U64(GenObject &a, const char *comment="");        // explicit conersion of biguint to uint64 (sysc only)
-Operation &TO_BIG(size_t sz, GenObject &a); // convert to biguint
+
+/**
+    Convet to biguint<> (effect in systemc only):
+ */
+class ToBigOperation : public Operation {
+ public:
+    ToBigOperation(GenObject *a, size_t sz, const char *comment)
+        : Operation(NO_PARENT, comment), a_(a) {
+        objWidth_ = new DecConst(static_cast<int>(sz));
+    }
+
+    virtual std::string getStrValue() override { return generate(); }
+    virtual uint64_t getWidth() override { return objWidth_->getValue(); }
+    virtual std::string generate() override;
+
+ protected:
+    GenObject *a_;
+    GenObject *objWidth_;
+};
+
+/**
+    a > b ? 1 : 0
+ */
+class GtOperation : public TwoStandardLogicOperation {
+ public:
+    GtOperation(GenObject *a, GenObject *b, const char *comment)
+        : TwoStandardLogicOperation(a, b, comment) {}
+
+    virtual std::string getOperand() { return std::string(" > "); }
+    virtual uint64_t getValue() { return a_->getValue() > b_->getValue() ? 1: 0; }
+};
+
 Operation &EQ(GenObject &a, GenObject &b, const char *comment="");  // ==
 Operation &NE(GenObject &a, GenObject &b, const char *comment="");  // !=
 Operation &EZ(GenObject &a, const char *comment="");        // equal-zero
 Operation &NZ(GenObject &a, const char *comment="");        // Non-zero
-Operation &GT(GenObject &a, GenObject &b, const char *comment="");        // Greater (>)
+//Operation &GT(GenObject &a, GenObject &b, const char *comment="");        // Greater (>)
 Operation &GE(GenObject &a, GenObject &b, const char *comment="");        // Greater-Equal (>=)
 Operation &LS(GenObject &a, GenObject &b, const char *comment="");        // Less (<)
 Operation &LE(GenObject &a, GenObject &b, const char *comment="");        // Less-Equal (<=)
-Operation &INV_L(GenObject &a, const char *comment="");        // bits inversion
-Operation &INV(GenObject &a, const char *comment="");        // logical inversion
+
+/**
+    Inversion logical or arithemical:
+        ~a (!a)
+ */
+class InvOperation : public Operation {
+ public:
+    InvOperation(GenObject *a, bool logical, const char *comment)
+        : Operation(NO_PARENT, comment), a_(a), logical_(logical) {}
+
+    virtual std::string getStrValue() override { return generate(); }
+    virtual uint64_t getWidth() override { return a_->getWidth(); }
+    virtual std::string generate() override;
+
+ protected:
+    GenObject *a_;
+    bool logical_;    // affect only systemc
+};
+
+/**
+    a + b
+*/
+class Add2Operation : public TwoStandardOperandsOperation {
+ public:
+    Add2Operation(GenObject *a, GenObject *b, const char *comment)
+        : TwoStandardOperandsOperation(a, b, comment) {}
+
+    virtual std::string getOperand() override { return std::string(" + "); }
+    virtual uint64_t getValue() { return a_->getValue() + b_->getValue(); }
+};
+
+/**
+    a - b
+*/
+class Sub2Operation : public TwoStandardOperandsOperation {
+ public:
+    Sub2Operation(GenObject *a, GenObject *b, const char *comment)
+        : TwoStandardOperandsOperation(a, b, comment) {}
+
+    virtual std::string getOperand() override { return std::string(" - "); }
+    virtual uint64_t getValue() { return a_->getValue() - b_->getValue(); }
+};
+
+/**
+    a * b
+*/
+class Mul2Operation : public TwoStandardOperandsOperation {
+ public:
+    Mul2Operation(GenObject *a, GenObject *b, const char *comment)
+        : TwoStandardOperandsOperation(a, b, comment) {}
+
+    virtual std::string getOperand() override { return std::string(" * "); }
+    virtual uint64_t getValue() { return a_->getValue() * b_->getValue(); }
+};
+
+/**
+    a / b
+*/
+class Div2Operation : public TwoStandardOperandsOperation {
+ public:
+    Div2Operation(GenObject *a, GenObject *b, const char *comment)
+        : TwoStandardOperandsOperation(a, b, comment) {}
+
+    virtual std::string getOperand() override { return std::string(" / "); }
+    virtual uint64_t getValue() { return a_->getValue() / b_->getValue(); }
+};
+
+/**
+    Logical AND: (a & b), (a && b)
+*/
+class And2Operation : public TwoStandardOperandsOperation {
+ public:
+    And2Operation(GenObject *a, GenObject *b, bool logical, const char *comment)
+        : TwoStandardOperandsOperation(a, b, comment), logical_(logical) {}
+
+    virtual std::string getOperand() override;
+    virtual uint64_t getValue() { return a_->getValue() & b_->getValue(); }
+ protected:
+    bool logical_;
+};
+
+
 Operation &OR2_L(GenObject &a, GenObject &b, const char *comment="");   // bitwise OR
 Operation &OR2(GenObject &a, GenObject &b, const char *comment="");
 Operation &OR3(GenObject &a, GenObject &b, GenObject &c, const char *comment="");
 Operation &OR4(GenObject &a, GenObject &b, GenObject &c, GenObject &d, const char *comment="");
 Operation &ORx(size_t cnt, ...);
 Operation &ORx_L(size_t cnt, ...);
-Operation &OR_REDUCE(GenObject &a, const char *comment="");
+
+class AndReduceOperation : public ReduceOperation {
+ public:
+    AndReduceOperation(GenObject *a, const char *comment)
+        : ReduceOperation(a, comment) {}
+
+    virtual uint64_t getValue() { return 0; }  // todo: a == (mask-1)
+    virtual std::string getStrValue() override;
+};
+
+class OrReduceOperation : public ReduceOperation {
+ public:
+    OrReduceOperation(GenObject *a, const char *comment)
+        : ReduceOperation(a, comment) {}
+
+    virtual uint64_t getValue() { return a_->getValue() ? 1: 0; }
+    virtual std::string getStrValue() override;
+};
+
 Operation &XOR2(GenObject &a, GenObject &b, const char *comment="");
 Operation &XORx(size_t cnt, ...);
-Operation &AND2_L(GenObject &a, GenObject &b, const char *comment="");
 Operation &AND3_L(GenObject &a, GenObject &b, GenObject &c, const char *comment="");
-Operation &ADD2(GenObject &a, GenObject &b, const char *comment="");
 Operation &ADDx(size_t cnt, ...);
-Operation &CALCWIDTHx(size_t cnt, ...);
-Operation &SUB2(GenObject &a, GenObject &b, const char *comment="");
-Operation &AND_REDUCE(GenObject &a, const char *comment="");
-Operation &AND2(GenObject &a, GenObject &b, const char *comment="");
 Operation &AND3(GenObject &a, GenObject &b, GenObject &c, const char *comment="");
 Operation &AND4(GenObject &a, GenObject &b, GenObject &c, GenObject &d, const char *comment="");
 Operation &ANDx(size_t cnt, ...);
 Operation &ANDx_L(size_t cnt, ...);
-Operation &DEC(GenObject &a, const char *comment="");
-Operation &INC(GenObject &a, const char *comment="");
 Operation &INCVAL(GenObject &res, GenObject &inc, const char *comment="");
-Operation &MUL2(GenObject &a, GenObject &b, const char *comment="");
-Operation &DIV2(GenObject &a, GenObject &b, const char *comment="");
-Operation &CC2(GenObject &a, GenObject &b, const char *comment="");     // concatation
-Operation &CC3(GenObject &a, GenObject &b, GenObject &c, const char *comment="");     // concatation
-Operation &CC4(GenObject &a, GenObject &b, GenObject &c, GenObject &d, const char *comment="");     // concatation
-Operation &CCx(size_t cnt, ...);                    // concatation
-Operation &SPLx(GenObject &a, size_t cnt, ...);     // cplit concatated bus
-Operation &LSH(GenObject &a, GenObject &sz, const char *comment="");    // left shift
-Operation &LSH(GenObject &a, int sz, const char *comment="");           // left shift
-Operation &RSH(GenObject &a, GenObject &sz, const char *comment="");    // right shift
-Operation &RSH(GenObject &a, int sz, const char *comment="");           // right shift
+
+/**
+    Concatation operation
+ */
+class CCxOperation : public NStandardOperandsOperation {
+ public:
+    CCxOperation(bool oneline, const char *comment)
+        : NStandardOperandsOperation(oneline, comment) {}
+
+    virtual std::string getOpeningBrace() override;
+    virtual std::string getClosingBrace() override;
+    virtual std::string getOperand() override;
+    virtual uint64_t getValue() { return 0; }
+    virtual std::string getStrValue() override;
+    virtual uint64_t getWidth() override;
+};
+
+/**
+    Split bus on signals
+ */
+class SplitOperation : public Operation {
+ public:
+    SplitOperation(GenObject *a, const char *comment)
+        : Operation(top_obj(), comment), a_(a) {}
+
+    virtual std::string getStrValue() override { return std::string(""); }
+    virtual std::string generate() override;
+
+ protected:
+    GenObject *a_;
+};
+
+/**
+    Calculate width of the bus using buswidth of arguments
+ */
+class CalcWidthOperation : public NStandardOperandsOperation {
+ public:
+    CalcWidthOperation(const char *comment)
+        : NStandardOperandsOperation(false, comment), objWdith_(32) {}
+
+    virtual std::string getOperand() { return std::string(" +"); }
+    virtual std::string getType() override { return objWdith_.getType(); }
+    virtual uint64_t getValue() override;
+    virtual std::string getStrValue() override;
+    virtual uint64_t getWidth() override { return objWdith_.getWidth(); }
+    virtual std::string getStrWidth() override { return objWdith_.getStrWidth(); }
+    virtual std::string generate() override { return getStrValue(); }
+
+ protected:
+    DecConst objWdith_;
+};
+
+/**
+    Left shift operation
+ */
+class LshOperation : public Operation {
+ public:
+    LshOperation(GenObject *a, GenObject *sz, const char *comment)
+        : Operation(NO_PARENT, comment), a_(a), sz_(sz) {}
+
+    virtual uint64_t getValue() override { return a_->getValue() << sz_->getValue(); }
+    virtual std::string getStrValue() override { return generate(); }
+    virtual uint64_t getWidth() override { return a_->getWidth(); }
+    virtual std::string generate() override;
+
+ protected:
+    GenObject *a_;
+    GenObject *sz_;
+};
+
+/**
+    Right shift operation
+ */
+class RshOperation : public Operation {
+ public:
+    RshOperation(GenObject *a, GenObject *sz, const char *comment)
+        : Operation(NO_PARENT, comment), a_(a), sz_(sz) {}
+
+    virtual uint64_t getValue() override { return a_->getValue() >> sz_->getValue(); }
+    virtual std::string getStrValue() override { return generate(); }
+    virtual uint64_t getWidth() override { return a_->getWidth(); }
+    virtual std::string generate() override;
+
+ protected:
+    GenObject *a_;
+    GenObject *sz_;
+};
 
 Operation &ARRITEM(GenObject &arr, GenObject &idx, GenObject &item, const char *comment="");
 Operation &ARRITEM(GenObject &arr, int idx, GenObject &item, const char *comment="");

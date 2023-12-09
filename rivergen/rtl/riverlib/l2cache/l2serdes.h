@@ -42,8 +42,8 @@ class L2SerDes : public ModuleObject {
             vb_size(this, "vb_size", "3"),
             t_line(this, "t_line", "linew"),
             t_wstrb(this, "t_wstrb", "lineb"),
-            vl2i(this, "vl2i", NO_COMMENT),
-            vmsto(this, "vmsto", NO_COMMENT) {
+            vl2i(this, "vl2i", "axi4_l2_in_none", NO_COMMENT),
+            vmsto(this, "vmsto", "axi4_master_out_none", NO_COMMENT) {
         }
 
      public:
@@ -58,8 +58,8 @@ class L2SerDes : public ModuleObject {
         Logic vb_size;
         Logic t_line;
         Logic t_wstrb;
-        types_river::axi4_l2_in_type vl2i;
-        types_amba::axi4_master_out_type vmsto;
+        StructVar<types_river::axi4_l2_in_type> vl2i;
+        StructVar<types_amba::axi4_master_out_type> vmsto;
     };
 
     class Size2LenFunction : public FunctionObject {

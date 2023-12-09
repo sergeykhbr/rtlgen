@@ -28,15 +28,21 @@
 
 namespace sysvc {
 
-// T = signal or logic
+// T = signal or logic, contains Width argument
 template<class T>
 class WireArray : public T {
  public:
     WireArray(GenObject *parent, const char *name, const char *width,
         const char *depth, const char *comment="")
         : T(width, name, "'0", parent, comment) {
-        T::setStrDepth(depth);
+        objDepth_ = SCV_parse_to_obj(this, depth);
     }
+    virtual uint64_t getDepth() override { return objDepth_->getValue(); }
+    virtual GenObject *getObjDepth() override { return objDepth_; }
+    virtual std::string getStrDepth() override { return objDepth_->getName(); }
+
+ protected:
+    GenObject *objDepth_;
 };
 
 class RegArray : public RegSignal {
@@ -44,28 +50,63 @@ class RegArray : public RegSignal {
     RegArray(GenObject *parent, const char *name, const char *width,
         const char *depth, const char *comment="")
         : RegSignal(width, name, "'0", parent, comment) {
-        setStrDepth(depth);
+        objDepth_ = SCV_parse_to_obj(this, depth);
     }
+    virtual uint64_t getDepth() override { return objDepth_->getValue(); }
+    virtual GenObject *getObjDepth() override { return objDepth_; }
+    virtual std::string getStrDepth() override { return objDepth_->getName(); }
+
+ protected:
+    GenObject *objDepth_;
 };
 
 template<class T>
 class StructArray : public T {
-    public:
+ public:
     StructArray(GenObject *parent, const char *name, const char *depth,
         const char *comment) : T(parent, name, comment) {
-        T::setStrDepth(depth);
+        objDepth_ = SCV_parse_to_obj(this, depth);
     }
+    virtual uint64_t getDepth() override { return objDepth_->getValue(); }
+    virtual GenObject *getObjDepth() override { return objDepth_; }
+    virtual std::string getStrDepth() override { return objDepth_->getName(); }
+
+ protected:
+    GenObject *objDepth_;
+};
+
+/** Struct array with init value: */
+template<class T>
+class StructVarArray : public StructVar<T> {
+ public:
+    StructVarArray(GenObject *parent, const char *name, const char *depth,
+        const char *val, const char *comment) : StructVar<T>(parent, name, val, comment) {
+        objDepth_ = SCV_parse_to_obj(this, depth);
+    }
+    virtual uint64_t getDepth() override { return objDepth_->getValue(); }
+    virtual GenObject *getObjDepth() override { return objDepth_; }
+    virtual std::string getStrDepth() override { return objDepth_->getName(); }
+
+ protected:
+    GenObject *objDepth_;
 };
 
 template<class T>
 class RegStructArray : public T {
-    public:
+ public:
     RegStructArray(GenObject *parent, const char *name, const char *depth,
         const char *comment) : T(parent, name, comment) {
-        T::setStrDepth(depth);
+        objDepth_ = SCV_parse_to_obj(this, depth);
     }
+    virtual uint64_t getDepth() override { return objDepth_->getValue(); }
+    virtual GenObject *getObjDepth() override { return objDepth_; }
+    virtual std::string getStrDepth() override { return objDepth_->getName(); }
+
     virtual bool isSignal() override { return true; }
     virtual bool isReg() override { return true; }
+
+ protected:
+    GenObject *objDepth_;
 };
 
 template<class T>
@@ -73,8 +114,14 @@ class ModuleArray : public T {
  public:
     ModuleArray(GenObject *parent, const char *name, const char *depth,
         const char *comment) : T(parent, name, comment) {
-        T::setStrDepth(depth);
+        objDepth_ = SCV_parse_to_obj(this, depth);
     }
+    virtual uint64_t getDepth() override { return objDepth_->getValue(); }
+    virtual GenObject *getObjDepth() override { return objDepth_; }
+    virtual std::string getStrDepth() override { return objDepth_->getName(); }
+
+ protected:
+    GenObject *objDepth_;
 };
 
 }  // namespace sysvc

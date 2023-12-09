@@ -25,7 +25,15 @@ Logic::Logic(const char *width,
               const char *val,
               GenObject *parent,
               const char *comment)
-    : GenValue(width, val, name, parent, comment) {
+    : GenValue(parent, name, "", comment) {
+    objWidth_ = SCV_parse_to_obj(this, width);
+    if (val[0] < '0' || val[0] > '9') {
+        objValue_ = SCV_parse_to_obj(this, val);
+    } else if (val[1] == 'x') {
+        objValue_ = new HexLogicConst(objWidth_, strtoll(val, 0, 16));
+    } else {
+        objValue_ = new DecLogicConst(objWidth_, strtoll(val, 0, 10));
+    }
 }
 
 
@@ -51,7 +59,7 @@ std::string Logic::getType() {
                 ret += "sc_bv<" + strw + ">";
             } else if (getWidth() > 64 || isBigSC()) {
                 ret += "sc_biguint<" + strw + ">";
-            } else if (getWidth() <= 1 && isNumber(strw)) {
+            } else if (getWidth() <= 1) {
                 ret += "bool";
             } else {
                 ret += "sc_uint<" + strw + ">";
@@ -63,9 +71,9 @@ std::string Logic::getType() {
         } else {
             ret = std::string("logic");
         }
-        if (!isNumber(strw) || getWidth() > 1) {
+        if (getWidth() > 1) {
             ret += " [";
-            if (isNumber(strw)) {
+            if (isConst()) {
                 char tstr[256];
                 RISCV_sprintf(tstr, sizeof(tstr), "%d", getWidth() - 1);
                 ret += tstr;
@@ -79,7 +87,7 @@ std::string Logic::getType() {
             ret = std::string("std_logic");
         } else {
             ret += "std_logic_vector(";
-            if (isNumber(strw)) {
+            if (isConst()) {
                 char tstr[256];
                 RISCV_sprintf(tstr, sizeof(tstr), "%d", getWidth() - 1);
                 ret += tstr;
@@ -112,7 +120,7 @@ std::string Logic::generate() {
             ret += "sc_bv<" + strw + ">";
         } else if (getWidth() > 64 || isBigSC()) {
             ret += "sc_biguint<" + strw + ">";
-            } else if (getWidth() <= 1 && isNumber(strw)) {
+            } else if (getWidth() <= 1) {
                 ret += "bool";
         } else {
             ret += "sc_uint<" + strw + ">";
@@ -129,13 +137,13 @@ std::string Logic::generate() {
             ret += "[" + strw + "-1:0] ";
         }
         ret += getType();
-        if (getDepth() > 1) {
+        if (getObjDepth()) {
             ret += "[0:" + getStrDepth() + " - 1]";
         }
         ret += ";\n";
     } else if (SCV_is_vhdl()) {
         ret += "type " + getType() + " is ";
-        if (getDepth() > 1) {
+        if (getObjDepth()) {
             ret += "(0 up " + getStrDepth() + " - 1)";
         }
         ret += "of std_logic_vector ";
@@ -150,16 +158,14 @@ std::string Logic::generate() {
 std::string Logic1::getType() {
     std::string ret = "";
 
-    if (SCV_is_sysc()) {
+    if (getWidth() == 1 && SCV_is_sysc()) {
         if (isParam() && !isParamGeneric()) {
             ret += "bool";
         } else {
-            ret += "sc_uint<1>";
+            ret += "sc_uint<" + getStrWidth() + ">";
         }
-    } else if (SCV_is_sv()) {
-        ret = std::string("logic");
-    } else if (SCV_is_vhdl()) {
-        ret = std::string("std_logic");
+    } else {
+        return Logic::getType();
     }
     return ret;
 }

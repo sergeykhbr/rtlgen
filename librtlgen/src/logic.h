@@ -39,23 +39,28 @@ class Logic : public GenValue {
           const char *comment = NO_COMMENT) :
         Logic(width, name, val, parent, comment) {}
 
+//    Logic(GenObject *parent,
+//          const char *name,
+//          GenObject *width,
+//          GenObject *val,
+//          const char *comment);
+
     virtual bool isLogic() override { return true; }
-    virtual std::string getType();
+    virtual std::string getType() override;
+    virtual GenObject *getObjWidth() { return objWidth_; }
+    virtual uint64_t getWidth() override { return objWidth_->getValue(); }
+    virtual std::string getStrWidth() override { return objWidth_->getName(); }
     virtual std::string generate() override;
+
+ protected:
+    GenObject *objWidth_;
 };
 
 class Logic1 : public Logic {
  public:
-    Logic1(const char *name,
-          const char *val="0",
-          GenObject *parent = NO_PARENT,
-          const char *comment = NO_COMMENT) :
-        Logic("1", name, val, parent, comment) {}
-
-    Logic1(GenObject *parent,
-          const char *name,
-          const char *comment = NO_COMMENT) :
-        Logic("1", name, "0", parent, comment) {}
+    Logic1(GenObject *parent, const char *name, const char *width,
+        const char *val, const char *comment)
+        : Logic(width, name, val, parent, comment) {}
 
     virtual std::string getType() override;
 };

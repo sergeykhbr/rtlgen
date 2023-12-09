@@ -29,7 +29,7 @@ class types_river : public FileObject {
     class dport_in_type : public StructObject {
     public:
         dport_in_type(GenObject* parent, const char* name, const char* comment)
-            : StructObject(parent, "dport_in_type", name, "dport_in_none", comment),
+            : StructObject(parent, "dport_in_type", name, comment),
             haltreq("1", "haltreq", "0", this),
             resumereq("1", "resumereq", "0", this),
             resethaltreq("1", "resethaltreq", "0", this),
@@ -57,7 +57,7 @@ class types_river : public FileObject {
     class dport_out_type : public StructObject {
     public:
         dport_out_type(GenObject* parent, const char* name, const char* comment)
-            : StructObject(parent, "dport_out_type", name, "dport_out_none", comment),
+            : StructObject(parent, "dport_out_type", name, comment),
             req_ready("1", "req_ready", "1", this, "ready to accept request"),
             resp_valid("1", "resp_valid", "1", this, "rdata is valid"),
             resp_error("1", "resp_error", "0", this, "response error"),
@@ -70,23 +70,21 @@ class types_river : public FileObject {
         Logic rdata;
     };
 
-    class dport_in_vector : public dport_in_type {
+    class dport_in_vector : public StructArray<dport_in_type> {
      public:
         dport_in_vector(GenObject *parent, const char *name, const char *descr="")
-            : dport_in_type(parent, name, descr) {
+            : StructArray<dport_in_type>(parent, name, "CFG_CPU_MAX", descr) {
             setTypedef("dport_in_vector");
-            setStrDepth("CFG_CPU_MAX");
         }
         virtual bool isVector() override { return true; }
         virtual bool isSignal() override { return true; }
     };
 
-    class dport_out_vector : public dport_out_type {
+    class dport_out_vector : public StructArray<dport_out_type> {
      public:
         dport_out_vector(GenObject *parent, const char *name, const char *descr="")
-            : dport_out_type(parent, name, descr) {
+            : StructArray<dport_out_type>(parent, name, "CFG_CPU_MAX", descr) {
             setTypedef("dport_out_vector");
-            setStrDepth("CFG_CPU_MAX");
         }
         virtual bool isVector() override { return true; }
         virtual bool isSignal() override { return true; }
@@ -95,21 +93,21 @@ class types_river : public FileObject {
     class axi4_l1_out_type : public StructObject {
      public:
         axi4_l1_out_type(GenObject* parent, const char* name, const char* comment)
-            : StructObject(parent, "axi4_l1_out_type", name, "axi4_l1_out_none", comment),
+            : StructObject(parent, "axi4_l1_out_type", name, comment),
             aw_valid("1", "aw_valid", "0", this),
-            aw_bits(this, "aw_bits", NO_COMMENT),
-            aw_id("CFG_CPU_ID_BITS", "aw_id", "0", this),
-            aw_user("CFG_SYSBUS_USER_BITS", "aw_user", "0", this),
+            aw_bits(this, "aw_bits", "META_NONE", NO_COMMENT),
+            aw_id(this, "aw_id", "CFG_CPU_ID_BITS", "'0", NO_COMMENT),
+            aw_user(this, "aw_user", "CFG_SYSBUS_USER_BITS", "'0", NO_COMMENT),
             w_valid("1", "w_valid", "0", this),
             w_data("L1CACHE_LINE_BITS", "w_data", "0", this),
             w_last("1", "w_last", "0", this),
             w_strb("L1CACHE_BYTES_PER_LINE", "w_strb", "0", this),
-            w_user("CFG_CPU_USER_BITS", "w_user", "0", this),
+            w_user(this, "w_user", "CFG_CPU_USER_BITS", "'0", NO_COMMENT),
             b_ready("1", "b_ready", "0", this),
             ar_valid("1", "ar_valid", "0", this),
-            ar_bits(this, "ar_bits", NO_COMMENT),
-            ar_id("CFG_CPU_ID_BITS", "ar_id", "0", this),
-            ar_user("CFG_SYSBUS_USER_BITS", "ar_user", "0", this),
+            ar_bits(this, "ar_bits", "META_NONE", NO_COMMENT),
+            ar_id(this, "ar_id", "CFG_CPU_ID_BITS", "'0", NO_COMMENT),
+            ar_user(this, "ar_user", "CFG_SYSBUS_USER_BITS", "'0", NO_COMMENT),
             r_ready("1", "r_ready", "0", this),
             _ac0_(this, "ACE signals"),
             ar_domain("2", "ar_domain", "0", this, "00=Non-shareable (single master in domain)"),
@@ -129,19 +127,19 @@ class types_river : public FileObject {
 
      public:
         Logic aw_valid;
-        types_amba::axi4_metadata_type aw_bits;
-        Logic  aw_id;
-        Logic aw_user;
+        StructVar<types_amba::axi4_metadata_type> aw_bits;
+        Logic1 aw_id;
+        Logic1 aw_user;
         Logic w_valid;
         Logic w_data;
         Logic w_last;
         Logic w_strb;
-        Logic w_user;
+        Logic1 w_user;
         Logic b_ready;
         Logic ar_valid;
-        types_amba::axi4_metadata_type ar_bits;
-        Logic ar_id;
-        Logic ar_user;
+        StructVar<types_amba::axi4_metadata_type> ar_bits;
+        Logic1 ar_id;
+        Logic1 ar_user;
         Logic r_ready;
         TextLine _ac0_;
         Logic ar_domain;
@@ -163,20 +161,20 @@ class types_river : public FileObject {
     class axi4_l1_in_type : public StructObject {
      public:
         axi4_l1_in_type(GenObject* parent, const char* name, const char* comment)
-            : StructObject(parent, "axi4_l1_in_type", name, "axi4_l1_in_none", comment),
+            : StructObject(parent, "axi4_l1_in_type", name, comment),
             aw_ready("1", "aw_ready", "0", this),
             w_ready("1", "w_ready", "0", this),
             b_valid("1", "b_valid", "0", this),
             b_resp("2", "b_resp", "0", this),
-            b_id("CFG_CPU_ID_BITS", "b_id", "0", this),
-            b_user("CFG_SYSBUS_USER_BITS", "b_user", "0", this),
+            b_id(this, "b_id", "CFG_CPU_ID_BITS", "'0", NO_COMMENT),
+            b_user(this, "b_user", "CFG_SYSBUS_USER_BITS", "'0", NO_COMMENT),
             ar_ready("1", "ar_ready", "0", this),
             r_valid("1", "r_valid", "0", this),
             r_resp("4", "r_resp", "0", this),
             r_data("L1CACHE_LINE_BITS", "r_data", "0", this),
             r_last("1", "r_last", "0", this),
-            r_id("CFG_CPU_ID_BITS", "r_id", "0", this),
-            r_user("CFG_SYSBUS_USER_BITS", "r_user", "0", this),
+            r_id(this, "r_id", "CFG_CPU_ID_BITS", "'0", NO_COMMENT),
+            r_user(this, "r_user", "CFG_SYSBUS_USER_BITS", "'0", NO_COMMENT),
             ac_valid("1", "ac_valid", "0", this),
             ac_addr("CFG_CPU_ADDR_BITS", "ac_addr", "0", this),
             ac_snoop("4", "ac_snoop", "0", this, "Table C3-19"),
@@ -189,15 +187,15 @@ class types_river : public FileObject {
         Logic w_ready;
         Logic b_valid;
         Logic b_resp;
-        Logic b_id;
-        Logic b_user;
+        Logic1 b_id;
+        Logic1 b_user;
         Logic ar_ready;
         Logic r_valid;
         Logic r_resp;
         Logic r_data;
         Logic r_last;
-        Logic r_id;
-        Logic r_user;
+        Logic1 r_id;
+        Logic1 r_user;
         Logic ac_valid;
         Logic ac_addr;
         Logic ac_snoop;
@@ -206,23 +204,21 @@ class types_river : public FileObject {
         Logic cd_ready;
     };
 
-    class axi4_l1_in_vector : public axi4_l1_in_type {
+    class axi4_l1_in_vector : public StructArray<axi4_l1_in_type> {
         public:
         axi4_l1_in_vector(GenObject *parent, const char *name, const char *comment)
-            : axi4_l1_in_type(parent, name, comment) {
+            : StructArray<axi4_l1_in_type>(parent, name, "CFG_SLOT_L1_TOTAL", comment) {
             setTypedef("axi4_l1_in_vector");
-            setStrDepth("CFG_SLOT_L1_TOTAL");
         }
         virtual bool isVector() override { return true; }
         virtual bool isSignal() override { return true; }
     };
 
-    class axi4_l1_out_vector : public axi4_l1_out_type {
+    class axi4_l1_out_vector : public StructArray<axi4_l1_out_type> {
         public:
         axi4_l1_out_vector(GenObject *parent, const char *name, const char *descr)
-            : axi4_l1_out_type(parent, name, descr) {
+            : StructArray<axi4_l1_out_type>(parent, name, "CFG_SLOT_L1_TOTAL", descr) {
             setTypedef("axi4_l1_out_vector");
-            setStrDepth("CFG_SLOT_L1_TOTAL");
         }
         virtual bool isVector() override { return true; }
         virtual bool isSignal() override { return true; }
@@ -231,93 +227,91 @@ class types_river : public FileObject {
     class axi4_l2_out_type : public StructObject {
      public:
         axi4_l2_out_type(GenObject* parent, const char* name, const char* comment)
-            : StructObject(parent, "axi4_l2_out_type", name, "axi4_l2_out_none", comment),
+            : StructObject(parent, "axi4_l2_out_type", name, comment),
             aw_valid("1", "aw_valid", "0", this),
-            aw_bits(this, "aw_bits", NO_COMMENT),
-            aw_id("CFG_CPU_ID_BITS", "aw_id", "0", this),
-            aw_user("CFG_SYSBUS_USER_BITS", "aw_user", "0", this),
+            aw_bits(this, "aw_bits", "META_NONE", NO_COMMENT),
+            aw_id(this, "aw_id", "CFG_CPU_ID_BITS", "'0", NO_COMMENT),
+            aw_user(this, "aw_user", "CFG_SYSBUS_USER_BITS", "'0", NO_COMMENT),
             w_valid("1", "w_valid", "0", this),
             w_data("L2CACHE_LINE_BITS", "w_data", "0", this),
             w_last("1", "w_last", "0", this),
             w_strb("L2CACHE_BYTES_PER_LINE", "w_strb", "0", this),
-            w_user("CFG_CPU_USER_BITS", "w_user", "0", this),
+            w_user(this, "w_user", "CFG_CPU_USER_BITS", "'0", NO_COMMENT),
             b_ready("1", "b_ready", "0", this),
             ar_valid("1", "ar_valid", "0", this),
-            ar_bits(this, "ar_bits", NO_COMMENT),
-            ar_id("CFG_CPU_ID_BITS", "ar_id", "0", this),
-            ar_user("CFG_SYSBUS_USER_BITS", "ar_user", "0", this),
+            ar_bits(this, "ar_bits", "META_NONE", NO_COMMENT),
+            ar_id(this, "ar_id", "CFG_CPU_ID_BITS", "'0", NO_COMMENT),
+            ar_user(this, "ar_user", "CFG_SYSBUS_USER_BITS", "'0", NO_COMMENT),
             r_ready("1", "r_ready", "0", this) {}
 
      public:
         Logic aw_valid;
-        types_amba::axi4_metadata_type aw_bits;
-        Logic  aw_id;
-        Logic aw_user;
+        StructVar<types_amba::axi4_metadata_type> aw_bits;
+        Logic1 aw_id;
+        Logic1 aw_user;
         Logic w_valid;
         Logic w_data;
         Logic w_last;
         Logic w_strb;
-        Logic w_user;
+        Logic1 w_user;
         Logic b_ready;
         Logic ar_valid;
-        types_amba::axi4_metadata_type ar_bits;
-        Logic ar_id;
-        Logic ar_user;
+        StructVar<types_amba::axi4_metadata_type> ar_bits;
+        Logic1 ar_id;
+        Logic1 ar_user;
         Logic r_ready;
     };
 
     class axi4_l2_in_type : public StructObject {
      public:
         axi4_l2_in_type(GenObject* parent, const char* name, const char* comment)
-            : StructObject(parent, "axi4_l2_in_type", name, "axi4_l2_in_none", comment),
+            : StructObject(parent, "axi4_l2_in_type", name, comment),
             aw_ready("1", "aw_ready", "0", this),
             w_ready("1", "w_ready", "0", this),
             b_valid("1", "b_valid", "0", this),
             b_resp("2", "b_resp", "0", this),
-            b_id("CFG_CPU_ID_BITS", "b_id", "0", this, "create ID for L2?"),
-            b_user("CFG_SYSBUS_USER_BITS", "b_user", "0", this),
+            b_id(this, "b_id", "CFG_CPU_ID_BITS", "'0", "create ID for L2?"),
+            b_user(this, "b_user", "CFG_SYSBUS_USER_BITS", "'0", NO_COMMENT),
             ar_ready("1", "ar_ready", "0", this),
             r_valid("1", "r_valid", "0", this),
             r_resp("2", "r_resp", "0", this),
             r_data("L2CACHE_LINE_BITS", "r_data", "0", this),
             r_last("1", "r_last", "0", this),
-            r_id("CFG_CPU_ID_BITS", "r_id", "0", this),
-            r_user("CFG_SYSBUS_USER_BITS", "r_user", "0", this) {}
+            r_id(this, "r_id", "CFG_CPU_ID_BITS", "'0", NO_COMMENT),
+            r_user(this, "r_user", "CFG_SYSBUS_USER_BITS", "'0", NO_COMMENT) {}
 
      public:
         Logic aw_ready;
         Logic w_ready;
         Logic b_valid;
         Logic b_resp;
-        Logic b_id;
-        Logic b_user;
+        Logic1 b_id;
+        Logic1 b_user;
         Logic ar_ready;
         Logic r_valid;
         Logic r_resp;
         Logic r_data;
         Logic r_last;
-        Logic r_id;
-        Logic r_user;
+        Logic1 r_id;
+        Logic1 r_user;
     };
 
-    class hart_signal_vector : public Signal {
+    class hart_signal_vector : public WireArray<Signal> {
      public:
         hart_signal_vector(GenObject *parent, const char *name) :
-            Signal(parent, name, "1") {
+            WireArray<Signal>(parent, name, "1", "CFG_CPU_MAX") {
             setTypedef("hart_signal_vector");
-            setStrDepth("CFG_CPU_MAX");
         }
         virtual bool isTypedef() override { return getName() == getType(); } // type is empty for logic now
         virtual bool isVector() override { return true; }
         virtual std::string getType() override { return type_; }            // otherwise it will depends of bitwidth and system
     };
 
-    class hart_irq_vector : public Signal {
+    class hart_irq_vector : public WireArray<Signal> {
      public:
         hart_irq_vector(GenObject *parent, const char *name) :
-            Signal(parent, name, "IRQ_TOTAL") {
+            WireArray<Signal>(parent, name, "IRQ_TOTAL", "CFG_CPU_MAX") {
             setTypedef("hart_irq_vector");
-            setStrDepth("CFG_CPU_MAX");
         }
         virtual bool isTypedef() override { return getName() == getType(); }
         virtual bool isVector() override { return true; }
@@ -330,11 +324,11 @@ class types_river : public FileObject {
     TextLine _dbgiface2_;
     dport_in_type dport_in_type_def_;
     TextLine _dbgiface3_;
-    dport_in_type dport_in_none;
+    ParamStruct<dport_in_type> dport_in_none;
     TextLine _dbgiface4_;
     dport_out_type dport_out_type_def_;
     TextLine _dbgiface5_;
-    dport_out_type dport_out_none;
+    ParamStruct<dport_out_type> dport_out_none;
     TextLine _dbgiface6_;
     dport_in_vector dport_in_vector_def_;
     dport_out_vector dport_out_vector_def_;
@@ -345,22 +339,22 @@ class types_river : public FileObject {
     TextLine _axi1_;
     axi4_l1_out_type axi4_l1_out_type_def;
     TextLine _axi2_;
-    axi4_l1_out_type axi4_l1_out_none;
+    ParamStruct<axi4_l1_out_type> axi4_l1_out_none;
     TextLine _axi3_;
     axi4_l1_in_type axi4_l1_in_type_def;
     TextLine _axi4_;
-    axi4_l1_in_type axi4_l1_in_none;
+    ParamStruct<axi4_l1_in_type> axi4_l1_in_none;
     TextLine _axi5_;
     axi4_l1_in_vector axi4_l1_in_vector_def_;
     axi4_l1_out_vector axi4_l1_out_vector_def_;
     TextLine _axi6_;
     axi4_l2_out_type axi4_l2_out_type_def;
     TextLine _axi7_;
-    axi4_l2_out_type axi4_l2_out_none;
+    ParamStruct<axi4_l2_out_type> axi4_l2_out_none;
     TextLine _axi8_;
     axi4_l2_in_type axi4_l2_in_type_def;
     TextLine _axi9_;
-    axi4_l2_in_type axi4_l2_in_none;
+    ParamStruct<axi4_l2_in_type> axi4_l2_in_none;
     TextLine _axi10_;
     TextLine _n_;
 };

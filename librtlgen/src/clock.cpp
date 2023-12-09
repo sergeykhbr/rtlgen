@@ -24,7 +24,7 @@ Clock::Clock(GenObject *parent,
              const char *name,
              const char *period,
              const char *comment)
-    : GenValue("1", period, name, parent, comment) {
+    : GenValue(parent, name, period, comment) {
     id_ = ID_CLOCK;
 }
 
@@ -38,6 +38,10 @@ std::string Clock::getType() {
         ret = std::string("logic");
     }
     return ret;
+}
+
+std::string Clock::getStrValue() {
+    return objValue_->getName();
 }
 
 }

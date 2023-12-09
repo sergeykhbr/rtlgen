@@ -29,7 +29,8 @@ class Clock : public GenValue {
           const char *period,
           const char *comment="");
 
-    virtual std::string getType();
+    virtual std::string getType() override;
+    virtual std::string getStrValue() override;
     virtual bool isClock() override { return true; }
     virtual bool isSignal() override { return true; }
 };

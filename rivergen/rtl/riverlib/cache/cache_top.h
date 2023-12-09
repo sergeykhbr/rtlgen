@@ -37,8 +37,8 @@ class CacheTop : public ModuleObject {
             vb_ctrl_bus(this, "vb_ctrl_bus", "QUEUE_WIDTH"),
             vb_data_bus(this, "vb_data_bus", "QUEUE_WIDTH"),
             vb_queue_bus(this, "vb_queue_bus", "QUEUE_WIDTH"),
-            ctrl_path_id("ctrl_path_id", "CTRL_PATH", this),
-            data_path_id("data_path_id", "DATA_PATH", this),
+            ctrl_path_id(this, "ctrl_path_id", "1", "CTRL_PATH", NO_COMMENT),
+            data_path_id(this, "data_path_id", "1", "DATA_PATH", NO_COMMENT),
             v_queue_we(this, "v_queue_we", "1"),
             v_queue_re(this, "v_queue_re", "1"),
             v_req_mem_path_o(this, "v_req_mem_path_o", "1"),
@@ -139,7 +139,7 @@ class CacheTop : public ModuleObject {
     class CacheOutputType : public StructObject {
      public:
         CacheOutputType(GenObject *parent, const char *name, const char *comment)
-            : StructObject(parent, "CacheOutputType", name, "", comment),
+            : StructObject(parent, "CacheOutputType", name, comment),
             req_mem_valid(this, "req_mem_valid", "1"),
             req_mem_type(this, "req_mem_type", "REQ_MEM_TYPE_BITS"),
             req_mem_size(this, "req_mem_size", "3"),

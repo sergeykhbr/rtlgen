@@ -99,7 +99,7 @@ class TagMemCoupled : public ModuleObject {
     class tagmem_in_type : public StructObject {
      public:
         tagmem_in_type(GenObject *parent, const char *name, const char *comment)
-            : StructObject(parent, "tagmem_in_type", name, "", comment),
+            : StructObject(parent, "tagmem_in_type", name, comment),
             direct_access(this, "direct_access", "1"),
             invalidate(this, "invalidate", "1"),
             re(this, "re", "1"),
@@ -125,7 +125,7 @@ class TagMemCoupled : public ModuleObject {
     class tagmem_out_type : public StructObject {
      public:
         tagmem_out_type(GenObject *parent, const char *name, const char *comment)
-            : StructObject(parent, "tagmem_out_type", name, "", comment),
+            : StructObject(parent, "tagmem_out_type", name, comment),
             raddr(this, "raddr", "abus"),
             rdata(this, "rdata", "MUL(8,POW2(1,lnbits))"),
             rflags(this, "rflags", "flbits"),
