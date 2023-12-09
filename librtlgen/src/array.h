@@ -35,7 +35,7 @@ class WireArray : public T {
     WireArray(GenObject *parent, const char *name, const char *width,
         const char *depth, const char *comment="")
         : T(width, name, "'0", parent, comment) {
-        objDepth_ = SCV_parse_to_obj(depth);
+        objDepth_ = SCV_parse_to_obj(this, depth);
     }
     virtual uint64_t getDepth() override { return objDepth_->getValue(); }
     virtual GenObject *getObjDepth() override { return objDepth_; }
@@ -50,7 +50,7 @@ class RegArray : public RegSignal {
     RegArray(GenObject *parent, const char *name, const char *width,
         const char *depth, const char *comment="")
         : RegSignal(width, name, "'0", parent, comment) {
-        objDepth_ = SCV_parse_to_obj(depth);
+        objDepth_ = SCV_parse_to_obj(this, depth);
     }
     virtual uint64_t getDepth() override { return objDepth_->getValue(); }
     virtual GenObject *getObjDepth() override { return objDepth_; }
@@ -65,7 +65,7 @@ class StructArray : public T {
  public:
     StructArray(GenObject *parent, const char *name, const char *depth,
         const char *comment) : T(parent, name, comment) {
-        objDepth_ = SCV_parse_to_obj(depth);
+        objDepth_ = SCV_parse_to_obj(this, depth);
     }
     virtual uint64_t getDepth() override { return objDepth_->getValue(); }
     virtual GenObject *getObjDepth() override { return objDepth_; }
@@ -81,7 +81,7 @@ class StructVarArray : public StructVar<T> {
  public:
     StructVarArray(GenObject *parent, const char *name, const char *depth,
         const char *val, const char *comment) : StructVar<T>(parent, name, val, comment) {
-        objDepth_ = SCV_parse_to_obj(depth);
+        objDepth_ = SCV_parse_to_obj(this, depth);
     }
     virtual uint64_t getDepth() override { return objDepth_->getValue(); }
     virtual GenObject *getObjDepth() override { return objDepth_; }
@@ -96,7 +96,7 @@ class RegStructArray : public T {
  public:
     RegStructArray(GenObject *parent, const char *name, const char *depth,
         const char *comment) : T(parent, name, comment) {
-        objDepth_ = SCV_parse_to_obj(depth);
+        objDepth_ = SCV_parse_to_obj(this, depth);
     }
     virtual uint64_t getDepth() override { return objDepth_->getValue(); }
     virtual GenObject *getObjDepth() override { return objDepth_; }
@@ -114,7 +114,7 @@ class ModuleArray : public T {
  public:
     ModuleArray(GenObject *parent, const char *name, const char *depth,
         const char *comment) : T(parent, name, comment) {
-        objDepth_ = SCV_parse_to_obj(depth);
+        objDepth_ = SCV_parse_to_obj(this, depth);
     }
     virtual uint64_t getDepth() override { return objDepth_->getValue(); }
     virtual GenObject *getObjDepth() override { return objDepth_; }

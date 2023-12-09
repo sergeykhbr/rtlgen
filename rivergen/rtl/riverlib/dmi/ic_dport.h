@@ -40,8 +40,8 @@ class ic_dport : public ModuleObject {
             vb_hartreset(this, "vb_hartreset", "CFG_CPU_MAX"),
             vb_req_valid(this, "vb_req_valid", "CFG_CPU_MAX"),
             vb_req_ready(this, "vb_req_ready", "CFG_CPU_MAX"),
-            vb_dporti(this, "vb_dporti", "CFG_CPU_MAX", NO_COMMENT),
-            vb_dporto(this, "vb_dporto", "CFG_CPU_MAX", NO_COMMENT),
+            vb_dporti(this, "vb_dporti", "CFG_CPU_MAX", "dport_in_none", NO_COMMENT),
+            vb_dporto(this, "vb_dporto", "CFG_CPU_MAX", "dport_out_none", NO_COMMENT),
             v_req_accepted(this, "v_req_accepted", "1") {
         }
      public:
@@ -55,8 +55,8 @@ class ic_dport : public ModuleObject {
         Logic vb_hartreset;
         Logic vb_req_valid;
         Logic vb_req_ready;
-        StructArray<types_river::dport_in_type> vb_dporti;
-        StructArray<types_river::dport_out_type> vb_dporto;
+        StructVarArray<types_river::dport_in_type> vb_dporti;
+        StructVarArray<types_river::dport_out_type> vb_dporto;
         Logic v_req_accepted;
     };
 

@@ -49,7 +49,6 @@ class StructObject : public GenObject {
     virtual std::string generate_interface_op_stream();     // operator <<
     virtual std::string generate_interface_op_bracket();    // operator [] for vector only
     virtual std::string generate_interface_sc_trace();      // sc_trace
-    virtual std::string generate_const_none();
 };
 
 class RegStructObject : public StructObject {

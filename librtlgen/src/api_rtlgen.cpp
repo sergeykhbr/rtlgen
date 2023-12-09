@@ -69,17 +69,19 @@ Operation &BITSW(GenObject &a, GenObject &start, GenObject &width, const char *c
 
 // CONST
 GenObject &CONST(const char *val) {
-    GenObject *p = SCV_parse_to_obj(val);
+    GenObject *p = SCV_parse_to_obj(SCV_get_local_module(), val);
     return *p;
 }
 
 GenObject &CONST(const char *val, const char *width) {
-    GenObject *w = SCV_parse_to_obj(width);
+    GenObject *w = SCV_parse_to_obj(SCV_get_local_module(), width);
     GenObject *p;
     if (val[0] == '0' && val[1] == 'x') {
-        p = new HexLogicConst(w, SCV_parse_to_obj(val)->getValue());
+        p = new HexLogicConst(w,
+            SCV_parse_to_obj(SCV_get_local_module(), val)->getValue());
     } else {
-        p = new DecLogicConst(w, SCV_parse_to_obj(val)->getValue());
+        p = new DecLogicConst(w,
+            SCV_parse_to_obj(SCV_get_local_module(), val)->getValue());
     }
     return *p;
 }
@@ -88,9 +90,11 @@ GenObject &CONST(const char *val, int width) {
     GenObject *w = new DecConst(width);
     GenObject *p;
     if (val[0] == '0' && val[1] == 'x') {
-        p = new HexLogicConst(w, SCV_parse_to_obj(val)->getValue());
+        p = new HexLogicConst(w,
+            SCV_parse_to_obj(SCV_get_local_module(), val)->getValue());
     } else {
-        p = new DecLogicConst(w, SCV_parse_to_obj(val)->getValue());
+        p = new DecLogicConst(w,
+            SCV_parse_to_obj(SCV_get_local_module(), val)->getValue());
     }
     return *p;
 }
@@ -188,6 +192,12 @@ Operation &AND2(GenObject &a, GenObject &b, const char *comment) {
     return *p;
 }
 
+// Greater (>)
+Operation &GT(GenObject &a, GenObject &b, const char *comment) {
+    Operation *p = new GtOperation(&a, &b, comment);
+    return *p;
+}
+
 // CC2
 Operation &CC2(GenObject &a, GenObject &b, const char *comment) {
     CCxOperation *p = new CCxOperation(true, comment);      // oneline = true
@@ -237,7 +247,7 @@ Operation &SPLx(GenObject &a, size_t cnt, ...) {
     va_start(arg, cnt);
     for (int i = 0; i < cnt; i++) {
         obj = va_arg(arg, GenObject *);
-        p->add_arg(obj);
+        p->add_entry(obj);
     }
     va_end(arg);
     return *p;
@@ -251,7 +261,7 @@ Operation &CALCWIDTHx(size_t cnt, ...) {
     va_start(arg, cnt);
     for (int i = 0; i < cnt; i++) {
         obj = va_arg(arg, GenObject *);
-        p->add_arg(obj);
+        p->add_entry(obj);
     }
     va_end(arg);
     return *p;
@@ -312,7 +322,7 @@ Operation &ASSIGN(GenObject &a, GenObject &b, const char *comment) {
     return *new AssignOperation(a, b, comment);
 }
 
-GenObject *SCV_parse_to_obj(const char *val) {
+GenObject *SCV_parse_to_obj(GenObject *owner, const char *val) {
     GenObject *ret = 0;
     const char *pstr = val;
     char opcode[256] = "";
@@ -361,7 +371,7 @@ GenObject *SCV_parse_to_obj(const char *val) {
         if (isfloat) {
             ret = new FloatConst(strtod(opcode, NULL));
         } else if (val[0] == '0' && val[1] == 'x') {
-            ret = new HexConst(static_cast<uint64_t>(strtoll(val, 0, 16)));
+            ret = new HexConst(strtoull(val, 0, 16));
         } else if (val[0] == '\'' && val[1] == '0') {
             ret = &ALLZEROS();
         } else if (val[0] == '\'' && val[1] == '1') {
@@ -371,8 +381,8 @@ GenObject *SCV_parse_to_obj(const char *val) {
         } else if (val[0] == 'f' && val[1] == 'a' && val[2] == 'l' && val[3] == 's' && val[4] == 'e') {
             ret = new DecConst(0);
         } else if (val[0] >= '0' && val[0] <= '9') {
-            ret = new DecConst(static_cast<uint64_t>(strtoll(val, 0, 10)));
-        } else if (cfgobj = SCV_get_cfg_type(SCV_get_local_module(), val)) {
+            ret = new DecConst(strtoull(val, 0, 10));
+        } else if (cfgobj = SCV_get_cfg_type(owner, val)) {
             ret = cfgobj;
         } else {
             ret = new StringConst(val);
@@ -418,7 +428,7 @@ GenObject *SCV_parse_to_obj(const char *val) {
             SHOW_ERROR("parse error: argument%d", i);
             return ret;
         }
-        args[i] = SCV_parse_to_obj(strarg);
+        args[i] = SCV_parse_to_obj(owner, strarg);
         pos++;
         // Skip spaces:
         while (val[pos] == ' ') {

@@ -101,7 +101,7 @@ std::string FunctionObject::generate_sysc() {
         }
 
         ret += addspaces() + e->getType() + " " + e->getName();
-        if (e->getDepth() > 1) {
+        if (e->getObjDepth()) {
             ret += "[";
             ret += e->getStrDepth();
             ret += "]";

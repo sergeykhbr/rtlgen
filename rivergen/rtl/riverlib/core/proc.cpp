@@ -228,6 +228,7 @@ TEXT();
     ENDNEW();
 
 TEXT();
+    dec0.fpu_ena.setObjValue(&fpu_ena);
     NEW(dec0, dec0.getName().c_str());
         CONNECT(dec0, 0, dec0.i_clk, i_clk);
         CONNECT(dec0, 0, dec0.i_nrst, i_nrst);
@@ -263,6 +264,7 @@ TEXT();
     ENDNEW();
 
 TEXT();
+    exec0.fpu_ena.setObjValue(&fpu_ena);
     NEW(exec0, exec0.getName().c_str());
         CONNECT(exec0, 0, exec0.i_clk, i_clk);
         CONNECT(exec0, 0, exec0.i_nrst, i_nrst);
@@ -550,6 +552,7 @@ TEXT();
     ENDNEW();
 
 TEXT();
+    csr0.hartid.setObjValue(&hartid);
     NEW(csr0, csr0.getName().c_str());
         CONNECT(csr0, 0, csr0.i_clk, i_clk);
         CONNECT(csr0, 0, csr0.i_nrst, i_nrst);
@@ -655,6 +658,8 @@ TEXT();
     ENDNEW();
 
 TEXT();
+    trace0.hartid.setObjValue(&hartid);
+    trace0.trace_file.setObjValue(&trace_file);
     GENERATE("trgen");
     IFGEN (tracer_ena, new STRING("tr_en"));
         NEW(trace0, trace0.getName().c_str());

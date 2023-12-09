@@ -58,7 +58,7 @@ std::string ModuleObject::generate_sysc_h_reg_struct(bool negedge) {
             ln += ">";
         }
         ln += " " + p->getName();
-        if (p->getDepth() > 1) {
+        if (p->getObjDepth()) {
             generate_struct_rst = false;
             ln += "[" + p->getStrDepth() + "]";
         }
@@ -268,7 +268,7 @@ std::string ModuleObject::generate_sysc_h() {
         out += addspaces() + (new Logic("1", "async_reset"))->getType() + " async_reset_;\n";
         tcnt++;
     }
-    for (auto &p: entries_) {
+    for (auto &p: getEntries()) {
         if (p->isParamTemplate()) {
             // do nothing
         } else if (p->isParamGeneric()) {
@@ -407,7 +407,7 @@ std::string ModuleObject::generate_sysc_h() {
             out += addspaces() + p->getType();
             out += generate_sysc_template_param(p);
             out += " *" + p->getName();
-            if (p->getDepth() > 1) {
+            if (p->getObjDepth()) {
                 out += "[" + p->getStrDepth() + "]";
             }
             out += ";\n";
@@ -508,7 +508,7 @@ std::string ModuleObject::generate_sysc_sensitivity(GenObject *obj,
     }
     prefix += obj->getName();
 
-    if (obj->getDepth() > 1) {
+    if (obj->getObjDepth()) {
         prefix += "[" + i + "]";
         loop = addspaces();
         loop += "for (int " + i + " = 0; " + i + " < " + obj->getStrDepth() + "; " + i + "++) {\n";
@@ -542,7 +542,7 @@ std::string ModuleObject::generate_sysc_sensitivity(GenObject *obj,
         loop = "";
     }
 
-    if (obj->getDepth() > 1) {
+    if (obj->getObjDepth()) {
         // Insert end of 'for' loop if it was generated:
         if (loop == "") {
             popspaces();
@@ -579,7 +579,7 @@ std::string ModuleObject::generate_sysc_vcd_entries(GenObject *obj,
 
 
     std::string objname = obj->getName();
-    if (obj->getDepth() > 1) {
+    if (obj->getObjDepth()) {
         if (i != "i") {
             // Currently double layer structures are not supported (tracer regs)
             return ret;
@@ -619,12 +619,12 @@ std::string ModuleObject::generate_sysc_vcd_entries(GenObject *obj,
             ret += loop;
             loop = "";
         }
-        if (obj->getDepth() > 1) {
+        if (obj->getObjDepth()) {
             ret += addspaces();
             ret += "RISCV_sprintf(tstr, sizeof(tstr), \"%s." + r_ + prefix + objname + "%d\", pn.c_str(), i);\n";
             ret += addspaces() + "sc_trace(o_vcd, " + r + prefix + objname + "[i], tstr);\n";
         } else if (obj->getParent()
-            && obj->getParent()->getDepth() > 1) {
+            && obj->getParent()->getObjDepth()) {
             ret += addspaces();
             ret += "RISCV_sprintf(tstr, sizeof(tstr), \"%s." + r_ + obj->getParent()->getName() + "%d_" + objname + "\", pn.c_str(), i);\n";
             ret += addspaces() + "sc_trace(o_vcd, " + r + obj->getParent()->getName() + "[i]." + objname + ", tstr);\n";
@@ -635,7 +635,7 @@ std::string ModuleObject::generate_sysc_vcd_entries(GenObject *obj,
         }
     }
 
-    if (obj->getDepth() > 1) {
+    if (obj->getObjDepth()) {
         if (loop.size() == 0) {
             popspaces();
             ret += addspaces() + "}\n";
@@ -650,7 +650,6 @@ std::string ModuleObject::generate_sysc_vcd_entries(GenObject *obj,
 std::string ModuleObject::generate_sysc_template_param(GenObject *p) {
     std::string ret = "";
     int tcnt = 0;
-    //GenObject *pthis;
 
     for (auto &e: p->getEntries()) {
         if (!e->isParamTemplate()) {
@@ -671,19 +670,7 @@ std::string ModuleObject::generate_sysc_template_param(GenObject *p) {
         if (tcnt++) {
             ret += ", ";
         }
-#if 0
-        // Check this module for the same name parameter (that was not changed):
-        pthis = getEntryByName(e->getName().c_str());
-        if (pthis && pthis->isParam()
-            //&& e->getObjValue() == 0
-            ) {
-            ret += e->getName();
-        } else {
-            ret += e->getStrValue();
-        }
-#else
-        ret += e->getName();
-#endif
+        ret += e->getStrValue();
     }
     if (tcnt) {
         ret += ">";
@@ -733,13 +720,9 @@ std::string ModuleObject::generate_sysc_param_strings() {
     std::string ret = "";
     int tcnt = 0;
     for (auto &p: getEntries()) {
-        if (p->isParam() && !p->isParamGeneric() && p->isLocal() && p->isString()) {
+        if (p->isString() && p->isParam() && !p->isParamGeneric()) {
             // Only string parameter defined inside of this module
-            ret += "static " + p->getType() + " " + p->getName();
-            if (p->getDepth() > 1) {
-                ret += "[" + p->getStrDepth() + "]";
-            }
-            ret += " = " + p->getStrValue() + ";\n";
+            ret += p->generate();
             tcnt++;
         }
     }
@@ -903,7 +886,7 @@ std::string ModuleObject::generate_sysc_submodule_nullify() {
 
     for (auto &p: getEntries()) {
         if (p->isModule()) {
-            if (p->getDepth() > 1) {
+            if (p->getObjDepth()) {
                 ret += addspaces();
                 ret += "for (int i = 0; i < " + p->getStrDepth() + "; i++) {\n";
                 pushspaces();
@@ -932,7 +915,7 @@ std::string ModuleObject::generate_sysc_destructor() {
     for (auto &p: getEntries()) {
         if (p->isModule()) {
             std::string tidx = "";
-            if (p->getDepth() > 1) {
+            if (p->getObjDepth()) {
                 ret += addspaces();
                 ret += "for (int i = 0; i < " + p->getStrDepth() + "; i++) {\n";
                 pushspaces();
@@ -945,7 +928,7 @@ std::string ModuleObject::generate_sysc_destructor() {
             popspaces();
             ret += addspaces() + "}\n";
 
-            if (p->getDepth() > 1) {
+            if (p->getObjDepth()) {
                 popspaces();
                 ret += addspaces() + "}\n";
             }
@@ -983,7 +966,7 @@ std::string ModuleObject::generate_sysc_vcd() {
     for (auto &p: getEntries()) {
         if (p->isModule() && p->isVcd()) {
             std::string tidx = "";
-            if (p->getDepth() > 1) {
+            if (p->getObjDepth()) {
                 ret += addspaces();
                 ret += "for (int i = 0; i < " + p->getStrDepth() + "; i++) {\n";
                 pushspaces();
@@ -995,7 +978,7 @@ std::string ModuleObject::generate_sysc_vcd() {
             popspaces();
             ret += addspaces() + "}\n";
 
-            if (p->getDepth() > 1) {
+            if (p->getObjDepth()) {
                 popspaces();
                 ret += addspaces() + "}\n";
             }
@@ -1078,7 +1061,7 @@ std::string ModuleObject::generate_sysc_proc_nullify(GenObject *obj,
     }
     prefix += obj->getName();
 
-    if (obj->getDepth() > 1) {
+    if (obj->getObjDepth()) {
         prefix += "[" + i + "]";
         ret += addspaces();
         ret += "for (int " + i + " = 0; " + i + " < " + obj->getStrDepth() + "; " + i + "++) {\n";
@@ -1088,7 +1071,7 @@ std::string ModuleObject::generate_sysc_proc_nullify(GenObject *obj,
         i = std::string(tidx);
     }
 
-    if (obj->isStruct() && obj->getStrValue() == "") {
+    if (obj->isStruct() && obj->getStrValue().c_str()[0] == '{') {
         for (auto &p : obj->getEntries()) {
             ret += generate_sysc_proc_nullify(p, prefix, i);
         }
@@ -1096,7 +1079,7 @@ std::string ModuleObject::generate_sysc_proc_nullify(GenObject *obj,
         ret += addspaces() + prefix + " = " + obj->getStrValue() + ";\n";
     }
 
-    if (obj->getDepth() > 1) {
+    if (obj->getObjDepth()) {
         popspaces();
         ret += addspaces() + "}\n";
     }
@@ -1120,7 +1103,7 @@ std::string ModuleObject::generate_sysc_proc(GenObject *proc) {
             continue;
         }
         ln += addspaces() + e->getType() + " " + e->getName();
-        if (e->getDepth() > 1) {
+        if (e->getObjDepth()) {
             ln += "[" + e->getStrDepth() + "]";
         }
         ln += ";";

@@ -284,7 +284,10 @@ std::string Operation::reset(const char *dst, const char *src, ModuleObject *m, 
             if (xrst.size()) {
                 ret += "(";
             }
-            ret += "(!async_reset_ && ";
+            ret += "(";
+            if (m->isAsyncResetParam()) {
+                ret += "!async_reset_ && ";
+            }
             ret += m->getResetPort()->getName() + ".read() == ";
             if (m->getResetActive()) {
                 ret += "1";
@@ -298,7 +301,7 @@ std::string Operation::reset(const char *dst, const char *src, ModuleObject *m, 
             ret += " {\n";
         } else {
             ret += "if (";
-            if (m->getResetPort()) {
+            if (m->getResetPort() && m->isAsyncResetParam()) {
                 ret += "async_reset_ && ";
             }
             ret += m->getResetPort()->getName() + ".read() == ";
@@ -1189,23 +1192,6 @@ Operation &NZ(GenObject &a, const char *comment) {
     return *p;
 }
 
-// GT
-std::string GT_gen(GenObject **args) {
-    std::string A = Operation::obj2varname(args[1], "r", true);
-    std::string B = Operation::obj2varname(args[2], "r", true);
-    A = "(" + A + " > " + B + ")";
-    return A;
-}
-
-Operation &GT(GenObject &a, GenObject &b, const char *comment) {
-    Operation *p = new Operation(0, comment);
-    p->igen_ = GT_gen;
-    p->add_arg(p);
-    p->add_arg(&a);
-    p->add_arg(&b);
-    return *p;
-}
-
 // GE
 std::string GE_gen(GenObject **args) {
     std::string A = Operation::obj2varname(args[1], "r", true);
@@ -1820,6 +1806,8 @@ std::string CCxOperation::getStrValue() {
         ret += obj2varname(B, "r", true) + " << " + C->getStrWidth();
         if (C->getValue() != 0) {
             ret += ") | " + C->getStrValue();
+        } else {
+            ret += ")";
         }
         getClosingBrace();
     } else {
@@ -2888,11 +2876,6 @@ std::string NewOperation::generate_sc() {
     } else {
         ret += "\"" + instname_ + "\"";
     }
-#if 1
-    if (m_->getName() == "pll0") {
-        bool st = true;
-    }
-#endif
     if (m_->isAsyncResetParam() && m_->getAsyncResetParam() == 0) {
         ret += ", async_reset";
     }
@@ -2903,11 +2886,6 @@ std::string NewOperation::generate_sc() {
         for (int i = 0; i <= ln.size(); i++) {
             ret += " ";
         }
-#if 1
-    if (g->getStrValue() == "450") {
-        bool st = true;
-    }
-#endif
         ret += g->getStrValue();
     }
     ret += ");\n";

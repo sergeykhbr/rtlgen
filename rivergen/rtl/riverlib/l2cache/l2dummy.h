@@ -30,9 +30,9 @@ class L2Dummy : public ModuleObject {
      public:
         CombProcess(GenObject *parent) :
             ProcObject(parent, "comb"),
-            vl1o(this, "vl1o", "CFG_SLOT_L1_TOTAL", NO_COMMENT),
-            vlxi(this, "vlxi", "CFG_SLOT_L1_TOTAL", NO_COMMENT),
-            vl2o(this, "vl2o", NO_COMMENT),
+            vl1o(this, "vl1o", "CFG_SLOT_L1_TOTAL", "axi4_l1_out_none", NO_COMMENT),
+            vlxi(this, "vlxi", "CFG_SLOT_L1_TOTAL", "axi4_l1_in_none", NO_COMMENT),
+            vl2o(this, "vl2o", "axi4_l2_out_none", NO_COMMENT),
             vb_src_aw(this, "vb_src_aw", "CFG_SLOT_L1_TOTAL"),
             vb_src_ar(this, "vb_src_ar", "CFG_SLOT_L1_TOTAL"),
             vb_srcid("0", "vb_srcid", this),
@@ -40,9 +40,9 @@ class L2Dummy : public ModuleObject {
         }
 
      public:
-        StructArray<types_river::axi4_l1_out_type> vl1o;
-        StructArray<types_river::axi4_l1_in_type> vlxi;
-        types_river::axi4_l2_out_type vl2o;
+        StructVarArray<types_river::axi4_l1_out_type> vl1o;
+        StructVarArray<types_river::axi4_l1_in_type> vlxi;
+        StructVar<types_river::axi4_l2_out_type> vl2o;
         Logic vb_src_aw;
         Logic vb_src_ar;
         I32D vb_srcid;
@@ -79,7 +79,7 @@ class L2Dummy : public ModuleObject {
     RegSignal req_size;
     RegSignal req_prot;
     RegSignal req_lock;
-    RegSignal req_id;
+    RegSignal1 req_id;
     RegSignal1 req_user;
     RegSignal req_wdata;
     RegSignal req_wstrb;

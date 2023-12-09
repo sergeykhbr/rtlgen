@@ -160,9 +160,9 @@ class CsrRegs : public ModuleObject {
     OutPort o_mxr;
     OutPort o_sum;
 
- protected:
     DefParamUI32D hartid;
 
+ protected:
     ParamUI32D State_Idle;
     ParamUI32D State_RW;
     ParamUI32D State_Exception;

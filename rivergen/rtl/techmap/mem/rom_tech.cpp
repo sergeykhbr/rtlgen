@@ -38,6 +38,7 @@ rom_tech::rom_tech(GenObject *parent, const char *name, const char *comment) :
     TEXT("else");
 
     inf0.abits.setObjValue(&SUB2(abits, log2_dbytes));
+    inf0.filename.setObjValue(&filename);
     NEW(inf0, inf0.getName().c_str());
         CONNECT(inf0, 0, inf0.i_clk, i_clk);
         CONNECT(inf0, 0, inf0.i_addr, wb_addr);

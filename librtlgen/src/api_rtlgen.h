@@ -189,6 +189,13 @@ Operation &AND2_L(GenObject &a, GenObject &b, const char *comment=NO_COMMENT);
  */
 Operation &AND2(GenObject &a, GenObject &b, const char *comment=NO_COMMENT);
 
+/** Greater:
+    sysc: (a > b)
+    sv:   (a > b)
+    vhdl: (a gt b)
+ */
+Operation &GT(GenObject &a, GenObject &b, const char *comment=NO_COMMENT);
+
 /** Concatation
     sysc: (a, b, c, ..)  depends of zero value
     sv:   {a, b, c, ..)

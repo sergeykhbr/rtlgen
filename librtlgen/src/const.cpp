@@ -46,8 +46,20 @@ std::string HexConst::getStrValue() {
 }
 
 std::string FloatConst::getStrValue() {
-    char tstr[64];
-    RISCV_sprintf(tstr, sizeof(tstr), "%.f", f64_);
+    char tstr[128];
+    int sz = RISCV_sprintf(tstr, sizeof(tstr), "%.f", f64_);
+    bool dot_found = false;
+    for (int i = 0; i < sz; i++) {
+        if (tstr[i] == '.') {
+            dot_found = true;
+            break;
+        }
+    }
+    if (!dot_found) {
+        tstr[sz++] = '.';
+        tstr[sz++] = '0';
+        tstr[sz] = '\0';
+    }
     return std::string(tstr);
 }
 

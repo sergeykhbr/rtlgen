@@ -157,6 +157,7 @@ CacheTop::CacheTop(GenObject *parent, const char *name, const char *comment) :
     ENDNEW();
 
 TEXT();
+    d0.coherence_ena.setObjValue(&coherence_ena);
     NEW(d0, d0.getName().c_str());
         CONNECT(d0, 0, d0.i_clk, i_clk);
         CONNECT(d0, 0, d0.i_nrst, i_nrst);

@@ -58,11 +58,6 @@ std::string StructObject::getStrValue() {
     }
     if (getObjDepth()) {
         int d = static_cast<int>(getDepth());
-        if (getEntries().back()->getType() != checktype
-            || getEntries().size() < d) {
-            SHOW_ERROR("Wrong struct param definition %d < %d",
-                        d, getEntries().size());
-        }
         ret += "\n";
         pushspaces();
         int tcnt = 0;
@@ -488,46 +483,6 @@ std::string StructObject::generate_interface() {
     return ret;
 }
 
-std::string StructObject::generate_const_none() {
-    std::string ret = "";
-    if (SCV_is_sysc()) {
-        ret += addspaces();
-        ret += "static const " + getType() + " " + getName() + ";\n";
-    } else if (SCV_is_sv()) {
-        ret += addspaces();
-        ret += "const " + getType() + " " + getName() + " = '{\n";
-        pushspaces();
-        for (auto& p : entries_) {
-            if (p->isComment()) {
-                continue;
-            }
-            ret += addspaces() + p->getStrValue();
-            if (p != entries_.back()) {
-                ret += ",";
-            }
-            ret += "  // " + p->getName() + "\n";
-        }
-        popspaces();
-        ret += addspaces() + "};\n";
-    } else if (SCV_is_vhdl()) {
-        ret += addspaces();
-        ret += "constant " + getName() + " : " + getType() + " := (\n";
-        pushspaces();
-        for (auto& p : entries_) {
-            if (p->isComment()) {
-                continue;
-            }
-            ret += addspaces() + p->getStrValue();
-            if (p != entries_.back()) {
-                ret += ",";
-            }
-            ret += "  -- " + p->getName() + "\n";
-        }
-        popspaces();
-        ret += addspaces() + ");\n";
-    }
-    return ret;
-}
 
 std::string StructObject::generate_vector_type() {
     std::string ret;
@@ -562,21 +517,34 @@ std::string StructObject::generate_param() {
             ret += getType();
         }
         ret += " " + getName();
-        if (getDepth() > 1) {
+        if (getObjDepth()) {
             ret += "[" + getStrDepth() + "]";
         }
-        ret += " = ";
+        // do not call getStrValue() for sysc structure containing Logic
+        // because we cannot directly assign value to template sc_uint<*>
+        // But we should do that for BUSx_MAP constants definitions:
+        bool islogic = false;
+        for (auto &p: getEntries()) {
+            if (p->isLogic()) {
+                islogic = true;
+                break;
+            }
+        }
+        if (!islogic) {
+            ret += " = " + getStrValue();
+        }
+        ret += ";\n";
     } else if (SCV_is_sv()) {
         ret += "const " + getType() + " " + getName();
-        if (!isVector() && getDepth() > 1) {
+        if (!isVector() && getObjDepth()) {
             ret += "[" + getStrDepth() + "]";
         }
         ret += " = ";
+        ret += getStrValue() + ";\n";
     } else if (SCV_is_vhdl()) {
         ret += "constant " + getName() + "of " + getType() + " := ";
+        ret += getStrValue() + ";\n";
     }
-
-    ret += getStrValue() + ";\n";
     return ret;
 }
 
@@ -591,12 +559,7 @@ std::string StructObject::generate() {
         return generate_vector_type();
     }
     if (getParent()->isFile()) {
-        if (!isTypedef()) {
-            ret = generate_const_none();
-        } else {
-            ret = generate_interface();
-        }
-        return ret;
+        return generate_interface();
     }
 
     if (getComment().size()) {
@@ -638,7 +601,7 @@ std::string StructObject::generate() {
         } else if (SCV_is_vhdl()) {
             ln += p->getName() + " :" +  p->getType();
         }
-        if (p->getDepth() > 1) {
+        if (p->getObjDepth()) {
             if (SCV_is_sysc()) {
                 ln += "[" + p->getStrDepth() + "]";
             } else if (SCV_is_sv()) {

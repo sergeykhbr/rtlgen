@@ -220,7 +220,7 @@ std::string ModuleObject::generate_vhdl_mod_param_strings() {
             continue;
         }
         ret += "constant " + p->getType() + " " + p->getName();
-        if (p->getDepth() > 1) {
+        if (p->getObjDepth()) {
             ret += "(0 up " + p->getStrDepth() +"-1)";
         }
         ret += " := " + p->generate() + ";\n";

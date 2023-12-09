@@ -44,7 +44,7 @@ class ICacheLru : public ModuleObject {
             vb_line_addr(this, "vb_line_addr", "CFG_CPU_ADDR_BITS"),
             vb_line_wdata(this, "vb_line_wdata", "L1CACHE_LINE_BITS"),
             vb_line_wstrb(this, "vb_line_wstrb", "L1CACHE_BYTES_PER_LINE"),
-            v_line_wflags(this, "v_line_wflags", "ITAG_FL_TOTAL"),
+            v_line_wflags(this, "v_line_wflags", "ITAG_FL_TOTAL", "'0", NO_COMMENT),
             sel_cached("0", "sel_cached", this),
             sel_uncached("0", "sel_uncached", this),
             v_ready_next(this, "v_ready_next", "1"),
@@ -66,7 +66,7 @@ class ICacheLru : public ModuleObject {
         Logic vb_line_addr;
         Logic vb_line_wdata;
         Logic vb_line_wstrb;
-        Logic v_line_wflags;
+        Logic1 v_line_wflags;
         I32D sel_cached;
         I32D sel_uncached;
         Logic v_ready_next;
@@ -134,10 +134,10 @@ class ICacheLru : public ModuleObject {
     Signal line_addr_i;
     Signal line_wdata_i;
     Signal line_wstrb_i;
-    Signal line_wflags_i;
+    Signal1 line_wflags_i;
     Signal line_raddr_o;
     Signal line_rdata_o;
-    Signal line_rflags_o;
+    Signal1 line_rflags_o;
     Signal line_hit_o;
     Signal line_hit_next_o;
 

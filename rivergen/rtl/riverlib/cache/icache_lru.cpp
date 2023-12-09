@@ -77,10 +77,10 @@ ICacheLru::ICacheLru(GenObject *parent, const char *name, const char *comment) :
     line_addr_i(this, "line_addr_i", "CFG_CPU_ADDR_BITS"),
     line_wdata_i(this, "line_wdata_i", "L1CACHE_LINE_BITS"),
     line_wstrb_i(this, "line_wstrb_i", "POW2(1,CFG_LOG2_L1CACHE_BYTES_PER_LINE)"),
-    line_wflags_i(this, "line_wflags_i", "ITAG_FL_TOTAL"),
+    line_wflags_i(this, "line_wflags_i", "ITAG_FL_TOTAL", "'0", NO_COMMENT),
     line_raddr_o(this, "line_raddr_o", "CFG_CPU_ADDR_BITS"),
     line_rdata_o(this, "line_rdata_o", "ADD(L1CACHE_LINE_BITS,32)"),
-    line_rflags_o(this, "line_rflags_o", "ITAG_FL_TOTAL"),
+    line_rflags_o(this, "line_rflags_o", "ITAG_FL_TOTAL", "'0", NO_COMMENT),
     line_hit_o(this, "line_hit_o", "1"),
     line_hit_next_o(this, "line_hit_next_o", "1"),
     // registers

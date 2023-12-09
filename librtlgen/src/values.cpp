@@ -23,7 +23,7 @@ namespace sysvc {
 
 GenValue::GenValue(GenObject *parent, const char *name, const char *val, const char *comment)
     : GenObject(parent, "", ID_VALUE, name, comment) {
-    objValue_ = SCV_parse_to_obj(val);
+    objValue_ = SCV_parse_to_obj(this, val);
 }
 
 GenValue::GenValue(GenObject *parent, const char *name, GenObject *val, const char *comment)

@@ -40,6 +40,7 @@ class GenValue : public GenObject {
     virtual double getFloatValue() override { return objValue_->getFloatValue(); }
     virtual std::string getStrValue() override { return objValue_->getName(); }
     virtual GenObject *getObjValue() override { return objValue_; }
+    virtual void setObjValue(GenObject *v) override { objValue_ = v; }   // used in BUSx_MAP assignment
 
     /** Signal could be a register when it inside of register struct */
     virtual bool isReg() override;
@@ -158,7 +159,7 @@ class StructVar : public T {
  public:
     StructVar(GenObject *parent, const char *name, const char *val, const char *comment)
         : T(parent, name, comment) {
-        objValue_ = SCV_parse_to_obj(val);
+        objValue_ = SCV_parse_to_obj(this, val);
     }
     virtual bool isValue() override { return true; }
     virtual bool isConst() override { return T::getName() == ""; }

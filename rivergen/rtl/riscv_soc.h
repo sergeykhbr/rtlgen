@@ -49,7 +49,7 @@ class riscv_soc : public ModuleObject {
      public:
         CombProcess(GenObject* parent)
             : ProcObject(parent, "comb"),
-            v_gnd1(this, "v_gnd1", "1", "1", NO_COMMENT),
+            v_gnd1(this, "v_gnd1", "1", "0", NO_COMMENT),
             vb_ext_irqs(this, "vb_ext_irqs", "SOC_PLIC_IRQ_TOTAL") {
         }
      public:

@@ -113,6 +113,10 @@ RiverAmba::RiverAmba(GenObject *parent, const char *name, const char *depth) :
     Operation::start(this);
 
     // Create and connet Sub-modules:
+    river0.hartid.setObjValue(&hartid);
+    river0.fpu_ena.setObjValue(&fpu_ena);
+    river0.coherence_ena.setObjValue(&coherence_ena);
+    river0.tracer_ena.setObjValue(&tracer_ena);
     NEW(river0, river0.getName().c_str());
         CONNECT(river0, 0, river0.i_clk, i_clk);
         CONNECT(river0, 0, river0.i_nrst, i_nrst);

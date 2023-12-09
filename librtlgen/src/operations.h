@@ -93,6 +93,17 @@ class TwoStandardOperandsOperation : public Operation {
     GenObject *b_;
 };
 
+class TwoStandardLogicOperation : public TwoStandardOperandsOperation {
+ public:
+    TwoStandardLogicOperation(GenObject *a, GenObject *b, const char *comment)
+        : TwoStandardOperandsOperation(a, b, comment), objWidth_(1) {}
+
+    virtual uint64_t getWidth() override { return objWidth_.getValue(); }
+
+ protected:
+    DecConst objWidth_;
+};
+
 class NStandardOperandsOperation : public Operation {
  public:
     NStandardOperandsOperation(bool oneline, const char *comment)
@@ -254,11 +265,23 @@ class ToBigOperation : public Operation {
     GenObject *objWidth_;
 };
 
+/**
+    a > b ? 1 : 0
+ */
+class GtOperation : public TwoStandardLogicOperation {
+ public:
+    GtOperation(GenObject *a, GenObject *b, const char *comment)
+        : TwoStandardLogicOperation(a, b, comment) {}
+
+    virtual std::string getOperand() { return std::string(" > "); }
+    virtual uint64_t getValue() { return a_->getValue() > b_->getValue() ? 1: 0; }
+};
+
 Operation &EQ(GenObject &a, GenObject &b, const char *comment="");  // ==
 Operation &NE(GenObject &a, GenObject &b, const char *comment="");  // !=
 Operation &EZ(GenObject &a, const char *comment="");        // equal-zero
 Operation &NZ(GenObject &a, const char *comment="");        // Non-zero
-Operation &GT(GenObject &a, GenObject &b, const char *comment="");        // Greater (>)
+//Operation &GT(GenObject &a, GenObject &b, const char *comment="");        // Greater (>)
 Operation &GE(GenObject &a, GenObject &b, const char *comment="");        // Greater-Equal (>=)
 Operation &LS(GenObject &a, GenObject &b, const char *comment="");        // Less (<)
 Operation &LE(GenObject &a, GenObject &b, const char *comment="");        // Less-Equal (<=)

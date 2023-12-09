@@ -26,9 +26,9 @@ Logic::Logic(const char *width,
               GenObject *parent,
               const char *comment)
     : GenValue(parent, name, "", comment) {
-    objWidth_ = SCV_parse_to_obj(width);
+    objWidth_ = SCV_parse_to_obj(this, width);
     if (val[0] < '0' || val[0] > '9') {
-        objValue_ = SCV_parse_to_obj(val);
+        objValue_ = SCV_parse_to_obj(this, val);
     } else if (val[1] == 'x') {
         objValue_ = new HexLogicConst(objWidth_, strtoll(val, 0, 16));
     } else {
@@ -137,13 +137,13 @@ std::string Logic::generate() {
             ret += "[" + strw + "-1:0] ";
         }
         ret += getType();
-        if (getDepth() > 1) {
+        if (getObjDepth()) {
             ret += "[0:" + getStrDepth() + " - 1]";
         }
         ret += ";\n";
     } else if (SCV_is_vhdl()) {
         ret += "type " + getType() + " is ";
-        if (getDepth() > 1) {
+        if (getObjDepth()) {
             ret += "(0 up " + getStrDepth() + " - 1)";
         }
         ret += "of std_logic_vector ";

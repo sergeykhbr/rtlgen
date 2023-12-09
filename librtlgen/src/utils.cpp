@@ -137,6 +137,10 @@ GenObject *SCV_get_cfg_type(GenObject *obj, const char *name) {
         }
         while (!obj->isModule() && !obj->isFile()) {
             obj = obj->getParent();
+            if (obj == 0) {
+                // temporary constant
+                obj = localmodule_;
+            }
         }
         if (!obj->isModule() && !obj->isFile()) {
             SHOW_ERROR("Wrong inheritance %s", obj->getName().c_str());

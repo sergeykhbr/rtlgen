@@ -35,8 +35,8 @@ class RiverAmba : public ModuleObject {
             v_mem_er_load_fault(this, "v_mem_er_load_fault", "1"),
             v_mem_er_store_fault(this, "v_mem_er_store_fault", "1"),
             v_next_ready(this, "v_next_ready", "1"),
-            vmsto(this, "vmsto", NO_COMMENT),
-            vdporto(this, "vdporto", NO_COMMENT),
+            vmsto(this, "vmsto", "axi4_l1_out_none", NO_COMMENT),
+            vdporto(this, "vdporto", "dport_out_none", NO_COMMENT),
             _snoop0_(this, "snoop processing"),
             v_snoop_next_ready(this, "v_snoop_next_ready", "1"),
             req_snoop_valid(this, "req_snoop_valid", "1"),
@@ -52,8 +52,8 @@ class RiverAmba : public ModuleObject {
         Logic v_mem_er_load_fault;
         Logic v_mem_er_store_fault;
         Logic v_next_ready;
-        types_river::axi4_l1_out_type vmsto;
-        types_river::dport_out_type vdporto;
+        StructVar<types_river::axi4_l1_out_type> vmsto;
+        StructVar<types_river::dport_out_type> vdporto;
         TextLine _snoop0_;
         Logic v_snoop_next_ready;
         Logic req_snoop_valid;

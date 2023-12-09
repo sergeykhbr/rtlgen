@@ -43,6 +43,11 @@ void FileObject::add_dependency(GenObject *reqobj) {
             }
         }
     }
+#if 1
+    if (getName() == "types_amba") {
+        bool st = true;
+    }
+#endif
     if (!found) {
         depfiles_[libname].push_back(file);
     }

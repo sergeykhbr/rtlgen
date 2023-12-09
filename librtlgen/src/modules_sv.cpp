@@ -39,7 +39,7 @@ std::string ModuleObject::generate_sv_pkg_localparam() {
         if (p->isComment()) {
             comment += p->generate();
             continue;
-        } else if (p->isParam() && !p->isParamGeneric() && p->isLocal() && !p->isGenericDep()) {
+        } else if (p->isParam() && !p->isParamGeneric() && !p->isGenericDep()) {
             ret += comment;
             if (p->isString()) {
                 // Vivado doesn't support string parameters, skip type
@@ -75,7 +75,7 @@ std::string ModuleObject::generate_sv_pkg_reg_struct(bool negedge) {
             continue;
         }
         ln = addspaces() + p->getType() + " " + p->getName();
-        if (p->getDepth() > 1) {
+        if (p->getObjDepth()) {
             generate_struct_rst = false;
             ln += "[0: " + p->getStrDepth() + " - 1]";
         }
@@ -211,7 +211,7 @@ std::string ModuleObject::generate_sv_mod_param_strings() {
         } else {
             ret += "localparam " + p->getType() + " " + p->getName();
         }
-        if (p->getDepth() > 1) {
+        if (p->getObjDepth()) {
             ret += "[0: " + p->getStrDepth() +"-1]";
         }
         ret += " = " + p->generate() + ";\n";
@@ -314,7 +314,7 @@ std::string ModuleObject::generate_sv_mod_proc_nullify(GenObject *obj,
     }
     prefix += obj->getName();
 
-    if (obj->getDepth() > 1) {
+    if (obj->getObjDepth()) {
         prefix += "[" + i + "]";
         ret += addspaces();
         ret += "for (int " + i + " = 0; " + i + " < " + obj->getStrDepth() + "; " + i + "++) begin\n";
@@ -329,7 +329,7 @@ std::string ModuleObject::generate_sv_mod_proc_nullify(GenObject *obj,
         ret += addspaces() + prefix + " = " + obj->getStrValue() + ";\n";
     }
 
-    if (obj->getDepth() > 1) {
+    if (obj->getObjDepth()) {
         popspaces();
         ret += addspaces() + "end\n";
     }
@@ -378,7 +378,7 @@ std::string ModuleObject::generate_sv_mod_proc(GenObject *proc) {
         if (e->getId() == ID_VALUE
             || e->isStruct()) {    // no structure inside of process, typedef can be removed
             ln += addspaces() + e->getType() + " " + e->getName();
-            if (e->getDepth() > 1) {
+            if (e->getObjDepth()) {
                 ln += "[0: " + e->getStrDepth() + "-1]";
             }
             tcnt++;

@@ -110,6 +110,9 @@ RiverTop::RiverTop(GenObject *parent, const char *name, const char *comment) :
     Operation::start(this);
 
     // Create and connet Sub-modules:
+    proc0.hartid.setObjValue(&hartid);
+    proc0.fpu_ena.setObjValue(&fpu_ena);
+    proc0.tracer_ena.setObjValue(&tracer_ena);
     NEW(proc0, proc0.getName().c_str());
         CONNECT(proc0, 0, proc0.i_clk, i_clk);
         CONNECT(proc0, 0, proc0.i_nrst, i_nrst);
@@ -164,8 +167,8 @@ RiverTop::RiverTop(GenObject *parent, const char *name, const char *comment) :
     ENDNEW();
 
 TEXT();
+    cache0.coherence_ena.setObjValue(&coherence_ena);
     NEW(cache0, cache0.getName().c_str());
-        //CONNECT(cache0, 0, cache0.coherence_ena, coherence_ena);
         CONNECT(cache0, 0, cache0.i_clk, i_clk);
         CONNECT(cache0, 0, cache0.i_nrst, i_nrst);
         CONNECT(cache0, 0, cache0.i_req_ctrl_valid, w_req_ctrl_valid);
