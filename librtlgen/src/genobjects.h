@@ -44,7 +44,7 @@ enum EIdType {
 //    ID_VECTOR = (1<<19),      // array of the fixed depth
     ID_PROCESS = (1<<20),
     ID_COMMENT = (1<<21),
-    ID_EMPTYLINE = (1<<22),
+//    ID_EMPTYLINE = (1<<22),
     ID_OPERATION = (1<<23),
     ID_FILEVALUE = (1<<24),
     ID_CLOCK = (1<<25)
@@ -104,6 +104,7 @@ class GenObject {
     virtual bool isTypedef() { return false; }
     virtual bool isLogic() { return false; }
     virtual bool isSignal() { return false; }
+    virtual bool isFileValue() { return false; }        // pointer to an open file to read/write data (FILE * in C).
     virtual bool isIgnoreSignal();
     virtual bool isBigSC() { return false; }            // Use sc_biguint in systemc always
     virtual bool isBvSC() { return false; }             // Use sc_bv in systemc always (for bitwidth > 512)
@@ -113,16 +114,16 @@ class GenObject {
     virtual bool isVector() { return false; }           // vector typedef of array of element
     virtual bool isModule() { return false; }
     virtual bool isOperation() { return false; }
+    virtual bool isReg() { return false; }              // is register with posedge clock
+    virtual bool isNReg() { return false; }             // is register with negedge clock
     virtual bool isClock() { return false; }
     virtual bool isFile() { return false; }
     virtual bool isFunction() { return false; }
     virtual bool isProcess() { return false; }
-    virtual bool isInterface();                         // struct with parent = file (sc_trace method generated)
+    virtual bool isInterface() { return false; }        // struct with parent = file (sc_trace method generated)
     virtual bool isGenVar() { return false; }           // Variable is used generate cycle: I32D analog for rtl
     virtual bool isGenerate() { return false; }         // use generate instead of comb in sv and vhdl
-    virtual bool isLocal();                             // if parent is file then obj is global; if module obj is local
     virtual bool isTop() { return false; }
-    virtual bool isInitable() { return false; }         // Generate structure constructor with arguemnts to initialize all class variables
 
     virtual std::string v_name(std::string v);
     virtual std::string r_name(std::string v);
@@ -144,8 +145,6 @@ class GenObject {
     virtual std::string getLibName();                   // VHDL library. Default is "work"
     virtual void setSelector(GenObject *sel) { sel_ = sel; }
     virtual GenObject *getSelector() { return sel_; }
-    virtual bool isReg() { return false; }              // is register with posedge clock
-    virtual bool isNReg() { return false; }             // is register with negedge clock
     virtual void disableReset() { reset_disabled_ = true; }
     virtual bool isResetDisabled() { return reset_disabled_; }
     virtual void disableVcd() { vcd_enabled_ = false; }

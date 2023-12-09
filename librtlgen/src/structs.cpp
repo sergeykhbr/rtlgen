@@ -37,10 +37,27 @@ StructObject::StructObject(GenObject *parent,
     }
 }
 
-/** it is better to remove empty name */
 bool StructObject::isTypedef() {
     return getName() == getType();
 }
+
+/** No need in this method, all structures define in file automatically are interfaces */
+bool StructObject::isInterface() {
+    GenObject *p;
+    if (!isTypedef()) {
+        p = SCV_get_cfg_type(this, type_.c_str());
+        if (p) {
+            p = p->getParent();
+        }
+    } else {
+        p = getParent();
+    }
+    if (p && p->isFile()) {
+        return true;
+    }
+    return false;
+}
+
 
 std::string StructObject::getStrValue() {
     std::string ret = "";
@@ -428,9 +445,7 @@ std::string StructObject::generate_interface() {
 
         pushspaces();
         ret += generate_interface_constructor();
-        if (isInitable()) {
-            ret += generate_interface_constructor_init();
-        }
+        ret += generate_interface_constructor_init();
         ret += generate_interface_op_equal();
         ret += generate_interface_op_assign();
         ret += generate_interface_sc_trace();

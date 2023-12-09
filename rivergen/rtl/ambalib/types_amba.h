@@ -47,7 +47,6 @@ class types_amba : public FileObject {
             addr_end("0", "addr_end", this) {
             disableVcd();
         }
-        virtual bool isInitable() override { return true; }
 
     public:
         TextLine _0_;

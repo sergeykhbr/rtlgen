@@ -75,6 +75,23 @@ class StructArray : public T {
     GenObject *objDepth_;
 };
 
+/**
+    Struct array with the new redefined type as typedef.
+    In SystemC it is sc_vector<T> not just an array [].
+*/
+template<class T>
+class StructVector : public StructArray<T> {
+ public:
+    StructVector(GenObject *parent, const char *tpdef, const char *name,
+                const char *depth, const char *comment)
+        : StructArray<T>(parent, name, depth, comment) {
+        T::setTypedef(tpdef);
+    }
+    virtual bool isVector() override { return true; }
+    virtual bool isSignal() override { return true; }
+};
+
+
 /** Struct array with init value: */
 template<class T>
 class StructVarArray : public StructVar<T> {
@@ -108,6 +125,7 @@ class RegStructArray : public T {
  protected:
     GenObject *objDepth_;
 };
+
 
 template<class T>
 class ModuleArray : public T {

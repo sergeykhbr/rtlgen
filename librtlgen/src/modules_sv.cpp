@@ -202,7 +202,7 @@ std::string ModuleObject::generate_sv_mod_param_strings() {
         if (!p->isParam() || p->isParamGeneric()) {
             continue;
         }
-        if (!p->isLocal() || !p->isGenericDep()) {
+        if (!p->isGenericDep()) {
             continue;
         }
         if (p->isString()) {

@@ -34,6 +34,7 @@ class StructObject : public GenObject {
     /** GenObject generic methods */
     virtual bool isStruct() override { return true; }
     virtual bool isTypedef() override;
+    virtual bool isInterface() override;
     virtual std::string getStrValue() override;
 
     virtual std::string generate() override;

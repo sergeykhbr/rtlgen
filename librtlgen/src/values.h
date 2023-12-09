@@ -84,6 +84,7 @@ class FileValue : public GenValue {
         id_ = ID_FILEVALUE;
     }
 
+    virtual bool isFileValue() { return true; }
     virtual std::string getType();
 };
 

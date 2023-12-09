@@ -124,40 +124,6 @@ bool GenObject::isIgnoreSignal() {
     return false;
 }
 
-// Not local struct is an interface
-bool GenObject::isInterface() {
-    if (isStruct()) {
-        GenObject *p;
-        if (!isTypedef()) {
-            p = SCV_get_cfg_type(this, type_.c_str());
-            if (p) {
-                p = p->getParent();  // Maybe it is easy to implement isInterface() method?
-            }
-        } else {
-            p = getParent();
-        }
-        if (p && p->isFile()) {
-            return true;
-        }
-    }
-    return false;
-}
-
-bool GenObject::isLocal() {
-    bool local = false;
-    GenObject *p = getParent();
-    while (p) {
-        if (p->isModule()) {
-            local = true;
-            break;
-        } else if (p->isFile()) {
-            break;
-        }
-        p = p->getParent();
-    }
-    return local;
-}
-
 std::string GenObject::v_name(std::string v) {
     if (v.size()) {
         if (isReg()) {

@@ -39,7 +39,7 @@ std::string ModuleObject::generate_vhdl_pkg_localparam() {
         if (p->isComment()) {
             comment += p->generate();
             continue;
-        } else if (p->isParam() && !p->isParamGeneric() && p->isLocal() && !p->isGenericDep()) {
+        } else if (p->isParam() && !p->isParamGeneric() && !p->isGenericDep()) {
             ret += comment;
             ln = addspaces() + "constant " + p->getName() + " : " + p->getType();
             ln += " := " + p->generate() + ";";
@@ -216,7 +216,7 @@ std::string ModuleObject::generate_vhdl_mod_param_strings() {
         if (!p->isParam() || p->isParamGeneric()) {
             continue;
         }
-        if (!p->isLocal() || !p->isGenericDep()) {
+        if (!p->isGenericDep()) {
             continue;
         }
         ret += "constant " + p->getType() + " " + p->getName();
