@@ -371,7 +371,7 @@ GenObject *SCV_parse_to_obj(GenObject *owner, const char *val) {
         if (isfloat) {
             ret = new FloatConst(strtod(opcode, NULL));
         } else if (val[0] == '0' && val[1] == 'x') {
-            ret = new HexConst(strtoull(val, 0, 16));
+            ret = new HexConst(static_cast<uint64_t>(strtoull(val, 0, 16)));
         } else if (val[0] == '\'' && val[1] == '0') {
             ret = &ALLZEROS();
         } else if (val[0] == '\'' && val[1] == '1') {
@@ -381,7 +381,7 @@ GenObject *SCV_parse_to_obj(GenObject *owner, const char *val) {
         } else if (val[0] == 'f' && val[1] == 'a' && val[2] == 'l' && val[3] == 's' && val[4] == 'e') {
             ret = new DecConst(0);
         } else if (val[0] >= '0' && val[0] <= '9') {
-            ret = new DecConst(strtoull(val, 0, 10));
+            ret = new DecConst(static_cast<uint64_t>(strtoull(val, 0, 10)));
         } else if (cfgobj = SCV_get_cfg_type(owner, val)) {
             ret = cfgobj;
         } else {
