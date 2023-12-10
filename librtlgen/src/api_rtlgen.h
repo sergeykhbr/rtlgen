@@ -232,6 +232,13 @@ Operation &SPLx(GenObject &a, size_t cnt, ...);     // cplit concatated bus
 Operation &LSH(GenObject &a, GenObject &sz, const char *comment=NO_COMMENT);
 Operation &LSH(GenObject &a, int sz, const char *comment=NO_COMMENT);
 
+/** Power of 2, Special case of LSH:
+    sysc: (1 << sz)
+    sv:   (2**sz)
+    vhdl: (2**sz)
+ */
+Operation &POW2(GenObject &sz, const char *comment=NO_COMMENT);
+
 /** Right shift:
     sysc: (a >> sz)
     sv:   {a[], {sz{1'b0}}

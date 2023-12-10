@@ -34,12 +34,12 @@ class ic_axi4_to_l1 : public ModuleObject {
             vb_xmsti(this, "vb_xmsti", "axi4_master_in_none", NO_COMMENT),
             vb_l1o(this, "vb_l1o", "axi4_l1_out_none", NO_COMMENT),
             idx(this, "idx", "SUB(CFG_LOG2_L1CACHE_BYTES_PER_LINE,3)", "0", "request always 64 bits"),
-            vb_req_xbytes(this, "vb_req_xbytes", "XSIZE_TOTAL"),
-            vb_req_mask(this, "vb_req_mask", "64"),
-            vb_r_data_modified(this, "vb_r_data_modified", "L1CACHE_LINE_BITS"),
-            vb_line_wstrb(this, "vb_line_wstrb", "L1CACHE_BYTES_PER_LINE"),
-            vb_resp_data(this, "vb_resp_data", "64"),
-            t_req_addr(this, "t_req_addr", "CFG_SYSBUS_ADDR_BITS") {
+            vb_req_xbytes(this, "vb_req_xbytes", "XSIZE_TOTAL", "'0", NO_COMMENT),
+            vb_req_mask(this, "vb_req_mask", "64", "'0", NO_COMMENT),
+            vb_r_data_modified(this, "vb_r_data_modified", "L1CACHE_LINE_BITS", "'0", NO_COMMENT),
+            vb_line_wstrb(this, "vb_line_wstrb", "L1CACHE_BYTES_PER_LINE", "'0", NO_COMMENT),
+            vb_resp_data(this, "vb_resp_data", "64", "'0", NO_COMMENT),
+            t_req_addr(this, "t_req_addr", "CFG_SYSBUS_ADDR_BITS", "'0", NO_COMMENT) {
         }
      public:
         StructVar<types_amba::axi4_master_in_type> vb_xmsti;

@@ -27,7 +27,7 @@ vip_sdcard_crc7::vip_sdcard_crc7(GenObject *parent, const char *name, const char
     // params
     // signals
     // registers
-    crc7(this, "crc7", "7"),
+    crc7(this, "crc7", "7", "'0", NO_COMMENT),
     //
     comb(this)
 {

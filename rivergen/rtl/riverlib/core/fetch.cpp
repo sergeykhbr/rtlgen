@@ -52,7 +52,7 @@ InstrFetch::InstrFetch(GenObject *parent, const char *name, const char *comment)
     req_addr(this, "req_addr", "RISCV_ARCH", "'1"),
     mem_resp_shadow(this, "mem_resp_shadow", "RISCV_ARCH", "'1", "the same as memory response but internal"),
     pc(this, "pc", "RISCV_ARCH", "'1"),
-    instr(this, "instr", "64"),
+    instr(this, "instr", "64", "'0", NO_COMMENT),
     instr_load_fault(this, "instr_load_fault", "1"),
     instr_page_fault_x(this, "instr_page_fault_x", "1"),
     progbuf_ena(this, "progbuf_ena", "1"),

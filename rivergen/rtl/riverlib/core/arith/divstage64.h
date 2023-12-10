@@ -29,8 +29,8 @@ class divstage64 : public ModuleObject {
      public:
         CombProcess(GenObject *parent) :
             ProcObject(parent, "comb"),
-            wb_bits(this, "wb_bits", "4"),
-            wb_dif(this, "wb_dif", "64"),
+            wb_bits(this, "wb_bits", "4", "'0", NO_COMMENT),
+            wb_dif(this, "wb_dif", "64", "'0", NO_COMMENT),
             wb_divx1(this, "wb_divx1", "65"),
             wb_divx2(this, "wb_divx2", "65"),
             wb_divx3(this, "wb_divx3", "65"),

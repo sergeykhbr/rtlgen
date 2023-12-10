@@ -30,8 +30,8 @@ class axi_slv : public ModuleObject {
      public:
         CombProcess(GenObject *parent) :
             ProcObject(parent, "comb"),
-            vb_req_addr_next(this, "vb_req_addr_next", "12"),
-            vb_req_len_next(this, "vb_req_len_next", "8"),
+            vb_req_addr_next(this, "vb_req_addr_next", "12", "'0", NO_COMMENT),
+            vb_req_len_next(this, "vb_req_len_next", "8", "'0", NO_COMMENT),
             vcfg(this, "vcfg", "dev_config_none", NO_COMMENT),
             vxslvo(this, "vxslvo", "axi4_slave_out_none", NO_COMMENT) {
         }

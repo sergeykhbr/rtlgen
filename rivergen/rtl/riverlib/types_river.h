@@ -30,16 +30,16 @@ class types_river : public FileObject {
     public:
         dport_in_type(GenObject* parent, const char* name, const char* comment)
             : StructObject(parent, "dport_in_type", name, comment),
-            haltreq("1", "haltreq", "0", this),
-            resumereq("1", "resumereq", "0", this),
-            resethaltreq("1", "resethaltreq", "0", this),
-            hartreset("1", "hartreset", "0", this),
-            req_valid("1", "req_valid", "0", this),
-            dtype("DPortReq_Total", "dtype", "0", this),
-            addr("RISCV_ARCH", "addr", "0", this),
-            wdata("RISCV_ARCH", "wdata", "0", this),
-            size("3", "size", "0", this),
-            resp_ready("1", "resp_ready", "0", this) {}
+            haltreq(this, "haltreq", "1", "0", NO_COMMENT),
+            resumereq(this, "resumereq", "1", "0", NO_COMMENT),
+            resethaltreq(this, "resethaltreq", "1", "0", NO_COMMENT),
+            hartreset(this, "hartreset", "1", "0", NO_COMMENT),
+            req_valid(this, "req_valid", "1", "0", NO_COMMENT),
+            dtype(this, "dtype", "DPortReq_Total", "'0", NO_COMMENT),
+            addr(this, "addr", "RISCV_ARCH", "'0", NO_COMMENT),
+            wdata(this, "wdata", "RISCV_ARCH", "'0", NO_COMMENT),
+            size(this, "size", "3", "'0", NO_COMMENT),
+            resp_ready(this, "resp_ready", "1", "0", NO_COMMENT) {}
         
     public:
         Logic haltreq;
@@ -58,10 +58,10 @@ class types_river : public FileObject {
     public:
         dport_out_type(GenObject* parent, const char* name, const char* comment)
             : StructObject(parent, "dport_out_type", name, comment),
-            req_ready("1", "req_ready", "1", this, "ready to accept request"),
-            resp_valid("1", "resp_valid", "1", this, "rdata is valid"),
-            resp_error("1", "resp_error", "0", this, "response error"),
-            rdata("RISCV_ARCH", "rdata", "0", this) {}
+            req_ready(this, "req_ready", "1", "1", "ready to accept request"),
+            resp_valid(this, "resp_valid", "1", "1", "rdata is valid"),
+            resp_error(this, "resp_error", "1", "0", "response error"),
+            rdata(this, "rdata", "RISCV_ARCH", "'0", NO_COMMENT) {}
 
     public:
         Logic req_ready;
@@ -90,36 +90,36 @@ class types_river : public FileObject {
      public:
         axi4_l1_out_type(GenObject* parent, const char* name, const char* comment)
             : StructObject(parent, "axi4_l1_out_type", name, comment),
-            aw_valid("1", "aw_valid", "0", this),
+            aw_valid(this, "aw_valid", "1", "0", NO_COMMENT),
             aw_bits(this, "aw_bits", "META_NONE", NO_COMMENT),
             aw_id(this, "aw_id", "CFG_CPU_ID_BITS", "'0", NO_COMMENT),
             aw_user(this, "aw_user", "CFG_SYSBUS_USER_BITS", "'0", NO_COMMENT),
-            w_valid("1", "w_valid", "0", this),
-            w_data("L1CACHE_LINE_BITS", "w_data", "0", this),
-            w_last("1", "w_last", "0", this),
-            w_strb("L1CACHE_BYTES_PER_LINE", "w_strb", "0", this),
+            w_valid(this, "w_valid", "1", "0", NO_COMMENT),
+            w_data(this, "w_data", "L1CACHE_LINE_BITS", "'0", NO_COMMENT),
+            w_last(this, "w_last", "1", "0", NO_COMMENT),
+            w_strb(this, "w_strb", "L1CACHE_BYTES_PER_LINE", "'0", NO_COMMENT),
             w_user(this, "w_user", "CFG_CPU_USER_BITS", "'0", NO_COMMENT),
-            b_ready("1", "b_ready", "0", this),
-            ar_valid("1", "ar_valid", "0", this),
+            b_ready(this, "b_ready", "1", "0", NO_COMMENT),
+            ar_valid(this, "ar_valid", "1", "0", NO_COMMENT),
             ar_bits(this, "ar_bits", "META_NONE", NO_COMMENT),
             ar_id(this, "ar_id", "CFG_CPU_ID_BITS", "'0", NO_COMMENT),
             ar_user(this, "ar_user", "CFG_SYSBUS_USER_BITS", "'0", NO_COMMENT),
-            r_ready("1", "r_ready", "0", this),
+            r_ready(this, "r_ready", "1", "0", NO_COMMENT),
             _ac0_(this, "ACE signals"),
-            ar_domain("2", "ar_domain", "0", this, "00=Non-shareable (single master in domain)"),
-            ar_snoop("4", "ar_snoop", "0", this, "Table C3-7:"),
-            ar_bar("2", "ar_bar", "0", this, "read barrier transaction"),
-            aw_domain("2", "aw_domain", "0", this),
-            aw_snoop("3", "aw_snoop", "0", this, "Table C3-8"),
-            aw_bar("2", "aw_bar", "0", this, "write barrier transaction"),
-            ac_ready("1", "ac_ready", "1", this),
-            cr_valid("1", "cr_valid", "1", this),
-            cr_resp("5", "cr_resp", "0", this),
-            cd_valid("1", "cd_valid", "0", this),
-            cd_data("L1CACHE_LINE_BITS", "cd_data", "0", this),
-            cd_last("1", "cd_last", "0", this),
-            rack("1", "rack", "0", this),
-            wack("1", "wack", "0", this) {}
+            ar_domain(this, "ar_domain", "2", "0", "00=Non-shareable (single master in domain)"),
+            ar_snoop(this, "ar_snoop", "4", "0", "Table C3-7:"),
+            ar_bar(this, "ar_bar", "2", "0", "read barrier transaction"),
+            aw_domain(this, "aw_domain", "2", "0", NO_COMMENT),
+            aw_snoop(this, "aw_snoop", "3", "0", "Table C3-8"),
+            aw_bar(this, "aw_bar", "2", "0", "write barrier transaction"),
+            ac_ready(this, "ac_ready", "1", "1", NO_COMMENT),
+            cr_valid(this, "cr_valid", "1", "1", NO_COMMENT),
+            cr_resp(this, "cr_resp", "5", "0", NO_COMMENT),
+            cd_valid(this, "cd_valid", "1", "0", NO_COMMENT),
+            cd_data(this, "cd_data", "L1CACHE_LINE_BITS", "'0", NO_COMMENT),
+            cd_last(this, "cd_last", "1", "0", NO_COMMENT),
+            rack(this, "rack", "1", "0", NO_COMMENT),
+            wack(this, "wack", "1", "0", NO_COMMENT) {}
 
      public:
         Logic aw_valid;
@@ -158,25 +158,25 @@ class types_river : public FileObject {
      public:
         axi4_l1_in_type(GenObject* parent, const char* name, const char* comment)
             : StructObject(parent, "axi4_l1_in_type", name, comment),
-            aw_ready("1", "aw_ready", "0", this),
-            w_ready("1", "w_ready", "0", this),
-            b_valid("1", "b_valid", "0", this),
-            b_resp("2", "b_resp", "0", this),
+            aw_ready(this, "aw_ready", "1", "0", NO_COMMENT),
+            w_ready(this, "w_ready", "1", "0", NO_COMMENT),
+            b_valid(this, "b_valid", "1", "0", NO_COMMENT),
+            b_resp(this, "b_resp", "2", "0", NO_COMMENT),
             b_id(this, "b_id", "CFG_CPU_ID_BITS", "'0", NO_COMMENT),
             b_user(this, "b_user", "CFG_SYSBUS_USER_BITS", "'0", NO_COMMENT),
-            ar_ready("1", "ar_ready", "0", this),
-            r_valid("1", "r_valid", "0", this),
-            r_resp("4", "r_resp", "0", this),
-            r_data("L1CACHE_LINE_BITS", "r_data", "0", this),
-            r_last("1", "r_last", "0", this),
+            ar_ready(this, "ar_ready", "1", "0", NO_COMMENT),
+            r_valid(this, "r_valid", "1", "0", NO_COMMENT),
+            r_resp(this, "r_resp", "4", "'0", NO_COMMENT),
+            r_data(this, "r_data", "L1CACHE_LINE_BITS", "'0", NO_COMMENT),
+            r_last(this, "r_last", "1", "0", NO_COMMENT),
             r_id(this, "r_id", "CFG_CPU_ID_BITS", "'0", NO_COMMENT),
             r_user(this, "r_user", "CFG_SYSBUS_USER_BITS", "'0", NO_COMMENT),
-            ac_valid("1", "ac_valid", "0", this),
-            ac_addr("CFG_CPU_ADDR_BITS", "ac_addr", "0", this),
-            ac_snoop("4", "ac_snoop", "0", this, "Table C3-19"),
-            ac_prot("3", "ac_prot", "0", this),
-            cr_ready("1", "cr_ready", "1", this),
-            cd_ready("1", "cd_ready", "1", this) {}
+            ac_valid(this, "ac_valid", "1", "0", NO_COMMENT),
+            ac_addr(this, "ac_addr", "CFG_CPU_ADDR_BITS", "'0", NO_COMMENT),
+            ac_snoop(this, "ac_snoop", "4", "0", "Table C3-19"),
+            ac_prot(this, "ac_prot", "3", "0", NO_COMMENT),
+            cr_ready(this, "cr_ready", "1", "1", NO_COMMENT),
+            cd_ready(this, "cd_ready", "1", "1", NO_COMMENT) {}
 
      public:
         Logic aw_ready;
@@ -220,21 +220,21 @@ class types_river : public FileObject {
      public:
         axi4_l2_out_type(GenObject* parent, const char* name, const char* comment)
             : StructObject(parent, "axi4_l2_out_type", name, comment),
-            aw_valid("1", "aw_valid", "0", this),
+            aw_valid(this, "aw_valid", "1", "0", NO_COMMENT),
             aw_bits(this, "aw_bits", "META_NONE", NO_COMMENT),
             aw_id(this, "aw_id", "CFG_CPU_ID_BITS", "'0", NO_COMMENT),
             aw_user(this, "aw_user", "CFG_SYSBUS_USER_BITS", "'0", NO_COMMENT),
-            w_valid("1", "w_valid", "0", this),
-            w_data("L2CACHE_LINE_BITS", "w_data", "0", this),
-            w_last("1", "w_last", "0", this),
-            w_strb("L2CACHE_BYTES_PER_LINE", "w_strb", "0", this),
+            w_valid(this, "w_valid", "1", "0", NO_COMMENT),
+            w_data(this, "w_data", "L2CACHE_LINE_BITS", "'0", NO_COMMENT),
+            w_last(this, "w_last", "1", "0", NO_COMMENT),
+            w_strb(this, "w_strb", "L2CACHE_BYTES_PER_LINE", "'0", NO_COMMENT),
             w_user(this, "w_user", "CFG_CPU_USER_BITS", "'0", NO_COMMENT),
-            b_ready("1", "b_ready", "0", this),
-            ar_valid("1", "ar_valid", "0", this),
+            b_ready(this, "b_ready", "1", "0", NO_COMMENT),
+            ar_valid(this, "ar_valid", "1", "0", NO_COMMENT),
             ar_bits(this, "ar_bits", "META_NONE", NO_COMMENT),
             ar_id(this, "ar_id", "CFG_CPU_ID_BITS", "'0", NO_COMMENT),
             ar_user(this, "ar_user", "CFG_SYSBUS_USER_BITS", "'0", NO_COMMENT),
-            r_ready("1", "r_ready", "0", this) {}
+            r_ready(this, "r_ready", "1", "0", NO_COMMENT) {}
 
      public:
         Logic aw_valid;
@@ -258,17 +258,17 @@ class types_river : public FileObject {
      public:
         axi4_l2_in_type(GenObject* parent, const char* name, const char* comment)
             : StructObject(parent, "axi4_l2_in_type", name, comment),
-            aw_ready("1", "aw_ready", "0", this),
-            w_ready("1", "w_ready", "0", this),
-            b_valid("1", "b_valid", "0", this),
-            b_resp("2", "b_resp", "0", this),
+            aw_ready(this, "aw_ready", "1", "0", NO_COMMENT),
+            w_ready(this, "w_ready", "1", "0", NO_COMMENT),
+            b_valid(this, "b_valid", "1", "0", NO_COMMENT),
+            b_resp(this, "b_resp", "2", "0", NO_COMMENT),
             b_id(this, "b_id", "CFG_CPU_ID_BITS", "'0", "create ID for L2?"),
             b_user(this, "b_user", "CFG_SYSBUS_USER_BITS", "'0", NO_COMMENT),
-            ar_ready("1", "ar_ready", "0", this),
-            r_valid("1", "r_valid", "0", this),
-            r_resp("2", "r_resp", "0", this),
-            r_data("L2CACHE_LINE_BITS", "r_data", "0", this),
-            r_last("1", "r_last", "0", this),
+            ar_ready(this, "ar_ready", "1", "0", NO_COMMENT),
+            r_valid(this, "r_valid", "1", "0", NO_COMMENT),
+            r_resp(this, "r_resp", "2", "0", NO_COMMENT),
+            r_data(this, "r_data", "L2CACHE_LINE_BITS", "'0", NO_COMMENT),
+            r_last(this, "r_last", "1", "0", NO_COMMENT),
             r_id(this, "r_id", "CFG_CPU_ID_BITS", "'0", NO_COMMENT),
             r_user(this, "r_user", "CFG_SYSBUS_USER_BITS", "'0", NO_COMMENT) {}
 

@@ -28,7 +28,7 @@ class jtagcdc : public ModuleObject {
      public:
         CombProcess(GenObject* parent)
             : ProcObject(parent, "comb"),
-            vb_bus(this, "vb_bus", "CDC_REG_WIDTH") {
+            vb_bus(this, "vb_bus", "CDC_REG_WIDTH", "'0", NO_COMMENT) {
         }
      public:
         Logic vb_bus;

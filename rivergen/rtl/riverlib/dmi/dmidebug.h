@@ -35,16 +35,16 @@ class dmidebug : public ModuleObject {
             : ProcObject(parent, "comb"),
             vcfg(this, "vcfg", "dev_config_none", NO_COMMENT),
             vapbo(this, "vapbo", "apb_out_none", NO_COMMENT),
-            vb_req_type(this, "vb_req_type", "DPortReq_Total"),
-            vb_resp_data(this, "vb_resp_data", "32"),
-            vb_hartselnext(this, "vb_hartselnext", "CFG_LOG2_CPU_MAX"),
+            vb_req_type(this, "vb_req_type", "DPortReq_Total", "'0", NO_COMMENT),
+            vb_resp_data(this, "vb_resp_data", "32", "'0", NO_COMMENT),
+            vb_hartselnext(this, "vb_hartselnext", "CFG_LOG2_CPU_MAX", "'0", NO_COMMENT),
             v_resp_valid(this, "v_resp_valid", "1"),
             hsel("0", "hsel", this),
             v_cmd_busy(this, "v_cmd_busy", "1"),
             v_cdc_dmi_req_ready(this, "v_cdc_dmi_req_ready", "1"),
-            vb_arg1(this, "vb_arg1", "64"),
-            t_command(this, "t_command", "32"),
-            t_progbuf(this, "t_progbuf", "MUL(32,CFG_PROGBUF_REG_TOTAL)"),
+            vb_arg1(this, "vb_arg1", "64", "'0", NO_COMMENT),
+            t_command(this, "t_command", "32", "'0", NO_COMMENT),
+            t_progbuf(this, "t_progbuf", "MUL(32,CFG_PROGBUF_REG_TOTAL)", "'0", NO_COMMENT),
             t_idx("0", "t_idx", this) {
         }
      public:

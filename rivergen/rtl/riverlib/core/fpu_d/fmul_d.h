@@ -30,22 +30,22 @@ class DoubleMul : public ModuleObject {
      public:
         CombProcess(GenObject *parent) :
             ProcObject(parent, "comb"),
-            vb_ena(this, "vb_ena", "5"),
+            vb_ena(this, "vb_ena", "5", "'0", NO_COMMENT),
             signA(this, "signA", "1", "0", NO_COMMENT),
             signB(this, "signB", "1", "0", NO_COMMENT),
-            mantA(this, "mantA", "53"),
-            mantB(this, "mantB", "53"),
+            mantA(this, "mantA", "53", "'0", NO_COMMENT),
+            mantB(this, "mantB", "53", "'0", NO_COMMENT),
             zeroA(this, "zeroA", "1"),
             zeroB(this, "zeroB", "1"),
-            expAB_t(this, "expAB_t", "12"),
-            expAB(this, "expAB", "13"),
-            mantAlign(this, "mantAlign", "105"),
-            expAlign_t(this, "expAlign_t", "13"),
-            expAlign(this, "expAlign", "13"),
-            postShift(this, "postShift", "12"),
-            mantPostScale(this, "mantPostScale", "105"),
-            mantShort(this, "mantShort", "53"),
-            tmpMant05(this, "tmpMant05", "52"),
+            expAB_t(this, "expAB_t", "12", "'0", NO_COMMENT),
+            expAB(this, "expAB", "13", "'0", NO_COMMENT),
+            mantAlign(this, "mantAlign", "105", "'0", NO_COMMENT),
+            expAlign_t(this, "expAlign_t", "13", "'0", NO_COMMENT),
+            expAlign(this, "expAlign", "13", "'0", NO_COMMENT),
+            postShift(this, "postShift", "12", "'0", NO_COMMENT),
+            mantPostScale(this, "mantPostScale", "105", "'0", NO_COMMENT),
+            mantShort(this, "mantShort", "53", "'0", NO_COMMENT),
+            tmpMant05(this, "tmpMant05", "52", "'0", NO_COMMENT),
             mantOnes(this, "mantOnes", "1"),
             mantEven(this, "mantEven", "1"),
             mant05(this, "mant05", "1"),
@@ -55,8 +55,8 @@ class DoubleMul : public ModuleObject {
             mantZeroA(this, "mantZeroA", "1"),
             mantZeroB(this, "mantZeroB", "1"),
             v_res_sign(this, "v_res_sign", "1"),
-            vb_res_exp(this, "vb_res_exp", "11"),
-            vb_res_mant(this, "vb_res_mant", "52") {
+            vb_res_exp(this, "vb_res_exp", "11", "'0", NO_COMMENT),
+            vb_res_mant(this, "vb_res_mant", "52", "'0", NO_COMMENT) {
         }
 
      public:

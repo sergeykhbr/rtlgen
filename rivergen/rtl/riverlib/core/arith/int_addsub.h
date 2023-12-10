@@ -29,11 +29,11 @@ class IntAddSub : public ModuleObject {
      public:
         CombProcess(GenObject *parent) :
             ProcObject(parent, "comb"),
-            vb_rdata1(this, "vb_rdata1", "RISCV_ARCH"),
-            vb_rdata2(this, "vb_rdata2", "RISCV_ARCH"),
-            vb_add(this, "vb_add", "RISCV_ARCH"),
-            vb_sub(this, "vb_sub", "RISCV_ARCH"),
-            vb_res(this, "vb_res", "RISCV_ARCH") {
+            vb_rdata1(this, "vb_rdata1", "RISCV_ARCH", "'0", NO_COMMENT),
+            vb_rdata2(this, "vb_rdata2", "RISCV_ARCH", "'0", NO_COMMENT),
+            vb_add(this, "vb_add", "RISCV_ARCH", "'0", NO_COMMENT),
+            vb_sub(this, "vb_sub", "RISCV_ARCH", "'0", NO_COMMENT),
+            vb_res(this, "vb_res", "RISCV_ARCH", "'0", NO_COMMENT) {
         }
 
      public:

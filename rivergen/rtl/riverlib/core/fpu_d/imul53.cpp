@@ -31,11 +31,11 @@ imul53::imul53(GenObject *parent, const char *name, const char *comment) :
     wb_sumInv(this, "wb_sumInv", "105"),
     wb_lshift(this, "wb_lshift", "7"),
     // registers
-    delay(this, "delay", "16"),
-    shift(this, "shift", "7"),
+    delay(this, "delay", "16", "'0", NO_COMMENT),
+    shift(this, "shift", "7", "'0", NO_COMMENT),
     accum_ena(this, "accum_ena", "1"),
-    b(this, "b", "56"),
-    sum(this, "sum", "106"),
+    b(this, "b", "56", "'0", NO_COMMENT),
+    sum(this, "sum", "106", "'0", NO_COMMENT),
     overflow(this, "overflow", "1"),
     // process
     comb(this),

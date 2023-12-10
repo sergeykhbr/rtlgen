@@ -33,12 +33,12 @@ class jtagtap : public ModuleObject {
      public:
         CombProcess(GenObject* parent)
             : ProcObject(parent, "comb"),
-            vb_dr(this, "vb_dr", "drlen"),
+            vb_dr(this, "vb_dr", "drlen", "'0", NO_COMMENT),
             v_dmi_req_valid(this, "v_dmi_req_valid", "1"),
             v_dmi_req_write(this, "v_dmi_req_write", "1"),
-            vb_dmi_req_data(this, "vb_dmi_req_data", "32"),
-            vb_dmi_req_addr(this, "vb_dmi_req_addr", "abits"),
-            vb_err_sticky(this, "vb_err_sticky", "2"),
+            vb_dmi_req_data(this, "vb_dmi_req_data", "32", "'0", NO_COMMENT),
+            vb_dmi_req_addr(this, "vb_dmi_req_addr", "abits", "'0", NO_COMMENT),
+            vb_err_sticky(this, "vb_err_sticky", "2", "'0", NO_COMMENT),
             v_dmi_hardreset(this, "v_dmi_hardreset", "1") {
         }
      public:

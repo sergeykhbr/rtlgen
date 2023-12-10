@@ -109,6 +109,15 @@ std::string Operation::fullname(const char *prefix, std::string name, GenObject 
         curname += name;
     } else if (SCV_is_sysc() && obj->isParamGeneric() && !obj->isParamTemplate()) {
         curname = obj->getName() + "_";
+    } else if (SCV_is_sv_pkg() && obj->isParam() && !obj->isParamGeneric()) {
+        GenObject *pfile = obj->getParent();
+        while (pfile && !pfile->isFile()) {
+            pfile = pfile->getParent();
+        }
+        if (pfile) {
+            curname += pfile->getName() + "_pkg::";
+        }
+        curname += obj->getName();
     } else {
         curname = obj->getName();
     }
@@ -1895,7 +1904,7 @@ std::string CCx_gen(GenObject **args) {
 
 
 // LSH: left shift
-std::string LshOperation::generate() {
+std::string LshOperation::getStrValue() {
     std::string A = obj2varname(a_, "r", true);
     std::string B = obj2varname(sz_);
     if (SCV_is_sysc()) {
@@ -1912,6 +1921,19 @@ std::string LshOperation::generate() {
     return A;
 }
 
+// POW2: 1 << sz
+std::string Pow2Operation::getStrValue() {
+    std::string A = "";
+    std::string sz = obj2varname(sz_);
+    if (SCV_is_sysc()) {
+        A = "(1 << " + sz + ")";
+    } else if (SCV_is_sv()) {
+        A = "(2**" + sz + ")";
+    } else if (SCV_is_vhdl()) {
+        A = "(2**" + sz + ")";
+    }
+    return A;
+}
 
 // RSH: right shift
 std::string RshOperation::generate() {

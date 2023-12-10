@@ -30,24 +30,24 @@ class DoubleDiv : public ModuleObject {
      public:
         CombProcess(GenObject *parent) :
             ProcObject(parent, "comb"),
-            vb_ena(this, "vb_ena", "5"),
+            vb_ena(this, "vb_ena", "5", "'0", NO_COMMENT),
             signA(this, "signA", "1", "0", NO_COMMENT),
             signB(this, "signB", "1", "0", NO_COMMENT),
-            mantA(this, "mantA", "53"),
-            mantB(this, "mantB", "53"),
+            mantA(this, "mantA", "53", "'0", NO_COMMENT),
+            mantB(this, "mantB", "53", "'0", NO_COMMENT),
             zeroA(this, "zeroA", "1"),
             zeroB(this, "zeroB", "1"),
-            divisor(this, "divisor", "53"),
-            preShift(this, "preShift", "6"),
-            expAB_t(this, "expAB_t", "12"),
-            expAB(this, "expAB", "13"),
-            mantAlign(this, "mantAlign", "105"),
-            expShift(this, "expShift", "12"),
-            expAlign(this, "expAlign", "13"),
-            postShift(this, "postShift", "12"),
-            mantPostScale(this, "mantPostScale", "105"),
-            mantShort(this, "mantShort", "53"),
-            tmpMant05(this, "tmpMant05", "52"),
+            divisor(this, "divisor", "53", "'0", NO_COMMENT),
+            preShift(this, "preShift", "6", "'0", NO_COMMENT),
+            expAB_t(this, "expAB_t", "12", "'0", NO_COMMENT),
+            expAB(this, "expAB", "13", "'0", NO_COMMENT),
+            mantAlign(this, "mantAlign", "105", "'0", NO_COMMENT),
+            expShift(this, "expShift", "12", "'0", NO_COMMENT),
+            expAlign(this, "expAlign", "13", "'0", NO_COMMENT),
+            postShift(this, "postShift", "12", "'0", NO_COMMENT),
+            mantPostScale(this, "mantPostScale", "105", "'0", NO_COMMENT),
+            mantShort(this, "mantShort", "53", "'0", NO_COMMENT),
+            tmpMant05(this, "tmpMant05", "52", "'0", NO_COMMENT),
             mantOnes(this, "mantOnes", "1"),
             mantEven(this, "mantEven", "1"),
             mant05(this, "mant05", "1"),
@@ -56,7 +56,7 @@ class DoubleDiv : public ModuleObject {
             nanB(this, "nanB", "1"),
             mantZeroA(this, "mantZeroA", "1"),
             mantZeroB(this, "mantZeroB", "1"),
-            res(this, "res", "64") {
+            res(this, "res", "64", "'0", NO_COMMENT) {
         }
 
      public:

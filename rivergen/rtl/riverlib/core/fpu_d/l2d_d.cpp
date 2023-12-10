@@ -29,13 +29,13 @@ Long2Double::Long2Double(GenObject *parent, const char *name, const char *commen
     o_busy(this, "o_busy", "1", "Multiclock instruction under processing"),
     // registers
     busy(this, "busy", "1"),
-    ena(this, "ena", "3"),
+    ena(this, "ena", "3", "'0", NO_COMMENT),
     signA(this, "signA", "1"),
-    absA(this, "absA", "64"),
-    result(this, "result", "64"),
+    absA(this, "absA", "64", "'0", NO_COMMENT),
+    result(this, "result", "64", "'0", NO_COMMENT),
     op_signed(this, "op_signed", "1"),
-    mantAlign(this, "mantAlign", "64"),
-    lshift(this, "lshift", "6"),
+    mantAlign(this, "mantAlign", "64", "'0", NO_COMMENT),
+    lshift(this, "lshift", "6", "'0", NO_COMMENT),
     // process
     comb(this)
 {

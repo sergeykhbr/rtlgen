@@ -61,6 +61,8 @@ class ModuleObject : public GenObject {
     virtual void getParamList(std::list<GenObject *> &genlist);
     virtual void getIoList(std::list<GenObject *> &genlist);
  protected:
+    std::string generate_all_proc_nullify(GenObject *obj, std::string prefix, std::string i);
+
     std::string generate_sv_pkg_localparam();
     std::string generate_sv_pkg_reg_struct(bool negedge);
     std::string generate_sv_pkg_struct();
@@ -70,7 +72,6 @@ class ModuleObject : public GenObject {
     std::string generate_sv_mod_signals();
     std::string generate_sv_mod_clock(GenObject *proc);
     std::string generate_sv_mod_proc(GenObject *proc);
-    std::string generate_sv_mod_proc_nullify(GenObject *obj, std::string prefix, std::string i);
     std::string generate_sv_mod_proc_registers();
     std::string generate_sv_mod_always_ff_rst(bool clkpos=true);
     std::string generate_sv_mod_always_ops();   // additional operation in always process (if defined)
@@ -84,7 +85,6 @@ class ModuleObject : public GenObject {
     std::string generate_sysc_destructor();
     std::string generate_sysc_vcd();
     std::string generate_sysc_func(GenObject *func);
-    std::string generate_sysc_proc_nullify(GenObject *obj, std::string prefix, std::string i);
     std::string generate_sysc_proc(GenObject *proc);
     std::string generate_sysc_template_param(GenObject *p);
     std::string generate_sysc_template_f_name(const char *rettype="void");

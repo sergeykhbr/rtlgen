@@ -29,25 +29,25 @@ class DbgPort : public ModuleObject {
     class CombProcess : public ProcObject {
      public:
         CombProcess(GenObject *parent) : ProcObject(parent, "comb"),
-            vb_stack_raddr(this, "vb_stack_raddr", "CFG_LOG2_STACK_TRACE_ADDR"),
+            vb_stack_raddr(this, "vb_stack_raddr", "CFG_LOG2_STACK_TRACE_ADDR", "'0", NO_COMMENT),
             v_stack_we(this, "v_stack_we", "1"),
-            vb_stack_waddr(this, "vb_stack_waddr", "CFG_LOG2_STACK_TRACE_ADDR"),
-            vb_stack_wdata(this, "vb_stack_wdata", "MUL(2,RISCV_ARCH)"),
+            vb_stack_waddr(this, "vb_stack_waddr", "CFG_LOG2_STACK_TRACE_ADDR", "'0", NO_COMMENT),
+            vb_stack_wdata(this, "vb_stack_wdata", "MUL(2,RISCV_ARCH)", "'0", NO_COMMENT),
             v_csr_req_valid(this, "v_csr_req_valid", "1"),
             v_csr_resp_ready(this, "v_csr_resp_ready", "1"),
-            vb_csr_req_type(this, "vb_csr_req_type", "CsrReq_TotalBits"),
-            vb_csr_req_addr(this, "vb_csr_req_addr", "12"),
-            vb_csr_req_data(this, "vb_csr_req_data", "RISCV_ARCH"),
-            vb_o_ireg_addr(this, "vb_o_ireg_addr", "6"),
-            vb_o_ireg_wdata(this, "vb_o_ireg_wdata", "RISCV_ARCH"),
-            vb_idx(this, "vb_idx", "12"),
+            vb_csr_req_type(this, "vb_csr_req_type", "CsrReq_TotalBits", "'0", NO_COMMENT),
+            vb_csr_req_addr(this, "vb_csr_req_addr", "12", "'0", NO_COMMENT),
+            vb_csr_req_data(this, "vb_csr_req_data", "RISCV_ARCH", "'0", NO_COMMENT),
+            vb_o_ireg_addr(this, "vb_o_ireg_addr", "6", "'0", NO_COMMENT),
+            vb_o_ireg_wdata(this, "vb_o_ireg_wdata", "RISCV_ARCH", "'0", NO_COMMENT),
+            vb_idx(this, "vb_idx", "12", "'0", NO_COMMENT),
             v_o_ireg_ena(this, "v_o_ireg_ena", "1"),
             v_o_ireg_write(this, "v_o_ireg_write", "1"),
             v_mem_req_valid(this, "v_mem_req_valid", "1"),
             v_req_ready(this, "v_req_ready", "1"),
             v_resp_valid(this, "v_resp_valid", "1"),
-            vrdata(this, "vrdata", "64"),
-            t_idx(this, "t_idx", "5")
+            vrdata(this, "vrdata", "64", "'0", NO_COMMENT),
+            t_idx(this, "t_idx", "5", "'0", NO_COMMENT)
         {
             Operation::start(this);
             DbgPort *p = static_cast<DbgPort *>(parent);

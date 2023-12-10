@@ -55,7 +55,7 @@ TagMemNWay::TagMemNWay(GenObject *parent, const char *name, const char *comment)
     wb_lruo_lru(this, "wb_lruo_lru", "waybits"),
     way_i(this, "way_i", "NWAYS", NO_COMMENT),
     way_o(this, "way_o", "NWAYS", NO_COMMENT),
-    req_addr(this, "req_addr", "abus"),
+    req_addr(this, "req_addr", "abus", "'0", NO_COMMENT),
     direct_access(this, "direct_access", "1"),
     invalidate(this, "invalidate", "1"),
     re(this, "re", "1"),

@@ -63,8 +63,8 @@ class WireVector : public WireArray<T> {
         }
     }
     virtual bool isVector() override { return true; }
-    virtual bool isTypedef() override { return getName() == getType(); } // type is empty for logic now
-    virtual std::string getType() override { return type_; }            // otherwise it will depends of bitwidth and system
+    virtual bool isTypedef() override { return T::name_ == T::type_; }  // type is empty for logic now
+    virtual std::string getType() override { return T::type_; }         // otherwise it will depends of bitwidth and system
 };
 
 

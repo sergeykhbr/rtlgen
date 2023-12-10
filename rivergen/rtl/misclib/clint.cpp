@@ -44,9 +44,9 @@ clint::clint(GenObject *parent, const char *name, const char *comment) :
     wb_resp_rdata(this, "wb_resp_rdata", "CFG_SYSBUS_DATA_BITS"),
     wb_resp_err(this, "wb_resp_err", "1"),
     // registers
-    mtime(this, "mtime", "64"),
+    mtime(this, "mtime", "64", "'0", NO_COMMENT),
     hart(this, "hart", NO_COMMENT),
-    rdata(this, "rdata", "64"),
+    rdata(this, "rdata", "64", "'0", NO_COMMENT),
     //
     comb(this),
     xslv0(this, "xslv0")

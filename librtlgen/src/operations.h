@@ -462,14 +462,28 @@ class LshOperation : public Operation {
         : Operation(NO_PARENT, comment), a_(a), sz_(sz) {}
 
     virtual uint64_t getValue() override { return a_->getValue() << sz_->getValue(); }
-    virtual std::string getStrValue() override { return generate(); }
+    virtual std::string getStrValue() override;
     virtual uint64_t getWidth() override { return a_->getWidth(); }
-    virtual std::string generate() override;
+    virtual std::string generate() override { return getStrValue(); }
 
  protected:
     GenObject *a_;
     GenObject *sz_;
 };
+
+/**
+    Power of 2, special case of LSH
+ */
+class Pow2Operation : public LshOperation {
+ public:
+    Pow2Operation(GenObject *sz, const char *comment)
+        : LshOperation(&a1_, sz, comment), a1_(1) {}
+
+    virtual std::string getStrValue() override;
+ protected:
+    DecConst a1_;
+};
+
 
 /**
     Right shift operation

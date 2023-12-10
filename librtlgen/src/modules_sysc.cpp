@@ -1047,44 +1047,6 @@ std::string ModuleObject::generate_sysc_func(GenObject *func) {
     return ret;
 }
 
-std::string ModuleObject::generate_sysc_proc_nullify(GenObject *obj,
-                                                     std::string prefix,
-                                                     std::string i) {
-    std::string ret = "";
-    if (((obj->isValue() && !obj->isConst())
-        || (obj->isStruct() && !obj->isTypedef())) == 0) {
-        return ret;
-    }
-
-    if (prefix.size()) {
-        prefix += ".";
-    }
-    prefix += obj->getName();
-
-    if (obj->getObjDepth()) {
-        prefix += "[" + i + "]";
-        ret += addspaces();
-        ret += "for (int " + i + " = 0; " + i + " < " + obj->getStrDepth() + "; " + i + "++) {\n";
-        pushspaces();
-
-        const char tidx[2] = {static_cast<char>(static_cast<int>(i.c_str()[0]) + 1), 0};
-        i = std::string(tidx);
-    }
-
-    if (obj->isStruct() && obj->getStrValue().c_str()[0] == '{') {
-        for (auto &p : obj->getEntries()) {
-            ret += generate_sysc_proc_nullify(p, prefix, i);
-        }
-    } else {
-        ret += addspaces() + prefix + " = " + obj->getStrValue() + ";\n";
-    }
-
-    if (obj->getObjDepth()) {
-        popspaces();
-        ret += addspaces() + "}\n";
-    }
-    return ret;
-}
 
 std::string ModuleObject::generate_sysc_proc(GenObject *proc) {
     std::string ret = "";
@@ -1119,7 +1081,7 @@ std::string ModuleObject::generate_sysc_proc(GenObject *proc) {
     // nullify all local variables to avoid latches:
     size_t ret_sz = ret.size();
     for (auto &e: proc->getEntries()) {
-        ret += generate_sysc_proc_nullify(e, "", "i");
+        ret += generate_all_proc_nullify(e, "", "i");
     }
     if (ret.size() != ret_sz) {
         ret += "\n";

@@ -42,11 +42,11 @@ apb_slv::apb_slv(GenObject *parent, const char *name, const char *comment) :
     // registers
     state(this, "state", "3", "State_Idle"),
     req_valid(this, "req_valid", "1"),
-    req_addr(this, "req_addr", "32"),
+    req_addr(this, "req_addr", "32", "'0", NO_COMMENT),
     req_write(this, "req_write", "1"),
-    req_wdata(this, "req_wdata", "32"),
+    req_wdata(this, "req_wdata", "32", "'0", NO_COMMENT),
     resp_valid(this, "resp_valid", "1"),
-    resp_rdata(this, "resp_rdata", "32"),
+    resp_rdata(this, "resp_rdata", "32", "'0", NO_COMMENT),
     resp_err(this, "resp_err", "1"),
     // process
     comb(this)

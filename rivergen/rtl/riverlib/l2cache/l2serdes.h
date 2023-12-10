@@ -32,16 +32,16 @@ class L2SerDes : public ModuleObject {
         CombProcess(GenObject *parent) :
             ProcObject(parent, "comb"),
             v_req_mem_ready(this, "v_req_mem_ready", "1"),
-            vb_r_data(this, "vb_r_data", "busw"),
-            vb_line_o(this, "vb_line_o", "linew"),
+            vb_r_data(this, "vb_r_data", "busw", "'0", NO_COMMENT),
+            vb_line_o(this, "vb_line_o", "linew", "'0", NO_COMMENT),
             v_r_valid(this, "v_r_valid", "1"),
             v_w_valid(this, "v_w_valid", "1"),
             v_w_last(this, "v_w_last", "1"),
             v_w_ready(this, "v_w_ready", "1"),
-            vb_len(this, "vb_len", "8"),
-            vb_size(this, "vb_size", "3"),
-            t_line(this, "t_line", "linew"),
-            t_wstrb(this, "t_wstrb", "lineb"),
+            vb_len(this, "vb_len", "8", "'0", NO_COMMENT),
+            vb_size(this, "vb_size", "3", "'0", NO_COMMENT),
+            t_line(this, "t_line", "linew", "'0", NO_COMMENT),
+            t_wstrb(this, "t_wstrb", "lineb", "'0", NO_COMMENT),
             vl2i(this, "vl2i", "axi4_l2_in_none", NO_COMMENT),
             vmsto(this, "vmsto", "axi4_master_out_none", NO_COMMENT) {
         }

@@ -25,7 +25,7 @@ AluLogic::AluLogic(GenObject *parent, const char *name, const char *comment) :
     i_a2(this, "i_a2", "RISCV_ARCH", "Operand 2"),
     o_res(this, "o_res", "RISCV_ARCH", "Result"),
     // registers
-    res(this, "res", "RISCV_ARCH"),
+    res(this, "res", "RISCV_ARCH", "'0", NO_COMMENT),
     // process
     comb(this)
 {

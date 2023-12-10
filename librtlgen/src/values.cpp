@@ -115,13 +115,6 @@ std::string STRING::getType() {
 }
 
 
-std::string BOOL::generate() {
-    std::string ret = getType();
-    ret += " = " + getStrValue() + ";\n";
-    return ret;
-}
-
-
 std::string FileValue::getType() {
     std::string ret = "";
     if (SCV_is_sysc()) {

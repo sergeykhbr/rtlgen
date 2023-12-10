@@ -33,7 +33,7 @@ class FpuTop : public ModuleObject {
     class CombProcess : public ProcObject {
      public:
         CombProcess(GenObject *parent) :
-            iv(this, "iv", "Instr_FPU_Total"),
+            iv(this, "iv", "Instr_FPU_Total", "'0", NO_COMMENT),
             ProcObject(parent, "comb") {
         }
 

@@ -40,12 +40,12 @@ class RiverAmba : public ModuleObject {
             _snoop0_(this, "snoop processing"),
             v_snoop_next_ready(this, "v_snoop_next_ready", "1"),
             req_snoop_valid(this, "req_snoop_valid", "1"),
-            vb_req_snoop_addr(this, "vb_req_snoop_addr", "CFG_CPU_ADDR_BITS"),
-            vb_req_snoop_type(this, "vb_req_snoop_type", "SNOOP_REQ_TYPE_BITS"),
+            vb_req_snoop_addr(this, "vb_req_snoop_addr", "CFG_CPU_ADDR_BITS", "'0", NO_COMMENT),
+            vb_req_snoop_type(this, "vb_req_snoop_type", "SNOOP_REQ_TYPE_BITS", "'0", NO_COMMENT),
             v_cr_valid(this, "v_cr_valid", "1"),
-            vb_cr_resp(this, "vb_cr_resp", "5"),
+            vb_cr_resp(this, "vb_cr_resp", "5", "'0", NO_COMMENT),
             v_cd_valid(this, "v_cd_valid", "1"),
-            vb_cd_data(this, "vb_cd_data", "L1CACHE_LINE_BITS") {
+            vb_cd_data(this, "vb_cd_data", "L1CACHE_LINE_BITS", "'0", NO_COMMENT) {
         }
      public:
         Logic v_resp_mem_valid;

@@ -33,22 +33,22 @@ class ICacheLru : public ModuleObject {
             t_cache_line_i(this, "t_cache_line_i", "L1CACHE_LINE_BITS"),
             v_req_ready(this, "v_req_ready", "1"),
             v_resp_valid(this, "v_resp_valid", "1"),
-            vb_cached_data(this, "vb_cached_data", "64"),
-            vb_uncached_data(this, "vb_uncached_data", "64"),
-            vb_resp_data(this, "vb_resp_data", "64"),
+            vb_cached_data(this, "vb_cached_data", "64", "'0", NO_COMMENT),
+            vb_uncached_data(this, "vb_uncached_data", "64", "'0", NO_COMMENT),
+            vb_resp_data(this, "vb_resp_data", "64", "'0", NO_COMMENT),
             v_resp_er_load_fault(this, "v_resp_er_load_fault", "1"),
             v_direct_access(this, "v_direct_access", "1"),
             v_invalidate(this, "v_invalidate", "1"),
             v_line_cs_read(this, "v_line_cs_read", "1"),
             v_line_cs_write(this, "v_line_cs_write", "1"),
-            vb_line_addr(this, "vb_line_addr", "CFG_CPU_ADDR_BITS"),
-            vb_line_wdata(this, "vb_line_wdata", "L1CACHE_LINE_BITS"),
-            vb_line_wstrb(this, "vb_line_wstrb", "L1CACHE_BYTES_PER_LINE"),
+            vb_line_addr(this, "vb_line_addr", "CFG_CPU_ADDR_BITS", "'0", NO_COMMENT),
+            vb_line_wdata(this, "vb_line_wdata", "L1CACHE_LINE_BITS", "'0", NO_COMMENT),
+            vb_line_wstrb(this, "vb_line_wstrb", "L1CACHE_BYTES_PER_LINE", "'0", NO_COMMENT),
             v_line_wflags(this, "v_line_wflags", "ITAG_FL_TOTAL", "'0", NO_COMMENT),
             sel_cached("0", "sel_cached", this),
             sel_uncached("0", "sel_uncached", this),
             v_ready_next(this, "v_ready_next", "1"),
-            vb_addr_direct_next(this, "vb_addr_direct_next", "CFG_CPU_ADDR_BITS") {
+            vb_addr_direct_next(this, "vb_addr_direct_next", "CFG_CPU_ADDR_BITS", "'0", NO_COMMENT) {
         }
 
      public:

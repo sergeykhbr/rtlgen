@@ -30,8 +30,8 @@ class sdctrl_cmd_transmitter : public ModuleObject {
         CombProcess(GenObject *parent) :
             ProcObject(parent, "comb"),
             v_req_ready(this, "v_req_ready", "1"),
-            vb_cmdshift(this, "vb_cmdshift", "48"),
-            vb_resp_spistatus(this, "vb_resp_spistatus", "15"),
+            vb_cmdshift(this, "vb_cmdshift", "48", "'0", NO_COMMENT),
+            vb_resp_spistatus(this, "vb_resp_spistatus", "15", "'0", NO_COMMENT),
             v_crc7_dat(this, "v_crc7_dat", "1"),
             v_crc7_next(this, "v_crc7_next", "1") {
         }

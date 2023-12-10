@@ -165,7 +165,7 @@ sdctrl::sdctrl(GenObject *parent, const char *name, const char *comment) :
     // registers
     nrst_spimode(this, "nrst_spimode", "1"),
     nrst_sdmode(this, "nrst_sdmode", "1"),
-    clkcnt(this, "clkcnt", "7"),
+    clkcnt(this, "clkcnt", "7", "'0", NO_COMMENT),
     cmd_set_low(this, "cmd_set_low", "1"),
     mode(this, "mode", "2", "MODE_PRE_INIT"),
     //

@@ -60,7 +60,6 @@ class BOOL : public GenValue {
         GenValue(parent, name, val, comment) {}
 
     virtual std::string getType() override;
-    virtual std::string generate() override;
 };
 
 class STRING : public GenValue {

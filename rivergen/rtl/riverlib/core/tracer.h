@@ -64,12 +64,12 @@ class Tracer : public ModuleObject {
             rcnt("0", "rcnt", this),
             regcnt("0", "regcnt", this),
             memcnt("0", "memcnt", this),
-            mskoff(this, "mskoff", "7"),
-            mask(this, "mask", "64"),
-            tr_wcnt_nxt(this, "tr_wcnt_nxt", "TRACE_TBL_ABITS"),
+            mskoff(this, "mskoff", "7", "'0", NO_COMMENT),
+            mask(this, "mask", "64", "'0", NO_COMMENT),
+            tr_wcnt_nxt(this, "tr_wcnt_nxt", "TRACE_TBL_ABITS", "'0", NO_COMMENT),
             checked(this, "checked", "1"),
             entry_valid(this, "entry_valid", "1"),
-            rcnt_inc(this, "rcnt_inc", "TRACE_TBL_ABITS") {
+            rcnt_inc(this, "rcnt_inc", "TRACE_TBL_ABITS", "'0", NO_COMMENT) {
         }
     public:
         I32D wcnt;
@@ -161,14 +161,14 @@ class Tracer : public ModuleObject {
         MemopActionType(GenObject *parent, const char *name, const char *comment)
             : StructObject(parent, "MemopActionType", name, comment),
             store(this, "store", "1", "0", "0=load;1=store"),
-            size(this, "size", "2"),
-            mask(this, "mask", "64"),
-            memaddr(this, "memaddr", "64"),
-            data(this, "data", "64"),
+            size(this, "size", "2", "'0", NO_COMMENT),
+            mask(this, "mask", "64", "'0", NO_COMMENT),
+            memaddr(this, "memaddr", "64", "'0", NO_COMMENT),
+            data(this, "data", "64", "'0", NO_COMMENT),
             regaddr(this, "regaddr", "6", "0", "writeback address"),
-            complete(this, "complete", "1"),
-            sc_release(this, "sc_release", "1"),
-            ignored(this, "ignored", "1") {}
+            complete(this, "complete", "1", "0", NO_COMMENT),
+            sc_release(this, "sc_release", "1", "0", NO_COMMENT),
+            ignored(this, "ignored", "1", "0", NO_COMMENT) {}
      public:
         Signal store;
         Signal size;
@@ -185,8 +185,8 @@ class Tracer : public ModuleObject {
      public:
         RegActionType(GenObject *parent, const char *name, const char *comment)
             : StructObject(parent, "RegActionType", name, comment),
-        waddr(this, "waddr", "6"),
-        wres(this, "wres", "64") {}
+        waddr(this, "waddr", "6", "'0", NO_COMMENT),
+        wres(this, "wres", "64", "'0", NO_COMMENT) {}
      public:
         Signal waddr;
         Signal wres;
@@ -197,14 +197,14 @@ class Tracer : public ModuleObject {
      public:
         TraceStepType(GenObject *parent, const char *name, const char *comment)
             : StructObject(parent, "TraceStepType", name, comment),
-            exec_cnt(this, "exec_cnt", "64"),
-            pc(this, "pc", "64"),
-            instr(this, "instr", "32"),
-            regactioncnt(this, "regactioncnt", "32"),
-            memactioncnt(this, "memactioncnt", "32"),
+            exec_cnt(this, "exec_cnt", "64", "'0", NO_COMMENT),
+            pc(this, "pc", "64", "'0", NO_COMMENT),
+            instr(this, "instr", "32", "'0", NO_COMMENT),
+            regactioncnt(this, "regactioncnt", "32", "'0", NO_COMMENT),
+            memactioncnt(this, "memactioncnt", "32", "'0", NO_COMMENT),
             regaction(this, "regaction", "TRACE_TBL_SZ", NO_COMMENT),
             memaction(this, "memaction", "TRACE_TBL_SZ", NO_COMMENT),
-            completed(this, "completed", "1") {
+            completed(this, "completed", "1", "0", NO_COMMENT) {
             }
      public:
         Signal exec_cnt;

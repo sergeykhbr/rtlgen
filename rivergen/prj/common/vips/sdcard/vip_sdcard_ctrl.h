@@ -29,7 +29,7 @@ class vip_sdcard_ctrl : public ModuleObject {
         CombProcess(GenObject *parent) :
             ProcObject(parent, "comb"),
             v_resp_valid(this, "v_resp_valid", "1"),
-            vb_resp_data32(this, "vb_resp_data32", "32") {
+            vb_resp_data32(this, "vb_resp_data32", "32", "'0", NO_COMMENT) {
         }
 
      public:

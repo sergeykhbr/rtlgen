@@ -36,14 +36,14 @@ class apb_spi : public ModuleObject {
             v_negedge(this, "v_negedge", "1"),
             v_txfifo_re(this, "v_txfifo_re", "1"),
             v_txfifo_we(this, "v_txfifo_we", "1"),
-            vb_txfifo_wdata(this, "vb_txfifo_wdata", "8"),
+            vb_txfifo_wdata(this, "vb_txfifo_wdata", "8", "'0", NO_COMMENT),
             v_rxfifo_re(this, "v_rxfifo_re", "1"),
             v_inv7(this, "v_inv7", "1"),
-            vb_crc7(this, "vb_crc7", "7"),
+            vb_crc7(this, "vb_crc7", "7", "'0", NO_COMMENT),
             v_inv16(this, "v_inv16", "1"),
-            vb_crc16(this, "vb_crc16", "16"),
-            vb_rdata(this, "vb_rdata", "32"),
-            vb_shiftreg_next(this, "vb_shiftreg_next", "8") {
+            vb_crc16(this, "vb_crc16", "16", "'0", NO_COMMENT),
+            vb_rdata(this, "vb_rdata", "32", "'0", NO_COMMENT),
+            vb_shiftreg_next(this, "vb_shiftreg_next", "8", "'0", NO_COMMENT) {
         }
 
      public:

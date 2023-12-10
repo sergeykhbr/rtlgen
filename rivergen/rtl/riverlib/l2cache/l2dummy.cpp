@@ -37,16 +37,16 @@ L2Dummy::L2Dummy(GenObject *parent, const char *name, const char *comment) :
     // registers
     state(this, "state", "3", "Idle"),
     srcid(this, "srcid", "3", "CFG_SLOT_L1_TOTAL"),
-    req_addr(this, "req_addr", "CFG_SYSBUS_ADDR_BITS"),
-    req_size(this, "req_size", "3"),
-    req_prot(this, "req_prot", "3"),
+    req_addr(this, "req_addr", "CFG_SYSBUS_ADDR_BITS", "'0", NO_COMMENT),
+    req_size(this, "req_size", "3", "'0", NO_COMMENT),
+    req_prot(this, "req_prot", "3", "'0", NO_COMMENT),
     req_lock(this, "req_lock", "1"),
     req_id(this, "req_id", "CFG_CPU_ID_BITS", "'0", NO_COMMENT),
     req_user(this, "req_user", "CFG_CPU_USER_BITS", "'0", NO_COMMENT),
-    req_wdata(this, "req_wdata", "L1CACHE_LINE_BITS"),
-    req_wstrb(this, "req_wstrb", "L1CACHE_BYTES_PER_LINE"),
-    rdata(this, "rdata", "L1CACHE_LINE_BITS"),
-    resp(this, "resp", "2"),
+    req_wdata(this, "req_wdata", "L1CACHE_LINE_BITS", "'0", NO_COMMENT),
+    req_wstrb(this, "req_wstrb", "L1CACHE_BYTES_PER_LINE", "'0", NO_COMMENT),
+    rdata(this, "rdata", "L1CACHE_LINE_BITS", "'0", NO_COMMENT),
+    resp(this, "resp", "2", "'0", NO_COMMENT),
     // process
     comb(this)
 {

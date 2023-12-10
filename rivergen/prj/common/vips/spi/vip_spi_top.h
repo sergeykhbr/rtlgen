@@ -32,7 +32,7 @@ class vip_spi_top : public ModuleObject {
      public:
         CombProcess(GenObject *parent) :
             ProcObject(parent, "comb"),
-            rdata(this, "rdata" ,"32"),
+            rdata(this, "rdata" ,"32", "'0", NO_COMMENT),
             vb_gpio_in(this, "vb_gpio_in", "1") {
         }
 

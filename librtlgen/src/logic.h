@@ -28,14 +28,14 @@ class Logic : public GenValue {
  public:
     Logic(const char *width,
           const char *name,
-          const char *val="'0",
+          const char *val="0",
           GenObject *parent = NO_PARENT,
           const char *comment = NO_COMMENT);
 
     Logic(GenObject *parent,
           const char *name,
           const char *width,
-          const char *val="'0",
+          const char *val="0",
           const char *comment = NO_COMMENT) :
         Logic(width, name, val, parent, comment) {}
 

@@ -47,16 +47,16 @@ L2Destination::L2Destination(GenObject *parent, const char *name, const char *co
     // registers
     state(this, "state", "3", "Idle"),
     srcid(this, "srcid", "3", "CFG_SLOT_L1_TOTAL"),
-    req_addr(this, "req_addr", "CFG_CPU_ADDR_BITS"),
-    req_size(this, "req_size", "3"),
-    req_prot(this, "req_prot", "3"),
-    req_src(this, "req_src", "5"),
-    req_type(this, "req_type", "L2_REQ_TYPE_BITS"),
-    req_wdata(this, "req_wdata", "L1CACHE_LINE_BITS"),
-    req_wstrb(this, "req_wstrb", "L1CACHE_BYTES_PER_LINE"),
-    ac_valid(this, "ac_valid", "ADD(CFG_SLOT_L1_TOTAL,1)"),
-    cr_ready(this, "cr_ready", "ADD(CFG_SLOT_L1_TOTAL,1)"),
-    cd_ready(this, "cd_ready", "ADD(CFG_SLOT_L1_TOTAL,1)"),
+    req_addr(this, "req_addr", "CFG_CPU_ADDR_BITS", "'0", NO_COMMENT),
+    req_size(this, "req_size", "3", "'0", NO_COMMENT),
+    req_prot(this, "req_prot", "3", "'0", NO_COMMENT),
+    req_src(this, "req_src", "5", "'0", NO_COMMENT),
+    req_type(this, "req_type", "L2_REQ_TYPE_BITS", "'0", NO_COMMENT),
+    req_wdata(this, "req_wdata", "L1CACHE_LINE_BITS", "'0", NO_COMMENT),
+    req_wstrb(this, "req_wstrb", "L1CACHE_BYTES_PER_LINE", "'0", NO_COMMENT),
+    ac_valid(this, "ac_valid", "ADD(CFG_SLOT_L1_TOTAL,1)", "'0", NO_COMMENT),
+    cr_ready(this, "cr_ready", "ADD(CFG_SLOT_L1_TOTAL,1)", "'0", NO_COMMENT),
+    cd_ready(this, "cd_ready", "ADD(CFG_SLOT_L1_TOTAL,1)", "'0", NO_COMMENT),
     // functions
     // process
     comb(this)

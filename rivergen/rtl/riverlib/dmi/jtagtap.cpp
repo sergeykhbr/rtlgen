@@ -71,14 +71,14 @@ jtagtap::jtagtap(GenObject *parent, const char *name, const char *comment) :
     UPDATE_IR(this, "4", "UPDATE_IR", "15"),
     // registers
     state(this, "state", "4", "RESET_TAP"),
-    dr_length(this, "dr_length", "7"),
+    dr_length(this, "dr_length", "7", "'0", NO_COMMENT),
     dr(this, "dr", "drlen", "idcode"),
     bypass(this, "bypass", "1"),
-    datacnt(this, "datacnt", "32"),
+    datacnt(this, "datacnt", "32", "'0", NO_COMMENT),
     dmi_busy(this, "dmi_busy", "1"),
-    err_sticky(this, "err_sticky", "2"),
+    err_sticky(this, "err_sticky", "2", "'0", NO_COMMENT),
     ir(this, "ir", "irlen", "IR_IDCODE"),
-    dmi_addr(this, "dmi_addr", "abits"),
+    dmi_addr(this, "dmi_addr", "abits", "'0", NO_COMMENT),
     comb(this)
 {
     Operation::start(this);

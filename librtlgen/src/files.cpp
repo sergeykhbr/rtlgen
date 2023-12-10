@@ -390,16 +390,12 @@ void FileObject::generate_sysv() {
             out += "function automatic ";
             out += p->generate();
         } else if (p->isParam() && !p->isParamGeneric()) {
-            if (p->isStruct()) {
+            if (p->isStruct() || p->isString()) {
                 // Do all others params in a such way
                 out += p->generate();
             } else {
                 ln = addspaces() + "localparam ";
-                if (p->isString()) {
-                    // Vivado doesn't support string parameters. Skip type definition
-                } else {
-                    ln += p->getType() + " ";
-                }
+                ln += p->getType() + " ";
                 ln += p->getName() + " = " + p->generate() + ";";
                 p->addComment(ln);
                 out += ln + "\n";

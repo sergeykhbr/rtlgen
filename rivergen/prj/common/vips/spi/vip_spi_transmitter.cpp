@@ -41,17 +41,17 @@ vip_spi_transmitter::vip_spi_transmitter(GenObject *parent, const char *name, co
     state_data(this, "2", "state_data", "2"),
     // signals
     // registers
-    state(this, "state", "2", "state_cmd"),
+    state(this, "state", "2", "state_cmd", NO_COMMENT),
     sclk(this, "sclk", "1"),
-    rxshift(this, "rxshift", "32", "'1"),
-    txshift(this, "txshift", "32", "'1"),
-    bitcnt(this, "bitcnt", "4"),
-    bytecnt(this, "bytecnt", "3"),
+    rxshift(this, "rxshift", "32", "'1", NO_COMMENT),
+    txshift(this, "txshift", "32", "'1", NO_COMMENT),
+    bitcnt(this, "bitcnt", "4", "'0", NO_COMMENT),
+    bytecnt(this, "bytecnt", "3", "'0", NO_COMMENT),
     byterdy(this, "byterdy", "1"),
     req_valid(this, "req_valid", "1"),
     req_write(this, "req_write", "1"),
-    req_addr(this, "req_addr", "32"),
-    req_wdata(this, "req_wdata", "32"),
+    req_addr(this, "req_addr", "32", "'0", NO_COMMENT),
+    req_wdata(this, "req_wdata", "32", "'0", NO_COMMENT),
     //
     comb(this)
 {

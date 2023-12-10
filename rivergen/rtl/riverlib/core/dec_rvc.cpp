@@ -71,7 +71,7 @@ DecoderRvc::DecoderRvc(GenObject *parent, const char *name, const char *depth) :
     // signals
     // registers
     pc(this, "pc", "RISCV_ARCH", "'1"),
-    isa_type(this, "isa_type", "ISA_Total"),
+    isa_type(this, "isa_type", "ISA_Total", "'0", NO_COMMENT),
     instr_vec(this, "instr_vec", "Instr_Total"),
     instr(this, "instr", "16", "'1"),
     memop_store(this, "memop_store", "1"),
@@ -82,10 +82,10 @@ DecoderRvc::DecoderRvc(GenObject *parent, const char *name, const char *depth) :
     instr_load_fault(this, "instr_load_fault", "1"),
     instr_page_fault_x(this, "instr_page_fault_x", "1"),
     instr_unimplemented(this, "instr_unimplemented", "1"),
-    radr1(this, "radr1", "6"),
-    radr2(this, "radr2", "6"),
-    waddr(this, "waddr", "6"),
-    imm(this, "imm", "RISCV_ARCH"),
+    radr1(this, "radr1", "6", "'0", NO_COMMENT),
+    radr2(this, "radr2", "6", "'0", NO_COMMENT),
+    waddr(this, "waddr", "6", "'0", NO_COMMENT),
+    imm(this, "imm", "RISCV_ARCH", "'0", NO_COMMENT),
     progbuf_ena(this, "progbuf_ena", "1"),
     // process
     comb(this)

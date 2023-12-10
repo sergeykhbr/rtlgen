@@ -27,7 +27,7 @@ sdctrl_crc16::sdctrl_crc16(GenObject *parent, const char *name, const char *comm
     // params
     // signals
     // registers
-    crc16(this, "crc16", "16"),
+    crc16(this, "crc16", "16", "'0", NO_COMMENT),
     //
     comb(this)
 {

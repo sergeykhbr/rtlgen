@@ -32,16 +32,16 @@ class L2Destination : public ModuleObject {
             ProcObject(parent, "comb"),
             vcoreo(this, "vcoreo", "ADD(CFG_SLOT_L1_TOTAL,1)", "axi4_l1_out_none", NO_COMMENT),
             vlxi(this, "vlxi", "CFG_SLOT_L1_TOTAL", "axi4_l1_in_none", NO_COMMENT),
-            vb_src_aw(this, "vb_src_aw", "CFG_SLOT_L1_TOTAL"),
-            vb_src_ar(this, "vb_src_ar", "CFG_SLOT_L1_TOTAL"),
-            vb_broadband_mask_full(this, "vb_broadband_mask_full", "ADD(CFG_SLOT_L1_TOTAL,1)"),
-            vb_broadband_mask(this, "vb_broadband_mask", "ADD(CFG_SLOT_L1_TOTAL,1)"),
-            vb_ac_valid(this, "vb_ac_valid", "ADD(CFG_SLOT_L1_TOTAL,1)"),
-            vb_cr_ready(this, "vb_cr_ready", "ADD(CFG_SLOT_L1_TOTAL,1)"),
-            vb_cd_ready(this, "vb_cd_ready", "ADD(CFG_SLOT_L1_TOTAL,1)"),
-            vb_srcid(this, "vb_srcid", "3"),
+            vb_src_aw(this, "vb_src_aw", "CFG_SLOT_L1_TOTAL", "'0", NO_COMMENT),
+            vb_src_ar(this, "vb_src_ar", "CFG_SLOT_L1_TOTAL", "'0", NO_COMMENT),
+            vb_broadband_mask_full(this, "vb_broadband_mask_full", "ADD(CFG_SLOT_L1_TOTAL,1)", "'0", NO_COMMENT),
+            vb_broadband_mask(this, "vb_broadband_mask", "ADD(CFG_SLOT_L1_TOTAL,1)", "'0", NO_COMMENT),
+            vb_ac_valid(this, "vb_ac_valid", "ADD(CFG_SLOT_L1_TOTAL,1)", "'0", NO_COMMENT),
+            vb_cr_ready(this, "vb_cr_ready", "ADD(CFG_SLOT_L1_TOTAL,1)", "'0", NO_COMMENT),
+            vb_cd_ready(this, "vb_cd_ready", "ADD(CFG_SLOT_L1_TOTAL,1)", "'0", NO_COMMENT),
+            vb_srcid(this, "vb_srcid", "3", "'0", NO_COMMENT),
             v_req_valid(this, "v_req_valid", "1"),
-            vb_req_type(this, "vb_req_type", "L2_REQ_TYPE_BITS") {
+            vb_req_type(this, "vb_req_type", "L2_REQ_TYPE_BITS", "'0", NO_COMMENT) {
         }
 
      public:

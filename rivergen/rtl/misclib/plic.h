@@ -54,13 +54,13 @@ class plic : public ModuleObject {
      public:
         CombProcess(GenObject *parent) :
             ProcObject(parent, "comb"),
-            vrdata(this, "vrdata", "CFG_SYSBUS_DATA_BITS"),
+            vrdata(this, "vrdata", "CFG_SYSBUS_DATA_BITS", "'0", NO_COMMENT),
             vb_irq_idx(this, "vb_irq_idx", "10", "ctxmax", "Currently selected most prio irq"),
             vb_irq_prio(this, "vb_irq_prio", "10", "ctxmax", "Currently selected prio level"),
             vb_ctx(this, "vb_ctx", "ctxmax", NO_COMMENT),
             vb_src_priority(this, "vb_src_priority", "MUL(4,1024)"),
             vb_pending(this, "vb_pending", "1024"),
-            vb_ip(this, "vb_ip", "ctxmax"),
+            vb_ip(this, "vb_ip", "ctxmax", "'0", NO_COMMENT),
             rctx_idx("0", "rctx_idx", this) {
         }
 

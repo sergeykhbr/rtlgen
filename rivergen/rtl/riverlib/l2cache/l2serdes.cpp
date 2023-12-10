@@ -36,11 +36,11 @@ L2SerDes::L2SerDes(GenObject *parent, const char *name, const char *comment) :
     // signals
     // registers
     state(this, "state", "2", "State_Idle"),
-    req_len(this, "req_len", "8"),
+    req_len(this, "req_len", "8", "'0", NO_COMMENT),
     b_wait(this, "b_wait", "1"),
-    line(this, "line", "linew"),
-    wstrb(this, "wstrb", "lineb"),
-    rmux(this, "rmux", "SERDES_BURST_LEN"),
+    line(this, "line", "linew", "'0", NO_COMMENT),
+    wstrb(this, "wstrb", "lineb", "'0", NO_COMMENT),
+    rmux(this, "rmux", "SERDES_BURST_LEN", "'0", NO_COMMENT),
     // functions
     size2len(this),
     size2size(this),

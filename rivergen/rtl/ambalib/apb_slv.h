@@ -30,7 +30,7 @@ class apb_slv : public ModuleObject {
      public:
         CombProcess(GenObject *parent) :
             ProcObject(parent, "comb"),
-            vb_rdata(this, "vb_rdata", "32"),
+            vb_rdata(this, "vb_rdata", "32", "'0", NO_COMMENT),
             vcfg(this, "vcfg", "dev_config_none", NO_COMMENT),
             vapbo(this, "vapbo", "apb_out_none", NO_COMMENT) {
         }

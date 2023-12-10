@@ -134,7 +134,7 @@ Operation &OR_REDUCE(GenObject &a, const char *comment) {
 Operation &DEC(GenObject &a, const char *comment) {
     GenObject *p1;
     if (a.isLogic()) {
-        p1 = new DecLogicConst(a.getObjWidth(), 1);
+        p1 = new DecLogicConstOne(a.getObjWidth(), 1);
     } else {
         p1 = new DecConst(1);
     }
@@ -146,7 +146,7 @@ Operation &DEC(GenObject &a, const char *comment) {
 Operation &INC(GenObject &a, const char *comment) {
     GenObject *p1;
     if (a.isLogic()) {
-        p1 = new DecLogicConst(a.getObjWidth(), 1);
+        p1 = new DecLogicConstOne(a.getObjWidth(), 1);
     } else {
         p1 = new DecConst(1);
     }
@@ -276,6 +276,12 @@ Operation &LSH(GenObject &a, GenObject &sz, const char *comment) {
 
 Operation &LSH(GenObject &a, int sz, const char *comment) {
     Operation *p = new LshOperation(&a, new DecConst(sz), comment);
+    return *p;
+}
+
+// LSH
+Operation &POW2(GenObject &sz, const char *comment) {
+    Operation *p = new Pow2Operation(&sz, comment);
     return *p;
 }
 
@@ -437,7 +443,7 @@ GenObject *SCV_parse_to_obj(GenObject *owner, const char *val) {
     }
 
     if (strcmp(opcode, "POW2") == 0) {
-        ret = &LSH(*args[0], *args[1]);
+        ret = &POW2(*args[1]);
     } else if (strcmp(opcode, "ADD") == 0) {
         ret = &ADD2(*args[0], *args[1]);
     } else if (strcmp(opcode, "SUB") == 0) {

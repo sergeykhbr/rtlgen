@@ -38,7 +38,8 @@ std::string HexConst::getStrValue() {
     if (SCV_is_sysc()) {
         ret = "0x" + ret;
     } else if (SCV_is_sv()) {
-        ret = "0x" + ret;
+        RISCV_sprintf(tstr, sizeof(tstr), "%" RV_PRI64 "d'h", getWidth());
+        ret = std::string(tstr) + ret;
     } else if (SCV_is_vhdl()) {
         ret = "\"" + ret + "\"";
     }
@@ -108,6 +109,10 @@ std::string DecLogicConst::getStrValue() {
         }
     }
     return std::string(tstr);
+}
+
+std::string DecLogicConstOne::getStrValue() {
+    return std::string("1");
 }
 
 HexLogicConst::HexLogicConst(GenObject *width, uint64_t val)

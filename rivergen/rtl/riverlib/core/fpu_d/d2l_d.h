@@ -30,20 +30,19 @@ class Double2Long : public ModuleObject {
         CombProcess(GenObject *parent) :
             ProcObject(parent, "comb"),
             v_ena(this, "v_ena", "1", "0", NO_COMMENT),
-            mantA(this, "mantA", "53"),
+            mantA(this, "mantA", "53", "'0", NO_COMMENT),
             expDif_gr(this, "expDif_gr", "1", "0", "greater than 1023 + 63"),
             expDif_lt(this, "expDif_lt", "1", "0", "less than 1023"),
             overflow(this, "overflow", "1"),
             underflow(this, "underflow", "1"),
-            expDif(this, "expDif", "12"),
-            mantPreScale(this, "mantPreScale", "64"),
-            mantPostScale(this, "mantPostScale", "64"),
-
-            expMax(this, "expMax", "11"),
-            expShift(this, "expShift", "6"),
+            expDif(this, "expDif", "12", "'0", NO_COMMENT),
+            mantPreScale(this, "mantPreScale", "64", "'0", NO_COMMENT),
+            mantPostScale(this, "mantPostScale", "64", "'0", NO_COMMENT),
+            expMax(this, "expMax", "11", "'0", NO_COMMENT),
+            expShift(this, "expShift", "6", "'0", NO_COMMENT),
             resSign(this, "resSign", "1"),
-            resMant(this, "resMant", "64"),
-            res(this, "res", "64") {
+            resMant(this, "resMant", "64", "'0", NO_COMMENT),
+            res(this, "res", "64", "'0", NO_COMMENT) {
         }
 
      public:

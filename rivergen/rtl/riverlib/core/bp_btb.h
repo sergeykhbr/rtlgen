@@ -28,12 +28,12 @@ class BpBTB : public ModuleObject {
     class CombProcess : public ProcObject {
      public:
         CombProcess(GenObject *parent) : ProcObject(parent, "comb"),
-            vb_addr(this, "vb_addr", "MUL(CFG_BP_DEPTH,RISCV_ARCH)"),
-            vb_hit(this, "vb_hit", "CFG_BP_DEPTH"),
-            t_addr(this, "t_addr", "RISCV_ARCH"),
-            vb_pc_equal(this, "vb_pc_equal", "CFG_BTB_SIZE"),
-            vb_pc_nshift(this, "vb_pc_nshift", "CFG_BTB_SIZE"),
-            vb_bp_exec(this, "vb_bp_exec", "CFG_BP_DEPTH"),
+            vb_addr(this, "vb_addr", "MUL(CFG_BP_DEPTH,RISCV_ARCH)", "'0", NO_COMMENT),
+            vb_hit(this, "vb_hit", "CFG_BP_DEPTH", "'0", NO_COMMENT),
+            t_addr(this, "t_addr", "RISCV_ARCH", "'0", NO_COMMENT),
+            vb_pc_equal(this, "vb_pc_equal", "CFG_BTB_SIZE", "'0", NO_COMMENT),
+            vb_pc_nshift(this, "vb_pc_nshift", "CFG_BTB_SIZE", "'0", NO_COMMENT),
+            vb_bp_exec(this, "vb_bp_exec", "CFG_BP_DEPTH", "'0", NO_COMMENT),
             v_dont_update(this, "v_dont_update", "1") {
             BpBTB *p = static_cast<BpBTB *>(parent);
             Operation::start(this);
@@ -71,7 +71,7 @@ class BpBTB : public ModuleObject {
         BtbEntryType(GenObject *parent, const char *name, const char *comment)
             : StructObject(parent, "BtbEntryType", name, comment),
             pc(this, "pc", "RISCV_ARCH", "'1"),
-            npc(this, "npc", "RISCV_ARCH"),
+            npc(this, "npc", "RISCV_ARCH", "'0", NO_COMMENT),
             exec(this, "exec", "1", "0", "0=predec; 1=exec (high priority)") {}
      public:
         RegSignal pc;

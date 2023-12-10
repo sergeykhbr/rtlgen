@@ -42,12 +42,12 @@ jtagcdc::jtagcdc(GenObject *parent, const char *name, const char *comment) :
                                                     &i_dmi_req_valid)),
     // registers
     l1(this, "l1", "CDC_REG_WIDTH", "'1"),
-    l2(this, "l2", "CDC_REG_WIDTH"),
+    l2(this, "l2", "CDC_REG_WIDTH", "'0", NO_COMMENT),
     req_valid(this, "req_valid", "1"),
     req_accepted(this, "req_accepted", "1"),
     req_write(this, "req_write", "1"),
-    req_addr(this, "req_addr", "7"),
-    req_data(this, "req_data", "32"),
+    req_addr(this, "req_addr", "7", "'0", NO_COMMENT),
+    req_data(this, "req_data", "32", "'0", NO_COMMENT),
     req_hardreset(this, "req_hardreset", "1"),
     comb(this)
 {

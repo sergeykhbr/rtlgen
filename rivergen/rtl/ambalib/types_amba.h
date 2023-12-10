@@ -59,17 +59,17 @@ class types_amba : public FileObject {
      public:
         axi4_metadata_type(GenObject* parent, const char* name, const char* comment)
             : StructObject(parent, "axi4_metadata_type", name, comment),
-            addr("CFG_SYSBUS_ADDR_BITS", "addr", "0", this),
+            addr(this, "addr", "CFG_SYSBUS_ADDR_BITS", "'0", NO_COMMENT),
             _len0_(this, "@brief   Burst length."),
             _len1_(this, "@details This signal indicates the exact number of transfers in"),
             _len2_(this, "         a burst. This changes between AXI3 and AXI4. nastiXLenBits=8 so"),
             _len3_(this, "         this is an AXI4 implementation."),
             _len4_(this, "             Burst_Length = len[7:0] + 1"),
-            len("8", "len", "0", this),
+            len(this, "len", "8", "'0", NO_COMMENT),
             _size0_(this, "@brief   Burst size."),
             _size1_(this, "@details This signal indicates the size of each transfer"),
             _size2_(this, "         in the burst: 0=1 byte; ..., 6=64 bytes; 7=128 bytes;"),
-            size("3", "size", "0", this),
+            size(this, "size", "3", "'0", NO_COMMENT),
             _burst0_(this, "@brief   Read response."),
             _burst1_(this, "@details This signal indicates the status of the read transfer."),
             _burst2_(this, "The responses are:"),
@@ -83,9 +83,9 @@ class types_amba : public FileObject {
             _burst10_(this, "                 that the address wraps around to a lower address if an upper address"),
             _burst11_(this, "                 limit is reached."),
             _burst12_(this, "     0b11 resrved."),
-            burst("2", "burst", "AXI_BURST_INCR", this),
-            lock("1", "lock", "0", this),
-            cache("4", "cache", "0", this),
+            burst(this, "burst", "2", "AXI_BURST_INCR", NO_COMMENT),
+            lock(this, "lock", "1", "0", NO_COMMENT),
+            cache(this, "cache", "4", "'0", NO_COMMENT),
             _prot0_(this, "@brief   Protection type."),
             _prot1_(this, "@details This signal indicates the privilege and security level"),
             _prot2_(this, "         of the transaction, and whether the transaction is a data access"),
@@ -96,19 +96,19 @@ class types_amba : public FileObject {
             _prot7_(this, "         1 = Non-secure access"),
             _prot8_(this, " [2] :   0 = Data access"),
             _prot9_(this, "         1 = Instruction access"),
-            prot("3", "prot", "0", this),
+            prot(this, "prot", "3", "'0", NO_COMMENT),
             _qos0_(this, "@brief   Quality of Service, QoS."),
             _qos1_(this, "@details QoS identifier sent for each read transaction."),
             _qos2_(this, "         Implemented only in AXI4:"),
             _qos3_(this, "             0b0000 - default value. Indicates that the interface is"),
             _qos4_(this, "                      not participating in any QoS scheme."),
-            qos("4", "qos", "0", this),
+            qos(this, "qos", "4", "'0", NO_COMMENT),
             _region0_(this, "@brief Region identifier."),
             _region1_(this, "@details Permits a single physical interface on a slave to be used for"),
             _region2_(this, "         multiple logical interfaces. Implemented only in AXI4. This is"),
             _region3_(this, "         similar to the banks implementation in Leon3 without address"),
             _region4_(this, "         decoding."),
-            region("4", "region", "0", this) {
+            region(this, "region", "4", "'0", NO_COMMENT) {
         }
      public:
         Logic addr;
@@ -167,21 +167,21 @@ class types_amba : public FileObject {
      public:
         axi4_master_out_type(GenObject* parent, const char* name, const char* comment)
             : StructObject(parent, "axi4_master_out_type", name, comment),
-            aw_valid("1", "aw_valid", "0", this),
+            aw_valid(this, "aw_valid", "1", "0", NO_COMMENT),
             aw_bits(this, "aw_bits", "META_NONE", NO_COMMENT),
-            aw_id("CFG_SYSBUS_ID_BITS", "aw_id", "0", this),
+            aw_id(this, "aw_id", "CFG_SYSBUS_ID_BITS", "'0", NO_COMMENT),
             aw_user(this, "aw_user", "CFG_SYSBUS_USER_BITS", "'0", NO_COMMENT),
-            w_valid("1", "w_valid", "0", this),
-            w_data("CFG_SYSBUS_DATA_BITS", "w_data", "0", this),
-            w_last("1", "w_last", "0", this),
-            w_strb("CFG_SYSBUS_DATA_BYTES", "w_strb", "0", this),
+            w_valid(this, "w_valid", "1", "0", NO_COMMENT),
+            w_data(this, "w_data", "CFG_SYSBUS_DATA_BITS", "'0", NO_COMMENT),
+            w_last(this, "w_last", "1", "0", NO_COMMENT),
+            w_strb(this, "w_strb", "CFG_SYSBUS_DATA_BYTES", "'0", NO_COMMENT),
             w_user(this, "w_user", "CFG_SYSBUS_USER_BITS", "'0", NO_COMMENT),
-            b_ready("1", "b_ready", "0", this),
-            ar_valid("1", "ar_valid", "0", this),
+            b_ready(this, "b_ready", "1", "0", NO_COMMENT),
+            ar_valid(this, "ar_valid", "1", "0", NO_COMMENT),
             ar_bits(this, "ar_bits", "META_NONE", NO_COMMENT),
-            ar_id("CFG_SYSBUS_ID_BITS", "ar_id", "0", this),
+            ar_id(this, "ar_id", "CFG_SYSBUS_ID_BITS", "'0", NO_COMMENT),
             ar_user(this, "ar_user", "CFG_SYSBUS_USER_BITS", "'0", NO_COMMENT),
-            r_ready("1", "r_ready", "0", this) {
+            r_ready(this, "r_ready", "1", "0", NO_COMMENT) {
         }
 
     public:
@@ -206,18 +206,18 @@ class types_amba : public FileObject {
      public:
         axi4_master_in_type(GenObject* parent, const char* name, const char* comment)
             : StructObject(parent, "axi4_master_in_type", name, comment),
-            aw_ready("1", "aw_ready", "0", this),
-            w_ready("1", "w_ready", "0", this),
-            b_valid("1", "b_valid", "0", this),
-            b_resp("2", "b_resp", "0", this),
-            b_id("CFG_SYSBUS_ID_BITS", "b_id", "0", this),
+            aw_ready(this, "aw_ready", "1", "0", NO_COMMENT),
+            w_ready(this, "w_ready", "1", "0", NO_COMMENT),
+            b_valid(this, "b_valid", "1", "0", NO_COMMENT),
+            b_resp(this, "b_resp", "2", "'0", NO_COMMENT),
+            b_id(this, "b_id", "CFG_SYSBUS_ID_BITS", "'0", NO_COMMENT),
             b_user(this, "b_user", "CFG_SYSBUS_USER_BITS", "'0", NO_COMMENT),
-            ar_ready("1", "ar_ready", "0", this),
-            r_valid("1", "r_valid", "0", this),
-            r_resp("2", "r_resp", "0", this),
-            r_data("CFG_SYSBUS_DATA_BITS", "r_data", "0", this),
-            r_last("1", "r_last", "0", this),
-            r_id("CFG_SYSBUS_ID_BITS", "r_id", "0", this),
+            ar_ready(this, "ar_ready", "1", "0", NO_COMMENT),
+            r_valid(this, "r_valid", "1", "0", NO_COMMENT),
+            r_resp(this, "r_resp", "2", "'0", NO_COMMENT),
+            r_data(this, "r_data", "CFG_SYSBUS_DATA_BITS", "'0", NO_COMMENT),
+            r_last(this, "r_last", "1", "0", NO_COMMENT),
+            r_id(this, "r_id", "CFG_SYSBUS_ID_BITS", "'0", NO_COMMENT),
             r_user(this, "r_user", "CFG_SYSBUS_USER_BITS", "'0", NO_COMMENT) {
         }
 
@@ -241,21 +241,21 @@ class types_amba : public FileObject {
      public:
         axi4_slave_in_type(GenObject* parent, const char* name, const char* comment)
             : StructObject(parent, "axi4_slave_in_type", name, comment),
-            aw_valid("1", "aw_valid", "0", this),
+            aw_valid(this, "aw_valid", "1", "0", NO_COMMENT),
             aw_bits(this, "aw_bits", "META_NONE", NO_COMMENT),
-            aw_id("CFG_SYSBUS_ID_BITS", "aw_id", "0", this),
+            aw_id(this, "aw_id", "CFG_SYSBUS_ID_BITS", "'0", NO_COMMENT),
             aw_user(this, "aw_user", "CFG_SYSBUS_USER_BITS", "'0", NO_COMMENT),
-            w_valid("1", "w_valid", "0", this),
-            w_data("CFG_SYSBUS_DATA_BITS", "w_data", "0", this),
-            w_last("1", "w_last", "0", this),
-            w_strb("CFG_SYSBUS_DATA_BYTES", "w_strb", "0", this),
+            w_valid(this, "w_valid", "1", "0", NO_COMMENT),
+            w_data(this, "w_data", "CFG_SYSBUS_DATA_BITS", "'0", NO_COMMENT),
+            w_last(this, "w_last", "1", "0", NO_COMMENT),
+            w_strb(this, "w_strb", "CFG_SYSBUS_DATA_BYTES", "'0", NO_COMMENT),
             w_user(this, "w_user", "CFG_SYSBUS_USER_BITS", "'0", NO_COMMENT),
-            b_ready("1", "b_ready", "0", this),
-            ar_valid("1", "ar_valid", "0", this),
+            b_ready(this, "b_ready", "1", "0", NO_COMMENT),
+            ar_valid(this, "ar_valid", "1", "0", NO_COMMENT),
             ar_bits(this, "ar_bits", "META_NONE", NO_COMMENT),
-            ar_id("CFG_SYSBUS_ID_BITS", "ar_id", "0", this),
+            ar_id(this, "ar_id", "CFG_SYSBUS_ID_BITS", "'0", NO_COMMENT),
             ar_user(this, "ar_user", "CFG_SYSBUS_USER_BITS", "'0", NO_COMMENT),
-            r_ready("1", "r_ready", "0", this) {
+            r_ready(this, "r_ready", "1", "0", NO_COMMENT) {
         }
 
     public:
@@ -280,18 +280,18 @@ class types_amba : public FileObject {
      public:
         axi4_slave_out_type(GenObject* parent, const char* name, const char* comment)
             : StructObject(parent, "axi4_slave_out_type", name, comment),
-            aw_ready("1", "aw_ready", "0", this),
-            w_ready("1", "w_ready", "0", this),
-            b_valid("1", "b_valid", "0", this),
-            b_resp("2", "b_resp", "0", this),
-            b_id("CFG_SYSBUS_ID_BITS", "b_id", "0", this),
+            aw_ready(this, "aw_ready", "1", "0", NO_COMMENT),
+            w_ready(this, "w_ready", "1", "0", NO_COMMENT),
+            b_valid(this, "b_valid", "1", "0", NO_COMMENT),
+            b_resp(this, "b_resp", "2", "'0", NO_COMMENT),
+            b_id(this, "b_id", "CFG_SYSBUS_ID_BITS", "'0", NO_COMMENT),
             b_user(this, "b_user", "CFG_SYSBUS_USER_BITS", "'0", NO_COMMENT),
-            ar_ready("1", "ar_ready", "0", this),
-            r_valid("1", "r_valid", "0", this),
-            r_resp("2", "r_resp", "0", this),
-            r_data("CFG_SYSBUS_DATA_BITS", "r_data", "0", this),
-            r_last("1", "r_last", "0", this),
-            r_id("CFG_SYSBUS_ID_BITS", "r_id", "0", this),
+            ar_ready(this, "ar_ready", "1", "0", NO_COMMENT),
+            r_valid(this, "r_valid", "1", "0", NO_COMMENT),
+            r_resp(this, "r_resp", "2", "'0", NO_COMMENT),
+            r_data(this, "r_data", "CFG_SYSBUS_DATA_BITS", "'0", NO_COMMENT),
+            r_last(this, "r_last", "1", "0", NO_COMMENT),
+            r_id(this, "r_id", "CFG_SYSBUS_ID_BITS", "'0", NO_COMMENT),
             r_user(this, "r_user", "CFG_SYSBUS_USER_BITS", "'0", NO_COMMENT) {}
 
      public:
@@ -315,13 +315,13 @@ class types_amba : public FileObject {
      public:
         apb_in_type(GenObject* parent, const char* name, const char* comment)
             : StructObject(parent, "apb_in_type", name, comment),
-            paddr("32", "paddr", "0", this),
-            pprot("3", "pprot", "0", this),
-            pselx("1", "pselx", "0", this),
-            penable("1", "penable", "0", this),
-            pwrite("1", "pwrite", "0", this),
-            pstrb("4", "pstrb", "0", this),
-            pwdata("32", "pwdata", "0", this) {}
+            paddr(this, "paddr", "32", "'0", NO_COMMENT),
+            pprot(this, "pprot", "3", "'0", NO_COMMENT),
+            pselx(this, "pselx", "1", "0", NO_COMMENT),
+            penable(this, "penable", "1", "0", NO_COMMENT),
+            pwrite(this, "pwrite", "1", "0", NO_COMMENT),
+            pstrb(this, "pstrb", "4", "'0", NO_COMMENT),
+            pwdata(this, "pwdata", "32", "'0", NO_COMMENT) {}
 
      public:
         Logic paddr;
@@ -338,9 +338,9 @@ class types_amba : public FileObject {
      public:
         apb_out_type(GenObject* parent, const char* name, const char* comment)
             : StructObject(parent, "apb_out_type", name, comment),
-            pready("1", "pready", "0", this, "when 1 it breaks callback to functional model"),
-            prdata("32", "prdata", "0", this),
-            pslverr("1", "pslverr", "0", this) {}
+            pready(this, "pready", "1", "0", "when 1 it breaks callback to functional model"),
+            prdata(this, "prdata", "32", "'0", NO_COMMENT),
+            pslverr(this, "pslverr", "1", "0", NO_COMMENT) {}
 
      public:
         Logic pready;

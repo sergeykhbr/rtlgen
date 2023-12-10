@@ -42,11 +42,11 @@ class CacheTop : public ModuleObject {
             v_queue_we(this, "v_queue_we", "1"),
             v_queue_re(this, "v_queue_re", "1"),
             v_req_mem_path_o(this, "v_req_mem_path_o", "1"),
-            vb_req_mem_type_o(this, "vb_req_mem_type_o", "REQ_MEM_TYPE_BITS"),
-            vb_req_mem_size_o(this, "vb_req_mem_size_o", "3"),
-            vb_req_mem_addr_o(this, "vb_req_mem_addr_o", "CFG_CPU_ADDR_BITS"),
-            vb_resp_ctrl_addr(this, "vb_resp_ctrl_addr", "RISCV_ARCH"),
-            vb_resp_data_addr(this, "vb_resp_data_addr", "RISCV_ARCH") {
+            vb_req_mem_type_o(this, "vb_req_mem_type_o", "REQ_MEM_TYPE_BITS", "'0", NO_COMMENT),
+            vb_req_mem_size_o(this, "vb_req_mem_size_o", "3", "'0", NO_COMMENT),
+            vb_req_mem_addr_o(this, "vb_req_mem_addr_o", "CFG_CPU_ADDR_BITS", "'0", NO_COMMENT),
+            vb_resp_ctrl_addr(this, "vb_resp_ctrl_addr", "RISCV_ARCH", "'0", NO_COMMENT),
+            vb_resp_data_addr(this, "vb_resp_data_addr", "RISCV_ARCH", "'0", NO_COMMENT) {
         }
 
      public:

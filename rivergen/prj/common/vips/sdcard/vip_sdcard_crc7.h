@@ -29,7 +29,7 @@ class vip_sdcard_crc7 : public ModuleObject {
         CombProcess(GenObject *parent) :
             ProcObject(parent, "comb"),
             v_inv7(this, "v_inv7", "1"),
-            vb_crc7(this, "vb_crc7", "7") {
+            vb_crc7(this, "vb_crc7", "7", "'0", NO_COMMENT) {
         }
 
      public:

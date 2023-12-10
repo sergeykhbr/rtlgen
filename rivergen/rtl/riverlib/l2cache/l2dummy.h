@@ -33,8 +33,8 @@ class L2Dummy : public ModuleObject {
             vl1o(this, "vl1o", "CFG_SLOT_L1_TOTAL", "axi4_l1_out_none", NO_COMMENT),
             vlxi(this, "vlxi", "CFG_SLOT_L1_TOTAL", "axi4_l1_in_none", NO_COMMENT),
             vl2o(this, "vl2o", "axi4_l2_out_none", NO_COMMENT),
-            vb_src_aw(this, "vb_src_aw", "CFG_SLOT_L1_TOTAL"),
-            vb_src_ar(this, "vb_src_ar", "CFG_SLOT_L1_TOTAL"),
+            vb_src_aw(this, "vb_src_aw", "CFG_SLOT_L1_TOTAL", "'0", NO_COMMENT),
+            vb_src_ar(this, "vb_src_ar", "CFG_SLOT_L1_TOTAL", "'0", NO_COMMENT),
             vb_srcid("0", "vb_srcid", this),
             v_selected(this, "v_selected", "1") {
         }

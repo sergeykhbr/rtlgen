@@ -31,16 +31,16 @@ class TagMemNWay : public ModuleObject {
      public:
         CombProcess(GenObject *parent) :
             ProcObject(parent, "comb"),
-            vb_raddr(this, "vb_raddr", "abus"),
-            vb_rdata(this, "vb_rdata", "MUL(8,POW2(1,lnbits))"),
-            vb_rflags(this, "vb_rflags", "flbits"),
+            vb_raddr(this, "vb_raddr", "abus", "'0", NO_COMMENT),
+            vb_rdata(this, "vb_rdata", "MUL(8,POW2(1,lnbits))", "'0", NO_COMMENT),
+            vb_rflags(this, "vb_rflags", "flbits", "'0", NO_COMMENT),
             v_hit(this, "v_hit", "1"),
-            vb_hit_idx(this, "vb_hit_idx", "waybits"),
+            vb_hit_idx(this, "vb_hit_idx", "waybits", "'0", NO_COMMENT),
             v_way_we(this, "v_way_we", "1"),
-            vb_wstrb(this, "vb_wstrb", "POW2(1,lnbits)"),
-            vb_wflags(this, "vb_wflags", "flbits"),
+            vb_wstrb(this, "vb_wstrb", "POW2(1,lnbits)", "'0", NO_COMMENT),
+            vb_wflags(this, "vb_wflags", "flbits", "'0", NO_COMMENT),
             v_snoop_ready(this, "v_snoop_ready", "1"),
-            vb_snoop_flags(this, "vb_snoop_flags", "flbits") {
+            vb_snoop_flags(this, "vb_snoop_flags", "flbits", "'0", NO_COMMENT) {
         }
 
      public:

@@ -29,17 +29,17 @@ class types_pnp : public FileObject {
         dev_config_type(GenObject *parent, const char *name, const char *comment)
             : StructObject(parent, "dev_config_type", name, comment),
             _0_(this, "Descriptor size in bytes."),
-            descrsize("8", "descrsize", "PNP_CFG_DEV_DESCR_BYTES", this),
+            descrsize(this, "descrsize", "8", "PNP_CFG_DEV_DESCR_BYTES", NO_COMMENT),
             _1_(this, "Descriptor type."),
-            descrtype("2", "descrtype", "PNP_CFG_TYPE_SLAVE", this),
+            descrtype(this, "descrtype", "2", "PNP_CFG_TYPE_SLAVE", NO_COMMENT),
             _2_(this, "Base Address."),
-            addr_start("64", "addr_start", "0", this),
+            addr_start(this, "addr_start", "64", "'0", NO_COMMENT),
             _3_(this, "End of the base address."),
-            addr_end("64", "addr_end", "0", this),
+            addr_end(this, "addr_end", "64", "'0", NO_COMMENT),
             _4_(this, "Vendor ID."),
-            vid("16", "vid", "VENDOR_GNSSSENSOR", this),
+            vid(this, "vid", "16", "VENDOR_GNSSSENSOR", NO_COMMENT),
             _5_(this, "Device ID."),
-            did("16", "did", "SLV_DID_EMPTY", this) {
+            did(this, "did", "16", "SLV_DID_EMPTY", NO_COMMENT) {
             disableVcd();
         }
 

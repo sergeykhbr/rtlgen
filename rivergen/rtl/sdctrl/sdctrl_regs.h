@@ -33,7 +33,7 @@ class sdctrl_regs : public ModuleObject {
             ProcObject(parent, "comb"),
             v_posedge(this, "v_posedge", "1"),
             v_negedge(this, "v_negedge", "1"),
-            vb_rdata(this, "vb_rdata", "32") {
+            vb_rdata(this, "vb_rdata", "32", "'0", NO_COMMENT) {
         }
 
      public:

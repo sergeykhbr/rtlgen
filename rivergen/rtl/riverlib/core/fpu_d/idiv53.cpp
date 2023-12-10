@@ -38,12 +38,12 @@ idiv53::idiv53(GenObject *parent, const char *name, const char *comment) :
     wb_muxind_o(this, "wb_muxind_o", "7"),
     w_muxind_rdy_o(this, "w_muxind_rdy_o", "1"),
     // registers
-    delay(this, "delay", "15"),
-    lshift(this, "lshift", "7"),
+    delay(this, "delay", "15", "'0", NO_COMMENT),
+    lshift(this, "lshift", "7", "'0", NO_COMMENT),
     lshift_rdy(this, "lshift_rdy", "1"),
-    divisor(this, "divisor", "53"),
-    divident(this, "divident", "61"),
-    bits(this, "bits", "105"),
+    divisor(this, "divisor", "53", "'0", NO_COMMENT),
+    divident(this, "divident", "61", "'0", NO_COMMENT),
+    bits(this, "bits", "105", "'0", NO_COMMENT),
     overflow(this, "overflow", "1"),
     zero_resid(this, "zero_resid", "1"),
     // process

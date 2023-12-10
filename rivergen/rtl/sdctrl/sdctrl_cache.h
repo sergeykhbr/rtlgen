@@ -30,24 +30,24 @@ class sdctrl_cache : public ModuleObject {
      public:
         CombProcess(GenObject *parent) :
             ProcObject(parent, "comb"),
-            vb_cache_line_i_modified(this, "vb_cache_line_i_modified", "SDCACHE_LINE_BITS"),
-            vb_line_rdata_o_modified(this, "vb_line_rdata_o_modified", "SDCACHE_LINE_BITS"),
-            vb_line_rdata_o_wstrb(this, "vb_line_rdata_o_wstrb", "SDCACHE_BYTES_PER_LINE"),
+            vb_cache_line_i_modified(this, "vb_cache_line_i_modified", "SDCACHE_LINE_BITS", "'0", NO_COMMENT),
+            vb_line_rdata_o_modified(this, "vb_line_rdata_o_modified", "SDCACHE_LINE_BITS", "'0", NO_COMMENT),
+            vb_line_rdata_o_wstrb(this, "vb_line_rdata_o_wstrb", "SDCACHE_BYTES_PER_LINE", "'0", NO_COMMENT),
             v_req_ready(this, "v_req_ready", "1"),
-            t_cache_line_i(this, "t_cache_line_i", "SDCACHE_LINE_BITS"),
-            vb_cached_data(this, "vb_cached_data", "64"),
-            vb_uncached_data(this, "vb_uncached_data", "64"),
+            t_cache_line_i(this, "t_cache_line_i", "SDCACHE_LINE_BITS", "'0", NO_COMMENT),
+            vb_cached_data(this, "vb_cached_data", "64", "'0", NO_COMMENT),
+            vb_uncached_data(this, "vb_uncached_data", "64", "'0", NO_COMMENT),
             v_resp_valid(this, "v_resp_valid", "1"),
-            vb_resp_data(this, "vb_resp_data", "64"),
+            vb_resp_data(this, "vb_resp_data", "64", "'0", NO_COMMENT),
             v_flush_end(this, "v_flush_end", "1"),
-            vb_line_wdata(this, "vb_line_wdata", "SDCACHE_LINE_BITS"),
-            vb_line_wstrb(this, "vb_line_wstrb", "SDCACHE_BYTES_PER_LINE"),
-            vb_req_mask(this, "vb_req_mask", "64"),
-            vb_line_wflags(this, "vb_line_wflags", "SDCACHE_FL_TOTAL"),
-            ridx(this, "ridx", "SUB(CFG_LOG2_SDCACHE_BYTES_PER_LINE,3)"),
+            vb_line_wdata(this, "vb_line_wdata", "SDCACHE_LINE_BITS", "'0", NO_COMMENT),
+            vb_line_wstrb(this, "vb_line_wstrb", "SDCACHE_BYTES_PER_LINE", "'0", NO_COMMENT),
+            vb_req_mask(this, "vb_req_mask", "64", "'0", NO_COMMENT),
+            vb_line_wflags(this, "vb_line_wflags", "SDCACHE_FL_TOTAL", "'0", NO_COMMENT),
+            ridx(this, "ridx", "SUB(CFG_LOG2_SDCACHE_BYTES_PER_LINE,3)", "'0", NO_COMMENT),
             v_req_same_line(this, "v_req_same_line", "1"),
             v_mem_addr_last(this, "v_mem_addr_last", "1"),
-            vb_addr_direct_next(this, "vb_addr_direct_next", "CFG_SDCACHE_ADDR_BITS") {
+            vb_addr_direct_next(this, "vb_addr_direct_next", "CFG_SDCACHE_ADDR_BITS", "'0", NO_COMMENT) {
         }
 
      public:

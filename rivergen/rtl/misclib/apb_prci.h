@@ -34,7 +34,7 @@ class apb_prci : public ModuleObject {
      public:
         CombProcess(GenObject *parent) :
             ProcObject(parent, "comb"),
-            vb_rdata(this, "vb_rdata", "32") {
+            vb_rdata(this, "vb_rdata", "32", "'0", NO_COMMENT) {
         }
 
      public:

@@ -29,19 +29,19 @@ class DecoderRvc : public ModuleObject {
      public:
         CombProcess(GenObject *parent) : ProcObject(parent, "comb"),
             v_error(this, "v_error", "1"),
-            vb_instr(this, "vb_instr", "16"),
-            vb_opcode1(this, "vb_opcode1", "5"),
-            vb_opcode2(this, "vb_opcode2", "3"),
+            vb_instr(this, "vb_instr", "16", "'0", NO_COMMENT),
+            vb_opcode1(this, "vb_opcode1", "5", "'0", NO_COMMENT),
+            vb_opcode2(this, "vb_opcode2", "3", "'0", NO_COMMENT),
             vb_dec(this, "vb_dec", "Instr_Total"),
-            vb_isa_type(this, "vb_isa_type", "ISA_Total"),
-            vb_radr1(this, "vb_radr1", "6"),
-            vb_radr2(this, "vb_radr2", "6"),
-            vb_waddr(this, "vb_waddr", "6"),
-            vb_imm(this, "vb_imm", "RISCV_ARCH"),
+            vb_isa_type(this, "vb_isa_type", "ISA_Total", "'0", NO_COMMENT),
+            vb_radr1(this, "vb_radr1", "6", "'0", NO_COMMENT),
+            vb_radr2(this, "vb_radr2", "6", "'0", NO_COMMENT),
+            vb_waddr(this, "vb_waddr", "6", "'0", NO_COMMENT),
+            vb_imm(this, "vb_imm", "RISCV_ARCH", "'0", NO_COMMENT),
             v_memop_store(this, "v_memop_store", "1"),
             v_memop_load(this, "v_memop_load", "1"),
             v_memop_sign_ext(this, "v_memop_sign_ext", "1"),
-            vb_memop_size(this, "vb_memop_size", "2"),
+            vb_memop_size(this, "vb_memop_size", "2", "'0", NO_COMMENT),
             v_rv32(this, "v_rv32", "1")
         {
             Operation::start(this);

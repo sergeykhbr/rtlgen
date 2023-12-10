@@ -34,17 +34,17 @@ class TagMemCoupled : public ModuleObject {
             v_addr_sel_r(this, "v_addr_sel_r", "1"),
             v_use_overlay(this, "v_use_overlay", "1"),
             v_use_overlay_r(this, "v_use_overlay_r", "1"),
-            vb_index(this, "vb_index", "ibits"),
-            vb_index_next(this, "vb_index_next", "ibits"),
-            vb_addr_next(this, "vb_addr_next", "abus"),
-            vb_addr_tag_direct(this, "vb_addr_tag_direct", "abus"),
-            vb_addr_tag_next(this, "vb_addr_tag_next", "abus"),
-            vb_raddr_tag(this, "vb_raddr_tag", "abus"),
-            vb_o_raddr(this, "vb_o_raddr", "abus"),
-            vb_o_rdata(this, "vb_o_rdata", "ADD(MUL(8,POW2(1,lnbits)),32)"),
+            vb_index(this, "vb_index", "ibits", "'0", NO_COMMENT),
+            vb_index_next(this, "vb_index_next", "ibits", "'0", NO_COMMENT),
+            vb_addr_next(this, "vb_addr_next", "abus", "'0", NO_COMMENT),
+            vb_addr_tag_direct(this, "vb_addr_tag_direct", "abus", "'0", NO_COMMENT),
+            vb_addr_tag_next(this, "vb_addr_tag_next", "abus", "'0", NO_COMMENT),
+            vb_raddr_tag(this, "vb_raddr_tag", "abus", "'0", NO_COMMENT),
+            vb_o_raddr(this, "vb_o_raddr", "abus", "'0", NO_COMMENT),
+            vb_o_rdata(this, "vb_o_rdata", "ADD(MUL(8,POW2(1,lnbits)),32)", "'0", NO_COMMENT),
             v_o_hit(this, "v_o_hit", "1"),
             v_o_hit_next(this, "v_o_hit_next", "1"),
-            vb_o_rflags(this, "vb_o_rflags", "flbits") {
+            vb_o_rflags(this, "vb_o_rflags", "flbits", "'0", NO_COMMENT) {
         }
 
      public:

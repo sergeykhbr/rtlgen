@@ -23,20 +23,27 @@ std::string ParamString::generate() {
     std::string ret = "";
     ret += addspaces();
     if (SCV_is_sysc()) {
-        ret += "static const ";
+        ret += "static const " + getType() + " ";
     } else if (SCV_is_sv()) {
+        // Vivado doesn't support string parameters, skip type
         ret += "localparam ";
     } else if (SCV_is_vhdl()) {
-        ret += "constant ";
+        ret += "constant " + getType() + " ";
     }
-    ret += getType() + " " + getName();
+    ret += getName();
     if (getObjDepth() == 0) {
         ret += " = " + getStrValue() + ";\n";
         return ret;
     }
 
-    ret += "[" + getStrDepth() + "] = ";
-
+    if (SCV_is_sysc()) {
+        ret += "[" + getStrDepth() + "]";
+    } else if (SCV_is_sv()) {
+        ret += "[0:" + getStrDepth() + "-1]";
+    } else if (SCV_is_vhdl()) {
+        ret += "(0 up " + getStrDepth() +"-1)";
+    }
+    ret += " = ";
     if (SCV_is_sysc()) {
         ret += "{\n";
     } else if (SCV_is_sv()) {

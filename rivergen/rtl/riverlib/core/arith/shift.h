@@ -29,16 +29,16 @@ class Shifter : public ModuleObject {
      public:
         CombProcess(GenObject *parent) :
             ProcObject(parent, "comb"),
-            wb_sll(this, "wb_sll", "64"),
-            wb_sllw(this, "wb_sllw", "64"),
-            wb_srl(this, "wb_srl", "64"),
-            wb_sra(this, "wb_sra", "64"),
-            wb_srlw(this, "wb_srlw", "64"),
-            wb_sraw(this, "wb_sraw", "64"),
-            v64(this, "v64", "64"),
-            v32(this, "v32", "32"),
-            msk64(this, "msk64", "64"),
-            msk32(this, "msk32", "64")
+            wb_sll(this, "wb_sll", "64", "'0", NO_COMMENT),
+            wb_sllw(this, "wb_sllw", "64", "'0", NO_COMMENT),
+            wb_srl(this, "wb_srl", "64", "'0", NO_COMMENT),
+            wb_sra(this, "wb_sra", "64", "'0", NO_COMMENT),
+            wb_srlw(this, "wb_srlw", "64", "'0", NO_COMMENT),
+            wb_sraw(this, "wb_sraw", "64", "'0", NO_COMMENT),
+            v64(this, "v64", "64", "'0", NO_COMMENT),
+            v32(this, "v32", "32", "'0", NO_COMMENT),
+            msk64(this, "msk64", "64", "'0", NO_COMMENT),
+            msk32(this, "msk32", "64", "'0", NO_COMMENT)
         {
         }
 

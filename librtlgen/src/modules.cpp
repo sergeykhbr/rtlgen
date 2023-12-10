@@ -218,4 +218,62 @@ void ModuleObject::getIoList(std::list<GenObject *> &iolist) {
     }
 }
 
+std::string ModuleObject::generate_all_proc_nullify(GenObject *obj,
+                                                    std::string prefix,
+                                                    std::string i) {
+    std::string ret = "";
+    if (((obj->isValue() && !obj->isConst())
+        || (obj->isStruct() && !obj->isTypedef())) == 0) {
+        return ret;
+    }
+
+    if (prefix.size()) {
+        prefix += ".";
+    }
+    prefix += obj->getName();
+
+    if (obj->getObjDepth()) {
+        prefix += "[" + i + "]";
+        ret += addspaces();
+        ret += "for (int " + i + " = 0; " + i + " < " + obj->getStrDepth() + "; " + i + "++)";
+        if (SCV_is_sysc()) {
+            ret += " {";
+        } else if (SCV_is_sv()) {
+            ret += " begin";
+        } else if (SCV_is_vhdl()) {
+            ret += " begin";
+        }
+        ret += "\n";
+        pushspaces();
+
+        const char tidx[2] = {static_cast<char>(static_cast<int>(i.c_str()[0]) + 1), 0};
+        i = std::string(tidx);
+    }
+
+    if (obj->isStruct()
+        && ((SCV_is_sysc() && obj->getStrValue().c_str()[0] == '{')
+            || (SCV_is_sv() && obj->getStrValue().c_str()[0] == '\''))) {
+        for (auto &p : obj->getEntries()) {
+            ret += generate_all_proc_nullify(p, prefix, i);
+        }
+    } else {
+        ret += addspaces() + prefix + " = " + obj->getStrValue() + ";\n";
+    }
+
+    if (obj->getObjDepth()) {
+        popspaces();
+        ret += addspaces();
+        if (SCV_is_sysc()) {
+            ret += "}";
+        } else if (SCV_is_sv()) {
+            ret += "end";
+        } else if (SCV_is_vhdl()) {
+            ret += "end";
+        }
+        ret += "\n";
+    }
+    return ret;
+}
+
+
 }

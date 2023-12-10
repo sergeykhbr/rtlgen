@@ -33,12 +33,12 @@ class BranchPredictor : public ModuleObject {
             ProcObject(parent, "comb"),
             vb_addr(this, "vb_addr", "RISCV_ARCH", "CFG_BP_DEPTH"),
             vb_piped(this, "vb_piped", "SUB(RISCV_ARCH,2)", "4"),
-            vb_fetch_npc(this, "vb_fetch_npc", "RISCV_ARCH"),
+            vb_fetch_npc(this, "vb_fetch_npc", "RISCV_ARCH", "'0", NO_COMMENT),
             v_btb_we(this, "v_btb_we", "1"),
-            vb_btb_we_pc(this, "vb_btb_we_pc", "RISCV_ARCH"),
-            vb_btb_we_npc(this, "vb_btb_we_npc", "RISCV_ARCH"),
-            vb_hit(this, "vb_hit", "4"),
-            vb_ignore_pd(this, "vb_ignore_pd", "2") {
+            vb_btb_we_pc(this, "vb_btb_we_pc", "RISCV_ARCH", "'0", NO_COMMENT),
+            vb_btb_we_npc(this, "vb_btb_we_npc", "RISCV_ARCH", "'0", NO_COMMENT),
+            vb_hit(this, "vb_hit", "4", "'0", NO_COMMENT),
+            vb_ignore_pd(this, "vb_ignore_pd", "2", "'0", NO_COMMENT) {
             proc_comb();
         }
 

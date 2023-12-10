@@ -29,17 +29,17 @@ class IntMul : public ModuleObject {
      public:
         CombProcess(GenObject *parent) :
             ProcObject(parent, "comb"),
-            vb_a1(this, "vb_a1", "RISCV_ARCH"),
-            vb_a2(this, "vb_a2", "RISCV_ARCH"),
-            wb_mux_lvl0(this, "wb_mux_lvl0", "2"),
+            vb_a1(this, "vb_a1", "RISCV_ARCH", "'0", NO_COMMENT),
+            vb_a2(this, "vb_a2", "RISCV_ARCH", "'0", NO_COMMENT),
+            wb_mux_lvl0(this, "wb_mux_lvl0", "2", "'0", NO_COMMENT),
             wb_lvl0(this, "wb_lvl0", "66", "32"),
             wb_lvl2(this, "wb_lvl2", "74", "8"),
             wb_lvl4(this, "wb_lvl4", "100", "2"),
             wb_lvl5(this, "wb_lvl5", "128"),
             wb_res32(this, "wb_res32", "128"),
-            wb_res(this, "wb_res", "64"),
-            vb_a1s(this, "vb_a1s", "64"),
-            vb_a2s(this, "vb_a2s", "64"),
+            wb_res(this, "wb_res", "64", "'0", NO_COMMENT),
+            vb_a1s(this, "vb_a1s", "64", "'0", NO_COMMENT),
+            vb_a2s(this, "vb_a2s", "64", "'0", NO_COMMENT),
             v_a1s_nzero(this, "v_a1s_nzero", "1"),
             v_a2s_nzero(this, "v_a2s_nzero", "1"),
             v_ena(this, "v_ena", "1", "0", NO_COMMENT)

@@ -26,7 +26,7 @@ sdctrl_wdog::sdctrl_wdog(GenObject *parent, const char *name, const char *commen
     // parameters
     // signals
     // registers
-    cnt(this, "cnt", "16"),
+    cnt(this, "cnt", "16", "'0", NO_COMMENT),
     trigger(this, "trigger", "1"),
     //
     comb(this)

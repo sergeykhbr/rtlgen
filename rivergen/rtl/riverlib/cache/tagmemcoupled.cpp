@@ -47,7 +47,7 @@ TagMemCoupled::TagMemCoupled(GenObject *parent, const char *name, const char *co
     tagmem_out_type_def_(this, "tagmem_out_type", NO_COMMENT),
     linei(this, "linei", "MemTotal", NO_COMMENT),
     lineo(this, "lineo", "MemTotal", NO_COMMENT),
-    req_addr(this, "req_addr", "abus"),
+    req_addr(this, "req_addr", "abus", "'0", NO_COMMENT),
     // process
     comb(this),
     memx(this, "memx", "MemTotal", NO_COMMENT)

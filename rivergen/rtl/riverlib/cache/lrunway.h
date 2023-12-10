@@ -29,12 +29,12 @@ class lrunway : public ModuleObject {
      public:
         CombProcess(GenObject *parent) :
             ProcObject(parent, "comb"),
-            vb_tbl_rdata(this, "wb_tbl_rdata", "LINE_WIDTH"),
-            vb_tbl_wadr(this, "vb_tbl_wadr", "abits"),
-            vb_tbl_wdata_init(this, "vb_tbl_wdata_init", "LINE_WIDTH"),
-            vb_tbl_wdata_up(this, "vb_tbl_wdata_up", "LINE_WIDTH"),
-            vb_tbl_wdata_down(this, "vb_tbl_wdata_down", "LINE_WIDTH"),
-            vb_tbl_wdata(this, "vb_tbl_wdata", "LINE_WIDTH"),
+            vb_tbl_rdata(this, "wb_tbl_rdata", "LINE_WIDTH", "'0", NO_COMMENT),
+            vb_tbl_wadr(this, "vb_tbl_wadr", "abits", "'0", NO_COMMENT),
+            vb_tbl_wdata_init(this, "vb_tbl_wdata_init", "LINE_WIDTH", "'0", NO_COMMENT),
+            vb_tbl_wdata_up(this, "vb_tbl_wdata_up", "LINE_WIDTH", "'0", NO_COMMENT),
+            vb_tbl_wdata_down(this, "vb_tbl_wdata_down", "LINE_WIDTH", "'0", NO_COMMENT),
+            vb_tbl_wdata(this, "vb_tbl_wdata", "LINE_WIDTH", "'0", NO_COMMENT),
             v_we(this, "v_we", "1"),
             shift_ena_up(this, "shift_ena_up", "1"),
             shift_ena_down(this, "shift_ena_down", "1") {

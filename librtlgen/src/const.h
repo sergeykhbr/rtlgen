@@ -97,6 +97,18 @@ class DecLogicConst : public DecConst {
     GenObject *objWidth_;
 };
 
+/**
+    Special case of DecLogicConst to use in INC()/DEC() operation,
+    in this case no need to output buswidth in SV, just 1 instead of 32'd1
+ */
+class DecLogicConstOne : public DecLogicConst {
+ public:
+    DecLogicConstOne(GenObject *width, uint64_t val)
+        : DecLogicConst(width, val) {}
+
+    virtual std::string getStrValue() override;
+};
+
 class HexLogicConst : public HexConst {
  public:
     HexLogicConst(GenObject *width, uint64_t val);

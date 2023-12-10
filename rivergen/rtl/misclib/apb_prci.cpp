@@ -43,7 +43,7 @@ apb_prci::apb_prci(GenObject *parent, const char *name, const char *comment) :
     sys_locked(this, "sys_locked", "1"),
     ddr_locked(this, "ddr_locked", "1"),
     resp_valid(this, "resp_valid", "1"),
-    resp_rdata(this, "resp_rdata", "32"),
+    resp_rdata(this, "resp_rdata", "32", "'0", NO_COMMENT),
     resp_err(this, "resp_err", "1"),
     //
     comb(this),

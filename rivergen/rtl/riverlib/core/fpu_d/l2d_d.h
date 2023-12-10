@@ -30,16 +30,16 @@ class Long2Double : public ModuleObject {
         CombProcess(GenObject *parent) :
             ProcObject(parent, "comb"),
             v_ena(this, "v_ena", "1", "0", NO_COMMENT),
-            mantAlign(this, "mantAlign", "64"),
-            lshift(this, "lshift", "6"),
-            expAlign(this, "expAlign", "11"),
+            mantAlign(this, "mantAlign", "64", "'0", NO_COMMENT),
+            lshift(this, "lshift", "6", "'0", NO_COMMENT),
+            expAlign(this, "expAlign", "11", "'0", NO_COMMENT),
             mantEven(this, "mantEven", "1"),
             mant05(this, "mant05", "1"),
             mantOnes(this, "mantOnes", "1"),
             rndBit(this, "rndBit", "1"),
             v_signA(this, "v_signA", "1"),
-            vb_A(this, "vb_A", "64"),
-            res(this, "res", "64") {
+            vb_A(this, "vb_A", "64", "'0", NO_COMMENT),
+            res(this, "res", "64", "'0", NO_COMMENT) {
         }
 
      public:

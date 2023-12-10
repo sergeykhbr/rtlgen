@@ -30,7 +30,7 @@ class vip_sdcard_cmdio : public ModuleObject {
      public:
         CombProcess(GenObject *parent) :
             ProcObject(parent, "comb"),
-            vb_cmd_txshift(this, "vb_cmd_txshift", "48"),
+            vb_cmd_txshift(this, "vb_cmd_txshift", "48", "'0", NO_COMMENT),
             v_crc7_clear(this, "v_crc7_clear", "1"),
             v_crc7_next(this, "v_crc7_next", "1"),
             v_crc7_in(this, "v_crc7_in", "1"),

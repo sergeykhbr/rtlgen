@@ -30,7 +30,7 @@ class sdctrl_spimode : public ModuleObject {
         CombProcess(GenObject *parent) :
             ProcObject(parent, "comb"),
             v_dat(this, "v_dat", "1"),
-            vb_cmd_req_arg(this, "vb_cmd_req_arg", "32"),
+            vb_cmd_req_arg(this, "vb_cmd_req_arg", "32", "'0", NO_COMMENT),
             v_data_req_ready(this, "v_data_req_ready", "1"),
             v_crc16_next(this, "v_crc16_next", "1") {
             }

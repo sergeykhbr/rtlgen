@@ -29,7 +29,7 @@ class sdctrl_crc16 : public ModuleObject {
         CombProcess(GenObject *parent) :
             ProcObject(parent, "comb"),
             v_inv16(this, "v_inv16_0", "1"),
-            vb_crc16(this, "vb_crc16_0", "16") {
+            vb_crc16(this, "vb_crc16_0", "16", "'0", NO_COMMENT) {
         }
 
      public:

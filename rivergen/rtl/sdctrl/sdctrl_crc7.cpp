@@ -27,7 +27,7 @@ sdctrl_crc7::sdctrl_crc7(GenObject *parent, const char *name, const char *commen
     // params
     // signals
     // registers
-    crc7(this, "crc7", "7"),
+    crc7(this, "crc7", "7", "'0", NO_COMMENT),
     //
     comb(this)
 {

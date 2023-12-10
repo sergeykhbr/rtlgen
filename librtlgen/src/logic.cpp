@@ -73,11 +73,20 @@ std::string Logic::getType() {
         }
         if (getWidth() > 1) {
             ret += " [";
-            if (isConst()) {
+            if (strw.c_str()[0] >= '0' && strw.c_str()[0] <= '9') {
                 char tstr[256];
                 RISCV_sprintf(tstr, sizeof(tstr), "%d", getWidth() - 1);
                 ret += tstr;
             } else {
+                if (SCV_is_sv_pkg() && !objWidth_->isParamGeneric()) {
+                    GenObject *pfile = objWidth_;
+                    while (pfile && !pfile->isFile()) {
+                        pfile = pfile->getParent();
+                    }
+                    if (pfile) {
+                        ret += pfile->getName() + "_pkg::";
+                    }
+                }
                 ret += strw + "-1";
             }
             ret += ":0]";
@@ -87,7 +96,7 @@ std::string Logic::getType() {
             ret = std::string("std_logic");
         } else {
             ret += "std_logic_vector(";
-            if (isConst()) {
+            if (strw.c_str()[0] >= '0' && strw.c_str()[0] <= '9') {
                 char tstr[256];
                 RISCV_sprintf(tstr, sizeof(tstr), "%d", getWidth() - 1);
                 ret += tstr;
@@ -158,11 +167,39 @@ std::string Logic::generate() {
 std::string Logic1::getType() {
     std::string ret = "";
 
-    if (getWidth() == 1 && SCV_is_sysc()) {
-        if (isParam() && !isParamGeneric()) {
-            ret += "bool";
-        } else {
-            ret += "sc_uint<" + getStrWidth() + ">";
+    if (getWidth() == 1) {
+        std::string strw = getStrWidth();
+        if (SCV_is_sysc()) {
+            if (isParam() && !isParamGeneric()) {
+                ret += "bool";
+            } else {
+                ret += "sc_uint<" + strw + ">";
+            }
+        } else if (SCV_is_sv()) {
+            if (isParam() && !isParamGeneric()) {
+                ret = std::string("bit");
+            } else {
+                ret = std::string("logic");
+            }
+            if (strw.c_str()[0] >= '0' && strw.c_str()[0] <= '9') {
+                // do nothing in SV:
+            } else {
+                ret += " [";
+                if (SCV_is_sv_pkg() && !objWidth_->isParamGeneric()) {
+                    GenObject *pfile = objWidth_;
+                    while (pfile && !pfile->isFile()) {
+                        pfile = pfile->getParent();
+                    }
+                    if (pfile) {
+                        ret += pfile->getName() + "_pkg::";
+                    }
+                }
+                ret += strw + "-1";
+                ret += ":0]";
+            }
+        } else if (SCV_is_vhdl()) {
+            // vhdl
+            return Logic::getType();
         }
     } else {
         return Logic::getType();

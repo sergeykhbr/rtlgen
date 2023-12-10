@@ -31,8 +31,8 @@ class idiv53 : public ModuleObject {
         CombProcess(GenObject *parent) :
             ProcObject(parent, "comb"),
             v_ena(this, "v_ena", "1", "0", NO_COMMENT),
-            vb_muxind(this, "vb_muxind", "56"),
-            vb_bits(this, "vb_bits", "105"),
+            vb_muxind(this, "vb_muxind", "56", "'0", NO_COMMENT),
+            vb_bits(this, "vb_bits", "105", "'0", NO_COMMENT),
             v_mux_ena_i(this, "v_mux_ena_i", "1") {
         }
 

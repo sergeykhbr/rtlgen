@@ -32,9 +32,9 @@ class clint : public ModuleObject {
      public:
         CombProcess(GenObject *parent) :
             ProcObject(parent, "comb"),
-            vrdata(this, "vrdata", "CFG_SYSBUS_DATA_BITS"),
-            vb_msip(this, "vb_msip", "cpu_total"),
-            vb_mtip(this, "vb_mtip", "cpu_total"),
+            vrdata(this, "vrdata", "CFG_SYSBUS_DATA_BITS", "'0", NO_COMMENT),
+            vb_msip(this, "vb_msip", "cpu_total", "'0", NO_COMMENT),
+            vb_mtip(this, "vb_mtip", "cpu_total", "'0", NO_COMMENT),
             regidx("0", "regidx", this) {
         }
 

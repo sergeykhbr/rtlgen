@@ -31,13 +31,13 @@ class TagMem : public ModuleObject {
      public:
         CombProcess(GenObject *parent) :
             ProcObject(parent, "comb"),
-            vb_index(this, "vb_index", "ibits"),
-            vb_raddr(this, "vb_raddr", "abus"),
-            vb_tagi_wdata(this, "vb_tagi_wdata", "TAG_WITH_FLAGS"),
+            vb_index(this, "vb_index", "ibits", "'0", NO_COMMENT),
+            vb_raddr(this, "vb_raddr", "abus", "'0", NO_COMMENT),
+            vb_tagi_wdata(this, "vb_tagi_wdata", "TAG_WITH_FLAGS", "'0", NO_COMMENT),
             v_hit(this, "v_hit", "1"),
-            vb_snoop_index(this, "vb_snoop_index", "ibits"),
-            vb_snoop_tagaddr(this, "vb_snoop_tagaddr", "TAG_BITS"),
-            vb_snoop_flags(this, "vb_snoop_flags", "flbits") {
+            vb_snoop_index(this, "vb_snoop_index", "ibits", "'0", NO_COMMENT),
+            vb_snoop_tagaddr(this, "vb_snoop_tagaddr", "TAG_BITS", "'0", NO_COMMENT),
+            vb_snoop_flags(this, "vb_snoop_flags", "flbits", "'0", NO_COMMENT) {
         }
 
      public:
