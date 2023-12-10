@@ -27,6 +27,9 @@ std::string ParamString::generate() {
     } else if (SCV_is_sv()) {
         // Vivado doesn't support string parameters, skip type
         ret += "localparam ";
+        if (getObjDepth()) {
+            ret += "string ";       // ncsim doesnot compile without it with string array (tracer)
+        }
     } else if (SCV_is_vhdl()) {
         ret += "constant " + getType() + " ";
     }

@@ -83,7 +83,7 @@ std::string DecLogicConst::getStrValue() {
             SHOW_ERROR("Unsupported constant %" RV_PRI64 "x", ui64_);
         }
         if (SCV_is_sysc()) {
-            RISCV_sprintf(tstr, sizeof(tstr), "%dull", 0);
+            RISCV_sprintf(tstr, sizeof(tstr), "%d", 0);
         } else if (SCV_is_sv()) {
             RISCV_sprintf(tstr, sizeof(tstr), "'%d", 0);
         } else if (SCV_is_vhdl()) {
@@ -130,7 +130,7 @@ std::string HexLogicConst::getStrValue() {
             SHOW_ERROR("Unsupported constant %" RV_PRI64 "x", ui64_);
         }
         if (SCV_is_sysc()) {
-            RISCV_sprintf(tstr, sizeof(tstr), "%dull", 0);
+            RISCV_sprintf(tstr, sizeof(tstr), "%d", 0);
         } else if (SCV_is_sv()) {
             RISCV_sprintf(tstr, sizeof(tstr), "'%d", 0);
         } else if (SCV_is_vhdl()) {

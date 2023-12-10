@@ -162,8 +162,8 @@ TEXT();
     ENDNEW();
 
 TEXT();
-    group0.cpu_num.setObjValue(&glob_target_cfg_->CFG_CPU_NUM);
-    group0.l2cache_ena.setObjValue(&glob_target_cfg_->CFG_L2CACHE_ENA);
+    group0.cpu_num.setObjValue(SCV_get_cfg_type(this, "CFG_CPU_NUM"));
+    group0.l2cache_ena.setObjValue(SCV_get_cfg_type(this, "CFG_L2CACHE_ENA"));
     NEW(group0, group0.getName().c_str());
         CONNECT(group0, 0, group0.i_clk, i_sys_clk);
         CONNECT(group0, 0, group0.i_cores_nrst, i_sys_nrst);
@@ -191,8 +191,8 @@ TEXT();
     ENDNEW();
 
 TEXT();
-    rom0.abits.setObjValue(&glob_target_cfg_->CFG_BOOTROM_LOG2_SIZE);
-    rom0.filename.setObjValue(&glob_target_cfg_->CFG_BOOTROM_FILE_HEX);
+    rom0.abits.setObjValue(SCV_get_cfg_type(this, "CFG_BOOTROM_LOG2_SIZE"));
+    rom0.filename.setObjValue(SCV_get_cfg_type(this, "CFG_BOOTROM_FILE_HEX"));
     NEW(rom0, rom0.getName().c_str());
         CONNECT(rom0, 0, rom0.i_clk, i_sys_clk);
         CONNECT(rom0, 0, rom0.i_nrst, i_sys_nrst);
@@ -203,7 +203,7 @@ TEXT();
     ENDNEW();
 
 TEXT();
-    sram0.abits.setObjValue(&glob_target_cfg_->CFG_SRAM_LOG2_SIZE);
+    sram0.abits.setObjValue(SCV_get_cfg_type(this, "CFG_SRAM_LOG2_SIZE"));
     NEW(sram0, sram0.getName().c_str());
         CONNECT(sram0, 0, sram0.i_clk, i_sys_clk);
         CONNECT(sram0, 0, sram0.i_nrst, i_sys_nrst);
@@ -215,7 +215,7 @@ TEXT();
 
 TEXT();
     plic0.ctxmax.setObjValue(&SOC_PLIC_CONTEXT_TOTAL);
-    clint0.cpu_total.setObjValue(&glob_river_cfg_->CFG_CPU_MAX);
+    clint0.cpu_total.setObjValue(SCV_get_cfg_type(this, "CFG_CPU_MAX"));
     NEW(clint0, clint0.getName().c_str());
         CONNECT(clint0, 0, clint0.i_clk, i_sys_clk);
         CONNECT(clint0, 0, clint0.i_nrst, i_sys_nrst);
@@ -316,10 +316,10 @@ TEXT();
     ENDNEW();
 
 TEXT();
-    pnp0.cfg_slots.setObjValue(&glob_pnp_cfg_->SOC_PNP_TOTAL);
+    pnp0.cfg_slots.setObjValue(SCV_get_cfg_type(this, "SOC_PNP_TOTAL"));
     pnp0.hw_id.setObjValue(&SOC_HW_ID);
-    pnp0.cpu_max.setObjValue(&glob_target_cfg_->CFG_CPU_NUM);
-    pnp0.l2cache_ena.setObjValue(&glob_target_cfg_->CFG_L2CACHE_ENA);
+    pnp0.cpu_max.setObjValue(SCV_get_cfg_type(this, "CFG_CPU_NUM"));
+    pnp0.l2cache_ena.setObjValue(SCV_get_cfg_type(this, "CFG_L2CACHE_ENA"));
     pnp0.plic_irq_max.setObjValue(&SOC_PLIC_IRQ_TOTAL);
     NEW(pnp0, pnp0.getName().c_str());
         CONNECT(pnp0, 0, pnp0.i_clk, i_sys_clk);

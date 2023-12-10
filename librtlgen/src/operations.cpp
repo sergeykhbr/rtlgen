@@ -2702,7 +2702,7 @@ std::string FOPEN_gen(GenObject **args) {
         ret += addspaces() + "assert (" + Operation::obj2varname(args[1]) + ")\n";
         ret += addspaces() + "else begin\n";
         ret += addspaces() + "    $warning(\"Cannot open log-file\");\n";
-        ret += addspaces() + "end";
+        ret += addspaces() + "end\n";
     }
     return ret;
 }
