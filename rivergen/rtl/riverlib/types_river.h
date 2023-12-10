@@ -70,24 +70,20 @@ class types_river : public FileObject {
         Logic rdata;
     };
 
-    class dport_in_vector : public StructArray<dport_in_type> {
+    class dport_in_vector : public StructVector<dport_in_type> {
      public:
         dport_in_vector(GenObject *parent, const char *name, const char *descr="")
-            : StructArray<dport_in_type>(parent, name, "CFG_CPU_MAX", descr) {
-            setTypedef("dport_in_vector");
+            : StructVector<dport_in_type>(parent, "dport_in_vector",
+                name, "CFG_CPU_MAX", descr) {
         }
-        virtual bool isVector() override { return true; }
-        virtual bool isSignal() override { return true; }
     };
 
-    class dport_out_vector : public StructArray<dport_out_type> {
+    class dport_out_vector : public StructVector<dport_out_type> {
      public:
         dport_out_vector(GenObject *parent, const char *name, const char *descr="")
-            : StructArray<dport_out_type>(parent, name, "CFG_CPU_MAX", descr) {
-            setTypedef("dport_out_vector");
+            : StructVector<dport_out_type>(parent, "dport_out_vector",
+                name, "CFG_CPU_MAX", descr) {
         }
-        virtual bool isVector() override { return true; }
-        virtual bool isSignal() override { return true; }
     };
 
     class axi4_l1_out_type : public StructObject {
@@ -204,24 +200,20 @@ class types_river : public FileObject {
         Logic cd_ready;
     };
 
-    class axi4_l1_in_vector : public StructArray<axi4_l1_in_type> {
+    class axi4_l1_in_vector : public StructVector<axi4_l1_in_type> {
         public:
         axi4_l1_in_vector(GenObject *parent, const char *name, const char *comment)
-            : StructArray<axi4_l1_in_type>(parent, name, "CFG_SLOT_L1_TOTAL", comment) {
-            setTypedef("axi4_l1_in_vector");
+            : StructVector<axi4_l1_in_type>(parent, "axi4_l1_in_vector",
+                name, "CFG_SLOT_L1_TOTAL", comment) {
         }
-        virtual bool isVector() override { return true; }
-        virtual bool isSignal() override { return true; }
     };
 
-    class axi4_l1_out_vector : public StructArray<axi4_l1_out_type> {
+    class axi4_l1_out_vector : public StructVector<axi4_l1_out_type> {
         public:
         axi4_l1_out_vector(GenObject *parent, const char *name, const char *descr)
-            : StructArray<axi4_l1_out_type>(parent, name, "CFG_SLOT_L1_TOTAL", descr) {
-            setTypedef("axi4_l1_out_vector");
+            : StructVector<axi4_l1_out_type>(parent, "axi4_l1_out_vector",
+                name, "CFG_SLOT_L1_TOTAL", descr) {
         }
-        virtual bool isVector() override { return true; }
-        virtual bool isSignal() override { return true; }
     };
 
     class axi4_l2_out_type : public StructObject {
@@ -296,26 +288,20 @@ class types_river : public FileObject {
         Logic1 r_user;
     };
 
-    class hart_signal_vector : public WireArray<Signal> {
+    class hart_signal_vector : public WireVector<Signal> {
      public:
         hart_signal_vector(GenObject *parent, const char *name) :
-            WireArray<Signal>(parent, name, "1", "CFG_CPU_MAX") {
-            setTypedef("hart_signal_vector");
+            WireVector<Signal>(parent, "hart_signal_vector",
+                name, "1", "CFG_CPU_MAX", NO_COMMENT) {
         }
-        virtual bool isTypedef() override { return getName() == getType(); } // type is empty for logic now
-        virtual bool isVector() override { return true; }
-        virtual std::string getType() override { return type_; }            // otherwise it will depends of bitwidth and system
     };
 
-    class hart_irq_vector : public WireArray<Signal> {
+    class hart_irq_vector : public WireVector<Signal> {
      public:
         hart_irq_vector(GenObject *parent, const char *name) :
-            WireArray<Signal>(parent, name, "IRQ_TOTAL", "CFG_CPU_MAX") {
-            setTypedef("hart_irq_vector");
+            WireVector<Signal>(parent, "hart_irq_vector", name,
+                "IRQ_TOTAL", "CFG_CPU_MAX", NO_COMMENT) {
         }
-        virtual bool isTypedef() override { return getName() == getType(); }
-        virtual bool isVector() override { return true; }
-        virtual std::string getType() override { return type_; }            // otherwise it will depends of bitwidth and system
     };
 
  public:

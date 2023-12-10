@@ -25,34 +25,28 @@ class types_bus1 : public FileObject {
  public:
     types_bus1(GenObject *parent);
 
-    class bus1_apb_in_vector : public StructArray<types_amba::apb_in_type> {
+    class bus1_apb_in_vector : public StructVector<types_amba::apb_in_type> {
      public:
         bus1_apb_in_vector(GenObject *parent, const char *name, const char *descr="")
-            : StructArray<apb_in_type>(parent, name, "CFG_BUS1_PSLV_TOTAL", descr) {
-            setTypedef("bus1_apb_in_vector");
+            : StructVector<apb_in_type>(parent, "bus1_apb_in_vector",
+                name, "CFG_BUS1_PSLV_TOTAL", descr) {
         }
-        virtual bool isVector() override { return true; }
-        virtual bool isSignal() override { return true; }
     };
 
-    class bus1_apb_out_vector : public StructArray<types_amba::apb_out_type> {
+    class bus1_apb_out_vector : public StructVector<types_amba::apb_out_type> {
      public:
         bus1_apb_out_vector(GenObject *parent, const char *name, const char *descr="")
-            : StructArray<apb_out_type>(parent, name, "CFG_BUS1_PSLV_TOTAL", descr) {
-            setTypedef("bus1_apb_out_vector");
+            : StructVector<apb_out_type>(parent, "bus1_apb_out_vector",
+                name, "CFG_BUS1_PSLV_TOTAL", descr) {
         }
-        virtual bool isVector() override { return true; }
-        virtual bool isSignal() override { return true; }
     };
 
-    class bus1_mapinfo_vector : public StructArray<types_amba::mapinfo_type> {
+    class bus1_mapinfo_vector : public StructVector<types_amba::mapinfo_type> {
      public:
         bus1_mapinfo_vector(GenObject *parent, const char *name, const char *descr="")
-            : StructArray<mapinfo_type>(parent, name, "CFG_BUS1_PSLV_TOTAL", descr) {
-            setTypedef("bus1_mapinfo_vector");
+            : StructVector<mapinfo_type>(parent, "bus1_mapinfo_vector",
+                name, "CFG_BUS1_PSLV_TOTAL", descr) {
         }
-        virtual bool isVector() override { return true; }
-        virtual bool isSignal() override { return true; }
     };
 
     class CONST_CFG_BUS1_MAP : public ParamStruct<bus1_mapinfo_vector> {

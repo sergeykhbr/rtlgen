@@ -25,55 +25,45 @@ class types_bus0 : public FileObject {
  public:
     types_bus0(GenObject *parent);
 
-    class bus0_xmst_in_vector : public StructArray<types_amba::axi4_master_in_type> {
+    class bus0_xmst_in_vector : public StructVector<types_amba::axi4_master_in_type> {
      public:
         bus0_xmst_in_vector(GenObject *parent, const char *name, const char *descr="")
-            : StructArray<axi4_master_in_type>(parent, name, "CFG_BUS0_XMST_TOTAL", descr) {
-            setTypedef("bus0_xmst_in_vector");
+            : StructVector<axi4_master_in_type>(parent, "bus0_xmst_in_vector",
+                name, "CFG_BUS0_XMST_TOTAL", descr) {
         }
-        virtual bool isVector() override { return true; }
-        virtual bool isSignal() override { return true; }
     };
 
-    class bus0_xmst_out_vector : public StructArray<types_amba::axi4_master_out_type> {
+    class bus0_xmst_out_vector : public StructVector<types_amba::axi4_master_out_type> {
      public:
         bus0_xmst_out_vector(GenObject *parent, const char *name, const char *descr="")
-            : StructArray<axi4_master_out_type>(parent, name, "CFG_BUS0_XMST_TOTAL", descr) {
-            setTypedef("bus0_xmst_out_vector");
+            : StructVector<axi4_master_out_type>(parent, "bus0_xmst_out_vector",
+                name, "CFG_BUS0_XMST_TOTAL", descr) {
         }
-        virtual bool isVector() override { return true; }
-        virtual bool isSignal() override { return true; }
     };
 
 
-    class bus0_xslv_in_vector : public StructArray<types_amba::axi4_slave_in_type> {
+    class bus0_xslv_in_vector : public StructVector<types_amba::axi4_slave_in_type> {
      public:
         bus0_xslv_in_vector(GenObject *parent, const char *name, const char *descr="")
-            : StructArray<axi4_slave_in_type>(parent, name, "CFG_BUS0_XSLV_TOTAL", descr) {
-            setTypedef("bus0_xslv_in_vector");
+            : StructVector<axi4_slave_in_type>(parent, "bus0_xslv_in_vector",
+                name, "CFG_BUS0_XSLV_TOTAL", descr) {
         }
-        virtual bool isVector() override { return true; }
-        virtual bool isSignal() override { return true; }
     };
 
-    class bus0_xslv_out_vector : public StructArray<types_amba::axi4_slave_out_type> {
+    class bus0_xslv_out_vector : public StructVector<types_amba::axi4_slave_out_type> {
      public:
         bus0_xslv_out_vector(GenObject *parent, const char *name, const char *descr="")
-            : StructArray<axi4_slave_out_type>(parent, name, "CFG_BUS0_XSLV_TOTAL", descr) {
-            setTypedef("bus0_xslv_out_vector");
+            : StructVector<axi4_slave_out_type>(parent, "bus0_xslv_out_vector",
+                name, "CFG_BUS0_XSLV_TOTAL", descr) {
         }
-        virtual bool isVector() override { return true; }
-        virtual bool isSignal() override { return true; }
     };
 
-    class bus0_mapinfo_vector : public StructArray<types_amba::mapinfo_type> {
+    class bus0_mapinfo_vector : public StructVector<types_amba::mapinfo_type> {
      public:
         bus0_mapinfo_vector(GenObject *parent, const char *name, const char *descr="")
-            : StructArray<mapinfo_type>(parent, name, "CFG_BUS0_XSLV_TOTAL", descr) {
-            setTypedef("bus0_mapinfo_vector");
+            : StructVector<mapinfo_type>(parent, "bus0_mapinfo_vector",
+                name, "CFG_BUS0_XSLV_TOTAL", descr) {
         }
-        virtual bool isVector() override { return true; }
-        virtual bool isSignal() override { return true; }
     };
 
     class CONST_CFG_BUS0_MAP : public ParamStruct<bus0_mapinfo_vector> {

@@ -45,6 +45,29 @@ class WireArray : public T {
     GenObject *objDepth_;
 };
 
+/**
+    Vector allows to connect its element to input/output ports in systemc,
+    simple array or logic cannot do that.
+    Vector has it own typedef name.
+ */
+template<class T>
+class WireVector : public WireArray<T> {
+    public:
+    WireVector(GenObject *parent, const char *tpdef, const char *name,
+        const char *width, const char *depth, const char *comment) :
+        WireArray<T>(parent, name, width, depth, comment) {
+        // Logic and signal types are empty. No need to trigger dependency
+        T::type_ = std::string(tpdef);
+        if (T::name_ == T::type_) {
+            SCV_set_cfg_type(this);
+        }
+    }
+    virtual bool isVector() override { return true; }
+    virtual bool isTypedef() override { return getName() == getType(); } // type is empty for logic now
+    virtual std::string getType() override { return type_; }            // otherwise it will depends of bitwidth and system
+};
+
+
 class RegArray : public RegSignal {
  public:
     RegArray(GenObject *parent, const char *name, const char *width,
@@ -85,10 +108,19 @@ class StructVector : public StructArray<T> {
     StructVector(GenObject *parent, const char *tpdef, const char *name,
                 const char *depth, const char *comment)
         : StructArray<T>(parent, name, depth, comment) {
-        T::setTypedef(tpdef);
+        SCV_get_cfg_type(this, T::type_.c_str());   // to trigger dependecy array
+        typedef_ = T::type_;
+        T::type_ = std::string(tpdef);
+        if (T::name_ == T::type_) {
+            SCV_set_cfg_type(this);
+        }
     }
     virtual bool isVector() override { return true; }
     virtual bool isSignal() override { return true; }
+    virtual std::string getTypedef() override { return typedef_; }
+
+ protected:
+    std::string typedef_;
 };
 
 

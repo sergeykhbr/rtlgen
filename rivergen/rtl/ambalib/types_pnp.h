@@ -59,14 +59,12 @@ class types_pnp : public FileObject {
     };
 
 
-    class soc_pnp_vector : public StructArray<dev_config_type> {
+    class soc_pnp_vector : public StructVector<dev_config_type> {
      public:
         soc_pnp_vector(GenObject *parent, const char *name, const char *descr)
-            : StructArray<dev_config_type>(parent, name, "SOC_PNP_TOTAL", descr) {
-            setTypedef("soc_pnp_vector");
+            : StructVector<dev_config_type>(parent, "soc_pnp_vector",
+                name, "SOC_PNP_TOTAL", descr) {
         }
-        virtual bool isSignal() override { return true; }  // this vector is used only as signal, no need to create both types
-        virtual bool isVector() override { return true; }
     };
 
 

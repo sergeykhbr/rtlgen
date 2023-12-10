@@ -32,7 +32,6 @@ GenObject::GenObject(GenObject *parent, const char *type, EIdType id,
     reset_disabled_ = false;
     vcd_enabled_ = true;
     sv_api_ = false;
-    typedef_ = "";
     type_ = std::string(type);
     name_ = std::string(name);
     comment_ = std::string(comment);
@@ -73,24 +72,6 @@ GenObject *GenObject::getFile() {
 
 void GenObject::add_entry(GenObject *p) {
     entries_.push_back(p);
-}
-
-void GenObject::setTypedef(const char *n) {
-    typedef_ = type_;
-    type_ = std::string(n);
-     
-    if (typedef_.size()) {
-        SCV_get_cfg_type(this, typedef_.c_str());   // to trigger dependecy array
-    } else {
-        // simple logic vector, nothing to trigger
-    }
-    if (getName() == type_) {
-        if (getName() == "") {
-            SHOW_ERROR("typedef %s cannot be with empty name", n);
-            return;
-        }
-        SCV_set_cfg_type(this);
-    }
 }
 
 std::string GenObject::addComment() {

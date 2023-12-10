@@ -75,7 +75,7 @@ class GenObject {
     virtual GenObject *getParent() { return parent_; }
     virtual std::string getComment() { return comment_; }
     virtual std::string getType() { return type_; }
-    virtual std::string getTypedef() { return typedef_; }
+    virtual std::string getTypedef() { return std::string(""); }    // redefined type of vectors
 
     virtual std::string getFullPath();
     virtual GenObject *getFile();
@@ -90,7 +90,6 @@ class GenObject {
     virtual bool getResetActive() { return false; }
     virtual std::string addComment();                   // comment at current position
     virtual void addComment(std::string &out);          // comment after 60 spaces
-    virtual void setTypedef(const char *n);
     virtual bool isComment() { return false; }
     virtual bool isParam() { return false; }            // StrValue is its name, Method generate() to generate its value
     virtual bool isParamGeneric() { return false; }     // Parameter that is defined as argument of constructor
@@ -157,7 +156,6 @@ class GenObject {
  protected:
     EIdType id_;
     GenObject *parent_;
-    std::string typedef_;                               // original structure type after was re-typed
     std::string type_;
     std::string name_;
 
