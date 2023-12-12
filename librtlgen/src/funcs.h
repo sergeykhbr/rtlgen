@@ -36,11 +36,6 @@ class FunctionObject : public GenObject {
     virtual GenObject *getpReturn() { return 0; }
 
  protected:
-    virtual bool isStatic() {
-        return parent_->getId() == ID_FILE;
-    }
-
- protected:
     std::string generate_sysc();
     std::string generate_sysv();
     std::string generate_vhdl();

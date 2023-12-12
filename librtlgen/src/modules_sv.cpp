@@ -283,7 +283,7 @@ std::string ModuleObject::generate_sv_mod_signals() {
         tcnt++;
     }
     for (auto &p: getEntries()) {
-        if (p->getId() != ID_FILEVALUE) {
+        if (!p->isFileValue()) {
             continue;
         }
         ret += "int " + p->getName() + ";\n";
@@ -467,7 +467,7 @@ std::string ModuleObject::generate_sv_mod_always_ff_rst(bool clkpos) {
 std::string ModuleObject::generate_sv_mod_always_ops() {
     std::string out = "";
     for (auto &e: getEntries()) {
-        if (e->getId() != ID_PROCESS
+        if (!e->isProcess()
             || e->getName() != "registers") {
             continue;
         }
@@ -629,8 +629,8 @@ std::string ModuleObject::generate_sv_mod() {
     ret += generate_sv_mod_signals();
 
     // Functions
-    for (auto &p: entries_) {
-        if (p->getId() != ID_FUNCTION) {
+    for (auto &p: getEntries()) {
+        if (!p->isFunction()) {
             continue;
         }
         ret += generate_sv_mod_func(p);
@@ -653,7 +653,7 @@ std::string ModuleObject::generate_sv_mod() {
 
     // Process
     for (auto &p: entries_) {
-        if (p->getId() != ID_PROCESS) {
+        if (!p->isProcess()) {
             continue;
         }
         if (p->getName() == "registers") {

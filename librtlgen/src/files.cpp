@@ -126,7 +126,7 @@ std::string FileObject::fullPath2fileRelative(const char *fullpath) {
     // search file owner of the module
     std::string tstr;
     while (f) {
-        if (f->getId() != ID_FILE) {
+        if (!f->isFile()) {
             f = f->getParent();
             continue;
         }
@@ -170,6 +170,7 @@ void FileObject::generate_sysc() {
     std::string ln;
     std::string filename = getFullPath();
     filename = filename + ".h";
+    bool incl_string = false;
 
     out += CommentLicense().generate();
     out += 
@@ -181,11 +182,16 @@ void FileObject::generate_sysc() {
         if (!p->isModule()) {
             continue;
         }
-        if (!static_cast<ModuleObject *>(p)->isFileValue()) {
-            continue;
+        for (auto &s: p->getEntries()) {
+            if (s->isFileValue()) {
+                incl_string = true;
+                break;
+            }
         }
-        out += "#include <string>\n";
-        break;
+        if (incl_string) {
+            out += "#include <string>\n";
+            break;
+        }
     }
 
 
@@ -225,9 +231,7 @@ void FileObject::generate_sysc() {
     for (auto &p: getEntries()) {
         if (p->isModule()) {
             out += p->generate();
-        } else if (p->getId() == ID_FUNCTION) {
-            // for global functions only
-            out += addspaces() + "static " + p->getType() + " ";
+        } else if (p->isFunction()) {
             out += p->generate();
         } else if (p->isParam() && !p->isParamGeneric()) {
             if (p->isStruct() || p->isString()) {
@@ -386,8 +390,7 @@ void FileObject::generate_sysv() {
             } else {
                 out += mod->generate_sv_pkg();
             }
-        } else if (p->getId() == ID_FUNCTION) {
-            out += "function automatic ";
+        } else if (p->isFunction()) {
             out += p->generate();
         } else if (p->isParam() && !p->isParamGeneric()) {
             if (p->isStruct() || p->isString()) {
@@ -467,8 +470,8 @@ void FileObject::generate_vhdl() {
                 SCV_set_local_module(p);
                 out += mod->generate_vhdl_pkg();
             }
-        } else if (p->getId() == ID_FUNCTION) {
-            out += "function ";
+        } else if (p->isFunction()) {
+            out += p->generate();
         } else if (p->isParam() && !p->isParamGeneric()) {
             if (p->isStruct()) {
                 // Do all others params in a such way

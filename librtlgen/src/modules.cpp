@@ -99,7 +99,7 @@ std::string ModuleObject::generate() {
 
 bool ModuleObject::isCombProcess() {
     for (auto &e: entries_) {
-        if (e->getId() == ID_PROCESS
+        if (e->isProcess()
             && e->getName() != "registers"
             && e->getName() != "nregisters") {
             return true;
@@ -120,7 +120,7 @@ bool ModuleObject::isRegs() {
 bool ModuleObject::isRegProcess() {
     for (auto &e: entries_) {
         if (e->isReg()
-            || (e->getId() == ID_PROCESS && e->getName() == "registers")) {
+            || (e->isProcess() && e->getName() == "registers")) {
             return true;
         }
     }
@@ -139,7 +139,7 @@ bool ModuleObject::isNRegs() {
 bool ModuleObject::isNRegProcess() {
     for (auto &e: entries_) {
         if (e->isNReg()
-            || (e->getId() == ID_PROCESS && e->getName() == "nregisters")) {
+            || (e->isProcess() && e->getName() == "nregisters")) {
             return true;
         }
     }
@@ -162,15 +162,6 @@ bool ModuleObject::is2DimReg() {
 bool ModuleObject::isSubModules() {
     for (auto &p: entries_) {
         if (p->isModule()) {
-            return true;
-        }
-    }
-    return false;
-}
-
-bool ModuleObject::isFileValue() {
-    for (auto &p: entries_) {
-        if (p->getId() == ID_FILEVALUE) {
             return true;
         }
     }

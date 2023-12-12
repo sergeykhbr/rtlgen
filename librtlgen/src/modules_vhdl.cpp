@@ -291,7 +291,7 @@ std::string ModuleObject::generate_vhdl_mod_signals() {
         tcnt++;
     }
     for (auto &p: getEntries()) {
-        if (p->getId() != ID_FILEVALUE) {
+        if (!p->isFileValue()) {
             continue;
         }
         ret += "file " + p->getName() + ";\n";
@@ -431,8 +431,8 @@ std::string ModuleObject::generate_vhdl_mod() {
     ret += generate_vhdl_mod_signals();
 
     // Functions
-    for (auto &p: entries_) {
-        if (p->getId() != ID_FUNCTION) {
+    for (auto &p: getEntries()) {
+        if (!p->isFunction()) {
             continue;
         }
         ret += generate_vhdl_mod_func(p);
@@ -453,7 +453,7 @@ std::string ModuleObject::generate_vhdl_mod() {
 /*
     // Clock process
     for (auto &p: entries_) {
-        if (p->getId() != ID_CLOCK) {
+        if (!p->isClock()) {
             continue;
         }
         ret += generate_sv_mod_clock(p);
@@ -461,7 +461,7 @@ std::string ModuleObject::generate_vhdl_mod() {
 
     // Process
     for (auto &p: entries_) {
-        if (p->getId() != ID_PROCESS) {
+        if (!p->isProcess()) {
             continue;
         }
         if (p->getName() == "registers") {

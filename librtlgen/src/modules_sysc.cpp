@@ -196,7 +196,7 @@ std::string ModuleObject::generate_sysc_h() {
     out += "\n";
     bool hasProcess = false;
     for (auto &p: entries_) {
-        if (p->getId() != ID_PROCESS) {
+        if (!p->isProcess()) {
             continue;
         }
         if (p->getName() == "registers") {
@@ -312,24 +312,14 @@ std::string ModuleObject::generate_sysc_h() {
 
     // Functions declaration:
     tcnt = 0;
-    for (auto &p: entries_) {
-        if (p->getId() != ID_FUNCTION) {
+    for (auto &p: getEntries()) {
+        if (!p->isFunction()) {
             continue;
         }
         tcnt++;
-        ln = addspaces() + p->getType();
-        ln += " " + p->getName();
-        out += ln + "(";
-        tcnt = 0;
-        argslist.clear();
-        static_cast<FunctionObject *>(p)->getArgsList(argslist);
-        for (auto &io: argslist) {
-            if (tcnt++) {
-                out += ", ";
-            }
-            out += io->getType() + " " + io->getName();
-        }
-        out += ");\n";
+        SCV_set_generator(SYSC_H);
+        out += p->generate();
+        SCV_set_generator(SYSC_ALL);
     }
     if (tcnt) {
         out += "\n";
@@ -390,7 +380,7 @@ std::string ModuleObject::generate_sysc_h() {
         tcnt++;
     }
     for (auto &p: getEntries()) {
-        if (p->getId() != ID_FILEVALUE) {
+        if (!p->isFileValue()) {
             continue;
         }
         out += addspaces() + "FILE *" + p->getName() + ";\n";
@@ -467,7 +457,7 @@ std::string ModuleObject::generate_sysc_proc_registers(bool clkpos) {
         }
     }
     for (auto &e: getEntries()) {
-        if (e->getId() != ID_PROCESS
+        if (!e->isProcess()
             || e->getName() != "registers") {
             continue;
         }
@@ -835,7 +825,7 @@ std::string ModuleObject::generate_sysc_constructor() {
     std::string prefix1 = "";
     std::string loop = "";
     for (auto &p: getEntries()) {
-        if (p->getId() != ID_PROCESS) {
+        if (!p->isProcess()) {
             continue;
         }
         if (p->getName() == "registers") {
@@ -1013,7 +1003,7 @@ std::string ModuleObject::generate_sysc_cpp() {
 
     // Functions
     for (auto &p: entries_) {
-        if (p->getId() != ID_FUNCTION) {
+        if (!p->isFunction()) {
             continue;
         }
         out += generate_sysc_func(p);
@@ -1022,7 +1012,7 @@ std::string ModuleObject::generate_sysc_cpp() {
 
     // Process
     for (auto &p: entries_) {
-        if (p->getId() != ID_PROCESS) {
+        if (!p->isProcess()) {
             continue;
         }
         if (p->getName() == "registers") {

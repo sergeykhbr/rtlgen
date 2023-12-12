@@ -28,11 +28,34 @@ FunctionObject::FunctionObject(GenObject *parent,
 
 std::string FunctionObject::generate() {
     std::string ret = "";
-    if (SCV_is_sysc()) {
+    int tcnt = 0;
+    if (SCV_is_sysc_h()) {
+        // module header
+        if (getParent()->isModule()) {
+            std::list<GenObject *> argslist;
+            ret += addspaces() + getType() + " " + getName() + "(";
+            argslist.clear();
+            getArgsList(argslist);
+            for (auto &io: argslist) {
+                if (tcnt++) {
+                    ret += ", ";
+                }
+                ret += io->getType() + " " + io->getName();
+            }
+            ret += ");\n";
+        } else {
+            ret += addspaces() + "static " + getType() + " ";
+            ret += generate_sysc();
+        }
+    } else if (SCV_is_sysc()) {
         ret += generate_sysc();
     } else if (SCV_is_sv()) {
+        if (getParent()->isFile()) {
+            ret += addspaces() + "function automatic ";
+        }
         ret += generate_sysv();
     } else {
+        ret += "function ";
         ret += generate_vhdl();
     }
     return ret;
