@@ -21,7 +21,8 @@ namespace sysvc {
 
 FolderObject::FolderObject(GenObject *parent,
                            const char *name)
-    : GenObject(parent, "", ID_FOLDER, name) {
+    : GenObject(parent, NO_COMMENT) {
+    name_ = std::string(name);
 }
 
 

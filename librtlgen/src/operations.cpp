@@ -27,11 +27,11 @@ int stackcnt_ = 0;
 GenObject *stackobj_[256] = {0};
 
 Operation::Operation(const char *comment)
-    : GenObject(top_obj(), "", ID_OPERATION, "", comment), igen_(0), argcnt_(0) {
+    : GenObject(top_obj(), comment), igen_(0), argcnt_(0) {
 }
 
 Operation::Operation(GenObject *parent, const char *comment)
-    : GenObject(parent, "", ID_OPERATION, "", comment), igen_(0), argcnt_(0) {
+    : GenObject(parent, comment), igen_(0), argcnt_(0) {
 }
 
 void Operation::start(GenObject *owner) {
@@ -644,9 +644,7 @@ Operation &SETBIT(GenObject &a, GenObject &b, GenObject &val, const char *commen
 }
 
 Operation &SETBIT(GenObject &a, int b, GenObject &val, const char *comment) {
-    char tstr[64];
-    RISCV_sprintf(tstr, sizeof(tstr), "%d", b);
-    GenObject *t1 = new I32D(tstr);
+    GenObject *t1 = new DecConst(b);
     return SETBIT(a, *t1, val, comment);
 }
 
@@ -681,7 +679,7 @@ Operation &SETBITONE(GenObject &a, GenObject &b, const char *comment) {
     return *p;
 }
 Operation &SETBITONE(GenObject &a, const char *b, const char *comment) {
-    GenObject *t1 = new I32D(b);
+    GenObject *t1 = SCV_parse_to_obj(0, b);
     return SETBITONE(a, *t1, comment);
 }
 
@@ -722,7 +720,7 @@ Operation &SETBITZERO(GenObject &a, GenObject &b, const char *comment) {
     return *p;
 }
 Operation &SETBITZERO(GenObject &a, const char *b, const char *comment) {
-    GenObject *t1 = new I32D(b);
+    GenObject *t1 = SCV_parse_to_obj(0, b);
     return SETBITZERO(a, *t1, comment);
 }
 
@@ -768,14 +766,11 @@ Operation &SETBITS(GenObject &a, GenObject &h, GenObject &l, GenObject &val, con
 
 Operation &SETBITS(GenObject &a, int h, int l, GenObject &val, const char *comment) {
     Operation *p = new Operation(comment);
-    char tstr[64];
     p->igen_ = SETBITS_gen;
     p->add_arg(p);
     p->add_arg(&a);
-    RISCV_sprintf(tstr, sizeof(tstr), "%d", h);
-    p->add_arg(new I32D(tstr));
-    RISCV_sprintf(tstr, sizeof(tstr), "%d", l);
-    p->add_arg(new I32D(tstr));
+    p->add_arg(new DecConst(h));
+    p->add_arg(new DecConst(l));
     p->add_arg(&val);
     return *p;
 }
@@ -1979,12 +1974,10 @@ Operation &ARRITEM(GenObject &arr, GenObject &idx, GenObject &item, const char *
 
 Operation &ARRITEM(GenObject &arr, int idx, GenObject &item, const char *comment) {
     Operation *p = new Operation(0, comment);
-    char tstr[256];
-    RISCV_sprintf(tstr, sizeof(tstr), "%d", idx);
     p->igen_ = ARRITEM_gen;
     p->add_arg(p);      // 0
     p->add_arg(&arr);   // 1
-    p->add_arg(new I32D(tstr));   // 2
+    p->add_arg(new DecConst(idx));   // 2
     p->add_arg(&item);  // 3
     p->add_arg(0);      // [4] do not use .read()
     return *p;
@@ -1992,12 +1985,10 @@ Operation &ARRITEM(GenObject &arr, int idx, GenObject &item, const char *comment
 
 Operation &ARRITEM(GenObject &arr, int idx) {
     Operation *p = new Operation(0, "");
-    char tstr[256];
-    RISCV_sprintf(tstr, sizeof(tstr), "%d", idx);
     p->igen_ = ARRITEM_gen;
     p->add_arg(p);      // 0
     p->add_arg(&arr);   // 1
-    p->add_arg(new I32D(tstr));   // 2
+    p->add_arg(new DecConst(idx));   // 2
     p->add_arg(&arr);  // 3
     p->add_arg(0);      // [4] do not use .read()
     return *p;
@@ -2076,12 +2067,10 @@ Operation &ASSIGNARRITEM(GenObject &arr, GenObject &idx, GenObject &item, GenObj
 // reduced formed
 Operation &SETARRITEM(GenObject &arr, int idx, GenObject &val) {
     Operation *p = new Operation("");
-    char tstr[256];
-    RISCV_sprintf(tstr, sizeof(tstr), "%d", idx);
     p->igen_ = SETARRITEM_gen;
     p->add_arg(p);
     p->add_arg(&arr);
-    p->add_arg(new I32D(tstr));
+    p->add_arg(new DecConst(idx));
     p->add_arg(&arr);
     p->add_arg(&val);
     p->add_arg(0);  // [5] do not use 'assign '
@@ -2090,12 +2079,10 @@ Operation &SETARRITEM(GenObject &arr, int idx, GenObject &val) {
 
 Operation &ASSIGNARRITEM(GenObject &arr, int idx, GenObject &val) {
     Operation *p = new Operation("");
-    char tstr[256];
-    RISCV_sprintf(tstr, sizeof(tstr), "%d", idx);
     p->igen_ = SETARRITEM_gen;
     p->add_arg(p);
     p->add_arg(&arr);
-    p->add_arg(new I32D(tstr));
+    p->add_arg(new DecConst(idx));
     p->add_arg(&arr);
     p->add_arg(&val);
     p->add_arg(p);  // [5] use 'assign '
@@ -2243,7 +2230,7 @@ void IF(GenObject &a, const char *comment) {
     p->add_arg(0);
 }
 
-void IFGEN(GenObject &a, STRING *name, const char *comment) {
+void IFGEN(GenObject &a, StringConst *name, const char *comment) {
     Operation *p = new Operation(comment);
     Operation::push_obj(p);
     p->igen_ = IF_gen;
@@ -2314,7 +2301,7 @@ void ELSE(const char *comment) {
     p->add_arg(0);
 }
 
-void ELSEGEN(STRING *name, const char *comment) {
+void ELSEGEN(StringConst *name, const char *comment) {
     Operation *p = new Operation(comment);
     Operation::pop_obj();
     Operation::push_obj(p);
@@ -2348,7 +2335,7 @@ void ENDIF(const char *comment) {
     p->add_arg(0);
 }
 
-void ENDIFGEN(STRING *name, const char *comment) {
+void ENDIFGEN(StringConst *name, const char *comment) {
     Operation::pop_obj();
     Operation *p = new Operation(comment);
     p->igen_ = ENDIF_gen;
@@ -2496,10 +2483,12 @@ std::string FOR_gen(GenObject **args) {
     }
     ret += start + "; ";
     ret += i;
-    if (dir == "++") {
+    if (dir == "\"++\"") {
         ret += " < ";
+        dir = std::string("++");
     } else {
         ret += " >= ";
+        dir = std::string("--");
     }
     ret += end + "; ";
     ret += i + dir;
@@ -2525,13 +2514,18 @@ GenObject &FOR(const char *i, GenObject &start, GenObject &end, const char *dir,
     p->add_arg(ret);
     p->add_arg(&start);
     p->add_arg(&end);
-    p->add_arg(new TextLine(0, dir));
+    p->add_arg(new StringConst(dir));
     p->add_arg(0);
     return *ret;
 }
 
 // 'generate' for cycle used in rtl, it is the same for in systemc
-GenObject &FORGEN(const char *i, GenObject &start, GenObject &end, const char *dir, STRING *name, const char *comment) {
+GenObject &FORGEN(const char *i,
+                  GenObject &start,
+                  GenObject &end,
+                  const char *dir,
+                  StringConst *name,
+                  const char *comment) {
     Operation *p = new Operation(comment);
     I32D *ret = new GenVar("0", i, 0);
     Operation::push_obj(p);
@@ -2540,7 +2534,7 @@ GenObject &FORGEN(const char *i, GenObject &start, GenObject &end, const char *d
     p->add_arg(ret);
     p->add_arg(&start);
     p->add_arg(&end);
-    p->add_arg(new TextLine(0, dir));
+    p->add_arg(new StringConst(dir));
     p->add_arg(name);
     return *ret;
 }
@@ -2570,7 +2564,7 @@ void ENDFOR(const char *comment) {
     p->add_arg(0);
 }
 
-void ENDFORGEN(STRING *name, const char *comment) {
+void ENDFORGEN(StringConst *name, const char *comment) {
     Operation::pop_obj();
     Operation *p = new Operation(comment);
     p->igen_ = ENDFOR_gen;

@@ -28,7 +28,8 @@ typedef std::map<std::string, std::list<GenObject *>>::const_iterator depit;
 
 FileObject::FileObject(GenObject *parent,
                            const char *name)
-    : GenObject(parent, "", ID_FILE, name) {
+    : GenObject(parent, NO_COMMENT) {
+    name_ = std::string(name);
 }
 
 void FileObject::add_dependency(GenObject *reqobj) {

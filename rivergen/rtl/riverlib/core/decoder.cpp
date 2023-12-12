@@ -74,7 +74,7 @@ InstrDecoder::InstrDecoder(GenObject *parent, const char *name, const char *comm
 
     // Create and connet Sub-modules:
     rv.fpu_ena.setObjValue(&fpu_ena);
-    GenObject *i = &FORGEN ("i", CONST("0"), CONST("DEC_NUM"), "++", new STRING("rvx"));
+    GenObject *i = &FORGEN ("i", CONST("0"), CONST("DEC_NUM"), "++", new StringConst("rvx"));
         NEW(rv, rv.getName().c_str(), i);
             CONNECT(rv, i, rv.i_clk, i_clk);
             CONNECT(rv, i, rv.i_nrst, i_nrst);
@@ -107,10 +107,10 @@ InstrDecoder::InstrDecoder(GenObject *parent, const char *name, const char *comm
             CONNECT(rv, i, rv.o_instr_page_fault_x, ARRITEM(wd, MUL2(CONST("2"), *i), wd.instr_page_fault_x));
             CONNECT(rv, i, rv.o_progbuf_ena, ARRITEM(wd, MUL2(CONST("2"), *i), wd.progbuf_ena));
         ENDNEW();
-    ENDFORGEN(new STRING("rvx"));
+    ENDFORGEN(new StringConst("rvx"));
 
 TEXT();
-    i = &FORGEN ("i", CONST("0"), CONST("DEC_NUM"), "++", new STRING("rvcx"));
+    i = &FORGEN ("i", CONST("0"), CONST("DEC_NUM"), "++", new StringConst("rvcx"));
         NEW(rvc, rvc.getName().c_str(), i);
             CONNECT(rvc, i, rvc.i_clk, i_clk);
             CONNECT(rvc, i, rvc.i_nrst, i_nrst);
@@ -143,7 +143,7 @@ TEXT();
             CONNECT(rvc, i, rvc.o_instr_page_fault_x, ARRITEM(wd, INC(MUL2(CONST("2"), *i)), wd.instr_page_fault_x));
             CONNECT(rvc, i, rvc.o_progbuf_ena, ARRITEM(wd, INC(MUL2(CONST("2"), *i)), wd.progbuf_ena));
         ENDNEW();
-    ENDFORGEN(new STRING("rvcx"));
+    ENDFORGEN(new StringConst("rvcx"));
 }
 
 void InstrDecoder::proc_comb() {

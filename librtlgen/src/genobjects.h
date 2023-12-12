@@ -24,49 +24,8 @@ namespace sysvc {
 #define NO_PARENT 0
 #define NO_COMMENT ""
 
-enum EIdType {
-    ID_PROJECT = (1<<0),
-    ID_FOLDER = (1<<1),
-    ID_FILE = (1<<2),
-//    ID_CONST = (1<<3),
-    ID_VALUE = (1<<4),
-    ID_ENUM = (1<<5),
-//    ID_PARAM = (1<<6),
-//    ID_DEF_PARAM = (1<<7),   // Generic parameter used in ifdef/endif statements
-//    ID_TMPL_PARAM = (1<<8),  // The same as DEF_PARAM in sv but need to generate templates in systemc
-    ID_FUNCTION = (1<<9),
-    ID_MODULE = (1<<10),
-//    ID_MODULE_INST = (1<<11),
-    ID_STRUCT = (1<<15),
-//    ID_STRUCT_INST = (1<<16),
-//    ID_ARRAY_DEF = (1<<17),
-//    ID_ARRAY_STRING = (1<<18),
-//    ID_VECTOR = (1<<19),      // array of the fixed depth
-    ID_PROCESS = (1<<20),
-    ID_COMMENT = (1<<21),
-//    ID_EMPTYLINE = (1<<22),
-    ID_OPERATION = (1<<23),
-    ID_FILEVALUE = (1<<24),
-    ID_CLOCK = (1<<25)
-};
-
-enum EGenerateType {
-    GEN_UNDEFINED,
-    SYSC_ALL,
-    SYSC_H,
-    SYSC_CPP,
-    SV_ALL,
-    SV_PKG,
-    SV_MOD,
-    VHDL_ALL,
-    VHDL_PKG,
-    VHDL_MOD
-};
-
 class GenObject {
  public:
-    GenObject(GenObject *parent, const char *type, EIdType id,
-              const char *name, const char *comment=NO_COMMENT);
     GenObject(GenObject *parent, const char *comment);       // 
 
     virtual std::list<GenObject *> &getEntries() { return entries_; }
@@ -94,8 +53,8 @@ class GenObject {
     virtual bool isParamGeneric() { return false; }     // Parameter that is defined as argument of constructor
     virtual bool isParamTemplate() { return false; }    // Special type of ParamGeneric used in systemc, when in/out depend on it
     virtual bool isGenericDep() { return false; }       // depend on generic parameters (but not a template parameter)
-    virtual bool isValue() { return false; }            // scalara value
-    virtual bool isConst() { return false; }            // scalar value with the an empty name
+    virtual bool isValue() { return false; }            // scalar value with the name (variable)
+    virtual bool isConst() { return false; }            // scalar value with no name
     virtual bool isString() { return false; }
     virtual bool isHex() { return false; }
     virtual bool isFloat() { return false; }
@@ -153,7 +112,6 @@ class GenObject {
     virtual std::string generate() { return std::string(""); }
 
  protected:
-    EIdType id_;
     GenObject *parent_;
     std::string type_;
     std::string name_;

@@ -21,7 +21,8 @@ namespace sysvc {
 
 ProjectObject::ProjectObject(const char *name,
                          const char *comment)
-    : GenObject(0, "", ID_PROJECT, name, comment) {
+    : GenObject(0, comment) {
+    name_ = std::string(name);
 }
 
 

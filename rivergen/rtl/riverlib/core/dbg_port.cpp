@@ -108,7 +108,7 @@ DbgPort::DbgPort(GenObject *parent, const char *name, const char *comment) :
     Operation::start(this);
 
     GENERATE("tb");
-        IFGEN (NE(glob_river_cfg_->CFG_LOG2_STACK_TRACE_ADDR, CONST("0")), new STRING("tracebuf_en"));
+        IFGEN (NE(glob_river_cfg_->CFG_LOG2_STACK_TRACE_ADDR, CONST("0")), new StringConst("tracebuf_en"));
             NEW(trbuf0, trbuf0.getName().c_str());
                 CONNECT(trbuf0, 0, trbuf0.i_clk, i_clk);
                 CONNECT(trbuf0, 0, trbuf0.i_raddr, wb_stack_raddr);
@@ -117,7 +117,7 @@ DbgPort::DbgPort(GenObject *parent, const char *name, const char *comment) :
                 CONNECT(trbuf0, 0, trbuf0.i_waddr, wb_stack_waddr);
                 CONNECT(trbuf0, 0, trbuf0.i_wdata, wb_stack_wdata);
             ENDNEW();
-        ENDIFGEN(new STRING("tracebuf_en"));
+        ENDIFGEN(new StringConst("tracebuf_en"));
     ENDGENERATE("tb");
 }
 

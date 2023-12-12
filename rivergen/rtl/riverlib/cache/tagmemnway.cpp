@@ -72,7 +72,7 @@ TagMemNWay::TagMemNWay(GenObject *parent, const char *name, const char *comment)
     wayx.lnbits.setObjValue(&lnbits);
     wayx.flbits.setObjValue(&flbits);
     wayx.snoop.setObjValue(&snoop);
-    GenObject &i = FORGEN ("i", CONST("0"), CONST("NWAYS"), "++", new STRING("waygen"));
+    GenObject &i = FORGEN ("i", CONST("0"), CONST("NWAYS"), "++", new StringConst("waygen"));
         NEW(wayx, wayx.getName().c_str(), &i);
             CONNECT(wayx, &i, wayx.i_clk, i_clk);
             CONNECT(wayx, &i, wayx.i_nrst, i_nrst);
@@ -88,7 +88,7 @@ TagMemNWay::TagMemNWay(GenObject *parent, const char *name, const char *comment)
             CONNECT(wayx, &i, wayx.o_snoop_flags, ARRITEM(way_o, i, way_o.snoop_flags));
 
         ENDNEW();
-    ENDFORGEN(new STRING("waygen"));
+    ENDFORGEN(new StringConst("waygen"));
 
 TEXT();
     lru0.abits.setObjValue(&ibits);

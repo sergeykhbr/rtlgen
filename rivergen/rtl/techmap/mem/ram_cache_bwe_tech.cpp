@@ -41,7 +41,7 @@ ram_cache_bwe_tech::ram_cache_bwe_tech(GenObject *parent, const char *name, cons
     // Create and connet Sub-modules:
     rx.abits.setObjValue(&abits);
     rx.dbits.setObjValue(&CONST("8"));
-    GenObject &i = FORGEN ("i", CONST("0"), CONST("DIV(dbits,8)"), "++", new STRING("rxgen"));
+    GenObject &i = FORGEN ("i", CONST("0"), CONST("DIV(dbits,8)"), "++", new StringConst("rxgen"));
         NEW(rx, rx.getName().c_str(), &i);
             CONNECT(rx, &i, rx.i_clk, i_clk);
             CONNECT(rx, &i, rx.i_addr, i_addr);
@@ -49,7 +49,7 @@ ram_cache_bwe_tech::ram_cache_bwe_tech(GenObject *parent, const char *name, cons
             CONNECT(rx, &i, rx.i_wdata, ARRITEM(wb_wdata, i, wb_wdata));
             CONNECT(rx, &i, rx.o_rdata, ARRITEM(wb_rdata, i, wb_rdata));
         ENDNEW();
-    ENDFORGEN(new STRING("rxgen"));
+    ENDFORGEN(new StringConst("rxgen"));
 
     Operation::start(&comb);
     proc_comb();

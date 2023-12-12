@@ -139,11 +139,12 @@ class Tracer : public ModuleObject {
                 "fa6", "fa7", "fs2",  "fs3",  "fs4", "fs5", "fs6",  "fs7",
                 "fs8", "fs9", "fs10", "fs11", "ft8", "ft9", "ft10", "ft11"
             };
-            STRING *pitem;
+            StringConst *pitem;
             char tstr[16];
             for (int i = 0; i < 64; i++) {
                 RISCV_sprintf(tstr, sizeof(tstr), "x%d", i);
-                pitem = new STRING(RNAMES[i], "", this, tstr);
+                pitem = new StringConst(RNAMES[i], tstr);
+                add_entry(pitem);
             }
         }
 

@@ -22,7 +22,8 @@ namespace sysvc {
 ProcObject::ProcObject(GenObject *parent,
                        const char *name,
                        const char *comment)
-    : GenObject(parent, "", ID_PROCESS, name, comment) {
+    : GenObject(parent, comment) {
+    name_ = std::string(name);
     Operation::start(this);
 }
 

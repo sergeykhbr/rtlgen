@@ -62,7 +62,7 @@ TagMemCoupled::TagMemCoupled(GenObject *parent, const char *name, const char *co
     memx.lnbits.setObjValue(&lnbits);
     memx.flbits.setObjValue(&flbits);
     memx.snoop.setObjValue(&CONST("0"));
-    GenObject &i = FORGEN ("i", CONST("0"), CONST("MemTotal"), "++", new STRING("memgen"));
+    GenObject &i = FORGEN ("i", CONST("0"), CONST("MemTotal"), "++", new StringConst("memgen"));
         NEW(memx, memx.getName().c_str(), &i);
             CONNECT(memx, &i, memx.i_clk, i_clk);
             CONNECT(memx, &i, memx.i_nrst, i_nrst);
@@ -82,7 +82,7 @@ TagMemCoupled::TagMemCoupled(GenObject *parent, const char *name, const char *co
             CONNECT(memx, &i, memx.o_snoop_ready, ARRITEM(lineo, i, lineo.snoop_ready));
             CONNECT(memx, &i, memx.o_snoop_flags, ARRITEM(lineo, i, lineo.snoop_flags));
         ENDNEW();
-    ENDFORGEN(new STRING("memgen"));
+    ENDFORGEN(new StringConst("memgen"));
 
     Operation::start(&comb);
     proc_comb();

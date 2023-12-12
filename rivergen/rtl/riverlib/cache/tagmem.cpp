@@ -81,7 +81,7 @@ TEXT();
 
 TEXT();
     GENERATE("snoop_gen");
-        IFGEN (snoop, new STRING("snoop_en"));
+        IFGEN (snoop, new StringConst("snoop_en"));
         tagsnoop0.abits.setObjValue(&ibits);
         tagsnoop0.dbits.setObjValue(&TAG_WITH_FLAGS);
             NEW(tagsnoop0, tagsnoop0.getName().c_str());
@@ -91,9 +91,9 @@ TEXT();
                 CONNECT(tagsnoop0, 0, tagsnoop0.i_wdata, wb_tagi_wdata);
                 CONNECT(tagsnoop0, 0, tagsnoop0.o_rdata, wb_tago_snoop_rdata);
             ENDNEW();
-        ELSEGEN(new STRING("snoop"));
+        ELSEGEN(new StringConst("snoop"));
             ASSIGNZERO(wb_tago_snoop_rdata);
-        ENDIFGEN(new STRING("snoop_dis"));
+        ENDIFGEN(new StringConst("snoop_dis"));
     ENDGENERATE("snoop_gen");
 
     Operation::start(&comb);

@@ -64,7 +64,8 @@ std::string FloatConst::getStrValue() {
     return std::string(tstr);
 }
 
-StringConst::StringConst(const char *v) : GenObject(NO_PARENT, NO_COMMENT) {
+StringConst::StringConst(const char *v, const char *comment)
+    : GenObject(NO_PARENT, comment) {
     strval_ = "\"" + std::string(v) + "\"";
 }
 

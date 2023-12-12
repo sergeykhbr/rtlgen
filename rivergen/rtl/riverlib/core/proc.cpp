@@ -661,7 +661,7 @@ TEXT();
     trace0.hartid.setObjValue(&hartid);
     trace0.trace_file.setObjValue(&trace_file);
     GENERATE("trgen");
-    IFGEN (tracer_ena, new STRING("tr_en"));
+    IFGEN (tracer_ena, new StringConst("tr_en"));
         NEW(trace0, trace0.getName().c_str());
             CONNECT(trace0, 0, trace0.i_clk, i_clk);
             CONNECT(trace0, 0, trace0.i_nrst, i_nrst);
@@ -686,7 +686,7 @@ TEXT();
             CONNECT(trace0, 0, trace0.i_m_wdata, w.w.wdata);
             CONNECT(trace0, 0, trace0.i_reg_ignored, w_reg_ignored);
         ENDNEW();
-    ENDIFGEN(new STRING("tr_en"));
+    ENDIFGEN(new StringConst("tr_en"));
     ENDGENERATE("trgen");
 }
 

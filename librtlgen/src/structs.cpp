@@ -26,11 +26,13 @@ StructObject::StructObject(GenObject *parent,
                            const char *type,
                            const char *name,
                            const char *comment)
-    : GenObject(parent, type, ID_STRUCT, name, comment) {
-    if (getName() == "") {
+    : GenObject(parent, comment) {
+    type_ = std::string(type);
+    name_ = std::string(name);
+    if (name_ == "") {
         SHOW_ERROR("Unnamed structure of type %s", type_.c_str());
     }
-    if (getName() == type_) {
+    if (name_ == type_) {
         SCV_set_cfg_type(this);
     } else {
         SCV_get_cfg_type(this, type_.c_str());

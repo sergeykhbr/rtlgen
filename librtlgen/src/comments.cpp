@@ -20,7 +20,7 @@
 namespace sysvc {
 
 TextLine::TextLine(GenObject *parent, const char *comment)
-    : GenObject(parent, "TextLine", ID_COMMENT, comment, comment) {
+    : GenObject(parent, comment) {
     empty_ = false;
 }
 
@@ -53,8 +53,7 @@ std::string TextLine::generate() {
 }
 
 
-CommentLicense::CommentLicense()
-    : GenObject(0, "", ID_COMMENT, ""),
+CommentLicense::CommentLicense() : GenObject(0, NO_COMMENT),
     str01(this, ""),
     str02(this, " Copyright 2022 Sergey Khabarov, sergeykhbr@gmail.com"),
     str03(this, ""),

@@ -38,7 +38,7 @@ Operation &BIT(GenObject &a, GenObject &b, const char *comment) {
 }
 
 Operation &BIT(GenObject &a, const char *b, const char *comment) {
-    GenObject *idx = new I32D(b);
+    GenObject *idx = SCV_parse_to_obj(0, b);
     Operation *p = new BitOperation(&a, idx, comment);
     return *p;
 }

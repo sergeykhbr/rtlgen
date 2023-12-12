@@ -22,6 +22,19 @@
 
 namespace sysvc {
 
+enum EGenerateType {
+    GEN_UNDEFINED,
+    SYSC_ALL,
+    SYSC_H,
+    SYSC_CPP,
+    SV_ALL,
+    SV_PKG,
+    SV_MOD,
+    VHDL_ALL,
+    VHDL_PKG,
+    VHDL_MOD
+};
+
 
 void SCV_printf(const char *fmt, ...);
 

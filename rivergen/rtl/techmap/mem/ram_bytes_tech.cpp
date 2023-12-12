@@ -43,7 +43,7 @@ ram_bytes_tech::ram_bytes_tech(GenObject *parent, const char *name, const char *
 
     mem.abits.setObjValue(&SUB2(abits, log2_dbytes));
     mem.dbits.setObjValue(&CONST("8"));
-    GenObject &i = FORGEN("i", CONST("0"), dbytes, "++", new STRING("memgen"));
+    GenObject &i = FORGEN("i", CONST("0"), dbytes, "++", new StringConst("memgen"));
         NEW(mem, mem.getName().c_str(), &i);
             CONNECT(mem, &i, mem.i_clk, i_clk);
             CONNECT(mem, &i, mem.i_addr, wb_addr);
@@ -51,7 +51,7 @@ ram_bytes_tech::ram_bytes_tech(GenObject *parent, const char *name, const char *
             CONNECT(mem, &i, mem.i_wdata, ARRITEM(wb_wdata, i, wb_wdata));
             CONNECT(mem, &i, mem.o_rdata, ARRITEM(wb_rdata, i, wb_rdata));
         ENDNEW();
-    ENDFORGEN(new STRING("memgen"));
+    ENDFORGEN(new StringConst("memgen"));
 
 
     Operation::start(&comb);

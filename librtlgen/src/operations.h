@@ -523,9 +523,9 @@ void ELSIF(GenObject &a, const char *comment="");
 void ELSE(const char *comment="");
 void ENDIF(const char *comment="");
 // RTL specific if condition with names
-void IFGEN(GenObject &a, STRING *name, const char *comment="");
-void ELSEGEN(STRING *name, const char *comment="");
-void ENDIFGEN(STRING *name, const char *comment="");
+void IFGEN(GenObject &a, StringConst *name, const char *comment="");
+void ELSEGEN(StringConst *name, const char *comment="");
+void ENDIFGEN(StringConst *name, const char *comment="");
 
 void SWITCH(GenObject &a, const char *comment="");
 void CASE(GenObject &a, const char *comment="");
@@ -533,11 +533,21 @@ void CASEDEF(const char *comment="");
 void ENDCASE(const char *comment="");
 void ENDSWITCH(const char *comment="");
 
-//GenObject &GENVAR(const char *name);
-GenObject &FOR(const char *i, GenObject &start, GenObject &end, const char *dir, const char *comment="");
-GenObject &FORGEN(const char *i, GenObject &start, GenObject &end, const char *dir, STRING *name, const char *comment="");
+GenObject &FOR(const char *i,
+               GenObject &start,
+               GenObject &end,
+               const char *dir,
+               const char *comment=NO_COMMENT);
+
+GenObject &FORGEN(const char *i,
+                  GenObject &start,
+                  GenObject &end,
+                  const char *dir,
+                  StringConst *name,
+                  const char *comment=NO_COMMENT);
+
 void ENDFOR(const char *comment="");
-void ENDFORGEN(STRING *name, const char *comment="");
+void ENDFORGEN(StringConst *name, const char *comment="");
 
 void WHILE(GenObject &a, const char *comment="");
 void ENDWHILE(const char *comment="");

@@ -25,9 +25,10 @@ namespace sysvc {
 
 class DecConst : public GenObject {
  public:
-    DecConst(uint64_t v) : GenObject(NO_PARENT, NO_COMMENT), ui64_(v) {}
-    DecConst(int v) : GenObject(NO_PARENT, NO_COMMENT),
-        ui64_(static_cast<uint64_t>(v)) {}
+    DecConst(uint64_t v, const char *comment=NO_COMMENT)
+        : GenObject(NO_PARENT, comment), ui64_(v) {}
+    DecConst(int v, const char *comment=NO_COMMENT)
+        : GenObject(NO_PARENT, comment), ui64_(static_cast<uint64_t>(v)) {}
 
     virtual bool isConst() override { return true; }
     virtual uint64_t getValue() override { return ui64_; }
@@ -73,7 +74,7 @@ class FloatConst : public GenObject {
 // TODO: StringConst and StringVariable
 class StringConst : public GenObject {
  public:
-    StringConst(const char *val);
+    StringConst(const char *val, const char *comment=NO_COMMENT);
 
     virtual bool isConst() override { return true; }
     virtual bool isString() override { return true; }

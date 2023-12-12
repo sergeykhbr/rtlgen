@@ -29,7 +29,9 @@ ModuleObject::ModuleObject(GenObject *parent,
                            const char *type,
                            const char *name,
                            const char *comment)
-    : GenObject(parent, type, ID_MODULE, name, comment) {
+    : GenObject(parent, comment) {
+    name_ = std::string(name);
+    type_ = std::string(type);
 
     SCV_add_module(this);
 }

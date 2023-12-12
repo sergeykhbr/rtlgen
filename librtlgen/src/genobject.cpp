@@ -20,20 +20,14 @@
 
 namespace sysvc {
 
-GenObject::GenObject(GenObject *parent, const char *comment) :
-    GenObject(parent, "", ID_VALUE, "", comment) {
-}
-
-GenObject::GenObject(GenObject *parent, const char *type, EIdType id,
-                     const char *name, const char *comment) {
-    id_ = id;
+GenObject::GenObject(GenObject *parent, const char *comment) {
     parent_ = parent;
     sel_ = 0;
     reset_disabled_ = false;
     vcd_enabled_ = true;
     sv_api_ = false;
-    type_ = std::string(type);
-    name_ = std::string(name);
+    type_ = std::string("");
+    name_ = std::string("");
     comment_ = std::string(comment);
     if (parent_) {
         parent_->add_entry(this);

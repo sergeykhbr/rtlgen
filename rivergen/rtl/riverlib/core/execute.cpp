@@ -285,7 +285,7 @@ TEXT();
 
 TEXT();
     GENERATE("fpu");
-        IFGEN (fpu_ena, new STRING("fpu_en"));
+        IFGEN (fpu_ena, new StringConst("fpu_en"));
             NEW(fpu0, fpu0.getName().c_str());
                 CONNECT(fpu0, 0, fpu0.i_clk, i_clk);
                 CONNECT(fpu0, 0, fpu0.i_nrst, i_nrst);
@@ -301,7 +301,7 @@ TEXT();
                 CONNECT(fpu0, 0, fpu0.o_ex_inexact, w_ex_fpu_inexact);
                 CONNECT(fpu0, 0, fpu0.o_valid, ARRITEM(wb_select, Res_FPU, wb_select.valid));
             ENDNEW();
-        ELSEGEN(new STRING("fpu"));
+        ELSEGEN(new StringConst("fpu"));
             ASSIGNZERO(ARRITEM(wb_select, Res_FPU, wb_select.res));
             ASSIGNZERO(ARRITEM(wb_select, Res_FPU, wb_select.valid));
             ASSIGNZERO(w_ex_fpu_invalidop);
@@ -309,7 +309,7 @@ TEXT();
             ASSIGNZERO(w_ex_fpu_overflow);
             ASSIGNZERO(w_ex_fpu_underflow);
             ASSIGNZERO(w_ex_fpu_inexact);
-        ENDIFGEN(new STRING("fpu_dis"));
+        ENDIFGEN(new StringConst("fpu_dis"));
     ENDGENERATE("fpu");
 }
 

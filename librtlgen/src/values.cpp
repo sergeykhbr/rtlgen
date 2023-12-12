@@ -22,23 +22,19 @@
 namespace sysvc {
 
 GenValue::GenValue(GenObject *parent, const char *name, const char *val, const char *comment)
-    : GenObject(parent, "", ID_VALUE, name, comment) {
+    : GenObject(parent, comment) {
+    name_ = std::string(name);
+    if (name_ == "") {
+        SHOW_ERROR("Unnamed variable of type %s", type_.c_str());
+    }
     objValue_ = SCV_parse_to_obj(this, val);
 }
 
 GenValue::GenValue(GenObject *parent, const char *name, GenObject *val, const char *comment)
-    : GenObject(parent, "", ID_VALUE, name, comment) {
+    : GenObject(parent, comment) {
+    name_ = std::string(name);
     objValue_ = val;
 }
-
-std::string GenValue::getName() {
-    if (name_ == "") {
-        return getStrValue();
-    }
-    return name_;
-}
-
-
 
 bool GenValue::isReg() {
     GenObject *p = getParent();
