@@ -263,7 +263,7 @@ std::string ModuleObject::generate_sv_mod_signals() {
             continue;
         }
         if (!p->isSignal()
-                && p->getId() != ID_VALUE
+                && !p->isValue()
                 && !p->isStruct()
                 && !p->isClock()) {
             text = "";
@@ -280,13 +280,6 @@ std::string ModuleObject::generate_sv_mod_signals() {
         ln += ";";
         p->addComment(ln);
         ret += ln + "\n";
-        tcnt++;
-    }
-    for (auto &p: getEntries()) {
-        if (!p->isFileValue()) {
-            continue;
-        }
-        ret += "int " + p->getName() + ";\n";
         tcnt++;
     }
 
@@ -343,27 +336,18 @@ std::string ModuleObject::generate_sv_mod_proc(GenObject *proc) {
     }
 
     for (auto &e: proc->getEntries()) {
-        ln = "";
-        if (e->getId() == ID_VALUE
-            || e->isStruct()) {    // no structure inside of process, typedef can be removed
-            ln += addspaces() + e->getType() + " " + e->getName();
-            if (e->getObjDepth()) {
-                ln += "[0: " + e->getStrDepth() + "-1]";
-            }
-            tcnt++;
-        } else if (e->getObjDepth()) {
-            // DELME:
-            ln += addspaces() + e->getType() + " " + e->getName();
-            ln += "[0: ";
-            ln += e->getStrDepth();
-            ln += "-1]";
-        } else {
+        if (!e->isValue() && !e->isStruct()) {    // no structure inside of process, typedef can be removed
             continue;
         }
-        tcnt++;
+
+        ln = addspaces() + e->getType() + " " + e->getName();
+        if (e->getObjDepth()) {
+            ln += "[0: " + e->getStrDepth() + "-1]";
+        }
         ln += ";";
         e->addComment(ln);
         ret += ln + "\n";
+        tcnt++;
     }
     if (tcnt) {
         ret += "\n";

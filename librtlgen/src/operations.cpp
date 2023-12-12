@@ -825,7 +825,7 @@ std::string SETVAL_gen(GenObject **args) {
     }
     if (args[2]->isConst()) {
         ret += args[2]->getStrValue();
-    } else if (args[2]->getId() == ID_VALUE
+    } else if (args[2]->isValue()
             || args[2]->isClock()
             || args[2]->isParam()
             || args[2]->isStruct()) {

@@ -70,7 +70,6 @@ class GenObject {
     GenObject(GenObject *parent, const char *comment);       // 
 
     virtual std::list<GenObject *> &getEntries() { return entries_; }
-    virtual EIdType getId() { return id_; }
     virtual std::string getName() { return name_; }
     virtual GenObject *getParent() { return parent_; }
     virtual std::string getComment() { return comment_; }

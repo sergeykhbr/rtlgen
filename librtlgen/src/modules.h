@@ -55,7 +55,6 @@ class ModuleObject : public GenObject {
     virtual bool isNRegProcess();
     virtual bool is2DimReg();
     virtual bool isSubModules();
-    virtual bool isSignalEntries(GenObject *obj);
     virtual void getTmplParamList(std::list<GenObject *> &genlist);
     virtual void getParamList(std::list<GenObject *> &genlist);
     virtual void getIoList(std::list<GenObject *> &genlist);

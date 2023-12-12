@@ -352,7 +352,7 @@ std::string ModuleObject::generate_sysc_h() {
             continue;
         }
         if (!p->isSignal()
-                && p->getId() != ID_VALUE
+                && !p->isValue()
                 && !p->isStruct()
                 && !p->isClock()) {
                 text = "";
@@ -377,13 +377,6 @@ std::string ModuleObject::generate_sysc_h() {
         ln += ";";
         p->addComment(ln);
         out += ln + "\n";
-        tcnt++;
-    }
-    for (auto &p: getEntries()) {
-        if (!p->isFileValue()) {
-            continue;
-        }
-        out += addspaces() + "FILE *" + p->getName() + ";\n";
         tcnt++;
     }
     if (tcnt) {
@@ -1051,7 +1044,7 @@ std::string ModuleObject::generate_sysc_proc(GenObject *proc) {
     tcnt = 0;
     for (auto &e: proc->getEntries()) {
         ln = "";
-        if (e->getId() != ID_VALUE && !e->isStruct()) {  // no need to check typedef inside of proc
+        if (!e->isValue() && !e->isStruct()) {  // no need to check typedef inside of proc
             continue;
         }
         ln += addspaces() + e->getType() + " " + e->getName();

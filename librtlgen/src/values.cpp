@@ -118,7 +118,7 @@ std::string STRING::getType() {
 std::string FileValue::getType() {
     std::string ret = "";
     if (SCV_is_sysc()) {
-        ret = std::string("FILE *");
+        ret = std::string("FILE*");
     } else if (SCV_is_sv()) {
         ret = std::string("int");
     } else if (SCV_is_vhdl()) {

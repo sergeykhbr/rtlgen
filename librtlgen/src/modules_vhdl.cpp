@@ -266,7 +266,7 @@ std::string ModuleObject::generate_vhdl_mod_signals() {
         }
         if (p->isReg() || p->isNReg()
             || (!p->isSignal()
-                && p->getId() != ID_VALUE
+                && !p->isValue()
                 && !p->isStruct()
                 && !p->isClock())) {
             text = "";
@@ -288,13 +288,6 @@ std::string ModuleObject::generate_vhdl_mod_signals() {
             ln += p->addComment();
         }
         ret += ln + "\n";
-        tcnt++;
-    }
-    for (auto &p: getEntries()) {
-        if (!p->isFileValue()) {
-            continue;
-        }
-        ret += "file " + p->getName() + ";\n";
         tcnt++;
     }
 

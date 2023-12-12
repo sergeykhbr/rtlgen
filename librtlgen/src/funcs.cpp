@@ -207,21 +207,18 @@ std::string FunctionObject::generate_sysv() {
             continue;
         }
 
-        if (e->getId() == ID_VALUE) {
-            ret += addspaces() + e->getType() + " " + e->getName();
-            tcnt++;
-        } else if (e->getObjDepth()) {
-            ret += addspaces() + e->getType() + " " + e->getName();
+        if (!e->isValue() && !e->isStruct()) {
+            continue;
+        }
+
+        ret += addspaces() + e->getType() + " " + e->getName();
+        if (e->getObjDepth()) {
             ret += "[";
             ret += e->getStrDepth();
             ret += "]";
-        } else if (e->isStruct()) { // no need to check typedef inside function
-            ret += addspaces() + e->getType() + " " + e->getName();
-        } else {
-            continue;
         }
-        tcnt++;
         ret += ";\n";
+        tcnt++;
     }
     if (tcnt) {
         ret += "\n";
