@@ -55,4 +55,13 @@ class NRegSignal : public Signal {
     virtual bool isNReg() override { return true; }
 };
 
+template<class T>
+class RegStructObject : public SignalStruct<T> {
+ public:
+    RegStructObject(GenObject *parent, const char *name, const char *comment)
+        : SignalStruct<T>(parent, name, comment) {}
+
+    virtual bool isReg() override { return true; }
+};
+
 }  // namespace sysvc

@@ -53,14 +53,4 @@ class StructObject : public GenObject {
     virtual std::string generate_interface_sc_trace();      // sc_trace
 };
 
-class RegStructObject : public StructObject {
- public:
-    RegStructObject(GenObject *parent, const char *type, const char *name,
-                 const char *comment)
-        : StructObject(parent, type, name, comment) {}
-
-    virtual bool isSignal() override { return true; }
-    virtual bool isReg() override { return true; }
-};
-
 }  // namespace sysvc
