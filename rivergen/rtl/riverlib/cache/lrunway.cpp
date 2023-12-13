@@ -32,12 +32,11 @@ lrunway::lrunway(GenObject *parent, const char *name, const char *comment) :
     WAYS_TOTAL(this, "WAYS_TOTAL", "POW2(1,waybits)"),
     LINE_WIDTH(this, "LINE_WIDTH", "MUL(WAYS_TOTAL,waybits)"),
     radr(this, "radr", "abits", "0"),
-    mem(this, "mem", "LINE_WIDTH", "LINES_TOTAL"),
+    mem(this, "mem", "LINE_WIDTH", "LINES_TOTAL", NO_COMMENT),
     // process
     comb(this)
 {
     Operation::start(this);
-    mem.disableReset();
     disableVcd();
 
     Operation::start(&comb);

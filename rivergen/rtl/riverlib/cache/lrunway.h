@@ -72,12 +72,7 @@ class lrunway : public ModuleObject {
     ParamI32D LINE_WIDTH;
 
     RegSignal radr;
-
-    class MemTable : public RegArray {
-     public:
-        MemTable(GenObject *parent, const char *name, const char *width, const char *depth)
-            : RegArray(parent, name, width, depth) {}
-    } mem;
+    RegMemory mem;
 
     // process should be intialized last to make all signals available
     CombProcess comb;

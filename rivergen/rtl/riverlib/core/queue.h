@@ -63,14 +63,8 @@ class Queue : public ModuleObject {
 
     ParamI32D DEPTH;
 
-     class MemType : public RegArray {
-     public:
-        MemType(GenObject *parent, const char *name, const char *width, const char *depth)
-            : RegArray(parent, name, width, depth) {}
-    };
-
     RegSignal wcnt;
-    MemType mem;
+    RegMemory mem;
 
     // process should be intialized last to make all signals available
     CombProcess comb;

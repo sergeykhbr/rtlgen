@@ -47,8 +47,8 @@ class rom_inferred_2x32 : public ModuleObject {
 
     Logic wb_rdata0;
     Logic wb_rdata1;
-    WireArray<Logic> mem0;
-    WireArray<Logic> mem1;
+    LogicMemory mem0;
+    LogicMemory mem1;
 
     // process should be intialized last to make all signals available
     RegistersProcess rproc;

@@ -28,8 +28,8 @@ rom_inferred_2x32::rom_inferred_2x32(GenObject *parent, const char *name, const 
     hexname1("", "hexname1", this),
     wb_rdata0(this, "wb_rdata0", "32"),
     wb_rdata1(this, "wb_rdata1", "32"),
-    mem0(this, "mem0", "32", "DEPTH"),
-    mem1(this, "mem1", "32", "DEPTH"),
+    mem0(this, "mem0", "32", "DEPTH", NO_COMMENT),
+    mem1(this, "mem1", "32", "DEPTH", NO_COMMENT),
     // process
     rproc(this)
 {
@@ -44,8 +44,6 @@ rom_inferred_2x32::rom_inferred_2x32(GenObject *parent, const char *name, const 
         READMEMH(hexname1, mem1);
     ENDINITIAL();
 
-    mem0.disableReset();
-    mem1.disableReset();
     disableVcd();
 
     Operation::start(&rproc);

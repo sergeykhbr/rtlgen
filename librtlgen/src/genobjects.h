@@ -73,6 +73,8 @@ class GenObject {
     virtual bool isOperation() { return false; }
     virtual bool isReg() { return false; }              // is register with posedge clock
     virtual bool isNReg() { return false; }             // is register with negedge clock
+    virtual bool isResetDisabled() { return false; }    // Registers without reset usually implemented in memory bank
+
     virtual bool isClock() { return false; }
     virtual bool isFile() { return false; }
     virtual bool isFunction() { return false; }
@@ -102,8 +104,6 @@ class GenObject {
     virtual std::string getLibName();                   // VHDL library. Default is "work"
     virtual void setSelector(GenObject *sel) { sel_ = sel; }
     virtual GenObject *getSelector() { return sel_; }
-    virtual void disableReset() { reset_disabled_ = true; }
-    virtual bool isResetDisabled() { return reset_disabled_; }
     virtual void disableVcd() { vcd_enabled_ = false; }
     virtual bool isVcd() { return vcd_enabled_; }
     virtual bool isSvApiUsed() { return sv_api_; }      // readmemh or similar methods used
@@ -117,7 +117,6 @@ class GenObject {
     std::string name_;
 
     GenObject *sel_;                                    // selector when is array
-    bool reset_disabled_;                               // register without reset (memory)
     bool vcd_enabled_;                                  // show instance in VCD trace file
     bool sv_api_;                                       // method readmemh or similar were used
     std::string comment_;

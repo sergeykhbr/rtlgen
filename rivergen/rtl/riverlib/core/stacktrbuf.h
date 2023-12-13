@@ -46,15 +46,8 @@ class StackTraceBuffer : public ModuleObject {
     InPort i_wdata;
 
  protected:
-     class MemType : public RegArray {
-     public:
-        MemType(GenObject *parent, const char *name, const char *width, const char *depth)
-            : RegArray(parent, name, width, depth, "[pc, npc]") {}
-    };
-
-
     RegSignal raddr;
-    MemType stackbuf;
+    RegMemory stackbuf;
 
     // process should be intialized last to make all signals available
     CombProcess comb;

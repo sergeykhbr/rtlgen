@@ -27,12 +27,11 @@ ram_mmu_tech::ram_mmu_tech(GenObject *parent, const char *name, const char *comm
     o_rdata(this, "o_rdata", "dbits"),
     DEPTH(this, "DEPTH", "POW2(1,abits)"),
     rdata(this, "rdata", "dbits"),
-    mem(this, "mem", "dbits", "DEPTH"),
+    mem(this, "mem", "dbits", "DEPTH", NO_COMMENT),
     // process
     rproc(this)
 {
     Operation::start(this);
-    mem.disableReset();
     disableVcd();
 
     Operation::start(&rproc);

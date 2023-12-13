@@ -46,7 +46,7 @@ class ram_tech : public ModuleObject {
     ParamI32D DEPTH;
 
     Logic rdata;
-    WireArray<Logic> mem;
+    LogicMemory mem;
 
     // process should be intialized last to make all signals available
     RegistersProcess rproc;

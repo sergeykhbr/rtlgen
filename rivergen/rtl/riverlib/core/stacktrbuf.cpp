@@ -26,11 +26,10 @@ StackTraceBuffer::StackTraceBuffer(GenObject *parent, const char *name, const ch
     i_wdata(this, "i_wdata", "MUL(2,RISCV_ARCH)"),
     // registers
     raddr(this, "raddr", "5"),
-    stackbuf(this, "stackbuf", "MUL(2,RISCV_ARCH)", "STACK_TRACE_BUF_SIZE"),
+    stackbuf(this, "stackbuf", "MUL(2,RISCV_ARCH)", "STACK_TRACE_BUF_SIZE", NO_COMMENT),
     // process
     comb(this)
 {
-    stackbuf.disableReset();
     disableVcd();
 }
 

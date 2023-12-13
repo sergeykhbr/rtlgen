@@ -83,6 +83,30 @@ class RegArray : public RegSignal {
     GenObject *objDepth_;
 };
 
+/**
+    LogicMemory and RegMemory are almost the same except that LogicMemory
+    is used for pure memory bank without other logic that allows to avoid creating
+    "comb" process. Only "registers" process is created.
+ */
+class LogicMemory : public WireArray<Logic> {
+ public:
+    LogicMemory(GenObject *parent, const char *name, const char *width, const char *depth,
+        const char *comment) : WireArray<Logic>(parent, name, width, depth, comment) {}
+
+    virtual bool isResetDisabled() override { return true; }
+};
+
+class RegMemory : public RegArray {
+ public:
+    RegMemory(GenObject *parent, const char *name, const char *width, const char *depth,
+        const char *comment) : RegArray(parent, name, width, depth, comment) {}
+
+    virtual bool isResetDisabled() override { return true; }
+};
+
+/**
+    Array of structures with element access by integer index
+ */
 template<class T>
 class StructArray : public T {
  public:

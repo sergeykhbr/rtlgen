@@ -23,7 +23,6 @@ namespace sysvc {
 GenObject::GenObject(GenObject *parent, const char *comment) {
     parent_ = parent;
     sel_ = 0;
-    reset_disabled_ = false;
     vcd_enabled_ = true;
     sv_api_ = false;
     type_ = std::string("");

@@ -30,11 +30,10 @@ Queue::Queue(GenObject *parent, const char *name, const char *comment) :
     o_nempty(this, "o_nempty", "1"),
     DEPTH(this, "DEPTH", "POW2(1,abits)"),
     wcnt(this, "wcnt", "ADD(abits,1)", "0"),
-    mem(this, "mem", "dbits", "DEPTH"),
+    mem(this, "mem", "dbits", "DEPTH", NO_COMMENT),
     // process
     comb(this)
 {
-    mem.disableReset();
     disableVcd();
 }
 
