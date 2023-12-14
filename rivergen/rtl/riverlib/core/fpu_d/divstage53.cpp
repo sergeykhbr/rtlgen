@@ -27,8 +27,8 @@ divstage53::divstage53(GenObject *parent, const char *name, const char *comment)
     o_muxind(this, "o_muxind", "7", "first found non-zero bits"),
     o_muxind_rdy(this, "o_muxind_rdy", "1", "seeking was successfull"),
     // registers
-    wb_thresh(this, "wb_thresh", "62", "16"),
-    wb_dif(this, "wb_dif", "61", "4"),
+    wb_thresh(this, "wb_thresh", "62", "16", NO_COMMENT),
+    wb_dif(this, "wb_dif", "61", "4", NO_COMMENT),
     // process
     comb(this)
 {

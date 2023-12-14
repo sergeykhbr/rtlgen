@@ -23,7 +23,7 @@ zeroenc::zeroenc(GenObject *parent, const char *name, const char *comment) :
     i_value(this, "i_value", "iwidth", "Input value to encode"),
     o_shift(this, "o_shift", "shiftwidth", "First non-zero bit"),
     // signals
-    wb_muxind(this, "wb_muxind", "shiftwidth", "ADD(iwidth,1)"),
+    wb_muxind(this, "wb_muxind", "shiftwidth", "ADD(iwidth,1)", NO_COMMENT),
     // registers
     // process
     gen(this)

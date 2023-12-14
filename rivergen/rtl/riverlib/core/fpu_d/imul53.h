@@ -31,7 +31,7 @@ class imul53 : public ModuleObject {
         CombProcess(GenObject *parent) :
             ProcObject(parent, "comb"),
             v_ena(this, "v_ena", "1", "0", NO_COMMENT),
-            vb_mux(this, "vb_mux", "57", "17"),
+            vb_mux(this, "vb_mux", "57", "17", NO_COMMENT),
             vb_sel(this, "vb_sel", "57", "'0", NO_COMMENT),
             vb_shift(this, "vb_shift", "7", "'0", NO_COMMENT),
             vb_sumInv(this, "vb_sumInv", "105", "'0", NO_COMMENT) {

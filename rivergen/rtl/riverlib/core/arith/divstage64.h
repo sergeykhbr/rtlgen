@@ -49,7 +49,7 @@ class divstage64 : public ModuleObject {
             wb_divx16(this, "wb_divx16", "65"),
             wb_divident(this, "wb_divident", "65"),
             wb_divisor(this, "wb_divisor", "124"),
-            wb_thresh(this, "wb_thresh", "66", "16") {
+            wb_thresh(this, "wb_thresh", "66", "16", NO_COMMENT) {
         }
 
      public:

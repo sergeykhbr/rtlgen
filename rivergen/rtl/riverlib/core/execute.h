@@ -355,7 +355,7 @@ class InstrExecute : public ModuleObject {
      class TagExpectedType : public WireArray<Signal> {
      public:
         TagExpectedType(GenObject *parent, const char *name, const char *width, const char *depth)
-            : WireArray<Signal>(parent, name, width, depth) {}
+            : WireArray<Signal>(parent, name, width, depth, NO_COMMENT) {}
         virtual bool isSignal() override { return true; }
     };
 

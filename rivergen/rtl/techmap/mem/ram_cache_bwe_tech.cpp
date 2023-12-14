@@ -27,9 +27,9 @@ ram_cache_bwe_tech::ram_cache_bwe_tech(GenObject *parent, const char *name, cons
     i_wdata(this, "i_wdata", "dbits"),
     o_rdata(this, "o_rdata", "dbits"),
     // signals
-    wb_we(this, "wb_we", "1", "DIV(dbits,8)"),
-    wb_wdata(this, "wb_wdata", "8", "DIV(dbits,8)"),
-    wb_rdata(this, "wb_rdata", "8", "DIV(dbits,8)"),
+    wb_we(this, "wb_we", "1", "DIV(dbits,8)", NO_COMMENT),
+    wb_wdata(this, "wb_wdata", "8", "DIV(dbits,8)", NO_COMMENT),
+    wb_rdata(this, "wb_rdata", "8", "DIV(dbits,8)", NO_COMMENT),
     // process
     comb(this),
     rx(this, "rx", "DIV(dbits,8)", NO_COMMENT)

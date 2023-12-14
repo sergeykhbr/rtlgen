@@ -31,8 +31,8 @@ class BranchPredictor : public ModuleObject {
      public:
         CombProcess(GenObject *parent) :
             ProcObject(parent, "comb"),
-            vb_addr(this, "vb_addr", "RISCV_ARCH", "CFG_BP_DEPTH"),
-            vb_piped(this, "vb_piped", "SUB(RISCV_ARCH,2)", "4"),
+            vb_addr(this, "vb_addr", "RISCV_ARCH", "CFG_BP_DEPTH", NO_COMMENT),
+            vb_piped(this, "vb_piped", "SUB(RISCV_ARCH,2)", "4", NO_COMMENT),
             vb_fetch_npc(this, "vb_fetch_npc", "RISCV_ARCH", "'0", NO_COMMENT),
             v_btb_we(this, "v_btb_we", "1"),
             vb_btb_we_pc(this, "vb_btb_we_pc", "RISCV_ARCH", "'0", NO_COMMENT),

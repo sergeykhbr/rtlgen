@@ -149,14 +149,14 @@ class InstrDecoder : public ModuleObject {
      class FetchedPcType : public WireArray<Signal> {
      public:
         FetchedPcType(GenObject *parent, const char *name, const char *width, const char *depth)
-            : WireArray<Signal>(parent, name, width, depth) {}
+            : WireArray<Signal>(parent, name, width, depth, NO_COMMENT) {}
         virtual bool isSignal() override { return true; }
     };
 
      class FetchedInstrType : public WireArray<Signal> {
      public:
         FetchedInstrType(GenObject *parent, const char *name, const char *width, const char *depth)
-            : WireArray<Signal>(parent, name, width, depth) {}
+            : WireArray<Signal>(parent, name, width, depth, NO_COMMENT) {}
         virtual bool isSignal() override { return true; }
     };
 

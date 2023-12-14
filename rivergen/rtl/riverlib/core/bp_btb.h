@@ -89,7 +89,7 @@ class BpBTB : public ModuleObject {
      class DebugNpcType : public WireArray<Signal> {
      public:
         DebugNpcType(GenObject *parent, const char *name, const char *width, const char *depth)
-            : WireArray<Signal>(parent, name, width, depth) {}
+            : WireArray<Signal>(parent, name, width, depth, NO_COMMENT) {}
         virtual bool isSignal() override { return true; }
     };
 

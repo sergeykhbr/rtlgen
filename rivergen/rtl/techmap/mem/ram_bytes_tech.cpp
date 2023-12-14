@@ -30,9 +30,9 @@ ram_bytes_tech::ram_bytes_tech(GenObject *parent, const char *name, const char *
     o_rdata(this, "o_rdata", "MUL(8,POW2(1,log2_dbytes))"),
     // signals
     wb_addr(this, "wb_addr", "SUB(abits,log2_dbytes)"),
-    wb_wena(this, "wb_wena", "1", "dbytes"),
-    wb_wdata(this, "wb_wdata", "8", "dbytes"),
-    wb_rdata(this, "wb_rdata", "8", "dbytes"),
+    wb_wena(this, "wb_wena", "1", "dbytes", NO_COMMENT),
+    wb_wdata(this, "wb_wdata", "8", "dbytes", NO_COMMENT),
+    wb_rdata(this, "wb_rdata", "8", "dbytes", NO_COMMENT),
     // process
     comb(this),
     mem(this, "mem", "dbytes", NO_COMMENT)
