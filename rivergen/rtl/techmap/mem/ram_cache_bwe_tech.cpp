@@ -35,7 +35,6 @@ ram_cache_bwe_tech::ram_cache_bwe_tech(GenObject *parent, const char *name, cons
     rx(this, "rx", "DIV(dbits,8)", NO_COMMENT)
 {
     Operation::start(this);
-    disableVcd();
 
     // Create and connet Sub-modules:
     rx.abits.setObjValue(&abits);

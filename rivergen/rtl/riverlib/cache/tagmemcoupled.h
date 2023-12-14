@@ -26,6 +26,8 @@ class TagMemCoupled : public ModuleObject {
  public:
     TagMemCoupled(GenObject *parent, const char *name, const char *comment=NO_COMMENT);
 
+    virtual bool isVcd() override { return false; }     // disable tracing
+
     class CombProcess : public ProcObject {
      public:
         CombProcess(GenObject *parent) :

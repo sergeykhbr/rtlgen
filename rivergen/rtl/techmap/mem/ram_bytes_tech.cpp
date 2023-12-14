@@ -38,7 +38,6 @@ ram_bytes_tech::ram_bytes_tech(GenObject *parent, const char *name, const char *
     mem(this, "mem", "dbytes", NO_COMMENT)
 {
     Operation::start(this);
-    disableVcd();
 
     mem.abits.setObjValue(&SUB2(abits, log2_dbytes));
     mem.dbits.setObjValue(&CONST("8"));

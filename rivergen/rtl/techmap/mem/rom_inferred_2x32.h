@@ -24,6 +24,8 @@ class rom_inferred_2x32 : public ModuleObject {
  public:
     rom_inferred_2x32(GenObject *parent, const char *name, const char *comment=NO_COMMENT);
 
+    virtual bool isVcd() override { return false; }     // disable tracing
+
     class RegistersProcess : public ProcObject {
      public:
         RegistersProcess(GenObject *parent) :

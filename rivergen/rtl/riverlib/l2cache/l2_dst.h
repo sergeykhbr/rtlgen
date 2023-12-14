@@ -45,8 +45,8 @@ class L2Destination : public ModuleObject {
         }
 
      public:
-        StructVarArray<types_river::axi4_l1_out_type> vcoreo;
-        StructVarArray<types_river::axi4_l1_in_type> vlxi;
+        ValueArray<StructVar<types_river::axi4_l1_out_type>> vcoreo;
+        ValueArray<StructVar<types_river::axi4_l1_in_type>> vlxi;
         Logic vb_src_aw;
         Logic vb_src_ar;
         Logic vb_broadband_mask_full;

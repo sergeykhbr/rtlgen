@@ -32,7 +32,6 @@ ram_tech::ram_tech(GenObject *parent, const char *name, const char *comment) :
     rproc(this)
 {
     Operation::start(this);
-    disableVcd();
 
     Operation::start(&rproc);
     registers();

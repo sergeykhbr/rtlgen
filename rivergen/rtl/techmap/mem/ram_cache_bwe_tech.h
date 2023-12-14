@@ -25,6 +25,8 @@ class ram_cache_bwe_tech : public ModuleObject {
  public:
     ram_cache_bwe_tech(GenObject *parent, const char *name, const char *comment);
 
+    virtual bool isVcd() override { return false; }     // disable tracing
+
     class CombProcess : public ProcObject {
      public:
         CombProcess(GenObject *parent) :

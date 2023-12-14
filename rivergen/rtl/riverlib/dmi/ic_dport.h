@@ -55,8 +55,8 @@ class ic_dport : public ModuleObject {
         Logic vb_hartreset;
         Logic vb_req_valid;
         Logic vb_req_ready;
-        StructVarArray<types_river::dport_in_type> vb_dporti;
-        StructVarArray<types_river::dport_out_type> vb_dporto;
+        ValueArray<StructVar<types_river::dport_in_type>> vb_dporti;
+        ValueArray<StructVar<types_river::dport_out_type>> vb_dporto;
         Logic v_req_accepted;
     };
 

@@ -102,12 +102,12 @@ class GenObject {
     virtual std::string getStrDepth() { return std::string(""); }
 
     virtual std::string getLibName();                   // VHDL library. Default is "work"
-    virtual void setSelector(GenObject *sel) { sel_ = sel; }
-    virtual GenObject *getSelector() { return sel_; }
+    virtual void setSelector(GenObject *sel) {}
+    virtual GenObject *getSelector() { return 0; }
     virtual void disableVcd() { vcd_enabled_ = false; }
     virtual bool isVcd() { return vcd_enabled_; }
-    virtual bool isSvApiUsed() { return sv_api_; }      // readmemh or similar methods used
-    virtual void setSvApiUsed() { sv_api_ = true; }
+    virtual bool isSvApiUsed() { return false; }        // readmemh/display or similar methods were used
+    virtual void setSvApiUsed() {}                      // set usage of SV API from operation
 
     virtual std::string generate() { return std::string(""); }
 
@@ -116,9 +116,7 @@ class GenObject {
     std::string type_;
     std::string name_;
 
-    GenObject *sel_;                                    // selector when is array
     bool vcd_enabled_;                                  // show instance in VCD trace file
-    bool sv_api_;                                       // method readmemh or similar were used
     std::string comment_;
     std::list<GenObject *> entries_;
 };

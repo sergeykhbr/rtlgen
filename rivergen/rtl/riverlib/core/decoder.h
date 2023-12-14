@@ -142,6 +142,8 @@ class InstrDecoder : public ModuleObject {
         DecTableType(GenObject *parent, const char *name)
             : RegStructArray<DecoderDataType>(parent, name, "FULL_DEC_DEPTH", NO_COMMENT) {
         }
+
+        virtual bool isVcd() override { return false; }     // disable tracing
     };
 
      class FetchedPcType : public WireArray<Signal> {

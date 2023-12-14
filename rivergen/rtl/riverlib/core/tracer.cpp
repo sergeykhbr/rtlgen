@@ -67,7 +67,6 @@ Tracer::Tracer(GenObject *parent, const char *name, const char *comment) :
     comb(this),
     reg(this)
 {
-    trace_tbl.disableVcd();
     Operation::start(this);
     INITIAL();
         DECLARE_TSTR();

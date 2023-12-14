@@ -39,8 +39,8 @@ class axi2apb_bus1 : public ModuleObject {
 
      public:
         I32D iselidx;
-        StructVarArray<types_amba::apb_in_type> vapbi;
-        StructVarArray<types_amba::apb_out_type> vapbo;
+        ValueArray<StructVar<types_amba::apb_in_type>> vapbi;
+        ValueArray<StructVar<types_amba::apb_out_type>> vapbo;
     };
 
     void proc_comb();

@@ -45,8 +45,8 @@ class types_amba : public FileObject {
             addr_start("0", "addr_start", this),
             _1_(this, "Maskable bits of the base address."),
             addr_end("0", "addr_end", this) {
-            disableVcd();
         }
+        virtual bool isVcd() override { return false; }      // no need to trace
 
     public:
         TextLine _0_;

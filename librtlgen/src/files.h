@@ -31,10 +31,11 @@ class FileObject : public GenObject {
                  const char *name);
 
     virtual bool isFile() override { return true; }
+    virtual bool isSvApiUsed() override { return sv_api_; }     // readmemh/display or similar methods were used
+    virtual void setSvApiUsed() override { sv_api_ = true; }    // set usage of SV API from operation
     virtual void add_dependency(GenObject *p) override;
 
     virtual std::string getFullPath() override;
-    virtual std::string getType() { return std::string(""); }
     virtual std::string generate() override;
 
     virtual void getDepList(std::list<std::string> &lst);
@@ -50,7 +51,8 @@ class FileObject : public GenObject {
     std::string fullPath2fileRelative(const char *fullpath);
     //void list_of_modules(GenObject *p, std::list<std::string> &fpath);
 
- private:
+ protected:
+    bool sv_api_;                                       // method readmemh or similar were used
     std::map<std::string, std::list<GenObject *>> depfiles_;
 };
 

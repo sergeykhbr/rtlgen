@@ -40,8 +40,8 @@ class L2Dummy : public ModuleObject {
         }
 
      public:
-        StructVarArray<types_river::axi4_l1_out_type> vl1o;
-        StructVarArray<types_river::axi4_l1_in_type> vlxi;
+        ValueArray<StructVar<types_river::axi4_l1_out_type>> vl1o;
+        ValueArray<StructVar<types_river::axi4_l1_in_type>> vlxi;
         StructVar<types_river::axi4_l2_out_type> vl2o;
         Logic vb_src_aw;
         Logic vb_src_ar;

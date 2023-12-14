@@ -30,7 +30,6 @@ StackTraceBuffer::StackTraceBuffer(GenObject *parent, const char *name, const ch
     // process
     comb(this)
 {
-    disableVcd();
 }
 
 void StackTraceBuffer::proc_comb() {

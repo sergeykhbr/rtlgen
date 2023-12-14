@@ -37,7 +37,6 @@ lrunway::lrunway(GenObject *parent, const char *name, const char *comment) :
     comb(this)
 {
     Operation::start(this);
-    disableVcd();
 
     Operation::start(&comb);
     proc_comb();

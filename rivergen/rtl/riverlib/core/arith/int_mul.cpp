@@ -48,8 +48,6 @@ IntMul::IntMul(GenObject *parent, const char *name, const char *comment) :
     // process
     comb(this)
 {
-    lvl1.disableVcd();
-    lvl3.disableVcd();
     Operation::start(&comb);
     proc_comb();
 }

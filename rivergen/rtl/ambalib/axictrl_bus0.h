@@ -58,10 +58,10 @@ class axictrl_bus0 : public ModuleObject {
         }
 
      public:
-        StructVarArray<types_amba::axi4_master_in_type> vmsti;
-        StructVarArray<types_amba::axi4_master_out_type> vmsto;
-        StructVarArray<types_amba::axi4_slave_in_type> vslvi;
-        StructVarArray<types_amba::axi4_slave_out_type> vslvo;
+        ValueArray<StructVar<types_amba::axi4_master_in_type>> vmsti;
+        ValueArray<StructVar<types_amba::axi4_master_out_type>> vmsto;
+        ValueArray<StructVar<types_amba::axi4_slave_in_type>> vslvi;
+        ValueArray<StructVar<types_amba::axi4_slave_out_type>> vslvo;
         StructVar<types_amba::mapinfo_type> vb_def_mapinfo;
         I32D i_ar_midx;
         I32D i_aw_midx;

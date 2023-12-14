@@ -25,6 +25,8 @@ class lrunway : public ModuleObject {
  public:
     lrunway(GenObject *parent, const char *name, const char *comment=NO_COMMENT);
 
+    virtual bool isVcd() override { return false; }      // no need to trace
+
     class CombProcess : public ProcObject {
      public:
         CombProcess(GenObject *parent) :

@@ -30,6 +30,7 @@ FileObject::FileObject(GenObject *parent,
                            const char *name)
     : GenObject(parent, NO_COMMENT) {
     name_ = std::string(name);
+    sv_api_ = false;
 }
 
 void FileObject::add_dependency(GenObject *reqobj) {
@@ -44,11 +45,6 @@ void FileObject::add_dependency(GenObject *reqobj) {
             }
         }
     }
-#if 1
-    if (getName() == "types_amba") {
-        bool st = true;
-    }
-#endif
     if (!found) {
         depfiles_[libname].push_back(file);
     }

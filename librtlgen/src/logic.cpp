@@ -26,6 +26,7 @@ Logic::Logic(const char *width,
               GenObject *parent,
               const char *comment)
     : GenValue(parent, name, "", comment) {
+    objBitidx_ = 0;
     objWidth_ = SCV_parse_to_obj(this, width);
     if (val[0] < '0' || val[0] > '9') {
         objValue_ = SCV_parse_to_obj(this, val);

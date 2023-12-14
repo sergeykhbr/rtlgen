@@ -80,15 +80,19 @@ class IntMul : public ModuleObject {
 
  protected:
      class MulLevel1Type : public RegArray {
-     public:
+      public:
         MulLevel1Type(GenObject *parent, const char *name, const char *width, const char *depth)
-            : RegArray(parent, name, width, depth) {}
+            : RegArray(parent, name, width, depth, NO_COMMENT) {}
+
+        virtual bool isVcd() override { return false; }     // disable tracing
     };
 
      class MulLevel3Type : public RegArray {
-     public:
+      public:
         MulLevel3Type(GenObject *parent, const char *name, const char *width, const char *depth)
-            : RegArray(parent, name, width, depth) {}
+            : RegArray(parent, name, width, depth, NO_COMMENT) {}
+
+        virtual bool isVcd() override { return false; }     // disable tracing
     };
 
     RegSignal busy;

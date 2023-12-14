@@ -32,7 +32,6 @@ ram_mmu_tech::ram_mmu_tech(GenObject *parent, const char *name, const char *comm
     rproc(this)
 {
     Operation::start(this);
-    disableVcd();
 
     Operation::start(&rproc);
     registers();

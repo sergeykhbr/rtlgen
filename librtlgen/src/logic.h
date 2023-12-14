@@ -50,10 +50,13 @@ class Logic : public GenValue {
     virtual GenObject *getObjWidth() { return objWidth_; }
     virtual uint64_t getWidth() override { return objWidth_->getValue(); }
     virtual std::string getStrWidth() override { return objWidth_->getName(); }
+    virtual void setSelector(GenObject *sel) override { objBitidx_ = sel; }           // Set object as an array index
+    virtual GenObject *getSelector() override { return objBitidx_; }                  // generate  Name[obj]
     virtual std::string generate() override;
 
  protected:
     GenObject *objWidth_;
+    GenObject *objBitidx_;      // Bit selector used by Operations, cleared after each operation automatically
 };
 
 class Logic1 : public Logic {

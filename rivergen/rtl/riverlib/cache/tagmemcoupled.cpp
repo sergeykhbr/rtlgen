@@ -53,7 +53,6 @@ TagMemCoupled::TagMemCoupled(GenObject *parent, const char *name, const char *co
     memx(this, "memx", "MemTotal", NO_COMMENT)
 {
     Operation::start(this);
-    disableVcd();
 
     // Create and connet Sub-modules:
     memx.abus.setObjValue(&abus);

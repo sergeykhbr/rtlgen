@@ -24,6 +24,8 @@ class ram_mmu_tech : public ModuleObject {
  public:
     ram_mmu_tech(GenObject *parent, const char *name, const char *comment=NO_COMMENT);
 
+    virtual bool isVcd() override { return false; }     // disable tracing
+
     class RegistersProcess : public ProcObject {
      public:
         RegistersProcess(GenObject *parent) :

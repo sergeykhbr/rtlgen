@@ -125,10 +125,10 @@ class Tracer : public ModuleObject {
     ParamI32D TRACE_TBL_ABITS;
     ParamI32D TRACE_TBL_SZ;
 
-    class RegisterNameArray : public ParamString {
+    class RegisterNameArray : public ValueArray<ParamString> {
      public:
         RegisterNameArray(GenObject *parent) :
-            ParamString(parent, "rname", "", NO_COMMENT), objDepth_(64) {
+            ValueArray<ParamString>(parent, "rname", "64", "", NO_COMMENT) {
             static const char *RNAMES[64] = {
                 "zero", "ra", "sp", "gp", "tp", "t0", "t1", "t2",
                 "s0", "s1", "a0", "a1", "a2", "a3", "a4", "a5",
@@ -147,13 +147,6 @@ class Tracer : public ModuleObject {
                 add_entry(pitem);
             }
         }
-
-        virtual uint64_t getDepth() override { return objDepth_.getValue(); }
-        virtual GenObject *getObjDepth() { return &objDepth_; }
-        virtual std::string getStrDepth() { return objDepth_.getStrValue(); }
-
-     protected:
-        DecConst objDepth_;
     } rname;
 
  protected:
@@ -223,6 +216,8 @@ class Tracer : public ModuleObject {
         TraceTableType(GenObject *parent, const char *name)
             : RegStructArray<TraceStepType>(parent, name, "TRACE_TBL_SZ", NO_COMMENT) {
         }
+
+        virtual bool isVcd() override { return false; }     // disable tracing
     };
 
     TraceTableType trace_tbl;

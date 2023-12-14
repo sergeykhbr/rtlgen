@@ -40,8 +40,8 @@ class types_pnp : public FileObject {
             vid(this, "vid", "16", "VENDOR_GNSSSENSOR", NO_COMMENT),
             _5_(this, "Device ID."),
             did(this, "did", "16", "SLV_DID_EMPTY", NO_COMMENT) {
-            disableVcd();
         }
+        virtual bool isVcd() override { return false; }      // no need to trace
 
     public:
         TextLine _0_;

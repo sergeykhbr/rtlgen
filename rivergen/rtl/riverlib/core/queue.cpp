@@ -34,7 +34,6 @@ Queue::Queue(GenObject *parent, const char *name, const char *comment) :
     // process
     comb(this)
 {
-    disableVcd();
 }
 
 void Queue::proc_comb() {

@@ -44,8 +44,6 @@ rom_inferred_2x32::rom_inferred_2x32(GenObject *parent, const char *name, const 
         READMEMH(hexname1, mem1);
     ENDINITIAL();
 
-    disableVcd();
-
     Operation::start(&rproc);
     registers();
 }
