@@ -25,15 +25,17 @@ GenValue::GenValue(GenObject *parent, const char *name, const char *val, const c
     : GenObject(parent, comment) {
     name_ = std::string(name);
     if (name_ == "") {
-        SHOW_ERROR("Unnamed variable of type %s", type_.c_str());
+        SHOW_ERROR("%s", "Unnamed variable of type");
     }
     objValue_ = SCV_parse_to_obj(this, val);
+    vcd_enabled_ = true;
 }
 
 GenValue::GenValue(GenObject *parent, const char *name, GenObject *val, const char *comment)
     : GenObject(parent, comment) {
     name_ = std::string(name);
     objValue_ = val;
+    vcd_enabled_ = true;
 }
 
 bool GenValue::isReg() {

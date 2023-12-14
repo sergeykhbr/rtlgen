@@ -27,14 +27,17 @@ class EnumObject : public GenObject {
     EnumObject(GenObject *parent,
                const char *name);
 
+    virtual std::string getName() override { return name_; }
     virtual void add_value(const char *name, const char *comment="");
 
-    virtual std::string getType() { return std::string(""); }
     virtual std::string generate();
  protected:
     std::string generate_sysc();
     std::string generate_sysv();
     std::string generate_vhdl();
+
+ protected:
+    std::string name_;
 };
 
 }  // namespace sysvc

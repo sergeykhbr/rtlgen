@@ -45,7 +45,6 @@ class HexConst : public GenObject {
     HexConst(uint64_t v) : GenObject(NO_PARENT, NO_COMMENT), ui64_(v) {}
 
     virtual bool isConst() override { return true; }
-    virtual bool isHex() override { return true; }
     virtual uint64_t getValue() override { return ui64_; }
     virtual std::string getName() override { return getStrValue(); }
     virtual std::string getStrValue() override;

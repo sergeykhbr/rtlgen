@@ -32,10 +32,11 @@ class StructObject : public GenObject {
                  const char *comment);
 
     /** GenObject generic methods */
+    virtual std::string getName() override { return name_; }
+    virtual std::string getType() override;
     virtual bool isStruct() override { return true; }
     virtual bool isTypedef() override;
     virtual bool isInterface() override;
-    virtual std::string getType() override;
     virtual std::string getStrValue() override;
 
     virtual std::string generate() override;
@@ -51,6 +52,10 @@ class StructObject : public GenObject {
     virtual std::string generate_interface_op_stream();     // operator <<
     virtual std::string generate_interface_op_bracket();    // operator [] for vector only
     virtual std::string generate_interface_sc_trace();      // sc_trace
+
+protected:
+    std::string type_;
+    std::string name_;
 };
 
 }  // namespace sysvc

@@ -26,11 +26,12 @@ class FolderObject : public GenObject {
     FolderObject(GenObject *parent,
                  const char *name);
 
+    virtual std::string getName() override { return name_; }
     virtual std::string getFullPath() override;
-    virtual std::string getType() { return std::string(""); }
     virtual std::string generate() override;
 
  protected:
+    std::string name_;
 };
 
 }  // namespace sysvc

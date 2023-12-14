@@ -26,11 +26,12 @@ class ProjectObject : public GenObject {
     ProjectObject(const char *name,
                   const char *comment);
 
+    virtual std::string getName() override { return name_; }
     virtual std::string getFullPath() override { return getName(); }
-    virtual std::string getType() { return std::string(""); }
     virtual std::string generate() override;
 
  protected:
+    std::string name_;
     //std::string rootpath_;
 };
 

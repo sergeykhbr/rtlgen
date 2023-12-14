@@ -22,9 +22,6 @@ namespace sysvc {
 
 GenObject::GenObject(GenObject *parent, const char *comment) {
     parent_ = parent;
-    vcd_enabled_ = true;
-    type_ = std::string("");
-    name_ = std::string("");
     comment_ = std::string(comment);
     if (parent_) {
         parent_->add_entry(this);

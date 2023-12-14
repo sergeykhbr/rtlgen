@@ -135,14 +135,17 @@ class WireVector : public WireArray<T> {
                const char *comment) :
         WireArray<T>(parent, name, width, depth, comment) {
         // Logic and signal types are empty. No need to trigger dependency
-        T::type_ = std::string(tpdef);
-        if (T::name_ == T::type_) {
+        type_ = std::string(tpdef);
+        if (T::name_ == type_) {
             SCV_set_cfg_type(this);
         }
     }
     virtual bool isVector() override { return true; }
-    virtual bool isTypedef() override { return T::name_ == T::type_; }  // type is empty for logic now
-    virtual std::string getType() override { return T::type_; }         // otherwise it will depends of bitwidth and system
+    virtual bool isTypedef() override { return T::name_ == type_; }  // type is empty for logic now
+    virtual std::string getType() override { return type_; }         // otherwise it will depends of bitwidth and system
+
+ protected:
+    std::string type_;
 };
 
 

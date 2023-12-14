@@ -30,6 +30,8 @@ class ModuleObject : public GenObject {
     ModuleObject(GenObject *parent, const char *type,
                  const char *name, const char *comment);
 
+    virtual std::string getType() override { return type_; }
+    virtual std::string getName() override { return name_; }
     virtual bool isAsyncResetParam() override { return getResetPort() ? true: false; }
     virtual GenObject *getAsyncResetParam() override;
     virtual GenObject *getResetPort() override;
@@ -47,7 +49,7 @@ class ModuleObject : public GenObject {
     // Check registers in current module and all sub-modules to create
     // async_reset logic and always (ff) process
     virtual bool isModule() override { return true; }
-    virtual bool isTypedef() override { return getName() == getType() || getName() == ""; }
+    virtual bool isTypedef() override { return getName() == getType(); }
     virtual bool isCombProcess();
     virtual bool isRegs();
     virtual bool isRegProcess();
@@ -98,6 +100,8 @@ class ModuleObject : public GenObject {
     std::string generate_vhdl_mod_signals();
     
  protected:
+    std::string type_;
+    std::string name_;
 };
 
 }  // namespace sysvc

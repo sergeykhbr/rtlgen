@@ -30,6 +30,7 @@ class FileObject : public GenObject {
     FileObject(GenObject *parent,
                  const char *name);
 
+    virtual std::string getName() override { return name_; }
     virtual bool isFile() override { return true; }
     virtual bool isSvApiUsed() override { return sv_api_; }     // readmemh/display or similar methods were used
     virtual void setSvApiUsed() override { sv_api_ = true; }    // set usage of SV API from operation
@@ -52,6 +53,7 @@ class FileObject : public GenObject {
     //void list_of_modules(GenObject *p, std::list<std::string> &fpath);
 
  protected:
+    std::string name_;
     bool sv_api_;                                       // method readmemh or similar were used
     std::map<std::string, std::list<GenObject *>> depfiles_;
 };

@@ -29,8 +29,8 @@ class FunctionObject : public GenObject {
                    const char *name,
                    const char *comment="");
 
+    virtual std::string getName() override { return name_; }
     virtual bool isFunction() override { return true; }
-    virtual std::string getType() { return std::string(""); }
     virtual std::string generate();
     virtual void getArgsList(std::list<GenObject *> &args) {}
     virtual GenObject *getpReturn() { return 0; }
@@ -39,6 +39,9 @@ class FunctionObject : public GenObject {
     std::string generate_sysc();
     std::string generate_sysv();
     std::string generate_vhdl();
+
+ protected:
+    std::string name_;
 };
 
 }  // namespace sysvc

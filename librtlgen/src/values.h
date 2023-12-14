@@ -40,6 +40,8 @@ class GenValue : public GenObject {
     virtual std::string getStrValue() override { return objValue_->getName(); }
     virtual GenObject *getObjValue() override { return objValue_; }
     virtual void setObjValue(GenObject *v) override { objValue_ = v; }   // used in BUSx_MAP assignment
+    virtual void disableVcd() override { vcd_enabled_ = false; }
+    virtual bool isVcd() override { return vcd_enabled_; }
 
     /** Signal could be a register when it inside of register struct */
     virtual bool isReg() override;
@@ -49,7 +51,9 @@ class GenValue : public GenObject {
     virtual std::string r_name(std::string v) override;
 
  protected:
+    std::string name_;
     GenObject *objValue_;
+    bool vcd_enabled_;          // add/remove variable from the trace (enabled by default)
 };
 
 class BOOL : public GenValue {
@@ -125,7 +129,6 @@ class UI64H : public GenValue {
         GenObject *parent=0, const char *comment=""):
         GenValue(parent, name, val, comment) {}
 
-    virtual bool isHex() override { return true; }
     virtual std::string getType();
     virtual uint64_t getWidth() override { return 64; }
 };

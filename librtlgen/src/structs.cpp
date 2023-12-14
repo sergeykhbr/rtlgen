@@ -61,7 +61,7 @@ bool StructObject::isInterface() {
 }
 
 std::string StructObject::getType() {
-    std::string ret = GenObject::getType();
+    std::string ret = type_;
     if (SCV_is_sv_pkg()) {
         GenObject *pfile = SCV_get_cfg_type(this, ret.c_str());
         while (pfile && !pfile->isFile()) {

@@ -26,7 +26,11 @@ class ProcObject : public GenObject {
                const char *name,
                const char *comment="");
 
+    virtual std::string getName() override { return name_; }
     virtual bool isProcess() override { return true; }
+
+ protected:
+    std::string name_;
 };
 
 }  // namespace sysvc

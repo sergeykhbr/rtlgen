@@ -32,6 +32,9 @@ ModuleObject::ModuleObject(GenObject *parent,
     : GenObject(parent, comment) {
     name_ = std::string(name);
     type_ = std::string(type);
+    if (name_ == "") {
+        SHOW_ERROR("%s", "Unnamed module");
+    }
 
     SCV_add_module(this);
 }

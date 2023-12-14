@@ -29,10 +29,10 @@ class GenObject {
     GenObject(GenObject *parent, const char *comment);       // 
 
     virtual std::list<GenObject *> &getEntries() { return entries_; }
-    virtual std::string getName() { return name_; }
     virtual GenObject *getParent() { return parent_; }
     virtual std::string getComment() { return comment_; }
-    virtual std::string getType() { return type_; }
+    virtual std::string getType() { return std::string(""); }
+    virtual std::string getName() { return std::string(""); }
     virtual std::string getTypedef() { return std::string(""); }    // redefined type of vectors
 
     virtual std::string getFullPath();
@@ -41,8 +41,8 @@ class GenObject {
     virtual void add_dependency(GenObject *p) {}
 
     virtual GenObject *getParentFile();
-    virtual bool isAsyncResetParam() { return false; }       // jtagtap has its own trst signal but does not have async_reset
-    virtual GenObject *getAsyncResetParam() { return 0; } // async_reset declared as a local parameter at asic_top, no need to autogenerate it
+    virtual bool isAsyncResetParam() { return false; }  // jtagtap has its own trst signal but does not have async_reset
+    virtual GenObject *getAsyncResetParam() { return 0; }// async_reset declared as a local parameter at asic_top, no need to autogenerate it
     virtual GenObject *getResetPort() { return 0; }     // reset port object
     virtual GenObject *getClockPort() { return 0; }
     virtual bool getResetActive() { return false; }
@@ -56,13 +56,12 @@ class GenObject {
     virtual bool isValue() { return false; }            // scalar value with the name (variable)
     virtual bool isConst() { return false; }            // scalar value with no name
     virtual bool isString() { return false; }
-    virtual bool isHex() { return false; }
     virtual bool isFloat() { return false; }
     virtual bool isTypedef() { return false; }
     virtual bool isLogic() { return false; }
     virtual bool isSignal() { return false; }
     virtual bool isFileValue() { return false; }        // pointer to an open file to read/write data (FILE * in C).
-    virtual bool isIgnoreSignal();
+    virtual bool isIgnoreSignal();                      // systemc: signal objects that do not require additional sc_signal<>, like input ports or clocks
     virtual bool isBigSC() { return false; }            // Use sc_biguint in systemc always
     virtual bool isBvSC() { return false; }             // Use sc_bv in systemc always (for bitwidth > 512)
     virtual bool isInput() { return false; }
@@ -74,7 +73,6 @@ class GenObject {
     virtual bool isReg() { return false; }              // is register with posedge clock
     virtual bool isNReg() { return false; }             // is register with negedge clock
     virtual bool isResetDisabled() { return false; }    // Registers without reset usually implemented in memory bank
-
     virtual bool isClock() { return false; }
     virtual bool isFile() { return false; }
     virtual bool isFunction() { return false; }
@@ -87,13 +85,13 @@ class GenObject {
     virtual std::string v_name(std::string v);
     virtual std::string r_name(std::string v);
 
-    virtual uint64_t getValue() { return 0; }
+    virtual uint64_t getValue() { return 0; }           // variable value used in calculations
     virtual double getFloatValue() { return 0; }
     virtual std::string getStrValue() { return std::string(""); }
-    virtual GenObject *getObjValue() { return 0; }
+    virtual GenObject *getObjValue() { return 0; }      // variable value
     virtual void setObjValue(GenObject *obj) {}         // used to connect parameters without Operation
 
-    virtual uint64_t getWidth() { return 0; }
+    virtual uint64_t getWidth() { return 0; }           // Logic, triggers bitwidth
     virtual std::string getStrWidth() { return std::string(""); }
     virtual GenObject *getObjWidth() { return 0; }
     
@@ -101,24 +99,20 @@ class GenObject {
     virtual GenObject *getObjDepth() { return 0; }
     virtual std::string getStrDepth() { return std::string(""); }
 
-    virtual std::string getLibName();                   // VHDL library. Default is "work"
-    virtual void setSelector(GenObject *sel) {}
-    virtual GenObject *getSelector() { return 0; }
-    virtual void disableVcd() { vcd_enabled_ = false; }
-    virtual bool isVcd() { return vcd_enabled_; }
+    virtual void setSelector(GenObject *sel) {}         // Set index object for array or logic
+    virtual GenObject *getSelector() { return 0; }      // Array index or Logic bit index object which is setup and cleared by Operation
+    virtual void disableVcd() {}                        // Exclude object from trace file
+    virtual bool isVcd() { return true; }               // Add object to trace file (sc_trace), default is enabled
     virtual bool isSvApiUsed() { return false; }        // readmemh/display or similar methods were used
     virtual void setSvApiUsed() {}                      // set usage of SV API from operation
+    virtual std::string getLibName();                   // VHDL library. Default is "work"
 
     virtual std::string generate() { return std::string(""); }
 
  protected:
-    GenObject *parent_;
-    std::string type_;
-    std::string name_;
-
-    bool vcd_enabled_;                                  // show instance in VCD trace file
-    std::string comment_;
-    std::list<GenObject *> entries_;
+    GenObject *parent_;                     // All object could have/should have parent
+    std::string comment_;                   // All object could have comment
+    std::list<GenObject *> entries_;        // All object could have childs
 };
 
 }  // namespace sysvc
