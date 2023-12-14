@@ -20,12 +20,11 @@
 
 namespace sysvc {
 
-Logic::Logic(const char *width,
+Logic::Logic(GenObject *parent,
               const char *name,
+              const char *width,
               const char *val,
-              GenObject *parent,
-              const char *comment)
-    : GenValue(parent, name, "", comment) {
+              const char *comment) : GenValue(parent, name, "", comment) {
     objBitidx_ = 0;
     objWidth_ = SCV_parse_to_obj(this, width);
     if (val[0] < '0' || val[0] > '9') {
@@ -36,6 +35,7 @@ Logic::Logic(const char *width,
         objValue_ = new DecLogicConst(objWidth_, strtoll(val, 0, 10));
     }
 }
+
 
 
 std::string Logic::getType() {

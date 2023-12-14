@@ -1108,145 +1108,6 @@ Operation &TO_CSTR(GenObject &a, const char *comment) {
     return *p;
 }
 
-// EQ
-std::string EQ_gen(GenObject **args) {
-    std::string A = Operation::obj2varname(args[1], "r", true);
-    std::string B = Operation::obj2varname(args[2], "r", true);
-    A = "(" + A + " == " + B + ")";
-    return A;
-}
-
-Operation &EQ(GenObject &a, GenObject &b, const char *comment) {
-    Operation *p = new Operation(0, comment);
-    p->igen_ = EQ_gen;
-    p->add_arg(p);
-    p->add_arg(&a);
-    p->add_arg(&b);
-    return *p;
-}
-
-
-// NE
-std::string NE_gen(GenObject **args) {
-    std::string A = Operation::obj2varname(args[1], "r", true);
-    std::string B = Operation::obj2varname(args[2], "r", true);
-    A = "(" + A + " != " + B + ")";
-    return A;
-}
-
-Operation &NE(GenObject &a, GenObject &b, const char *comment) {
-    Operation *p = new Operation(0, comment);
-    p->igen_ = NE_gen;
-    p->add_arg(p);
-    p->add_arg(&a);
-    p->add_arg(&b);
-    return *p;
-}
-
-
-// EZ
-std::string EZ_gen(GenObject **args) {
-    std::string A = Operation::obj2varname(args[1], "r", true);
-    if (args[1]->getWidth() > 1) {
-        if (SCV_is_sysc()) {
-            A += ".or_reduce()";
-        } else if (SCV_is_sv()) {
-            A = "(|" + A + ")";
-        }
-    }
-    if (SCV_is_sysc()) {
-        A = "(" + A + " == 0)";
-    } else {
-        A = "(" + A + " == 1'b0)";
-    }
-    return A;
-}
-
-Operation &EZ(GenObject &a, const char *comment) {
-    Operation *p = new Operation(0, comment);
-    p->igen_ = EZ_gen;
-    p->add_arg(p);
-    p->add_arg(&a);
-    return *p;
-}
-
-// NZ
-std::string NZ_gen(GenObject **args) {
-    std::string A = Operation::obj2varname(args[1], "r", true);
-    if (args[1]->getWidth() > 1) {
-        if (SCV_is_sysc()) {
-            A += ".or_reduce()";
-        } else if (SCV_is_sv()) {
-            A = "(|" + A + ")";
-        }
-    }
-    if (SCV_is_sysc()) {
-        A = "(" + A + " == 1)";
-    } else {
-        A = "(" + A + " == 1'b1)";
-    }
-    return A;
-}
-
-Operation &NZ(GenObject &a, const char *comment) {
-    Operation *p = new Operation(0, comment);
-    p->igen_ = NZ_gen;
-    p->add_arg(p);
-    p->add_arg(&a);
-    return *p;
-}
-
-// GE
-std::string GE_gen(GenObject **args) {
-    std::string A = Operation::obj2varname(args[1], "r", true);
-    std::string B = Operation::obj2varname(args[2], "r", true);
-    A = "(" + A + " >= " + B + ")";
-    return A;
-}
-
-Operation &GE(GenObject &a, GenObject &b, const char *comment) {
-    Operation *p = new Operation(0, comment);
-    p->igen_ = GE_gen;
-    p->add_arg(p);
-    p->add_arg(&a);
-    p->add_arg(&b);
-    return *p;
-}
-
-// LS
-std::string LS_gen(GenObject **args) {
-    std::string A = Operation::obj2varname(args[1], "r", true);
-    std::string B = Operation::obj2varname(args[2], "r", true);
-    A = "(" + A + " < " + B + ")";
-    return A;
-}
-
-Operation &LS(GenObject &a, GenObject &b, const char *comment) {
-    Operation *p = new Operation(0, comment);
-    p->igen_ = LS_gen;
-    p->add_arg(p);
-    p->add_arg(&a);
-    p->add_arg(&b);
-    return *p;
-}
-
-// LE
-std::string LE_gen(GenObject **args) {
-    std::string A = Operation::obj2varname(args[1], "r", true);
-    std::string B = Operation::obj2varname(args[2], "r", true);
-    A = "(" + A + " <= " + B + ")";
-    return A;
-}
-
-Operation &LE(GenObject &a, GenObject &b, const char *comment) {
-    Operation *p = new Operation(0, comment);
-    p->igen_ = LE_gen;
-    p->add_arg(p);
-    p->add_arg(&a);
-    p->add_arg(&b);
-    return *p;
-}
-
 // INV (arithemtic, logical)
 std::string InvOperation::generate() {
     std::string A = obj2varname(a_, "r", true);
@@ -1566,6 +1427,58 @@ std::string And2Operation::getOperand() {
         return std::string(" & ");
     }
     return std::string(" && ");
+}
+
+// EQ
+std::string EqOperation::getOperand() {
+    if (SCV_is_vhdl()) {
+        return std::string(" = ");
+    }
+    return std::string(" == ");
+}
+
+// NE
+std::string NeOperation::getOperand() {
+    if (SCV_is_vhdl()) {
+        return std::string(" /= ");
+    }
+    return std::string(" != ");
+}
+
+// EZ
+std::string EzOperation::getStrValue() {
+    std::string A = obj2varname(a_, "r", true);
+    if (a_->getWidth() > 1) {
+        if (SCV_is_sysc()) {
+            A += ".or_reduce()";
+        } else if (SCV_is_sv()) {
+            A = "(|" + A + ")";
+        }
+    }
+    if (SCV_is_sysc()) {
+        A = "(" + A + " == 0)";
+    } else {
+        A = "(" + A + " == 1'b0)";
+    }
+    return A;
+}
+
+// NZ
+std::string NzOperation::getStrValue() {
+    std::string A = obj2varname(a_, "r", true);
+    if (a_->getWidth() > 1) {
+        if (SCV_is_sysc()) {
+            A += ".or_reduce()";
+        } else if (SCV_is_sv()) {
+            A = "(|" + A + ")";
+        }
+    }
+    if (SCV_is_sysc()) {
+        A = "(" + A + " == 1)";
+    } else {
+        A = "(" + A + " == 1'b1)";
+    }
+    return A;
 }
 
 

@@ -21,13 +21,13 @@ namespace sysvc {
 
 Signal::Signal(const char *width, const char *name, const char *val,
     GenObject *parent, const char *comment)
-    : Logic(width, name, val, parent, comment) {
+    : Logic(parent, name, width, val, comment) {
 }
 
 
 Signal::Signal(GenObject *parent, const char *name, const char *width,
     const char *val, const char *comment)
-    : Logic(width, name, val, parent, comment) {
+    : Logic(parent, name, width, val, comment) {
 }
 
 Signal1::Signal1(GenObject *parent, const char *name, const char *width,

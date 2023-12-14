@@ -89,7 +89,7 @@ class WireArray : public T {
               const char *width,
               const char *depth,
               const char *comment)
-        : T(width, name, "'0", parent, comment) {
+        : T(parent, name, width, "'0", comment) {
         objArridx_ = 0;
         objDepth_ = SCV_parse_to_obj(this, depth);
     }

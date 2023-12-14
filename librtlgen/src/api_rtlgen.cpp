@@ -192,9 +192,52 @@ Operation &AND2(GenObject &a, GenObject &b, const char *comment) {
     return *p;
 }
 
+// Equal (==)
+Operation &EQ(GenObject &a, GenObject &b, const char *comment) {
+    Operation *p = new EqOperation(&a, &b, comment);
+    return *p;
+}
+
+// Not Equal (!=)
+Operation &NE(GenObject &a, GenObject &b, const char *comment) {
+    Operation *p = new NeOperation(&a, &b, comment);
+    return *p;
+}
+
+
 // Greater (>)
 Operation &GT(GenObject &a, GenObject &b, const char *comment) {
     Operation *p = new GtOperation(&a, &b, comment);
+    return *p;
+}
+
+// Greater-Equal (>=)
+Operation &GE(GenObject &a, GenObject &b, const char *comment) {
+    Operation *p = new GeOperation(&a, &b, comment);
+    return *p;
+}
+
+// Less (<)
+Operation &LS(GenObject &a, GenObject &b, const char *comment) {
+    Operation *p = new LsOperation(&a, &b, comment);
+    return *p;
+}
+
+// Less-Equal (<)
+Operation &LE(GenObject &a, GenObject &b, const char *comment) {
+    Operation *p = new LeOperation(&a, &b, comment);
+    return *p;
+}
+
+// Equal Zero
+Operation &EZ(GenObject &a, const char *comment) {
+    Operation *p = new EzOperation(&a, comment);
+    return *p;
+}
+
+// Non Zero
+Operation &NZ(GenObject &a, const char *comment) {
+    Operation *p = new NzOperation(&a, comment);
     return *p;
 }
 

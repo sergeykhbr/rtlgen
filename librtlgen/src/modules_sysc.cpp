@@ -265,7 +265,7 @@ std::string ModuleObject::generate_sysc_h() {
     // Generic parameter local storage:
     tcnt = 0;
     if (isAsyncResetParam() && getAsyncResetParam() == 0) {
-        out += addspaces() + (new Logic("1", "async_reset"))->getType() + " async_reset_;\n";
+        out += addspaces() + async_reset_.getType() + " async_reset_;\n";
         tcnt++;
     }
     for (auto &p: getEntries()) {

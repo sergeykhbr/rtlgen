@@ -34,9 +34,9 @@ class CacheTop : public ModuleObject {
      public:
         CombProcess(GenObject *parent) :
             ProcObject(parent, "comb"),
-            vb_ctrl_bus(this, "vb_ctrl_bus", "QUEUE_WIDTH"),
-            vb_data_bus(this, "vb_data_bus", "QUEUE_WIDTH"),
-            vb_queue_bus(this, "vb_queue_bus", "QUEUE_WIDTH"),
+            vb_ctrl_bus(this, "vb_ctrl_bus", "QUEUE_WIDTH", "'0", NO_COMMENT),
+            vb_data_bus(this, "vb_data_bus", "QUEUE_WIDTH", "'0", NO_COMMENT),
+            vb_queue_bus(this, "vb_queue_bus", "QUEUE_WIDTH", "'0", NO_COMMENT),
             ctrl_path_id(this, "ctrl_path_id", "1", "CTRL_PATH", NO_COMMENT),
             data_path_id(this, "data_path_id", "1", "DATA_PATH", NO_COMMENT),
             v_queue_we(this, "v_queue_we", "1"),

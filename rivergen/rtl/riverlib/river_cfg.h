@@ -160,7 +160,7 @@ class river_cfg : public FileObject {
      public:
         FunctionReadNoSnoop(GenObject *parent)
             : FunctionObject(parent, "ReadNoSnoop"),
-            ret_("REQ_MEM_TYPE_BITS", "ret", "", this) {
+            ret_(this, "ret", "REQ_MEM_TYPE_BITS", "", NO_COMMENT) {
             SETZERO(ret_);
         }
         virtual std::string getType() override { return ret_.getType(); }
@@ -173,7 +173,7 @@ class river_cfg : public FileObject {
      public:
         FunctionReadShared(GenObject *parent)
             : FunctionObject(parent, "ReadShared"),
-            ret_("REQ_MEM_TYPE_BITS", "ret", "", this) {
+            ret_(this, "ret", "REQ_MEM_TYPE_BITS", "", NO_COMMENT) {
             river_cfg *p = static_cast<river_cfg *>(parent_);
             SETZERO(ret_);
             SETBIT(ret_, p->REQ_MEM_TYPE_CACHED, CONST("1"));
@@ -188,7 +188,7 @@ class river_cfg : public FileObject {
      public:
         FunctionReadMakeUnique(GenObject *parent)
             : FunctionObject(parent, "ReadMakeUnique"),
-            ret_("REQ_MEM_TYPE_BITS", "ret", "", this) {
+            ret_(this, "ret", "REQ_MEM_TYPE_BITS", "", NO_COMMENT) {
             river_cfg *p = static_cast<river_cfg *>(parent_);
             SETZERO(ret_);
             SETBIT(ret_, p->REQ_MEM_TYPE_CACHED, CONST("1"));
@@ -204,7 +204,7 @@ class river_cfg : public FileObject {
      public:
         FunctionWriteNoSnoop(GenObject *parent)
             : FunctionObject(parent, "WriteNoSnoop"),
-            ret_("REQ_MEM_TYPE_BITS", "ret", "", this) {
+            ret_(this, "ret", "REQ_MEM_TYPE_BITS", "", NO_COMMENT) {
             river_cfg *p = static_cast<river_cfg *>(parent_);
             SETZERO(ret_);
             SETBIT(ret_, p->REQ_MEM_TYPE_WRITE, CONST("1"));
@@ -219,7 +219,7 @@ class river_cfg : public FileObject {
      public:
         FunctionWriteLineUnique(GenObject *parent)
             : FunctionObject(parent, "WriteLineUnique"),
-            ret_("REQ_MEM_TYPE_BITS", "ret", "", this) {
+            ret_(this, "ret", "REQ_MEM_TYPE_BITS", "", NO_COMMENT) {
             river_cfg *p = static_cast<river_cfg *>(parent_);
             SETZERO(ret_);
             SETBIT(ret_, p->REQ_MEM_TYPE_WRITE, CONST("1"));
@@ -236,7 +236,7 @@ class river_cfg : public FileObject {
      public:
         FunctionWriteBack(GenObject *parent)
             : FunctionObject(parent, "WriteBack"),
-            ret_("REQ_MEM_TYPE_BITS", "ret", "", this) {
+            ret_(this, "ret", "REQ_MEM_TYPE_BITS", "", NO_COMMENT) {
             river_cfg *p = static_cast<river_cfg *>(parent_);
             SETZERO(ret_);
             SETBIT(ret_, p->REQ_MEM_TYPE_WRITE, CONST("1"));

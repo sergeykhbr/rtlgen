@@ -29,7 +29,8 @@ ModuleObject::ModuleObject(GenObject *parent,
                            const char *type,
                            const char *name,
                            const char *comment)
-    : GenObject(parent, comment) {
+    : GenObject(parent, comment),
+    async_reset_(0, "async_reset", "1", "0", NO_COMMENT) {
     name_ = std::string(name);
     type_ = std::string(type);
     if (name_ == "") {

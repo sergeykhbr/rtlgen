@@ -101,7 +101,7 @@ class ParamLogic : public Logic {
  public:
     ParamLogic(GenObject *parent, const char *width, const char *name,
                 const char *val, const char *comment="")
-        : Logic(width, name, val, parent, comment) {
+        : Logic(parent, name, width, val, comment) {
         SCV_set_cfg_type(this);
     }
     virtual bool isParam() override { return true; }

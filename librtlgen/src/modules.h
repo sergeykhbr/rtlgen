@@ -17,6 +17,7 @@
 #pragma once
 
 #include "genobjects.h"
+#include "logic.h"
 #include <iostream>
 #include <list>
 
@@ -102,6 +103,7 @@ class ModuleObject : public GenObject {
  protected:
     std::string type_;
     std::string name_;
+    Logic async_reset_;
 };
 
 }  // namespace sysvc

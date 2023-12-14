@@ -266,6 +266,30 @@ class ToBigOperation : public Operation {
 };
 
 /**
+    a == b ? 1 : 0
+ */
+class EqOperation : public TwoStandardLogicOperation {
+ public:
+    EqOperation(GenObject *a, GenObject *b, const char *comment)
+        : TwoStandardLogicOperation(a, b, comment) {}
+
+    virtual std::string getOperand() override;
+    virtual uint64_t getValue() override { return a_->getValue() == b_->getValue() ? 1: 0; }
+};
+
+/**
+    a != b ? 1 : 0
+ */
+class NeOperation : public TwoStandardLogicOperation {
+ public:
+    NeOperation(GenObject *a, GenObject *b, const char *comment)
+        : TwoStandardLogicOperation(a, b, comment) {}
+
+    virtual std::string getOperand() override;
+    virtual uint64_t getValue() override { return a_->getValue() != b_->getValue() ? 1: 0; }
+};
+
+/**
     a > b ? 1 : 0
  */
 class GtOperation : public TwoStandardLogicOperation {
@@ -273,18 +297,69 @@ class GtOperation : public TwoStandardLogicOperation {
     GtOperation(GenObject *a, GenObject *b, const char *comment)
         : TwoStandardLogicOperation(a, b, comment) {}
 
-    virtual std::string getOperand() { return std::string(" > "); }
-    virtual uint64_t getValue() { return a_->getValue() > b_->getValue() ? 1: 0; }
+    virtual std::string getOperand() override { return std::string(" > "); }
+    virtual uint64_t getValue() override { return a_->getValue() > b_->getValue() ? 1: 0; }
 };
 
-Operation &EQ(GenObject &a, GenObject &b, const char *comment="");  // ==
-Operation &NE(GenObject &a, GenObject &b, const char *comment="");  // !=
-Operation &EZ(GenObject &a, const char *comment="");        // equal-zero
-Operation &NZ(GenObject &a, const char *comment="");        // Non-zero
-//Operation &GT(GenObject &a, GenObject &b, const char *comment="");        // Greater (>)
-Operation &GE(GenObject &a, GenObject &b, const char *comment="");        // Greater-Equal (>=)
-Operation &LS(GenObject &a, GenObject &b, const char *comment="");        // Less (<)
-Operation &LE(GenObject &a, GenObject &b, const char *comment="");        // Less-Equal (<=)
+/**
+    a >= b ? 1 : 0
+ */
+class GeOperation : public TwoStandardLogicOperation {
+ public:
+    GeOperation(GenObject *a, GenObject *b, const char *comment)
+        : TwoStandardLogicOperation(a, b, comment) {}
+
+    virtual std::string getOperand() override { return std::string(" >= "); }
+    virtual uint64_t getValue() override { return a_->getValue() >= b_->getValue() ? 1: 0; }
+};
+
+/**
+    a < b ? 1 : 0
+ */
+class LsOperation : public TwoStandardLogicOperation {
+ public:
+    LsOperation(GenObject *a, GenObject *b, const char *comment)
+        : TwoStandardLogicOperation(a, b, comment) {}
+
+    virtual std::string getOperand() override { return std::string(" < "); }
+    virtual uint64_t getValue() override { return a_->getValue() < b_->getValue() ? 1: 0; }
+};
+
+/**
+    a <= b ? 1 : 0
+ */
+class LeOperation : public TwoStandardLogicOperation {
+ public:
+    LeOperation(GenObject *a, GenObject *b, const char *comment)
+        : TwoStandardLogicOperation(a, b, comment) {}
+
+    virtual std::string getOperand() override { return std::string(" <= "); }
+    virtual uint64_t getValue() override { return a_->getValue() <= b_->getValue() ? 1: 0; }
+};
+
+/**
+    a == 0 ? 1 : 0
+ */
+class EzOperation : public ReduceOperation {
+ public:
+    EzOperation(GenObject *a, const char *comment)
+        : ReduceOperation(a, comment) {}
+
+    virtual uint64_t getValue() override { return a_->getValue() == 0 ? 1: 0; }
+    virtual std::string getStrValue() override;
+};
+
+/**
+    a != 0 ? 1 : 0
+ */
+class NzOperation : public ReduceOperation {
+ public:
+    NzOperation(GenObject *a, const char *comment)
+        : ReduceOperation(a, comment) {}
+
+    virtual uint64_t getValue() override { return a_->getValue() ? 1: 0; }
+    virtual std::string getStrValue() override;
+};
 
 /**
     Inversion logical or arithemical:

@@ -32,8 +32,8 @@ class RegIntBank : public ModuleObject {
             int_waddr("0", "int_waddr", this),
             int_radr1("0", "int_radr1", this),
             int_radr2("0", "int_radr2", this),
-            v_inordered("1", "v_inordered", "0", this),
-            next_tag("CFG_REG_TAG_WIDTH", "next_tag", "'0", this) {
+            v_inordered(this, "v_inordered", "1", "0", NO_COMMENT),
+            next_tag(this, "next_tag", "CFG_REG_TAG_WIDTH", "'0", NO_COMMENT) {
             RegIntBank *p = static_cast<RegIntBank *>(parent);
             Operation::start(this);
             p->proc_comb();
