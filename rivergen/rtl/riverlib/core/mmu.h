@@ -66,7 +66,7 @@ class Mmu : public ModuleObject {
             vb_tlb_pa3(this, "vb_tlb_pa3", "RISCV_ARCH", "0", "32 TB page phys address"),
             vb_tlb_pa_hit(this, "vb_tlb_pa_hit", "RISCV_ARCH", "'0", NO_COMMENT),
             t_tlb_wdata(this, "t_tlb_wdata", "CFG_MMU_PTE_DWIDTH", "'0", NO_COMMENT),
-            t_idx_lsb("0", "t_idx_lsb", this) {
+            t_idx_lsb(this, "t_idx_lsb", "0", NO_COMMENT) {
             Operation::start(this);
             Mmu *p = static_cast<Mmu *>(parent);
             p->proc_comb();

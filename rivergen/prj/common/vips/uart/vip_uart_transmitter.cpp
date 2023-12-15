@@ -27,10 +27,10 @@ vip_uart_transmitter::vip_uart_transmitter(GenObject *parent, const char *name, 
     o_full(this, "o_full", "1"),
     o_tx(this, "o_tx", "1"),
     // params
-    idle(this, "2", "idle", "0"),
-    startbit(this, "2", "startbit", "1"),
-    data(this, "2", "data", "2"),
-    stopbit(this, "2", "stopbit", "3"),
+    idle(this, "idle", "2", "0", NO_COMMENT),
+    startbit(this, "startbit", "2", "1", NO_COMMENT),
+    data(this, "data", "2", "2", NO_COMMENT),
+    stopbit(this, "stopbit", "2", "3", NO_COMMENT),
     // signals
     // registers
     state(this, "state", "2", "idle"),

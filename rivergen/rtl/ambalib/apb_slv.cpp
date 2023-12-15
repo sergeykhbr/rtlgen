@@ -34,10 +34,10 @@ apb_slv::apb_slv(GenObject *parent, const char *name, const char *comment) :
     i_resp_rdata(this, "i_resp_rdata", "32"),
     i_resp_err(this, "i_resp_err", "1"),
     // params
-    State_Idle(this, "2", "State_Idle", "0"),
-    State_Request(this, "2", "State_Request", "1"),
-    State_WaitResp(this, "2", "State_WaitResp", "2"),
-    State_Resp(this, "2", "State_Resp", "3"),
+    State_Idle(this, "State_Idle", "2", "0", NO_COMMENT),
+    State_Request(this, "State_Request", "2", "1", NO_COMMENT),
+    State_WaitResp(this, "State_WaitResp", "2", "2", NO_COMMENT),
+    State_Resp(this, "State_Resp", "2", "3", NO_COMMENT),
     // signals
     // registers
     state(this, "state", "3", "State_Idle"),

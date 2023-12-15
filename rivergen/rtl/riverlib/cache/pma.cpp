@@ -24,12 +24,12 @@ PMA::PMA(GenObject *parent, const char *name, const char *comment) :
     o_icached(this, "o_icached", "1", "Hardcoded cached memory range for I$"),
     o_dcached(this, "o_dcached", "1", "Hardcoded cached memory range for D$"),
     // params
-    CLINT_BAR(this, "CFG_CPU_ADDR_BITS", "CLINT_BAR",   "0x0000000002000000"),
-    CLINT_MASK(this, "CFG_CPU_ADDR_BITS", "CLINT_MASK", "0x000000000000FFFF", "64 KB"),
-    PLIC_BAR(this, "CFG_CPU_ADDR_BITS", "PLIC_BAR",   "0x000000000C000000"),
-    PLIC_MASK(this, "CFG_CPU_ADDR_BITS", "PLIC_MASK", "0x0000000003FFFFFF", "64 MB"),
-    IO1_BAR(this, "CFG_CPU_ADDR_BITS", "IO1_BAR",   "0x0000000010000000"),
-    IO1_MASK(this, "CFG_CPU_ADDR_BITS", "IO1_MASK", "0x00000000000FFFFF", "1 MB"),
+    CLINT_BAR(this, "CLINT_BAR", "CFG_CPU_ADDR_BITS",   "0x0000000002000000", NO_COMMENT),
+    CLINT_MASK(this, "CLINT_MASK", "CFG_CPU_ADDR_BITS", "0x000000000000FFFF", "64 KB"),
+    PLIC_BAR(this, "PLIC_BAR", "CFG_CPU_ADDR_BITS",   "0x000000000C000000", NO_COMMENT),
+    PLIC_MASK(this, "PLIC_MASK", "CFG_CPU_ADDR_BITS", "0x0000000003FFFFFF", "64 MB"),
+    IO1_BAR(this, "IO1_BAR", "CFG_CPU_ADDR_BITS",   "0x0000000010000000", NO_COMMENT),
+    IO1_MASK(this, "IO1_MASK", "CFG_CPU_ADDR_BITS", "0x00000000000FFFFF", "1 MB"),
     // registers
     // process
     comb(this)

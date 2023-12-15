@@ -30,9 +30,9 @@ L2SerDes::L2SerDes(GenObject *parent, const char *name, const char *comment) :
     lineb(this, "lineb", "DIV(linew,8)"),
     busb(this, "busb", "DIV(busw,8)"),
     SERDES_BURST_LEN(this, "SERDES_BURST_LEN", "DIV(lineb,busb)"),
-    State_Idle(this, "2", "State_Idle", "0"),
-    State_Read(this, "2", "State_Read", "1"),
-    State_Write(this, "2", "State_Write", "2"),
+    State_Idle(this, "State_Idle", "2", "0", NO_COMMENT),
+    State_Read(this, "State_Read", "2", "1", NO_COMMENT),
+    State_Write(this, "State_Write", "2", "2", NO_COMMENT),
     // signals
     // registers
     state(this, "state", "2", "State_Idle"),

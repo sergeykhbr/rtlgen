@@ -61,7 +61,7 @@ class plic : public ModuleObject {
             vb_src_priority(this, "vb_src_priority", "MUL(4,1024)"),
             vb_pending(this, "vb_pending", "1024"),
             vb_ip(this, "vb_ip", "ctxmax", "'0", NO_COMMENT),
-            rctx_idx("0", "rctx_idx", this) {
+            rctx_idx(this, "rctx_idx", "0", NO_COMMENT) {
         }
 
      public:

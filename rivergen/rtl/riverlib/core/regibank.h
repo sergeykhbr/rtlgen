@@ -28,10 +28,10 @@ class RegIntBank : public ModuleObject {
     class CombProcess : public ProcObject {
      public:
         CombProcess(GenObject *parent) : ProcObject(parent, "comb"),
-            int_daddr("0", "int_daddr", this),
-            int_waddr("0", "int_waddr", this),
-            int_radr1("0", "int_radr1", this),
-            int_radr2("0", "int_radr2", this),
+            int_daddr(this, "int_daddr", "0", NO_COMMENT),
+            int_waddr(this, "int_waddr", "0", NO_COMMENT),
+            int_radr1(this, "int_radr1", "0", NO_COMMENT),
+            int_radr2(this, "int_radr2", "0", NO_COMMENT),
             v_inordered(this, "v_inordered", "1", "0", NO_COMMENT),
             next_tag(this, "next_tag", "CFG_REG_TAG_WIDTH", "'0", NO_COMMENT) {
             RegIntBank *p = static_cast<RegIntBank *>(parent);

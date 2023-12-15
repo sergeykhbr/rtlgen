@@ -48,9 +48,9 @@ sdctrl::sdctrl(GenObject *parent, const char *name, const char *comment) :
     i_protect(this, "i_protect", "1"),
     // params
     _mode0_(this, "SD controller modes:"),
-    MODE_PRE_INIT(this, "2", "MODE_PRE_INIT", "0"),
-    MODE_SPI(this, "2", "MODE_SPI", "1"),
-    MODE_SD(this, "2", "MODE_SD", "2"),
+    MODE_PRE_INIT(this, "MODE_PRE_INIT", "2", "0", NO_COMMENT),
+    MODE_SPI(this, "MODE_SPI", "2", "1", NO_COMMENT),
+    MODE_SD(this, "MODE_SD", "2", "2", NO_COMMENT),
     // signals
     w_regs_sck_posedge(this, "w_regs_sck_posedge", "1"),
     w_regs_sck_negedge(this, "w_regs_sck", "1"),

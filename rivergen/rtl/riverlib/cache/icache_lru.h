@@ -45,8 +45,8 @@ class ICacheLru : public ModuleObject {
             vb_line_wdata(this, "vb_line_wdata", "L1CACHE_LINE_BITS", "'0", NO_COMMENT),
             vb_line_wstrb(this, "vb_line_wstrb", "L1CACHE_BYTES_PER_LINE", "'0", NO_COMMENT),
             v_line_wflags(this, "v_line_wflags", "ITAG_FL_TOTAL", "'0", NO_COMMENT),
-            sel_cached("0", "sel_cached", this),
-            sel_uncached("0", "sel_uncached", this),
+            sel_cached(this, "sel_cached", "0", NO_COMMENT),
+            sel_uncached(this, "sel_uncached", "0", NO_COMMENT),
             v_ready_next(this, "v_ready_next", "1"),
             vb_addr_direct_next(this, "vb_addr_direct_next", "CFG_CPU_ADDR_BITS", "'0", NO_COMMENT) {
         }

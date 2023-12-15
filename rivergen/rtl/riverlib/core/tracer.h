@@ -59,11 +59,11 @@ class Tracer : public ModuleObject {
     class CombProcess : public ProcObject {
      public:
         CombProcess(GenObject *parent) : ProcObject(parent, "comb"),
-            wcnt("0", "wcnt", this),
-            xcnt("0", "xcnt", this),
-            rcnt("0", "rcnt", this),
-            regcnt("0", "regcnt", this),
-            memcnt("0", "memcnt", this),
+            wcnt(this, "wcnt", "0", NO_COMMENT),
+            xcnt(this, "xcnt", "0", NO_COMMENT),
+            rcnt(this, "rcnt", "0", NO_COMMENT),
+            regcnt(this, "regcnt", "0", NO_COMMENT),
+            memcnt(this, "memcnt", "0", NO_COMMENT),
             mskoff(this, "mskoff", "7", "'0", NO_COMMENT),
             mask(this, "mask", "64", "'0", NO_COMMENT),
             tr_wcnt_nxt(this, "tr_wcnt_nxt", "TRACE_TBL_ABITS", "'0", NO_COMMENT),

@@ -39,13 +39,13 @@ class dmidebug : public ModuleObject {
             vb_resp_data(this, "vb_resp_data", "32", "'0", NO_COMMENT),
             vb_hartselnext(this, "vb_hartselnext", "CFG_LOG2_CPU_MAX", "'0", NO_COMMENT),
             v_resp_valid(this, "v_resp_valid", "1"),
-            hsel("0", "hsel", this),
+            hsel(this, "hsel", "0", NO_COMMENT),
             v_cmd_busy(this, "v_cmd_busy", "1"),
             v_cdc_dmi_req_ready(this, "v_cdc_dmi_req_ready", "1"),
             vb_arg1(this, "vb_arg1", "64", "'0", NO_COMMENT),
             t_command(this, "t_command", "32", "'0", NO_COMMENT),
             t_progbuf(this, "t_progbuf", "MUL(32,CFG_PROGBUF_REG_TOTAL)", "'0", NO_COMMENT),
-            t_idx("0", "t_idx", this) {
+            t_idx(this, "t_idx", "0", NO_COMMENT) {
         }
      public:
         StructVar<types_pnp::dev_config_type> vcfg;

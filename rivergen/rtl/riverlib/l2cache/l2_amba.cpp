@@ -36,10 +36,10 @@ L2Amba::L2Amba(GenObject *parent, const char *name, const char *comment) :
     i_msti(this, "i_msti"),
     o_msto(this, "o_msto"),
     // params
-    idle(this, "2", "idle", "0"),
-    reading(this, "2", "reading", "1"),
-    writing(this, "2", "writing", "2"),
-    wack(this, "2", "wack", "3"),
+    idle(this, "idle", "2", "0", NO_COMMENT),
+    reading(this, "reading", "2", "1", NO_COMMENT),
+    writing(this, "writing", "2", "2", NO_COMMENT),
+    wack(this, "wack", "2", "3", NO_COMMENT),
     // signals
     // registers
     state(this, "state", "2", "idle"),

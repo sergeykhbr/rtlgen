@@ -28,10 +28,10 @@ class CsrRegs : public ModuleObject {
     class CombProcess : public ProcObject {
      public:
         CombProcess(GenObject *parent) : ProcObject(parent, "comb"),
-            iM(&TO_INT(glob_river_cfg_->PRV_M), "iM", this),
-            iH(&TO_INT(glob_river_cfg_->PRV_H), "iH", this),
-            iS(&TO_INT(glob_river_cfg_->PRV_S), "iS", this),
-            iU(&TO_INT(glob_river_cfg_->PRV_U), "iU", this),
+            iM(this, "iM", &TO_INT(glob_river_cfg_->PRV_M), NO_COMMENT),
+            iH(this, "iH", &TO_INT(glob_river_cfg_->PRV_H), NO_COMMENT),
+            iS(this, "iS", &TO_INT(glob_river_cfg_->PRV_S), NO_COMMENT),
+            iU(this, "iU", &TO_INT(glob_river_cfg_->PRV_U), NO_COMMENT),
             vb_xpp(this, "vb_xpp", "2", "'0", NO_COMMENT),
             vb_pending(this, "vb_pending", "IRQ_TOTAL", "'0", NO_COMMENT),
             vb_irq_ena(this, "vb_irq_ena", "IRQ_TOTAL", "'0", NO_COMMENT),
@@ -61,8 +61,8 @@ class CsrRegs : public ModuleObject {
             vb_pmp_upd_ena(this, "vb_pmp_upd_ena", "CFG_PMP_TBL_SIZE", "'0", NO_COMMENT),
             vb_pmp_napot_mask(this, "vb_pmp_napot_mask", "RISCV_ARCH", "'0", NO_COMMENT),
             v_napot_shift(this, "v_napot_shift", "1"),
-            t_pmpdataidx("0", "t_pmpdataidx", this),
-            t_pmpcfgidx("0", "t_pmpcfgidx", this) {
+            t_pmpdataidx(this, "t_pmpdataidx", "0", NO_COMMENT),
+            t_pmpcfgidx(this, "t_pmpcfgidx", "0", NO_COMMENT) {
             Operation::start(this);
             CsrRegs *p = static_cast<CsrRegs *>(parent);
             p->proc_comb();

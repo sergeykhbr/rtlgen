@@ -49,7 +49,7 @@ Workgroup::Workgroup(GenObject *parent, const char *name, const char *comment) :
     o_dmi_apbo(this, "o_dmi_apbo"),
     o_dmreset(this, "o_dmreset", "1", "reset everything except DMI debug interface"),
     // param
-    coherence_ena(this, "1", "coherence_ena", "GT(MUL(cpu_num,l2cache_ena),1)"),
+    coherence_ena(this, "coherence_ena", "1", "GT(MUL(cpu_num,l2cache_ena),1)", NO_COMMENT),
     ACP_SLOT_IDX(this, "ACP_SLOT_IDX", "CFG_CPU_MAX"),
     // Singals:
     coreo(this, "coreo", NO_COMMENT),

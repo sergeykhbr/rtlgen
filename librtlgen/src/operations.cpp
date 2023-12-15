@@ -2344,7 +2344,7 @@ std::string FOR_gen(GenObject **args) {
 
 GenObject &FOR(const char *i, GenObject &start, GenObject &end, const char *dir, const char *comment) {
     Operation *p = new Operation(comment);
-    I32D *ret = new I32D(&start, i, 0);
+    I32D *ret = new I32D(NO_PARENT, i, &start, NO_COMMENT);
     Operation::push_obj(p);
     p->igen_ = FOR_gen;
     p->add_arg(p);
@@ -2364,7 +2364,7 @@ GenObject &FORGEN(const char *i,
                   StringConst *name,
                   const char *comment) {
     Operation *p = new Operation(comment);
-    I32D *ret = new GenVar("0", i, 0);
+    I32D *ret = new GenVar(NO_PARENT, i, "0", NO_COMMENT);
     Operation::push_obj(p);
     p->igen_ = FOR_gen;
     p->add_arg(p);

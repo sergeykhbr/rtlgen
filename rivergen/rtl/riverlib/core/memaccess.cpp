@@ -63,10 +63,10 @@ MemAccess::MemAccess(GenObject *parent, const char *name, const char *comment) :
     o_idle(this, "o_idle", "1", "All memory operation completed"),
     o_debug_valid(this, "o_debug_valid", "1", "Debug request processed, response is valid"),
     // parameters
-    State_Idle(this, "2", "State_Idle", "0"),
-    State_WaitReqAccept(this, "2", "State_WaitReqAccept", "1"),
-    State_WaitResponse(this, "2", "State_WaitResponse", "2"),
-    State_Hold(this, "2", "State_Hold", "3"),
+    State_Idle(this, "State_Idle", "2", "0", NO_COMMENT),
+    State_WaitReqAccept(this, "State_WaitReqAccept", "2", "1", NO_COMMENT),
+    State_WaitResponse(this, "State_WaitResponse", "2", "2", NO_COMMENT),
+    State_Hold(this, "State_Hold", "2", "3", NO_COMMENT),
     // registers
     state(this, "state", "2", "State_Idle"),
     mmu_ena(this, "mmu_ena", "1"),

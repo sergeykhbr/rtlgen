@@ -56,10 +56,10 @@ Tracer::Tracer(GenObject *parent, const char *name, const char *comment) :
     tr_rcnt(this, "tr_rcnt", "TRACE_TBL_ABITS", "'0", NO_COMMENT),
     tr_total(this, "tr_total", "TRACE_TBL_ABITS", "'0", NO_COMMENT),
     tr_opened(this, "tr_opened", "TRACE_TBL_ABITS", "'0", NO_COMMENT),
-    outstr("", "outstr", this),
-    trfilename("", "trfilename", this, "formatted string name with hartid"),
-    tracestr("", "tracestr", this),
-    fl("", "fl", this),
+    outstr(this, "outstr", "", NO_COMMENT),
+    trfilename(this, "trfilename", "", "formatted string name with hartid"),
+    tracestr(this, "tracestr", "", NO_COMMENT),
+    fl(this, "fl", "", NO_COMMENT),
     // functions
     TaskDisassembler(this),
     TraceOutput(this),
@@ -84,7 +84,7 @@ Tracer::Tracer(GenObject *parent, const char *name, const char *comment) :
 Tracer::FunctionTaskDisassembler::FunctionTaskDisassembler(GenObject *parent)
     : FunctionObject(parent, "TaskDisassembler"),
     instr(this, "instr", "32"),
-    ostr("", "ostr", this) {
+    ostr(this, "ostr", "", NO_COMMENT) {
 
     IF (NE(BITS(instr, 1, 0), CONST("3", 2)));
         SWITCH (BITS(instr, 1, 0));
@@ -1032,10 +1032,10 @@ TEXT();
 Tracer::FunctionTraceOutput::FunctionTraceOutput(GenObject *parent)
     : FunctionObject(parent, "TraceOutput"),
     rcnt(this, "rcnt", "TRACE_TBL_ABITS"),
-    ostr("", "ostr", this),
-    disasm("", "disasm", this),
-    ircnt("0", "ircnt", this),
-    iwaddr("0", "iwaddr", this) {
+    ostr(this, "ostr", "", NO_COMMENT),
+    disasm(this, "disasm", "", NO_COMMENT),
+    ircnt(this, "ircnt", "0", NO_COMMENT),
+    iwaddr(this, "iwaddr", "0", NO_COMMENT) {
     Tracer *p = static_cast<Tracer *>(getParent());
     GenObject *i;
 

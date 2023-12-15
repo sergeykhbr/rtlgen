@@ -81,7 +81,7 @@ riscv_soc::riscv_soc(GenObject *parent, const char *name, const char *comment) :
     _hwid0_(this),
     _hwid1_(this, "Hardware SoC Identificator."),
     _hwid2_(this, "Read Only unique platform identificator that could be read by FW"),
-    SOC_HW_ID(this, "32", "SOC_HW_ID", "0x20220903"),
+    SOC_HW_ID(this, "SOC_HW_ID", "32", "0x20220903", NO_COMMENT),
     _cfg0_(this),
     _cfg1_(this, "UARTx fifo log2(size) in bytes:"),
     SOC_UART1_LOG2_FIFOSZ(this, "SOC_UART1_LOG2_FIFOSZ", "4"),

@@ -28,10 +28,10 @@ axi2apb_bus1::axi2apb_bus1(GenObject *parent, const char *name, const char *comm
     o_apbi(this, "o_apbi", "APB slaves input vector"),
     o_mapinfo(this, "o_mapinfo", "APB devices memory mapping information"),
     // params
-    State_Idle(this, "2", "State_Idle", "0"),
-    State_setup(this, "2", "State_setup", "1"),
-    State_access(this, "2", "State_access", "2"),
-    State_out(this, "2", "State_out", "3"),
+    State_Idle(this, "State_Idle", "2", "0", NO_COMMENT),
+    State_setup(this, "State_setup", "2", "1", NO_COMMENT),
+    State_access(this, "State_access", "2", "2", NO_COMMENT),
+    State_out(this, "State_out", "2", "3", NO_COMMENT),
     // signals
     w_req_valid(this, "w_req_valid", "1"),
     wb_req_addr(this, "wb_req_addr", "CFG_SYSBUS_ADDR_BITS"),

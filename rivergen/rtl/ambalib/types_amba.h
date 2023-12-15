@@ -42,9 +42,9 @@ class types_amba : public FileObject {
         mapinfo_type(GenObject* parent, const char* name, const char* comment)
             : StructObject(parent, "mapinfo_type", name, comment),
             _0_(this, "Base Address."),
-            addr_start("0", "addr_start", this),
+            addr_start(this, "addr_start", "0", NO_COMMENT),
             _1_(this, "Maskable bits of the base address."),
-            addr_end("0", "addr_end", this) {
+            addr_end(this, "addr_end", "0", NO_COMMENT) {
         }
         virtual bool isVcd() override { return false; }      // no need to trace
 

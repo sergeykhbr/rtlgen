@@ -28,11 +28,11 @@ vip_sdcard_top::vip_sdcard_top(GenObject *parent, const char *name, const char *
     // params
     _cfg0_(this, "Generic config parameters"),
     CFG_SDCARD_POWERUP_DONE_DELAY(this, "CFG_SDCARD_POWERUP_DONE_DELAY", "450", "Delay of busy bits in ACMD41 response"),
-    CFG_SDCARD_HCS(this, "1", "CFG_SDCARD_HCS", "1", "High Capacity Support"),
-    CFG_SDCARD_VHS(this, "4", "CFG_SDCARD_VHS", "0x1", "CMD8 Voltage supply mask"),
-    CFG_SDCARD_PCIE_1_2V(this, "1", "CFG_SDCARD_PCIE_1_2V", "0"),
-    CFG_SDCARD_PCIE_AVAIL(this, "1", "CFG_SDCARD_PCIE_AVAIL", "0"),
-    CFG_SDCARD_VDD_VOLTAGE_WINDOW(this, "24", "CFG_SDCARD_VDD_VOLTAGE_WINDOW", "0xff8000"),
+    CFG_SDCARD_HCS(this, "CFG_SDCARD_HCS", "1", "1", "High Capacity Support"),
+    CFG_SDCARD_VHS(this, "CFG_SDCARD_VHS", "4", "0x1", "CMD8 Voltage supply mask"),
+    CFG_SDCARD_PCIE_1_2V(this, "CFG_SDCARD_PCIE_1_2V", "1", "0", NO_COMMENT),
+    CFG_SDCARD_PCIE_AVAIL(this, "CFG_SDCARD_PCIE_AVAIL", "1", "0", NO_COMMENT),
+    CFG_SDCARD_VDD_VOLTAGE_WINDOW(this, "CFG_SDCARD_VDD_VOLTAGE_WINDOW", "24", "0xff8000", NO_COMMENT),
     // signals
     w_clk(this, "w_clk", "1"),
     wb_rdata(this, "wb_rdata", "8"),

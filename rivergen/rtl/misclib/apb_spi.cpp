@@ -34,12 +34,12 @@ apb_spi::apb_spi(GenObject *parent, const char *name, const char *comment) :
     i_protect(this, "i_protect", "1"),
     // params
     _state0_(this, "SPI states"),
-    idle(this, "3", "idle", "0"),
-    wait_edge(this, "3", "wait_edge", "1"),
-    send_data(this, "3", "send_data", "2"),
-    recv_data(this, "3", "recv_data", "3"),
-    recv_sync(this, "3", "recv_sync", "4"),
-    ending(this, "3", "ending", "5"),
+    idle(this, "idle", "3", "0", NO_COMMENT),
+    wait_edge(this, "wait_edge", "3", "1", NO_COMMENT),
+    send_data(this, "send_data", "3", "2", NO_COMMENT),
+    recv_data(this, "recv_data", "3", "3", NO_COMMENT),
+    recv_sync(this, "recv_sync", "3", "4", NO_COMMENT),
+    ending(this, "ending", "3", "5", NO_COMMENT),
     // signals
     w_req_valid(this, "w_req_valid", "1"),
     wb_req_addr(this, "wb_req_addr", "32"),

@@ -35,14 +35,14 @@ L2Destination::L2Destination(GenObject *parent, const char *name, const char *co
     o_req_wdata(this, "o_req_wdata", "L1CACHE_LINE_BITS"),
     o_req_wstrb(this, "o_req_wstrb", "L1CACHE_BYTES_PER_LINE"),
     // params
-    Idle(this, "3", "Idle", "0"),
-    CacheReadReq(this, "3", "CacheReadReq", "1"),
-    CacheWriteReq(this, "3", "CacheWriteReq", "2"),
-    ReadMem(this, "3", "ReadMem", "3"),
-    WriteMem(this, "3", "WriteMem", "4"),
-    snoop_ac(this, "3", "snoop_ac", "5"),
-    snoop_cr(this, "3", "snoop_cr", "6"),
-    snoop_cd(this, "3", "snoop_cd", "7"),
+    Idle(this, "Idle", "3", "0", NO_COMMENT),
+    CacheReadReq(this, "CacheReadReq", "3", "1", NO_COMMENT),
+    CacheWriteReq(this, "CacheWriteReq", "3", "2", NO_COMMENT),
+    ReadMem(this, "ReadMem", "3", "3", NO_COMMENT),
+    WriteMem(this, "WriteMem", "3", "4", NO_COMMENT),
+    snoop_ac(this, "snoop_ac", "3", "5", NO_COMMENT),
+    snoop_cr(this, "snoop_cr", "3", "6", NO_COMMENT),
+    snoop_cd(this, "snoop_cd", "3", "7", NO_COMMENT),
     // signals
     // registers
     state(this, "state", "3", "Idle"),

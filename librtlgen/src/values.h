@@ -27,10 +27,15 @@ namespace sysvc {
 
 class GenValue : public GenObject {
  public:
-    GenValue(GenObject *parent, const char *name, const char *val,
-            const char *comment=NO_COMMENT);
-    GenValue(GenObject *parent, const char *name, GenObject *val,
-            const char *comment=NO_COMMENT);
+    GenValue(GenObject *parent,
+             const char *name,
+             const char *val,
+             const char *comment);
+
+    GenValue(GenObject *parent,
+             const char *name,
+             GenObject *val,
+             const char *comment);
 
     virtual bool isValue() override { return true; }
 
@@ -58,18 +63,20 @@ class GenValue : public GenObject {
 
 class BOOL : public GenValue {
  public:
-    BOOL(const char *val, const char *name,
-        GenObject *parent=0, const char *comment=""):
-        GenValue(parent, name, val, comment) {}
+    BOOL(GenObject *parent,
+         const char *name,
+         const char *val,
+         const char *comment) : GenValue(parent, name, val, comment) {}
 
     virtual std::string getType() override;
 };
 
 class STRING : public GenValue {
  public:
-    STRING(const char *val, const char *name,
-        GenObject *parent=0, const char *comment="")
-        : GenValue(parent, name, "", comment) {
+    STRING(GenObject *parent, 
+           const char *name,
+           const char *val,
+           const char *comment) : GenValue(parent, name, "", comment) {
         objValue_ = new StringConst(val);
     }
 
@@ -80,10 +87,10 @@ class STRING : public GenValue {
 
 class FileValue : public GenValue {
  public:
-    FileValue(const char *val, const char *name,
-        GenObject *parent, const char *comment=""):
-        GenValue(parent, name, val, comment) {
-    }
+    FileValue(GenObject *parent,
+              const char *name,
+              const char *val, 
+              const char *comment) : GenValue(parent, name, val, comment) {}
 
     virtual bool isFileValue() override{ return true; }
     virtual std::string getType() override;
@@ -92,9 +99,10 @@ class FileValue : public GenValue {
 
 class UI16D : public GenValue {
  public:
-    UI16D(const char *val, const char *name,
-        GenObject *parent=0, const char *comment=""):
-        GenValue(parent, name, val, comment) {}
+    UI16D(GenObject *parent,
+          const char *name,
+          const char *val,
+          const char *comment) : GenValue(parent, name, val, comment) {}
 
     virtual std::string getType();
     virtual uint64_t getWidth() override { return 16; }
@@ -102,12 +110,15 @@ class UI16D : public GenValue {
 
 class I32D : public GenValue {
  public:
-    I32D(const char *val, const char *name,
-        GenObject *parent=0, const char *comment=""):
-        GenValue(parent, name, val, comment) {}
-    I32D(GenObject *val, const char *name,
-        GenObject *parent, const char *comment="") :
-        GenValue(parent, name, val, comment) {}
+    I32D(GenObject *parent,
+         const char *name,
+         const char *val, 
+         const char *comment) : GenValue(parent, name, val, comment) {}
+
+    I32D(GenObject *parent,
+         const char *name,
+         GenObject *val,
+         const char *comment) : GenValue(parent, name, val, comment) {}
 
     virtual std::string getType();
     virtual uint64_t getWidth() override { return 32; }
@@ -115,9 +126,10 @@ class I32D : public GenValue {
 
 class UI32D : public GenValue {
  public:
-    UI32D(const char *val, const char *name,
-        GenObject *parent=0, const char *comment=""):
-        GenValue(parent, name, val, comment) {}
+    UI32D(GenObject *parent,
+          const char *name,
+          const char *val,
+          const char *comment) : GenValue(parent, name, val, comment) {}
 
     virtual std::string getType();
     virtual uint64_t getWidth() override { return 32; }
@@ -125,9 +137,10 @@ class UI32D : public GenValue {
 
 class UI64H : public GenValue {
  public:
-    UI64H(const char *val, const char *name,
-        GenObject *parent=0, const char *comment=""):
-        GenValue(parent, name, val, comment) {}
+    UI64H(GenObject *parent,
+          const char *name,
+          const char *val, 
+          const char *comment) : GenValue(parent, name, val, comment) {}
 
     virtual std::string getType();
     virtual uint64_t getWidth() override { return 64; }
@@ -135,9 +148,10 @@ class UI64H : public GenValue {
 
 class TIMESEC : public GenValue {
  public:
-    TIMESEC(const char *val, const char *name,
-        GenObject *parent=0, const char *comment=""):
-        GenValue(parent, name, val, comment) {}
+    TIMESEC(GenObject *parent,
+            const char *name,
+            const char *val,
+            const char *comment) : GenValue(parent, name, val, comment) {}
 
     virtual std::string getType();
     virtual bool isFloat() { return true; }
@@ -146,9 +160,10 @@ class TIMESEC : public GenValue {
 /** Variable used in generate cycle */
 class GenVar : public I32D {
  public:
-    GenVar(const char *val, const char *name,
-        GenObject *parent, const char *comment="") :
-        I32D(val, name, parent, comment) {}
+    GenVar(GenObject *parent,
+           const char *name,
+           const char *val,
+           const char *comment) : I32D(parent, name, val, comment) {}
 
     virtual bool isGenVar() override { return true; }
     virtual std::string getStrValue() override { return getName(); }

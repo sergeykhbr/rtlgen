@@ -36,9 +36,9 @@ vip_spi_transmitter::vip_spi_transmitter(GenObject *parent, const char *name, co
     i_resp_rdata(this, "i_resp_rdata", "32"),
     o_resp_ready(this, "o_resp_ready", "1"),
     // params
-    state_cmd(this, "2", "state_cmd", "0"),
-    state_addr(this, "2", "state_addr", "1"),
-    state_data(this, "2", "state_data", "2"),
+    state_cmd(this, "state_cmd", "2", "0", NO_COMMENT),
+    state_addr(this, "state_addr", "2", "1", NO_COMMENT),
+    state_data(this, "state_data", "2", "2", NO_COMMENT),
     // signals
     // registers
     state(this, "state", "2", "state_cmd", NO_COMMENT),

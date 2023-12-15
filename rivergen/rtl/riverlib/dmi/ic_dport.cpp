@@ -41,7 +41,7 @@ ic_dport::ic_dport(GenObject *parent, const char *name, const char *comment) :
     o_dporti(this, "o_dporti"),
     i_dporto(this, "i_dporto"),
     // param
-    ALL_CPU_MASK(this, "CFG_CPU_MAX", "ALL_CPU_MASK", "SUB(POW2(1,CFG_CPU_MAX),1)"),
+    ALL_CPU_MASK(this, "ALL_CPU_MASK", "CFG_CPU_MAX", "SUB(POW2(1,CFG_CPU_MAX),1)", NO_COMMENT),
     // registers
     hartsel(this, "hartsel", "CFG_LOG2_CPU_MAX", "'0", NO_COMMENT),
     comb(this)

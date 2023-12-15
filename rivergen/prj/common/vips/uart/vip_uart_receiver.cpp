@@ -28,10 +28,10 @@ vip_uart_receiver::vip_uart_receiver(GenObject *parent, const char *name, const 
     i_rdy_clr(this, "i_rdy_clr", "1"),
     o_data(this, "o_data", "8"),
     // params
-    startbit(this, "2", "startbit", "0"),
-    data(this, "2", "data", "1"),
-    stopbit(this, "2", "stopbit", "2"),
-    dummy(this, "2", "dummy", "3"),
+    startbit(this, "startbit", "2", "0", NO_COMMENT),
+    data(this, "data", "2", "1", NO_COMMENT),
+    stopbit(this, "stopbit", "2", "2", NO_COMMENT),
+    dummy(this, "dummy", "2", "3", NO_COMMENT),
     // signals
     // registers
     rx(this, "rx", "1"),

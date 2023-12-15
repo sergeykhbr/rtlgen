@@ -31,7 +31,7 @@ class InstrDecoder : public ModuleObject {
      public:
         CombProcess(GenObject *parent) :
             ProcObject(parent, "comb"),
-            selidx("0", "selidx", this),
+            selidx(this, "selidx", "0", NO_COMMENT),
             shift_ena(this, "shift_ena", "1") {
 
             InstrDecoder *p = static_cast<InstrDecoder *>(getParent());

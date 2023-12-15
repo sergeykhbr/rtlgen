@@ -23,7 +23,7 @@ vip_uart_top::vip_uart_top(GenObject *parent, const char *name, const char *comm
     scaler(this, "scaler", "8"),
     logpath(this, "logpath", "uart"),
     pll_period(this, "pll_period", "DIV(1.0,MUL(MUL(2,scaler),baudrate))"),
-    EOF_0x0D(this, "8", "EOF_0x0D", "0x0D"),
+    EOF_0x0D(this, "EOF_0x0D", "8", "0x0D", NO_COMMENT),
     i_nrst(this, "i_nrst", "1"),
     i_rx(this, "i_rx", "1"),
     o_tx(this, "o_tx", "1"),
@@ -37,14 +37,14 @@ vip_uart_top::vip_uart_top(GenObject *parent, const char *name, const char *comm
     w_tx_full(this, "w_tx_full", "1"),
     wb_rdata(this, "wb_rdata", "8"),
     wb_rdataz(this, "wb_rdataz", "8"),
-    outstr("", "outstr", this),
+    outstr(this, "outstr", "", NO_COMMENT),
 #ifndef FROST3
-    outstrtmp("", "outstrtmp", this),
+    outstrtmp(this, "outstrtmp", "", NO_COMMENT),
 #endif
-    outfilename("", "outfilename", this, "formatted string name with instnum"),
-    fl("", "fl", this),
+    outfilename(this, "outfilename", "", "formatted string name with instnum"),
+    fl(this, "fl", "", NO_COMMENT),
 #ifndef FROST3
-    fl_tmp("", "fl_tmp", this),
+    fl_tmp(this, "fl_tmp", "", NO_COMMENT),
 #endif
     initdone(this, "initdone", "2"),
     // registers
@@ -108,9 +108,9 @@ TEXT();
 
 vip_uart_top::FunctionU8ToString::FunctionU8ToString(GenObject *parent)
     : FunctionObject(parent, "U8ToString"),
-    istr("", "istr", this),
+    istr(this, "istr", "", NO_COMMENT),
     symb(this, "symb", "8"),
-    ostr("", "ostr", this) {
+    ostr(this, "ostr", "", NO_COMMENT) {
     ADDSTRU8(ostr, istr, symb);
 }
 

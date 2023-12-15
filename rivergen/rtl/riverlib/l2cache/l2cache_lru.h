@@ -50,7 +50,7 @@ class L2CacheLru : public ModuleObject {
             vb_line_wstrb(this, "vb_line_wstrb", "L2CACHE_BYTES_PER_LINE", "'0", NO_COMMENT),
             vb_req_mask(this, "vb_req_mask", "L1CACHE_LINE_BITS", "'0", NO_COMMENT),
             v_line_wflags(this, "v_line_wflags", "L2TAG_FL_TOTAL", "'0", NO_COMMENT),
-            ridx("0", "ridx", this),
+            ridx(this, "ridx", "0", NO_COMMENT),
             v_req_same_line(this, "v_req_same_line", "1"),
             v_ready_next(this, "v_ready_next", "1"),
             vb_req_type(this, "vb_req_type", "L2_REQ_TYPE_BITS", "'0", NO_COMMENT),

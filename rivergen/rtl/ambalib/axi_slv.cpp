@@ -38,13 +38,13 @@ axi_slv::axi_slv(GenObject *parent, const char *name, const char *comment) :
     i_resp_rdata(this, "i_resp_rdata", "CFG_SYSBUS_DATA_BITS"),
     i_resp_err(this, "i_resp_err", "1"),
     // params
-    State_Idle(this, "3", "State_Idle", "0"),
-    State_w(this, "3", "State_w", "1"), 
-    State_burst_w(this, "3", "State_burst_w", "2"),
-    State_addr_r(this, "3", "State_addr_r", "3"),
-    State_data_r(this, "3", "State_data_r", "4"),
-    State_out_r(this, "3", "State_out_r", "5"),
-    State_b(this, "3", "State_b", "6"),
+    State_Idle(this, "State_Idle", "3", "0", NO_COMMENT),
+    State_w(this, "State_w", "3", "1", NO_COMMENT), 
+    State_burst_w(this, "State_burst_w", "3", "2", NO_COMMENT),
+    State_addr_r(this, "State_addr_r", "3", "3", NO_COMMENT),
+    State_data_r(this, "State_data_r", "3", "4", NO_COMMENT),
+    State_out_r(this, "State_out_r", "3", "5", NO_COMMENT),
+    State_b(this, "State_b", "3", "6", NO_COMMENT),
     // signals
     // registers
     state(this, "state", "3", "State_Idle"),

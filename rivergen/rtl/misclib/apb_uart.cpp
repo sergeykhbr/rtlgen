@@ -32,11 +32,11 @@ apb_uart::apb_uart(GenObject *parent, const char *name, const char *comment) :
     // params
     fifosz(this, "fifosz", "POW2(1,log2_fifosz)"),
     _state0_(this, "Rx/Tx states"),
-    idle(this, "3", "idle", "0"),
-    startbit(this, "3", "startbit", "1"),
-    data(this, "3", "data", "2"),
-    parity(this, "3", "parity", "3"),
-    stopbit(this, "3", "stopbit", "4"),
+    idle(this, "idle", "3", "0", NO_COMMENT),
+    startbit(this, "startbit", "3", "1", NO_COMMENT),
+    data(this, "data", "3", "2", NO_COMMENT),
+    parity(this, "parity", "3", "3", NO_COMMENT),
+    stopbit(this, "stopbit", "3", "4", NO_COMMENT),
     // signals
     w_req_valid(this, "w_req_valid", "1"),
     wb_req_addr(this, "wb_req_addr", "32"),

@@ -21,7 +21,7 @@
 
 namespace sysvc {
 
-#define NO_PARENT 0
+#define NO_PARENT ((GenObject *)0)
 #define NO_COMMENT ""
 
 class GenObject {

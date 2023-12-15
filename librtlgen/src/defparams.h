@@ -82,9 +82,13 @@ class DefParamUI64H : public ParamUI64H {
 
 class DefParamLogic : public ParamLogic {
  public:
-    DefParamLogic(GenObject *parent, const char *width, const char *name, const char *val,
-                const char *comment="")
-                : ParamLogic(parent, width, name, val, comment) {}
+    DefParamLogic(GenObject *parent,
+                  const char *name,
+                  const char *width,
+                  const char *val,
+                  const char *comment)
+        : ParamLogic(parent, name, width, val, comment) {}
+
     virtual bool isParamGeneric() override { return true; }
     virtual bool isGenericDep() override { return true; }
     virtual void setObjValue(GenObject *v) override { objValue_ = v; }
@@ -104,18 +108,25 @@ class DefParamTIMESEC : public ParamTIMESEC {
   the same generic parameter ID_DEF_PARAM */
 class TmplParamI32D : public DefParamI32D {
  public:
-    TmplParamI32D(GenObject *parent, const char *name, const char *val,
+    TmplParamI32D(GenObject *parent,
+                  const char *name,
+                  const char *val,
                   const char *comment="")
         : DefParamI32D(parent, name, val, comment) {}
+
     virtual bool isParamTemplate() override { return true; }
     virtual void setObjValue(GenObject *v) override { objValue_ = v; }
 };
 
 class TmplParamLogic : public DefParamLogic {
  public:
-    TmplParamLogic(GenObject *parent, const char *width, const char *name,
-                   const char *val, const char *comment="")
-        : DefParamLogic(parent, width, name, val, comment) { }
+    TmplParamLogic(GenObject *parent,
+                   const char *name,
+                   const char *width,
+                   const char *val,
+                   const char *comment)
+        : DefParamLogic(parent, name, width, val, comment) { }
+
     virtual bool isParamTemplate() override { return true; }
     virtual void setObjValue(GenObject *v) override { objValue_ = v; }
 };
