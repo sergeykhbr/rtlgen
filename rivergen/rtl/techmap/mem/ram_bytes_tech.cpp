@@ -18,8 +18,8 @@
 
 ram_bytes_tech::ram_bytes_tech(GenObject *parent, const char *name, const char *comment) :
     ModuleObject(parent, "ram_bytes_tech", name, comment),
-    abits(this, "abits", "16"),
-    log2_dbytes(this, "log2_dbytes", "3"),
+    abits(this, "abits", "16", NO_COMMENT),
+    log2_dbytes(this, "log2_dbytes", "3", NO_COMMENT),
     dbytes(this, "dbytes", "POW2(1,log2_dbytes)"),
     dbits(this, "dbits", "MUL(8,POW2(1,log2_dbytes))"),
     i_clk(this, "i_clk", "1", "CPU clock"),

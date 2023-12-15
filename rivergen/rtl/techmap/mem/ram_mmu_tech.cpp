@@ -18,8 +18,8 @@
 
 ram_mmu_tech::ram_mmu_tech(GenObject *parent, const char *name, const char *comment) :
     ModuleObject(parent, "ram_mmu_tech", name, comment),
-    abits(this, "abits", "6"),
-    dbits(this, "dbits", "104"),
+    abits(this, "abits", "6", NO_COMMENT),
+    dbits(this, "dbits", "104", NO_COMMENT),
     i_clk(this, "i_clk", "1", "CPU clock"),
     i_addr(this, "i_addr", "abits"),
     i_wena(this, "i_wena", "1"),

@@ -18,8 +18,8 @@
 
 Queue::Queue(GenObject *parent, const char *name, const char *comment) :
     ModuleObject(parent, "Queue", name, comment),
-    abits(this, "abits", "6"),
-    dbits(this, "dbits", "128"),
+    abits(this, "abits", "6", NO_COMMENT),
+    dbits(this, "dbits", "128", NO_COMMENT),
     i_clk(this, "i_clk", "1", "CPU clock"),
     i_nrst(this, "i_nrst", "1", "Reset: active LOW"),
     i_re(this, "i_re", "1"),

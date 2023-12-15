@@ -18,8 +18,8 @@
 
 ram_cache_bwe_tech::ram_cache_bwe_tech(GenObject *parent, const char *name, const char *comment) :
     ModuleObject(parent, "ram_cache_bwe_tech", name, comment),
-    abits(this, "abits", "6"),
-    dbits(this, "dbits", "128"),
+    abits(this, "abits", "6", NO_COMMENT),
+    dbits(this, "dbits", "128", NO_COMMENT),
     //bytes_total(this, "bytes_total", "DIV(dbits,8)"),
     i_clk(this, "i_clk", "1", "CPU clock"),
     i_addr(this, "i_addr", "abits"),

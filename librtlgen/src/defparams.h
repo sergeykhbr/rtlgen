@@ -20,64 +20,86 @@
 
 namespace sysvc {
 
-class DefParamBOOL : public ParamBOOL {
+template<class T>
+class DefParamType : public T {
  public:
-    DefParamBOOL(GenObject *parent, const char *name, const char *val,
-                const char *comment="")
-                : ParamBOOL(parent, name, val, comment) {}
+    DefParamType(GenObject *parent,
+              const char *name,
+              const char *val,
+              const char *comment) : T(parent, name, val, comment) {}
+
+    DefParamType(GenObject *parent,
+              const char *name,
+              GenObject *val,
+              const char *comment) : T(parent, name, val, comment) {}
+
     virtual bool isParamGeneric() override { return true; }
     virtual bool isGenericDep() override { return true; }
-    virtual void setObjValue(GenObject *v) override { objValue_ = v; }
+    virtual void setObjValue(GenObject *v) override { T::objValue_ = v; }
 };
 
-class DefParamString : public ParamString {
+
+class DefParamBOOL : public DefParamType<ParamBOOL> {
  public:
-    DefParamString(GenObject *parent, const char *name, const char *val,
-                const char *comment="")
-                : ParamString(parent, name, val, comment) {}
-    virtual bool isParamGeneric() override { return true; }
-    virtual bool isGenericDep() override { return true; }
-    virtual void setObjValue(GenObject *v) override { objValue_ = v; }
+    DefParamBOOL(GenObject *parent,
+                 const char *name,
+                 const char *val,
+                 const char *comment=NO_COMMENT)
+        : DefParamType<ParamBOOL>(parent, name, val, comment) {}
 };
 
-class DefParamUI16D : public ParamUI16D {
+class DefParamString : public DefParamType<ParamString> {
  public:
-    DefParamUI16D(GenObject *parent, const char *name, const char *val,
-                const char *comment="")
-                : ParamUI16D(parent, name, val, comment) {}
-    virtual bool isParamGeneric() override { return true; }
-    virtual bool isGenericDep() override { return true; }
-    virtual void setObjValue(GenObject *v) override { objValue_ = v; }
+    DefParamString(GenObject *parent,
+                   const char *name,
+                   const char *val,
+                   const char *comment=NO_COMMENT)
+        : DefParamType<ParamString>(parent, name, val, comment) {}
 };
 
-class DefParamI32D : public ParamI32D {
+class DefParamUI16D : public DefParamType<ParamUI16D> {
  public:
-    DefParamI32D(GenObject *parent, const char *name, const char *val,
-                const char *comment="")
-                : ParamI32D(parent, name, val, comment) {}
-    virtual bool isParamGeneric() override { return true; }
-    virtual bool isGenericDep() override { return true; }
-    virtual void setObjValue(GenObject *v) override { objValue_ = v; }
+    DefParamUI16D(GenObject *parent,
+                  const char *name,
+                  const char *val,
+                  const char *comment=NO_COMMENT)
+        : DefParamType<ParamUI16D>(parent, name, val, comment) {}
 };
 
-class DefParamUI32D : public ParamUI32D {
+class DefParamI32D : public DefParamType<ParamI32D> {
  public:
-    DefParamUI32D(GenObject *parent, const char *name, const char *val,
-                const char *comment="")
-                : ParamUI32D(parent, name, val, comment) {}
-    virtual bool isParamGeneric() override { return true; }
-    virtual bool isGenericDep() override { return true; }
-    virtual void setObjValue(GenObject *v) override { objValue_ = v; }
+    DefParamI32D(GenObject *parent,
+                 const char *name,
+                 const char *val,
+                 const char *comment=NO_COMMENT)
+        : DefParamType<ParamI32D>(parent, name, val, comment) {}
 };
 
-class DefParamUI64H : public ParamUI64H {
+class DefParamUI32D : public DefParamType<ParamUI32D> {
  public:
-    DefParamUI64H(GenObject *parent, const char *name, const char *val,
-                const char *comment="")
-                : ParamUI64H(parent, name, val, comment) {}
-    virtual bool isParamGeneric() override { return true; }
-    virtual bool isGenericDep() override { return true; }
-    virtual void setObjValue(GenObject *v) override { objValue_ = v; }
+    DefParamUI32D(GenObject *parent,
+                  const char *name,
+                  const char *val,
+                  const char *comment=NO_COMMENT)
+                : DefParamType<ParamUI32D>(parent, name, val, comment) {}
+};
+
+class DefParamUI64H : public DefParamType<ParamUI64H> {
+ public:
+    DefParamUI64H(GenObject *parent,
+                  const char *name,
+                  const char *val,
+                  const char *comment=NO_COMMENT)
+        : DefParamType<ParamUI64H>(parent, name, val, comment) {}
+};
+
+class DefParamTIMESEC : public DefParamType<ParamTIMESEC> {
+ public:
+    DefParamTIMESEC(GenObject *parent,
+                    const char *name,
+                    const char *val,
+                    const char *comment=NO_COMMENT)
+        : DefParamType<ParamTIMESEC>(parent, name, val, comment) {}
 };
 
 class DefParamLogic : public ParamLogic {
@@ -94,24 +116,14 @@ class DefParamLogic : public ParamLogic {
     virtual void setObjValue(GenObject *v) override { objValue_ = v; }
 };
 
-class DefParamTIMESEC : public ParamTIMESEC {
- public:
-    DefParamTIMESEC(GenObject *parent, const char *name, const char *val,
-                const char *comment="")
-                : ParamTIMESEC(parent, name, val, comment) {}
-    virtual bool isParamGeneric() override { return true; }
-    virtual bool isGenericDep() override { return true; }
-    virtual void setObjValue(GenObject *v) override { objValue_ = v; }
-};
-
-/** Template paramaters is special key in sytemc. For SV and VHDL it is
-  the same generic parameter ID_DEF_PARAM */
+/** Template paramaters is a special keys in sytemc. For SV and VHDL it is
+  the same generic parameter DefParam */
 class TmplParamI32D : public DefParamI32D {
  public:
     TmplParamI32D(GenObject *parent,
                   const char *name,
                   const char *val,
-                  const char *comment="")
+                  const char *comment)
         : DefParamI32D(parent, name, val, comment) {}
 
     virtual bool isParamTemplate() override { return true; }

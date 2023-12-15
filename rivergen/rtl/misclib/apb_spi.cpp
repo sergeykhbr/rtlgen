@@ -18,7 +18,7 @@
 
 apb_spi::apb_spi(GenObject *parent, const char *name, const char *comment) :
     ModuleObject(parent, "apb_spi", name, comment),
-    log2_fifosz(this, "log2_fifosz", "9"),
+    log2_fifosz(this, "log2_fifosz", "9", NO_COMMENT),
     fifo_dbits(this, "fifo_dbits", "8"),
     i_clk(this, "i_clk", "1", "CPU clock"),
     i_nrst(this, "i_nrst", "1", "Reset: active LOW"),

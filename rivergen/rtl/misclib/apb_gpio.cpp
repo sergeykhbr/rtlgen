@@ -18,7 +18,7 @@
 
 apb_gpio::apb_gpio(GenObject *parent, const char *name, const char *comment) :
     ModuleObject(parent, "apb_gpio", name, comment),
-    width(this, "width", "12"),
+    width(this, "width", "12", NO_COMMENT),
     i_clk(this, "i_clk", "1", "CPU clock"),
     i_nrst(this, "i_nrst", "1", "Reset: active LOW"),
     i_mapinfo(this, "i_mapinfo", "interconnect slot information"),

@@ -18,7 +18,7 @@
 
 apb_uart::apb_uart(GenObject *parent, const char *name, const char *comment) :
     ModuleObject(parent, "apb_uart", name, comment),
-    log2_fifosz(this, "log2_fifosz", "4"),
+    log2_fifosz(this, "log2_fifosz", "4", NO_COMMENT),
     sim_speedup_rate(this, "sim_speedup_rate", "0", "simulation speed-up: 0=no speed up, 1=2x, 2=4x, etc"),
     i_clk(this, "i_clk", "1", "CPU clock"),
     i_nrst(this, "i_nrst", "1", "Reset: active LOW"),

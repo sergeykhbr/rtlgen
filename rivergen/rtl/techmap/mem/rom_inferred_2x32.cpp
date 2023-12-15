@@ -18,7 +18,7 @@
 
 rom_inferred_2x32::rom_inferred_2x32(GenObject *parent, const char *name, const char *comment) :
     ModuleObject(parent, "rom_inferred_2x32", name, comment),
-    abits(this, "abits", "6"),
+    abits(this, "abits", "6", NO_COMMENT),
     filename(this, "filename", ""),
     i_clk(this, "i_clk", "1", "CPU clock"),
     i_addr(this, "i_addr", "abits"),

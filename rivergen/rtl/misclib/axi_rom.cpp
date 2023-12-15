@@ -18,7 +18,7 @@
 
 axi_rom::axi_rom(GenObject *parent, const char *name, const char *comment) :
     ModuleObject(parent, "axi_rom", name, comment),
-    abits(this, "abits", "17"),
+    abits(this, "abits", "17", NO_COMMENT),
     filename(this, "filename", ""),
     i_clk(this, "i_clk", "1", "CPU clock"),
     i_nrst(this, "i_nrst", "1", "Reset: active LOW"),

@@ -18,8 +18,8 @@
 
 ram_tech::ram_tech(GenObject *parent, const char *name, const char *comment) :
     ModuleObject(parent, "ram_tech", name, comment),
-    abits(this, "abits", "6"),
-    dbits(this, "dbits", "8"),
+    abits(this, "abits", "6", NO_COMMENT),
+    dbits(this, "dbits", "8", NO_COMMENT),
     i_clk(this, "i_clk", "1", "CPU clock"),
     i_addr(this, "i_addr", "abits"),
     i_wena(this, "i_wena", "1"),

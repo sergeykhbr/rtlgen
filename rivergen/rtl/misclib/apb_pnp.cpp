@@ -18,7 +18,7 @@
 
 apb_pnp::apb_pnp(GenObject *parent, const char *name, const char *comment) :
     ModuleObject(parent, "apb_pnp", name, comment),
-    cfg_slots(this, "cfg_slots", "1"),
+    cfg_slots(this, "cfg_slots", "1", NO_COMMENT),
     hw_id(this, "hwid", "32", "0x20221123", NO_COMMENT),
     cpu_max(this, "cpu_max", "1"),
     l2cache_ena(this, "l2cache_ena", "1"),

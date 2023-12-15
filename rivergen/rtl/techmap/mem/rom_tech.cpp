@@ -18,8 +18,8 @@
 
 rom_tech::rom_tech(GenObject *parent, const char *name, const char *comment) :
     ModuleObject(parent, "rom_tech", name, comment),
-    abits(this, "abits", "6"),
-    log2_dbytes(this, "log2_dbytes", "3"),
+    abits(this, "abits", "6", NO_COMMENT),
+    log2_dbytes(this, "log2_dbytes", "3", NO_COMMENT),
     dbits(this, "dbits", "MUL(8,POW2(1,log2_dbytes))"),
     filename(this, "filename", ""),
     i_clk(this, "i_clk", "1", "CPU clock"),

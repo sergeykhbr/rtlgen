@@ -18,8 +18,8 @@
 
 jtagtap::jtagtap(GenObject *parent, const char *name, const char *comment) :
     ModuleObject(parent, "jtagtap", name, comment),
-    abits(this, "abits", "7"),
-    irlen(this, "irlen", "5"),
+    abits(this, "abits", "7", NO_COMMENT),
+    irlen(this, "irlen", "5", NO_COMMENT),
     idcode(this, "idcode", "32", "0x10e31913", NO_COMMENT),
     // Ports
     i_trst(this, "i_trst", "1", "Must be open-train, pullup"),
