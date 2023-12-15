@@ -118,20 +118,6 @@ Operation &INV_L(GenObject &a, const char *comment=NO_COMMENT);
  */
 Operation &INV(GenObject &a, const char *comment=NO_COMMENT);
 
-/**  OR all bits
-    sysc: a.or_reduce()
-    sv:   (|a)
-    vhdl: or_reduce(a)
- */
-Operation &OR_REDUCE(GenObject &a, const char *comment=NO_COMMENT);
-
-/**  AND all bits
-    sysc: a.and_reduce()
-    sv:   (&a)
-    vhdl: and_reduce(a)
- */
-Operation &AND_REDUCE(GenObject &a, const char *comment=NO_COMMENT);
-
 /**  Decrement
     sysc: (a - 1)
     sv:   (a - 1)
@@ -146,6 +132,75 @@ Operation &DEC(GenObject &a, const char *comment=NO_COMMENT);
  */
 Operation &INC(GenObject &a, const char *comment=NO_COMMENT);
 
+/**  OR all bits
+    sysc: a.or_reduce()
+    sv:   (|a)
+    vhdl: or_reduce(a)
+ */
+Operation &OR_REDUCE(GenObject &a, const char *comment=NO_COMMENT);
+
+/**  AND all bits
+    sysc: a.and_reduce()
+    sv:   (&a)
+    vhdl: and_reduce(a)
+ */
+Operation &AND_REDUCE(GenObject &a, const char *comment=NO_COMMENT);
+
+/** Equal Zero:
+    sysc: (a.or_reduce() == 0)
+    sv:   ((|a) == 1'b0)
+    vhdl: (or_reduce(a) = '0')
+ */
+Operation &EZ(GenObject &a, const char *comment=NO_COMMENT);
+
+/** Non Zero:
+    sysc: (a.or_reduce() != 0)
+    sv:   ((|a) == 1'b1)
+    vhdl: (or_reduce(a) = '1')
+ */
+Operation &NZ(GenObject &a, const char *comment=NO_COMMENT);
+
+/** Equal:
+    sysc: (a == b)
+    sv:   (a == b)
+    vhdl: (a = b)
+ */
+Operation &EQ(GenObject &a, GenObject &b, const char *comment=NO_COMMENT);
+
+/** Not equal:
+    sysc: (a != b)
+    sv:   (a != b)
+    vhdl: (a /= b)
+ */
+Operation &NE(GenObject &a, GenObject &b, const char *comment=NO_COMMENT);
+
+/** Greater:
+    sysc: (a > b)
+    sv:   (a > b)
+    vhdl: (a > b)
+ */
+Operation &GT(GenObject &a, GenObject &b, const char *comment=NO_COMMENT);
+
+/** Greater-Equal:
+    sysc: (a >= b)
+    sv:   (a >= b)
+    vhdl: (a >= b)
+ */
+Operation &GE(GenObject &a, GenObject &b, const char *comment=NO_COMMENT);
+
+/** Less:
+    sysc: (a < b)
+    sv:   (a < b)
+    vhdl: (a < b)
+ */
+Operation &LS(GenObject &a, GenObject &b, const char *comment=NO_COMMENT);
+
+/** Less-Equal:
+    sysc: (a <= b)
+    sv:   (a <= b)
+    vhdl: (a <= b)
+ */
+Operation &LE(GenObject &a, GenObject &b, const char *comment=NO_COMMENT);
 
 /** Arithemic adder:
     sysc: (a + b)
@@ -210,61 +265,82 @@ Operation &OR2(GenObject &a, GenObject &b, const char *comment=NO_COMMENT);
  */
 Operation &XOR2(GenObject &a, GenObject &b, const char *comment=NO_COMMENT);
 
-/** Equal:
-    sysc: (a == b)
-    sv:   (a == b)
-    vhdl: (a = b)
+/** Bitwise AND (output in one line):
+    sysc: (a & b & c)
+    sv:   (a & b & c)
+    vhdl: (a and b and c)
  */
-Operation &EQ(GenObject &a, GenObject &b, const char *comment=NO_COMMENT);
+Operation &AND3_L(GenObject &a, GenObject &b, GenObject &c, const char *comment=NO_COMMENT);
 
-/** Not equal:
-    sysc: (a != b)
-    sv:   (a != b)
-    vhdl: (a /= b)
+/** Logical AND (output in one line):
+    sysc: (a && b && c)
+    sv:   (a && b && d)
+    vhdl: (a and b and c)
  */
-Operation &NE(GenObject &a, GenObject &b, const char *comment=NO_COMMENT);
+Operation &AND3(GenObject &a, GenObject &b, GenObject &c, const char *comment=NO_COMMENT);
 
-/** Greater:
-    sysc: (a > b)
-    sv:   (a > b)
-    vhdl: (a > b)
+/** Logical OR (output in one line):
+    sysc: (a || b || c)
+    sv:   (a || b || d)
+    vhdl: (a or b or c)
  */
-Operation &GT(GenObject &a, GenObject &b, const char *comment=NO_COMMENT);
+Operation &OR3(GenObject &a, GenObject &b, GenObject &c, const char *comment=NO_COMMENT);
 
-/** Greater-Equal:
-    sysc: (a >= b)
-    sv:   (a >= b)
-    vhdl: (a >= b)
+/** Logical AND (output in one line):
+    sysc: (a && b && c && d)
+    sv:   (a && b && c && d)
+    vhdl: (a and b and c and d)
  */
-Operation &GE(GenObject &a, GenObject &b, const char *comment=NO_COMMENT);
+Operation &AND4(GenObject &a, GenObject &b, GenObject &c, GenObject &d, const char *comment=NO_COMMENT);
 
-/** Less:
-    sysc: (a < b)
-    sv:   (a < b)
-    vhdl: (a < b)
+/** Logical OR (output in one line):
+    sysc: (a || b || c || d)
+    sv:   (a || b || c || d)
+    vhdl: (a or b or c or d)
  */
-Operation &LS(GenObject &a, GenObject &b, const char *comment=NO_COMMENT);
+Operation &OR4(GenObject &a, GenObject &b, GenObject &c, GenObject &d, const char *comment=NO_COMMENT);
 
-/** Less-Equal:
-    sysc: (a <= b)
-    sv:   (a <= b)
-    vhdl: (a <= b)
+/** Sum of N-elements (multiline output)
+    sysc: (a + b + c + ..)
+    sv:   (a + b + c + ..)
+    vhdl: (a + b + c + ..)
  */
-Operation &LE(GenObject &a, GenObject &b, const char *comment=NO_COMMENT);
+Operation &ADDx(size_t cnt, ...);
 
-/** Equal Zero:
-    sysc: (a.or_reduce() == 0)
-    sv:   ((|a) == 1'b0)
-    vhdl: (or_reduce(a) = '0')
+/** Bitwise And of N-elements (multiline output)
+    sysc: (a & b & c & ..)
+    sv:   (a & b & c & ..)
+    vhdl: (a and b and c and ..)
  */
-Operation &EZ(GenObject &a, const char *comment=NO_COMMENT);
+Operation &ANDx_L(size_t cnt, ...);
 
-/** Non Zero:
-    sysc: (a.or_reduce() != 0)
-    sv:   ((|a) == 1'b1)
-    vhdl: (or_reduce(a) = '1')
+/** And of N-elements (multiline output)
+    sysc: (a && b && c && ..)
+    sv:   (a && b && c && ..)
+    vhdl: (a and b and c and ..)
  */
-Operation &NZ(GenObject &a, const char *comment=NO_COMMENT);
+Operation &ANDx(size_t cnt, ...);
+
+/** Bitwise OR of N-elements (multiline output)
+    sysc: (a | b | c | ..)
+    sv:   (a | b | c | ..)
+    vhdl: (a or b or c or ..)
+ */
+Operation &ORx_L(size_t cnt, ...);
+
+/** OR of N-elements (multiline output)
+    sysc: (a || b || c || ..)
+    sv:   (a || b || c || ..)
+    vhdl: (a or b or c or ..)
+ */
+Operation &ORx(size_t cnt, ...);
+
+/** XOR of N-elements (multiline output)
+    sysc: (a ^ b ^ c ^ ..)
+    sv:   (a ^ b ^ c ^ ..)
+    vhdl: (a xor b xor c xor ..)
+ */
+Operation &XORx(size_t cnt, ...);
 
 /** Concatation
     sysc: (a, b, c, ..)  depends of zero value

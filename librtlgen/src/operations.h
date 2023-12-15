@@ -111,6 +111,13 @@ class NStandardOperandsOperation : public Operation {
 
     virtual std::string getOpeningBrace() { return std::string("("); }
     virtual std::string getClosingBrace() { return std::string(")"); }
+    /** Format output (important for CCx):
+            (A ||             (A
+             B ||               || B
+             ..                 || ..
+             C)                 || C)
+     */
+    virtual bool isOperandNewLine() { return true; }
     virtual std::string getOperand() = 0;
     virtual uint64_t getValue() = 0;
     virtual std::string getStrValue() override;
@@ -223,6 +230,7 @@ class SetConstOperation : public Operation {
     GenObject *b_;
 };
 
+Operation &INCVAL(GenObject &res, GenObject &inc, const char *comment="");
 Operation &SETBIT(GenObject &a, GenObject &b, GenObject &val, const char *comment="");
 Operation &SETBIT(GenObject &a, int b, GenObject &val, const char *comment="");
 Operation &SETBITONE(GenObject &a, GenObject &b, const char *comment="");
@@ -491,21 +499,127 @@ class OrReduceOperation : public ReduceOperation {
     virtual std::string getStrValue() override;
 };
 
-Operation &AND3_L(GenObject &a, GenObject &b, GenObject &c, const char *comment="");
-Operation &AND3(GenObject &a, GenObject &b, GenObject &c, const char *comment="");
-Operation &OR3(GenObject &a, GenObject &b, GenObject &c, const char *comment="");
+/**
+    (a & b & c); (a && b && c)
+ */
+class And3Operation : public NStandardOperandsOperation {
+ public:
+    And3Operation(GenObject *a, GenObject *b, GenObject *c, bool logical, const char *comment)
+        : NStandardOperandsOperation(true, comment), logical_(logical) {
+        add_entry(a);
+        add_entry(b);
+        add_entry(c);
+    }
 
-Operation &AND4(GenObject &a, GenObject &b, GenObject &c, GenObject &d, const char *comment="");
-Operation &OR4(GenObject &a, GenObject &b, GenObject &c, GenObject &d, const char *comment="");
+    virtual std::string getOperand() override;
+    virtual uint64_t getValue() override { return 0; }
+ protected:
+    bool logical_;
+};
 
-Operation &ADDx(size_t cnt, ...);
-Operation &ANDx(size_t cnt, ...);
-Operation &ANDx_L(size_t cnt, ...);
-Operation &ORx(size_t cnt, ...);
-Operation &ORx_L(size_t cnt, ...);
-Operation &XORx(size_t cnt, ...);
+/**
+    (a | b | c); (a || b || c)
+ */
+class Or3Operation : public NStandardOperandsOperation {
+ public:
+    Or3Operation(GenObject *a, GenObject *b, GenObject *c, bool logical, const char *comment)
+        : NStandardOperandsOperation(true, comment), logical_(logical) {
+        add_entry(a);
+        add_entry(b);
+        add_entry(c);
+    }
 
-Operation &INCVAL(GenObject &res, GenObject &inc, const char *comment="");
+    virtual std::string getOperand() override;
+    virtual uint64_t getValue() override { return 0; }
+ protected:
+    bool logical_;
+};
+
+/**
+    (a && b && c && d)
+ */
+class And4Operation : public NStandardOperandsOperation {
+ public:
+    And4Operation(GenObject *a, GenObject *b, GenObject *c, GenObject *d, const char *comment)
+        : NStandardOperandsOperation(true, comment) {
+        add_entry(a);
+        add_entry(b);
+        add_entry(c);
+        add_entry(d);
+    }
+
+    virtual std::string getOperand() override;
+    virtual uint64_t getValue() override { return 0; }
+};
+
+/**
+    (a || b || c || d)
+ */
+class Or4Operation : public NStandardOperandsOperation {
+ public:
+    Or4Operation(GenObject *a, GenObject *b, GenObject *c, GenObject *d, const char *comment)
+        : NStandardOperandsOperation(true, comment) {
+        add_entry(a);
+        add_entry(b);
+        add_entry(c);
+        add_entry(d);
+    }
+
+    virtual std::string getOperand() override;
+    virtual uint64_t getValue() override { return 0; }
+};
+
+/**
+    Sum of elements
+ */
+class ADDxOperation : public NStandardOperandsOperation {
+ public:
+    ADDxOperation(const char *comment)
+        : NStandardOperandsOperation(false, comment) {}
+
+    virtual std::string getOperand() override { return std::string("+"); }
+    virtual uint64_t getValue() { return 0; }
+};
+
+/**
+    AND of elements
+ */
+class ANDxOperation : public NStandardOperandsOperation {
+ public:
+    ANDxOperation(bool logical, const char *comment)
+        : NStandardOperandsOperation(false, comment), logical_(logical) {}
+
+    virtual std::string getOperand() override;
+    virtual uint64_t getValue() { return 0; }
+ protected:
+    bool logical_;
+};
+
+/**
+    OR of elements
+ */
+class ORxOperation : public NStandardOperandsOperation {
+ public:
+    ORxOperation(bool logical, const char *comment)
+        : NStandardOperandsOperation(false, comment), logical_(logical) {}
+
+    virtual std::string getOperand() override;
+    virtual uint64_t getValue() { return 0; }
+ protected:
+    bool logical_;
+};
+
+/**
+    XOR of elements
+ */
+class XORxOperation : public NStandardOperandsOperation {
+ public:
+    XORxOperation(const char *comment)
+        : NStandardOperandsOperation(false, comment) {}
+
+    virtual std::string getOperand() override;
+    virtual uint64_t getValue() { return 0; }
+};
 
 /**
     Concatation operation
@@ -517,6 +631,7 @@ class CCxOperation : public NStandardOperandsOperation {
 
     virtual std::string getOpeningBrace() override;
     virtual std::string getClosingBrace() override;
+    virtual bool isOperandNewLine() override { return false; }
     virtual std::string getOperand() override;
     virtual uint64_t getValue() { return 0; }
     virtual std::string getStrValue() override;

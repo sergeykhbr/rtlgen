@@ -117,19 +117,6 @@ Operation &INV(GenObject &a, const char *comment) {
     return *p;
 }
 
-
-// AND_REDUCE
-Operation &AND_REDUCE(GenObject &a, const char *comment) {
-    Operation *p = new AndReduceOperation(&a, comment);
-    return *p;
-}
-
-// OR_REDUCE
-Operation &OR_REDUCE(GenObject &a, const char *comment) {
-    Operation *p = new OrReduceOperation(&a, comment);
-    return *p;
-}
-
 // DEC
 Operation &DEC(GenObject &a, const char *comment) {
     GenObject *p1;
@@ -151,6 +138,66 @@ Operation &INC(GenObject &a, const char *comment) {
         p1 = new DecConst(1);
     }
     Operation *p = new Add2Operation(&a, p1, comment);
+    return *p;
+}
+
+// AND_REDUCE
+Operation &AND_REDUCE(GenObject &a, const char *comment) {
+    Operation *p = new AndReduceOperation(&a, comment);
+    return *p;
+}
+
+// OR_REDUCE
+Operation &OR_REDUCE(GenObject &a, const char *comment) {
+    Operation *p = new OrReduceOperation(&a, comment);
+    return *p;
+}
+
+// Equal Zero
+Operation &EZ(GenObject &a, const char *comment) {
+    Operation *p = new EzOperation(&a, comment);
+    return *p;
+}
+
+// Non Zero
+Operation &NZ(GenObject &a, const char *comment) {
+    Operation *p = new NzOperation(&a, comment);
+    return *p;
+}
+
+// Equal (==)
+Operation &EQ(GenObject &a, GenObject &b, const char *comment) {
+    Operation *p = new EqOperation(&a, &b, comment);
+    return *p;
+}
+
+// Not Equal (!=)
+Operation &NE(GenObject &a, GenObject &b, const char *comment) {
+    Operation *p = new NeOperation(&a, &b, comment);
+    return *p;
+}
+
+// Greater (>)
+Operation &GT(GenObject &a, GenObject &b, const char *comment) {
+    Operation *p = new GtOperation(&a, &b, comment);
+    return *p;
+}
+
+// Greater-Equal (>=)
+Operation &GE(GenObject &a, GenObject &b, const char *comment) {
+    Operation *p = new GeOperation(&a, &b, comment);
+    return *p;
+}
+
+// Less (<)
+Operation &LS(GenObject &a, GenObject &b, const char *comment) {
+    Operation *p = new LsOperation(&a, &b, comment);
+    return *p;
+}
+
+// Less-Equal (<)
+Operation &LE(GenObject &a, GenObject &b, const char *comment) {
+    Operation *p = new LeOperation(&a, &b, comment);
     return *p;
 }
 
@@ -210,52 +257,117 @@ Operation &XOR2(GenObject &a, GenObject &b, const char *comment) {
     return *p;
 }
 
-// Equal (==)
-Operation &EQ(GenObject &a, GenObject &b, const char *comment) {
-    Operation *p = new EqOperation(&a, &b, comment);
+// AND3_L
+Operation &AND3_L(GenObject &a, GenObject &b, GenObject &c, const char *comment) {
+    Operation *p = new And3Operation(&a, &b, &c, true, comment);
     return *p;
 }
 
-// Not Equal (!=)
-Operation &NE(GenObject &a, GenObject &b, const char *comment) {
-    Operation *p = new NeOperation(&a, &b, comment);
+// AND3
+Operation &AND3(GenObject &a, GenObject &b, GenObject &c, const char *comment) {
+    Operation *p = new And3Operation(&a, &b, &c, false, comment);
     return *p;
 }
 
-
-// Greater (>)
-Operation &GT(GenObject &a, GenObject &b, const char *comment) {
-    Operation *p = new GtOperation(&a, &b, comment);
+// OR3
+Operation &OR3(GenObject &a, GenObject &b, GenObject &c, const char *comment) {
+    Operation *p = new Or3Operation(&a, &b, &c, false, comment);
     return *p;
 }
 
-// Greater-Equal (>=)
-Operation &GE(GenObject &a, GenObject &b, const char *comment) {
-    Operation *p = new GeOperation(&a, &b, comment);
+// AND4
+Operation &AND4(GenObject &a, GenObject &b, GenObject &c, GenObject &d, const char *comment) {
+    Operation *p = new And4Operation(&a, &b, &c, &d, comment);
     return *p;
 }
 
-// Less (<)
-Operation &LS(GenObject &a, GenObject &b, const char *comment) {
-    Operation *p = new LsOperation(&a, &b, comment);
+// OR4
+Operation &OR4(GenObject &a, GenObject &b, GenObject &c, GenObject &d, const char *comment) {
+    Operation *p = new Or4Operation(&a, &b, &c, &d, comment);
     return *p;
 }
 
-// Less-Equal (<)
-Operation &LE(GenObject &a, GenObject &b, const char *comment) {
-    Operation *p = new LeOperation(&a, &b, comment);
+// ADDx
+Operation &ADDx(size_t cnt, ...) {
+    ADDxOperation *p = new ADDxOperation(NO_COMMENT);
+    GenObject *obj;
+    va_list arg;
+    va_start(arg, cnt);
+    for (int i = 0; i < cnt; i++) {
+        obj = va_arg(arg, GenObject *);
+        p->add_entry(obj);
+    }
+    va_end(arg);
     return *p;
 }
 
-// Equal Zero
-Operation &EZ(GenObject &a, const char *comment) {
-    Operation *p = new EzOperation(&a, comment);
+// ANDx_L
+Operation &ANDx_L(size_t cnt, ...) {
+    ANDxOperation *p = new ANDxOperation(true, NO_COMMENT);
+    GenObject *obj;
+    va_list arg;
+    va_start(arg, cnt);
+    for (int i = 0; i < cnt; i++) {
+        obj = va_arg(arg, GenObject *);
+        p->add_entry(obj);
+    }
+    va_end(arg);
     return *p;
 }
 
-// Non Zero
-Operation &NZ(GenObject &a, const char *comment) {
-    Operation *p = new NzOperation(&a, comment);
+// ANDx
+Operation &ANDx(size_t cnt, ...) {
+    ANDxOperation *p = new ANDxOperation(false, NO_COMMENT);
+    GenObject *obj;
+    va_list arg;
+    va_start(arg, cnt);
+    for (int i = 0; i < cnt; i++) {
+        obj = va_arg(arg, GenObject *);
+        p->add_entry(obj);
+    }
+    va_end(arg);
+    return *p;
+}
+
+// ORx_L
+Operation &ORx_L(size_t cnt, ...) {
+    ORxOperation *p = new ORxOperation(true, NO_COMMENT);
+    GenObject *obj;
+    va_list arg;
+    va_start(arg, cnt);
+    for (int i = 0; i < cnt; i++) {
+        obj = va_arg(arg, GenObject *);
+        p->add_entry(obj);
+    }
+    va_end(arg);
+    return *p;
+}
+
+// ORx
+Operation &ORx(size_t cnt, ...) {
+    ORxOperation *p = new ORxOperation(false, NO_COMMENT);
+    GenObject *obj;
+    va_list arg;
+    va_start(arg, cnt);
+    for (int i = 0; i < cnt; i++) {
+        obj = va_arg(arg, GenObject *);
+        p->add_entry(obj);
+    }
+    va_end(arg);
+    return *p;
+}
+
+// XOR
+Operation &XORx(size_t cnt, ...) {
+    XORxOperation *p = new XORxOperation(NO_COMMENT);
+    GenObject *obj;
+    va_list arg;
+    va_start(arg, cnt);
+    for (int i = 0; i < cnt; i++) {
+        obj = va_arg(arg, GenObject *);
+        p->add_entry(obj);
+    }
+    va_end(arg);
     return *p;
 }
 

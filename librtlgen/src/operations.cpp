@@ -433,11 +433,16 @@ std::string NStandardOperandsOperation::getStrValue() {
     for (auto &p: getEntries()) {
         ret += obj2varname(p, "r", true);
         if (p != getEntries().back()) {
-            ret += getOperand();
-            if (oneline_) {
-                ret += " ";
-            } else {
+            if (!oneline_ && isOperandNewLine()) {
                 ret += "\n" + addspaces();
+            }
+
+            ret += getOperand();
+
+            if (!oneline_ && !isOperandNewLine()) {
+                ret += "\n" + addspaces();
+            } else {
+                ret += " ";
             }
         }
     }
@@ -1126,194 +1131,6 @@ std::string InvOperation::generate() {
     return A;
 }
 
-
-// OR3
-std::string OR3_gen(GenObject **args) {
-    std::string A = Operation::obj2varname(args[1]);
-    std::string B = Operation::obj2varname(args[2]);
-    std::string C = Operation::obj2varname(args[3]);
-    A = "(" + A + " || " + B + " || " + C + ")";
-    return A;
-}
-
-Operation &OR3(GenObject &a, GenObject &b, GenObject &c, const char *comment) {
-    Operation *p = new Operation(0, comment);
-    p->igen_ = OR3_gen;
-    p->add_arg(p);
-    p->add_arg(&a);
-    p->add_arg(&b);
-    p->add_arg(&c);
-    return *p;
-}
-
-// OR4
-std::string OR4_gen(GenObject **args) {
-    std::string A = Operation::obj2varname(args[1]);
-    std::string B = Operation::obj2varname(args[2]);
-    std::string C = Operation::obj2varname(args[3]);
-    std::string D = Operation::obj2varname(args[4]);
-    A = "(" + A + " || " + B + " || " + C + " || " + D + ")";
-    return A;
-}
-
-Operation &OR4(GenObject &a, GenObject &b, GenObject &c, GenObject &d, const char *comment) {
-    Operation *p = new Operation(0, comment);
-    p->igen_ = OR4_gen;
-    p->add_arg(p);
-    p->add_arg(&a);
-    p->add_arg(&b);
-    p->add_arg(&c);
-    p->add_arg(&d);
-    return *p;
-}
-
-// ORx
-std::string ORx_gen(GenObject **args) {
-    std::string ret = "(";
-    size_t cnt = reinterpret_cast<size_t>(args[1]);
-    pushspaces();
-    pushspaces();
-    for (size_t i = 0; i < cnt; i++) {
-        if (i > 0) {
-            ret += "\n";
-            ret += addspaces();
-            ret += "|| ";
-        }
-        ret += Operation::obj2varname(args[2 + i]);
-    }
-    popspaces();
-    popspaces();
-    ret += ")";
-    return ret;
-}
-
-Operation &ORx(size_t cnt, ...) {
-    Operation *p = new Operation(0, "");
-    GenObject *obj;
-    p->igen_ = ORx_gen;
-    p->add_arg(p);
-    p->add_arg(reinterpret_cast<GenObject *>(cnt));
-    va_list arg;
-    va_start(arg, cnt);
-    for (int i = 0; i < cnt; i++) {
-        obj = va_arg(arg, GenObject *);
-        p->add_arg(obj);
-    }
-    va_end(arg);
-    return *p;
-}
-
-// ORx_L
-std::string ORx_L_gen(GenObject **args) {
-    std::string ret = "(";
-    size_t cnt = reinterpret_cast<size_t>(args[1]);
-    pushspaces();
-    pushspaces();
-    for (size_t i = 0; i < cnt; i++) {
-        if (i > 0) {
-            ret += "\n";
-            ret += addspaces();
-            ret += "| ";
-        }
-        ret += Operation::obj2varname(args[2 + i]);
-    }
-    popspaces();
-    popspaces();
-    ret += ")";
-    return ret;
-}
-
-Operation &ORx_L(size_t cnt, ...) {
-    Operation *p = new Operation(0, "");
-    GenObject *obj;
-    p->igen_ = ORx_L_gen;
-    p->add_arg(p);
-    p->add_arg(reinterpret_cast<GenObject *>(cnt));
-    va_list arg;
-    va_start(arg, cnt);
-    for (int i = 0; i < cnt; i++) {
-        obj = va_arg(arg, GenObject *);
-        p->add_arg(obj);
-    }
-    va_end(arg);
-    return *p;
-}
-
-// XORx
-std::string XORx_gen(GenObject **args) {
-    std::string ret = "(";
-    size_t cnt = reinterpret_cast<size_t>(args[1]);
-    pushspaces();
-    pushspaces();
-    for (size_t i = 0; i < cnt; i++) {
-        if (i > 0) {
-            ret += "\n";
-            ret += addspaces();
-            ret += "^ ";
-        }
-        ret += Operation::obj2varname(args[2 + i]);
-    }
-    popspaces();
-    popspaces();
-    ret += ")";
-    return ret;
-}
-
-Operation &XORx(size_t cnt, ...) {
-    Operation *p = new Operation(0, "");
-    GenObject *obj;
-    p->igen_ = XORx_gen;
-    p->add_arg(p);
-    p->add_arg(reinterpret_cast<GenObject *>(cnt));
-    va_list arg;
-    va_start(arg, cnt);
-    for (int i = 0; i < cnt; i++) {
-        obj = va_arg(arg, GenObject *);
-        p->add_arg(obj);
-    }
-    va_end(arg);
-    return *p;
-}
-
-
-
-// ADDx
-std::string ADDx_gen(GenObject **args) {
-    std::string ret = "(";
-    size_t cnt = reinterpret_cast<size_t>(args[1]);
-    pushspaces();
-    pushspaces();
-    for (size_t i = 0; i < cnt; i++) {
-        if (i > 0) {
-            ret += "\n";
-            ret += addspaces();
-            ret += "+ ";
-        }
-        ret += Operation::obj2varname(args[2 + i]);
-    }
-    popspaces();
-    popspaces();
-    ret += ")";
-    return ret;
-}
-
-Operation &ADDx(size_t cnt, ...) {
-    Operation *p = new Operation(0, "");
-    GenObject *obj;
-    p->igen_ = ADDx_gen;
-    p->add_arg(p);
-    p->add_arg(reinterpret_cast<GenObject *>(cnt));
-    va_list arg;
-    va_start(arg, cnt);
-    for (int i = 0; i < cnt; i++) {
-        obj = va_arg(arg, GenObject *);
-        p->add_arg(obj);
-    }
-    va_end(arg);
-    return *p;
-}
-
-
 // CALCWIDTHx
 uint64_t CalcWidthOperation::getValue() {
     uint64_t ret = 0;
@@ -1398,6 +1215,74 @@ std::string Xor2Operation::getOperand() {
     return std::string(" ^ ");
 }
 
+// AND3
+std::string And3Operation::getOperand() {
+    if (SCV_is_vhdl()) {
+        return std::string(" and");
+    }
+    if (logical_) {
+        return std::string(" &");
+    }
+    return std::string(" &&");
+}
+
+// OR3
+std::string Or3Operation::getOperand() {
+    if (SCV_is_vhdl()) {
+        return std::string(" or");
+    }
+    if (logical_) {
+        return std::string(" |");
+    }
+    return std::string(" ||");
+}
+
+// AND4
+std::string And4Operation::getOperand() {
+    if (SCV_is_vhdl()) {
+        return std::string(" and");
+    }
+    return std::string(" &&");
+}
+
+// OR4
+std::string Or4Operation::getOperand() {
+    if (SCV_is_vhdl()) {
+        return std::string(" or");
+    }
+    return std::string(" ||");
+}
+
+// ANDx/ANDx_L
+std::string ANDxOperation::getOperand() {
+    if (SCV_is_vhdl()) {
+        return std::string("and");
+    }
+    if (logical_) {
+        return std::string("&");
+    }
+    return std::string("&&");
+}
+
+// ORx/ORx_L
+std::string ORxOperation::getOperand() {
+    if (SCV_is_vhdl()) {
+        return std::string("or");
+    }
+    if (logical_) {
+        return std::string("|");
+    }
+    return std::string("||");
+}
+
+// XORx
+std::string XORxOperation::getOperand() {
+    if (SCV_is_vhdl()) {
+        return std::string("xor");
+    }
+    return std::string("^");
+}
+
 // EQ
 std::string EqOperation::getOperand() {
     if (SCV_is_vhdl()) {
@@ -1451,136 +1336,6 @@ std::string NzOperation::getStrValue() {
 }
 
 
-// AND3_L
-std::string AND3_L_gen(GenObject **args) {
-    std::string A = Operation::obj2varname(args[1], "r", true);
-    std::string B = Operation::obj2varname(args[2], "r", true);
-    std::string C = Operation::obj2varname(args[3], "r", true);
-    A = "(" + A + " & " + B + " & " + C + ")";
-    return A;
-}
-
-Operation &AND3_L(GenObject &a, GenObject &b, GenObject &c, const char *comment) {
-    Operation *p = new Operation(0, comment);
-    p->igen_ = AND3_L_gen;
-    p->add_arg(p);
-    p->add_arg(&a);
-    p->add_arg(&b);
-    p->add_arg(&c);
-    return *p;
-}
-
-// AND3
-std::string AND3_gen(GenObject **args) {
-    std::string A = Operation::obj2varname(args[1]);
-    std::string B = Operation::obj2varname(args[2]);
-    std::string C = Operation::obj2varname(args[3]);
-    A = "(" + A + " && " + B + " && " + C + ")";
-    return A;
-}
-
-Operation &AND3(GenObject &a, GenObject &b, GenObject &c, const char *comment) {
-    Operation *p = new Operation(0, comment);
-    p->igen_ = AND3_gen;
-    p->add_arg(p);
-    p->add_arg(&a);
-    p->add_arg(&b);
-    p->add_arg(&c);
-    return *p;
-}
-
-// AND4
-std::string AND4_gen(GenObject **args) {
-    std::string A = Operation::obj2varname(args[1]);
-    std::string B = Operation::obj2varname(args[2]);
-    std::string C = Operation::obj2varname(args[3]);
-    std::string D = Operation::obj2varname(args[4]);
-    A = "(" + A + " && " + B + " && " + C + " && " + D + ")";
-    return A;
-}
-
-Operation &AND4(GenObject &a, GenObject &b, GenObject &c, GenObject &d, const char *comment) {
-    Operation *p = new Operation(0, comment);
-    p->igen_ = AND4_gen;
-    p->add_arg(p);
-    p->add_arg(&a);
-    p->add_arg(&b);
-    p->add_arg(&c);
-    p->add_arg(&d);
-    return *p;
-}
-
-// ANDx
-std::string ANDx_gen(GenObject **args) {
-    std::string ret = "(";
-    size_t cnt = reinterpret_cast<size_t>(args[1]);
-    pushspaces();
-    pushspaces();
-    for (size_t i = 0; i < cnt; i++) {
-        if (i > 0) {
-            ret += "\n";
-            ret += addspaces();
-            ret += "&& ";
-        }
-        ret += Operation::obj2varname(args[2 + i]);
-    }
-    popspaces();
-    popspaces();
-    ret += ")";
-    return ret;
-}
-
-Operation &ANDx(size_t cnt, ...) {
-    Operation *p = new Operation(0, "");
-    GenObject *obj;
-    p->igen_ = ANDx_gen;
-    p->add_arg(p);
-    p->add_arg(reinterpret_cast<GenObject *>(cnt));
-    va_list arg;
-    va_start(arg, cnt);
-    for (int i = 0; i < cnt; i++) {
-        obj = va_arg(arg, GenObject *);
-        p->add_arg(obj);
-    }
-    va_end(arg);
-    return *p;
-}
-
-// ANDx_L
-std::string ANDx_L_gen(GenObject **args) {
-    std::string ret = "(";
-    size_t cnt = reinterpret_cast<size_t>(args[1]);
-    pushspaces();
-    pushspaces();
-    for (size_t i = 0; i < cnt; i++) {
-        if (i > 0) {
-            ret += "\n";
-            ret += addspaces();
-            ret += "& ";
-        }
-        ret += Operation::obj2varname(args[2 + i]);
-    }
-    popspaces();
-    popspaces();
-    ret += ")";
-    return ret;
-}
-
-Operation &ANDx_L(size_t cnt, ...) {
-    Operation *p = new Operation(0, "");
-    GenObject *obj;
-    p->igen_ = ANDx_L_gen;
-    p->add_arg(p);
-    p->add_arg(reinterpret_cast<GenObject *>(cnt));
-    va_list arg;
-    va_start(arg, cnt);
-    for (int i = 0; i < cnt; i++) {
-        obj = va_arg(arg, GenObject *);
-        p->add_arg(obj);
-    }
-    va_end(arg);
-    return *p;
-}
 
 
 // INCVAL
