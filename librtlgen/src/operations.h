@@ -441,14 +441,35 @@ class And2Operation : public TwoStandardOperandsOperation {
     bool logical_;
 };
 
+/**
+    Logical OR2: (a | b), (a || b)
+*/
+class Or2Operation : public TwoStandardOperandsOperation {
+ public:
+    Or2Operation(GenObject *a, GenObject *b, bool logical, const char *comment)
+        : TwoStandardOperandsOperation(a, b, comment), logical_(logical) {}
 
-Operation &OR2_L(GenObject &a, GenObject &b, const char *comment="");   // bitwise OR
-Operation &OR2(GenObject &a, GenObject &b, const char *comment="");
-Operation &OR3(GenObject &a, GenObject &b, GenObject &c, const char *comment="");
-Operation &OR4(GenObject &a, GenObject &b, GenObject &c, GenObject &d, const char *comment="");
-Operation &ORx(size_t cnt, ...);
-Operation &ORx_L(size_t cnt, ...);
+    virtual std::string getOperand() override;
+    virtual uint64_t getValue() { return a_->getValue() | b_->getValue(); }
+ protected:
+    bool logical_;
+};
 
+/**
+    Logical XOR2: (a ^ b)
+*/
+class Xor2Operation : public TwoStandardOperandsOperation {
+ public:
+    Xor2Operation(GenObject *a, GenObject *b, const char *comment)
+        : TwoStandardOperandsOperation(a, b, comment) {}
+
+    virtual std::string getOperand() override;
+    virtual uint64_t getValue() { return a_->getValue() ^ b_->getValue(); }
+};
+
+/**
+    (&a)
+ */
 class AndReduceOperation : public ReduceOperation {
  public:
     AndReduceOperation(GenObject *a, const char *comment)
@@ -458,6 +479,9 @@ class AndReduceOperation : public ReduceOperation {
     virtual std::string getStrValue() override;
 };
 
+/**
+    (|a)
+ */
 class OrReduceOperation : public ReduceOperation {
  public:
     OrReduceOperation(GenObject *a, const char *comment)
@@ -467,14 +491,20 @@ class OrReduceOperation : public ReduceOperation {
     virtual std::string getStrValue() override;
 };
 
-Operation &XOR2(GenObject &a, GenObject &b, const char *comment="");
-Operation &XORx(size_t cnt, ...);
 Operation &AND3_L(GenObject &a, GenObject &b, GenObject &c, const char *comment="");
-Operation &ADDx(size_t cnt, ...);
 Operation &AND3(GenObject &a, GenObject &b, GenObject &c, const char *comment="");
+Operation &OR3(GenObject &a, GenObject &b, GenObject &c, const char *comment="");
+
 Operation &AND4(GenObject &a, GenObject &b, GenObject &c, GenObject &d, const char *comment="");
+Operation &OR4(GenObject &a, GenObject &b, GenObject &c, GenObject &d, const char *comment="");
+
+Operation &ADDx(size_t cnt, ...);
 Operation &ANDx(size_t cnt, ...);
 Operation &ANDx_L(size_t cnt, ...);
+Operation &ORx(size_t cnt, ...);
+Operation &ORx_L(size_t cnt, ...);
+Operation &XORx(size_t cnt, ...);
+
 Operation &INCVAL(GenObject &res, GenObject &inc, const char *comment="");
 
 /**

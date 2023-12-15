@@ -192,6 +192,24 @@ Operation &AND2(GenObject &a, GenObject &b, const char *comment) {
     return *p;
 }
 
+// OR2_L
+Operation &OR2_L(GenObject &a, GenObject &b, const char *comment) {
+    Operation *p = new Or2Operation(&a, &b, true, comment);
+    return *p;
+}
+
+// OR2
+Operation &OR2(GenObject &a, GenObject &b, const char *comment) {
+    Operation *p = new Or2Operation(&a, &b, false, comment);
+    return *p;
+}
+
+// XOR2
+Operation &XOR2(GenObject &a, GenObject &b, const char *comment) {
+    Operation *p = new Xor2Operation(&a, &b, comment);
+    return *p;
+}
+
 // Equal (==)
 Operation &EQ(GenObject &a, GenObject &b, const char *comment) {
     Operation *p = new EqOperation(&a, &b, comment);

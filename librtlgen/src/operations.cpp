@@ -1126,39 +1126,6 @@ std::string InvOperation::generate() {
     return A;
 }
 
-// OR2_L
-std::string OR2_L_gen(GenObject **args) {
-    std::string A = Operation::obj2varname(args[1], "r", true);
-    std::string B = Operation::obj2varname(args[2], "r", true);
-    A = "(" + A + " | " + B + ")";
-    return A;
-}
-
-Operation &OR2_L(GenObject &a, GenObject &b, const char *comment) {
-    Operation *p = new Operation(0, comment);
-    p->igen_ = OR2_L_gen;
-    p->add_arg(p);
-    p->add_arg(&a);
-    p->add_arg(&b);
-    return *p;
-}
-
-// OR2
-std::string OR2_gen(GenObject **args) {
-    std::string A = Operation::obj2varname(args[1]);
-    std::string B = Operation::obj2varname(args[2]);
-    A = "(" + A + " || " + B + ")";
-    return A;
-}
-
-Operation &OR2(GenObject &a, GenObject &b, const char *comment) {
-    Operation *p = new Operation(0, comment);
-    p->igen_ = OR2_gen;
-    p->add_arg(p);
-    p->add_arg(&a);
-    p->add_arg(&b);
-    return *p;
-}
 
 // OR3
 std::string OR3_gen(GenObject **args) {
@@ -1269,23 +1236,6 @@ Operation &ORx_L(size_t cnt, ...) {
         p->add_arg(obj);
     }
     va_end(arg);
-    return *p;
-}
-
-// XOR2
-std::string XOR2_gen(GenObject **args) {
-    std::string A = Operation::obj2varname(args[1], "r", true);
-    std::string B = Operation::obj2varname(args[2], "r", true);
-    A = "(" + A + " ^ " + B + ")";
-    return A;
-}
-
-Operation &XOR2(GenObject &a, GenObject &b, const char *comment) {
-    Operation *p = new Operation(0, comment);
-    p->igen_ = XOR2_gen;
-    p->add_arg(p);
-    p->add_arg(&a);
-    p->add_arg(&b);
     return *p;
 }
 
@@ -1418,7 +1368,7 @@ std::string OrReduceOperation::getStrValue() {
 }
 
 
-// AND2_L
+// AND2/AND2_L
 std::string And2Operation::getOperand() {
     if (SCV_is_vhdl()) {
         return std::string(" and ");
@@ -1427,6 +1377,25 @@ std::string And2Operation::getOperand() {
         return std::string(" & ");
     }
     return std::string(" && ");
+}
+
+// OR2/OR2_L
+std::string Or2Operation::getOperand() {
+    if (SCV_is_vhdl()) {
+        return std::string(" or ");
+    }
+    if (logical_) {
+        return std::string(" | ");
+    }
+    return std::string(" || ");
+}
+
+// XOR2
+std::string Xor2Operation::getOperand() {
+    if (SCV_is_vhdl()) {
+        return std::string(" xor ");
+    }
+    return std::string(" ^ ");
 }
 
 // EQ

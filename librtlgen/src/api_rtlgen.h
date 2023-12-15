@@ -189,6 +189,27 @@ Operation &AND2_L(GenObject &a, GenObject &b, const char *comment=NO_COMMENT);
  */
 Operation &AND2(GenObject &a, GenObject &b, const char *comment=NO_COMMENT);
 
+/** Bitwise OR:
+    sysc: (a | b)
+    sv:   (a | b)
+    vhdl: (a or b)
+ */
+Operation &OR2_L(GenObject &a, GenObject &b, const char *comment=NO_COMMENT);
+
+/** Logical OR:
+    sysc: (a || b)
+    sv:   (a || b)
+    vhdl: (a or b)
+ */
+Operation &OR2(GenObject &a, GenObject &b, const char *comment=NO_COMMENT);
+
+/** XOR:
+    sysc: (a ^ b)
+    sv:   (a ^ b)
+    vhdl: (a xor b)
+ */
+Operation &XOR2(GenObject &a, GenObject &b, const char *comment=NO_COMMENT);
+
 /** Equal:
     sysc: (a == b)
     sv:   (a == b)
