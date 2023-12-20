@@ -163,26 +163,52 @@ class ReduceOperation : public Operation {
     Set value int variable:
         a = b
         a[h:l] = b
-        a[arridx][h:l] = b
+        a[arridx].item[h:l] = b
+        a[arridx][h:l] = b  // not supported yet
  */
 class SetValueOperation : public Operation {
  public:
-    SetValueOperation(GenObject &a, GenObject &b, const char *comment);
-    SetValueOperation(GenObject &a, uint64_t v, const char *comment);
-    SetValueOperation(GenObject &a, GenObject &bitidx, GenObject &b, const char *comment);
-    SetValueOperation(GenObject &a, int bitidx, GenObject &b, const char *comment);
-    SetValueOperation(GenObject &a, int h, int l, GenObject &b, const char *comment);
+    SetValueOperation(GenObject *a,         // value to set
+                      GenObject *idx,       // array index (depth should be non-zero)
+                      GenObject *item,      // struct item
+                      bool h_as_width,      // interpret h as width argument for sv [start +: width] operation
+                      GenObject *h,         // MSB bit
+                      GenObject *l,         // LSB bit
+                      GenObject *val,
+                      const char *comment);
 
+    virtual bool isAssign() { return false; }       // modificator to use out-of-process assign operator (<=)
     virtual std::string generate() override;
 
  protected:
     GenObject *a_;
-    GenObject *b_;
-    GenObject *arridx_;
+    GenObject *idx_;
+    GenObject *item_;
     GenObject *h_;
     GenObject *l_;
+    GenObject *v_;
+    bool h_as_width_;
 };
 
+/**
+    Assign value is possible only for RTL (not in SystemC). SystemC should create process.
+        assign a <= b;
+ */
+class AssignValueOperation : public SetValueOperation {
+ public:
+    // Array item operations
+    AssignValueOperation(GenObject *a,         // value to set
+                         GenObject *idx,       // array index (depth should be non-zero)
+                         GenObject *item,      // struct item
+                         bool h_as_width,      // interpret h as width argument for sv [start +: width] operation
+                         GenObject *h,         // MSB bit
+                         GenObject *l,         // LSB bit
+                         GenObject *val,
+                         const char *comment)
+        : SetValueOperation(a, idx, item, h_as_width, h, l, val, comment) {}
+
+    virtual bool isAssign() override { return true; }       // modificator to use out-of-process assign operator (<=)
+};
 
 /**
     Generate commenting string:
@@ -789,15 +815,6 @@ Operation &ARRITEM(GenObject &arr, GenObject &idx, GenObject &item, const char *
 Operation &ARRITEM(GenObject &arr, int idx, GenObject &item, const char *comment="");
 Operation &ARRITEM(GenObject &arr, int idx);
 Operation &ARRITEM_B(GenObject &arr, GenObject &idx, GenObject &item, const char *comment="");  // .read() for signals and ports in bits operations
-Operation &SETARRITEM(GenObject &arr, GenObject &idx, GenObject &item, GenObject &val, const char *comment="");
-Operation &ASSIGNARRITEM(GenObject &arr, GenObject &idx, GenObject &item, GenObject &val, const char *comment="");
-Operation &SETARRITEM(GenObject &arr, int idx, GenObject &val);
-Operation &SETARRITEMBIT(GenObject &arr, GenObject &idx, GenObject &item, 
-                           GenObject &bitidx, GenObject &val, const char *comment="");
-Operation &SETARRITEMBITSW(GenObject &arr, GenObject &idx, GenObject &item,
-                           GenObject &start, GenObject &width, GenObject &val, const char *comment="");
-Operation &ASSIGNARRITEM(GenObject &arr, int idx, GenObject &val);
-Operation &SETARRIDX(GenObject &arr, GenObject &idx);
 Operation &IF_OTHERWISE(GenObject &cond, GenObject &a, GenObject &b, const char *comment="");
 
 void IF(GenObject &a, const char *comment="");

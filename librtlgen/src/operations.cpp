@@ -460,35 +460,17 @@ std::string NStandardOperandsOperation::getStrValue() {
         a = b
         a[h:l] = b
         a[arridx][h:l] = b
-
  */
-SetValueOperation::SetValueOperation(GenObject &a, GenObject &b, const char *comment)
-    : Operation(top_obj(), comment), a_(&a), b_(&b), arridx_(0), h_(0), l_(0) {
-}
-
-SetValueOperation::SetValueOperation(GenObject &a, uint64_t v, const char *comment)
-    : Operation(top_obj(), comment), a_(&a), b_(0), arridx_(0), h_(0), l_(0) {
-    if (a_->isLogic()) {
-        b_ = new DecLogicConst(a_->getObjWidth(), v);
-    } else {
-        b_ = new DecConst(v);
-    }
-}
-
-SetValueOperation::SetValueOperation(GenObject &a, GenObject &bitidx, GenObject &b, const char *comment)
-    : Operation(top_obj(), comment), a_(&a), b_(&b), arridx_(0), h_(&bitidx), l_(0) {
-}
-
-SetValueOperation::SetValueOperation(GenObject &a, int bitidx, GenObject &b, const char *comment)
-    : Operation(top_obj(), comment), a_(&a), b_(&b), arridx_(0),
-    h_(new DecConst(bitidx)),
-    l_(0) {
-}
-
-SetValueOperation::SetValueOperation(GenObject &a, int h, int l, GenObject &b, const char *comment)
-    : Operation(top_obj(), comment), a_(&a), b_(&b), arridx_(0),
-    h_(new DecConst(h)),
-    l_(new DecConst(l)) {
+SetValueOperation::SetValueOperation(GenObject *a,         // value to set
+                                     GenObject *idx,       // array index (depth should be non-zero)
+                                     GenObject *item,      // struct item
+                                     bool h_as_width,      // interpret h as width argument for sv [start +: width] operation
+                                     GenObject *h,         // MSB bit
+                                     GenObject *l,         // LSB bit
+                                     GenObject *val,
+                                     const char *comment)
+    : Operation(top_obj(), comment), a_(a), idx_(idx), item_(item),
+    h_(h), l_(l), v_(val), h_as_width_(h_as_width) {
 }
 
 
@@ -497,45 +479,71 @@ std::string SetValueOperation::generate() {
     if (SCV_is_sysc() && a_->isClock()) {
         ret += "// ";   // do not clear clock module
     }
+    if (isAssign()) {
+        ret += "assign ";
+    }
     ret += obj2varname(a_, "v");
-    if (a_->getDepth()) {
+    if (a_->getDepth() && idx_) {
         if (SCV_is_vhdl()) {
-            ret += "(" + arridx_->getStrValue() + ")";
+            ret += "(" + idx_->getName() + ")";
         } else {
-            ret += "[" + arridx_->getStrValue() + "]";
+            ret += "[" + idx_->getName() + "]";
         }
-    } else if (arridx_) {
-        SHOW_ERROR("Array[%s] without depth", arridx_->getStrValue().c_str());
+    } else if (idx_) {
+        SHOW_ERROR("Array[%s] without depth", idx_->getStrValue().c_str());
     }
 
-    if (a_->isLogic() && h_) {
-        if (SCV_is_vhdl()) {
-            ret += "(";
-        } else {
-            ret += "[";
-        }
-        ret += h_->getStrValue();
-        if (l_) {
-            if (SCV_is_vhdl()) {
-                ret += " downto ";
+    if (item_ && item_ != a_) {
+        ret += "." + item_->getName();
+    }
+
+    if (h_ && (a_->isLogic()
+              || (item_ && item_->isLogic()))) {
+        // Bits selection:
+        if (SCV_is_sysc()) {
+            if (h_as_width_) {
+                ret += "(" + l_->getName() + " + " + h_->getName() + " - 1, ";
+                ret += l_->getName() + ")";
+            } else if (l_) {
+                ret += "(" + h_->getName() + ", " + l_->getName() + ")";
             } else {
-                ret += " : ";
+                ret += "[" + h_->getName() + "]";
             }
-            ret += l_->getStrValue();
-        }
-        if (SCV_is_vhdl()) {
-            ret += ")";
-        } else {
+        } else if (SCV_is_sv()) {
+            ret += "[";
+            if (h_as_width_) {
+                ret += l_->getName() + " +: " + h_->getName();
+            } else {
+                ret += h_->getName();
+                if (l_) {
+                    ret += " : " + l_->getName();
+                }
+            }
             ret += "]";
+        } else if (SCV_is_vhdl()) {
+            ret += "(";
+            if (h_as_width_) {
+                ret += l_->getName() + " + " + h_->getName() + " - 1 downto ";
+                ret += l_->getName();
+            } else if (l_) {
+                ret += h_->getName() + " downto " + l_->getName();
+            } else {
+                ret += h_->getName();
+            }
+            ret += ")";
         }
     }
 
     if (SCV_is_vhdl()) {
-        ret += " := ";
+        if (isAssign()) {
+            ret += " <= ";
+        } else {
+            ret += " := ";
+        }
     } else {
         ret += " = ";
     }
-    ret += b_->getStrValue() + ";";
+    ret += obj2varname(v_, "r", true) + ";";
     ret += addtext(this, ret.size());
     ret += "\n";
     return ret;
@@ -763,12 +771,26 @@ std::string InvOperation::generate() {
 
 
 Operation &SETBIT(GenObject &a, GenObject &b, GenObject &val, const char *comment) {
-    Operation *p = new SetValueOperation(a, b, val, comment);
+    Operation *p = new SetValueOperation(&a,
+                                         0,     // idx
+                                         0,     // item
+                                         false, // h_as_width
+                                         &b,    // h
+                                         0,     // l
+                                         &val,  // val
+                                         comment);
     return *p;
 }
 
 Operation &SETBIT(GenObject &a, int b, GenObject &val, const char *comment) {
-    Operation *p = new SetValueOperation(a, *new DecConst(b), val, comment);
+    Operation *p = new SetValueOperation(&a,
+                                         0,     // idx
+                                         0,     // item
+                                         false, // h_as_width
+                                         new DecConst(b),    // h
+                                         0,     // l
+                                         &val,  // val
+                                         comment);
     return *p;
 }
 
@@ -1581,6 +1603,7 @@ Operation &SETARRIDX(GenObject &arr, GenObject &idx) {
     return *p;
 }
 
+#if 0
 // SETARRITEM
 std::string SETARRITEM_gen(GenObject **args) {
     args[1]->setSelector(args[2]);
@@ -1732,6 +1755,7 @@ Operation &SETARRITEMBITSW(GenObject &arr, GenObject &idx, GenObject &item,
     p->add_arg(&val);   // 6
     return *p;
 }
+#endif
 
 
 //IF_OTHERWISE

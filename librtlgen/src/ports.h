@@ -39,6 +39,7 @@ class InPort : public Logic {
 
     virtual bool isSignal() override { return true; }
     virtual bool isInput() override { return true; }
+    virtual std::string getStrValue() override { return getName(); }    // ports should not have objValue. think how to fix that
 };
 
 class OutPort : public Logic {

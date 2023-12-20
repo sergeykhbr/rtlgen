@@ -501,14 +501,161 @@ Operation &RSH(GenObject &a, int sz, const char *comment) {
 }
 
 
+// a = 0
 Operation &SETZERO(GenObject &a, const char *comment) {
-    return *new SetValueOperation(a, 0, comment);
+    GenObject *b;
+    if (a.isLogic()) {
+        b = new DecLogicConst(a.getObjWidth(), 0);
+    } else {
+        b = new DecConst(0);
+    }
+    return *new SetValueOperation(&a,
+                                  0,    // [arridx]
+                                  0,    // .item
+                                  false,    // h as width
+                                  0,    // [h
+                                  0,    // :l]
+                                  b,  // val
+                                  comment);
 }
 
+// a = 1
 Operation &SETONE(GenObject &a, const char *comment) {
-    return *new SetValueOperation(a, 1, comment);
+    GenObject *b;
+    if (a.isLogic()) {
+        b = new DecLogicConst(a.getObjWidth(), 1);
+    } else {
+        b = new DecConst(0);
+    }
+    return *new SetValueOperation(&a,
+                                  0,    // [arridx]
+                                  0,    // .item
+                                  false,    // h as width
+                                  0,    // [h
+                                  0,    // :l]
+                                  b,  // val
+                                  comment);
 }
 
+
+/** Write array item value:
+    sysc: arr[idx].item = val;
+    sv:   arr[idx].item = val;
+    vhdl: arr(idx).item := val;
+ */
+Operation &SETARRITEM(GenObject &arr, GenObject &idx,
+                      GenObject &item,
+                      GenObject &val,
+                      const char *comment) {
+    return *new SetValueOperation(&arr,
+                                  &idx,     // [arridx]
+                                  &item,    // .item
+                                  false,    // h as width
+                                  0,        // [h
+                                  0,        // :l]
+                                  &val,     // val
+                                  comment);
+}
+
+/** Write array item value (another format):
+    sysc: arr[idx].item = val;
+    sv:   arr[idx].item = val;
+    vhdl: arr(idx).item := val;
+ */
+Operation &SETARRITEM(GenObject &arr, int idx, GenObject &val) {
+    return *new SetValueOperation(&arr,
+                                  new DecConst(idx),     // [arridx]
+                                  0,        // .item
+                                  false,    // h as width
+                                  0,        // [h
+                                  0,        // :l]
+                                  &val,     // val
+                                  NO_COMMENT);
+}
+
+/** Assign array item value:
+    sysc: arr[idx].item = val;
+    sv:   assign arr[idx].item = val; (only out of process)
+    vhdl: arr(idx).item <= val;
+ */
+Operation &ASSIGNARRITEM(GenObject &arr, GenObject &idx,
+                         GenObject &item,
+                         GenObject &val,
+                         const char *comment) {
+    return *new AssignValueOperation(&arr,
+                                     &idx,     // [arridx]
+                                     &item,    // .item
+                                     false,    // h as width
+                                     0,        // [h
+                                     0,        // :l]
+                                     &val,     // val
+                                     comment);
+}
+
+/** Assign array item valu (another format of idx argument):
+    sysc: arr[idx].item = val;
+    sv:   assign arr[idx].item = val; (only out of process)
+    vhdl: arr(idx).item <= val;
+ */
+Operation &ASSIGNARRITEM(GenObject &arr, int idx, GenObject &val) {
+    return *new AssignValueOperation(&arr,
+                                     new DecConst(idx),     // [arridx]
+                                     0,    // .item
+                                     false,    // h as width
+                                     0,        // [h
+                                     0,        // :l]
+                                     &val,     // val
+                                     NO_COMMENT);
+}
+
+
+/** Write array item bit value:
+    sysc: arr[idx].item[bitidx] = val;
+    sv:   arr[idx].item[bitidx] = val;
+    vhdl: arr(idx).item(bitidx) := val;
+ */
+Operation &SETARRITEMBIT(GenObject &arr, GenObject &idx,
+                         GenObject &item,  GenObject &bitidx,
+                         GenObject &val,
+                         const char *comment) {
+    return *new SetValueOperation(&arr,
+                                  &idx,     // [arridx]
+                                  &item,    // .item
+                                  false,    // h as width
+                                  &bitidx,  // [h
+                                  0,        // :l]
+                                  &val,     // val
+                                  comment);
+}
+
+/** Write array item bits using width argument:
+    sysc: arr[idx].item(start+width-1, width) = val;
+    sv:   arr[idx].item[start +: width] = val;
+    vhdl: arr(idx).item(start+width-1 downto width) := val;
+ */
+Operation &SETARRITEMBITSW(GenObject &arr, GenObject &idx,
+                           GenObject &item, GenObject &start, GenObject &width,
+                           GenObject &val,
+                           const char *comment) {
+    return *new SetValueOperation(&arr,
+                                  &idx,     // [arridx]
+                                  &item,    // .item
+                                  true,      // interpret h (MSB) as width
+                                  &width,    // [h
+                                  &start,    // :l]
+                                  &val,      // val
+                                  comment);
+}
+
+
+/** Auaxilirary function used in for() cycle. Index is cleared after operation is generated.
+    sysc: -
+    sv:   -
+    vhdl: -
+ */
+/*Operation &SETARRIDX(GenObject &arr, GenObject &idx) {
+    arr.setSelector(&idx);
+}*/
 
 
 void NEW(GenObject &m, const char *name, GenObject *idx, const char *comment) {
