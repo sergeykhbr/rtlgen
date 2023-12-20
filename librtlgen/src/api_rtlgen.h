@@ -439,6 +439,13 @@ Operation &POW2(GenObject &sz, const char *comment=NO_COMMENT);
 Operation &RSH(GenObject &a, GenObject &sz, const char *comment=NO_COMMENT);
 Operation &RSH(GenObject &a, int sz, const char *comment=NO_COMMENT);
 
+/** Set value b into a (type could be checked to avoid different types assignment):
+    sysc: a = b;
+    sv:   a = b;
+    vhdl: a := b;
+ */
+Operation &SETVAL(GenObject &a, GenObject &b, const char *comment=NO_COMMENT);
+
 /** Write 0 into variable:
     sysc: a = 0;
     sv:   a = 1'b0;     or '0
@@ -452,6 +459,84 @@ Operation &SETZERO(GenObject &a, const char *comment=NO_COMMENT);
     vhdl: a := '1';  or "00...01"
  */
 Operation &SETONE(GenObject &a, const char *comment=NO_COMMENT);
+
+/** Set to a specific bit of logic:
+    sysc: a[b] = val;
+    sv:   a[b] = val;
+    vhdl: a(b) := val;
+ */
+Operation &SETBIT(GenObject &a, GenObject &b, GenObject &val, const char *comment=NO_COMMENT);
+
+/** Set to a specific bit of logic (int b):
+    sysc: a[b] = val;
+    sv:   a[b] = val;
+    vhdl: a(b) := val;
+ */
+Operation &SETBIT(GenObject &a, int b, GenObject &val, const char *comment=NO_COMMENT);
+
+/** Set a specific bit of logic to HIGH:
+    sysc: a[b] = 1;
+    sv:   a[b] = 1'b1;
+    vhdl: a(b) := '1';
+ */
+Operation &SETBITONE(GenObject &a, GenObject &b, const char *comment=NO_COMMENT);
+
+/** Set a specific bit of logic to HIGH (variant 2):
+    sysc: a[b] = 1;
+    sv:   a[b] = 1'b1;
+    vhdl: a(b) := '1';
+ */
+Operation &SETBITONE(GenObject &a, const char *b, const char *comment=NO_COMMENT);
+
+/** Set a specific bit of logic to HIGH (variant 3):
+    sysc: a[b] = 1;
+    sv:   a[b] = 1'b1;
+    vhdl: a(b) := '1';
+ */
+Operation &SETBITONE(GenObject &a, int b, const char *comment=NO_COMMENT);
+
+/** Set a specific bit of logic to LOW:
+    sysc: a[b] = 0;
+    sv:   a[b] = 1'b0;
+    vhdl: a(b) := '0';
+ */
+Operation &SETBITZERO(GenObject &a, GenObject &b, const char *comment=NO_COMMENT);
+
+/** Set a specific bit of logic to LOW (variant 2):
+    sysc: a[b] = 0;
+    sv:   a[b] = 1'b0;
+    vhdl: a(b) := '0';
+ */
+Operation &SETBITZERO(GenObject &a, const char *b, const char *comment=NO_COMMENT);
+
+/** Set a specific bit of logic to LOW (variant 3):
+    sysc: a[b] = 0;
+    sv:   a[b] = 1'b0;
+    vhdl: a(b) := '0';
+ */
+Operation &SETBITZERO(GenObject &a, int b, const char *comment=NO_COMMENT);
+
+/** Set a specific bits of logic:
+    sysc: a(h, l) = val;
+    sv:   a[h: l] = val;
+    vhdl: a(h downto l) := val;
+ */
+Operation &SETBITS(GenObject &a, GenObject &h, GenObject &l, GenObject &val, const char *comment=NO_COMMENT);
+
+/** Set a specific bits of logic (variant 2):
+    sysc: a(h, l) = val;
+    sv:   a[h: l] = val;
+    vhdl: a(h downto l) := val;
+ */
+Operation &SETBITS(GenObject &a, int h, int l, GenObject &val, const char *comment=NO_COMMENT);
+
+/** Set a specific bits of logic using width argument:
+    sysc: a(start + width - 1, start) = val;
+    sv:   a[start +: width] = val;
+    vhdl: a(start + width - 1 downto start) := val;
+ */
+Operation &SETBITSW(GenObject &a, GenObject &start, GenObject &width, GenObject &val, const char *comment=NO_COMMENT);
+
 
 /** Write array item value:
     sysc: arr[idx].item = val;

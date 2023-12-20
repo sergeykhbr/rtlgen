@@ -516,7 +516,7 @@ std::string SetValueOperation::generate() {
             } else {
                 ret += h_->getName();
                 if (l_) {
-                    ret += " : " + l_->getName();
+                    ret += ": " + l_->getName();
                 }
             }
             ret += "]";
@@ -770,193 +770,6 @@ std::string InvOperation::generate() {
 }
 
 
-Operation &SETBIT(GenObject &a, GenObject &b, GenObject &val, const char *comment) {
-    Operation *p = new SetValueOperation(&a,
-                                         0,     // idx
-                                         0,     // item
-                                         false, // h_as_width
-                                         &b,    // h
-                                         0,     // l
-                                         &val,  // val
-                                         comment);
-    return *p;
-}
-
-Operation &SETBIT(GenObject &a, int b, GenObject &val, const char *comment) {
-    Operation *p = new SetValueOperation(&a,
-                                         0,     // idx
-                                         0,     // item
-                                         false, // h_as_width
-                                         new DecConst(b),    // h
-                                         0,     // l
-                                         &val,  // val
-                                         comment);
-    return *p;
-}
-
-// SETBITONE
-std::string SETBITONE_gen(GenObject **args) {
-    std::string ret = addspaces();
-    ret += Operation::obj2varname(args[1], "v");
-    if (SCV_is_sysc()) {
-        ret += "[";
-        ret += Operation::obj2varname(args[2]);
-        ret += "] = 1;";
-    } else if (SCV_is_sv()) {
-        ret += "[";
-        ret += Operation::obj2varname(args[2]);
-        ret += "] = 1'b1;";
-    } else {
-        ret += "(";
-        ret += Operation::obj2varname(args[2]);
-        ret += ") := '1';";
-    }
-    ret += Operation::addtext(args[0], ret.size());
-    ret += "\n";
-    return ret;
-}
-
-Operation &SETBITONE(GenObject &a, GenObject &b, const char *comment) {
-    Operation *p = new Operation(comment);
-    p->igen_ = SETBITONE_gen;
-    p->add_arg(p);
-    p->add_arg(&a);
-    p->add_arg(&b);
-    return *p;
-}
-Operation &SETBITONE(GenObject &a, const char *b, const char *comment) {
-    GenObject *t1 = SCV_parse_to_obj(0, b);
-    return SETBITONE(a, *t1, comment);
-}
-
-Operation &SETBITONE(GenObject &a, int b, const char *comment) {
-    char tstr[64];
-    RISCV_sprintf(tstr, sizeof(tstr), "%d", b);
-    return SETBITONE(a, tstr, comment);
-}
-
-// SETBITZERO
-std::string SETBITZERO_gen(GenObject **args) {
-    std::string ret = addspaces();
-    ret += Operation::obj2varname(args[1], "v");
-    if (SCV_is_sysc()) {
-        ret += "[";
-        ret += Operation::obj2varname(args[2]);
-        ret += "] = 0;";
-    } else if (SCV_is_sv()) {
-        ret += "[";
-        ret += Operation::obj2varname(args[2]);
-        ret += "] = 1'b0;";
-    } else {
-        ret += "(";
-        ret += Operation::obj2varname(args[2]);
-        ret += ") := '0';";
-    }
-    ret += Operation::addtext(args[0], ret.size());
-    ret += "\n";
-    return ret;
-}
-
-Operation &SETBITZERO(GenObject &a, GenObject &b, const char *comment) {
-    Operation *p = new Operation(comment);
-    p->igen_ = SETBITZERO_gen;
-    p->add_arg(p);
-    p->add_arg(&a);
-    p->add_arg(&b);
-    return *p;
-}
-Operation &SETBITZERO(GenObject &a, const char *b, const char *comment) {
-    GenObject *t1 = SCV_parse_to_obj(0, b);
-    return SETBITZERO(a, *t1, comment);
-}
-
-Operation &SETBITZERO(GenObject &a, int b, const char *comment) {
-    char tstr[64];
-    RISCV_sprintf(tstr, sizeof(tstr), "%d", b);
-    return SETBITZERO(a, tstr, comment);
-}
-
-// SETBITS
-std::string SETBITS_gen(GenObject **args) {
-    std::string ret = addspaces();
-    ret += Operation::obj2varname(args[1], "v");
-    if (SCV_is_sysc()) {
-         ret += "(";
-         ret += Operation::obj2varname(args[2]);
-         ret += ", ";
-         ret += Operation::obj2varname(args[3]);
-         ret += ") = " + Operation::obj2varname(args[4]) + ";";
-    } else if (SCV_is_sv()) {
-         ret += "[";
-         ret += Operation::obj2varname(args[2]);
-         ret += ": ";
-         ret += Operation::obj2varname(args[3]);
-         ret += "] = " + Operation::obj2varname(args[4]) + ";";
-    } else {
-    }
-    ret += Operation::addtext(args[0], ret.size());
-    ret += "\n";
-    return ret;
-}
-
-Operation &SETBITS(GenObject &a, GenObject &h, GenObject &l, GenObject &val, const char *comment) {
-    Operation *p = new Operation(comment);
-    p->igen_ = SETBITS_gen;
-    p->add_arg(p);
-    p->add_arg(&a);
-    p->add_arg(&h);
-    p->add_arg(&l);
-    p->add_arg(&val);
-    return *p;
-}
-
-Operation &SETBITS(GenObject &a, int h, int l, GenObject &val, const char *comment) {
-    Operation *p = new Operation(comment);
-    p->igen_ = SETBITS_gen;
-    p->add_arg(p);
-    p->add_arg(&a);
-    p->add_arg(new DecConst(h));
-    p->add_arg(new DecConst(l));
-    p->add_arg(&val);
-    return *p;
-}
-
-// SETBITSW
-std::string SETBITSW_gen(GenObject **args) {
-    std::string ret = addspaces();
-    ret += Operation::obj2varname(args[1], "v");
-    if (SCV_is_sysc()) {
-         ret += "(";
-         ret += Operation::obj2varname(args[2]);
-         ret += " + ";
-         ret += Operation::obj2varname(args[3]);
-         ret += "- 1, ";
-         ret += Operation::obj2varname(args[2]);
-         ret += ") = " + Operation::obj2varname(args[4]) + ";";
-    } else if (SCV_is_sv()) {
-         ret += "[";
-         ret += Operation::obj2varname(args[2]);
-         ret += " +: ";
-         ret += Operation::obj2varname(args[3]);
-         ret += "] = " + Operation::obj2varname(args[4]) + ";";
-    } else {
-    }
-    ret += Operation::addtext(args[0], ret.size());
-    ret += "\n";
-    return ret;
-}
-
-Operation &SETBITSW(GenObject &a, GenObject &start, GenObject &width, GenObject &val, const char *comment) {
-    Operation *p = new Operation(comment);
-    p->igen_ = SETBITSW_gen;
-    p->add_arg(p);
-    p->add_arg(&a);
-    p->add_arg(&start);
-    p->add_arg(&width);
-    p->add_arg(&val);
-    return *p;
-}
-
 // SETVAL
 std::string SETVAL_gen(GenObject **args) {
     std::string ret = addspaces();
@@ -983,7 +796,7 @@ std::string SETVAL_gen(GenObject **args) {
     return ret;
 }
 
-Operation &SETVAL(GenObject &a, GenObject &b, const char *comment) {
+/*Operation &SETVAL(GenObject &a, GenObject &b, const char *comment) {
     Operation *p = new Operation(comment);
     p->igen_ = SETVAL_gen;
     p->add_arg(p);
@@ -991,6 +804,7 @@ Operation &SETVAL(GenObject &a, GenObject &b, const char *comment) {
     p->add_arg(&b);
     return *p;
 }
+*/
 
 // SETZ
 std::string SETZ_gen(GenObject **args) {

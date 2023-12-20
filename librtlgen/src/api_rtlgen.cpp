@@ -500,6 +500,16 @@ Operation &RSH(GenObject &a, int sz, const char *comment) {
     return *p;
 }
 
+Operation &SETVAL(GenObject &a, GenObject &b, const char *comment) {
+    return *new SetValueOperation(&a,
+                                  0,    // [arridx]
+                                  0,    // .item
+                                  false,    // h as width
+                                  0,    // [h
+                                  0,    // :l]
+                                  &b,  // val
+                                  comment);
+}
 
 // a = 0
 Operation &SETZERO(GenObject &a, const char *comment) {
@@ -509,14 +519,7 @@ Operation &SETZERO(GenObject &a, const char *comment) {
     } else {
         b = new DecConst(0);
     }
-    return *new SetValueOperation(&a,
-                                  0,    // [arridx]
-                                  0,    // .item
-                                  false,    // h as width
-                                  0,    // [h
-                                  0,    // :l]
-                                  b,  // val
-                                  comment);
+    return SETVAL(a, *b, comment);
 }
 
 // a = 1
@@ -525,16 +528,146 @@ Operation &SETONE(GenObject &a, const char *comment) {
     if (a.isLogic()) {
         b = new DecLogicConst(a.getObjWidth(), 1);
     } else {
-        b = new DecConst(0);
+        b = new DecConst(1);
     }
-    return *new SetValueOperation(&a,
-                                  0,    // [arridx]
-                                  0,    // .item
-                                  false,    // h as width
-                                  0,    // [h
-                                  0,    // :l]
-                                  b,  // val
-                                  comment);
+    return SETVAL(a, *b, comment);
+}
+
+Operation &SETBIT(GenObject &a, GenObject &b, GenObject &val, const char *comment) {
+    Operation *p = new SetValueOperation(&a,
+                                         0,     // idx
+                                         0,     // item
+                                         false, // h_as_width
+                                         &b,    // h
+                                         0,     // l
+                                         &val,  // val
+                                         comment);
+    return *p;
+}
+
+Operation &SETBIT(GenObject &a, int b, GenObject &val, const char *comment) {
+    Operation *p = new SetValueOperation(&a,
+                                         0,     // idx
+                                         0,     // item
+                                         false, // h_as_width
+                                         new DecConst(b),    // h
+                                         0,     // l
+                                         &val,  // val
+                                         comment);
+    return *p;
+}
+
+/** Set a specific bit of logic to HIGH:
+    sysc: a[b] = 1;
+    sv:   a[b] = 1'b1;
+    vhdl: a(b) := '1';
+ */
+Operation &SETBITONE(GenObject &a, GenObject &b, const char *comment) {
+    Operation *p = new SetValueOperation(&a,
+                                         0,     // idx
+                                         0,     // item
+                                         false, // h_as_width
+                                         &b,    // h
+                                         0,     // l
+                                         new DecLogicConst(new DecConst(1), 1),  // val
+                                         comment);
+    return *p;
+}
+
+/** Set a specific bit of logic to HIGH (variant 2):
+    sysc: a[b] = 1;
+    sv:   a[b] = 1'b1;
+    vhdl: a(b) := '1';
+ */
+Operation &SETBITONE(GenObject &a, const char *b, const char *comment) {
+    return SETBITONE(a, *SCV_parse_to_obj(0, b), comment);
+}
+
+/** Set a specific bit of logic to HIGH (variant 3):
+    sysc: a[b] = 1;
+    sv:   a[b] = 1'b1;
+    vhdl: a(b) := '1';
+ */
+Operation &SETBITONE(GenObject &a, int b, const char *comment) {
+    return SETBITONE(a, *new DecConst(b), comment);
+}
+
+/** Set a specific bit of logic to LOW:
+    sysc: a[b] = 0;
+    sv:   a[b] = 1'b0;
+    vhdl: a(b) := '0';
+ */
+Operation &SETBITZERO(GenObject &a, GenObject &b, const char *comment) {
+    Operation *p = new SetValueOperation(&a,
+                                         0,     // idx
+                                         0,     // item
+                                         false, // h_as_width
+                                         &b,    // h
+                                         0,     // l
+                                         new DecLogicConst(new DecConst(1), 0),  // val
+                                         comment);
+    return *p;
+}
+
+/** Set a specific bit of logic to LOW (variant 2):
+    sysc: a[b] = 0;
+    sv:   a[b] = 1'b0;
+    vhdl: a(b) := '0';
+ */
+Operation &SETBITZERO(GenObject &a, const char *b, const char *comment) {
+    return SETBITZERO(a, *SCV_parse_to_obj(0, b), comment);
+}
+
+/** Set a specific bit of logic to LOW (variant 3):
+    sysc: a[b] = 0;
+    sv:   a[b] = 1'b0;
+    vhdl: a(b) := '0';
+ */
+Operation &SETBITZERO(GenObject &a, int b, const char *comment) {
+    return SETBITZERO(a, *new DecConst(b), comment);
+}
+
+/** Set a specific bits of logic:
+    sysc: a(h, l) = val;
+    sv:   a[h : l] = val;
+    vhdl: a(h downto l) := val;
+ */
+Operation &SETBITS(GenObject &a, GenObject &h, GenObject &l, GenObject &val, const char *comment) {
+    Operation *p = new SetValueOperation(&a,
+                                         0,     // idx
+                                         0,     // item
+                                         false, // h_as_width
+                                         &h,    // h
+                                         &l,     // l
+                                         &val,  // val
+                                         comment);
+    return *p;
+}
+
+/** Set a specific bits of logic (variant 2):
+    sysc: a(h, l) = val;
+    sv:   a[h : l] = val;
+    vhdl: a(h downto l) := val;
+ */
+Operation &SETBITS(GenObject &a, int h, int l, GenObject &val, const char *comment) {
+    return SETBITS(a, *new DecConst(h), *new DecConst(l), val, comment);
+}
+
+/** Set a specific bits of logic using width argument:
+    sysc: a(start + width - 1, start) = val;
+    sv:   a[start +: width] = val;
+    vhdl: a(start + width - 1 downto start) := val;
+ */
+Operation &SETBITSW(GenObject &a, GenObject &start, GenObject &width, GenObject &val, const char *comment) {
+    Operation *p = new SetValueOperation(&a,
+                                         0,     // idx
+                                         0,     // item
+                                         true, // h_as_width
+                                         &width,    // h
+                                         &start,     // l
+                                         &val,  // val
+                                         comment);
+    return *p;
 }
 
 

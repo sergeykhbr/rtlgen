@@ -343,18 +343,6 @@ class ToBigOperation : public ConvertOperation {
 
 
 Operation &INCVAL(GenObject &res, GenObject &inc, const char *comment="");
-Operation &SETBIT(GenObject &a, GenObject &b, GenObject &val, const char *comment="");
-Operation &SETBIT(GenObject &a, int b, GenObject &val, const char *comment="");
-Operation &SETBITONE(GenObject &a, GenObject &b, const char *comment="");
-Operation &SETBITONE(GenObject &a, const char *b, const char *comment="");
-Operation &SETBITONE(GenObject &a, int b, const char *comment="");
-Operation &SETBITZERO(GenObject &a, GenObject &b, const char *comment="");
-Operation &SETBITZERO(GenObject &a, const char *b, const char *comment="");
-Operation &SETBITZERO(GenObject &a, int b, const char *comment="");
-Operation &SETBITS(GenObject &a, GenObject &h, GenObject &l, GenObject &val, const char *comment="");
-Operation &SETBITS(GenObject &a, int h, int l, GenObject &val, const char *comment="");
-Operation &SETBITSW(GenObject &a, GenObject &start, GenObject &width, GenObject &val, const char *comment="");
-Operation &SETVAL(GenObject &a, GenObject &b, const char *comment="");
 Operation &SETZ(GenObject &a, const char *comment="");
 Operation &SETSTR(GenObject &a, const char *str, const char *comment="");
 Operation &SETSTRF(GenObject &a, const char *fmt, size_t cnt, ...);
