@@ -455,6 +455,92 @@ std::string NStandardOperandsOperation::getStrValue() {
     return ret;
 }
 
+/**
+    Set value into variable:
+        a = b
+        a[h:l] = b
+        a[arridx][h:l] = b
+
+ */
+SetValueOperation::SetValueOperation(GenObject &a, GenObject &b, const char *comment)
+    : Operation(top_obj(), comment), a_(&a), b_(&b), arridx_(0), h_(0), l_(0) {
+}
+
+SetValueOperation::SetValueOperation(GenObject &a, uint64_t v, const char *comment)
+    : Operation(top_obj(), comment), a_(&a), b_(0), arridx_(0), h_(0), l_(0) {
+    if (a_->isLogic()) {
+        b_ = new DecLogicConst(a_->getObjWidth(), v);
+    } else {
+        b_ = new DecConst(v);
+    }
+}
+
+SetValueOperation::SetValueOperation(GenObject &a, GenObject &bitidx, GenObject &b, const char *comment)
+    : Operation(top_obj(), comment), a_(&a), b_(&b), arridx_(0), h_(&bitidx), l_(0) {
+}
+
+SetValueOperation::SetValueOperation(GenObject &a, int bitidx, GenObject &b, const char *comment)
+    : Operation(top_obj(), comment), a_(&a), b_(&b), arridx_(0),
+    h_(new DecConst(bitidx)),
+    l_(0) {
+}
+
+SetValueOperation::SetValueOperation(GenObject &a, int h, int l, GenObject &b, const char *comment)
+    : Operation(top_obj(), comment), a_(&a), b_(&b), arridx_(0),
+    h_(new DecConst(h)),
+    l_(new DecConst(l)) {
+}
+
+
+std::string SetValueOperation::generate() {
+    std::string ret = addspaces();
+    if (SCV_is_sysc() && a_->isClock()) {
+        ret += "// ";   // do not clear clock module
+    }
+    ret += obj2varname(a_, "v");
+    if (a_->getDepth()) {
+        if (SCV_is_vhdl()) {
+            ret += "(" + arridx_->getStrValue() + ")";
+        } else {
+            ret += "[" + arridx_->getStrValue() + "]";
+        }
+    } else if (arridx_) {
+        SHOW_ERROR("Array[%s] without depth", arridx_->getStrValue().c_str());
+    }
+
+    if (a_->isLogic() && h_) {
+        if (SCV_is_vhdl()) {
+            ret += "(";
+        } else {
+            ret += "[";
+        }
+        ret += h_->getStrValue();
+        if (l_) {
+            if (SCV_is_vhdl()) {
+                ret += " downto ";
+            } else {
+                ret += " : ";
+            }
+            ret += l_->getStrValue();
+        }
+        if (SCV_is_vhdl()) {
+            ret += ")";
+        } else {
+            ret += "]";
+        }
+    }
+
+    if (SCV_is_vhdl()) {
+        ret += " := ";
+    } else {
+        ret += " = ";
+    }
+    ret += b_->getStrValue() + ";";
+    ret += addtext(this, ret.size());
+    ret += "\n";
+    return ret;
+}
+
 
 /**
     Generate commenting string:
@@ -589,68 +675,101 @@ std::string BitswOperation::generate() {
     return ret;
 }
 
-
-/**
-    Used to set 0 or 1, not ued with other values (but possible)
-    todo: rename to SetDec..
- */
-SetConstOperation::SetConstOperation(GenObject &a, uint64_t v, const char *comment)
-    : Operation(top_obj(), comment), a_(&a) {
-    if (a_->isLogic()) {
-        b_ = new DecLogicConst(a_->getObjWidth(), v);
-    } else {
-        b_ = new DecConst(v);
+// TO_INT
+std::string ToIntOperation::generate() {
+    std::string A = obj2varname(a_, "r", true);
+    if (SCV_is_sysc()) {
+        if (!a_->isParam()) {      // params aren't use sc_uint<> templates
+            A = A + ".to_int()";
+        }
+    } else if (SCV_is_sv()) {
+        A = "int'(" + A + ")";
+    } else if (SCV_is_vhdl()) {
+        if (a_->isLogic()) {
+            A = "conv_std_logic_to_int(" + A + ")";
+        }
     }
+    return A;
 }
 
-std::string SetConstOperation::generate() {
-    std::string ret = addspaces();
-    if (SCV_is_sysc() && a_->isClock()) {
-        ret += "// ";   // do not clear clock module
+// TO_U32
+std::string ToU32Operation::generate() {
+    std::string A = obj2varname(a_, "r", true);
+    if (SCV_is_sysc()) {
+        A = A + ".to_uint()";
     }
-    ret += obj2varname(a_, "v");
-    if (SCV_is_vhdl()) {
-        ret += " := ";
-    } else {
-        ret += " = ";
-    }
-    ret += b_->getStrValue() + ";";
-    ret += addtext(this, ret.size());
-    ret += "\n";
-    return ret;
+    return A;
 }
 
-// SETBIT
-std::string SETBIT_gen(GenObject **args) {
-    std::string ret = addspaces();
-    ret += Operation::obj2varname(args[1], "v");
-    if (SCV_is_sysc() || SCV_is_sv()) {
-        ret += "[";
-        ret += Operation::obj2varname(args[2]);
-        ret += "] = " + Operation::obj2varname(args[3], "r", true) + ";";
-    } else {
-        ret += "(";
-        ret += Operation::obj2varname(args[2]);
-        ret += ") := " + Operation::obj2varname(args[3]) + ";";
+// TO_U64
+std::string ToU64Operation::generate() {
+    std::string A = obj2varname(a_, "r", true);
+    if (SCV_is_sysc()) {
+        A = A + ".to_uint64()";
     }
-    ret += Operation::addtext(args[0], ret.size());
-    ret += "\n";
-    return ret;
+    return A;
 }
+
+// TO_CSTR
+std::string ToCStrOperation::generate() {
+    std::string A = obj2varname(a_, "r", true);
+    if (SCV_is_sysc()) {
+        A = A + ".c_str()";
+    }
+    return A;
+}
+
+// BIG_TO_U64: explicit conersion of biguint to uint64 (sysc only)
+std::string BigToU64Operation::generate() {
+    std::string A = "";
+    if (SCV_is_sysc()) {
+        A = obj2varname(a_, "r", true) + ".to_uint64()";
+    } else {
+        A = obj2varname(a_, "r", true);
+    }
+    return A;
+}
+
+// TO_BIG
+std::string ToBigOperation::generate() {
+    std::string A = "";
+    if (SCV_is_sysc()) {
+        A = "sc_biguint<" + objWidth_.getStrValue() + ">(";
+        A += obj2varname(a_, "r", true) + ")";
+    } else {
+        A += obj2varname(a_, "r", true);
+    }
+    return A;
+}
+
+
+// INV (arithemtic, logical)
+std::string InvOperation::generate() {
+    std::string A = obj2varname(a_, "r", true);
+    if (SCV_is_sysc()) {
+        if (logical_) {
+            A = "(~" + A + ")";
+        } else {
+            A = "(!" + A + ")";
+        }
+    } else if (SCV_is_sv()) {
+        A = "(~" + A + ")";
+    } else if (SCV_is_vhdl()) {
+        A = "(not " + A + ")";
+    }
+
+    return A;
+}
+
 
 Operation &SETBIT(GenObject &a, GenObject &b, GenObject &val, const char *comment) {
-    Operation *p = new Operation(comment);
-    p->igen_ = SETBIT_gen;
-    p->add_arg(p);
-    p->add_arg(&a);
-    p->add_arg(&b);
-    p->add_arg(&val);
+    Operation *p = new SetValueOperation(a, b, val, comment);
     return *p;
 }
 
 Operation &SETBIT(GenObject &a, int b, GenObject &val, const char *comment) {
-    GenObject *t1 = new DecConst(b);
-    return SETBIT(a, *t1, val, comment);
+    Operation *p = new SetValueOperation(a, *new DecConst(b), val, comment);
+    return *p;
 }
 
 // SETBITONE
@@ -1008,127 +1127,6 @@ Operation &ADDSTRU8(GenObject &strout, GenObject &strin, GenObject &val) {
     p->add_arg(&strin); // 2
     p->add_arg(&val); // 3
     return *p;
-}
-
-// BIG_TO_U64: explicit conersion of biguint to uint64 (sysc only)
-std::string BIG_TO_U64_gen(GenObject **args) {
-    std::string A = "";
-    if (SCV_is_sysc()) {
-        A = Operation::obj2varname(args[1], "r", true) + ".to_uint64()";
-    } else {
-        A = Operation::obj2varname(args[1], "r", true);
-    }
-    return A;
-}
-
-Operation &BIG_TO_U64(GenObject &a, const char *comment) {
-    Operation *p = new Operation(0, comment);
-    p->igen_ = BIG_TO_U64_gen;
-    p->add_arg(p);
-    p->add_arg(&a);
-    return *p;
-}
-
-// TO_BIG
-std::string ToBigOperation::generate() {
-    std::string A = "";
-    if (SCV_is_sysc()) {
-        A = "sc_biguint<" + objWidth_->getStrValue() + ">(";
-        A += Operation::obj2varname(a_, "r", true) + ")";
-    } else {
-        A += Operation::obj2varname(a_, "r", true);
-    }
-    return A;
-}
-
-// TO_INT
-std::string TO_INT_gen(GenObject **args) {
-    std::string A = Operation::obj2varname(args[1], "r", true);
-    if (SCV_is_sysc()) {
-        if (!args[1]->isParam()) {      // params aren't use sc_uint<> templates
-            A = A + ".to_int()";
-        }
-    } else {
-        A = "int'(" + A + ")";
-    }
-    return A;
-}
-
-Operation &TO_INT(GenObject &a, const char *comment) {
-    Operation *p = new Operation(0, comment);
-    p->igen_ = TO_INT_gen;
-    p->add_arg(p);
-    p->add_arg(&a);
-    return *p;
-}
-
-// TO_U32
-std::string TO_U32_gen(GenObject **args) {
-    std::string A = Operation::obj2varname(args[1], "r", true);
-    if (SCV_is_sysc()) {
-        A = A + ".to_uint()";
-    }
-    return A;
-}
-
-Operation &TO_U32(GenObject &a, const char *comment) {
-    Operation *p = new Operation(0, comment);
-    p->igen_ = TO_U32_gen;
-    p->add_arg(p);
-    p->add_arg(&a);
-    return *p;
-}
-
-// TO_U64
-std::string TO_U64_gen(GenObject **args) {
-    std::string A = Operation::obj2varname(args[1], "r", true);
-    if (SCV_is_sysc()) {
-        A = A + ".to_uint64()";
-    }
-    return A;
-}
-
-Operation &TO_U64(GenObject &a, const char *comment) {
-    Operation *p = new Operation(0, comment);
-    p->igen_ = TO_U64_gen;
-    p->add_arg(p);
-    p->add_arg(&a);
-    return *p;
-}
-
-// TO_CSTR
-std::string TO_CSTR_gen(GenObject **args) {
-    std::string A = Operation::obj2varname(args[1], "r", true);
-    if (SCV_is_sysc()) {
-        A = A + ".c_str()";
-    }
-    return A;
-}
-
-Operation &TO_CSTR(GenObject &a, const char *comment) {
-    Operation *p = new Operation(0, comment);
-    p->igen_ = TO_CSTR_gen;
-    p->add_arg(p);
-    p->add_arg(&a);
-    return *p;
-}
-
-// INV (arithemtic, logical)
-std::string InvOperation::generate() {
-    std::string A = obj2varname(a_, "r", true);
-    if (SCV_is_sysc()) {
-        if (logical_) {
-            A = "(~" + A + ")";
-        } else {
-            A = "(!" + A + ")";
-        }
-    } else if (SCV_is_sv()) {
-        A = "(~" + A + ")";
-    } else if (SCV_is_vhdl()) {
-        A = "(not " + A + ")";
-    }
-
-    return A;
 }
 
 // CALCWIDTHx

@@ -76,6 +76,22 @@ class Operation : public GenObject {
     int argcnt_;
 };
 
+class ConvertOperation : public Operation {
+ public:
+    ConvertOperation(GenObject *a, int sz, const char *comment)
+        : Operation(NO_PARENT, comment), a_(a), objWidth_(sz) {
+    }
+
+    virtual uint64_t getValue() override { return a_->getValue(); }
+    virtual std::string getStrValue() override { return generate(); }
+    virtual uint64_t getWidth() override { return objWidth_.getValue(); }
+    virtual std::string generate() = 0;
+
+ protected:
+    GenObject *a_;
+    DecConst objWidth_;
+};
+
 class TwoStandardOperandsOperation : public Operation {
  public:
     TwoStandardOperandsOperation(GenObject *a, GenObject *b, const char *comment)
@@ -143,6 +159,30 @@ class ReduceOperation : public Operation {
     DecConst objWidth_;
 };
 
+/**
+    Set value int variable:
+        a = b
+        a[h:l] = b
+        a[arridx][h:l] = b
+ */
+class SetValueOperation : public Operation {
+ public:
+    SetValueOperation(GenObject &a, GenObject &b, const char *comment);
+    SetValueOperation(GenObject &a, uint64_t v, const char *comment);
+    SetValueOperation(GenObject &a, GenObject &bitidx, GenObject &b, const char *comment);
+    SetValueOperation(GenObject &a, int bitidx, GenObject &b, const char *comment);
+    SetValueOperation(GenObject &a, int h, int l, GenObject &b, const char *comment);
+
+    virtual std::string generate() override;
+
+ protected:
+    GenObject *a_;
+    GenObject *b_;
+    GenObject *arridx_;
+    GenObject *h_;
+    GenObject *l_;
+};
+
 
 /**
     Generate commenting string:
@@ -155,7 +195,7 @@ class TextOperation : public Operation {
 };
 
 /**
-    Assign constant value to all bits. No parent.
+    Generate constant value to all bits. No parent.
  */
 class AllConstOperation : public Operation {
  public:
@@ -216,19 +256,65 @@ class BitswOperation : public Operation {
 };
 
 /**
-    Set constant value int variable:
-        a = const
+    Convert to signed int:
  */
-class SetConstOperation : public Operation {
+class ToIntOperation : public ConvertOperation {
  public:
-    SetConstOperation(GenObject &a, uint64_t v, const char *comment);
-
+    ToIntOperation(GenObject *a, const char *comment)
+        : ConvertOperation(a, 32, comment) {}
     virtual std::string generate() override;
-
- protected:
-    GenObject *a_;
-    GenObject *b_;
 };
+
+/**
+    Convert to unsigned int:
+ */
+class ToU32Operation : public ConvertOperation {
+ public:
+    ToU32Operation(GenObject *a, const char *comment)
+        : ConvertOperation(a, 32, comment) {}
+    virtual std::string generate() override;
+};
+
+/**
+    Convert to uint64:
+ */
+class ToU64Operation : public ConvertOperation {
+ public:
+    ToU64Operation(GenObject *a, const char *comment)
+        : ConvertOperation(a, 64, comment) {}
+    virtual std::string generate() override;
+};
+
+/**
+    Convert to string:
+ */
+class ToCStrOperation : public ConvertOperation {
+ public:
+    ToCStrOperation(GenObject *a, const char *comment)
+        : ConvertOperation(a, 0, comment) {}
+    virtual std::string generate() override;
+};
+
+/**
+    Convert cs_biguint<> to uint64_ (for sysc only):
+ */
+class BigToU64Operation : public ConvertOperation {
+ public:
+    BigToU64Operation(GenObject *a, const char *comment)
+        : ConvertOperation(a, 64, comment) {}
+    virtual std::string generate() override;
+};
+
+/**
+    Convert to biguint<> (effect in systemc only):
+ */
+class ToBigOperation : public ConvertOperation {
+ public:
+    ToBigOperation(GenObject *a, int sz, const char *comment)
+        : ConvertOperation(a, sz, comment) {}
+    virtual std::string generate() override;
+};
+
 
 Operation &INCVAL(GenObject &res, GenObject &inc, const char *comment="");
 Operation &SETBIT(GenObject &a, GenObject &b, GenObject &val, const char *comment="");
@@ -248,30 +334,6 @@ Operation &SETSTR(GenObject &a, const char *str, const char *comment="");
 Operation &SETSTRF(GenObject &a, const char *fmt, size_t cnt, ...);
 Operation &ADDSTRF(GenObject &a, const char *fmt, size_t cnt, ...);
 Operation &ADDSTRU8(GenObject &strout, GenObject &strin, GenObject &val);
-Operation &TO_INT(GenObject &a, const char *comment="");
-Operation &TO_U32(GenObject &a, const char *comment="");
-Operation &TO_U64(GenObject &a, const char *comment="");
-Operation &TO_CSTR(GenObject &a, const char *comment="");
-Operation &BIG_TO_U64(GenObject &a, const char *comment="");        // explicit conersion of biguint to uint64 (sysc only)
-
-/**
-    Convet to biguint<> (effect in systemc only):
- */
-class ToBigOperation : public Operation {
- public:
-    ToBigOperation(GenObject *a, size_t sz, const char *comment)
-        : Operation(NO_PARENT, comment), a_(a) {
-        objWidth_ = new DecConst(static_cast<int>(sz));
-    }
-
-    virtual std::string getStrValue() override { return generate(); }
-    virtual uint64_t getWidth() override { return objWidth_->getValue(); }
-    virtual std::string generate() override;
-
- protected:
-    GenObject *a_;
-    GenObject *objWidth_;
-};
 
 /**
     a == b ? 1 : 0

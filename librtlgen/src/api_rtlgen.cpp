@@ -67,12 +67,13 @@ Operation &BITSW(GenObject &a, GenObject &start, GenObject &width, const char *c
 }
 
 
-// CONST
+// CONST number
 GenObject &CONST(const char *val) {
     GenObject *p = SCV_parse_to_obj(SCV_get_local_module(), val);
     return *p;
 }
 
+// CONST logic
 GenObject &CONST(const char *val, const char *width) {
     GenObject *w = SCV_parse_to_obj(SCV_get_local_module(), width);
     GenObject *p;
@@ -86,6 +87,7 @@ GenObject &CONST(const char *val, const char *width) {
     return *p;
 }
 
+// CONST logic
 GenObject &CONST(const char *val, int width) {
     GenObject *w = new DecConst(width);
     GenObject *p;
@@ -99,12 +101,41 @@ GenObject &CONST(const char *val, int width) {
     return *p;
 }
 
-// TO_BIG
-Operation &TO_BIG(size_t sz, GenObject &a) {
-    Operation *p = new ToBigOperation(&a, sz, NO_COMMENT);
+// TO_INT
+Operation &TO_INT(GenObject &a) {
+    Operation *p = new ToIntOperation(&a, NO_COMMENT);
     return *p;
 }
 
+// TO_U32
+Operation &TO_U32(GenObject &a) {
+    Operation *p = new ToU32Operation(&a, NO_COMMENT);
+    return *p;
+}
+
+// TO_U64
+Operation &TO_U64(GenObject &a) {
+    Operation *p = new ToU64Operation(&a, NO_COMMENT);
+    return *p;
+}
+
+// TO_CSTR
+Operation &TO_CSTR(GenObject &a) {
+    Operation *p = new ToCStrOperation(&a, NO_COMMENT);
+    return *p;
+}
+
+// BIG_TO_U64
+Operation &BIG_TO_U64(GenObject &a) {
+    Operation *p = new BigToU64Operation(&a, NO_COMMENT);
+    return *p;
+}
+
+// TO_BIG
+Operation &TO_BIG(int sz, GenObject &a) {
+    Operation *p = new ToBigOperation(&a, sz, NO_COMMENT);
+    return *p;
+}
 
 // INV (arithemtic, logical)
 Operation &INV_L(GenObject &a, const char *comment) {
@@ -471,11 +502,11 @@ Operation &RSH(GenObject &a, int sz, const char *comment) {
 
 
 Operation &SETZERO(GenObject &a, const char *comment) {
-    return *new SetConstOperation(a, 0, comment);
+    return *new SetValueOperation(a, 0, comment);
 }
 
 Operation &SETONE(GenObject &a, const char *comment) {
-    return *new SetConstOperation(a, 1, comment);
+    return *new SetValueOperation(a, 1, comment);
 }
 
 

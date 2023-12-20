@@ -86,22 +86,68 @@ Operation &BITS(GenObject &a, int h, int l, const char *comment=NO_COMMENT);
  */
 Operation &BITSW(GenObject &a, GenObject &start, GenObject &width, const char *comment="");
 
-
-/** Simple number in different format (including allzeros/allones)
+/** Create unnamed number in different format (including allzeros/allones)
     sysc: 1234, 0xABC, true, 3.2, "str", '1, '0
     sv:   1234
     vhdl: 1234
  */
 GenObject &CONST(const char *val);
+
+/** Create unnamed logic value using string width argument
+    sysc: 1234, 0x0ABC
+    sv:   16'd1234, 16'h0ABC
+    vhdl: "1234", X"0ABC"
+ */
 GenObject &CONST(const char *val, const char *width);
+
+/** Create unnamed logic value using int width argument
+    sysc: 1234, 0x0ABC
+    sv:   16'd1234, 16'h0ABC
+    vhdl: "1234", X"0ABC"
+ */
 GenObject &CONST(const char *val, int width);
+
+/** explicit conversion to int
+    sysc: a.to_int()
+    sv:   int'(a)
+    vhdl: conv_std_logic_to_int(a)
+*/
+Operation &TO_INT(GenObject &a);
+
+/** explicit conversion to uint32 (sysc only)
+    sysc: a.to_uint64()
+    sv:   a
+    vhdl: a
+*/
+Operation &TO_U32(GenObject &a);
+
+/** explicit conversion to uint64 (sysc only)
+    sysc: a.to_uint64()
+    sv:   a
+    vhdl: a
+*/
+Operation &TO_U64(GenObject &a);
+
+/** explicit conversion to const char* (sysc only)
+    sysc: a.c_str()
+    sv:   a
+    vhdl: a
+*/
+Operation &TO_CSTR(GenObject &a);
+
+/** explicit conversion of biguint to uint64 (sysc only)
+    sysc: a.to_uint64()
+    sv:   a
+    vhdl: a
+*/
+Operation &BIG_TO_U64(GenObject &a);
 
 /** Convert to biguint<> (systemc only):
     sysc: biguint<sz>(a)
     sv:   a
     vhdl: a
  */
-Operation &TO_BIG(size_t sz, GenObject &a);
+Operation &TO_BIG(int sz, GenObject &a);
 
 
 /** Logical bitwise inversion:
