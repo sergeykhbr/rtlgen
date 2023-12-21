@@ -160,13 +160,65 @@ class ReduceOperation : public Operation {
 };
 
 /**
+    Set array index. Applied only to next operation, then cleared
+*/
+class SetArrayIndexOperation : public Operation {
+ public:
+    SetArrayIndexOperation(GenObject *a, GenObject *idx, const char *comment)
+        : Operation(top_obj(), comment), a_(a), idx_(idx) {}
+
+    virtual std::string generate() override { 
+        a_->setSelector(idx_);
+        return std::string("");
+    }
+
+ protected:
+    GenObject *a_;
+    GenObject *idx_;
+};
+
+/**
+    Get value. Do not have a parent:
+        a
+        a[h:l]
+        a[arridx].item[h:l]
+        a[arridx][h:l]
+ */
+class GetValueOperation : public Operation {
+ public:
+    GetValueOperation(GenObject *a,         // value to get
+                      GenObject *idx,       // array index (depth should be non-zero)
+                      GenObject *item,      // struct item
+                      bool h_as_width,      // interpret h as width argument for sv [start +: width] operation
+                      GenObject *h,         // MSB bit
+                      GenObject *l,         // LSB bit
+                      const char *comment);
+
+    virtual std::string getStrValue() override;
+    virtual std::string generate() override { return getStrValue(); }
+
+ protected:
+    virtual std::string getRegPrefix() { return std::string("r"); }     // prefix of a_ ("v" for set; "r" for get)
+    virtual bool isForceRead() { return h_ ? true: false; }             // a_.read() forced
+
+ protected:
+    GenObject *a_;
+    GenObject *idx_;
+    GenObject *item_;
+    GenObject *h_;
+    GenObject *l_;
+    bool h_as_width_;
+};
+
+
+/**
     Set value int variable:
         a = b
         a[h:l] = b
         a[arridx].item[h:l] = b
-        a[arridx][h:l] = b  // not supported yet
+        a[arridx][h:l] = b
  */
-class SetValueOperation : public Operation {
+class SetValueOperation : public GetValueOperation {
  public:
     SetValueOperation(GenObject *a,         // value to set
                       GenObject *idx,       // array index (depth should be non-zero)
@@ -177,17 +229,16 @@ class SetValueOperation : public Operation {
                       GenObject *val,
                       const char *comment);
 
-    virtual bool isAssign() { return false; }       // modificator to use out-of-process assign operator (<=)
+    virtual std::string getStrValue() override { return generate(); }
     virtual std::string generate() override;
 
  protected:
-    GenObject *a_;
-    GenObject *idx_;
-    GenObject *item_;
-    GenObject *h_;
-    GenObject *l_;
+    virtual std::string getRegPrefix() { return std::string("v"); }     // prefix of a_ ("v" for set; "r" for get)
+    virtual bool isForceRead() { return false; }                        // a.read() forced
+    virtual bool isAssign() { return false; }       // modificator to use out-of-process assign operator (<=)
+
+ protected:
     GenObject *v_;
-    bool h_as_width_;
 };
 
 /**
@@ -207,7 +258,30 @@ class AssignValueOperation : public SetValueOperation {
                          const char *comment)
         : SetValueOperation(a, idx, item, h_as_width, h, l, val, comment) {}
 
+ protected:
     virtual bool isAssign() override { return true; }       // modificator to use out-of-process assign operator (<=)
+};
+
+/**
+    Increment value (vhdl does not support += operation):
+        a += b
+        a[h:l] += b
+        a[arridx].item[h:l] += b
+        a[arridx][h:l] += b
+ */
+class IncrementValueOperation : public SetValueOperation {
+ public:
+    IncrementValueOperation(GenObject *a,   // value to set
+                      GenObject *idx,       // array index (depth should be non-zero)
+                      GenObject *item,      // struct item
+                      bool h_as_width,      // interpret h as width argument for sv [start +: width] operation
+                      GenObject *h,         // MSB bit
+                      GenObject *l,         // LSB bit
+                      GenObject *val,
+                      const char *comment)
+        : SetValueOperation(a, idx, item, h_as_width, h, l, val, comment) {}
+
+    virtual std::string generate() override;
 };
 
 /**
@@ -342,7 +416,6 @@ class ToBigOperation : public ConvertOperation {
 };
 
 
-Operation &INCVAL(GenObject &res, GenObject &inc, const char *comment="");
 Operation &SETZ(GenObject &a, const char *comment="");
 Operation &SETSTR(GenObject &a, const char *str, const char *comment="");
 Operation &SETSTRF(GenObject &a, const char *fmt, size_t cnt, ...);

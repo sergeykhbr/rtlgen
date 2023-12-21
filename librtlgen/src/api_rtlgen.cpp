@@ -782,14 +782,27 @@ Operation &SETARRITEMBITSW(GenObject &arr, GenObject &idx,
 
 
 /** Auaxilirary function used in for() cycle. Index is cleared after operation is generated.
-    sysc: -
-    sv:   -
-    vhdl: -
  */
-/*Operation &SETARRIDX(GenObject &arr, GenObject &idx) {
-    arr.setSelector(&idx);
-}*/
+Operation &SETARRIDX(GenObject &arr, GenObject &idx) {
+    return *new SetArrayIndexOperation(&arr, &idx, NO_COMMENT);
+}
 
+
+/** Increment value:
+    sysc: res += inc;
+    sv:   res += inc;
+    vhdl: res = res + inc;
+ */
+Operation &INCVAL(GenObject &res, GenObject &inc, const char *comment) {
+    return *new IncrementValueOperation(&res,
+                                  0,        // [arridx]
+                                  0,        // .item
+                                  false,    // interpret h (MSB) as width
+                                  0,        // [h
+                                  0,        // :l]
+                                  &inc,     // val
+                                  comment);
+}
 
 void NEW(GenObject &m, const char *name, GenObject *idx, const char *comment) {
     new NewOperation(m, name, idx, comment);

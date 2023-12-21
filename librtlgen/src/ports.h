@@ -69,6 +69,7 @@ class IoPort : public Logic {
     virtual bool isSignal() override { return true; }
     virtual bool isInput() override { return true; }
     virtual bool isOutput() override { return true; }
+    virtual std::string getStrValue() override { return getName(); }    // ports should not have objValue. think how to fix that
 };
 
 template<class T>
@@ -80,6 +81,7 @@ class InStruct : public T {
     virtual bool isSignal() override { return true; }
     virtual bool isInput() override { return true; }
     virtual bool isOutput() override { return false; }
+    virtual std::string getStrValue() override { return getName(); }    // ports should not have objValue. think how to fix that
 };
 
 template<class T>

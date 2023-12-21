@@ -455,39 +455,24 @@ std::string NStandardOperandsOperation::getStrValue() {
     return ret;
 }
 
-/**
-    Set value into variable:
-        a = b
-        a[h:l] = b
-        a[arridx][h:l] = b
- */
-SetValueOperation::SetValueOperation(GenObject *a,         // value to set
+GetValueOperation::GetValueOperation(GenObject *a,         // value to get
                                      GenObject *idx,       // array index (depth should be non-zero)
                                      GenObject *item,      // struct item
                                      bool h_as_width,      // interpret h as width argument for sv [start +: width] operation
                                      GenObject *h,         // MSB bit
                                      GenObject *l,         // LSB bit
-                                     GenObject *val,
                                      const char *comment)
-    : Operation(top_obj(), comment), a_(a), idx_(idx), item_(item),
-    h_(h), l_(l), v_(val), h_as_width_(h_as_width) {
+    : Operation(NO_PARENT, comment), a_(a), idx_(idx), item_(item),
+    h_(h), l_(l), h_as_width_(h_as_width) {
 }
 
-
-std::string SetValueOperation::generate() {
-    std::string ret = addspaces();
-    if (SCV_is_sysc() && a_->isClock()) {
-        ret += "// ";   // do not clear clock module
-    }
-    if (isAssign()) {
-        ret += "assign ";
-    }
-    ret += obj2varname(a_, "v");
+std::string GetValueOperation::getStrValue() {
+    std::string ret = obj2varname(a_, getRegPrefix().c_str(), isForceRead());
     if (a_->getDepth() && idx_) {
         if (SCV_is_vhdl()) {
-            ret += "(" + idx_->getName() + ")";
+            ret += "(" + obj2varname(idx_, "r", true) + ")";
         } else {
-            ret += "[" + idx_->getName() + "]";
+            ret += "[" + obj2varname(idx_, "r", true) + "]";
         }
     } else if (idx_) {
         SHOW_ERROR("Array[%s] without depth", idx_->getStrValue().c_str());
@@ -500,39 +485,72 @@ std::string SetValueOperation::generate() {
     if (h_ && (a_->isLogic()
               || (item_ && item_->isLogic()))) {
         // Bits selection:
+        std::string h_name = obj2varname(h_, "r", true);
+        std::string l_name = obj2varname(l_, "r", true);
         if (SCV_is_sysc()) {
             if (h_as_width_) {
-                ret += "(" + l_->getName() + " + " + h_->getName() + " - 1, ";
-                ret += l_->getName() + ")";
+                ret += "(" + l_name + " + " + h_name + " - 1, " + l_name + ")";
             } else if (l_) {
-                ret += "(" + h_->getName() + ", " + l_->getName() + ")";
+                ret += "(" + h_name + ", " + l_name + ")";
             } else {
-                ret += "[" + h_->getName() + "]";
+                ret += "[" + h_name + "]";
             }
         } else if (SCV_is_sv()) {
             ret += "[";
             if (h_as_width_) {
-                ret += l_->getName() + " +: " + h_->getName();
+                ret += l_name + " +: " + h_name;
             } else {
-                ret += h_->getName();
+                ret += h_name;
                 if (l_) {
-                    ret += ": " + l_->getName();
+                    ret += ": " + l_name;
                 }
             }
             ret += "]";
         } else if (SCV_is_vhdl()) {
             ret += "(";
             if (h_as_width_) {
-                ret += l_->getName() + " + " + h_->getName() + " - 1 downto ";
-                ret += l_->getName();
+                ret += l_name + " + " + h_name + " - 1 downto " + l_name;
             } else if (l_) {
-                ret += h_->getName() + " downto " + l_->getName();
+                ret += h_name + " downto " + l_name;
             } else {
-                ret += h_->getName();
+                ret += h_name;
             }
             ret += ")";
         }
     }
+    return ret;
+}
+
+
+/**
+    Set value into variable:
+        a = b
+        a[h:l] = b
+        a[arridx][h:l] = b
+ */
+SetValueOperation::SetValueOperation(GenObject *a,         // value to set
+                                     GenObject *idx,       // array index (depth should be non-zero)
+                                     GenObject *item,      // struct item
+                                     bool h_as_width,      // interpret h as width argument for sv [start +: width] operation
+                                     GenObject *h,         // MSB bit
+                                     GenObject *l,         // LSB bit
+                                     GenObject *val,       // value to get
+                                     const char *comment)
+    : GetValueOperation(a, idx, item, h_as_width, h, l, comment), v_(val) {
+    top_obj()->add_entry(this);
+}
+
+
+std::string SetValueOperation::generate() {
+    std::string ret = addspaces();
+    if (SCV_is_sysc() && a_->isClock()) {
+        ret += "// ";   // do not clear clock module
+    }
+    if (isAssign() && SCV_is_sv()) {
+        ret += "assign ";
+    }
+
+    ret += GetValueOperation::getStrValue();
 
     if (SCV_is_vhdl()) {
         if (isAssign()) {
@@ -543,7 +561,23 @@ std::string SetValueOperation::generate() {
     } else {
         ret += " = ";
     }
-    ret += obj2varname(v_, "r", true) + ";";
+    ret += obj2varname(v_, "r", false) + ";";
+    ret += addtext(this, ret.size());
+    ret += "\n";
+    return ret;
+}
+
+std::string IncrementValueOperation::generate() {
+    std::string ret = addspaces();
+    std::string t1 = GetValueOperation::getStrValue();
+
+    ret += t1;
+    if (SCV_is_vhdl()) {
+        ret += " := " + t1 + " + ";
+    } else {
+        ret += " += ";
+    }
+    ret += obj2varname(v_, "r", false) + ";";
     ret += addtext(this, ret.size());
     ret += "\n";
     return ret;
@@ -1171,26 +1205,6 @@ std::string NzOperation::getStrValue() {
 
 
 
-
-// INCVAL
-std::string INCVAL_gen(GenObject **args) {
-    std::string ret = addspaces();
-    ret += Operation::obj2varname(args[1], "v");
-    ret += " += ";
-    ret += Operation::obj2varname(args[2], "r", true);
-    ret += ";\n";
-    return ret;
-}
-
-Operation &INCVAL(GenObject &res, GenObject &inc, const char *comment) {
-    Operation *p = new Operation(comment);
-    p->igen_ = INCVAL_gen;
-    p->add_arg(p);
-    p->add_arg(&res);
-    p->add_arg(&inc);
-    return *p;
-}
-
 // SPLx
 std::string SplitOperation::generate() {
     std::string ret = "";
@@ -1399,177 +1413,6 @@ Operation &ARRITEM_B(GenObject &arr, GenObject &idx, GenObject &item, const char
     p->add_arg(p);      // [4] use .read()
     return *p;
 }
-
-// SETARRIDX
-std::string SETARRIDX_gen(GenObject **args) {
-    GenObject *arr = args[1];
-    std::string ret = "";
-    arr->setSelector(args[2]);
-    return ret;
-}
-
-Operation &SETARRIDX(GenObject &arr, GenObject &idx) {
-    Operation *p = new Operation("");
-    p->igen_ = SETARRIDX_gen;
-    p->add_arg(p);      // 0
-    p->add_arg(&arr);   // 1
-    p->add_arg(&idx);   // 2
-    return *p;
-}
-
-#if 0
-// SETARRITEM
-std::string SETARRITEM_gen(GenObject **args) {
-    args[1]->setSelector(args[2]);
-    std::string ret = addspaces();
-    if (args[5]) {
-        if (SCV_is_sv()) {
-            ret += "assign ";
-        }
-    }
-    ret += Operation::obj2varname(args[3], "v");
-    ret += " = ";
-    ret += Operation::obj2varname(args[4]);
-    ret += ";";
-    ret += Operation::addtext(args[0], ret.size());
-    ret += "\n";
-    return ret;
-}
-
-Operation &SETARRITEM(GenObject &arr, GenObject &idx, GenObject &item, GenObject &var, const char *comment) {
-    Operation *p = new Operation(comment);
-    p->igen_ = SETARRITEM_gen;
-    p->add_arg(p);
-    p->add_arg(&arr);
-    p->add_arg(&idx);
-    p->add_arg(&item);
-    p->add_arg(&var);
-    p->add_arg(0);  // [5] do not use 'assign '
-    return *p;
-}
-
-Operation &ASSIGNARRITEM(GenObject &arr, GenObject &idx, GenObject &item, GenObject &var, const char *comment) {
-    Operation *p = new Operation(comment);
-    p->igen_ = SETARRITEM_gen;
-    p->add_arg(p);
-    p->add_arg(&arr);
-    p->add_arg(&idx);
-    p->add_arg(&item);
-    p->add_arg(&var);
-    p->add_arg(p);  // [5] add 'assign '
-    return *p;
-}
-
-// reduced formed
-Operation &SETARRITEM(GenObject &arr, int idx, GenObject &val) {
-    Operation *p = new Operation("");
-    p->igen_ = SETARRITEM_gen;
-    p->add_arg(p);
-    p->add_arg(&arr);
-    p->add_arg(new DecConst(idx));
-    p->add_arg(&arr);
-    p->add_arg(&val);
-    p->add_arg(0);  // [5] do not use 'assign '
-    return *p;
-}
-
-Operation &ASSIGNARRITEM(GenObject &arr, int idx, GenObject &val) {
-    Operation *p = new Operation("");
-    p->igen_ = SETARRITEM_gen;
-    p->add_arg(p);
-    p->add_arg(&arr);
-    p->add_arg(new DecConst(idx));
-    p->add_arg(&arr);
-    p->add_arg(&val);
-    p->add_arg(p);  // [5] use 'assign '
-    return *p;
-}
-
-// Set bits value in array element
-// SETARRITEMBIT
-std::string SETARRITEMBIT_gen(GenObject **args) {
-    args[1]->setSelector(args[2]);
-    std::string ret = addspaces();
-    ret += Operation::obj2varname(args[3], "v");
-    if (SCV_is_sysc()) {
-        ret += "[";
-    } else if (SCV_is_sv()) {
-        ret += "[";
-    } else {
-    }
-
-    ret += Operation::obj2varname(args[4]);
-
-    if (SCV_is_sysc()) {
-        ret += "]";
-    } else if (SCV_is_sv()) {
-        ret += "]";
-    } else {
-    }
-    ret += " = ";
-    ret += Operation::obj2varname(args[5]);
-    ret += ";";
-    ret += Operation::addtext(args[0], ret.size());
-    ret += "\n";
-    return ret;
-}
-
-Operation &SETARRITEMBIT(GenObject &arr, GenObject &idx, GenObject &item, 
-                           GenObject &bitidx, GenObject &val, const char *comment) {
-    Operation *p = new Operation(comment);
-    p->igen_ = SETARRITEMBIT_gen;
-    p->add_arg(p);      // 0
-    p->add_arg(&arr);   // 1
-    p->add_arg(&idx);   // 2
-    p->add_arg(&item);  // 3
-    p->add_arg(&bitidx); // 4
-    p->add_arg(&val);   // 5
-    return *p;
-}
-
-// SETARRITEMBITS
-std::string SETARRITEMBITSW_gen(GenObject **args) {
-    args[1]->setSelector(args[2]);
-    std::string ret = addspaces();
-    ret += Operation::obj2varname(args[3], "v");
-    if (SCV_is_sysc()) {
-        ret += "(";
-        ret += Operation::obj2varname(args[4]);
-        ret += " + ";
-        ret += Operation::obj2varname(args[5]);
-        ret += "- 1, ";
-        ret += Operation::obj2varname(args[4]);
-        ret += ")";
-    } else if (SCV_is_sv()) {
-        ret += "[";
-        ret += Operation::obj2varname(args[4]);
-        ret += " +: ";
-        ret += Operation::obj2varname(args[5]);
-        ret += "]";
-    } else {
-    }
-    ret += " = ";
-    ret += Operation::obj2varname(args[6]);
-    ret += ";";
-    ret += Operation::addtext(args[0], ret.size());
-    ret += "\n";
-    return ret;
-}
-
-Operation &SETARRITEMBITSW(GenObject &arr, GenObject &idx, GenObject &item, 
-                           GenObject &start, GenObject &width, GenObject &val, const char *comment) {
-    Operation *p = new Operation(comment);
-    p->igen_ = SETARRITEMBITSW_gen;
-    p->add_arg(p);      // 0
-    p->add_arg(&arr);   // 1
-    p->add_arg(&idx);   // 2
-    p->add_arg(&item);  // 3
-    p->add_arg(&start); // 4
-    p->add_arg(&width); // 5
-    p->add_arg(&val);   // 6
-    return *p;
-}
-#endif
 
 
 //IF_OTHERWISE

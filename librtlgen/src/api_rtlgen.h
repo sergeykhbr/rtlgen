@@ -594,12 +594,32 @@ Operation &SETARRITEMBITSW(GenObject &arr, GenObject &idx,
                            const char *comment=NO_COMMENT);
 
 
-/** Auaxilirary function used in for() cycle. Index is cleared after operation is generated.
+/** Auaxilirary function used in multilevel cycles with multilevel structures.
+    Index is cleared after operation is generated.
+
+    Example: We would like to form variable names "struct1[i].struct2[j].variable*":
+        
+        for (int i = 0; i < i_end; i++) {
+            for (int j = 0; j <ji_end; j++) {
+                SETARRIDX(struct1, i);
+                ARRITEM(struct1.struct2, j, struct1.struct2.variable1);
+
+                SETARRIDX(struct1, i);
+                ARRITEM(struct1.struct2, j, struct1.struct2.variable2);
+            }
+        }
     sysc: -
     sv:   -
     vhdl: -
  */
 Operation &SETARRIDX(GenObject &arr, GenObject &idx);
+
+/** Increment value:
+    sysc: res += inc;
+    sv:   res += inc;
+    vhdl: res = res + inc;
+ */
+Operation &INCVAL(GenObject &res, GenObject &inc, const char *comment=NO_COMMENT);
 
 
 /** Instantitate new module:
