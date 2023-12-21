@@ -830,16 +830,6 @@ std::string SETVAL_gen(GenObject **args) {
     return ret;
 }
 
-/*Operation &SETVAL(GenObject &a, GenObject &b, const char *comment) {
-    Operation *p = new Operation(comment);
-    p->igen_ = SETVAL_gen;
-    p->add_arg(p);
-    p->add_arg(&a);
-    p->add_arg(&b);
-    return *p;
-}
-*/
-
 // SETZ
 std::string SETZ_gen(GenObject **args) {
     std::string ret = addspaces();
