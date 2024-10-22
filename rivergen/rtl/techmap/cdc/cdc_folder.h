@@ -1,5 +1,5 @@
 // 
-//  Copyright 2022 Sergey Khabarov, sergeykhbr@gmail.com
+//  Copyright 2023 Sergey Khabarov, sergeykhbr@gmail.com
 // 
 //  Licensed under the Apache License, Version 2.0 (the "License");
 //  you may not use this file except in compliance with the License.
@@ -14,19 +14,17 @@
 //  limitations under the License.
 // 
 
-#include "signals.h"
-#include "utils.h"
+#pragma once
 
-namespace sysvc {
+#include <api_rtlgen.h>
+#include "cdc_sync.h"
 
-Signal::Signal(GenObject *parent, const char *name, const char *width,
-    const char *val, const char *comment)
-    : Logic(parent, name, width, val, comment) {
-}
+class cdc_folder : public FolderObject {
+ public:
+    cdc_folder(GenObject *parent) :
+        FolderObject(parent, "cdc"),
+        cdc_sync_file_(this) {}
 
-Signal1::Signal1(GenObject *parent, const char *name, const char *width,
-    const char *val, const char *comment)
-    : Logic1(parent, name, width, val, comment) {
-}
-
-}
+ protected:
+    cdc_sync_file cdc_sync_file_;
+};
