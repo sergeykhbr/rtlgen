@@ -36,6 +36,7 @@ cdc_sync::cdc_sync(GenObject *parent, const char *name, const char *comment) :
     o_m_data(this, "o_m_data", "abits", "master payload data"),
     o_m_valid(this, "o_m_valid", "1", "output data is valid strob"),
     i_m_ready(this, "i_m_ready", "1", "output data was accepted"),
+    w_nrst(this, "w_nrst", "1", "0", "master-slave async reset"),
     state(this, "state", "2"),
     next_state(this, "next_state", "2"),
     s_tready(this, "s_tready", "1"),
@@ -43,17 +44,20 @@ cdc_sync::cdc_sync(GenObject *parent, const char *name, const char *comment) :
     m_tdata(this, "m_tdata", "1"),
     m_tstorage(this, "m_tstorage", "1"),
     m_tready_hold(this, "m_tready_hold", "1"),
-    m_rstn(this, "m_rstn", "1"),
-    s_rstn(this, "s_rstn", "1"),
+    m_rstn(this, &i_m_clk, REG_POSEDGE, &w_nrst, REG_RESET_LOW, "m_rstn", "1", RESET_ZERO, NO_COMMENT),
+    s_rstn(this, &i_s_clk, REG_POSEDGE, &w_nrst, REG_RESET_LOW, "s_rstn", "1", RESET_ZERO, NO_COMMENT),
     // process
     comb(this)
 {
     Operation::start(this);
+    ASSIGN(w_nrst, OR2(INV_L(i_s_nrst), INV_L(i_m_nrst)));
 
     Operation::start(&comb);
     proc_comb();
 }
 
 void cdc_sync::proc_comb() {
+    SETVAL(s_rstn, AND2(i_s_nrst, i_m_nrst));
+    SETVAL(m_rstn, AND2(i_s_nrst, i_m_nrst));
 }
 

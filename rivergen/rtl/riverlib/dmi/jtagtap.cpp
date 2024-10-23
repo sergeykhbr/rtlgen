@@ -70,15 +70,15 @@ jtagtap::jtagtap(GenObject *parent, const char *name, const char *comment) :
     EXIT2_IR(this, "EXIT2_IR", "4", "14", NO_COMMENT),
     UPDATE_IR(this, "UPDATE_IR", "4", "15", NO_COMMENT),
     // registers
-    state(this, "state", "4", "RESET_TAP"),
-    dr_length(this, "dr_length", "7", "'0", NO_COMMENT),
-    dr(this, "dr", "drlen", "idcode"),
-    bypass(this, "bypass", "1"),
-    datacnt(this, "datacnt", "32", "'0", NO_COMMENT),
-    dmi_busy(this, "dmi_busy", "1"),
-    err_sticky(this, "err_sticky", "2", "'0", NO_COMMENT),
-    ir(this, "ir", "irlen", "IR_IDCODE"),
-    dmi_addr(this, "dmi_addr", "abits", "'0", NO_COMMENT),
+    state(this, &i_tck, REG_POSEDGE, &i_trst, REG_RESET_HIGH, "state", "4", "RESET_TAP", NO_COMMENT),
+    dr_length(this, &i_tck, REG_POSEDGE, &i_trst, REG_RESET_HIGH, "dr_length", "7", "'0", NO_COMMENT),
+    dr(this, &i_tck, REG_POSEDGE, &i_trst, REG_RESET_HIGH, "dr", "drlen", "idcode", NO_COMMENT),
+    bypass(this, &i_tck, REG_POSEDGE, &i_trst, REG_RESET_HIGH, "bypass", "1", RESET_ZERO, NO_COMMENT),
+    datacnt(this, &i_tck, REG_POSEDGE, &i_trst, REG_RESET_HIGH, "datacnt", "32", "'0", NO_COMMENT),
+    dmi_busy(this, &i_tck, REG_POSEDGE, &i_trst, REG_RESET_HIGH, "dmi_busy", "1", RESET_ZERO, NO_COMMENT),
+    err_sticky(this, &i_tck, REG_POSEDGE, &i_trst, REG_RESET_HIGH, "err_sticky", "2", "'0", NO_COMMENT),
+    ir(this, &i_tck, REG_NEGEDGE, &i_trst, REG_RESET_HIGH, "ir", "irlen", "IR_IDCODE", NO_COMMENT),
+    dmi_addr(this, &i_tck, REG_NEGEDGE, &i_trst, REG_RESET_HIGH, "dmi_addr", "abits", "'0", NO_COMMENT),
     comb(this)
 {
     Operation::start(this);

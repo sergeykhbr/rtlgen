@@ -58,6 +58,8 @@ class cdc_sync : public ModuleObject {
      OutPort o_m_valid;
      InPort i_m_ready;
 
+     Signal w_nrst;
+
      RegSignal state;
      RegSignal next_state;
      RegSignal s_tready;
