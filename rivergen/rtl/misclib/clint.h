@@ -78,9 +78,13 @@ class clint : public ModuleObject {
 
     class ClintCpuTableType : public RegStructArray<clint_cpu_type> {
      public:
-        ClintCpuTableType(GenObject *parent, const char *name, const char *comment)
-            : RegStructArray<clint_cpu_type>(parent, name, "cpu_total", comment) {
-        }
+        ClintCpuTableType(GenObject *parent,
+                          Logic *clk,
+                          Logic *rstn,
+                          const char *name,
+                          const char *comment)
+            : RegStructArray<clint_cpu_type>(parent, clk, REG_POSEDGE,
+                        rstn, REG_RESET_LOW, name, "cpu_total", comment) {}
     };
 
     clint_cpu_type clint_cpu_type_def_;

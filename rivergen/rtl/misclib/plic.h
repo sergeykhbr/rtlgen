@@ -94,9 +94,13 @@ class plic : public ModuleObject {
 
     class PlicContextTableType : public RegStructArray<plic_context_type> {
      public:
-        PlicContextTableType(GenObject *parent, const char *name, const char *comment)
-            : RegStructArray<plic_context_type>(parent, name, "ctxmax", comment) {
-        }
+        PlicContextTableType(GenObject *parent,
+                             Logic *clk,
+                             Logic *rstn,
+                             const char *name,
+                             const char *comment)
+            : RegStructArray<plic_context_type>(parent, clk, REG_POSEDGE,
+                                                rstn, REG_RESET_LOW, name, "ctxmax", comment) {}
     };
 
     plic_context_type plic_context_type_def_;

@@ -115,8 +115,12 @@ class RegIntBank : public ModuleObject {
 
     class RegTableType : public RegStructArray<RegValueType> {
      public:
-        RegTableType(GenObject *parent, const char *name)
-            : RegStructArray<RegValueType>(parent, name, "REGS_TOTAL", NO_COMMENT) {
+        RegTableType(GenObject *parent,
+                     Logic *clk,
+                     Logic *rstn,
+                     const char *name)
+            : RegStructArray<RegValueType>(parent, clk, REG_POSEDGE,
+                rstn, REG_RESET_LOW, name, "REGS_TOTAL", NO_COMMENT) {
         }
     };
 

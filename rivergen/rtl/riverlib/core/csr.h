@@ -224,8 +224,12 @@ class CsrRegs : public ModuleObject {
 
     class ModeTableType : public RegStructArray<RegModeType> {
      public:
-        ModeTableType(GenObject *parent, const char *name)
-            : RegStructArray<RegModeType>(parent, name, "4", NO_COMMENT) {
+        ModeTableType(GenObject *parent,
+                      Logic *clk,
+                      Logic *rstn,
+                      const char *name)
+            : RegStructArray<RegModeType>(parent, clk, REG_POSEDGE,
+                    rstn, REG_RESET_LOW, name, "4", NO_COMMENT) {
         }
     };
 
@@ -245,8 +249,12 @@ class CsrRegs : public ModuleObject {
 
     class PmpTableType : public RegStructArray<PmpItemType> {
      public:
-        PmpTableType(GenObject *parent, const char *name)
-            : RegStructArray<PmpItemType>(parent, name, "CFG_PMP_TBL_SIZE", NO_COMMENT) {
+        PmpTableType(GenObject *parent,
+                     Logic *clk,
+                     Logic *rstn,
+                     const char *name)
+            : RegStructArray<PmpItemType>(parent, clk, REG_POSEDGE,
+                    rstn, REG_RESET_LOW, name, "CFG_PMP_TBL_SIZE", NO_COMMENT) {
         }
     };
 

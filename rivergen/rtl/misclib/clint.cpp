@@ -45,7 +45,7 @@ clint::clint(GenObject *parent, const char *name, const char *comment) :
     wb_resp_err(this, "wb_resp_err", "1"),
     // registers
     mtime(this, "mtime", "64", "'0", NO_COMMENT),
-    hart(this, "hart", NO_COMMENT),
+    hart(this, &i_clk, &i_nrst, "hart", NO_COMMENT),
     rdata(this, "rdata", "64", "'0", NO_COMMENT),
     //
     comb(this),

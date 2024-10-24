@@ -33,7 +33,7 @@ PMP::PMP(GenObject *parent, const char *name, const char *comment) :
     o_x(this, "o_x", "1"),
     PmpTableItemTypeDef_(this, "PmpTableItemType", NO_COMMENT),
     // registers
-    tbl(this, "tbl"),
+    tbl(this, &i_clk, &i_nrst, "tbl"),
     // process
     comb(this)
 {

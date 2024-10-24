@@ -28,29 +28,35 @@
 
 namespace sysvc {
 
+class ArrayType {
+ public:
+    ArrayType(GenObject *parent,
+            const char *depth) {
+        objArridx_ = 0;
+        objDepth_ = SCV_parse_to_obj(parent, depth);
+    }
+ protected:
+    GenObject *objArridx_;                                    // Used in ARRAYITEM operation
+    GenObject *objDepth_;
+};
+
 /** T Object contains 3 arguments without additional modificators:
         T could be: module, struct, vector or any other object
 */
 template<class T>
-class ObjectArray : public T {
+class ObjectArray : public T,
+                    public ArrayType {
  public:
     ObjectArray(GenObject *parent,
                 const char *name,
                 const char *depth,
                 const char *comment)
-        : T(parent, name, comment) {
-        objArridx_ = 0;
-        objDepth_ = SCV_parse_to_obj(this, depth);
-    }
+        : T(parent, name, comment), ArrayType(this, depth) {}
     virtual uint64_t getDepth() override { return objDepth_->getValue(); }
     virtual GenObject *getObjDepth() override { return objDepth_; }
     virtual std::string getStrDepth() override { return objDepth_->getName(); }
     virtual void setSelector(GenObject *sel) override { objArridx_ = sel; }           // Set object as an array index
     virtual GenObject *getSelector() override { return objArridx_; }                  // generate  Name[obj]
-
- protected:
-    GenObject *objDepth_;
-    GenObject *objArridx_;                                    // Used in ARRAYITEM operation
 };
 
 
@@ -58,50 +64,86 @@ class ObjectArray : public T {
         T could be: struct, string, parameters or other variable with value
 */
 template<class T>
-class ValueArray : public T {
+class ValueArray : public T,
+                   public ArrayType {
  public:
     ValueArray(GenObject *parent,
                const char *name,
                const char *depth,
                const char *val,
                const char *comment)
-        : T(parent, name, val, comment) {
-        objArridx_ = 0;
-        objDepth_ = SCV_parse_to_obj(this, depth);
-    }
+        : T(parent, name, val, comment), ArrayType(this, depth) {}
+
     virtual uint64_t getDepth() override { return objDepth_->getValue(); }
     virtual GenObject *getObjDepth() override { return objDepth_; }
     virtual std::string getStrDepth() override { return objDepth_->getName(); }
     virtual void setSelector(GenObject *sel) override { objArridx_ = sel; }           // Set object as an array index
     virtual GenObject *getSelector() override { return objArridx_; }                  // generate  Name[obj]
-
- protected:
-    GenObject *objDepth_;
-    GenObject *objArridx_;                                    // Used in ARRAYITEM operation
 };
+
+
+class RegArray : public RegSignal,
+                 public ArrayType {
+ public:
+    RegArray(GenObject *parent,
+             Logic *clk,
+             ERegClockEdge edge,
+             Logic *rstn,
+             ERegResetActive active,
+             const char *name,
+             const char *width,
+             const char *depth,
+             const char *comment) :
+             RegSignal(parent, clk, edge, rstn, active, name, width, RESET_ZERO, comment),
+             ArrayType(this, depth) {}
+
+    virtual uint64_t getDepth() override { return objDepth_->getValue(); }
+    virtual GenObject *getObjDepth() override { return objDepth_; }
+    virtual std::string getStrDepth() override { return objDepth_->getName(); }
+    virtual void setSelector(GenObject *sel) override { objArridx_ = sel; }           // Set object as an array index
+    virtual GenObject *getSelector() override { return objArridx_; }                  // generate  Name[obj]
+};
+
+template<class T>
+class RegStructArray : public RegStructObject<T>,
+                       public ArrayType {
+ public:
+    RegStructArray(GenObject *parent,
+                   Logic *clk,
+                   ERegClockEdge edge,
+                   Logic *rstn,
+                   ERegResetActive active,
+                   const char *name,
+                   const char *depth,
+                   const char *comment) : 
+                   RegStructObject<T>(parent, clk, edge, rstn, active, name, comment),
+                   ArrayType(this, depth) {}
+
+    virtual uint64_t getDepth() override { return objDepth_->getValue(); }
+    virtual GenObject *getObjDepth() override { return objDepth_; }
+    virtual std::string getStrDepth() override { return objDepth_->getName(); }
+    virtual void setSelector(GenObject *sel) override { objArridx_ = sel; }           // Set object as an array index
+    virtual GenObject *getSelector() override { return objArridx_; }                  // generate  Name[obj]
+};
+
 
 // T = signal or logic, contains Width argument
 template<class T>
-class WireArray : public T {
+class WireArray : public T,
+                  public ArrayType {
  public:
     WireArray(GenObject *parent,
               const char *name,
               const char *width,
               const char *depth,
               const char *comment)
-        : T(parent, name, width, "'0", comment) {
-        objArridx_ = 0;
-        objDepth_ = SCV_parse_to_obj(this, depth);
-    }
+        : T(parent, name, width, "'0", comment), ArrayType(this, depth) {}
+
     virtual uint64_t getDepth() override { return objDepth_->getValue(); }
     virtual GenObject *getObjDepth() override { return objDepth_; }
     virtual std::string getStrDepth() override { return objDepth_->getName(); }
     virtual void setSelector(GenObject *sel) override { objArridx_ = sel; }           // Set object as an array index
     virtual GenObject *getSelector() override { return objArridx_; }                  // generate  Name[obj]
-
- protected:
-    GenObject *objDepth_;
-    GenObject *objArridx_;                                    // Used in ARRAYITEM operation
 };
 
 class LogicArray : public WireArray<Logic> {
@@ -109,13 +151,6 @@ class LogicArray : public WireArray<Logic> {
     LogicArray(GenObject *parent, const char *name, const char *width,
         const char *depth, const char *comment)
         : WireArray<Logic>(parent, name, width, depth, comment) {}
-};
-
-class RegArray : public WireArray<RegSignal> {
- public:
-    RegArray(GenObject *parent, const char *name, const char *width,
-        const char *depth, const char *comment)
-        : WireArray<RegSignal>(parent, name, width, depth, comment) {}
 };
 
 
@@ -150,7 +185,7 @@ class WireVector : public WireArray<T> {
 
 
 /**
-    LogicMemory and RegMemory are almost the same except that LogicMemory
+    LogicMemory and RegArray without reset are almost the same except that LogicMemory
     is used for pure memory bank without other logic that allows to avoid creating
     "comb" process. Only "registers" process is created.
  */
@@ -158,14 +193,6 @@ class LogicMemory : public LogicArray {
  public:
     LogicMemory(GenObject *parent, const char *name, const char *width, const char *depth,
         const char *comment) : LogicArray(parent, name, width, depth, comment) {}
-
-    virtual bool isResetDisabled() override { return true; }        // no registers reset
-};
-
-class RegMemory : public RegArray {
- public:
-    RegMemory(GenObject *parent, const char *name, const char *width, const char *depth,
-        const char *comment) : RegArray(parent, name, width, depth, comment) {}
 
     virtual bool isResetDisabled() override { return true; }        // no registers reset
 };
@@ -203,16 +230,6 @@ class StructVector : public StructArray<T> {
 
  protected:
     std::string typedef_;
-};
-
-
-template<class T>
-class RegStructArray : public ObjectArray<SignalStruct<T>> {
- public:
-    RegStructArray(GenObject *parent, const char *name, const char *depth,
-        const char *comment) : ObjectArray<SignalStruct<T>>(parent, name, depth, comment) {}
-
-    virtual bool isReg() override { return true; }
 };
 
 

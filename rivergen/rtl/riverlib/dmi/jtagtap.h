@@ -110,7 +110,7 @@ public:
 
     // signals
 
-    // regs
+    TextLine text0;
     RegSignal state;
     RegSignal dr_length;
     RegSignal dr;
@@ -118,9 +118,9 @@ public:
     RegSignal datacnt;
     RegSignal dmi_busy;
     RegSignal err_sticky;
-
-    NRegSignal ir;
-    NRegSignal dmi_addr;
+    TextLine text1;
+    RegSignal ir;
+    RegSignal dmi_addr;
 
     // process
     CombProcess comb;

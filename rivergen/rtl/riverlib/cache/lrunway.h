@@ -74,7 +74,7 @@ class lrunway : public ModuleObject {
     ParamI32D LINE_WIDTH;
 
     RegSignal radr;
-    RegMemory mem;
+    RegArray mem;
 
     // process should be intialized last to make all signals available
     CombProcess comb;

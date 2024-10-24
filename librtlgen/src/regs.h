@@ -43,6 +43,8 @@ class RegPorts {
  protected:
     GenObject *regclk_;
     GenObject *regrstn_;
+    ERegClockEdge edge_;
+    ERegResetActive active_;
 };
 
 class RegSignal : public Signal,
@@ -67,8 +69,12 @@ class RegSignal : public Signal,
               RegSignal(parent, 0, REG_POSEDGE, 0, REG_RESET_LOW,
                         name, width, rstval, comment) {}
  protected:
-    virtual bool isReg() override { return true; }
+    virtual bool isReg() override { return edge_ == REG_POSEDGE; }
+    virtual bool isNReg() override { return edge_ == REG_NEGEDGE; }
     virtual GenObject *getClockPort() override { return regclk_; }
+    virtual GenObject *getResetPort() { return regrstn_; }
+    virtual bool isResetDisabled() override { return regrstn_ == 0 || active_ == REG_RESET_NONE; }
+    virtual bool getResetActive() { return active_ == REG_RESET_LOW ? false: true; }
 };
 
 /**
@@ -96,34 +102,12 @@ class RegSignal1 : public Signal1,
                 RegSignal1(parent, 0, REG_POSEDGE, 0, REG_RESET_LOW,
                            name, width, rstval, comment) {}
  protected:
-    virtual bool isReg() override { return true; }
+    virtual bool isReg() override { return edge_ == REG_POSEDGE; }
+    virtual bool isNReg() override { return edge_ == REG_NEGEDGE; }
     virtual GenObject *getClockPort() override { return regclk_; }
-};
-
-class NRegSignal : public Signal,
-                   public RegPorts {
- public:
-     NRegSignal(GenObject *parent,
-                Logic *clk,
-                ERegClockEdge edge,
-                Logic *rstn,
-                ERegResetActive active,
-                const char *name,
-                const char *width,
-                const char *rstval,
-                const char *comment) :
-                Signal(parent, name, width, rstval, comment),
-                RegPorts(this, clk, edge, rstn, active) {}
-     NRegSignal(GenObject *parent,
-                const char *name,
-                const char *width,
-                const char *rstval = RESET_ZERO,
-                const char *comment = NO_COMMENT) :
-                NRegSignal(parent, 0, REG_NEGEDGE, 0, REG_RESET_LOW,
-                           name, width, rstval, comment) {}
- protected:
-    virtual bool isNReg() override { return true; }
-    virtual GenObject *getClockPort() override { return regclk_; }
+    virtual GenObject *getResetPort() { return regrstn_; }
+    virtual bool isResetDisabled() override { return regrstn_ == 0 || active_ == REG_RESET_NONE; }
+    virtual bool getResetActive() { return active_ == REG_RESET_LOW ? false: true; }
 };
 
 template<class T>
@@ -145,8 +129,12 @@ class RegStructObject : public SignalStruct<T>,
                     RegStructObject<T>(parent, 0, REG_POSEDGE, 0,
                                        REG_RESET_LOW, name, comment) {}
 
-    virtual bool isReg() override { return true; }
+    virtual bool isReg() override { return edge_ == REG_POSEDGE; }
+    virtual bool isNReg() override { return edge_ == REG_NEGEDGE; }
     virtual GenObject *getClockPort() override { return regclk_; }
+    virtual GenObject *getResetPort() { return regrstn_; }
+    virtual bool isResetDisabled() override { return regrstn_ == 0 || active_ == REG_RESET_NONE; }
+    virtual bool getResetActive() { return active_ == REG_RESET_LOW ? false: true; }
 };
 
 }  // namespace sysvc

@@ -25,8 +25,8 @@ StackTraceBuffer::StackTraceBuffer(GenObject *parent, const char *name, const ch
     i_waddr(this, "i_waddr", "CFG_LOG2_STACK_TRACE_ADDR"),
     i_wdata(this, "i_wdata", "MUL(2,RISCV_ARCH)"),
     // registers
-    raddr(this, "raddr", "5"),
-    stackbuf(this, "stackbuf", "MUL(2,RISCV_ARCH)", "STACK_TRACE_BUF_SIZE", NO_COMMENT),
+    raddr(this, &i_clk, REG_POSEDGE, 0, REG_RESET_NONE, "raddr", "5", RESET_ZERO, NO_COMMENT),
+    stackbuf(this, &i_clk, REG_POSEDGE, 0, REG_RESET_NONE, "stackbuf", "MUL(2,RISCV_ARCH)", "STACK_TRACE_BUF_SIZE", NO_COMMENT),
     // process
     comb(this)
 {

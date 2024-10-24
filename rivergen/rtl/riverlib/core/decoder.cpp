@@ -59,7 +59,7 @@ InstrDecoder::InstrDecoder(GenObject *parent, const char *name, const char *comm
     FULL_DEC_DEPTH(this, "FULL_DEC_DEPTH", "MUL(DEC_BLOCK,ADD(SUB(CFG_DEC_DEPTH,1),CFG_BP_DEPTH))"),
     // Signals
     wd(this, "wd", "ADD(FULL_DEC_DEPTH,DEC_BLOCK)", NO_COMMENT),
-    d(this, "d"),
+    d(this, &i_clk, &i_nrst, "d"),
     wb_f_pc(this, "wb_f_pc", "RISCV_ARCH", "DEC_NUM"),
     wb_f_instr(this, "wb_f_instr", "32", "DEC_NUM"),
     // registers

@@ -189,7 +189,9 @@ class Tracer : public ModuleObject {
 
     class TraceStepType : public StructObject {
      public:
-        TraceStepType(GenObject *parent, const char *name, const char *comment)
+        TraceStepType(GenObject *parent,
+                      const char *name,
+                      const char *comment)
             : StructObject(parent, "TraceStepType", name, comment),
             exec_cnt(this, "exec_cnt", "64", "'0", NO_COMMENT),
             pc(this, "pc", "64", "'0", NO_COMMENT),
@@ -206,15 +208,19 @@ class Tracer : public ModuleObject {
         Signal instr;
         Signal regactioncnt;
         Signal memactioncnt;
-        RegStructArray<RegActionType> regaction;
-        RegStructArray<MemopActionType> memaction;
+        StructArray<RegActionType> regaction;
+        StructArray<MemopActionType> memaction;
         Signal completed;
     } TraceStepTypeDef_;
 
     class TraceTableType : public RegStructArray<TraceStepType> {
      public:
-        TraceTableType(GenObject *parent, const char *name)
-            : RegStructArray<TraceStepType>(parent, name, "TRACE_TBL_SZ", NO_COMMENT) {
+        TraceTableType(GenObject *parent,
+                       Logic *clk,
+                       Logic *rstn,
+                       const char *name)
+            : RegStructArray<TraceStepType>(parent, clk, REG_POSEDGE,
+                    rstn, REG_RESET_LOW, name, "TRACE_TBL_SZ", NO_COMMENT) {
         }
 
         virtual bool isVcd() override { return false; }     // disable tracing

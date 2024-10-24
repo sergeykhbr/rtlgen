@@ -79,8 +79,12 @@ class PMP : public ModuleObject {
 
     class PmpTableType : public RegStructArray<PmpTableItemType> {
      public:
-        PmpTableType(GenObject *parent, const char *name) :
-            RegStructArray<PmpTableItemType>(parent, name, "CFG_PMP_TBL_SIZE", NO_COMMENT) {
+        PmpTableType(GenObject *parent,
+                     Logic *clk,
+                     Logic *rstn,
+                     const char *name) :
+            RegStructArray<PmpTableItemType>(parent, clk, REG_POSEDGE,
+                    rstn, REG_RESET_LOW, name, "CFG_PMP_TBL_SIZE", NO_COMMENT) {
         }
     };
     PmpTableType tbl;

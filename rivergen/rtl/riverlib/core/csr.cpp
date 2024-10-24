@@ -98,8 +98,8 @@ CsrRegs::CsrRegs(GenObject *parent, const char *name, const char *comment) :
     RegModeTypeDef_(this, "RegModeType", NO_COMMENT),
     PmpItemTypeDef_(this, "PmpItemType", NO_COMMENT),
     // registers
-    xmode(this, "xmode"),
-    pmp(this, "pmp"),
+    xmode(this, &i_clk, &i_nrst, "xmode"),
+    pmp(this, &i_clk, &i_nrst, "pmp"),
     state(this, "state", "4", "State_Idle"),
     fencestate(this, "fencestate", "3", "Fence_None"),
     irq_pending(this, "irq_pending", "IRQ_TOTAL", "'0", NO_COMMENT),

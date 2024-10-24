@@ -31,7 +31,7 @@ BpBTB::BpBTB(GenObject *parent, const char *name, const char *comment) :
     // struct declaration
     BtbEntryTypeDef_(this, "BtbEntryType", NO_COMMENT),
     // Signals
-    btb(this, "btb"),
+    btb(this, &i_clk, &i_nrst, "btb"),
     dbg_npc(this, "dbg_npc", "RISCV_ARCH", "CFG_BP_DEPTH"),
     // registers
     // process

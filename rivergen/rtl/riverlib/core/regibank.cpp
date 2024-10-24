@@ -71,7 +71,7 @@ RegIntBank::RegIntBank(GenObject *parent, const char *name, const char *comment)
     // struct declaration
     RegValueTypeDef_(this, "RegValueType", NO_COMMENT),
     // registers
-    arr(this, "arr"),
+    arr(this, &i_clk, &i_nrst, "arr"),
     // process
     comb(this)
 {

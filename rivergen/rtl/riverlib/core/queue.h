@@ -66,7 +66,7 @@ class Queue : public ModuleObject {
     ParamI32D DEPTH;
 
     RegSignal wcnt;
-    RegMemory mem;
+    RegArray mem;
 
     // process should be intialized last to make all signals available
     CombProcess comb;

@@ -49,7 +49,7 @@ class StackTraceBuffer : public ModuleObject {
 
  protected:
     RegSignal raddr;
-    RegMemory stackbuf;
+    RegArray stackbuf;
 
     // process should be intialized last to make all signals available
     CombProcess comb;

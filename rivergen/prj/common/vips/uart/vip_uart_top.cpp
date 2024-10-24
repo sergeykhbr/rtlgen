@@ -46,7 +46,7 @@ vip_uart_top::vip_uart_top(GenObject *parent, const char *name, const char *comm
 #ifndef FROST3
     fl_tmp(this, "fl_tmp", "", NO_COMMENT),
 #endif
-    initdone(this, "initdone", "2"),
+    initdone(this, &w_clk, REG_POSEDGE, &i_nrst, REG_RESET_LOW, "initdone", "2", RESET_ZERO, NO_COMMENT),
     // registers
     //
     clk0(this, "clk0", NO_COMMENT),

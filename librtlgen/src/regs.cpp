@@ -21,7 +21,7 @@ namespace sysvc {
 
 RegPorts::RegPorts(GenObject *parent, Logic *clk, ERegClockEdge edge,
     Logic *rstn, ERegResetActive active)
-    : regclk_(clk), regrstn_(rstn) {
+    : regclk_(clk), edge_(edge), regrstn_(rstn), active_(active) {
     if (regclk_ == 0) {
         GenObject *p = parent;
         while (!p->isModule()) {
@@ -40,7 +40,7 @@ RegPorts::RegPorts(GenObject *parent, Logic *clk, ERegClockEdge edge,
         }
     }
 
-    if (regrstn_ == 0 && !parent->isResetDisabled()) {
+    if (regrstn_ == 0 && active != REG_RESET_NONE) {
         GenObject *p = parent;
         while (!p->isModule()) {
             p = p->getParent();

@@ -81,8 +81,12 @@ class BpBTB : public ModuleObject {
 
     class BtbTableType : public RegStructArray<BtbEntryType> {
      public:
-        BtbTableType(GenObject *parent, const char *name)
-            : RegStructArray<BtbEntryType>(parent, name, "CFG_BTB_SIZE", NO_COMMENT) {
+        BtbTableType(GenObject *parent,
+                     Logic *clk,
+                     Logic *rstn,
+                     const char *name)
+            : RegStructArray<BtbEntryType>(parent, clk, REG_POSEDGE,
+                    rstn, REG_RESET_LOW, name, "CFG_BTB_SIZE", NO_COMMENT) {
         }
     };
 

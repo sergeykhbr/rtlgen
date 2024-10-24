@@ -139,8 +139,12 @@ class InstrDecoder : public ModuleObject {
 
     class DecTableType : public RegStructArray<DecoderDataType> {
      public:
-        DecTableType(GenObject *parent, const char *name)
-            : RegStructArray<DecoderDataType>(parent, name, "FULL_DEC_DEPTH", NO_COMMENT) {
+        DecTableType(GenObject *parent,
+                     Logic *clk,
+                     Logic *rstn,
+                     const char *name)
+            : RegStructArray<DecoderDataType>(parent, clk, REG_POSEDGE,
+                rstn, REG_RESET_LOW, name, "FULL_DEC_DEPTH", NO_COMMENT) {
         }
 
         virtual bool isVcd() override { return false; }     // disable tracing
