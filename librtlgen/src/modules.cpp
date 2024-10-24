@@ -73,26 +73,6 @@ GenObject *ModuleObject::getClockPort() {
     return 0;
 }
 
-
-/*GenObject *ModuleObject::getAsyncReset() {
-    GenObject *rst_port = getResetPort();
-    if (!rst_port) {
-        return rst_port;
-    }
-    for (auto &e: entries_) {
-        if (e->isModule()) {
-            if (e->getAsyncReset()) {
-                return rst_port;
-            }
-        } else if (e->isReg() || e->isNReg()) {
-            return rst_port;
-        }
-    }
-    rst_port = 0;    // no registers to reset in this module
-    return rst_port;
-}*/
-
-
 std::string ModuleObject::generate() {
     std::string ret = "";
     if (SCV_is_sysc_h()) {

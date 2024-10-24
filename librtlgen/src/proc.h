@@ -24,7 +24,7 @@ class ProcObject : public GenObject {
  public:
     ProcObject(GenObject *parent,
                const char *name,
-               const char *comment="");
+               const char *comment = NO_COMMENT);
 
     virtual std::string getName() override { return name_; }
     virtual bool isProcess() override { return true; }

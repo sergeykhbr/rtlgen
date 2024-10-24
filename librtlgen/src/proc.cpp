@@ -24,6 +24,13 @@ ProcObject::ProcObject(GenObject *parent,
                        const char *comment)
     : GenObject(parent, comment) {
     name_ = std::string(name);
+
+    GenObject *p = parent;
+    while (!p->isModule()) {
+        p = p->getParent();
+    }
+    dynamic_cast<ModuleObject *>(p)->registerProcess(this);
+
     Operation::start(this);
 }
 

@@ -94,7 +94,7 @@ class InStruct : public T {
     
     // ports should not have objValue. think how to fix that
     virtual std::string getStrValue() override {
-        std::string t1 = getName();     // gcc compatible t1 variable
+        std::string t1 = T::getName();     // gcc compatible t1 variable
         return t1;
     }
 };

@@ -16,17 +16,20 @@
 
 #include "regs.h"
 #include "utils.h"
+#include "modules.h"
 
 namespace sysvc {
 
-RegPorts::RegPorts(GenObject *parent, Logic *clk, ERegClockEdge edge,
+RegCommon::RegCommon(GenObject *parent, Logic *clk, ERegClockEdge edge,
     Logic *rstn, ERegResetActive active)
     : regclk_(clk), edge_(edge), regrstn_(rstn), active_(active) {
+    GenObject *p = parent;
+    while (!p->isModule()) {
+        p = p->getParent();
+    }
+    dynamic_cast<ModuleObject *>(p)->registerRegister(parent);
+
     if (regclk_ == 0) {
-        GenObject *p = parent;
-        while (!p->isModule()) {
-            p = p->getParent();
-        }
         for (auto &i : p->getEntries()) {
             if (i->isInput() && i->getName() == "i_clk") {
                 regclk_ = i;
@@ -41,10 +44,6 @@ RegPorts::RegPorts(GenObject *parent, Logic *clk, ERegClockEdge edge,
     }
 
     if (regrstn_ == 0 && active != REG_RESET_NONE) {
-        GenObject *p = parent;
-        while (!p->isModule()) {
-            p = p->getParent();
-        }
         for (auto &i : p->getEntries()) {
             if (i->isInput() && i->getName() == "i_nrst") {
                 regrstn_ = i;

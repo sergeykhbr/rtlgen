@@ -31,6 +31,9 @@ class ModuleObject : public GenObject {
     ModuleObject(GenObject *parent, const char *type,
                  const char *name, const char *comment);
 
+    virtual void registerProcess(GenObject *p) { proclist_.push_back(p); }
+    virtual void registerRegister(GenObject *r) { reglist_.push_back(r); }
+
     virtual std::string getType() override { return type_; }
     virtual std::string getName() override { return name_; }
     virtual bool isAsyncResetParam() override { return getResetPort() ? true: false; }
@@ -104,6 +107,8 @@ class ModuleObject : public GenObject {
     std::string type_;
     std::string name_;
     Logic async_reset_;
+    std::list<GenObject *> proclist_;
+    std::list<GenObject *> reglist_;
 };
 
 }  // namespace sysvc

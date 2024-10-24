@@ -32,9 +32,9 @@ enum ERegResetActive {
     REG_RESET_HIGH
 };
 
-class RegPorts {
+class RegCommon {
  public:
-    RegPorts(GenObject *parent,
+    RegCommon(GenObject *parent,
              Logic *clk,
              ERegClockEdge edge,
              Logic *rstnm,
@@ -48,7 +48,7 @@ class RegPorts {
 };
 
 class RegSignal : public Signal,
-                  public RegPorts {
+                  public RegCommon {
  public:
     RegSignal(GenObject *parent,
               Logic *clk,
@@ -60,7 +60,7 @@ class RegSignal : public Signal,
               const char *rstval,
               const char *comment) :
               Signal(parent, name, width, rstval, comment),
-              RegPorts(this, clk, edge, rstn, active) {}
+              RegCommon(this, clk, edge, rstn, active) {}
     RegSignal(GenObject *parent,
               const char *name,
               const char *width,
@@ -81,7 +81,7 @@ class RegSignal : public Signal,
     Force to use sc_uint<1> instead of bool in SystemC even when width=1
  */
 class RegSignal1 : public Signal1,
-                   public RegPorts {
+                   public RegCommon {
  public:
      RegSignal1(GenObject *parent,
                 Logic *clk,
@@ -93,7 +93,7 @@ class RegSignal1 : public Signal1,
                 const char *rstval,
                 const char *comment) :
                 Signal1(parent, name, width, rstval, comment),
-                RegPorts(this, clk, edge, rstn, active) {}
+                RegCommon(this, clk, edge, rstn, active) {}
      RegSignal1(GenObject *parent,
                 const char *name,
                 const char *width,
@@ -112,7 +112,7 @@ class RegSignal1 : public Signal1,
 
 template<class T>
 class RegStructObject : public SignalStruct<T>,
-                        public RegPorts {
+                        public RegCommon {
  public:
      RegStructObject(GenObject *parent,
                      Logic *clk,
@@ -122,7 +122,7 @@ class RegStructObject : public SignalStruct<T>,
                      const char *name,
                      const char *comment) :
                      SignalStruct<T>(parent, name, comment),
-                     RegPorts(this, clk, edge, rstn, active) {}
+                     RegCommon(this, clk, edge, rstn, active) {}
      RegStructObject(GenObject *parent,
                     const char *name,
                     const char *comment) :
