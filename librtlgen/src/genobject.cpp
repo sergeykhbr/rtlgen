@@ -94,23 +94,17 @@ bool GenObject::isIgnoreSignal() {
 }
 
 std::string GenObject::v_name(std::string v) {
+    std::string ret;   
     if (v.size()) {
-        if (isReg()) {
-            v += "v." + v;
-        } else if (isNReg()) {
-            v += "nv." + v;
-        }
+        ret = v_prefix() + "." + v;
     }
     return v;
 }
 
 std::string GenObject::r_name(std::string v) {
+    std::string ret;   
     if (v.size()) {
-        if (isReg()) {
-            v += "r." + v;
-        } else if (isNReg()) {
-            v += "nr." + v;
-        }
+        ret = r_prefix() + "." + v;
     }
     return v;
 }

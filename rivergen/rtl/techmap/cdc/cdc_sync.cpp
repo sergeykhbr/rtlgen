@@ -44,8 +44,8 @@ cdc_sync::cdc_sync(GenObject *parent, const char *name, const char *comment) :
     m_tdata(this, "m_tdata", "1"),
     m_tstorage(this, "m_tstorage", "1"),
     m_tready_hold(this, "m_tready_hold", "1"),
-    m_rstn(this, &i_m_clk, REG_POSEDGE, &w_nrst, REG_RESET_LOW, "m_rstn", "1", RESET_ZERO, NO_COMMENT),
-    s_rstn(this, &i_s_clk, REG_POSEDGE, &w_nrst, REG_RESET_LOW, "s_rstn", "1", RESET_ZERO, NO_COMMENT),
+    m_rstn(this, &i_m_clk, CLK_POSEDGE, &w_nrst, ACTIVE_LOW, "m_rstn", "1", RSTVAL_ZERO, NO_COMMENT),
+    s_rstn(this, &i_s_clk, CLK_POSEDGE, &w_nrst, ACTIVE_LOW, "s_rstn", "1", RSTVAL_ZERO, NO_COMMENT),
     // process
     comb(this)
 {

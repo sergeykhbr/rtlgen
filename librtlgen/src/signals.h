@@ -26,17 +26,34 @@ namespace sysvc {
 /**
     Variable or structure without signal flag won't get into sensitivity
     list of a process.
+    Signal can be implicitly transformed into RegSignal if CLK_..EDGE is set
 */
 
 class Signal : public Logic {
  public:
     Signal(GenObject *parent,
+           GenObject *clk,
+           EClockEdge edge,
+           GenObject *nrst,
+           EResetActive active,
+           const char *name,
+           const char *width,
+           const char *rstval,
+           const char *comment);
+
+    Signal(GenObject *parent,
            const char *name,
            const char *width,
            const char *val="'0",
-           const char *comment="");
+           const char *comment="")
+        : Signal(parent, 0, CLK_ALWAYS, 0, ACTIVE_NONE,
+                name, width, val, comment) {}
 
     virtual bool isSignal() override { return true; }
+    virtual std::string getCopyValue(char *i,
+                                     const char *dst_prefix,
+                                     const char *optype,
+                                     const char *src_prefix) override;
 };
 
 /**
@@ -44,13 +61,30 @@ class Signal : public Logic {
  */
 class Signal1 : public Logic1 {
  public:
+     Signal1(GenObject *parent,
+             GenObject *clk,
+             EClockEdge edge,
+             GenObject *nrst,
+             EResetActive active,
+             const char *name,
+             const char *width,
+             const char *rstval,
+             const char *comment);
+
     Signal1(GenObject *parent,
            const char *name,
            const char *width,
            const char *val,
-           const char *comment);
+           const char *comment)
+        : Signal1(parent, 0, CLK_ALWAYS, 0, ACTIVE_NONE,
+                name, width, val, comment) {}
+
 
     virtual bool isSignal() override { return true; }
+    virtual std::string getCopyValue(char *i,
+                                     const char *dst_prefix,
+                                     const char *optype,
+                                     const char *src_prefix) override;
 };
 
 // Always use sc_biguint in SystemC

@@ -64,27 +64,40 @@ class clint : public ModuleObject {
     class clint_cpu_type : public StructObject {
      public:
         // Structure definition
-        clint_cpu_type(GenObject *parent, const char *name, const char *comment)
-            : StructObject(parent, "clint_cpu_type", name, comment),
-            msip(this, "msip", "1", "0"),
-            mtip(this, "mtip", "1", "0"),
-            mtimecmp(this, "mtimecmp", "64", "0") {}
+        clint_cpu_type(GenObject *parent,
+                       GenObject *clk,
+                       EClockEdge edge,
+                       GenObject *nrst,
+                       EResetActive active,
+                       const char *name,
+                       const char *rstval,
+                       const char *comment)
+            : StructObject(parent, clk, edge, nrst, active, "clint_cpu_type", name, rstval, comment),
+            msip(this, clk, edge, nrst, active, "msip", "1", RSTVAL_ZERO, NO_COMMENT),
+            mtip(this, clk, edge, nrst, active, "mtip", "1", RSTVAL_ZERO, NO_COMMENT),
+            mtimecmp(this, clk, edge, nrst, active, "mtimecmp", "64", RSTVAL_ZERO, NO_COMMENT) {}
+
+        clint_cpu_type(GenObject *parent,
+                       const char *name,
+                       const char *comment)
+            : clint_cpu_type(parent, 0, CLK_ALWAYS, 0, ACTIVE_NONE, 
+                             name, RSTVAL_NONE, comment) {}
      public:
-        Signal msip;
-        Signal mtip;
-        Signal mtimecmp;
+        RegSignal msip;
+        RegSignal mtip;
+        RegSignal mtimecmp;
     };
 
 
-    class ClintCpuTableType : public RegStructArray<clint_cpu_type> {
+    class ClintCpuTableType : public ValueArray<clint_cpu_type> {
      public:
         ClintCpuTableType(GenObject *parent,
                           Logic *clk,
                           Logic *rstn,
                           const char *name,
                           const char *comment)
-            : RegStructArray<clint_cpu_type>(parent, clk, REG_POSEDGE,
-                        rstn, REG_RESET_LOW, name, "cpu_total", comment) {}
+            : ValueArray<clint_cpu_type>(parent, clk, CLK_POSEDGE,
+                        rstn, ACTIVE_LOW, name, "cpu_total", RSTVAL_NONE, comment) {}
     };
 
     clint_cpu_type clint_cpu_type_def_;

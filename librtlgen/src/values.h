@@ -28,6 +28,15 @@ namespace sysvc {
 class GenValue : public GenObject {
  public:
     GenValue(GenObject *parent,
+             GenObject *clk,
+             EClockEdge edge,
+             GenObject *nrst,
+             EResetActive active,
+             const char *name,
+             const char *val,
+             const char *comment);
+
+    GenValue(GenObject *parent,
              const char *name,
              const char *val,
              const char *comment);
@@ -49,15 +58,29 @@ class GenValue : public GenObject {
     virtual bool isVcd() override { return vcd_enabled_; }
 
     /** Signal could be a register when it inside of register struct */
-    virtual bool isReg() override;
-    virtual bool isNReg() override;
+    virtual bool isReg() override { return edge_ == CLK_POSEDGE; }      // remove me: use getClockEdge()
+    virtual bool isNReg() override { return edge_ == CLK_NEGEDGE; }     // remove me: use getClockEdge()
+    virtual bool is2Dim() override { return getDepth() > 0; }
+    virtual GenObject *getClockPort() override { return objClock_; }
+    virtual GenObject *getResetPort() { return objReset_; }
+    virtual bool isResetDisabled() override { return objReset_ == 0 || active_ == ACTIVE_NONE; }
+    virtual EClockEdge getClockEdge() { return edge_; }
+    virtual EResetActive getResetActive() override { return active_; }
 
+    virtual std::string v_prefix() override { return v_; }
+    virtual std::string r_prefix() override { return r_; }
     virtual std::string v_name(std::string v) override;
     virtual std::string r_name(std::string v) override;
 
  protected:
     std::string name_;
+    std::string v_;            // prefix v. nv. vx. v1. vx1. etc for registers
+    std::string r_;            // prefix r. rv. rx. r1. rx1. etc for registers
     GenObject *objValue_;
+    GenObject *objClock_;
+    GenObject *objReset_;
+    EClockEdge edge_;
+    EResetActive active_;
     bool vcd_enabled_;          // add/remove variable from the trace (enabled by default)
 };
 

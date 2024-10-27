@@ -74,28 +74,17 @@ class ValueArray : public T,
                const char *comment)
         : T(parent, name, val, comment), ArrayType(this, depth) {}
 
-    virtual uint64_t getDepth() override { return objDepth_->getValue(); }
-    virtual GenObject *getObjDepth() override { return objDepth_; }
-    virtual std::string getStrDepth() override { return objDepth_->getName(); }
-    virtual void setSelector(GenObject *sel) override { objArridx_ = sel; }           // Set object as an array index
-    virtual GenObject *getSelector() override { return objArridx_; }                  // generate  Name[obj]
-};
-
-
-class RegArray : public RegSignal,
-                 public ArrayType {
- public:
-    RegArray(GenObject *parent,
-             Logic *clk,
-             ERegClockEdge edge,
-             Logic *rstn,
-             ERegResetActive active,
+    ValueArray(GenObject *parent,
+             GenObject *clk,
+             EClockEdge edge,
+             GenObject *nrst,
+             EResetActive active,
              const char *name,
-             const char *width,
              const char *depth,
+             const char *val,
              const char *comment) :
-             RegSignal(parent, clk, edge, rstn, active, name, width, RESET_ZERO, comment),
-             ArrayType(this, depth) {}
+        T(parent, clk, edge, nrst, active, name, val, comment),
+        ArrayType(this, depth) {}
 
     virtual uint64_t getDepth() override { return objDepth_->getValue(); }
     virtual GenObject *getObjDepth() override { return objDepth_; }
@@ -104,34 +93,23 @@ class RegArray : public RegSignal,
     virtual GenObject *getSelector() override { return objArridx_; }                  // generate  Name[obj]
 };
 
-template<class T>
-class RegStructArray : public RegStructObject<T>,
-                       public ArrayType {
- public:
-    RegStructArray(GenObject *parent,
-                   Logic *clk,
-                   ERegClockEdge edge,
-                   Logic *rstn,
-                   ERegResetActive active,
-                   const char *name,
-                   const char *depth,
-                   const char *comment) : 
-                   RegStructObject<T>(parent, clk, edge, rstn, active, name, comment),
-                   ArrayType(this, depth) {}
-
-    virtual uint64_t getDepth() override { return objDepth_->getValue(); }
-    virtual GenObject *getObjDepth() override { return objDepth_; }
-    virtual std::string getStrDepth() override { return objDepth_->getName(); }
-    virtual void setSelector(GenObject *sel) override { objArridx_ = sel; }           // Set object as an array index
-    virtual GenObject *getSelector() override { return objArridx_; }                  // generate  Name[obj]
-};
-
-
-// T = signal or logic, contains Width argument
+// T = signal, logic, registers contains Width argument
 template<class T>
 class WireArray : public T,
                   public ArrayType {
  public:
+    WireArray(GenObject *parent,
+              Logic *clk,
+              EClockEdge edge,
+              Logic *nrst,
+              EResetActive active,
+              const char *name,
+              const char *width,
+              const char *depth,
+              const char *rstval,
+              const char *comment)
+        : T(parent, clk, edge, nrst, active, name, width, rstval, comment),
+        ArrayType(this, depth) {}
     WireArray(GenObject *parent,
               const char *name,
               const char *width,
@@ -145,6 +123,24 @@ class WireArray : public T,
     virtual void setSelector(GenObject *sel) override { objArridx_ = sel; }           // Set object as an array index
     virtual GenObject *getSelector() override { return objArridx_; }                  // generate  Name[obj]
 };
+
+// Argument 'width' added to ValueArray
+class RegArray : public WireArray<RegSignal> {
+ public:
+    RegArray(GenObject *parent,
+             Logic *clk,
+             EClockEdge edge,
+             Logic *rstn,
+             EResetActive active,
+             const char *name,
+             const char *width,
+             const char *depth,
+             const char *rstval,
+             const char *comment) :
+             WireArray<RegSignal>(parent, clk, edge, rstn, active,
+                                  name, width, depth, rstval, comment) {}
+};
+
 
 class LogicArray : public WireArray<Logic> {
  public:

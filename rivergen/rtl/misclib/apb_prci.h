@@ -28,7 +28,7 @@ class apb_prci : public ModuleObject {
     apb_prci(GenObject *parent, const char *name, const char *comment);
 
     virtual GenObject *getResetPort() override { return &i_pwrreset; }
-    virtual bool getResetActive() override { return true; }
+    virtual EResetActive getResetActive() override { return ACTIVE_HIGH; }
 
     class CombProcess : public ProcObject {
      public:

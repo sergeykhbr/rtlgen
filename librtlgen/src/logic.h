@@ -25,9 +25,19 @@ namespace sysvc {
 class Logic : public GenValue {
  public:
     Logic(GenObject *parent,
+          GenObject *clk,
+          EClockEdge edge,
+          GenObject *nrst,
+          EResetActive active,
           const char *name,
           const char *width,
-          const char *val="0",
+          const char *val,
+          const char *comment);
+
+    Logic(GenObject *parent,
+          const char *name,
+          const char *width,
+          const char *val = RSTVAL_ZERO,
           const char *comment = NO_COMMENT);
 
     virtual bool isLogic() override { return true; }
@@ -50,6 +60,16 @@ class Logic : public GenValue {
  */
 class Logic1 : public Logic {
  public:
+    Logic1(GenObject *parent,
+          GenObject *clk,
+          EClockEdge edge,
+          GenObject *nrst,
+          EResetActive active,
+          const char *name,
+          const char *width,
+          const char *val,
+          const char *comment)
+        : Logic(parent, clk, edge, nrst, active, name, width, val, comment) {}
     Logic1(GenObject *parent, const char *name, const char *width,
         const char *val, const char *comment)
         : Logic(parent, name, width, val, comment) {}
@@ -60,6 +80,16 @@ class Logic1 : public Logic {
 // SystemC only use sc_biguint always
 class LogicBig : public Logic {
  public:
+    LogicBig(GenObject *parent,
+          GenObject *clk,
+          EClockEdge edge,
+          GenObject *nrst,
+          EResetActive active,
+          const char *name,
+          const char *width,
+          const char *val,
+          const char *comment)
+        : Logic(parent, clk, edge, nrst, active, name, width, val, comment) {}
     LogicBig(GenObject *parent,
              const char *name,
              const char *width,
@@ -72,6 +102,16 @@ class LogicBig : public Logic {
 
 class LogicBv : public Logic {
  public:
+    LogicBv(GenObject *parent,
+          GenObject *clk,
+          EClockEdge edge,
+          GenObject *nrst,
+          EResetActive active,
+          const char *name,
+          const char *width,
+          const char *val,
+          const char *comment)
+        : Logic(parent, clk, edge, nrst, active, name, width, val, comment) {}
     LogicBv(GenObject *parent,
              const char *name,
              const char *width,

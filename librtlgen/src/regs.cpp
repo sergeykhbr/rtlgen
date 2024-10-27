@@ -20,42 +20,4 @@
 
 namespace sysvc {
 
-RegCommon::RegCommon(GenObject *parent, Logic *clk, ERegClockEdge edge,
-    Logic *rstn, ERegResetActive active)
-    : regclk_(clk), edge_(edge), regrstn_(rstn), active_(active) {
-    GenObject *p = parent;
-    while (!p->isModule()) {
-        p = p->getParent();
-    }
-    dynamic_cast<ModuleObject *>(p)->registerRegister(parent);
-
-    if (regclk_ == 0) {
-        for (auto &i : p->getEntries()) {
-            if (i->isInput() && i->getName() == "i_clk") {
-                regclk_ = i;
-                break;
-            }
-        }
-        if (!regclk_) {
-            printf("Register '%s.%s' does not have clock\n",
-                    p->getName().c_str(), 
-                    parent->getName().c_str());
-        }
-    }
-
-    if (regrstn_ == 0 && active != REG_RESET_NONE) {
-        for (auto &i : p->getEntries()) {
-            if (i->isInput() && i->getName() == "i_nrst") {
-                regrstn_ = i;
-                break;
-            }
-        }
-        if (!regrstn_) {
-            printf("Register '%s.%s' does not have reset\n",
-                    p->getName().c_str(),
-                    parent->getName().c_str());
-        }
-    }
-}
-
 }

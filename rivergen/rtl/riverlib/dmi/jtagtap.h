@@ -26,7 +26,7 @@ class jtagtap : public ModuleObject {
 
     virtual bool isAsyncResetParam() override { return false; }
     virtual GenObject *getResetPort() override { return &i_trst; }
-    virtual bool getResetActive() override { return true; }
+    virtual EResetActive getResetActive() override { return ACTIVE_HIGH; }
     virtual GenObject *getClockPort() override { return &i_tck; }
 
     class CombProcess : public ProcObject {

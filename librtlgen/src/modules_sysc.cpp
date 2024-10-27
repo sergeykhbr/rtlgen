@@ -414,56 +414,211 @@ std::string ModuleObject::generate_sysc_h() {
     return out;
 }
 
-std::string ModuleObject::generate_sysc_proc_registers(bool clkpos) {
-    std::string out = "";
-    std::string xrst = "";
-    std::string src = "v";
-    std::string dst = "r";
-    bool isregs;
+/* Generate in process (synchronous) reset. Multiple resets are supported:
 
-    out += generate_sysc_template_f_name();
-    if (clkpos) {
-        out += "::registers() {\n";
-        isregs = isRegs();
-    } else {
-        out += "::nregisters() {\n";
-        src = "nv";
-        dst = "nr";
-        isregs = isNRegs();
-    }
-    pushspaces();
-    if (isregs) {
-        if (getResetPort()) {
-            if (isCombProcess()) {
-                out += Operation::reset(dst.c_str(), 0, this, xrst);
-            }
-            out += " else {\n";
-            pushspaces();
-        }
-        if (isCombProcess()) {
-            out += Operation::copyreg(dst.c_str(), src.c_str(), this);
-        }
-        if (getResetPort()) {
-            popspaces();
-            out += addspaces();
-            out += "}\n";
-        }
-    }
-    for (auto &e: getEntries()) {
-        if (!e->isProcess()
-            || e->getName() != "registers") {
+      if (!async_reset && i_rst0.read() == LOW) {
+          module_type_r0(v0);
+      }
+      if (!async_reset && i_rst1.read() == LOW) {
+          module_type_r1(v1);
+      }
+      if (!async_reset && i_rst0.read() == HIGH) {
+          module_type_r0(v0);
+      }
+ */
+std::string ModuleObject::generate_sysc_proc_v_reset(EResetActive active,
+                                                     std::string &xrst) {
+    std::map<std::string, std::list<GenObject *>>rstmap;
+    std::string ret;
+    std::string v;
+    std::string r;
+    bool is2dm = false;      // two-dimensional register
+
+    // All registers with selected active reset:
+    for (auto &p : getEntries()) {
+        if (p->getClockEdge() == CLK_ALWAYS) {
             continue;
         }
-        out += "\n";
-        for (auto &r: e->getEntries()) {
-            out += r->generate();
+        GenObject *rstport = p->getResetPort();
+        if (rstport && p->getResetActive() == active) {
+            rstmap[rstport->getName()].push_back(p);
+            is2dm |= p->is2Dim();
         }
     }
-    popspaces();
-    out += addspaces();
-    out += "}\n";
-    out += "\n";
-    return out;
+
+    for (std::map<std::string, std::list<GenObject *>>::iterator it = rstmap.begin();
+        it != rstmap.end(); ++it) {
+
+        ret += addspaces() + "if ";
+        if (xrst.size()) {
+            ret += "(";
+        }
+        if (isAsyncResetParam()) {
+            ret += "(!async_reset_ && ";
+        }
+        ret += it->first + ".read() == ";
+        if (active == ACTIVE_LOW) {
+            ret += "0)";
+        } else {
+            ret += "1)";
+        }
+        if (xrst.size()) {
+            ret += " || " + xrst + ")";
+        }
+        ret += " {\n";
+        pushspaces();
+
+        r = (*it->second.begin())->r_prefix();
+        v = (*it->second.begin())->v_prefix();
+        if (!is2dm) {
+            ret += addspaces() + getType() + "_" + r + "_reset(" + v + ");\n";
+        } else {
+            char i_idx[2] = {0};
+            for (auto &r : it->second) {
+                i_idx[0] = 'i';
+                ret += r->getCopyValue(i_idx, v.c_str(), "=", RSTVAL_NONE);
+            }
+        }
+
+        popspaces();
+        ret += addspaces() + "}";
+    }
+    return ret;
+}
+
+std::string ModuleObject::generate_sysc_proc_r_to_v() {
+    std::string ret;
+    std::map<std::string, std::list<GenObject *>> regmap;
+    bool is2dm = false;
+
+    for (auto &p : getEntries()) {
+        GenObject *clkport = p->getClockPort();
+        if (!clkport || p->getClockEdge() == CLK_ALWAYS) {
+            continue;
+        }
+        if (p->v_prefix().size() == 0) {
+            SHOW_ERROR("%s::%s v-preifx not defined",
+                        getName().c_str(), p->getName().c_str());
+        }
+        regmap[p->v_prefix()].push_back(p);
+        is2dm |= p->is2Dim();
+    }
+
+    // Copy v = r
+    std::string v, r;
+    for (std::map<std::string, std::list<GenObject *>>::iterator it = regmap.begin();
+        it != regmap.end(); it++) {
+        v = it->first;                          // map sorted by v_prefix
+        r = (*it->second.begin())->r_prefix();  // all obj in a list has the same r_prefix as the first one
+        if (!is2dm) {
+            ret += addspaces() + v + " = " + r + ";\n";
+        } else {
+            char i_idx[2] = {0};
+            for (auto &p : it->second) {
+                i_idx[0] = 'i';
+                ret += p->getCopyValue(i_idx, v.c_str(), "=", r.c_str());
+            }
+        }
+    }
+    return ret;
+}
+
+std::string ModuleObject::generate_sysc_proc_registers(EClockEdge edge, EResetActive active) {
+    std::map<std::string, std::list<GenObject *>> clkmap;
+    std::map<std::string, std::list<GenObject *>> rstmap;
+    std::string ret;
+    std::string v;
+    std::string r;
+    std::string resetname;
+    bool is2dm = 0;      // two-dimensional register
+
+#if 1
+    if (getType() == "lrunway") {
+        bool st = true;
+    }
+#endif
+
+    // All registers with selected posedge and reset level:
+    for (auto &p : getEntries()) {
+        GenObject *clkport = p->getClockPort();
+        if (!clkport || p->getClockEdge() == CLK_ALWAYS) {
+            continue;
+        }
+        if (edge != p->getClockEdge() || active != p->getResetActive()) {
+            continue;
+        }
+        clkmap[clkport->getName()].push_back(p);
+        if (active != ACTIVE_NONE) {
+            resetname = p->getResetPort()->getName();
+            rstmap[resetname].push_back(p);
+        }
+        is2dm |= p->is2Dim();
+    }
+
+    if (rstmap.size() > 1) {
+        SHOW_ERROR("Unsupported: Module %s implements more than 1 reset signal",
+                    getName().c_str());
+    }
+
+    for (std::map<std::string, std::list<GenObject *>>::iterator it = clkmap.begin();
+        it != clkmap.end(); ++it) {
+
+        ret += generate_sysc_template_f_name();
+        r = (*it->second.begin())->r_prefix();
+        v = (*it->second.begin())->v_prefix();
+        ret += "::" + r + "egisters() {\n";
+        pushspaces();
+
+        if (active != ACTIVE_NONE) {
+            // Async Reset implementation
+            ret += addspaces() + "if (";
+            if (isAsyncResetParam()) {
+                ret += "async_reset_ && ";
+            }
+            // Warning: we suppose all registers has the same reset port for now,
+            //          later fix it
+            ret += resetname + ".read() == ";
+            if (active == ACTIVE_LOW) {
+                ret += "0) {\n";
+            } else {
+                ret += "1) {\n";
+            }
+            pushspaces();
+
+            // r <= reset
+            if (!is2dm) {
+                ret += addspaces() + getType() + "_" + r + "_reset(" + r + ");\n";
+            } else {
+                char i_idx[2] = {0};
+                for (auto &p : it->second) {
+                    i_idx[0] = 'i';
+                    ret += p->getCopyValue(i_idx, r.c_str(), "=", "");
+                }
+            }
+
+            popspaces();
+            ret += addspaces() + "} else {\n";
+            pushspaces();
+        }
+        // Copy r <= v:
+        if (!is2dm) {
+            ret += addspaces() + r + " = " + v + ";\n";
+        } else {
+            char i_idx[2] = {0};
+            for (auto &p : it->second) {
+                i_idx[0] = 'i';
+                ret += p->getCopyValue(i_idx, r.c_str(), "=", v.c_str());
+            }
+        }
+        if (active != ACTIVE_NONE) {
+            popspaces();
+            ret += addspaces() + "}\n";
+        }
+        popspaces();
+        ret += addspaces() + "}\n";
+        ret += "\n";
+    }
+    return ret;
 }
 
 std::string ModuleObject::generate_sysc_sensitivity(GenObject *obj,
@@ -473,8 +628,8 @@ std::string ModuleObject::generate_sysc_sensitivity(GenObject *obj,
     std::string ret = "";
     if (!obj->isSignal()
         && !obj->isStruct()
-        && !obj->isReg()
-        && !obj->isNReg()) {
+        && !(obj->getClockEdge() == CLK_POSEDGE)
+        && !(obj->getClockEdge() == CLK_NEGEDGE)) {
         return ret;
     }
     if (prefix == "") {
@@ -505,20 +660,13 @@ std::string ModuleObject::generate_sysc_sensitivity(GenObject *obj,
             ret += generate_sysc_sensitivity(e, prefix, i, loop);
         }
     } else {
-        if (obj->isReg()) {
-            prefix = "r." + prefix;
-            if (!obj->isSignal()) {
-                SCV_printf("warning: non signal '%s' used as a trigger, "
-                    "skip in the sensitivity list.", obj->getName().c_str());
-                return ret;
-            }
-        } else if (obj->isNReg()) {
-            prefix = "nr." + prefix;
-            if (!obj->isSignal()) {
-                SCV_printf("warning: non signal '%s' used as a trigger, "
-                    "skip in the sensitivity list.", obj->getName().c_str());
-                return ret;
-            }
+        if (obj->r_prefix().size()) {
+            prefix = obj->r_prefix() + "." + prefix;
+        }
+        if (!obj->isSignal()) {
+            SCV_printf("warning: non signal '%s' used as a trigger, "
+                "skip in the sensitivity list.", obj->getName().c_str());
+            return ret;
         }
         ret += loop;
         ret += addspaces() + "sensitive << " + prefix + ";\n";
@@ -1015,10 +1163,14 @@ std::string ModuleObject::generate_sysc_cpp() {
     }
 
     if (isRegProcess()) {
-        out += generate_sysc_proc_registers(true);
+        out += generate_sysc_proc_registers(CLK_POSEDGE, ACTIVE_LOW);
+        out += generate_sysc_proc_registers(CLK_POSEDGE, ACTIVE_HIGH);
+        out += generate_sysc_proc_registers(CLK_POSEDGE, ACTIVE_NONE);
     }
     if (isNRegProcess()) {
-        out += generate_sysc_proc_registers(false);
+        out += generate_sysc_proc_registers(CLK_NEGEDGE, ACTIVE_LOW);
+        out += generate_sysc_proc_registers(CLK_NEGEDGE, ACTIVE_HIGH);
+        out += generate_sysc_proc_registers(CLK_NEGEDGE, ACTIVE_NONE);
     }
     return out;
 }
@@ -1070,6 +1222,10 @@ std::string ModuleObject::generate_sysc_proc(GenObject *proc) {
         ret += "\n";
     }
 
+#if 1
+    tcnt = static_cast<int>(ret.size());
+    ret += generate_sysc_proc_r_to_v();
+#else
     if (isRegs()) {
         ret += Operation::copyreg("v", "r", this);
         tcnt++;
@@ -1078,7 +1234,8 @@ std::string ModuleObject::generate_sysc_proc(GenObject *proc) {
         ret += Operation::copyreg("nv", "nr", this);
         tcnt++;
     }
-    if (tcnt) {
+#endif
+    if (tcnt != static_cast<int>(ret.size())) {
         tcnt = 0;
         ret += "\n";
     }

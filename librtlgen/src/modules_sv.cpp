@@ -419,7 +419,7 @@ std::string ModuleObject::generate_sv_mod_always_ff_rst(bool clkpos) {
     out += getClockPort()->getName();
     if (getResetPort()) {
         out += ", ";
-        if (!getResetActive()) {
+        if (getResetActive() == ACTIVE_LOW) {
             out += "negedge ";
         } else {
             out += "posedge ";
@@ -430,7 +430,8 @@ std::string ModuleObject::generate_sv_mod_always_ff_rst(bool clkpos) {
     pushspaces();
     if (isCombProcess() &&  isregs) {
         if (getResetPort()) {
-            out += Operation::reset(dst.c_str(), 0, this, xrst);
+// TODO:
+            //out += Operation::reset(dst.c_str(), 0, this, xrst);
             out += " else begin\n";
             pushspaces();
             out += Operation::copyreg(dst.c_str(), src.c_str(), this);

@@ -21,9 +21,24 @@
 
 namespace sysvc {
 
-GenValue::GenValue(GenObject *parent, const char *name, const char *val, const char *comment)
-    : GenObject(parent, comment) {
-    name_ = std::string(name);
+GenValue::GenValue(GenObject *parent,
+                   GenObject *clk,
+                   EClockEdge edge,
+                   GenObject *nrst,
+                   EResetActive active,
+                   const char *name,
+                   const char *val,
+                   const char *comment) :
+    GenObject(parent, comment),
+    name_(std::string(name)),
+    v_(""),
+    r_(""),
+    objValue_(0),
+    objClock_(clk),
+    objReset_(nrst),
+    edge_(edge),
+    active_(active),
+    vcd_enabled_(true) {
     if (name_ == "") {
         SHOW_ERROR("%s", "Unnamed variable of type");
     }
@@ -31,33 +46,13 @@ GenValue::GenValue(GenObject *parent, const char *name, const char *val, const c
     vcd_enabled_ = true;
 }
 
+GenValue::GenValue(GenObject *parent, const char *name, const char *val, const char *comment)
+    : GenValue(parent, 0, CLK_ALWAYS, 0, ACTIVE_NONE, name, val, comment) {
+}
+
 GenValue::GenValue(GenObject *parent, const char *name, GenObject *val, const char *comment)
-    : GenObject(parent, comment) {
-    name_ = std::string(name);
+    : GenValue(parent, 0, CLK_ALWAYS, 0, ACTIVE_NONE, name, "", comment) {
     objValue_ = val;
-    vcd_enabled_ = true;
-}
-
-bool GenValue::isReg() {
-    GenObject *p = getParent();
-    while (p && p->isStruct()) {
-        if (p->isReg()) {
-            return true;
-        }
-        p = p->getParent();
-    }
-    return false;
-}
-
-bool GenValue::isNReg() {
-    GenObject *p = getParent();
-    while (p && p->isStruct()) {
-        if (p->isNReg()) {
-            return true;
-        }
-        p = p->getParent();
-    }
-    return false;
 }
 
 std::string GenValue::v_name(std::string v) {

@@ -67,26 +67,39 @@ class BpBTB : public ModuleObject {
 
     class BtbEntryType : public StructObject {
      public:
-        // Structure definition
-        BtbEntryType(GenObject *parent, const char *name, const char *comment)
-            : StructObject(parent, "BtbEntryType", name, comment),
-            pc(this, "pc", "RISCV_ARCH", "'1"),
-            npc(this, "npc", "RISCV_ARCH", "'0", NO_COMMENT),
-            exec(this, "exec", "1", "0", "0=predec; 1=exec (high priority)") {}
+        // Structure register definition
+        BtbEntryType(GenObject *parent,
+                     GenObject *clk,
+                     EClockEdge edge,
+                     GenObject *nrst,
+                     EResetActive active,
+                     const char *name,
+                     const char *rstval,
+                     const char *comment)
+            : StructObject(parent, clk, edge, nrst, active, "BtbEntryType", name, rstval, comment),
+            pc(this, clk, edge, nrst, active, "pc", "RISCV_ARCH", "'1", NO_COMMENT),
+            npc(this, clk, edge, nrst, active, "npc", "RISCV_ARCH", RSTVAL_ZERO, NO_COMMENT),
+            exec(this, clk, edge, nrst, active, "exec", "1", RSTVAL_ZERO, "0=predec; 1=exec (high priority)") {}
+        // Structure typedef definition
+        BtbEntryType(GenObject *parent,
+                     const char *name,
+                     const char *comment)
+            : BtbEntryType(parent, 0, CLK_ALWAYS, 0, ACTIVE_NONE,
+                           name, RSTVAL_NONE, comment) {}
      public:
-        RegSignal pc;
-        RegSignal npc;
-        RegSignal exec;
+        Signal pc;
+        Signal npc;
+        Signal exec;
     } BtbEntryTypeDef_;
 
-    class BtbTableType : public RegStructArray<BtbEntryType> {
+    class BtbTableType : public ValueArray<BtbEntryType> {
      public:
         BtbTableType(GenObject *parent,
                      Logic *clk,
                      Logic *rstn,
                      const char *name)
-            : RegStructArray<BtbEntryType>(parent, clk, REG_POSEDGE,
-                    rstn, REG_RESET_LOW, name, "CFG_BTB_SIZE", NO_COMMENT) {
+            : ValueArray<BtbEntryType>(parent, clk, CLK_POSEDGE,
+                    rstn, ACTIVE_LOW, name, "CFG_BTB_SIZE", RSTVAL_NONE, NO_COMMENT) {
         }
     };
 

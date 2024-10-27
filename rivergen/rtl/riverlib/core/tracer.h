@@ -152,17 +152,30 @@ class Tracer : public ModuleObject {
  protected:
     class MemopActionType : public StructObject {
      public:
-        MemopActionType(GenObject *parent, const char *name, const char *comment)
-            : StructObject(parent, "MemopActionType", name, comment),
-            store(this, "store", "1", "0", "0=load;1=store"),
-            size(this, "size", "2", "'0", NO_COMMENT),
-            mask(this, "mask", "64", "'0", NO_COMMENT),
-            memaddr(this, "memaddr", "64", "'0", NO_COMMENT),
-            data(this, "data", "64", "'0", NO_COMMENT),
-            regaddr(this, "regaddr", "6", "0", "writeback address"),
-            complete(this, "complete", "1", "0", NO_COMMENT),
-            sc_release(this, "sc_release", "1", "0", NO_COMMENT),
-            ignored(this, "ignored", "1", "0", NO_COMMENT) {}
+        MemopActionType(GenObject *parent,
+                        GenObject *clk,
+                        EClockEdge edge,
+                        GenObject *nrst,
+                        EResetActive active,
+                        const char *name,
+                        const char *rstval,
+                        const char *comment)
+            : StructObject(parent, clk, edge, nrst, active, "MemopActionType", name, rstval, comment),
+            store(this, clk, edge, nrst, active, "store", "1", RSTVAL_ZERO, "0=load;1=store"),
+            size(this, clk, edge, nrst, active, "size", "2", RSTVAL_ZERO, NO_COMMENT),
+            mask(this, clk, edge, nrst, active, "mask", "64", RSTVAL_ZERO, NO_COMMENT),
+            memaddr(this, clk, edge, nrst, active, "memaddr", "64", RSTVAL_ZERO, NO_COMMENT),
+            data(this, clk, edge, nrst, active, "data", "64", RSTVAL_ZERO, NO_COMMENT),
+            regaddr(this, clk, edge, nrst, active, "regaddr", "6", RSTVAL_ZERO, "writeback address"),
+            complete(this, clk, edge, nrst, active, "complete", "1", RSTVAL_ZERO, NO_COMMENT),
+            sc_release(this, clk, edge, nrst, active, "sc_release", "1", RSTVAL_ZERO, NO_COMMENT),
+            ignored(this, clk, edge, nrst, active, "ignored", "1", RSTVAL_ZERO, NO_COMMENT) {}
+
+        MemopActionType(GenObject *parent,
+                      const char *name,
+                      const char *comment)
+            : MemopActionType(parent, 0, CLK_ALWAYS, 0, ACTIVE_LOW,
+                              name, RSTVAL_NONE, comment) {}
      public:
         Signal store;
         Signal size;
@@ -177,10 +190,23 @@ class Tracer : public ModuleObject {
 
     class RegActionType : public StructObject {
      public:
-        RegActionType(GenObject *parent, const char *name, const char *comment)
-            : StructObject(parent, "RegActionType", name, comment),
-        waddr(this, "waddr", "6", "'0", NO_COMMENT),
-        wres(this, "wres", "64", "'0", NO_COMMENT) {}
+        RegActionType(GenObject *parent,
+                      GenObject *clk,
+                      EClockEdge edge,
+                      GenObject *nrst,
+                      EResetActive active,
+                      const char *name,
+                      const char *rstval,
+                      const char *comment)
+            : StructObject(parent, clk, edge, nrst, active, "RegActionType", name, rstval, comment),
+        waddr(this, clk, edge, nrst, active, "waddr", "6", RSTVAL_ZERO, NO_COMMENT),
+        wres(this, clk, edge, nrst, active, "wres", "64", RSTVAL_ZERO, NO_COMMENT) {}
+
+        RegActionType(GenObject *parent,
+                      const char *name,
+                      const char *comment)
+            : RegActionType(parent, 0, CLK_ALWAYS, 0, ACTIVE_LOW,
+                            name, RSTVAL_NONE, comment) {}
      public:
         Signal waddr;
         Signal wres;
@@ -190,37 +216,48 @@ class Tracer : public ModuleObject {
     class TraceStepType : public StructObject {
      public:
         TraceStepType(GenObject *parent,
+                      GenObject *clk,
+                      EClockEdge edge,
+                      GenObject *nrst,
+                      EResetActive active,
+                      const char *name,
+                      const char *rstval,
+                      const char *comment)
+            : StructObject(parent, clk, edge, nrst, active, "TraceStepType", name, rstval, comment),
+            exec_cnt(this, clk, edge, nrst, active, "exec_cnt", "64", RSTVAL_ZERO, NO_COMMENT),
+            pc(this, clk, edge, nrst, active, "pc", "64", "'0", NO_COMMENT),
+            instr(this, clk, edge, nrst, active, "instr", "32", RSTVAL_ZERO, NO_COMMENT),
+            regactioncnt(this, clk, edge, nrst, active, "regactioncnt", "32", RSTVAL_ZERO, NO_COMMENT),
+            memactioncnt(this, clk, edge, nrst, active, "memactioncnt", "32", RSTVAL_ZERO, NO_COMMENT),
+            regaction(this, clk, edge, nrst, active, "regaction", "TRACE_TBL_SZ", RSTVAL_NONE, NO_COMMENT),
+            memaction(this, clk, edge, nrst, active, "memaction", "TRACE_TBL_SZ", RSTVAL_NONE, NO_COMMENT),
+            completed(this, clk, edge, nrst, active, "completed", "1", RSTVAL_ZERO, NO_COMMENT) {
+            }
+        TraceStepType(GenObject *parent,
                       const char *name,
                       const char *comment)
-            : StructObject(parent, "TraceStepType", name, comment),
-            exec_cnt(this, "exec_cnt", "64", "'0", NO_COMMENT),
-            pc(this, "pc", "64", "'0", NO_COMMENT),
-            instr(this, "instr", "32", "'0", NO_COMMENT),
-            regactioncnt(this, "regactioncnt", "32", "'0", NO_COMMENT),
-            memactioncnt(this, "memactioncnt", "32", "'0", NO_COMMENT),
-            regaction(this, "regaction", "TRACE_TBL_SZ", NO_COMMENT),
-            memaction(this, "memaction", "TRACE_TBL_SZ", NO_COMMENT),
-            completed(this, "completed", "1", "0", NO_COMMENT) {
-            }
+            : TraceStepType(parent, 0, CLK_ALWAYS, 0, ACTIVE_LOW,
+                            name, RSTVAL_NONE, comment) {}
+
      public:
         Signal exec_cnt;
         Signal pc;
         Signal instr;
         Signal regactioncnt;
         Signal memactioncnt;
-        StructArray<RegActionType> regaction;
-        StructArray<MemopActionType> memaction;
+        ValueArray<RegActionType> regaction;
+        ValueArray<MemopActionType> memaction;
         Signal completed;
     } TraceStepTypeDef_;
 
-    class TraceTableType : public RegStructArray<TraceStepType> {
+    class TraceTableType : public ValueArray<TraceStepType> {
      public:
         TraceTableType(GenObject *parent,
                        Logic *clk,
                        Logic *rstn,
                        const char *name)
-            : RegStructArray<TraceStepType>(parent, clk, REG_POSEDGE,
-                    rstn, REG_RESET_LOW, name, "TRACE_TBL_SZ", NO_COMMENT) {
+            : ValueArray<TraceStepType>(parent, clk, CLK_POSEDGE,
+                    rstn, ACTIVE_LOW, name, "TRACE_TBL_SZ", RSTVAL_NONE, NO_COMMENT) {
         }
 
         virtual bool isVcd() override { return false; }     // disable tracing

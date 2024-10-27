@@ -26,7 +26,7 @@ class SysPLL_tech : public ModuleObject {
 
     virtual bool isAsyncResetParam() override { return false; }     // do not generate async_reset generic parameter
     virtual GenObject *getResetPort() override { return &i_reset; }
-    virtual bool getResetActive() override { return true; }
+    virtual EResetActive getResetActive() override { return ACTIVE_HIGH; }
 
  protected:
     class CombProcess : public ProcObject {

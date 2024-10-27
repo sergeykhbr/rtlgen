@@ -104,23 +104,35 @@ class RegIntBank : public ModuleObject {
  protected:
     class RegValueType : public StructObject {
      public:
-        RegValueType(GenObject *parent, const char *name, const char *comment)
-            : StructObject(parent, "RegValueType", name, comment),
+        RegValueType(GenObject *parent,
+                     GenObject *clk,
+                     EClockEdge edge,
+                     GenObject *nrst,
+                     EResetActive active,
+                     const char *name,
+                     const char *rstval,
+                     const char *comment)
+            : StructObject(parent, clk, edge, nrst, active, "RegValueType", name, rstval, comment),
             val(this, "val", "RISCV_ARCH", "'0", NO_COMMENT),
             tag(this, "tag", "CFG_REG_TAG_WIDTH", "'0", NO_COMMENT) {}
+        RegValueType(GenObject *parent,
+                     const char *name,
+                     const char *comment)
+            : RegValueType(parent, 0, CLK_ALWAYS, 0, ACTIVE_NONE,
+                            name, RSTVAL_NONE, comment) {}
      public:
         RegSignal val;
         RegSignal tag;
     } RegValueTypeDef_;
 
-    class RegTableType : public RegStructArray<RegValueType> {
+    class RegTableType : public ValueArray<RegValueType> {
      public:
         RegTableType(GenObject *parent,
                      Logic *clk,
                      Logic *rstn,
                      const char *name)
-            : RegStructArray<RegValueType>(parent, clk, REG_POSEDGE,
-                rstn, REG_RESET_LOW, name, "REGS_TOTAL", NO_COMMENT) {
+            : ValueArray<RegValueType>(parent, clk, CLK_POSEDGE,
+                rstn, ACTIVE_LOW, name, "REGS_TOTAL", RSTVAL_NONE, NO_COMMENT) {
         }
     };
 

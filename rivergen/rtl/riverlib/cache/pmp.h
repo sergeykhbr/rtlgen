@@ -65,26 +65,38 @@ class PMP : public ModuleObject {
 
     class PmpTableItemType : public StructObject {
      public:
-        PmpTableItemType(GenObject *parent, const char *name, const char *comment)
-            : StructObject(parent, "PmpTableItemType", name, comment),
-            start_addr(this, "start_addr", "RISCV_ARCH"),
-            end_addr(this, "end_addr", "RISCV_ARCH"),
-            flags(this, "flags", "CFG_PMP_FL_TOTAL", "0") {
-        }
+        PmpTableItemType(GenObject *parent,
+                         GenObject *clk,
+                         EClockEdge edge,
+                         GenObject *nrst,
+                         EResetActive active,
+                         const char *name,
+                         const char *rstval,
+                         const char *comment)
+            : StructObject(parent, clk, edge, nrst, active, "PmpTableItemType", name, rstval, comment),
+            start_addr(this, clk, edge, nrst, active, "start_addr", "RISCV_ARCH", RSTVAL_ZERO, NO_COMMENT),
+            end_addr(this, clk, edge, nrst, active, "end_addr", "RISCV_ARCH", RSTVAL_ZERO, NO_COMMENT),
+            flags(this, clk, edge, nrst, active, "flags", "CFG_PMP_FL_TOTAL", RSTVAL_ZERO, NO_COMMENT) {}
+
+        PmpTableItemType(GenObject *parent,
+                         const char *name,
+                         const char *comment)
+            : PmpTableItemType(parent, 0, CLK_ALWAYS, 0, ACTIVE_NONE,
+                               name, RSTVAL_NONE, comment) {}
      public:
-        Signal start_addr;
-        Signal end_addr;
-        Signal flags;
+        RegSignal start_addr;
+        RegSignal end_addr;
+        RegSignal flags;
     } PmpTableItemTypeDef_;
 
-    class PmpTableType : public RegStructArray<PmpTableItemType> {
+    class PmpTableType : public ValueArray<PmpTableItemType> {
      public:
         PmpTableType(GenObject *parent,
                      Logic *clk,
                      Logic *rstn,
                      const char *name) :
-            RegStructArray<PmpTableItemType>(parent, clk, REG_POSEDGE,
-                    rstn, REG_RESET_LOW, name, "CFG_PMP_TBL_SIZE", NO_COMMENT) {
+            ValueArray<PmpTableItemType>(parent, clk, CLK_POSEDGE,
+                    rstn, ACTIVE_LOW, name, "CFG_PMP_TBL_SIZE", RSTVAL_NONE, NO_COMMENT) {
         }
     };
     PmpTableType tbl;

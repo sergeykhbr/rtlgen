@@ -37,14 +37,14 @@ apb_prci::apb_prci(GenObject *parent, const char *name, const char *comment) :
     w_req_write(this, "w_req_write", "1"),
     wb_req_wdata(this, "wb_req_wdata", "32"),
     // registers
-    sys_rst(this, &i_clk, REG_POSEDGE, &i_pwrreset, REG_RESET_HIGH, "sys_rst", "1", RESET_ZERO, NO_COMMENT),
-    sys_nrst(this, &i_clk, REG_POSEDGE, &i_pwrreset, REG_RESET_HIGH, "sys_nrst", "1", RESET_ZERO, NO_COMMENT),
-    dbg_nrst(this, &i_clk, REG_POSEDGE, &i_pwrreset, REG_RESET_HIGH, "dbg_nrst", "1", RESET_ZERO, NO_COMMENT),
-    sys_locked(this, &i_clk, REG_POSEDGE, &i_pwrreset, REG_RESET_HIGH, "sys_locked", "1", RESET_ZERO, NO_COMMENT),
-    ddr_locked(this, &i_clk, REG_POSEDGE, &i_pwrreset, REG_RESET_HIGH, "ddr_locked", "1", RESET_ZERO, NO_COMMENT),
-    resp_valid(this, &i_clk, REG_POSEDGE, &i_pwrreset, REG_RESET_HIGH, "resp_valid", "1", RESET_ZERO, NO_COMMENT),
-    resp_rdata(this, &i_clk, REG_POSEDGE, &i_pwrreset, REG_RESET_HIGH, "resp_rdata", "32", "'0", NO_COMMENT),
-    resp_err(this, &i_clk, REG_POSEDGE, &i_pwrreset, REG_RESET_HIGH, "resp_err", "1", RESET_ZERO, NO_COMMENT),
+    sys_rst(this, &i_clk, CLK_POSEDGE, &i_pwrreset, ACTIVE_HIGH, "sys_rst", "1", RSTVAL_ZERO, NO_COMMENT),
+    sys_nrst(this, &i_clk, CLK_POSEDGE, &i_pwrreset, ACTIVE_HIGH, "sys_nrst", "1", RSTVAL_ZERO, NO_COMMENT),
+    dbg_nrst(this, &i_clk, CLK_POSEDGE, &i_pwrreset, ACTIVE_HIGH, "dbg_nrst", "1", RSTVAL_ZERO, NO_COMMENT),
+    sys_locked(this, &i_clk, CLK_POSEDGE, &i_pwrreset, ACTIVE_HIGH, "sys_locked", "1", RSTVAL_ZERO, NO_COMMENT),
+    ddr_locked(this, &i_clk, CLK_POSEDGE, &i_pwrreset, ACTIVE_HIGH, "ddr_locked", "1", RSTVAL_ZERO, NO_COMMENT),
+    resp_valid(this, &i_clk, CLK_POSEDGE, &i_pwrreset, ACTIVE_HIGH, "resp_valid", "1", RSTVAL_ZERO, NO_COMMENT),
+    resp_rdata(this, &i_clk, CLK_POSEDGE, &i_pwrreset, ACTIVE_HIGH, "resp_rdata", "32", "'0", NO_COMMENT),
+    resp_err(this, &i_clk, CLK_POSEDGE, &i_pwrreset, ACTIVE_HIGH, "resp_err", "1", RSTVAL_ZERO, NO_COMMENT),
     //
     comb(this),
     pslv0(this, "pslv0", NO_COMMENT)

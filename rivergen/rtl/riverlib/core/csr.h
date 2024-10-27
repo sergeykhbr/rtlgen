@@ -188,23 +188,35 @@ class CsrRegs : public ModuleObject {
 
     class RegModeType : public StructObject {
      public:
-        RegModeType(GenObject *parent, const char *name, const char *comment)
-            : StructObject(parent, "RegModeType", name, comment),
-            xepc(this, "xepc", "RISCV_ARCH", "0", ""),
-            xpp(this, "xpp", "2", "0", "Previous Privildge mode. If x is not implemented, then xPP mus be 0"),
-            xpie(this, "xpie", "1", "0", "Previous Privildge mode global interrupt enable"),
-            xie(this, "xie", "1", "0", "Global interrupt enbale bit."),
-            xsie(this, "xsie", "1", "0", "Enable Software interrupts."),
-            xtie(this, "xtie", "1", "0", "Enable Timer interrupts."),
-            xeie(this, "xeie", "1", "0", "Enable External interrupts."),
-            xtvec_off(this, "xtvec_off", "RISCV_ARCH", "0", "Trap Vector BAR"),
-            xtvec_mode(this, "xtvec_mode", "2", "0", "Trap Vector mode: 0=direct; 1=vectored"),
-            xtval(this, "xtval", "RISCV_ARCH", "0", "Trap value, bad address"),
-            xcause_irq(this, "xcause_irq", "1", "0", "0=Exception, 1=Interrupt"),
-            xcause_code(this, "xcause_code", "5", "0", "Exception code"),
-            xscratch(this, "xscratch", "RISCV_ARCH", "0", "software dependable register"),
-            xcounteren(this, "xcounteren", "32", "0", "Counter-enable controls access to timers from the next less priv mode")
+        RegModeType(GenObject *parent,
+                    GenObject *clk,
+                    EClockEdge edge,
+                    GenObject *nrst,
+                    EResetActive active,
+                    const char *name,
+                    const char *rstval,
+                    const char *comment)
+            : StructObject(parent, clk, edge, nrst, active, "RegModeType", name, rstval, comment),
+            xepc(this, clk, edge, nrst, active, "xepc", "RISCV_ARCH", RSTVAL_ZERO, NO_COMMENT),
+            xpp(this, clk, edge, nrst, active, "xpp", "2", RSTVAL_ZERO, "Previous Privildge mode. If x is not implemented, then xPP mus be 0"),
+            xpie(this, clk, edge, nrst, active, "xpie", "1", RSTVAL_ZERO, "Previous Privildge mode global interrupt enable"),
+            xie(this, clk, edge, nrst, active, "xie", "1", RSTVAL_ZERO, "Global interrupt enbale bit."),
+            xsie(this, clk, edge, nrst, active, "xsie", "1", RSTVAL_ZERO, "Enable Software interrupts."),
+            xtie(this, clk, edge, nrst, active, "xtie", "1", RSTVAL_ZERO, "Enable Timer interrupts."),
+            xeie(this, clk, edge, nrst, active, "xeie", "1", RSTVAL_ZERO, "Enable External interrupts."),
+            xtvec_off(this, clk, edge, nrst, active, "xtvec_off", "RISCV_ARCH", RSTVAL_ZERO, "Trap Vector BAR"),
+            xtvec_mode(this, clk, edge, nrst, active, "xtvec_mode", "2", RSTVAL_ZERO, "Trap Vector mode: 0=direct; 1=vectored"),
+            xtval(this, clk, edge, nrst, active, "xtval", "RISCV_ARCH", RSTVAL_ZERO, "Trap value, bad address"),
+            xcause_irq(this, clk, edge, nrst, active, "xcause_irq", "1", RSTVAL_ZERO, "0=Exception, 1=Interrupt"),
+            xcause_code(this, clk, edge, nrst, active, "xcause_code", "5", RSTVAL_ZERO, "Exception code"),
+            xscratch(this, clk, edge, nrst, active, "xscratch", "RISCV_ARCH", RSTVAL_ZERO, "software dependable register"),
+            xcounteren(this, clk, edge, nrst, active, "xcounteren", "32", RSTVAL_ZERO, "Counter-enable controls access to timers from the next less priv mode")
             {}
+        RegModeType(GenObject *parent,
+                    const char *name,
+                    const char *comment)
+            : RegModeType(parent, 0, CLK_ALWAYS, 0, ACTIVE_NONE,
+                         name, RSTVAL_NONE, comment) {}
      public:
         RegSignal xepc;
         RegSignal xpp;
@@ -222,39 +234,51 @@ class CsrRegs : public ModuleObject {
         RegSignal xcounteren;
     } RegModeTypeDef_;
 
-    class ModeTableType : public RegStructArray<RegModeType> {
+    class ModeTableType : public ValueArray<RegModeType> {
      public:
         ModeTableType(GenObject *parent,
                       Logic *clk,
                       Logic *rstn,
                       const char *name)
-            : RegStructArray<RegModeType>(parent, clk, REG_POSEDGE,
-                    rstn, REG_RESET_LOW, name, "4", NO_COMMENT) {
+            : ValueArray<RegModeType>(parent, clk, CLK_POSEDGE,
+                    rstn, ACTIVE_LOW, name, "4", RSTVAL_NONE, NO_COMMENT) {
         }
     };
 
     class PmpItemType : public StructObject {
      public:
-        PmpItemType(GenObject *parent, const char *name, const char *comment)
-            : StructObject(parent, "PmpItemType", name, comment),
+        PmpItemType(GenObject *parent,
+                    GenObject *clk,
+                    EClockEdge edge,
+                    GenObject *nrst,
+                    EResetActive active,
+                    const char *name,
+                    const char *rstval,
+                    const char *comment)
+            : StructObject(parent, clk, edge, nrst, active, "PmpItemType", name, rstval, comment),
             cfg(this, "cfg", "8", "0", "pmpcfg bits without changes"),
             addr(this, "addr", "RISCV_ARCH", "0", "Maximal PMP address bits [55:2]"),
             mask(this, "mask", "RISCV_ARCH", "0", "NAPOT mask formed from address")
             {}
+        PmpItemType(GenObject *parent,
+                    const char *name,
+                    const char *comment)
+            : PmpItemType(parent, 0, CLK_ALWAYS, 0, ACTIVE_NONE, name,
+                          RSTVAL_NONE, comment) {}
      public:
         RegSignal cfg;
         RegSignal addr;
         RegSignal mask;
     } PmpItemTypeDef_;
 
-    class PmpTableType : public RegStructArray<PmpItemType> {
+    class PmpTableType : public ValueArray<PmpItemType> {
      public:
         PmpTableType(GenObject *parent,
                      Logic *clk,
                      Logic *rstn,
                      const char *name)
-            : RegStructArray<PmpItemType>(parent, clk, REG_POSEDGE,
-                    rstn, REG_RESET_LOW, name, "CFG_PMP_TBL_SIZE", NO_COMMENT) {
+            : ValueArray<PmpItemType>(parent, clk, CLK_POSEDGE,
+                    rstn, ACTIVE_LOW, name, "CFG_PMP_TBL_SIZE", RSTVAL_NONE, NO_COMMENT) {
         }
     };
 

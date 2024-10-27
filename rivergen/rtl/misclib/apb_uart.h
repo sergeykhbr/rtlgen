@@ -103,7 +103,7 @@ class apb_uart : public ModuleObject {
     RegSignal fwcpuid;
 
     TextLine _rx0_;
-    WireArray<RegSignal> rx_fifo;
+    RegArray rx_fifo;
     RegSignal rx_state;
     RegSignal rx_ena;
     RegSignal rx_ie;
@@ -119,7 +119,7 @@ class apb_uart : public ModuleObject {
     RegSignal rx_shift;
 
     TextLine _tx0_;
-    WireArray<RegSignal> tx_fifo;
+    RegArray tx_fifo;
     RegSignal tx_state;
     RegSignal tx_ena;
     RegSignal tx_ie;

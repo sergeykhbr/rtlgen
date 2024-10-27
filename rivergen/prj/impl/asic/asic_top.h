@@ -33,7 +33,7 @@ class asic_top : public ModuleObject {
     asic_top(GenObject *parent, const char *name, const char *comment=NO_COMMENT);
 
     virtual GenObject *getResetPort() override { return &i_rst; }
-    virtual bool getResetActive() override { return true; }
+    virtual EResetActive getResetActive() override { return ACTIVE_HIGH; }
     virtual bool isTop() override { return true; }
 
 public:

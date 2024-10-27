@@ -31,23 +31,37 @@ class plic : public ModuleObject {
      class plic_context_type : public StructObject {
      public:
         // Structure definition
-        plic_context_type(GenObject *parent, const char *name, const char *comment)
-            : StructObject(parent, "plic_context_type", name, comment),
-            priority_th(this, "priority_th", "4", "0"),
-            ie(this, "ie", "1024", "0", "interrupt enable per context"),
-            ip_prio(this, "ip_prio", "MUL(4,1024)", "0", "interrupt pending priority per context"),
-            prio_mask(this, "prio_mask", "16", "0", "pending interrupts priorites"),
-            sel_prio(this, "sel_prio", "4", "0", "the most available priority"),
-            irq_idx(this, "irq_idx", "10", "0", "currently selected most prio irq"),
-            irq_prio(this, "irq_prio", "10", "0", "currently selected prio level") {}
+        plic_context_type(GenObject *parent,
+                          GenObject *clk,
+                          EClockEdge edge,
+                          GenObject *nrst,
+                          EResetActive active,
+                          const char *name,
+                          const char *rstval,
+                          const char *comment)
+            : StructObject(parent, clk, edge, nrst, active, "plic_context_type", name, rstval, comment),
+            priority_th(this, clk, edge, nrst, active, "priority_th", "4", RSTVAL_ZERO, NO_COMMENT),
+            ie(this, clk, edge, nrst, active, "ie", "1024", RSTVAL_ZERO, "interrupt enable per context"),
+            ip_prio(this, clk, edge, nrst, active, "ip_prio", "MUL(4,1024)", RSTVAL_ZERO, "interrupt pending priority per context"),
+            prio_mask(this, clk, edge, nrst, active, "prio_mask", "16", RSTVAL_ZERO, "pending interrupts priorites"),
+            sel_prio(this, clk, edge, nrst, active, "sel_prio", "4", RSTVAL_ZERO, "the most available priority"),
+            irq_idx(this, clk, edge, nrst, active, "irq_idx", "10", RSTVAL_ZERO, "currently selected most prio irq"),
+            irq_prio(this, clk, edge, nrst, active, "irq_prio", "10", RSTVAL_ZERO, "currently selected prio level") {}
+
+        plic_context_type(GenObject *parent,
+                          const char *name,
+                          const char *comment)
+            : plic_context_type(parent, 0, CLK_ALWAYS, 0, ACTIVE_NONE,
+                                name, RSTVAL_NONE, comment) {}
+
      public:
-        Logic priority_th;
-        Logic ie;
-        Logic ip_prio;
-        Logic prio_mask;
-        Logic sel_prio;
-        Logic irq_idx;
-        Logic irq_prio;
+        RegSignal priority_th;
+        RegSignal ie;
+        RegSignal ip_prio;
+        RegSignal prio_mask;
+        RegSignal sel_prio;
+        RegSignal irq_idx;
+        RegSignal irq_prio;
     };
 
     class CombProcess : public ProcObject {
@@ -57,7 +71,7 @@ class plic : public ModuleObject {
             vrdata(this, "vrdata", "CFG_SYSBUS_DATA_BITS", "'0", NO_COMMENT),
             vb_irq_idx(this, "vb_irq_idx", "10", "ctxmax", "Currently selected most prio irq"),
             vb_irq_prio(this, "vb_irq_prio", "10", "ctxmax", "Currently selected prio level"),
-            vb_ctx(this, "vb_ctx", "ctxmax", NO_COMMENT),
+            vb_ctx(this, 0, CLK_ALWAYS, 0, ACTIVE_NONE, "vb_ctx", "ctxmax", RSTVAL_NONE, NO_COMMENT),
             vb_src_priority(this, "vb_src_priority", "MUL(4,1024)"),
             vb_pending(this, "vb_pending", "1024"),
             vb_ip(this, "vb_ip", "ctxmax", "'0", NO_COMMENT),
@@ -68,7 +82,7 @@ class plic : public ModuleObject {
         Logic vrdata;
         WireArray<Logic> vb_irq_idx;
         WireArray<Logic> vb_irq_prio;
-        StructArray<plic_context_type> vb_ctx;
+        ValueArray<plic_context_type> vb_ctx;
         Logic vb_src_priority;
         Logic vb_pending;
         Logic vb_ip;
@@ -92,15 +106,15 @@ class plic : public ModuleObject {
 
  protected:
 
-    class PlicContextTableType : public RegStructArray<plic_context_type> {
+    class PlicContextTableType : public ValueArray<plic_context_type> {
      public:
         PlicContextTableType(GenObject *parent,
                              Logic *clk,
                              Logic *rstn,
                              const char *name,
                              const char *comment)
-            : RegStructArray<plic_context_type>(parent, clk, REG_POSEDGE,
-                                                rstn, REG_RESET_LOW, name, "ctxmax", comment) {}
+            : ValueArray<plic_context_type>(parent, clk, CLK_POSEDGE,
+                                            rstn, ACTIVE_LOW, name, "ctxmax", "", comment) {}
     };
 
     plic_context_type plic_context_type_def_;

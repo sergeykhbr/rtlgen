@@ -16,17 +16,183 @@
 
 #include "signals.h"
 #include "utils.h"
+#include <map>
 
 namespace sysvc {
 
-Signal::Signal(GenObject *parent, const char *name, const char *width,
-    const char *val, const char *comment)
-    : Logic(parent, name, width, val, comment) {
+static GenObject* getModuleInput(GenObject *p, const char *portname) {
+    while (!p->isModule()) {
+        p = p->getParent();
+    }
+    for (auto &i : p->getEntries()) {
+        if (i->isInput() && i->getName() == portname) {
+            return i;
+        }
+    }
+    return 0;
 }
 
-Signal1::Signal1(GenObject *parent, const char *name, const char *width,
-    const char *val, const char *comment)
-    : Logic1(parent, name, width, val, comment) {
+void detect_vr_prefixes(GenObject *obj, std::string &v, std::string &r) {
+    if (obj->getClockEdge() == CLK_ALWAYS) {
+        return;
+    }
+    std::map<std::string, int> clkmap;
+    GenObject *p = obj;
+    while (!p->isModule()) {
+        p = p->getParent();
+    }
+    for (auto &r: p->getEntries()) {
+        if (r->getClockPort() && r->getClockEdge() != CLK_ALWAYS) {
+            clkmap[r->getClockPort()->getName()]++;
+        }
+    }
+    if (obj->getResetActive() == ACTIVE_LOW) {
+        v = "v";
+        r = "r";
+    } else if (obj->getResetActive() == ACTIVE_HIGH) {
+        v = "vh";
+        r = "rh";
+    } else {
+        v = "vx";
+        r = "rx";
+    }
+    if (obj->getClockEdge() == CLK_NEGEDGE) {
+        v = "n" + v;
+        r = "n" + r;
+    }
+    // Several clocks defined
+    if (clkmap.size() > 1) {
+        // "v1", "r1" .. etc
+        v += '0' + static_cast<char>(clkmap.size());
+        r += '0' + static_cast<char>(clkmap.size());
+    }
+}
+
+
+Signal::Signal(GenObject *parent,
+                     GenObject *clk,
+                     EClockEdge edge,
+                     GenObject *nrst,
+                     EResetActive active,
+                     const char *name,
+                     const char *width,
+                     const char *rstval,
+                     const char *comment)
+    : Logic(parent, clk, edge, nrst, active,
+            name, width, rstval, comment) {
+    // Assign default clock ports: i_clk and i_nrst
+    if (clk == 0 && edge != CLK_ALWAYS) {
+        objClock_ = getModuleInput(parent, "i_clk");
+        if (!objClock_) {
+            SHOW_ERROR("Register '%s.%s' does not have clock",
+                    parent->getName().c_str(), 
+                    getName().c_str());
+        }
+    }
+
+    if (nrst == 0 && active != ACTIVE_NONE) {
+        objReset_ = getModuleInput(parent, "i_nrst");
+        if (!objReset_) {
+            SHOW_ERROR("Register '%s.%s' does not have reset",
+                    parent->getName().c_str(),
+                    getName().c_str());
+        }
+    }
+    detect_vr_prefixes(this, v_, r_);
+}
+
+Signal1::Signal1(GenObject *parent,
+                       GenObject *clk,
+                       EClockEdge edge,
+                       GenObject *nrst,
+                       EResetActive active,
+                       const char *name,
+                       const char *width,
+                       const char *rstval,
+                       const char *comment)
+    : Logic1(parent, clk, edge, nrst, active,
+            name, width, rstval, comment) {
+    // Assign default clock ports: i_clk and i_nrst
+    if (clk == 0 && edge != CLK_ALWAYS) {
+        objClock_ = getModuleInput(parent, "i_clk");
+        if (!objClock_) {
+            SHOW_ERROR("Register '%s.%s' does not have clock",
+                    parent->getName().c_str(), 
+                    getName().c_str());
+        }
+    }
+
+    if (nrst == 0 && active != ACTIVE_NONE) {
+        objReset_ = getModuleInput(parent, "i_nrst");
+        if (!objReset_) {
+            SHOW_ERROR("Register '%s.%s' does not have reset",
+                    parent->getName().c_str(),
+                    getName().c_str());
+        }
+    }
+    detect_vr_prefixes(this, v_, r_);
+}
+
+
+static std::string copyreg(GenObject *r,
+                           const char *i,
+                           const char *dst_prefix,
+                           const char *optype,
+                           const char *src_prefix) {
+    std::string ret;
+    std::string dst = dst_prefix;
+    std::string src = src_prefix;
+    std::string idx = "";
+    if (dst.size()) {
+        dst += ".";
+    }
+    if (src.size()) {
+        src += ".";
+    }
+    if (SCV_is_sysc() || SCV_is_sv()) {
+        if (r->getDepth()) {
+            ret += addspaces() + "for (int " + i + " = 0; " + i + " < ";
+            ret += r->getStrDepth() + "; " + i + "++) ";
+            if (SCV_is_sysc()) {
+                ret += "{\n";
+            } else {
+                ret += "begin\n";
+            }
+            idx = "[" + std::string(i) + "]";
+            pushspaces();
+        }
+        ret += addspaces() + dst + r->getName() + idx + " " + optype + " ";
+
+        if (src.size()) {
+            ret += src + r->getName() + idx + ";\n";
+        } else {
+            ret += r->getStrValue() + ";\n";
+        }
+
+        if (r->getDepth()) {
+            popspaces();
+            if (SCV_is_sysc()) {
+                ret += addspaces() + "}\n";
+            } else {
+                ret += addspaces() + "end\n";
+            }
+        }
+    }
+    return ret;
+}
+
+std::string Signal::getCopyValue(char *i,
+                                 const char *dst_prefix,
+                                 const char *optype,
+                                 const char *src_prefix) {
+    return copyreg(this, i, dst_prefix, optype, src_prefix);
+}
+
+std::string Signal1::getCopyValue(char *i,
+                                  const char *dst_prefix,
+                                  const char *optype,
+                                  const char *src_prefix) {
+    return copyreg(this, i, dst_prefix, optype, src_prefix);
 }
 
 }

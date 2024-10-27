@@ -22,11 +22,18 @@
 
 namespace sysvc {
 
+extern void detect_vr_prefixes(GenObject *obj, std::string &v, std::string &r);
+
 StructObject::StructObject(GenObject *parent,
+                           GenObject *clk,
+                           EClockEdge edge,
+                           GenObject *nrst,
+                           EResetActive active,
                            const char *type,
                            const char *name,
+                           const char *rstval,
                            const char *comment)
-    : GenObject(parent, comment) {
+    : GenValue(parent, clk, edge, nrst, active, name, rstval, comment) {
     type_ = std::string(type);
     name_ = std::string(name);
     if (name_ == "") {
@@ -37,6 +44,15 @@ StructObject::StructObject(GenObject *parent,
     } else {
         SCV_get_cfg_type(this, type_.c_str());
     }
+    // See signals.cpp
+    detect_vr_prefixes(this, v_, r_);
+}
+
+StructObject::StructObject(GenObject *parent,
+                           const char *type,
+                           const char *name,
+                           const char *comment)
+    : StructObject(parent, 0, CLK_ALWAYS, 0, ACTIVE_NONE, type, name, "", comment) {
 }
 
 bool StructObject::isTypedef() {
@@ -76,6 +92,10 @@ std::string StructObject::getType() {
 
 std::string StructObject::getStrValue() {
     std::string ret = "";
+    if (objValue_) {
+        return objValue_->getName();
+    }
+
     if (SCV_is_sysc()) {
         ret += "{";
     } else if (SCV_is_sv()) {
@@ -130,6 +150,100 @@ std::string StructObject::getStrValue() {
     return ret;
 }
 
+bool StructObject::isReg() {
+    if (objClock_ && edge_ == CLK_POSEDGE) {
+        return true;
+    }
+    // TODO: remove me. Clock should be re-assigned to structure
+    //       while construct child objects.
+    for (auto &p: getEntries()) {
+        if (p->isReg()) {
+            return true;
+        }
+    }
+    return false;
+}
+
+bool StructObject::isNReg() {
+    if (objClock_ && edge_ == CLK_NEGEDGE) {
+        return true;
+    }
+    // TODO: remove me. Clock should be re-assigned to structure
+    //       while construct child objects.
+    for (auto &p: getEntries()) {
+        if (p->isNReg()) {
+            return true;
+        }
+    }
+    return false;
+}
+
+bool StructObject::is2Dim() {
+    if (getDepth()) {
+        return true;
+    }
+    for (auto &p: getEntries()) {
+        if (p->is2Dim()) {
+            return true;
+        }
+    }
+    return false;
+}
+
+std::string StructObject::getCopyValue(char *i,
+                                       const char *dst_prefix,
+                                       const char *optype,
+                                       const char *src_prefix) {
+    std::string ret;
+    std::string dst = dst_prefix;
+    std::string src = src_prefix;
+    if (dst.size()) {
+        dst += "." + getName();
+    }
+    if (src.size()) {
+        src += "." + getName();
+    }
+    if (objValue_ && !is2Dim()) {
+        // reset value request:
+        ret = addspaces() + dst_prefix + " " + optype + " ";
+        ret += objValue_->getName() + ";\n";
+        return ret;
+    }
+
+    if (SCV_is_sysc() || SCV_is_sv()) {
+        char i_idx[2] = {i[0]};
+        if (getDepth()) {
+            ret += addspaces() + "for (int " + i + " = 0; " + i + " < ";
+            ret += getStrDepth() + "; " + i + "++) ";
+            if (SCV_is_sysc()) {
+                ret += "{\n";
+            } else {
+                ret += "begin\n";
+            }
+            dst += "[" + std::string(i) + "]";
+            if (src.size()) {
+                src += "[" + std::string(i) + "]";
+            }
+            pushspaces();
+            i_idx[0]++;
+        }
+
+        for (auto &p: getEntries()) {
+            ret += p->getCopyValue(i_idx, dst.c_str(), optype, src.c_str());
+        }
+
+        if (getDepth()) {
+            popspaces();
+            if (SCV_is_sysc()) {
+                ret += addspaces() + "}\n";
+            } else {
+                ret += addspaces() + "end\n";
+            }
+        }
+
+    }
+    return ret;
+}
 
 std::string StructObject::generate_interface_constructor() {
     std::string ret = "";

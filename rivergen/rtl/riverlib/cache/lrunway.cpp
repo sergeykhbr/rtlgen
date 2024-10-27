@@ -31,8 +31,8 @@ lrunway::lrunway(GenObject *parent, const char *name, const char *comment) :
     LINES_TOTAL(this, "LINES_TOTAL", "POW2(1,abits)"),
     WAYS_TOTAL(this, "WAYS_TOTAL", "POW2(1,waybits)"),
     LINE_WIDTH(this, "LINE_WIDTH", "MUL(WAYS_TOTAL,waybits)"),
-    radr(this, &i_clk, REG_POSEDGE, 0, REG_RESET_NONE, "radr", "abits", RESET_ZERO, NO_COMMENT),
-    mem(this, &i_clk, REG_POSEDGE, 0, REG_RESET_NONE, "mem", "LINE_WIDTH", "LINES_TOTAL", NO_COMMENT),
+    radr(this, &i_clk, CLK_POSEDGE, 0, ACTIVE_NONE, "radr", "abits", RSTVAL_ZERO, NO_COMMENT),
+    mem(this, &i_clk, CLK_POSEDGE, 0, ACTIVE_NONE, "mem", "LINE_WIDTH", "LINES_TOTAL", RSTVAL_NONE, NO_COMMENT),
     // process
     comb(this)
 {

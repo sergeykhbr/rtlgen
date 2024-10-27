@@ -31,9 +31,6 @@ class ModuleObject : public GenObject {
     ModuleObject(GenObject *parent, const char *type,
                  const char *name, const char *comment);
 
-    virtual void registerProcess(GenObject *p) { proclist_.push_back(p); }
-    virtual void registerRegister(GenObject *r) { reglist_.push_back(r); }
-
     virtual std::string getType() override { return type_; }
     virtual std::string getName() override { return name_; }
     virtual bool isAsyncResetParam() override { return getResetPort() ? true: false; }
@@ -82,7 +79,11 @@ class ModuleObject : public GenObject {
 
     std::string generate_sysc_h_reg_struct(bool negedge=false);
     std::string generate_sysc_h_struct();
-    std::string generate_sysc_proc_registers(bool clkpos=true);
+ public:
+    std::string generate_sysc_proc_v_reset(EResetActive active, std::string &xrst);    // operation SYNC_RESET calls it explicitly
+ protected:
+    std::string generate_sysc_proc_r_to_v();         // at the beginning of main proc
+    std::string generate_sysc_proc_registers(EClockEdge edge, EResetActive active);
     std::string generate_sysc_param_strings();
     std::string generate_sysc_constructor();
     std::string generate_sysc_submodule_nullify();
@@ -107,8 +108,6 @@ class ModuleObject : public GenObject {
     std::string type_;
     std::string name_;
     Logic async_reset_;
-    std::list<GenObject *> proclist_;
-    std::list<GenObject *> reglist_;
 };
 
 }  // namespace sysvc

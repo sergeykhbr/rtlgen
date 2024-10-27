@@ -23,7 +23,20 @@ namespace sysvc {
 
 #define NO_PARENT ((GenObject *)0)
 #define NO_COMMENT ""
-#define RESET_ZERO "0"
+#define RSTVAL_ZERO "0"
+#define RSTVAL_NONE ""
+
+enum EClockEdge {
+    CLK_ALWAYS,
+    CLK_POSEDGE,
+    CLK_NEGEDGE
+};
+
+enum EResetActive {
+    ACTIVE_NONE,
+    ACTIVE_LOW,
+    ACTIVE_HIGH
+};
 
 class GenObject {
  public:
@@ -46,7 +59,8 @@ class GenObject {
     virtual GenObject *getAsyncResetParam() { return 0; }// async_reset declared as a local parameter at asic_top, no need to autogenerate it
     virtual GenObject *getResetPort() { return 0; }     // reset port object
     virtual GenObject *getClockPort() { return 0; }
-    virtual bool getResetActive() { return false; }
+    virtual EClockEdge getClockEdge() { return CLK_ALWAYS; }
+    virtual EResetActive getResetActive() { return ACTIVE_NONE; }
     virtual std::string addComment();                   // comment at current position
     virtual void addComment(std::string &out);          // comment after 60 spaces
     virtual bool isComment() { return false; }
@@ -71,6 +85,7 @@ class GenObject {
     virtual bool isVector() { return false; }           // vector typedef of array of element
     virtual bool isModule() { return false; }
     virtual bool isOperation() { return false; }
+    virtual bool is2Dim() { return false; }             // If any of child entries has more than 1 dimension we cannot use assignment without cycle
     virtual bool isReg() { return false; }              // is register with posedge clock
     virtual bool isNReg() { return false; }             // is register with negedge clock
     virtual bool isResetDisabled() { return false; }    // Registers without reset usually implemented in memory bank
@@ -83,6 +98,8 @@ class GenObject {
     virtual bool isGenerate() { return false; }         // use generate instead of comb in sv and vhdl
     virtual bool isTop() { return false; }
 
+    virtual std::string v_prefix() { return std::string(""); }
+    virtual std::string r_prefix() { return std::string(""); }
     virtual std::string v_name(std::string v);
     virtual std::string r_name(std::string v);
 
@@ -109,6 +126,14 @@ class GenObject {
     virtual std::string getLibName();                   // VHDL library. Default is "work"
 
     virtual std::string generate() { return std::string(""); }
+    virtual std::string getCopyValue(char *i,
+                                     const char *dst_prefix,
+                                     const char *optype,
+                                     const char *src_prefix) {
+        // copy register values, like:
+        //      dst_prefix[i].regname =/<= src_prefix[i].regname
+        return std::string("");
+    }
 
  protected:
     GenObject *parent_;                     // All object could have/should have parent

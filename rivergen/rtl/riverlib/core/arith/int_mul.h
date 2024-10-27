@@ -87,7 +87,8 @@ class IntMul : public ModuleObject {
                       const char *name,
                       const char *width,
                       const char *depth) :
-                      RegArray(parent, clk, REG_POSEDGE, rstn, REG_RESET_LOW, name, width, depth, NO_COMMENT) {}
+                      RegArray(parent, clk, CLK_POSEDGE, rstn, ACTIVE_LOW,
+                              name, width, depth, RSTVAL_ZERO, NO_COMMENT) {}
 
         virtual bool isVcd() override { return false; }     // disable tracing
     };
@@ -100,7 +101,8 @@ class IntMul : public ModuleObject {
                       const char *name,
                       const char *width,
                       const char *depth) :
-                      RegArray(parent, clk, REG_POSEDGE, rstn, REG_RESET_LOW, name, width, depth, NO_COMMENT) {}
+                      RegArray(parent, clk, CLK_POSEDGE, rstn, ACTIVE_LOW,
+                               name, width, depth, RSTVAL_ZERO, NO_COMMENT) {}
 
         virtual bool isVcd() override { return false; }     // disable tracing
     };

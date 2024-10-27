@@ -23,9 +23,18 @@
 
 namespace sysvc {
 
-class StructObject : public GenObject {
+class StructObject : public GenValue {
  public:
     // Declare structure type and create on instance
+    StructObject(GenObject *parent,
+                 GenObject *clk,
+                 EClockEdge edge,
+                 GenObject *nrst,
+                 EResetActive active,
+                 const char *type,
+                 const char *name,
+                 const char *rstval,
+                 const char *comment);
     StructObject(GenObject *parent,
                  const char *type,
                  const char *name,
@@ -38,6 +47,13 @@ class StructObject : public GenObject {
     virtual bool isTypedef() override;
     virtual bool isInterface() override;
     virtual std::string getStrValue() override;
+    virtual bool isReg() override;
+    virtual bool isNReg() override;
+    virtual bool is2Dim() override;
+    virtual std::string getCopyValue(char *i,
+                                     const char *dst_prefix,
+                                     const char *optype,
+                                     const char *src_prefix) override;
 
     virtual std::string generate() override;
 

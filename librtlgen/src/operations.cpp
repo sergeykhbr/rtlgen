@@ -298,7 +298,7 @@ std::string Operation::reset(const char *dst, const char *src, ModuleObject *m, 
                 ret += "!async_reset_ && ";
             }
             ret += m->getResetPort()->getName() + ".read() == ";
-            if (m->getResetActive()) {
+            if (m->getResetActive() == ACTIVE_HIGH) {
                 ret += "1";
             } else {
                 ret += "0";
@@ -314,7 +314,7 @@ std::string Operation::reset(const char *dst, const char *src, ModuleObject *m, 
                 ret += "async_reset_ && ";
             }
             ret += m->getResetPort()->getName() + ".read() == ";
-            if (m->getResetActive() == 0) {
+            if (m->getResetActive() == ACTIVE_LOW) {
                 ret += "0";
             } else {
                 ret += "1";
@@ -352,7 +352,7 @@ std::string Operation::reset(const char *dst, const char *src, ModuleObject *m, 
             }
             ret += "(~async_reset && ";
             ret += m->getResetPort()->getName() + " == ";
-            if (!m->getResetActive()) {
+            if (m->getResetActive() == ACTIVE_LOW) {
                 ret += "1'b0";
             } else {
                 ret += "1'b1";
@@ -364,7 +364,7 @@ std::string Operation::reset(const char *dst, const char *src, ModuleObject *m, 
             ret += " begin\n";
         } else {
             ret += "if (" + m->getResetPort()->getName() + " == ";
-            if (!m->getResetActive()) {
+            if (m->getResetActive() == ACTIVE_LOW) {
                 ret += "1'b0";
             } else {
                 ret += "1'b1";
@@ -1856,7 +1856,14 @@ void ENDWHILE(const char *comment) {
 std::string SYNC_RESET_gen(GenObject **args) {
     ModuleObject *m = static_cast<ModuleObject *>(args[1]);
     std::string xrst = Operation::obj2varname(args[2]);
-    std::string ret = Operation::reset("v", 0, m, xrst);
+    std::string ret;
+    if (m->getType() == "lrunway") {
+        bool st = true;
+    }
+    if (SCV_is_sysc()) {
+        ret = m->generate_sysc_proc_v_reset(ACTIVE_LOW, xrst);
+        ret += m->generate_sysc_proc_v_reset(ACTIVE_HIGH, xrst);
+    }
     ret += "\n";
     return ret;
 }

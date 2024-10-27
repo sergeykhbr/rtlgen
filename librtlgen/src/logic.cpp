@@ -21,10 +21,15 @@
 namespace sysvc {
 
 Logic::Logic(GenObject *parent,
-              const char *name,
-              const char *width,
-              const char *val,
-              const char *comment) : GenValue(parent, name, "", comment) {
+             GenObject *clk,
+             EClockEdge edge,
+             GenObject *nrst,
+             EResetActive active,
+             const char *name,
+             const char *width,
+             const char *val,
+             const char *comment) :
+    GenValue(parent, clk, edge, nrst, active, name, "", comment) {
     objBitidx_ = 0;
     objWidth_ = SCV_parse_to_obj(this, width);
     if (val[0] < '0' || val[0] > '9') {
@@ -34,6 +39,14 @@ Logic::Logic(GenObject *parent,
     } else {
         objValue_ = new DecLogicConst(objWidth_, strtoll(val, 0, 10));
     }
+}
+
+Logic::Logic(GenObject *parent,
+              const char *name,
+              const char *width,
+              const char *val,
+              const char *comment) :
+    Logic(parent, 0, CLK_ALWAYS, 0, ACTIVE_NONE, name, width, val, comment) {
 }
 
 

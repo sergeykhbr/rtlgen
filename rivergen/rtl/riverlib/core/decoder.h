@@ -88,30 +88,43 @@ class InstrDecoder : public ModuleObject {
 
     class DecoderDataType : public StructObject {
      public:
-        DecoderDataType(GenObject *parent, const char *name, const char *comment)
-            : StructObject(parent, "DecoderDataType", name, comment),
-        pc(this, "pc", "RISCV_ARCH", "'1", NO_COMMENT),
-        isa_type(this, "isa_type", "ISA_Total", "'0", NO_COMMENT),
-        instr_vec(this, "instr_vec", "Instr_Total", "'0", NO_COMMENT),
-        instr(this, "instr", "32", "'1", NO_COMMENT),
-        memop_store(this, "memop_store", "1", "0", NO_COMMENT),
-        memop_load(this, "memop_load", "1", "0", NO_COMMENT),
-        memop_sign_ext(this, "memop_sign_ext", "1", "0", NO_COMMENT),
-        memop_size(this, "memop_size", "2", "MEMOP_1B"),
-        unsigned_op(this, "unsigned_op", "1", "0", NO_COMMENT),
-        rv32(this, "rv32", "1", "0", NO_COMMENT),
-        f64(this, "f64", "1", "0", NO_COMMENT),
-        compressed(this, "compressed", "1", "0", NO_COMMENT),
-        amo(this, "amo", "1", "0", NO_COMMENT),
-        instr_load_fault(this, "instr_load_fault", "1", "0", NO_COMMENT),
-        instr_page_fault_x(this, "instr_page_fault_x", "1", "0", NO_COMMENT),
-        instr_unimplemented(this, "instr_unimplemented", "1", "0", NO_COMMENT),
-        radr1(this, "radr1", "6", "'0", NO_COMMENT),
-        radr2(this, "radr2", "6", "'0", NO_COMMENT),
-        waddr(this, "waddr", "6", "'0", NO_COMMENT),
-        csr_addr(this, "csr_addr", "12", "'0", NO_COMMENT),
-        imm(this, "imm", "RISCV_ARCH", "'0", NO_COMMENT),
-        progbuf_ena(this, "progbuf_ena", "1", "0", NO_COMMENT) {}
+        DecoderDataType(GenObject *parent,
+                        GenObject *clk,
+                        EClockEdge edge,
+                        GenObject *nrst,
+                        EResetActive active,
+                        const char *name,
+                        const char *rstval,
+                        const char *comment)
+            : StructObject(parent, clk, edge, nrst, active, "DecoderDataType", name, rstval, comment),
+        pc(this, clk, edge, nrst, active, "pc", "RISCV_ARCH", "'1", NO_COMMENT),
+        isa_type(this, clk, edge, nrst, active, "isa_type", "ISA_Total", RSTVAL_ZERO, NO_COMMENT),
+        instr_vec(this, clk, edge, nrst, active, "instr_vec", "Instr_Total", RSTVAL_ZERO, NO_COMMENT),
+        instr(this, clk, edge, nrst, active, "instr", "32", "'1", NO_COMMENT),
+        memop_store(this, clk, edge, nrst, active, "memop_store", "1", RSTVAL_ZERO, NO_COMMENT),
+        memop_load(this, clk, edge, nrst, active, "memop_load", "1", RSTVAL_ZERO, NO_COMMENT),
+        memop_sign_ext(this, clk, edge, nrst, active, "memop_sign_ext", "1", RSTVAL_ZERO, NO_COMMENT),
+        memop_size(this, clk, edge, nrst, active, "memop_size", "2", "MEMOP_1B", NO_COMMENT),
+        unsigned_op(this, clk, edge, nrst, active, "unsigned_op", "1", RSTVAL_ZERO, NO_COMMENT),
+        rv32(this, clk, edge, nrst, active, "rv32", "1", RSTVAL_ZERO, NO_COMMENT),
+        f64(this, clk, edge, nrst, active, "f64", "1", RSTVAL_ZERO, NO_COMMENT),
+        compressed(this, clk, edge, nrst, active, "compressed", "1", RSTVAL_ZERO, NO_COMMENT),
+        amo(this, clk, edge, nrst, active, "amo", "1", RSTVAL_ZERO, NO_COMMENT),
+        instr_load_fault(this, clk, edge, nrst, active, "instr_load_fault", "1", RSTVAL_ZERO, NO_COMMENT),
+        instr_page_fault_x(this, clk, edge, nrst, active, "instr_page_fault_x", "1", RSTVAL_ZERO, NO_COMMENT),
+        instr_unimplemented(this, clk, edge, nrst, active, "instr_unimplemented", "1", RSTVAL_ZERO, NO_COMMENT),
+        radr1(this, clk, edge, nrst, active, "radr1", "6", RSTVAL_ZERO, NO_COMMENT),
+        radr2(this, clk, edge, nrst, active, "radr2", "6", RSTVAL_ZERO, NO_COMMENT),
+        waddr(this, clk, edge, nrst, active, "waddr", "6", RSTVAL_ZERO, NO_COMMENT),
+        csr_addr(this, clk, edge, nrst, active, "csr_addr", "12", RSTVAL_ZERO, NO_COMMENT),
+        imm(this, clk, edge, nrst, active, "imm", "RISCV_ARCH", RSTVAL_ZERO, NO_COMMENT),
+        progbuf_ena(this, clk, edge, nrst, active, "progbuf_ena", "1", RSTVAL_ZERO, NO_COMMENT) {}
+        
+        DecoderDataType(GenObject *parent,
+                        const char *name,
+                        const char *comment)
+            : DecoderDataType(parent, 0, CLK_ALWAYS, 0, ACTIVE_NONE,
+                             name, RSTVAL_NONE, comment) {}
      public:
         Signal pc;
         Signal isa_type;
@@ -137,14 +150,14 @@ class InstrDecoder : public ModuleObject {
         Signal progbuf_ena;
     } DecoderDataTypeDef_;
 
-    class DecTableType : public RegStructArray<DecoderDataType> {
+    class DecTableType : public ValueArray<DecoderDataType> {
      public:
         DecTableType(GenObject *parent,
                      Logic *clk,
                      Logic *rstn,
                      const char *name)
-            : RegStructArray<DecoderDataType>(parent, clk, REG_POSEDGE,
-                rstn, REG_RESET_LOW, name, "FULL_DEC_DEPTH", NO_COMMENT) {
+            : ValueArray<DecoderDataType>(parent, clk, CLK_POSEDGE,
+                rstn, ACTIVE_LOW, name, "FULL_DEC_DEPTH", RSTVAL_NONE, NO_COMMENT) {
         }
 
         virtual bool isVcd() override { return false; }     // disable tracing
