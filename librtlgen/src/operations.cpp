@@ -85,7 +85,7 @@ std::string Operation::fullname(const char *prefix, std::string name, GenObject 
         curname = obj->generate();
     } else if (obj->getSelector()) {
         curname = "";
-        curname = fullname("r", curname, obj->getSelector());
+        curname = fullname("", curname, obj->getSelector());
         if (SCV_is_vhdl()) {
             curname = "(" + curname + ")";
         } else {
@@ -130,10 +130,12 @@ std::string Operation::fullname(const char *prefix, std::string name, GenObject 
 
     if (p && p->isStruct()) {
         curname = fullname(prefix, read + curname, obj->getParent());
-    } else if (obj->isReg()) {
-        curname = std::string(prefix) + "." + read + curname;
-    } else if (obj->isNReg()) {
-        curname = std::string("n") + std::string(prefix) + "." + read + curname;
+    } else if (obj->getClockEdge() != CLK_ALWAYS) {
+        if (prefix[0] == 'r') {
+            curname = obj->r_prefix() + "." + read + curname;
+        } else if (prefix[0] == 'v') {
+            curname = obj->v_prefix() + "." + read + curname;
+        }
     }
     return curname;
 }
@@ -147,7 +149,7 @@ std::string Operation::obj2varname(GenObject *obj, const char *prefix, bool read
 
     if (read) {
         if (obj->isInput()
-            || (prefix[0] == 'r' && obj->isSignal())) {
+            || obj->isSignal()) {
             if (SCV_is_sysc()) {
                 ret += ".read()";
             }
@@ -1857,14 +1859,9 @@ std::string SYNC_RESET_gen(GenObject **args) {
     ModuleObject *m = static_cast<ModuleObject *>(args[1]);
     std::string xrst = Operation::obj2varname(args[2]);
     std::string ret;
-    if (m->getType() == "lrunway") {
-        bool st = true;
-    }
     if (SCV_is_sysc()) {
-        ret = m->generate_sysc_proc_v_reset(ACTIVE_LOW, xrst);
-        ret += m->generate_sysc_proc_v_reset(ACTIVE_HIGH, xrst);
+        ret = m->generate_sysc_proc_v_reset(xrst);
     }
-    ret += "\n";
     return ret;
 }
 

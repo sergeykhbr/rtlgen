@@ -113,16 +113,16 @@ class RegIntBank : public ModuleObject {
                      const char *rstval,
                      const char *comment)
             : StructObject(parent, clk, edge, nrst, active, "RegValueType", name, rstval, comment),
-            val(this, "val", "RISCV_ARCH", "'0", NO_COMMENT),
-            tag(this, "tag", "CFG_REG_TAG_WIDTH", "'0", NO_COMMENT) {}
+            val(this, clk, edge, nrst, active, "val", "RISCV_ARCH", "'0", NO_COMMENT),
+            tag(this, clk, edge, nrst, active, "tag", "CFG_REG_TAG_WIDTH", "'0", NO_COMMENT) {}
         RegValueType(GenObject *parent,
                      const char *name,
                      const char *comment)
             : RegValueType(parent, 0, CLK_ALWAYS, 0, ACTIVE_NONE,
                             name, RSTVAL_NONE, comment) {}
      public:
-        RegSignal val;
-        RegSignal tag;
+        Signal val;
+        Signal tag;
     } RegValueTypeDef_;
 
     class RegTableType : public ValueArray<RegValueType> {

@@ -55,13 +55,13 @@ class plic : public ModuleObject {
                                 name, RSTVAL_NONE, comment) {}
 
      public:
-        RegSignal priority_th;
-        RegSignal ie;
-        RegSignal ip_prio;
-        RegSignal prio_mask;
-        RegSignal sel_prio;
-        RegSignal irq_idx;
-        RegSignal irq_prio;
+        Signal priority_th;
+        Signal ie;
+        Signal ip_prio;
+        Signal prio_mask;
+        Signal sel_prio;
+        Signal irq_idx;
+        Signal irq_prio;
     };
 
     class CombProcess : public ProcObject {
@@ -71,7 +71,14 @@ class plic : public ModuleObject {
             vrdata(this, "vrdata", "CFG_SYSBUS_DATA_BITS", "'0", NO_COMMENT),
             vb_irq_idx(this, "vb_irq_idx", "10", "ctxmax", "Currently selected most prio irq"),
             vb_irq_prio(this, "vb_irq_prio", "10", "ctxmax", "Currently selected prio level"),
-            vb_ctx(this, 0, CLK_ALWAYS, 0, ACTIVE_NONE, "vb_ctx", "ctxmax", RSTVAL_NONE, NO_COMMENT),
+            t0(this, "SystemC workaround: duplicate context structure to be able the bit assignment"),
+            vb_ctx_priority_th(this, 0, CLK_ALWAYS, 0, ACTIVE_NONE, "vb_ctx_priority_th", "4", "ctxmax", RSTVAL_ZERO, NO_COMMENT),
+            vb_ctx_ie(this, 0, CLK_ALWAYS, 0, ACTIVE_NONE, "vb_ctx_ie", "1024", "ctxmax", RSTVAL_ZERO, NO_COMMENT),
+            vb_ctx_ip_prio(this, 0, CLK_ALWAYS, 0, ACTIVE_NONE, "vb_ctx_ip_prio", "MUL(4,1024)", "ctxmax", RSTVAL_ZERO, NO_COMMENT),
+            vb_ctx_prio_mask(this, 0, CLK_ALWAYS, 0, ACTIVE_NONE, "vb_ctx_prio_mask", "16", "ctxmax", RSTVAL_ZERO, NO_COMMENT),
+            vb_ctx_sel_prio(this, 0, CLK_ALWAYS, 0, ACTIVE_NONE, "vb_ctx_sel_prio", "4", "ctxmax", RSTVAL_ZERO, NO_COMMENT),
+            vb_ctx_irq_idx(this, 0, CLK_ALWAYS, 0, ACTIVE_NONE, "vb_ctx_irq_idx", "10", "ctxmax", RSTVAL_ZERO, NO_COMMENT),
+            vb_ctx_irq_prio(this, 0, CLK_ALWAYS, 0, ACTIVE_NONE, "vb_ctx_irq_prio", "10", "ctxmax", RSTVAL_ZERO, NO_COMMENT),
             vb_src_priority(this, "vb_src_priority", "MUL(4,1024)"),
             vb_pending(this, "vb_pending", "1024"),
             vb_ip(this, "vb_ip", "ctxmax", "'0", NO_COMMENT),
@@ -82,7 +89,14 @@ class plic : public ModuleObject {
         Logic vrdata;
         WireArray<Logic> vb_irq_idx;
         WireArray<Logic> vb_irq_prio;
-        ValueArray<plic_context_type> vb_ctx;
+        TextLine t0;
+        WireArray<Logic> vb_ctx_priority_th;
+        WireArray<Logic> vb_ctx_ie;
+        WireArray<Logic> vb_ctx_ip_prio;
+        WireArray<Logic> vb_ctx_prio_mask;
+        WireArray<Logic> vb_ctx_sel_prio;
+        WireArray<Logic> vb_ctx_irq_idx;
+        WireArray<Logic> vb_ctx_irq_prio;
         Logic vb_src_priority;
         Logic vb_pending;
         Logic vb_ip;

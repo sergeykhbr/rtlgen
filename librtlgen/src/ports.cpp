@@ -20,7 +20,7 @@
 namespace sysvc {
 
 InPort::InPort(GenObject *parent, const char *name, const char *width,
-    const char *comment) : Logic(parent, name, width, "", comment) {
+    const char *comment) : Logic(parent, name, width, RSTVAL_NONE, comment) {
 }
 
 OutPort::OutPort(const char *width, const char *name, const char *val,
@@ -32,7 +32,7 @@ OutPort::OutPort(GenObject *parent, const char *name, const char *width,
     const char *comment) : OutPort(width, name, "0", parent, comment) {}
 
 IoPort::IoPort(GenObject *parent, const char *name, const char *width,
-    const char *comment) : Logic(parent, name, width, "", comment) {
+    const char *comment) : Logic(parent, name, width, RSTVAL_NONE, comment) {
 }
 
 }

@@ -20,6 +20,7 @@
 #include "logic.h"
 #include <iostream>
 #include <list>
+#include <map>
 
 namespace sysvc {
 
@@ -61,6 +62,8 @@ class ModuleObject : public GenObject {
     virtual void getTmplParamList(std::list<GenObject *> &genlist);
     virtual void getParamList(std::list<GenObject *> &genlist);
     virtual void getIoList(std::list<GenObject *> &genlist);
+    virtual void getSortedRegsMap(std::map<std::string, std::list<GenObject *>> &regmap,
+                                  std::map<std::string, bool> &is2dm);
  protected:
     std::string generate_all_proc_nullify(GenObject *obj, std::string prefix, std::string i);
 
@@ -77,13 +80,13 @@ class ModuleObject : public GenObject {
     std::string generate_sv_mod_always_ff_rst(bool clkpos=true);
     std::string generate_sv_mod_always_ops();   // additional operation in always process (if defined)
 
-    std::string generate_sysc_h_reg_struct(bool negedge=false);
+    std::string generate_sysc_h_reg_struct();
     std::string generate_sysc_h_struct();
  public:
-    std::string generate_sysc_proc_v_reset(EResetActive active, std::string &xrst);    // operation SYNC_RESET calls it explicitly
+    std::string generate_sysc_proc_v_reset(std::string &xrst);    // operation SYNC_RESET calls it explicitly
  protected:
     std::string generate_sysc_proc_r_to_v();         // at the beginning of main proc
-    std::string generate_sysc_proc_registers(EClockEdge edge, EResetActive active);
+    std::string generate_sysc_proc_registers();
     std::string generate_sysc_param_strings();
     std::string generate_sysc_constructor();
     std::string generate_sysc_submodule_nullify();

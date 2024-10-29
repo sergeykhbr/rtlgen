@@ -83,11 +83,17 @@ std::string ModuleObject::generate() {
     return ret;
 }
 
+// Remove me: this function not used in SysC alread, after upgrade of systemverilog
+//            delete it
 bool ModuleObject::isCombProcess() {
     for (auto &e: entries_) {
         if (e->isProcess()
             && e->getName() != "registers"
-            && e->getName() != "nregisters") {
+            && e->getName() != "rhegisters"
+            && e->getName() != "rxegisters"
+            && e->getName() != "nregisters"
+            && e->getName() != "nrhegisters"
+            && e->getName() != "nrxegisters") {
             return true;
         }
     }
@@ -175,6 +181,27 @@ void ModuleObject::getIoList(std::list<GenObject *> &iolist) {
         if (e->isInput() || e->isOutput()) {
             iolist.push_back(e);
         }
+    }
+}
+
+void ModuleObject::getSortedRegsMap(
+    std::map<std::string, std::list<GenObject *>> &regmap,
+    std::map<std::string, bool>  &is2dm)
+{
+    for (auto &p : getEntries()) {
+        GenObject *clkport = p->getClockPort();
+        if (!clkport || p->getClockEdge() == CLK_ALWAYS) {
+            continue;
+        }
+        if (p->r_prefix().size() == 0) {
+            SHOW_ERROR("%s::%s r-preifx not defined",
+                        getName().c_str(), p->getName().c_str());
+        }
+        regmap[p->r_prefix()].push_back(p);
+        if (is2dm.find(p->r_prefix()) == is2dm.end()) {
+            is2dm[p->r_prefix()] = false;
+        }
+        is2dm[p->r_prefix()] |= p->is2Dim();
     }
 }
 

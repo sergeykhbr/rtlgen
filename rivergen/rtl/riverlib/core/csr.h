@@ -256,9 +256,9 @@ class CsrRegs : public ModuleObject {
                     const char *rstval,
                     const char *comment)
             : StructObject(parent, clk, edge, nrst, active, "PmpItemType", name, rstval, comment),
-            cfg(this, "cfg", "8", "0", "pmpcfg bits without changes"),
-            addr(this, "addr", "RISCV_ARCH", "0", "Maximal PMP address bits [55:2]"),
-            mask(this, "mask", "RISCV_ARCH", "0", "NAPOT mask formed from address")
+            cfg(this, clk, edge, nrst, active, "cfg", "8", RSTVAL_ZERO, "pmpcfg bits without changes"),
+            addr(this, clk, edge, nrst, active, "addr", "RISCV_ARCH", RSTVAL_ZERO, "Maximal PMP address bits [55:2]"),
+            mask(this, clk, edge, nrst, active, "mask", "RISCV_ARCH", RSTVAL_ZERO, "NAPOT mask formed from address")
             {}
         PmpItemType(GenObject *parent,
                     const char *name,
