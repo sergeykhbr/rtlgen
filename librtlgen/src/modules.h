@@ -52,7 +52,7 @@ class ModuleObject : public GenObject {
     // async_reset logic and always (ff) process
     virtual bool isModule() override { return true; }
     virtual bool isTypedef() override { return getName() == getType(); }
-    virtual bool isCombProcess();
+    virtual void getCombProcess(std::list<GenObject *> &proclist);
     virtual bool isRegs();
     virtual bool isRegProcess();
     virtual bool isNRegs();
@@ -68,7 +68,7 @@ class ModuleObject : public GenObject {
     std::string generate_all_proc_nullify(GenObject *obj, std::string prefix, std::string i);
 
     std::string generate_sv_pkg_localparam();
-    std::string generate_sv_pkg_reg_struct(bool negedge);
+    std::string generate_sv_pkg_reg_struct();
     std::string generate_sv_pkg_struct();
     std::string generate_sv_mod_genparam();     // generic parameters
     std::string generate_sv_mod_param_strings();
@@ -77,8 +77,7 @@ class ModuleObject : public GenObject {
     std::string generate_sv_mod_clock(GenObject *proc);
     std::string generate_sv_mod_proc(GenObject *proc);
     std::string generate_sv_mod_proc_registers();
-    std::string generate_sv_mod_always_ff_rst(bool clkpos=true);
-    std::string generate_sv_mod_always_ops();   // additional operation in always process (if defined)
+    std::string generate_sv_mod_proc_always(bool async_on_off);
 
     std::string generate_sysc_h_reg_struct();
     std::string generate_sysc_h_struct();
@@ -100,7 +99,7 @@ class ModuleObject : public GenObject {
     std::string generate_sysc_vcd_entries(GenObject *obj, std::string prefix, std::string i, std::string &loop);
 
     std::string generate_vhdl_pkg_localparam();
-    std::string generate_vhdl_pkg_reg_struct(bool negedge);
+    std::string generate_vhdl_pkg_reg_struct();
     std::string generate_vhdl_pkg_struct();
     std::string generate_vhdl_mod_genparam();     // generic parameters
     std::string generate_vhdl_mod_param_strings();

@@ -22,6 +22,7 @@
 #include "files.h"
 #include "operations.h"
 #include <string.h>
+#include <algorithm>
 
 namespace sysvc {
 
@@ -83,21 +84,30 @@ std::string ModuleObject::generate() {
     return ret;
 }
 
-// Remove me: this function not used in SysC alread, after upgrade of systemverilog
-//            delete it
-bool ModuleObject::isCombProcess() {
-    for (auto &e: entries_) {
-        if (e->isProcess()
-            && e->getName() != "registers"
-            && e->getName() != "rhegisters"
-            && e->getName() != "rxegisters"
-            && e->getName() != "nregisters"
-            && e->getName() != "nrhegisters"
-            && e->getName() != "nrxegisters") {
-            return true;
-        }
+void ModuleObject::getCombProcess(std::list<GenObject *> &proclist) {
+    std::map<std::string,std::list<GenObject *>> regmap;
+    std::map<std::string,bool> is2dm;
+    std::list<std::string> regproclist;
+
+    // list of registers process depending of clock and reset
+    getSortedRegsMap(regmap,is2dm);
+    for (std::map<std::string,std::list<GenObject *>>::iterator it = regmap.begin();
+        it != regmap.end(); ++it) {
+        regproclist.push_back(it->first + "egisters");
     }
-    return false;
+
+    for (auto &p: getEntries()) {
+        if (!p->isProcess()) {
+            continue;
+        }
+        // Exclude process with name equals to <r>egisters process,
+        // because content of such process should be added to trigger action
+        if (std::find(regproclist.begin(),regproclist.end(),p->getName())
+            != regproclist.end()) {
+            continue;
+        }
+        proclist.push_back(p);
+    }
 }
 
 bool ModuleObject::isRegs() {

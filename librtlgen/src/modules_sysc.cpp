@@ -35,7 +35,6 @@ std::string ModuleObject::generate_sysc_h_reg_struct() {
     std::string ln = "";
     std::string r;
     std::string v;
-    bool generate_struct_rst = true;        // if 2-dimensional register array, then do not use reset function
     
     getSortedRegsMap(regmap, is2dm);
     for (std::map<std::string, std::list<GenObject *>>::iterator it = regmap.begin();
@@ -58,7 +57,6 @@ std::string ModuleObject::generate_sysc_h_reg_struct() {
             }
             ln += " " + p->getName();
             if (p->getObjDepth()) {
-                generate_struct_rst = false;
                 ln += "[" + p->getStrDepth() + "]";
             }
             ln += ";";
@@ -177,41 +175,29 @@ std::string ModuleObject::generate_sysc_h() {
     out += "\n";
     std::map<std::string, std::list<GenObject *>> regmap;
     std::map<std::string, bool> is2dm;
+    std::list<GenObject *> combproclist;
     std::list<std::string> regproclist;
 
-    // list of registers process depending of clock and reset
+    // Combinational process excluding register process:
+    getCombProcess(combproclist);
+    for (auto &p: combproclist) {
+        out += addspaces() + "void " + p->getName() + "();\n";
+    }
+
+    // Registers processes:
     getSortedRegsMap(regmap, is2dm);
-    for (std::map<std::string, std::list<GenObject *>>::iterator it = regmap.begin();
+    for (std::map<std::string,std::list<GenObject *>>::iterator it = regmap.begin();
         it != regmap.end(); ++it) {
         regproclist.push_back(it->first + "egisters");
     }
-
-    // Combinational process excluding register process:
-    bool hasProcess = false;
-    for (auto &p: entries_) {
-        if (!p->isProcess()) {
-            continue;
-        }
-        // Exclude process with name equals to <r>egisters process,
-        // because content of such process should be added to trigger action
-        if (std::find(regproclist.begin(), regproclist.end(), p->getName())
-            != regproclist.end()) {
-            continue;
-        }
-        out += addspaces() + "void " + p->getName() + "();\n";
-        hasProcess = true;
-    }
-    // Registers processes:
     for (auto &reg_proc : regproclist) {
         out += addspaces() + "void " + reg_proc + "();\n";
-        hasProcess = true;
     }
 
-    if (hasProcess) {
+    if (combproclist.size() || regproclist.size()) {
         out += "\n";
         out += addspaces() + "SC_HAS_PROCESS(" + getType() + ");\n";
     }
-
 
     out += "\n";
     // Constructor declaration:
@@ -504,6 +490,7 @@ std::string ModuleObject::generate_sysc_proc_registers() {
     std::string r;
     std::string resetname;
     std::string procname;
+    EResetActive active;
     GenObject *preg;
     GenObject *resobj;
     const char *SV_STR_ACTIVE[3] = {"", "0", "1"};
@@ -518,7 +505,7 @@ std::string ModuleObject::generate_sysc_proc_registers() {
 
         r = preg->r_prefix();
         v = preg->v_prefix();
-        EResetActive active = preg->getResetActive();
+        active = preg->getResetActive();
         procname = r + "egisters";
 
         ret += generate_sysc_template_f_name();
@@ -1046,11 +1033,17 @@ std::string ModuleObject::generate_sysc_vcd() {
     std::string ln = "";
     std::string ln2 = "";
     std::string loop = "";
+    std::list<GenObject *> comblist;
+    std::map<std::string, std::list<GenObject *>> regmap;
+    std::map<std::string, bool> is2dm;
+
+    getCombProcess(comblist);
+    getSortedRegsMap(regmap,is2dm);
 
     ret += generate_sysc_template_f_name();
     ret += "::generateVCD(sc_trace_file *i_vcd, sc_trace_file *o_vcd) {\n";
     pushspaces();
-    if (isRegs() && isCombProcess()) {
+    if (regmap.size() && comblist.size()) {
         ret += addspaces() + "std::string pn(name());\n";
     }
     ret += addspaces() + "if (o_vcd) {\n";

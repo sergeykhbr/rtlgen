@@ -55,79 +55,57 @@ std::string ModuleObject::generate_vhdl_pkg_localparam() {
     return ret;
 }
 
-std::string ModuleObject::generate_vhdl_pkg_reg_struct(bool negedge) {
+std::string ModuleObject::generate_vhdl_pkg_reg_struct() {
+    std::map<std::string, std::list<GenObject *>> regmap;
+    std::map<std::string, bool> is2dm;
     std::string ret = "";
     std::string ln = "";
-    std::string tstr;
-    int tcnt = 0;
-    bool twodim = false;
+    std::string r;
+    std::string v;
 
-    ret += addspaces();
-    ret += "type " + getType();
-    if (negedge == false) {
-        ret += "_registers";
-    } else {
-        ret += "_nregisters";
-    }
-    ret += " is record\n";
-    pushspaces();
-    for (auto &p: entries_) {
-        if ((!p->isReg() && negedge == false)
-            || (!p->isNReg() && negedge == true)) {
-            continue;
-        }
-        ln = addspaces() + p->getName() + " : " + p->getType();
-        if (p->getDepth()) {
-            twodim = true;
-            ln += "(0 to " + p->getStrDepth() + " - 1)";
-        }
-        ln += ";";
-        if (p->getComment().size()) {
-            while (ln.size() < 60) {
-                ln += " ";
-            }
-            ln += p->addComment();
-        }
-        ret += ln + "\n";
-    }
-    popspaces();
-    ret += addspaces() + "end record;\n";
-    ret += "\n";
+    getSortedRegsMap(regmap, is2dm);
+    for (std::map<std::string, std::list<GenObject *>>::iterator it = regmap.begin();
+        it != regmap.end(); it++) {
+        r = it->first;                          // map sorted by v_prefix
+        v = (*it->second.begin())->v_prefix();  // all obj in a list has the same v_prefix as the first one
 
-    // Reset function only if no two-dimensial signals
-    tcnt = 0;
-    for (auto &p: entries_) {
-        if ((p->isReg() && negedge == false)
-            || (p->isNReg() && negedge == true)) {
-            tcnt++;
-        }
-    }
-    if (!twodim) {
-        ret += addspaces();
-        if (negedge == false) {
-            ret += "constant " + getType() + "_r_reset : " + getType() + "_registers := (\n";
-        } else {
-            ret += "constant " + getType() + "_nr_reset : " + getType() + "_nregisters := (\n";
-        }
+        ret += addspaces() + "type " + getType() + "_" + r + "egisters is record\n";
         pushspaces();
-        for (auto &p: entries_) {
-            if ((!p->isReg() && negedge == false)
-                || (!p->isNReg() && negedge == true)) {
-                continue;
+        for (auto &p: it->second) {
+            ln = addspaces();
+
+            ln = addspaces() + p->getName() + " : " + p->getType();
+            if (p->getObjDepth()) {
+                ln += "(0 to " + p->getStrDepth() + " - 1)";
             }
-            ln = addspaces() + p->getStrValue();
-            if (--tcnt) {
-                ln += ",";
-            }
-            while (ln.size() < 40) {
-                ln += " ";
-            }
-            ln += "-- " + p->getName();
+            ln += ";";
+            p->addComment(ln);
             ret += ln + "\n";
         }
         popspaces();
-        ret += addspaces() + ");\n";
+        ret += addspaces() + "end record;\n";
         ret += "\n";
+
+        // Reset function only if no two-dimensial signals
+        if (!is2dm[it->first]) {
+            ret += addspaces();
+            ret += "constant " + getType() + "_" + r + "_reset : " + getType() + "_" + r +"egisters := (\n";
+            pushspaces();
+            for (auto &p: it->second) {
+                ln = addspaces() + p->getStrValue();
+                if (p != it->second.back()) {
+                    ln += ",";
+                }
+                while (ln.size() < 40) {
+                    ln += " ";
+                }
+                ln += "-- " + p->getName();
+                ret += ln + "\n";
+            }
+            popspaces();
+            ret += addspaces() + ");\n";
+            ret += "\n";
+        }
     }
     return ret;
 }
@@ -151,13 +129,7 @@ std::string ModuleObject::generate_vhdl_pkg_struct() {
         tcnt = 0;
     }
     // Register structure definition
-    bool twodim = false;        // if 2-dimensional register array, then do not use reset function
-    if (isRegs() && isCombProcess()) {
-        ret += generate_vhdl_pkg_reg_struct(false);
-    }
-    if (isNRegs() && isCombProcess()) {
-        ret += generate_vhdl_pkg_reg_struct(true);
-    }
+    ret += generate_vhdl_pkg_reg_struct();
     return ret;
 }
 
@@ -291,19 +263,18 @@ std::string ModuleObject::generate_vhdl_mod_signals() {
         tcnt++;
     }
 
-    if (isRegs() && isCombProcess()) {
+    std::map<std::string, std::list<GenObject *>> regmap;
+    std::map<std::string, bool> is2dm;
+    std::string r;
+    getSortedRegsMap(regmap, is2dm);
+    for (std::map<std::string, std::list<GenObject *>>::iterator it = regmap.begin();
+        it != regmap.end(); it++) {
+        r = it->first;                          // map sorted by v_prefix
         ret += addspaces();
-        ret += "signal r, rin : " + getType() + "_registers;\n";
-        tcnt++;
+        ret += "signal " + r + ", " + r + "in : " + getType() + "_" + r + "egisters;\n";
     }
-    if (isNRegs() && isCombProcess()) {
-        ret += addspaces();
-        ret += "signal nr, nrin : " + getType() + "_nregisters;\n";
-        tcnt++;
-    }
-    if (tcnt) {
+    if (regmap.size()) {
         ret += "\n";
-        tcnt = 0;
     }
     return ret;
 }
