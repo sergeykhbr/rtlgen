@@ -53,11 +53,6 @@ class ModuleObject : public GenObject {
     virtual bool isModule() override { return true; }
     virtual bool isTypedef() override { return getName() == getType(); }
     virtual void getCombProcess(std::list<GenObject *> &proclist);
-    virtual bool isRegs();
-    virtual bool isRegProcess();
-    virtual bool isNRegs();
-    virtual bool isNRegProcess();
-    virtual bool is2DimReg();
     virtual bool isSubModules();
     virtual void getTmplParamList(std::list<GenObject *> &genlist);
     virtual void getParamList(std::list<GenObject *> &genlist);
@@ -85,9 +80,6 @@ class ModuleObject : public GenObject {
 
     std::string generate_sysc_h_reg_struct();
     std::string generate_sysc_h_struct();
- public:
-    std::string generate_sysc_proc_v_reset(std::string &xrst);    // operation SYNC_RESET calls it explicitly
- protected:
     std::string generate_sysc_proc_registers();
     std::string generate_sysc_param_strings();
     std::string generate_sysc_constructor();

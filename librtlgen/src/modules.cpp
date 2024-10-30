@@ -110,57 +110,6 @@ void ModuleObject::getCombProcess(std::list<GenObject *> &proclist) {
     }
 }
 
-bool ModuleObject::isRegs() {
-    for (auto &e: entries_) {
-        if (e->isReg()) {
-            return true;
-        }
-    }
-    return false;
-}
-
-bool ModuleObject::isRegProcess() {
-    for (auto &e: entries_) {
-        if (e->isReg()
-            || (e->isProcess() && e->getName() == "registers")) {
-            return true;
-        }
-    }
-    return false;
-}
-
-bool ModuleObject::isNRegs() {
-    for (auto &e: entries_) {
-        if (e->isNReg()) {
-            return true;
-        }
-    }
-    return false;
-}
-
-bool ModuleObject::isNRegProcess() {
-    for (auto &e: entries_) {
-        if (e->isNReg()
-            || (e->isProcess() && e->getName() == "nregisters")) {
-            return true;
-        }
-    }
-    return false;
-}
-
-bool ModuleObject::is2DimReg() {
-    for (auto &p: entries_) {
-        if (!p->isReg()) {
-            continue;
-        }
-        if (p->getDepth()) {
-            // two-dimensional array is presence in a register list
-            return true;
-        }
-    }
-    return false;
-}
-
 bool ModuleObject::isSubModules() {
     for (auto &p: entries_) {
         if (p->isModule()) {

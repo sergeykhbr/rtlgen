@@ -395,69 +395,6 @@ std::string ModuleObject::generate_sysc_h() {
     return out;
 }
 
-/* Generate in process (synchronous) reset. Multiple resets are supported:
-
-      if (!async_reset && i_rst0.read() == LOW) {
-          module_type_r0(v0);
-      }
-      if (!async_reset && i_rst1.read() == LOW) {
-          module_type_r1(v1);
-      }
-      if (!async_reset && i_rst0.read() == HIGH) {
-          module_type_r0(v0);
-      }
- */
-std::string ModuleObject::generate_sysc_proc_v_reset(std::string &xrst) {
-    std::map<std::string, std::list<GenObject *>>regmap;
-    std::map<std::string, bool> is2dm;
-    GenObject *preg;
-    std::string ret;
-    std::string v;
-    std::string r;
-    const char *SV_STR_ACTIVE[3] = {"", "0", "1"};
-
-    getSortedRegsMap(regmap, is2dm);
-
-    for (std::map<std::string, std::list<GenObject *>>::iterator it = regmap.begin();
-        it != regmap.end(); ++it) {
-        preg = (*it->second.begin());       // all registers in a group have the same reset and clock signals
-        if (preg->getResetActive() == ACTIVE_NONE) {
-            continue;
-        }
-
-        ret += addspaces() + "if ";
-        if (xrst.size()) {
-            ret += "(";
-        }
-        if (isAsyncResetParam()) {
-            ret += "(!async_reset_ && ";
-        }
-        ret += preg->getResetPort()->getName() + ".read() == ";
-        ret += std::string(SV_STR_ACTIVE[preg->getResetActive()]) + ")";
-        if (xrst.size()) {
-            ret += " || " + xrst + ")";
-        }
-        ret += " {\n";
-        pushspaces();
-
-        r = preg->r_prefix();
-        v = preg->v_prefix();
-        if (!is2dm[it->first]) {
-            ret += addspaces() + getType() + "_" + r + "_reset(" + v + ");\n";
-        } else {
-            char i_idx[2] = {0};
-            for (auto &r : it->second) {
-                i_idx[0] = 'i';
-                ret += r->getCopyValue(i_idx, v.c_str(), "=", RSTVAL_NONE);
-            }
-        }
-
-        popspaces();
-        ret += addspaces() + "}\n";
-    }
-    return ret;
-}
-
 std::string ModuleObject::generate_sysc_proc_registers() {
     std::map<std::string, std::list<GenObject *>> regmap;
     std::map<std::string, bool> is2dm;

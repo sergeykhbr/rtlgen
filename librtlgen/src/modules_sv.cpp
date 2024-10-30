@@ -308,8 +308,12 @@ std::string ModuleObject::generate_sv_mod_clock(GenObject *p) {
 }
 
 std::string ModuleObject::generate_sv_mod_proc(GenObject *proc) {
+    std::map<std::string, std::list<GenObject *>>regmap;
+    std::map<std::string, bool> is2dm;
     std::string ret = "";
     std::string ln;
+    std::string r, v;
+    GenObject *preg;
     int tcnt = 0;
 
     if (proc->isGenerate() == false) {
@@ -319,12 +323,14 @@ std::string ModuleObject::generate_sv_mod_proc(GenObject *proc) {
     pushspaces();
     
     // process variables declaration
-    tcnt = 0;
-    if (isRegs()) {
-        ret += addspaces() + getType() + "_registers v;\n";
-    }
-    if (isNRegs()) {
-        ret += addspaces() + getType() + "_nregisters nv;\n";
+    getSortedRegsMap(regmap, is2dm);
+
+    for (std::map<std::string, std::list<GenObject *>>::iterator it = regmap.begin();
+        it != regmap.end(); ++it) {
+        preg = (*it->second.begin());
+        r = preg->r_prefix();
+        v = preg->v_prefix();
+        ret += addspaces() + getType() + "_" + r + "egisters " + v + ";\n";
     }
 
     for (auto &e: proc->getEntries()) {
