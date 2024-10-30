@@ -25,6 +25,7 @@
 #include "operations.h"
 #include "array.h"
 #include "funcs.h"
+#include <algorithm>
 
 namespace sysvc {
 
@@ -453,31 +454,6 @@ std::string ModuleObject::generate_sysc_proc_v_reset(std::string &xrst) {
 
         popspaces();
         ret += addspaces() + "}\n";
-    }
-    return ret;
-}
-
-std::string ModuleObject::generate_sysc_proc_r_to_v() {
-    std::string ret;
-    std::map<std::string, std::list<GenObject *>> regmap;
-    std::map<std::string, bool> is2dm;
-    getSortedRegsMap(regmap, is2dm);
-
-    // v = r
-    std::string v, r;
-    for (std::map<std::string, std::list<GenObject *>>::iterator it = regmap.begin();
-        it != regmap.end(); it++) {
-        r = it->first;                          // map sorted by v_prefix
-        v = (*it->second.begin())->v_prefix();  // all obj in a list has the same v_prefix as the first one
-        if (!is2dm[it->first]) {
-            ret += addspaces() + v + " = " + r + ";\n";
-        } else {
-            char i_idx[2] = {0};
-            for (auto &p : it->second) {
-                i_idx[0] = 'i';
-                ret += p->getCopyValue(i_idx, v.c_str(), "=", r.c_str());
-            }
-        }
     }
     return ret;
 }
@@ -1085,6 +1061,7 @@ std::string ModuleObject::generate_sysc_vcd() {
 }
 
 std::string ModuleObject::generate_sysc_cpp() {
+    std::list<GenObject *> proclist;
     std::string out = "";
     std::string ln;
     std::string text = "";
@@ -1106,7 +1083,7 @@ std::string ModuleObject::generate_sysc_cpp() {
     }
 
     // Functions
-    for (auto &p: entries_) {
+    for (auto &p: getEntries()) {
         if (!p->isFunction()) {
             continue;
         }
@@ -1115,13 +1092,8 @@ std::string ModuleObject::generate_sysc_cpp() {
     }
 
     // Process
-    for (auto &p: entries_) {
-        if (!p->isProcess()) {
-            continue;
-        }
-        if (p->getName() == "registers") {
-            continue;
-        }
+    getCombProcess(proclist);
+    for (auto &p: proclist) {
         out += generate_sysc_proc(p);
     }
 
@@ -1176,21 +1148,10 @@ std::string ModuleObject::generate_sysc_proc(GenObject *proc) {
         ret += "\n";
     }
 
-#if 1
     tcnt = static_cast<int>(ret.size());
-    ret += generate_sysc_proc_r_to_v();
-#else
-    if (isRegs()) {
-        ret += Operation::copyreg("v", "r", this);
-        tcnt++;
-    }
-    if (isNRegs()) {
-        ret += Operation::copyreg("nv", "nr", this);
-        tcnt++;
-    }
-#endif
+    ret += generate_all_proc_r_to_v(false);
+
     if (tcnt != static_cast<int>(ret.size())) {
-        tcnt = 0;
         ret += "\n";
     }
 

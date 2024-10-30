@@ -66,6 +66,10 @@ class ModuleObject : public GenObject {
                                   std::map<std::string, bool> &is2dm);
  protected:
     std::string generate_all_proc_nullify(GenObject *obj, std::string prefix, std::string i);
+    std::string generate_all_proc_r_to_v(bool inverse);         // at the begin/end of main proc
+ public:
+    std::string generate_all_proc_v_reset(std::string &xrst);   // operation SYNC_RESET calls it explicitly
+ protected:
 
     std::string generate_sv_pkg_localparam();
     std::string generate_sv_pkg_reg_struct();
@@ -84,7 +88,6 @@ class ModuleObject : public GenObject {
  public:
     std::string generate_sysc_proc_v_reset(std::string &xrst);    // operation SYNC_RESET calls it explicitly
  protected:
-    std::string generate_sysc_proc_r_to_v();         // at the beginning of main proc
     std::string generate_sysc_proc_registers();
     std::string generate_sysc_param_strings();
     std::string generate_sysc_constructor();

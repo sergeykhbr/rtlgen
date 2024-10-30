@@ -355,17 +355,12 @@ std::string ModuleObject::generate_sv_mod_proc(GenObject *proc) {
         ret += "\n";
     }
 
-    if (isRegs()) {
-        ret += Operation::copyreg("v", "r", this);
-        tcnt++;
-    }
-    if (isNRegs()) {
-        ret += Operation::copyreg("nv", "nr", this);
-        tcnt++;
-    }
-    if (tcnt) {
+    // v = r
+    tcnt = static_cast<int>(ret.size());
+    ret += generate_all_proc_r_to_v(false);
+
+    if (tcnt != static_cast<int>(ret.size())) {
         ret += "\n";
-        tcnt = 0;
     }
 
     // Generate operations:
@@ -375,13 +370,9 @@ std::string ModuleObject::generate_sv_mod_proc(GenObject *proc) {
         }
     }
 
-    if (isRegs()) {
-        ret += "\n";
-        ret += Operation::copyreg("rin", "v", this);
-    }
-    if (isNRegs()) {
-        ret += Operation::copyreg("nrin", "nv", this);
-    }
+    // rin = v
+    ret += generate_all_proc_r_to_v(true);
+
     popspaces();
     if (proc->isGenerate() == false) {
         ret += "end: " + proc->getName() + "_proc\n";
@@ -404,7 +395,7 @@ std::string ModuleObject::generate_sv_mod_proc_always(bool async_on_off) {
     char i_idx[2] = {0};
 
     const char *SV_STR_CLKEDGE[3] = {"*", "posedge", "negedge"};
-    const char *SV_STR_RSTEDGE[3] = {"", "negedge", "posgedge"};
+    const char *SV_STR_RSTEDGE[3] = {"", "negedge", "posedge"};
     const char *SV_STR_ACTIVE[3] = {"", "1'b0", "1'b1"};
 
     getCombProcess(combproc);
@@ -489,10 +480,16 @@ std::string ModuleObject::generate_sv_mod_proc_always(bool async_on_off) {
 
         popspaces();
         ret += addspaces() + "end: " + blkname + "\n";
+        ret += "\n";
     }
     return ret; 
 }
 
+/** There're 3 cases:
+        - 'async_reset' exists and registers with 'reset' exists. Need to generate 1 and 2.
+        - 'async_reset' disabled but regsiters with 'reset' exists (JTAG). Need to generate only 1.
+        - no 'async_reset' and no registers with reset. Need to generate only 2.
+ */
 std::string ModuleObject::generate_sv_mod_proc_registers() {
     std::string ret = "";
 
@@ -512,23 +509,42 @@ std::string ModuleObject::generate_sv_mod_proc_registers() {
         pushspaces();
 
         ret += addspaces() + "if (async_reset) begin: async_rst_gen\n";
+        ret += "\n";
         pushspaces();
+    }
 
-        ret += "\n";
+    if (reset_exists) {
+        /** case 1:
+                always_ff (posedge clk, negedge nrst) begin
+                    if (nrst == 0) begin
+                        r <= reset
+                    end else  begin
+                        r <= rin
+                    end if
+                end
+         */
         ret += generate_sv_mod_proc_always(true);
-        ret += "\n";
+    }
 
+    if (isAsyncResetParam() && reset_exists) {
         popspaces();
         ret += addspaces() + "end: async_rst_gen\n";
         ret += addspaces() + "else begin: no_rst_gen\n";
-        pushspaces();
         ret += "\n";
+        pushspaces();
     }
 
-    ret += generate_sv_mod_proc_always(false);
+    if (isAsyncResetParam() && reset_exists
+        || !reset_exists) {
+        /** case 2:
+                always_ff (posedge clk) begin
+                    r <= rin
+                end
+         */
+        ret += generate_sv_mod_proc_always(false);
+    }
 
     if (isAsyncResetParam() && reset_exists) {
-        ret += "\n";
         popspaces();
         ret += addspaces() + "end: no_rst_gen\n";
         popspaces();

@@ -272,5 +272,161 @@ std::string ModuleObject::generate_all_proc_nullify(GenObject *obj,
     return ret;
 }
 
+/**
+    v = r;      (inverse = false)
+    or
+    rin <= v    (inverse = true), SystemVerilog, VHDL
+ */
+std::string ModuleObject::generate_all_proc_r_to_v(bool inverse) {
+    std::string ret;
+    std::map<std::string, std::list<GenObject *>> regmap;
+    std::map<std::string, bool> is2dm;
+    std::string src;
+    std::string dst;
+    std::string eq = "=";
+    if (SCV_is_vhdl()) {
+        if (inverse) {
+            eq = "<=";
+        } else {
+            eq = ":=";
+        }
+    }
+
+    getSortedRegsMap(regmap, is2dm);
+    
+    // compatibility spacing:
+    if (inverse && regmap.size()) {
+        ret += "\n";
+    }
+
+    // v = r
+    for (std::map<std::string, std::list<GenObject *>>::iterator it = regmap.begin();
+        it != regmap.end(); it++) {
+        if (inverse) {
+            src = (*it->second.begin())->v_prefix();    // v:
+            dst = it->first + "in";                     // rin:
+        } else {
+            src = it->first;                            // r: map sorted by v_prefix
+            dst = (*it->second.begin())->v_prefix();    // v: all obj in a list has the same v_prefix as the first one
+        }
+        if (!is2dm[it->first]) {
+            ret += addspaces() + dst + " " + eq + " " + src + ";\n";
+        } else {
+            char i_idx[2] = {0};
+            for (auto &p : it->second) {
+                i_idx[0] = 'i';
+                ret += p->getCopyValue(i_idx, dst.c_str(),
+                                       eq.c_str(),
+                                       src.c_str());
+            }
+        }
+    }
+    return ret;
+}
+
+/** Generate in process (synchronous) reset. Multiple resets are supported:
+
+      if (!async_reset && i_rst0.read() == LOW) {
+          module_type_r0(v0);
+      }
+      if (!async_reset && i_rst1.read() == LOW) {
+          module_type_r1(v1);
+      }
+      if (!async_reset && i_rst0.read() == HIGH) {
+          module_type_r0(v0);
+      }
+ */
+std::string ModuleObject::generate_all_proc_v_reset(std::string &xrst) {
+    std::map<std::string, std::list<GenObject *>>regmap;
+    std::map<std::string, bool> is2dm;
+    GenObject *preg;
+    std::string ret;
+    std::string v;
+    std::string r;
+    DecLogicConst low(new DecConst(1), 0);
+    DecLogicConst high(new DecConst(1), 1);
+    DecLogicConst *SV_STR_ACTIVE[3] = {0, &low, &high};
+
+    getSortedRegsMap(regmap, is2dm);
+
+    for (std::map<std::string, std::list<GenObject *>>::iterator it = regmap.begin();
+        it != regmap.end(); ++it) {
+        preg = (*it->second.begin());       // all registers in a group have the same reset and clock signals
+        if (preg->getResetActive() == ACTIVE_NONE) {
+            continue;
+        }
+
+        ret += addspaces() + "if ";
+        if (xrst.size()) {
+            ret += "(";
+        }
+        if (isAsyncResetParam()) {
+            if (SCV_is_sysc()) {
+                ret += "(!async_reset_ && ";
+            } else if (SCV_is_sv()) {
+                ret += "(~async_reset && ";
+            } else if (SCV_is_vhdl()) {
+                ret += "(not async_reset and ";
+            }
+        }
+        ret += preg->getResetPort()->getName();
+        if (SCV_is_sysc()) {
+            ret += ".read() == ";
+        } else if (SCV_is_sv()) {
+            ret += " == ";
+        } else if (SCV_is_vhdl()) {
+            ret += " = ";
+        }
+        ret += SV_STR_ACTIVE[preg->getResetActive()]->getStrValue() + ")";
+        if (xrst.size()) {
+            if (SCV_is_sysc() || SCV_is_sv()) {
+                ret += " || ";
+            } else if (SCV_is_vhdl()) {
+                ret += " or ";
+            }
+            ret += xrst + ")";
+        }
+        if (SCV_is_sysc()) {
+            ret += " {\n";
+        } else if (SCV_is_sv()) {
+            ret += " begin\n";
+        } else if (SCV_is_vhdl()) {
+            ret += " begin\n";
+        }
+        pushspaces();
+
+        r = preg->r_prefix();
+        v = preg->v_prefix();
+        if (!is2dm[it->first]) {
+            ret += addspaces();
+            if (SCV_is_sysc()) {
+                ret += getType() + "_" + r + "_reset(" + v + ");\n";
+            } else if (SCV_is_sv()) {
+                ret += v + " = " + getType() + "_" + r + "_reset;\n";
+            } else if (SCV_is_vhdl()) {
+                ret += v + " := " + getType() + "_" + r + "_reset;\n";
+            }
+        } else {
+            char i_idx[2] = {0};
+            for (auto &r : it->second) {
+                i_idx[0] = 'i';
+                ret += r->getCopyValue(i_idx, v.c_str(), "=", RSTVAL_NONE);
+            }
+        }
+
+        popspaces();
+        ret += addspaces();
+        if (SCV_is_sysc()) {
+            ret += "}\n";
+        } else if (SCV_is_sv()) {
+            ret += "end\n";
+        } else if (SCV_is_vhdl()) {
+            ret += "end\n";
+        }
+    }
+    return ret;
+}
+
+
 
 }
