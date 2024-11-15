@@ -26,6 +26,7 @@
 #include "array.h"
 #include "funcs.h"
 #include <list>
+#include <cstring>
 
 namespace sysvc {
 
