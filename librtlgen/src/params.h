@@ -87,6 +87,12 @@ class ParamI32D : public ParamType<I32D> {
               GenObject *val,
               const char *comment=NO_COMMENT)
         : ParamType<I32D>(parent, name, val, comment) {}
+
+    ParamI32D(GenObject *parent,
+              const char *name,
+              int val,
+              const char *comment=NO_COMMENT)
+        : ParamI32D(parent, name, new DecConst(val), comment) {}
 };
 
 

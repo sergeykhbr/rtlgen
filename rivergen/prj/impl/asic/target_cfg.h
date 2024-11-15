@@ -17,6 +17,7 @@
 #pragma once
 
 #include <api_rtlgen.h>
+#include <genconfig.h>
 
 using namespace sysvc;
 
@@ -24,6 +25,7 @@ class target_cfg : public FileObject {
  public:
     target_cfg(GenObject *parent);
 
+    ParamLogic CFG_ASYNC_RESET;
     TextLine _prj0_;
     TextLine _prj1_;
     TextLine _prj2_;

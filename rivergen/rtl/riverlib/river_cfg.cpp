@@ -14,6 +14,7 @@
 //  limitations under the License.
 // 
 
+#include "genconfig.h"
 #include "river_cfg.h"
 
 river_cfg *glob_river_cfg_ = 0;
@@ -21,8 +22,8 @@ river_cfg *glob_river_cfg_ = 0;
 river_cfg::river_cfg(GenObject *parent) :
     FileObject(parent, "river_cfg"),
     CFG_VENDOR_ID(this, "CFG_VENDOR_ID", "32", "0x000000F1", NO_COMMENT),
-    CFG_IMPLEMENTATION_ID(this, "CFG_IMPLEMENTATION_ID", "32", "0x20220813", NO_COMMENT),
-    CFG_HW_FPU_ENABLE(this, "CFG_HW_FPU_ENABLE", "true"),
+    CFG_IMPLEMENTATION_ID(this, "CFG_IMPLEMENTATION_ID", "32", GENCFG_IMPLEMENTATION_ID, NO_COMMENT),
+    CFG_HW_FPU_ENABLE(this, "CFG_HW_FPU_ENABLE", GENCFG_HW_FPU_ENABLE),
     CFG_TRACER_ENABLE(this, "CFG_TRACER_ENABLE", "false"),
     _1_(this),
     _arch0_(this, "Architectural size definition"),

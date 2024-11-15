@@ -43,6 +43,7 @@ riscv_soc::riscv_soc(GenObject *parent, const char *name, const char *comment) :
     _uart1_(this, "UART1 signals"),
     i_uart1_rd(this, "i_uart1_rd", "1"),
     o_uart1_td(this, "o_uart1_td", "1"),
+#if GENCFG_SD_CTRL_ENABLE
     _sdctrl0_(this, "SD-card signals:"),
     o_sd_sclk(this, "o_sd_sclk", "1", "Clock up to 50 MHz"),
     i_sd_cmd(this, "i_sd_cmd", "1", "Command response;"),
@@ -62,6 +63,7 @@ riscv_soc::riscv_soc(GenObject *parent, const char *name, const char *comment) :
     o_sd_cd_dat3_dir(this, "o_sd_cd_dat3_dir", "1", "Direction bit: 1=input; 0=output"),
     i_sd_detected(this, "i_sd_detected", "1", "SD-card detected"),
     i_sd_protect(this, "i_sd_protect", "1", "SD-card write protect"),
+#endif
     _prci0_(this, "PLL and Reset interfaces:"),
     o_dmreset(this, "o_dmreset", "1", "Debug reset request. Everything except DMI."),
     o_prci_pmapinfo(this, "o_prci_pmapinfo", "PRCI mapping information"),
@@ -81,16 +83,18 @@ riscv_soc::riscv_soc(GenObject *parent, const char *name, const char *comment) :
     _hwid0_(this),
     _hwid1_(this, "Hardware SoC Identificator."),
     _hwid2_(this, "Read Only unique platform identificator that could be read by FW"),
-    SOC_HW_ID(this, "SOC_HW_ID", "32", "0x20220903", NO_COMMENT),
+    SOC_HW_ID(this, "SOC_HW_ID", "32", GENCFG_SOC_HW_ID, NO_COMMENT),
     _cfg0_(this),
     _cfg1_(this, "UARTx fifo log2(size) in bytes:"),
     SOC_UART1_LOG2_FIFOSZ(this, "SOC_UART1_LOG2_FIFOSZ", "4"),
     _cfg2_(this),
     _cfg3_(this, "Number of available generic IO pins:"),
     SOC_GPIO0_WIDTH(this, "SOC_GPIO0_WIDTH", "12"),
+#if GENCFG_SD_CTRL_ENABLE
     _cfg4_(this),
     _cfg5_(this, "SD-card in SPI mode buffer size. It should be at least log2(512) Bytes:"),
     SOC_SPI0_LOG2_FIFOSZ(this, "SOC_SPI0_LOG2_FIFOSZ", "9"),
+#endif
     _plic0_(this),
     _plic1_(this, "Number of contexts in PLIC controller."),
     _plic2_(this, "Example FU740: S7 Core0 (M) + 4xU74 Cores (M+S)."),
@@ -128,7 +132,9 @@ riscv_soc::riscv_soc(GenObject *parent, const char *name, const char *comment) :
     plic0(this, "plic0"),
     uart1(this, "uart1"),
     gpio0(this, "gpio0"),
+#if GENCFG_SD_CTRL_ENABLE
     sdctrl0(this, "sdctrl0"),
+#endif
     pnp0(this, "pnp0"),
     group0(this, "group0"),
     u_cdc_ddr0(this, "u_cdc_ddr0"),
@@ -283,6 +289,7 @@ TEXT();
         CONNECT(gpio0, 0, gpio0.o_irq, wb_irq_gpio);
     ENDNEW();
 
+#if GENCFG_SD_CTRL_ENABLE
 TEXT();
     NEW(sdctrl0, sdctrl0.getName().c_str());
         CONNECT(sdctrl0, 0, sdctrl0.i_clk, i_sys_clk);
@@ -314,6 +321,7 @@ TEXT();
         CONNECT(sdctrl0, 0, sdctrl0.i_detected, i_sd_detected);
         CONNECT(sdctrl0, 0, sdctrl0.i_protect, i_sd_protect);
     ENDNEW();
+#endif
 
 TEXT();
     pnp0.cfg_slots.setObjValue(SCV_get_cfg_type(this, "SOC_PNP_TOTAL"));

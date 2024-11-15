@@ -17,6 +17,7 @@
 #pragma once
 
 #include <api_rtlgen.h>
+#include <genconfig.h>
 #include "target_cfg.h"
 #include "../../../rtl/ambalib/types_amba.h"
 #include "../../../rtl/ambalib/types_pnp.h"
@@ -57,6 +58,7 @@ public:
     TextLine _uart1_;
     InPort i_uart1_rd;
     OutPort o_uart1_td;
+#if GENCFG_SD_CTRL_ENABLE
     TextLine _sdctrl0_;
     OutPort o_sd_sclk;
     IoPort io_sd_cmd;           // CMD IO Command/Resonse; Data output in SPI mode
@@ -66,6 +68,7 @@ public:
     IoPort io_sd_cd_dat3;       // CD/DAT3 IO CardDetect/Data Line 3; CS output in SPI mode
     InPort i_sd_detected;
     InPort i_sd_protect;
+#endif
 
     // Param
     //gpio_signal_vector gpio_signal_vector_def_;
@@ -75,6 +78,7 @@ public:
     Signal ib_gpio_ipins;
     Signal ob_gpio_opins;
     Signal ob_gpio_direction;
+#if GENCFG_SD_CTRL_ENABLE
     Signal ib_sd_cmd;
     Signal ob_sd_cmd;
     Signal ob_sd_cmd_direction;
@@ -90,6 +94,7 @@ public:
     Signal ib_sd_cd_dat3;
     Signal ob_sd_cd_dat3;
     Signal ob_sd_cd_dat3_direction;
+#endif
 
     Signal w_sys_rst;
     Signal w_sys_nrst;
@@ -120,11 +125,13 @@ public:
 
     // Sub-module instances:
     ids_tech iclk0;
+#if GENCFG_SD_CTRL_ENABLE
     iobuf_tech iosdcmd0;
     iobuf_tech iosddat0;
     iobuf_tech iosddat1;
     iobuf_tech iosddat2;
     iobuf_tech iosddat3;
+#endif
     SysPLL_tech pll0;
     apb_prci prci0;
     riscv_soc soc0;

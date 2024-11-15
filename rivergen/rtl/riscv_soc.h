@@ -17,6 +17,7 @@
 #pragma once
 
 #include <api_rtlgen.h>
+#include <genconfig.h>
 #include "ambalib/types_amba.h"
 #include "ambalib/types_bus0.h"
 #include "ambalib/types_bus1.h"
@@ -82,6 +83,7 @@ public:
     TextLine _uart1_;
     InPort i_uart1_rd;
     OutPort o_uart1_td;
+#if GENCFG_SD_CTRL_ENABLE
     TextLine _sdctrl0_;
     OutPort o_sd_sclk;
     InPort i_sd_cmd;
@@ -101,6 +103,7 @@ public:
     OutPort o_sd_cd_dat3_dir;
     InPort i_sd_detected;
     InPort i_sd_protect;
+#endif
     TextLine _prci0_;
     OutPort o_dmreset;
     OutStruct<types_amba::mapinfo_type> o_prci_pmapinfo;
@@ -128,9 +131,11 @@ public:
     TextLine _cfg2_;
     TextLine _cfg3_;
     ParamI32D SOC_GPIO0_WIDTH;
+#if GENCFG_SD_CTRL_ENABLE
     TextLine _cfg4_;
     TextLine _cfg5_;
     ParamI32D SOC_SPI0_LOG2_FIFOSZ;
+#endif
     TextLine _plic0_;
     TextLine _plic1_;
     TextLine _plic2_;
@@ -169,7 +174,9 @@ public:
     plic plic0;
     apb_uart uart1;
     apb_gpio gpio0;
+#if GENCFG_SD_CTRL_ENABLE
     sdctrl sdctrl0;
+#endif
     apb_pnp pnp0;
     Workgroup group0;
     cdc_axi_sync_tech u_cdc_ddr0;

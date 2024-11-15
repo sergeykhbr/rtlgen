@@ -17,6 +17,7 @@
 #pragma once
 
 #include <api_rtlgen.h>
+#include <genconfig.h>
 #include "types_amba.h"
 
 using namespace sysvc;
@@ -75,8 +76,11 @@ class types_bus0 : public FileObject {
             sram(this, "sram", "", "2, sram, 2MB"),
             plic(this, "plic", "", "3, plic"),
             bus1(this, "bus1", "", "4, APB bridge: uart1"),
-            ddr(this, "ddr", "", "5, ddr, 512 MB"),
-            sdctrl(this, "sdctrl", "", "6, sdctrl, 32 GB") {
+            ddr(this, "ddr", "", "5, ddr, 512 MB")
+#if GENCFG_SD_CTRL_ENABLE
+            ,sdctrl(this, "sdctrl", "", "6, sdctrl, 32 GB")
+#endif
+        {
 
             // It is possible now to do Logic definition:
             bootrom.addr_start.setObjValue(new HexConst(0x0000000010000));
@@ -97,8 +101,10 @@ class types_bus0 : public FileObject {
             ddr.addr_start.setObjValue(new HexConst(0x0000080000000));
             ddr.addr_end.setObjValue(new HexConst(0x00000C0000000));
 
+#if GENCFG_SD_CTRL_ENABLE
             sdctrl.addr_start.setObjValue(new HexConst(0x0000800000000));
             sdctrl.addr_end.setObjValue(new HexConst(0x0001000000000));
+#endif
         }
         virtual bool isParam() override { return true; }
 
@@ -109,10 +115,14 @@ class types_bus0 : public FileObject {
         StructVar<types_amba::mapinfo_type> plic;
         StructVar<types_amba::mapinfo_type> bus1;
         StructVar<types_amba::mapinfo_type> ddr;
+#if GENCFG_SD_CTRL_ENABLE
         StructVar<types_amba::mapinfo_type> sdctrl;
+#endif
     };
 
 
+ private:
+    int autoincr_;
  public:
     TextLine _xmst0_;
     TextLine _xmst1_;
@@ -146,8 +156,10 @@ class types_bus0 : public FileObject {
     ParamI32D CFG_BUS0_XSLV_PBRIDGE;
     TextLine _xslv12_;
     ParamI32D CFG_BUS0_XSLV_DDR;
+#if GENCFG_SD_CTRL_ENABLE
     TextLine _xslv13_;
     ParamI32D CFG_BUS0_XSLV_SDCTRL_MEM;
+#endif
     TextLine _xslv14_;
     ParamI32D CFG_BUS0_XSLV_TOTAL;
     TextLine _xslv15_;

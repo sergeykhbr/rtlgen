@@ -17,11 +17,14 @@
 #pragma once
 
 #include <api_rtlgen.h>
+#include <genconfig.h>
 #include "ambalib/ambalib_folder.h"
 #include "techmap/techmap_folder.h"
 #include "riverlib/riverlib_folder.h"
 #include "misclib/misclib_folder.h"
+#if GENCFG_SD_CTRL_ENABLE
 #include "sdctrl/sdctrl_folder.h"
+#endif
 #include "riscv_soc.h"
 
 
@@ -33,7 +36,9 @@ class rtl_folder : public FolderObject {
         techmap_folder_(this),
         riverlib_folder_(this),
         misclib_folder_(this),
+#if GENCFG_SD_CTRL_ENABLE
         sdctrl_folder_(this),
+#endif
         riscv_soc_file_(this) {}
 
  protected:
@@ -42,7 +47,9 @@ class rtl_folder : public FolderObject {
     techmap_folder techmap_folder_;
     riverlib_folder riverlib_folder_;
     misclib_folder misclib_folder_;
+#if GENCFG_SD_CTRL_ENABLE
     sdctrl_folder sdctrl_folder_;
+#endif
     // files
     riscv_soc_file riscv_soc_file_;
 };
