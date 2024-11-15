@@ -93,8 +93,8 @@ std::string ModuleObject::generate_sv_pkg_reg_struct() {
         ret += "_" + r + "egisters;\n";
         ret += "\n";
 
-        // Generate reset constant if possible:
-        if (!is2dm[it->first]) {
+        // Generate reset function only for simple regs with defined reset:
+        if (!is2dm[it->first] && (*it->second.begin())->getResetActive() != ACTIVE_NONE) {
             ret += addspaces();
             ret += "const " + getType() + "_" + r + "egisters " + getType() + "_" + r + "_reset = '{\n";
             pushspaces();
@@ -234,8 +234,7 @@ std::string ModuleObject::generate_sv_mod_signals() {
             || p->isOperation()
             || p->isTypedef()
             || p->isParam()
-            || p->isReg()
-            || p->isNReg()) {
+            || p->getClockEdge() != CLK_ALWAYS) {
             text = "";
             continue;
         }
@@ -267,22 +266,25 @@ std::string ModuleObject::generate_sv_mod_signals() {
     }
 
     // r, rin:
+    std::map<std::string,std::list<GenObject *>>regmap;
+    std::map<std::string,bool> is2dm;
+    std::string r;
     std::list<GenObject *> proclist;
     getCombProcess(proclist);
-    if (proclist.size()) {
-        std::map<std::string,std::list<GenObject *>>regmap;
-        std::map<std::string,bool> is2dm;
-        std::string r;
-
-        getSortedRegsMap(regmap, is2dm);
-        for (std::map<std::string,std::list<GenObject *>>::iterator it = regmap.begin();
-            it != regmap.end(); it++) {
-            r = it->first;                          // map sorted by v_prefix
-            ret += getType() + "_" + r + "egisters " + r + ", " + r + "in;\n";
-            tcnt++;
+    getSortedRegsMap(regmap, is2dm);
+    for (std::map<std::string,std::list<GenObject *>>::iterator it = regmap.begin();
+        it != regmap.end(); it++) {
+        r = it->first;                          // map sorted by v_prefix
+        ret += getType() + "_" + r + "egisters " + r;
+        // rin should be defined only if comb process exists,
+        //      otherwise memarray without reset.
+        if (proclist.size()) {
+            ret += ", " + r + "in";
         }
-
+        ret += ";\n";
+        tcnt++;
     }
+
     if (tcnt) {
         ret += "\n";
         tcnt = 0;
@@ -316,7 +318,21 @@ std::string ModuleObject::generate_sv_mod_proc(GenObject *proc) {
     GenObject *preg;
     int tcnt = 0;
 
-    if (proc->isGenerate() == false) {
+    if (strstr(proc->getName().c_str(), "egisters")) {
+        // RAM, ROM exception where no registers but memory exists;
+        GenObject *clkport = 0;
+        for (auto &pp: getEntries()) {
+            if (pp->isInput() && pp->getName() == "i_clk") {
+                clkport = pp;
+            }
+        }
+        if (clkport == 0) {
+            SHOW_ERROR("Memory %s clock port not defined", getName().c_str());
+        } else {
+            ret += addspaces() + "always_ff @(posedge " + clkport->getName();
+        }
+        ret += ") begin: " + proc->getName() + "_proc\n";
+    } else if (proc->isGenerate() == false) {
         ret += "always_comb\n";
         ret += "begin: " + proc->getName() + "_proc\n";
     }
@@ -458,19 +474,21 @@ std::string ModuleObject::generate_sv_mod_proc_always(bool async_on_off) {
             pushspaces();
         }
 
-        // r <= rin
-        if (!is2dm[it->first]) {
-            ret += addspaces() + r + " <= " + r + "in;\n";
-        } else {
-            for (auto &p : it->second) {
-                i_idx[0] = 'i';
-                ret += p->getCopyValue(i_idx, r.c_str(), "<=", (r + "in").c_str());
+        // r <= rin only if comb process exists in the module:
+        if (combproc.size()) {
+            if (!is2dm[it->first]) {
+                ret += addspaces() + r + " <= " + r + "in;\n";
+            } else {
+                for (auto &p : it->second) {
+                    i_idx[0] = 'i';
+                    ret += p->getCopyValue(i_idx, r.c_str(), "<=", (r + "in").c_str());
+                }
             }
-        }
 
-        if (async_on_off && active != ACTIVE_NONE) {
-            popspaces();
-            ret += addspaces() + "end\n";
+            if (async_on_off && active != ACTIVE_NONE) {
+                popspaces();
+                ret += addspaces() + "end\n";
+            }
         }
 
         // additional operation on posedge clock events

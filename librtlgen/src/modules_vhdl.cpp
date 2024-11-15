@@ -86,8 +86,8 @@ std::string ModuleObject::generate_vhdl_pkg_reg_struct() {
         ret += addspaces() + "end record;\n";
         ret += "\n";
 
-        // Reset function only if no two-dimensial signals
-        if (!is2dm[it->first]) {
+        // Generate reset function only for simple regs with defined reset:
+        if (!is2dm[it->first] && (*it->second.begin())->getResetActive() != ACTIVE_NONE) {
             ret += addspaces();
             ret += "constant " + getType() + "_" + r + "_reset : " + getType() + "_" + r +"egisters := (\n";
             pushspaces();
@@ -236,7 +236,7 @@ std::string ModuleObject::generate_vhdl_mod_signals() {
             // typedef should be skipped
             continue;
         }
-        if (p->isReg() || p->isNReg()
+        if (p->getClockEdge() == CLK_POSEDGE || p->getClockEdge() == CLK_NEGEDGE
             || (!p->isSignal()
                 && !p->isValue()
                 && !p->isStruct()

@@ -26,17 +26,20 @@
 #include "array.h"
 #include "funcs.h"
 #include <algorithm>
+#include <cstring>
 
 namespace sysvc {
 
 std::string ModuleObject::generate_sysc_h_reg_struct() {
     std::map<std::string, std::list<GenObject *>> regmap;
     std::map<std::string, bool> is2dm;
+    std::list<GenObject *> comblist;
     std::string out = "";
     std::string ln = "";
     std::string r;
     std::string v;
     
+    getCombProcess(comblist);
     getSortedRegsMap(regmap, is2dm);
     for (std::map<std::string, std::list<GenObject *>>::iterator it = regmap.begin();
         it != regmap.end(); it++) {
@@ -65,10 +68,16 @@ std::string ModuleObject::generate_sysc_h_reg_struct() {
             out += ln + "\n";
         }
         popspaces();
-        out += addspaces() + "} " + v + ", " + r + ";\n";
+        out += addspaces() + "} ";
+        if (comblist.size()) {
+            // To exclude memories implementation without reset and comb logic
+            out += v + ", ";
+        }
+        out += r + ";\n";
 
         out += "\n";
-        if (!is2dm[it->first]) {
+        // Generate reset function only for simple regs with defined reset:
+        if (!is2dm[it->first] && (*it->second.begin())->getResetActive() != ACTIVE_NONE) {
             out += addspaces() + "void " + getType();
             out += "_" + r + "_reset(" + getType() + "_" + r +"egisters &iv) {\n";
             pushspaces();
@@ -322,8 +331,7 @@ std::string ModuleObject::generate_sysc_h() {
             || p->isOperation()
             || p->isTypedef()
             || p->isParam()
-            || p->isReg()
-            || p->isNReg()) {
+            || p->getClockEdge() != CLK_ALWAYS) {
             text = "";
             continue;
         }
@@ -398,6 +406,7 @@ std::string ModuleObject::generate_sysc_h() {
 std::string ModuleObject::generate_sysc_proc_registers() {
     std::map<std::string, std::list<GenObject *>> regmap;
     std::map<std::string, bool> is2dm;
+    std::list<GenObject *> combproc;
     std::string ret;
     std::string v;
     std::string r;
@@ -409,6 +418,7 @@ std::string ModuleObject::generate_sysc_proc_registers() {
     const char *SV_STR_ACTIVE[3] = {"", "0", "1"};
 
     // All registers with selected posedge and reset level:
+    getCombProcess(combproc);
     getSortedRegsMap(regmap, is2dm);
 
     for (std::map<std::string, std::list<GenObject *>>::iterator it = regmap.begin();
@@ -451,19 +461,22 @@ std::string ModuleObject::generate_sysc_proc_registers() {
             ret += addspaces() + "} else {\n";
             pushspaces();
         }
-        // Copy r <= v:
-        if (!is2dm[it->first]) {
-            ret += addspaces() + r + " = " + v + ";\n";
-        } else {
-            char i_idx[2] = {0};
-            for (auto &p : it->second) {
-                i_idx[0] = 'i';
-                ret += p->getCopyValue(i_idx, r.c_str(), "=", v.c_str());
+
+        // Copy r <= v only if comb process exists in the module:
+        if (combproc.size()) {
+            if (!is2dm[it->first]) {
+                ret += addspaces() + r + " = " + v + ";\n";
+            } else {
+                char i_idx[2] = {0};
+                for (auto &p : it->second) {
+                    i_idx[0] = 'i';
+                    ret += p->getCopyValue(i_idx, r.c_str(), "=", v.c_str());
+                }
             }
-        }
-        if (active != ACTIVE_NONE) {
-            popspaces();
-            ret += addspaces() + "}\n";
+            if (active != ACTIVE_NONE) {
+                popspaces();
+                ret += addspaces() + "}\n";
+            }
         }
 
         // Let's check process name that should be added to this register
@@ -558,8 +571,8 @@ std::string ModuleObject::generate_sysc_vcd_entries(GenObject *obj,
     if (!obj->isInput()
         && !obj->isOutput()
         && !obj->isStruct()
-        && !obj->isReg()
-        && !obj->isNReg()) {
+        && !(obj->getClockEdge() == CLK_POSEDGE)
+        && !(obj->getClockEdge() == CLK_NEGEDGE)) {
         return ret;
     }
     if (prefix == "") {
@@ -852,9 +865,24 @@ std::string ModuleObject::generate_sysc_constructor() {
         ret += "\n";
         ret += addspaces() + "SC_METHOD(" + p->getName() + ");\n";
 
-        ln = std::string("i");
-        for (auto &s: getEntries()) {
-            ret += generate_sysc_sensitivity(s, prefix1, ln, loop);
+        // RAM, ROM exception where no registers but memory exists;
+        if (strstr(p->getName().c_str(), "egisters")) {
+            GenObject *clkport = 0;
+            for (auto &pp: getEntries()) {
+                if (pp->isInput() && pp->getName() == "i_clk") {
+                    clkport = pp;
+                }
+            }
+            if (clkport == 0) {
+                SHOW_ERROR("Memory %s clock port not defined", getName().c_str());
+            } else {
+                ret += addspaces() + "sensitive << " + clkport->getName() + ".pos();\n";
+            }
+        } else {
+            ln = std::string("i");
+            for (auto &s: getEntries()) {
+                ret += generate_sysc_sensitivity(s, prefix1, ln, loop);
+            }
         }
     }
     // Generate registers processes depending of clock source and reset polarity

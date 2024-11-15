@@ -33,7 +33,7 @@ class rom_inferred_2x32 : public ModuleObject {
         }
     };
 
-    void registers();
+    void rxegisters();
 
  public:
     TmplParamI32D abits;

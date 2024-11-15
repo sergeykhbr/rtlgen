@@ -17,17 +17,14 @@
 #pragma once
 
 #include <api_rtlgen.h>
-#include "cdc_sync.h"
 #include "cdc_afifo.h"
 
 class cdc_folder : public FolderObject {
  public:
     cdc_folder(GenObject *parent) :
         FolderObject(parent, "cdc"),
-        cdc_sync_file_(this),
         cdc_afifo_file_(this) {}
 
  protected:
-    cdc_sync_file cdc_sync_file_;
     cdc_afifo_file cdc_afifo_file_;
 };
