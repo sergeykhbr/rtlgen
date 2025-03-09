@@ -122,7 +122,8 @@ class types_bus0 : public FileObject {
 
 
  private:
-    int autoincr_;
+    int xmst_autoincr_;
+    int xslv_autoincr_;
  public:
     TextLine _xmst0_;
     TextLine _xmst1_;
@@ -133,9 +134,13 @@ class types_bus0 : public FileObject {
     ParamI32D CFG_BUS0_XMST_GROUP0;
     TextLine _xmst6_;
     ParamI32D CFG_BUS0_XMST_DMA;
+#if GENCFG_PCIE_ENABLE
     TextLine _xmst7_;
-    ParamI32D CFG_BUS0_XMST_TOTAL;
+    ParamI32D CFG_BUS0_XMST_PCIE;
+#endif
     TextLine _xmst8_;
+    ParamI32D CFG_BUS0_XMST_TOTAL;
+    TextLine _xmst9_;
     ParamI32D CFG_BUS0_XMST_LOG2_TOTAL;
     TextLine _xslv0_;
     TextLine _xslv1_;

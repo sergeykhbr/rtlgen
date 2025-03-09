@@ -40,6 +40,10 @@ types_bus1::types_bus1(GenObject *parent) :
     CFG_BUS1_PSLV_GPIO(this, "CFG_BUS1_PSLV_GPIO", autoincr_++),
     _pslv10_(this, "@brief DDR control register."),
     CFG_BUS1_PSLV_DDR(this, "CFG_BUS1_PSLV_DDR", autoincr_++),
+#if GENCFG_PCIE_ENABLE
+    _pslvpcie_(this, "@brief PCIE endpoint controller"),
+    CFG_BUS1_PSLV_PCIE(this, "CFG_BUS1_PSLV_PCIE", autoincr_++),
+#endif
     _xslv11_(this, "Configuration index of the Plug-n-Play module."),
     CFG_BUS1_PSLV_PNP(this, "CFG_BUS1_PSLV_PNP", autoincr_++),
     _pslv12_(this, "Total number of the APB slaves devices on Bus[1]."),

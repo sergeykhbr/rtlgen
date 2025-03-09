@@ -62,6 +62,9 @@ class types_bus1 : public FileObject {
 #endif
             gpio(this, "gpio", "", "GPIO 4KB"),
             ddr(this, "ddr", "", "DDR MGMT 4KB"),
+#if GENCFG_PCIE_ENABLE
+            pcie(this, "pcie", "", "PCIE Controller 4KB"),
+#endif
             pnp(this, "pnp", "", "Plug'n'Play 4KB")
             {
 
@@ -85,6 +88,11 @@ class types_bus1 : public FileObject {
             ddr.addr_start.setObjValue(new HexConst(0x00000000C0000));
             ddr.addr_end.setObjValue(new HexConst(0x00000000C1000));
 
+#if GENCFG_PCIE_ENABLE
+            pcie.addr_start.setObjValue(new HexConst(0x00000000C1000));
+            pcie.addr_end.setObjValue(new HexConst(0x00000000C2000));
+#endif
+
             pnp.addr_start.setObjValue(new HexConst(0x00000000ff000));
             pnp.addr_end.setObjValue(new HexConst(0x0000000100000));
         }
@@ -96,6 +104,9 @@ class types_bus1 : public FileObject {
 #endif
         StructVar<types_amba::mapinfo_type> gpio;
         StructVar<types_amba::mapinfo_type> ddr;
+#if GENCFG_PCIE_ENABLE
+        StructVar<types_amba::mapinfo_type> pcie;
+#endif
         StructVar<types_amba::mapinfo_type> pnp;
     };
 
@@ -121,6 +132,10 @@ class types_bus1 : public FileObject {
     ParamI32D CFG_BUS1_PSLV_GPIO;
     TextLine _pslv10_;
     ParamI32D CFG_BUS1_PSLV_DDR;
+#if GENCFG_PCIE_ENABLE
+    TextLine _pslvpcie_;
+    ParamI32D CFG_BUS1_PSLV_PCIE;
+#endif
     TextLine _xslv11_;
     ParamI32D CFG_BUS1_PSLV_PNP;
     TextLine _pslv12_;

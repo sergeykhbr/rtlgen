@@ -78,6 +78,7 @@ asic_top::asic_top(GenObject *parent, const char *name, const char *comment) :
     w_dmreset(this, "w_dmreset", "1"),
     w_sys_clk(this, "w_sys_clk", "1"),
     w_ddr_clk(this, "w_ddr_clk", "1"),
+    w_pcie_clk(this, "w_pcie_clk", "1"),
     w_pll_lock(this, "w_pll_lock", "1"),
     ddr_xmapinfo(this, "ddr_xmapinfo", NO_COMMENT),
     ddr_xdev_cfg(this, "ddr_xdev_cfg", NO_COMMENT),
@@ -94,6 +95,17 @@ asic_top::asic_top(GenObject *parent, const char *name, const char *comment) :
     prci_dev_cfg(this, "prci_dev_cfg", NO_COMMENT),
     prci_apbi(this, "prci_apbi", NO_COMMENT),
     prci_apbo(this, "prci_apbo", NO_COMMENT),
+#if GENCFG_PCIE_ENABLE
+    pcie_usr_clk(this, "pcie_usr_clk", "1"),
+    pcie_usr_rst(this, "pcie_usr_rst", "1"),
+    pcie_pmapinfo(this, "pcie_pmapinfo", NO_COMMENT),
+    pcie_dev_cfg(this, "pcie_dev_cfg", NO_COMMENT),
+    pcie_apbi(this, "pcie_apbi", NO_COMMENT),
+    pcie_apbo(this, "pcie_apbo", NO_COMMENT),
+    pcie_dmao(this, "pcie_dmao", NO_COMMENT),
+    pcie_dmai(this, "pcie_dmai", NO_COMMENT),
+    w_lnk_up(this, "w_lnk_up", "1"),
+#endif
     // submodules:
     iclk0(this, "iclk0", NO_COMMENT),
 #if GENCFG_SD_CTRL_ENABLE
@@ -105,6 +117,9 @@ asic_top::asic_top(GenObject *parent, const char *name, const char *comment) :
 #endif
     pll0(this, "pll0", NO_COMMENT),
     prci0(this, "prci0", NO_COMMENT),
+#if GENCFG_PCIE_ENABLE
+    ppcie0(this, "ppcie0", NO_COMMENT),
+#endif
     soc0(this, "soc0", NO_COMMENT)
 {
     Operation::start(this);
@@ -164,6 +179,7 @@ TEXT();
         CONNECT(pll0, 0, pll0.i_clk_tcxo, ib_clk_tcxo);
         CONNECT(pll0, 0, pll0.o_clk_sys, w_sys_clk);
         CONNECT(pll0, 0, pll0.o_clk_ddr, w_ddr_clk);
+        CONNECT(pll0, 0, pll0.o_clk_pcie, w_pcie_clk);
         CONNECT(pll0, 0, pll0.o_locked, w_pll_lock);
     ENDNEW();
 
@@ -182,6 +198,20 @@ TEXT();
         CONNECT(prci0, 0, prci0.i_apbi, prci_apbi);
         CONNECT(prci0, 0, prci0.o_apbo, prci_apbo);
     ENDNEW();
+
+#if GENCFG_PCIE_ENABLE
+TEXT();
+    NEW(ppcie0, ppcie0.getName().c_str());
+        CONNECT(ppcie0, 0, ppcie0.i_clk, ib_clk_tcxo);
+        CONNECT(ppcie0, 0, ppcie0.i_nrst, w_sys_nrst);
+        CONNECT(ppcie0, 0, ppcie0.i_lnk_up, w_lnk_up);
+        CONNECT(ppcie0, 0, ppcie0.i_mapinfo, prci_pmapinfo);
+        CONNECT(ppcie0, 0, ppcie0.o_cfg, prci_dev_cfg);
+        CONNECT(ppcie0, 0, ppcie0.i_apbi, prci_apbi);
+        CONNECT(ppcie0, 0, ppcie0.o_apbo, prci_apbo);
+        CONNECT(ppcie0, 0, ppcie0.i_dma_busy, pcie_dmao.busy);
+    ENDNEW();
+#endif
 
 TEXT();
     soc0.sim_uart_speedup_rate.setObjValue(&sim_uart_speedup_rate);
@@ -235,6 +265,16 @@ TEXT();
         CONNECT(soc0, 0, soc0.i_ddr_xdevcfg, ddr_xdev_cfg);
         CONNECT(soc0, 0, soc0.o_ddr_xslvi, ddr_xslvi);
         CONNECT(soc0, 0, soc0.i_ddr_xslvo, ddr_xslvo);
+#if GENCFG_PCIE_ENABLE
+        CONNECT(soc0, 0, soc0.i_pcie_usr_clk, pcie_usr_clk);
+        CONNECT(soc0, 0, soc0.i_pcie_usr_rst, pcie_usr_rst);
+        CONNECT(soc0, 0, soc0.o_pcie_pmapinfo, pcie_pmapinfo);
+        CONNECT(soc0, 0, soc0.i_pcie_pdevcfg, pcie_dev_cfg);
+        CONNECT(soc0, 0, soc0.o_pcie_apbi, pcie_apbi);
+        CONNECT(soc0, 0, soc0.i_pcie_apbo, pcie_apbo);
+        CONNECT(soc0, 0, soc0.o_pcie_dmao, pcie_dmao);
+        CONNECT(soc0, 0, soc0.i_pcie_dmai, pcie_dmai);
+#endif
     ENDNEW();
 }
 

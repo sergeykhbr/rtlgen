@@ -22,6 +22,7 @@ SysPLL_tech::SysPLL_tech(GenObject *parent, const char *name, const char *commen
     i_clk_tcxo(this, "i_clk_tcxo", "1"),
     o_clk_sys(this, "o_clk_sys", "1", "Bus clock 40 MHz"),
     o_clk_ddr(this, "o_clk_ddr", "1", "DDR clock 200 MHz"),
+    o_clk_pcie(this, "o_clk_pcie", "1", "PCIE PHY 100 MHz"),
     o_locked(this, "o_locked", "1"),
     // process
     comb(this)
@@ -35,6 +36,7 @@ SysPLL_tech::SysPLL_tech(GenObject *parent, const char *name, const char *commen
 void SysPLL_tech::proc_comb() {
     SETVAL(o_clk_sys, i_clk_tcxo);
     SETVAL(o_clk_ddr, i_clk_tcxo);
+    SETVAL(o_clk_pcie, i_clk_tcxo);
     SETONE(o_locked);
 }
 

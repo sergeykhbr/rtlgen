@@ -25,6 +25,9 @@
 #if GENCFG_SD_CTRL_ENABLE
 #include "sdctrl/sdctrl_folder.h"
 #endif
+#if GENCFG_PCIE_ENABLE
+#include "pcie/pcie_folder.h"
+#endif
 #include "riscv_soc.h"
 
 
@@ -39,6 +42,9 @@ class rtl_folder : public FolderObject {
 #if GENCFG_SD_CTRL_ENABLE
         sdctrl_folder_(this),
 #endif
+#if GENCFG_PCIE_ENABLE
+        pcie_folder_(this),
+#endif
         riscv_soc_file_(this) {}
 
  protected:
@@ -49,6 +55,9 @@ class rtl_folder : public FolderObject {
     misclib_folder misclib_folder_;
 #if GENCFG_SD_CTRL_ENABLE
     sdctrl_folder sdctrl_folder_;
+#endif
+#if GENCFG_PCIE_ENABLE
+    pcie_folder pcie_folder_;
 #endif
     // files
     riscv_soc_file riscv_soc_file_;

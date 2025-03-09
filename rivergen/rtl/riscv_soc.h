@@ -22,6 +22,7 @@
 #include "ambalib/types_bus0.h"
 #include "ambalib/types_bus1.h"
 #include "ambalib/types_pnp.h"
+#include "ambalib/types_dma.h"
 #include "ambalib/axictrl_bus0.h"
 #include "ambalib/axi2apb_bus1.h"
 #include "misclib/apb_uart.h"
@@ -32,6 +33,7 @@
 #include "misclib/plic.h"
 #include "misclib/clint.h"
 #include "sdctrl/sdctrl.h"
+#include "pcie/pcie_dma.h"
 #include "riverlib/river_cfg.h"
 #include "riverlib/types_river.h"
 #include "riverlib/river_amba.h"
@@ -119,6 +121,17 @@ public:
     InStruct<types_pnp::dev_config_type> i_ddr_xdevcfg;
     OutStruct<types_amba::axi4_slave_in_type> o_ddr_xslvi;
     InStruct<types_amba::axi4_slave_out_type> i_ddr_xslvo;
+#if GENCFG_PCIE_ENABLE
+    TextLine _pcie0_;
+    InPort i_pcie_usr_clk;
+    InPort i_pcie_usr_rst;
+    OutStruct<types_amba::mapinfo_type> o_pcie_pmapinfo;
+    InStruct<types_pnp::dev_config_type> i_pcie_pdevcfg;
+    OutStruct<types_amba::apb_in_type> o_pcie_apbi;
+    InStruct<types_amba::apb_out_type> i_pcie_apbo;
+    OutStruct<types_dma::dma64_out_type> o_pcie_dmao;
+    InStruct<types_dma::dma64_in_type> i_pcie_dmai;
+#endif
 
     // Param
     TextLine _hwid0_;
@@ -176,6 +189,9 @@ public:
     apb_gpio gpio0;
 #if GENCFG_SD_CTRL_ENABLE
     sdctrl sdctrl0;
+#endif
+#if GENCFG_PCIE_ENABLE
+    pcie_dma pcidma0;
 #endif
     apb_pnp pnp0;
     Workgroup group0;

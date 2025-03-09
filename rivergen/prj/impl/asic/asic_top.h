@@ -20,12 +20,14 @@
 #include <genconfig.h>
 #include "target_cfg.h"
 #include "../../../rtl/ambalib/types_amba.h"
+#include "../../../rtl/ambalib/types_dma.h"
 #include "../../../rtl/ambalib/types_pnp.h"
 #include "../../../rtl/techmap/bufg/ids_tech.h"
 #include "../../../rtl/techmap/bufg/iobuf_tech.h"
 #include "../../../rtl/techmap/pll/SysPLL_tech.h"
 #include "../../../rtl/riscv_soc.h"
 #include "../../../rtl/misclib/apb_prci.h"
+#include "../../../rtl/pcie/apb_pcie.h"
 
 using namespace sysvc;
 
@@ -102,6 +104,7 @@ public:
     Signal w_dmreset;
     Signal w_sys_clk;
     Signal w_ddr_clk;
+    Signal w_pcie_clk;
     Signal w_pll_lock;
 
     SignalStruct<types_amba::mapinfo_type> ddr_xmapinfo;
@@ -123,6 +126,18 @@ public:
     SignalStruct<types_amba::apb_in_type> prci_apbi;
     SignalStruct<types_amba::apb_out_type> prci_apbo;
 
+#if GENCFG_PCIE_ENABLE
+    Signal pcie_usr_clk;
+    Signal pcie_usr_rst;
+    SignalStruct<types_amba::mapinfo_type> pcie_pmapinfo;
+    SignalStruct<types_pnp::dev_config_type> pcie_dev_cfg;
+    SignalStruct<types_amba::apb_in_type> pcie_apbi;
+    SignalStruct<types_amba::apb_out_type> pcie_apbo;
+    SignalStruct<types_dma::dma64_out_type> pcie_dmao;
+    SignalStruct<types_dma::dma64_in_type> pcie_dmai;
+    Signal w_lnk_up;
+#endif
+
     // Sub-module instances:
     ids_tech iclk0;
 #if GENCFG_SD_CTRL_ENABLE
@@ -134,6 +149,9 @@ public:
 #endif
     SysPLL_tech pll0;
     apb_prci prci0;
+#if GENCFG_PCIE_ENABLE
+    apb_pcie ppcie0;
+#endif
     riscv_soc soc0;
     // process
 };

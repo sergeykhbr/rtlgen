@@ -17,6 +17,7 @@
 #pragma once
 
 #include <api_rtlgen.h>
+#include <genconfig.h>
 
 using namespace sysvc;
 
@@ -68,6 +69,8 @@ class types_pnp : public FileObject {
     };
 
 
+ private:
+    int autoincr_;
  public:
     TextLine _vid1_;
     ParamLogic VENDOR_GNSSSENSOR;
@@ -84,6 +87,8 @@ class types_pnp : public FileObject {
     ParamLogic GNSSSENSOR_UART_TAP;
     TextLine _didmst8_;
     ParamLogic OPTIMITECH_JTAG_SBA;
+    TextLine _didmst9_;
+    ParamLogic OPTIMITECH_PCIE_DMA;
     TextLine _didslv0_;
     TextLine _didslv1_;
     TextLine _didslv2_;
@@ -118,6 +123,8 @@ class types_pnp : public FileObject {
     ParamLogic OPTIMITECH_SDCTRL_MEM;
     TextLine _didslv17_;
     ParamLogic OPTIMITECH_RIVER_DMI;
+    TextLine _didslv18_;
+    ParamLogic OPTIMITECH_PCIE_CTRL;
     TextLine _pnpcfg0_;
     TextLine _pnpcfg1_;
     TextLine _pnpcfg2_;
@@ -145,8 +152,14 @@ class types_pnp : public FileObject {
     ParamI32D SOC_PNP_PBRIDGE0;
     ParamI32D SOC_PNP_DMI;
     ParamI32D SOC_PNP_UART1;
+#if GENCFG_SD_CTRL_ENABLE
     ParamI32D SOC_PNP_SDCTRL_REG;
     ParamI32D SOC_PNP_SDCTRL_MEM;
+#endif
+#if GENCFG_PCIE_ENABLE
+    ParamI32D SOC_PNP_PCIE_DMA;
+    ParamI32D SOC_PNP_PCIE_APB;
+#endif
     ParamI32D SOC_PNP_TOTAL;
     TextLine _pnp2_;
     TextLine _pnp3_;
