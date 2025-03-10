@@ -206,9 +206,9 @@ TEXT();
         CONNECT(ppcie0, 0, ppcie0.i_nrst, w_sys_nrst);
         CONNECT(ppcie0, 0, ppcie0.i_lnk_up, w_lnk_up);
         CONNECT(ppcie0, 0, ppcie0.i_mapinfo, prci_pmapinfo);
-        CONNECT(ppcie0, 0, ppcie0.o_cfg, prci_dev_cfg);
-        CONNECT(ppcie0, 0, ppcie0.i_apbi, prci_apbi);
-        CONNECT(ppcie0, 0, ppcie0.o_apbo, prci_apbo);
+        CONNECT(ppcie0, 0, ppcie0.o_cfg, pcie_dev_cfg);
+        CONNECT(ppcie0, 0, ppcie0.i_apbi, pcie_apbi);
+        CONNECT(ppcie0, 0, ppcie0.o_apbo, pcie_apbo);
         CONNECT(ppcie0, 0, ppcie0.i_dma_busy, pcie_dmao.busy);
     ENDNEW();
 #endif

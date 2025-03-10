@@ -66,6 +66,9 @@ class pcie_dma : public ModuleObject {
     InStruct<types_amba::axi4_master_in_type> i_xmsti;
     OutStruct<types_amba::axi4_master_out_type> o_xmsto;
     
+    ParamI32D TXFIFO_WIDTH;
+    ParamI32D RXFIFO_WIDTH;
+
     Signal wb_txfifo_payload_i;
     Signal wb_txfifo_payload_o;
     Signal w_txfifo_full;
@@ -79,9 +82,6 @@ class pcie_dma : public ModuleObject {
     Signal w_rxfifo_wr;
 
     CombProcess comb;
-
-    ParamI32D TXFIFO_WIDTH;
-    ParamI32D RXFIFO_WIDTH;
 
     cdc_afifo txfifo;
     cdc_afifo rxfifo;

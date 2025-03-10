@@ -55,7 +55,7 @@ pcie_dma::pcie_dma(GenObject *parent, const char *name, const char *comment) :
     Operation::start(this);
 
     TEXT("PCIE EP -> DMA");
-    txfifo.abits.setObjValue(&pcie_cfg_->CFG_PCIE_DMAFIFO_DEPTH);
+    txfifo.abits.setObjValue(SCV_get_cfg_type(this, "CFG_PCIE_DMAFIFO_DEPTH"));
     txfifo.dbits.setObjValue(&TXFIFO_WIDTH);
     NEW(txfifo, txfifo.getName().c_str());
         CONNECT(txfifo, 0, txfifo.i_wclk, i_pcie_usr_clk);
@@ -71,7 +71,7 @@ pcie_dma::pcie_dma(GenObject *parent, const char *name, const char *comment) :
     ENDNEW();
 
     TEXT("DMA -> PCIE EP");
-    rxfifo.abits.setObjValue(&pcie_cfg_->CFG_PCIE_DMAFIFO_DEPTH);
+    rxfifo.abits.setObjValue(SCV_get_cfg_type(this, "CFG_PCIE_DMAFIFO_DEPTH"));
     rxfifo.dbits.setObjValue(&RXFIFO_WIDTH);
     NEW(rxfifo, rxfifo.getName().c_str());
         CONNECT(rxfifo, 0, rxfifo.i_wclk, i_pcie_usr_clk);
