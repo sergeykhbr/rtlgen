@@ -98,6 +98,7 @@ asic_top::asic_top(GenObject *parent, const char *name, const char *comment) :
 #if GENCFG_PCIE_ENABLE
     pcie_usr_clk(this, "pcie_usr_clk", "1"),
     pcie_usr_rst(this, "pcie_usr_rst", "1"),
+    wb_pcie_completer_id(this, "wb_pcie_completer_id", "16", "Bus, Device, Function"),
     pcie_pmapinfo(this, "pcie_pmapinfo", NO_COMMENT),
     pcie_dev_cfg(this, "pcie_dev_cfg", NO_COMMENT),
     pcie_apbi(this, "pcie_apbi", NO_COMMENT),
@@ -268,6 +269,7 @@ TEXT();
 #if GENCFG_PCIE_ENABLE
         CONNECT(soc0, 0, soc0.i_pcie_usr_clk, pcie_usr_clk);
         CONNECT(soc0, 0, soc0.i_pcie_usr_rst, pcie_usr_rst);
+        CONNECT(soc0, 0, soc0.i_pcie_completer_id, wb_pcie_completer_id);
         CONNECT(soc0, 0, soc0.o_pcie_pmapinfo, pcie_pmapinfo);
         CONNECT(soc0, 0, soc0.i_pcie_pdevcfg, pcie_dev_cfg);
         CONNECT(soc0, 0, soc0.o_pcie_apbi, pcie_apbi);

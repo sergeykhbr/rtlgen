@@ -125,12 +125,13 @@ public:
     TextLine _pcie0_;
     InPort i_pcie_usr_clk;
     InPort i_pcie_usr_rst;
+    InPort i_pcie_completer_id;
     OutStruct<types_amba::mapinfo_type> o_pcie_pmapinfo;
     InStruct<types_pnp::dev_config_type> i_pcie_pdevcfg;
     OutStruct<types_amba::apb_in_type> o_pcie_apbi;
     InStruct<types_amba::apb_out_type> i_pcie_apbo;
-    OutStruct<types_dma::dma64_out_type> o_pcie_dmao;
-    InStruct<types_dma::dma64_in_type> i_pcie_dmai;
+    OutStruct<types_dma::pcie_dma64_out_type> o_pcie_dmao;
+    InStruct<types_dma::pcie_dma64_in_type> i_pcie_dmai;
 #endif
 
     // Param

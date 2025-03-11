@@ -24,57 +24,65 @@ class types_dma : public FileObject {
  public:
     types_dma(GenObject *parent);
 
-    class dma64_out_type : public StructObject {
+    class pcie_dma64_out_type : public StructObject {
      public:
-        dma64_out_type(GenObject* parent, const char* name, const char* comment)
-            : StructObject(parent, "dma64_out_type", name, comment),
-            tx_ready(this, "tx_ready", "1", "0", NO_COMMENT),
-            rx_data(this, "rx_data", "64", "0", NO_COMMENT),
-            rx_last(this, "rx_last", "1", "'0", NO_COMMENT),
-            rx_valid(this, "rx_valid", "1", "0", NO_COMMENT),
-            busy(this, "busy", "1", "0", "DMA endine status") {
+        pcie_dma64_out_type(GenObject* parent, const char* name, const char* comment)
+            : StructObject(parent, "pcie_dma64_out_type", name, comment),
+            ready(this, "ready", "1", RSTVAL_ZERO, NO_COMMENT),
+            data(this, "data", "64", RSTVAL_ZERO, NO_COMMENT),
+            strob(this, "strob", "8", RSTVAL_ZERO, NO_COMMENT),
+            last(this, "last", "1", RSTVAL_ZERO, NO_COMMENT),
+            valid(this, "valid", "1", RSTVAL_ZERO, NO_COMMENT),
+            busy(this, "busy", "1", RSTVAL_ZERO, "DMA endine status") {
         }
 
      public:
-        Logic tx_ready;
-        Logic rx_data;
-        Logic rx_last;
-        Logic rx_valid;
+        Logic ready;
+        Logic data;
+        Logic strob;
+        Logic last;
+        Logic valid;
         Logic busy;
     };
 
-    class dma64_in_type : public StructObject {
+    class pcie_dma64_in_type : public StructObject {
      public:
-        dma64_in_type(GenObject* parent, const char* name, const char* comment)
-            : StructObject(parent, "dma64_in_type", name, comment),
-            rx_ready(this, "rx_ready", "1", "0", NO_COMMENT),
-            tx_data(this, "tx_data", "64", "'0", NO_COMMENT),
-            tx_strob(this, "tx_strob", "8", "'0", NO_COMMENT),
-            tx_last(this, "tx_last", "1", "0", NO_COMMENT),
-            tx_valid(this, "tx_valid", "1", "'0", NO_COMMENT) {
+        pcie_dma64_in_type(GenObject* parent, const char* name, const char* comment)
+            : StructObject(parent, "pcie_dma64_in_type", name, comment),
+            ready(this, "ready", "1", RSTVAL_ZERO, NO_COMMENT),
+            data(this, "data", "64", RSTVAL_ZERO, NO_COMMENT),
+            strob(this, "strob", "8", RSTVAL_ZERO, NO_COMMENT),
+            last(this, "last", "1", RSTVAL_ZERO, NO_COMMENT),
+            bar_hit(this, "bar_hit", "7", RSTVAL_ZERO, "[0]=BAR0, [1]=BAR1.. [5]=BAR5, [6]=Expansion ROM"),
+            err_fwd(this, "err_fwd", "1", RSTVAL_ZERO, "Receive error Forward: packet in progress is error-poisoned"),
+            ecrc_err(this, "ecrc_err", "1", RSTVAL_ZERO, "Receive ECRC Error: current packet has an ECRC error. Asserted at the packet EOF"),
+            valid(this, "valid", "1", RSTVAL_ZERO, NO_COMMENT) {
         }
 
     public:
-        Logic rx_ready;
-        Logic tx_data;
-        Logic tx_strob;
-        Logic tx_last;
-        Logic tx_valid;
+        Logic ready;
+        Logic data;
+        Logic strob;
+        Logic last;
+        Logic bar_hit;
+        Logic err_fwd;
+        Logic ecrc_err;
+        Logic valid;
     };
 
 
  public:
     TextLine _dma0_;
     TextLine _dma1_;
-    dma64_out_type dma64_out_type_def;
+    pcie_dma64_out_type pcie_dma64_out_def;
     TextLine _dma2_;
     TextLine _dma3_;
-    ParamStruct<dma64_out_type> dma64_out_none;
+    ParamStruct<pcie_dma64_out_type> pcie_dma64_out_none;
     TextLine _dma4_;
     TextLine _dma5_;
-    dma64_in_type dma64_in_type_def;
+    pcie_dma64_in_type pcie_dma64_in_type_def;
     TextLine _dma6_;
-    ParamStruct<dma64_in_type> dma64_in_none;
+    ParamStruct<pcie_dma64_in_type> pcie_dma64_in_none;
     TextLine _n_;
 };
 

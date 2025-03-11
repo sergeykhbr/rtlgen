@@ -34,57 +34,117 @@ class pcie_dma : public ModuleObject {
         CombProcess(GenObject *parent) :
             ProcObject(parent, "comb"),
             vb_xmst_cfg(this, "vb_xmst_cfg", "dev_config_none", NO_COMMENT),
-            vb_tx_data(this, "vb_tx_data", "64", RSTVAL_ZERO, NO_COMMENT),
-            vb_tx_strob(this, "vb_tx_strob", "8", RSTVAL_ZERO, NO_COMMENT),
-            v_tx_last(this, "v_tx_last", "1", RSTVAL_ZERO, NO_COMMENT),
-            vb_rx_data(this, "vb_rx_data", "64", RSTVAL_ZERO, NO_COMMENT),
-            v_rx_last(this, "v_rx_last", "1", RSTVAL_ZERO, NO_COMMENT) {
+            vb_xmsto(this, "vb_xmsto", "axi4_master_out_none", NO_COMMENT),
+            v_req_ready(this, "v_req_ready", "1", RSTVAL_ZERO, NO_COMMENT),
+            vb_req_addr(this, "vb_req_addr", "64", "0", NO_COMMENT),
+            vb_req_data(this, "vb_req_data", "64", RSTVAL_ZERO, NO_COMMENT),
+            vb_req_strob(this, "vb_req_strob", "8", RSTVAL_ZERO, NO_COMMENT),
+            v_req_last(this, "v_req_last", "1", RSTVAL_ZERO, NO_COMMENT),
+            v_resp_valid(this, "v_resp_valid", "1", RSTVAL_ZERO, NO_COMMENT),
+            vb_resp_data(this, "vb_resp_data", "64", RSTVAL_ZERO, NO_COMMENT),
+            vb_resp_strob(this, "vb_resp_strob", "8", RSTVAL_ZERO, NO_COMMENT),
+            v_resp_last(this, "v_resp_last", "1", RSTVAL_ZERO, NO_COMMENT) {
         }
 
      public:
         StructVar<types_pnp::dev_config_type> vb_xmst_cfg;
-        Logic vb_tx_data;
-        Logic vb_tx_strob;
-        Logic v_tx_last;
-        Logic vb_rx_data;
-        Logic v_rx_last;
+        StructVar<types_amba::axi4_master_out_type> vb_xmsto;
+        Logic v_req_ready;
+        Logic vb_req_addr;
+        Logic vb_req_data;
+        Logic vb_req_strob;
+        Logic v_req_last;
+        Logic v_resp_valid;
+        Logic vb_resp_data;
+        Logic vb_resp_strob;
+        Logic v_resp_last;
     };
 
     void proc_comb();
 
  public:
     // io:
-    InPort i_sys_nrst;
-    InPort i_sys_clk;
+    InPort i_nrst;
+    InPort i_clk;
     InPort i_pcie_usr_rst;
     InPort i_pcie_usr_clk;
     TextLine _text0_;
-    InStruct<types_dma::dma64_in_type> i_pcie_dmai;
-    OutStruct<types_dma::dma64_out_type> o_pcie_dmao;
+    InPort i_pcie_completer_id;
+    InStruct<types_dma::pcie_dma64_in_type> i_pcie_dmai;
+    OutStruct<types_dma::pcie_dma64_out_type> o_pcie_dmao;
     TextLine _text1_;
     OutStruct<types_pnp::dev_config_type> o_xmst_cfg;
     InStruct<types_amba::axi4_master_in_type> i_xmsti;
     OutStruct<types_amba::axi4_master_out_type> o_xmsto;
     
-    ParamI32D TXFIFO_WIDTH;
-    ParamI32D RXFIFO_WIDTH;
+    TextLine _fmt0_;
+    TextLine _fmt1_;
+    ParamLogic TLP_FMT_3DW_NOPAYLOAD;
+    ParamLogic TLP_FMT_4DW_NOPAYLOAD;
+    ParamLogic TLP_FMT_3DW_PAYLOAD;
+    ParamLogic TLP_FMT_4DW_PAYLOAD;
 
-    Signal wb_txfifo_payload_i;
-    Signal wb_txfifo_payload_o;
-    Signal w_txfifo_full;
-    Signal w_txfifo_empty;
-    Signal w_txfifo_rd;
+    TextLine _tlp0_;
+    TextLine _tlp1_;
+    ParamLogic TLP_FMT_TYPE_RD_MEM32;
+    ParamLogic TLP_FMT_TYPE_WR_MEM32;
+    ParamLogic TLP_FMT_TYPE_RD_MEM64;
+    ParamLogic TLP_FMT_TYPE_WR_MEM64;
+    ParamLogic TLP_FMT_TYPE_RD_IO32;
+    ParamLogic TLP_FMT_TYPE_WR_IO32;
 
-    Signal wb_rxfifo_payload_i;
-    Signal wb_rxfifo_payload_o;
-    Signal w_rxfifo_full;
-    Signal w_rxfifo_empty;
-    Signal w_rxfifo_wr;
+    TextLine _state0_;
+    TextLine _state1_;
+    ParamLogic STATE_RST;
+    ParamLogic STATE_DW3DW4;
+    ParamLogic STATE_AR;
+    ParamLogic STATE_R;
+    ParamLogic STATE_AW;
+    ParamLogic STATE_W;
+    ParamLogic STATE_B;
+    ParamLogic STATE_RESP_DW0DW1;
+    ParamLogic STATE_RESP_DW2DW3;
+    ParamLogic STATE_RESP_PAYLOAD;
+
+    TextLine _fifo0_;
+    ParamI32D REQ_FIFO_WIDTH;
+    ParamI32D RESP_FIFO_WIDTH;
+
+    Signal w_pcie_nrst;
+    Signal wb_reqfifo_payload_i;
+    Signal wb_reqfifo_payload_o;
+    Signal w_reqfifo_full;
+    Signal w_reqfifo_empty;
+    Signal w_reqfifo_rd;
+
+    Signal wb_respfifo_payload_i;
+    Signal wb_respfifo_payload_o;
+    Signal w_respfifo_full;
+    Signal w_respfifo_empty;
+    Signal w_respfifo_wr;
+
+    RegSignal state;
+    RegSignal dw0;
+    RegSignal dw1;
+    RegSignal dw2;
+    RegSignal dw3;
+    RegSignal xlen;
+    RegSignal xsize;
+    RegSignal xaddr;
+    RegSignal xwstrb;
+    RegSignal xwdata;
+    RegSignal xwena;    // AXI light: RW and W at the same time without burst
+    RegSignal xrdata;
+    RegSignal resp_data_ena;
+    RegSignal resp_data;
+    RegSignal resp_last;
+    RegSignal byte_cnt;
+    RegSignal busy;
 
     CombProcess comb;
 
-    cdc_afifo txfifo;
-    cdc_afifo rxfifo;
+    cdc_afifo reqfifo;
+    cdc_afifo respfifo;
 };
 
 class pcie_dma_file : public FileObject {

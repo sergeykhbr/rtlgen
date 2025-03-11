@@ -22,15 +22,15 @@ types_dma::types_dma(GenObject *parent) :
     FileObject(parent, "types_dma"),
     _dma0_(this),
     _dma1_(this),
-    dma64_out_type_def(this, "dma64_out_type", NO_COMMENT),
+    pcie_dma64_out_def(this, "pcie_dma64_out_type", NO_COMMENT),
     _dma2_(this),
     _dma3_(this, "@brief   DMA output empty values."),
-    dma64_out_none(this, "dma64_out_none", NO_COMMENT),
+    pcie_dma64_out_none(this, "pcie_dma64_out_none", NO_COMMENT),
     _dma4_(this),
     _dma5_(this, "@brief DMA device input signals."),
-    dma64_in_type_def(this, "dma64_in_type", NO_COMMENT),
+    pcie_dma64_in_type_def(this, "pcie_dma64_in_type", NO_COMMENT),
     _dma6_(this),
-    dma64_in_none(this, "dma64_in_none", NO_COMMENT),
+    pcie_dma64_in_none(this, "pcie_dma64_in_none", NO_COMMENT),
     _n_(this)
 {
     glob_types_dma_ = this;
