@@ -32,8 +32,7 @@ class types_dma : public FileObject {
             data(this, "data", "64", RSTVAL_ZERO, NO_COMMENT),
             strob(this, "strob", "8", RSTVAL_ZERO, NO_COMMENT),
             last(this, "last", "1", RSTVAL_ZERO, NO_COMMENT),
-            valid(this, "valid", "1", RSTVAL_ZERO, NO_COMMENT),
-            busy(this, "busy", "1", RSTVAL_ZERO, "DMA endine status") {
+            valid(this, "valid", "1", RSTVAL_ZERO, NO_COMMENT) {
         }
 
      public:
@@ -42,7 +41,6 @@ class types_dma : public FileObject {
         Logic strob;
         Logic last;
         Logic valid;
-        Logic busy;
     };
 
     class pcie_dma64_in_type : public StructObject {

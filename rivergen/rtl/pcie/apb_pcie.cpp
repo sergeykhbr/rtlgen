@@ -1,5 +1,5 @@
 // 
-//  Copyright 2022 Sergey Khabarov, sergeykhbr@gmail.com
+//  Copyright 2025 Sergey Khabarov, sergeykhbr@gmail.com
 // 
 //  Licensed under the Apache License, Version 2.0 (the "License");
 //  you may not use this file except in compliance with the License.
@@ -20,12 +20,12 @@ apb_pcie::apb_pcie(GenObject *parent, const char *name, const char *comment) :
     ModuleObject(parent, "apb_pcie", name, comment),
     i_clk(this, "i_clk", "1", "APB clock"),
     i_nrst(this, "i_nrst", "1", "Reset: active LOW"),
-    i_lnk_up(this, "i_lnk_up", "1", "Link-up signal"),
     i_mapinfo(this, "i_mapinfo", "interconnect slot information"),
     o_cfg(this, "o_cfg", "Device descriptor"),
     i_apbi(this, "i_apbi", "APB input interface"),
     o_apbo(this, "o_apbo", "APB output interface"),
-    i_dma_busy(this, "i_dma_busy", "1", "DMA engine brief state"),
+    i_pcie_completer_id(this, "i_pcie_completer_id", "16", "Bus, Device, Function"),
+    i_dma_state(this, "i_dma_state", "4", "DMA engine brief state"),
     // params
     // signals
     w_req_valid(this, "w_req_valid", "1"),
@@ -33,10 +33,6 @@ apb_pcie::apb_pcie(GenObject *parent, const char *name, const char *comment) :
     w_req_write(this, "w_req_write", "1"),
     wb_req_wdata(this, "wb_req_wdata", "32"),
     // registers
-    lnk_up(this, "lnk_up", "1", "0"),
-    cfg_bus_number(this, "cfg_bus_number", "8", "0"),
-    cfg_device_number(this, "cfg_device_number", "5", "0"),
-    cfg_function_number(this, "cfg_function_number", "3", "0"),
     resp_valid(this, "resp_valid", "1", "0"),
     resp_rdata(this, "resp_rdata", "32", "'0", NO_COMMENT),
     resp_err(this, "resp_err", "1", "0"),
@@ -69,20 +65,15 @@ apb_pcie::apb_pcie(GenObject *parent, const char *name, const char *comment) :
 }
 
 void apb_pcie::proc_comb() {
-    SETVAL(lnk_up, i_lnk_up);
-
 TEXT();
     SETZERO(resp_err);
     TEXT("Registers access:");
     SWITCH (BITS(wb_req_addr, 11, 2));
     CASE (CONST("0", 10), "0x00: link status");
-        SETBIT(comb.vb_rdata, 0, lnk_up);
-        SETBIT(comb.vb_rdata, 1, i_dma_busy);
+        SETBITS(comb.vb_rdata, 3, 0, i_dma_state);
         ENDCASE();
     CASE (CONST("1", 10), "0x04: bus, device, function");
-        SETBITS(comb.vb_rdata, 15, 8, cfg_bus_number);
-        SETBITS(comb.vb_rdata, 7, 3, cfg_device_number);
-        SETBITS(comb.vb_rdata, 2, 0, cfg_function_number);
+        SETBITS(comb.vb_rdata, 15, 0, i_pcie_completer_id);
         ENDCASE();
     CASEDEF();
         ENDCASE();

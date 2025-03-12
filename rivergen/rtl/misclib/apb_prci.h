@@ -50,6 +50,7 @@ class apb_prci : public ModuleObject {
     InPort i_dmireset;
     InPort i_sys_locked;
     InPort i_ddr_locked;
+    InPort i_pcie_phy_lnk_up;
     OutPort o_sys_rst;
     OutPort o_sys_nrst;
     OutPort o_dbg_nrst;

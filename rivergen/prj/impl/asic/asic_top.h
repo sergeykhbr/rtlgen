@@ -27,7 +27,6 @@
 #include "../../../rtl/techmap/pll/SysPLL_tech.h"
 #include "../../../rtl/riscv_soc.h"
 #include "../../../rtl/misclib/apb_prci.h"
-#include "../../../rtl/pcie/apb_pcie.h"
 
 using namespace sysvc;
 
@@ -120,6 +119,7 @@ public:
     Signal w_ddr_ui_nrst;
     Signal w_ddr_ui_clk;
     Signal w_ddr3_init_calib_complete;
+    Signal w_pcie_phy_lnk_up;
 
     SignalStruct<types_amba::mapinfo_type> prci_pmapinfo;
     SignalStruct<types_pnp::dev_config_type> prci_dev_cfg;
@@ -130,13 +130,8 @@ public:
     Signal pcie_usr_clk;
     Signal pcie_usr_rst;
     Signal wb_pcie_completer_id;
-    SignalStruct<types_amba::mapinfo_type> pcie_pmapinfo;
-    SignalStruct<types_pnp::dev_config_type> pcie_dev_cfg;
-    SignalStruct<types_amba::apb_in_type> pcie_apbi;
-    SignalStruct<types_amba::apb_out_type> pcie_apbo;
     SignalStruct<types_dma::pcie_dma64_out_type> pcie_dmao;
     SignalStruct<types_dma::pcie_dma64_in_type> pcie_dmai;
-    Signal w_lnk_up;
 #endif
 
     // Sub-module instances:
@@ -150,9 +145,6 @@ public:
 #endif
     SysPLL_tech pll0;
     apb_prci prci0;
-#if GENCFG_PCIE_ENABLE
-    apb_pcie ppcie0;
-#endif
     riscv_soc soc0;
     // process
 };

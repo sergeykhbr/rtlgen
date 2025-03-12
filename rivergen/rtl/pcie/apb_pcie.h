@@ -44,22 +44,18 @@ class apb_pcie : public ModuleObject {
     // io:
     InPort i_clk;
     InPort i_nrst;
-    InPort i_lnk_up;
     InStruct<types_amba::mapinfo_type> i_mapinfo;
     OutStruct<types_pnp::dev_config_type> o_cfg;
     InStruct<types_amba::apb_in_type> i_apbi;
     OutStruct<types_amba::apb_out_type> o_apbo;
-    InPort i_dma_busy;
+    InPort i_pcie_completer_id;
+    InPort i_dma_state;
 
     Signal w_req_valid;
     Signal wb_req_addr;
     Signal w_req_write;
     Signal wb_req_wdata;
 
-    RegSignal lnk_up;
-    RegSignal cfg_bus_number;
-    RegSignal cfg_device_number;
-    RegSignal cfg_function_number;
     RegSignal resp_valid;
     RegSignal resp_rdata;
     RegSignal resp_err;

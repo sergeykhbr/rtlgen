@@ -34,6 +34,7 @@
 #include "misclib/clint.h"
 #include "sdctrl/sdctrl.h"
 #include "pcie/pcie_dma.h"
+#include "pcie/apb_pcie.h"
 #include "riverlib/river_cfg.h"
 #include "riverlib/types_river.h"
 #include "riverlib/river_amba.h"
@@ -126,10 +127,6 @@ public:
     InPort i_pcie_usr_clk;
     InPort i_pcie_usr_rst;
     InPort i_pcie_completer_id;
-    OutStruct<types_amba::mapinfo_type> o_pcie_pmapinfo;
-    InStruct<types_pnp::dev_config_type> i_pcie_pdevcfg;
-    OutStruct<types_amba::apb_in_type> o_pcie_apbi;
-    InStruct<types_amba::apb_out_type> i_pcie_apbo;
     OutStruct<types_dma::pcie_dma64_out_type> o_pcie_dmao;
     InStruct<types_dma::pcie_dma64_in_type> i_pcie_dmai;
 #endif
@@ -178,6 +175,9 @@ public:
     Signal wb_irq_gpio;
     Signal w_irq_pnp;
     Signal wb_ext_irqs;
+#if GENCFG_PCIE_ENABLE
+    Signal wb_pcie_dma_state;
+#endif
 
     // Sub-module instances:
     axictrl_bus0 bus0;
@@ -193,6 +193,7 @@ public:
 #endif
 #if GENCFG_PCIE_ENABLE
     pcie_dma pcidma0;
+    apb_pcie ppcie0;
 #endif
     apb_pnp pnp0;
     Workgroup group0;

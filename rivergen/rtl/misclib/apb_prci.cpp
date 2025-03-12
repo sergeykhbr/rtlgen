@@ -23,6 +23,7 @@ apb_prci::apb_prci(GenObject *parent, const char *name, const char *comment) :
     i_dmireset(this, "i_dmireset", "1", "Debug reset: system reset except DMI interface"),
     i_sys_locked(this, "i_sys_locked", "1"),
     i_ddr_locked(this, "i_ddr_locked", "1"),
+    i_pcie_phy_lnk_up(this, "i_pcie_phy_lnk_up", "1", "PCIE PHY link status up"),
     o_sys_rst(this, "o_sys_rst", "1", "System reset except DMI. Active HIGH"),
     o_sys_nrst(this, "o_sys_nrst", "1", "System reset except DMI. Active LOW"),
     o_dbg_nrst(this, "o_dbg_nrst", "1", "Reset DMI. Active LOW"),
@@ -84,6 +85,7 @@ TEXT();
     CASE (CONST("0", 10), "0x00: pll statuses");
         SETBIT(comb.vb_rdata, 0, i_sys_locked);
         SETBIT(comb.vb_rdata, 1, i_ddr_locked);
+        SETBIT(comb.vb_rdata, 2, i_pcie_phy_lnk_up);
         ENDCASE();
     CASE (CONST("1", 10), "0x04: reset status");
         SETBIT(comb.vb_rdata, 0, sys_nrst);
