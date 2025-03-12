@@ -89,6 +89,7 @@ pcie_dma::pcie_dma(GenObject *parent, const char *name, const char *comment) :
     xwdata(this, "xwdata", "CFG_SYSBUS_DATA_BITS", RSTVAL_ZERO, NO_COMMENT),
     xwena(this, "xwena", "1", RSTVAL_ZERO, "AXI light: RW and W at the same time without burst"),
     xrdata(this, "xrdata", "CFG_SYSBUS_DATA_BITS", RSTVAL_ZERO, NO_COMMENT),
+    xerr(this, "xerr", "2", "AXI_RESP_OKAY", NO_COMMENT),
     resp_data_ena(this, "resp_data_ena", "1", RSTVAL_ZERO, "TLP with payload"),
     resp_data(this, "resp_data", "64", RSTVAL_ZERO, NO_COMMENT),
     resp_last(this, "resp_last", "1", RSTVAL_ZERO, NO_COMMENT),
@@ -159,7 +160,7 @@ TEXT();
                                        &i_pcie_dmai.strob,
                                        &i_pcie_dmai.data));
 TEXT();
-    SPLx(wb_reqfifo_payload_i, 3, &comb.v_req_last,
+    SPLx(wb_reqfifo_payload_o, 3, &comb.v_req_last,
                                  &comb.vb_req_strob,
                                  &comb.vb_req_data);
 
@@ -174,7 +175,7 @@ TEXT("Temporary register");
     SWITCH(state);
     CASE(STATE_RST);
         SETONE(comb.v_req_ready);
-        IF (NZ(w_reqfifo_empty));
+        IF (EZ(w_reqfifo_empty));
             SETVAL(dw0, BITS(comb.vb_req_data, 31, 0));
             SETVAL(dw1, BITS(comb.vb_req_data, 63, 32));
             SETVAL(state, STATE_DW3DW4);
@@ -192,7 +193,7 @@ TEXT();
         SETVAL(dw2, BITS(comb.vb_req_data, 31, 0));
         SETZERO(dw3);
         SETZERO(busy);
-        IF (NZ(w_reqfifo_empty));
+        IF (EZ(w_reqfifo_empty));
             SETONE(busy);
             TEXT("fmt[0] = 1 when 4DW header is used");
             IF (NZ(BIT(dw0, 29)));
@@ -226,7 +227,7 @@ TEXT();
                     SETVAL(xsize, CONST("2", 3));
                     SETVAL(byte_cnt, CC2(BITS(dw0, 7, 0), CONST("0", 2)));
                     SETBITS(comb.vb_req_addr, 31, 0, BITS(comb.vb_req_data, 31, 0));
-                    SETVAL(xwdata, BITS(comb.vb_req_data, 63, 32));
+                    SETVAL(xwdata, CC2(BITS(comb.vb_req_data, 63, 32), BITS(comb.vb_req_data, 63, 32)));
                     SETVAL(xwena, comb.v_req_last, "AXI Light: burst transactions are no supported");
                 ELSE();
                     TEXT("fmt[0]=1: 4DW header (64-bits address):");
@@ -242,6 +243,10 @@ TEXT();
     CASE(STATE_AR);
         SETONE(comb.vb_xmsto.ar_valid);
         SETVAL(comb.vb_xmsto.ar_bits.addr, BITS(xaddr, DEC(cfg->CFG_SYSBUS_ADDR_BITS), CONST("0")));
+#if 1
+        TEXT("sram base address: 64'h0000000008000000");
+        SETVAL(comb.vb_xmsto.ar_bits.addr, ADD2(comb.vb_xmsto.ar_bits.addr, CONST("0x0000000008001000", "CFG_SYSBUS_ADDR_BITS")));
+#endif
         SETVAL(comb.vb_xmsto.ar_bits.len, xlen);
         SETVAL(comb.vb_xmsto.ar_bits.size, xsize);
         SETONE(resp_data_ena);
@@ -253,15 +258,21 @@ TEXT();
         SETONE(comb.vb_xmsto.r_ready);
         IF(NZ(i_xmsti.r_valid));
             SETVAL(xrdata, i_xmsti.r_data);
+            SETVAL(xerr, i_xmsti.r_resp);
             SETVAL(state, STATE_RESP_PAYLOAD);
         ENDIF();
         ENDCASE();
     CASE(STATE_AW);
         SETONE(comb.vb_xmsto.aw_valid);
-        SETVAL(comb.vb_xmsto.ar_bits.addr, BITS(xaddr, DEC(cfg->CFG_SYSBUS_ADDR_BITS), CONST("0")));
-        SETVAL(comb.vb_xmsto.ar_bits.len, xlen);
-        SETVAL(comb.vb_xmsto.ar_bits.size, xsize);
+        SETVAL(comb.vb_xmsto.aw_bits.addr, BITS(xaddr, DEC(cfg->CFG_SYSBUS_ADDR_BITS), CONST("0")));
+#if 1
+        TEXT("sram base address: 64'h0000000008000000");
+        SETVAL(comb.vb_xmsto.aw_bits.addr, ADD2(comb.vb_xmsto.aw_bits.addr, CONST("0x0000000008001000", "CFG_SYSBUS_ADDR_BITS")));
+#endif
+        SETVAL(comb.vb_xmsto.aw_bits.len, xlen);
+        SETVAL(comb.vb_xmsto.aw_bits.size, xsize);
         SETVAL(comb.vb_xmsto.w_valid, xwena);
+        SETVAL(comb.vb_xmsto.w_last, xwena);
         SETVAL(comb.vb_xmsto.w_strb, xwstrb);
         SETVAL(comb.vb_xmsto.w_data, CC2(BITS(xwdata, 31, 0), BITS(xwdata, 31, 0)));
         IF(NZ(i_xmsti.aw_ready));
@@ -275,19 +286,32 @@ TEXT();
         ENDIF();
         ENDCASE();
     CASE(STATE_W);
-        SETONE(comb.v_req_ready);
-        SETVAL(comb.vb_xmsto.w_valid, NZ(w_reqfifo_empty));
-        SETVAL(comb.vb_xmsto.w_strb, comb.vb_req_strob);
-        SETVAL(comb.vb_xmsto.w_data, comb.vb_req_data);
-        IF(AND2(NZ(w_reqfifo_empty), NZ(i_xmsti.w_ready)));
-            IF (NZ(comb.v_req_last));
+        IF (NZ(xwena));
+            SETZERO(xwena);
+            SETONE(comb.vb_xmsto.w_valid);
+            SETVAL(comb.vb_xmsto.w_strb, xwstrb);
+            SETVAL(comb.vb_xmsto.w_data, xwdata);
+            SETONE(comb.vb_xmsto.w_last);
+            IF(NZ(i_xmsti.w_ready));
                 SETVAL(state, STATE_B);
+            ENDIF();
+        ELSE();
+            SETVAL(comb.v_req_ready, i_xmsti.w_ready);
+            SETVAL(comb.vb_xmsto.w_valid, INV_L(w_reqfifo_empty));
+            SETVAL(comb.vb_xmsto.w_strb, comb.vb_req_strob);
+            SETVAL(comb.vb_xmsto.w_data, comb.vb_req_data);
+            SETVAL(comb.vb_xmsto.w_last, INV_L(OR_REDUCE(xlen)));
+            IF(AND2(EZ(w_reqfifo_empty), NZ(i_xmsti.w_ready)));
+                IF (NZ(comb.v_req_last));
+                    SETVAL(state, STATE_B);
+                ENDIF();
             ENDIF();
         ENDIF();
         ENDCASE();
     CASE(STATE_B);
-        SETVAL(comb.vb_xmsto.b_ready, EZ(w_respfifo_full));
-        IF(AND2(EZ(w_respfifo_full), NZ(i_xmsti.b_valid)));
+        SETONE(comb.vb_xmsto.b_ready);
+        IF(NZ(i_xmsti.b_valid));
+            SETVAL(xerr, i_xmsti.b_resp);
             SETVAL(state, STATE_RESP_DW0DW1);
         ENDIF();
         ENDCASE();
@@ -357,5 +381,5 @@ TEXT();
     SETVAL(w_respfifo_wr, comb.v_resp_valid);
     SETVAL(w_reqfifo_rd, comb.v_req_ready);
     SETVAL(o_xmst_cfg, comb.vb_xmst_cfg);
-    SETVAL(o_xmsto, cfg->axi4_master_out_none);
+    SETVAL(o_xmsto, comb.vb_xmsto);
 }

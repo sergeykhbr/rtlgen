@@ -135,6 +135,7 @@ class pcie_dma : public ModuleObject {
     RegSignal xwdata;
     RegSignal xwena;    // AXI light: RW and W at the same time without burst
     RegSignal xrdata;
+    RegSignal xerr;
     RegSignal resp_data_ena;
     RegSignal resp_data;
     RegSignal resp_last;
