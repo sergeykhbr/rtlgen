@@ -92,7 +92,7 @@ pcie_dma::pcie_dma(GenObject *parent, const char *name, const char *comment) :
     resp_with_payload(this, "resp_with_payload", "1", RSTVAL_ZERO, "TLP with payload"),
     resp_data(this, "resp_data", "64", RSTVAL_ZERO, NO_COMMENT),
     resp_status(this, "resp_status", "3", "TLP_STATUS_SUCCESS", NO_COMMENT),
-    resp_cpl(this, "resp_cpl", "4", RSTVAL_ZERO, "Completion packet"),
+    resp_cpl(this, "resp_cpl", "7", RSTVAL_ZERO, "Completion packet"),
     byte_cnt(this, "byte_cnt", "12", RSTVAL_ZERO, "Byte counter to send in payload"),
     //
     comb(this),
@@ -150,6 +150,7 @@ void pcie_dma::proc_comb() {
 
 TEXT();
     IF (AND2(EQ(BITS(dw0, 9, 0), CONST("1", 10)), EQ(xsize, CONST("2", 3))));
+        TEXT("DW0[9:0] = Length must be equal 1");
         SETONE(comb.v_single_tlp32);
     ENDIF();
     SETVAL(comb.vb_xmst_cfg.descrsize, glob_pnp_cfg_->PNP_CFG_DEV_DESCR_BYTES);
@@ -196,6 +197,7 @@ TEXT("Temporary register");
         SETVAL(resp_status, TLP_STATUS_SUCCESS);
         SETZERO(req_rd_locked);
         SETZERO(resp_cpl);
+        SETZERO(resp_with_payload);
         IF (EZ(w_reqfifo_empty));
             SETVAL(dw0, BITS(comb.vb_req_data, 31, 0));
             SETVAL(dw1, BITS(comb.vb_req_data, 63, 32));
