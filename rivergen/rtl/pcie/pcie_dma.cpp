@@ -43,14 +43,6 @@ pcie_dma::pcie_dma(GenObject *parent, const char *name, const char *comment) :
     TLP_STATUS_SUCCESS(this, "TLP_STATUS_SUCCESS", "3", "0", "Successful completion"),
     TLP_STATUS_UNSUPPORTED(this, "TLP_STATUS_UNSUPPORTED", "3", "1", "Unsupported Request (UR)"),
     TLP_STATUS_ABORTED(this, "TLP_STATUS_ABORTED", "3", "4", "Completer Abort (CA)"),
-    _tlp0_(this, ""),
-    _tlp1_(this, "TLP[30:29] = fmt; TLP[28:24] = type"),
-    TLP_FMT_TYPE_RD_MEM32(this, "TLP_FMT_TYPE_RD_MEM32", "7", "0x00", NO_COMMENT),
-    TLP_FMT_TYPE_WR_MEM32(this, "TLP_FMT_TYPE_WR_MEM32", "7", "0x20", NO_COMMENT),
-    TLP_FMT_TYPE_RD_MEM64(this, "TLP_FMT_TYPE_RD_MEM64", "7", "0x10", NO_COMMENT),
-    TLP_FMT_TYPE_WR_MEM64(this, "TLP_FMT_TYPE_WR_MEM64", "7", "0x30", NO_COMMENT),
-    TLP_FMT_TYPE_RD_IO32(this, "TLP_FMT_TYPE_RD_IO32", "7", "0x02", NO_COMMENT),
-    TLP_FMT_TYPE_WR_IO32(this, "TLP_FMT_TYPE_WR_IO32", "7", "0x22", NO_COMMENT),
     _state0_(this, ""),
     _state1_(this, "State machine to parse TLP"),
     STATE_RST(this, "STATE_RST", "8", "0x0", NO_COMMENT),
@@ -88,6 +80,7 @@ pcie_dma::pcie_dma(GenObject *parent, const char *name, const char *comment) :
     dw1(this, "dw1", "32", RSTVAL_ZERO, NO_COMMENT),
     dw2(this, "dw2", "32", RSTVAL_ZERO, NO_COMMENT),
     dw3(this, "dw3", "32", RSTVAL_ZERO, NO_COMMENT),
+    req_rd_locked(this, "req_rd_locked", "1", RSTVAL_ZERO, "Read locked request"),
     xlen(this, "xlen", "8", "0", "AXI Burst Len - 1"),
     xsize(this, "xsize", "3", "0", "AXI Burst size: 0=1B, 1=2B, 2=4B, 3=8B,.."),
     xaddr(this, "xaddr", "CFG_SYSBUS_ADDR_BITS", "0", "AXI request address"),
@@ -99,6 +92,7 @@ pcie_dma::pcie_dma(GenObject *parent, const char *name, const char *comment) :
     resp_with_payload(this, "resp_with_payload", "1", RSTVAL_ZERO, "TLP with payload"),
     resp_data(this, "resp_data", "64", RSTVAL_ZERO, NO_COMMENT),
     resp_status(this, "resp_status", "3", "TLP_STATUS_SUCCESS", NO_COMMENT),
+    resp_cpl(this, "resp_cpl", "4", RSTVAL_ZERO, "Completion packet"),
     byte_cnt(this, "byte_cnt", "12", RSTVAL_ZERO, "Byte counter to send in payload"),
     //
     comb(this),
@@ -200,6 +194,8 @@ TEXT("Temporary register");
     CASE(STATE_RST);
         SETONE(comb.v_req_ready);
         SETVAL(resp_status, TLP_STATUS_SUCCESS);
+        SETZERO(req_rd_locked);
+        SETZERO(resp_cpl);
         IF (EZ(w_reqfifo_empty));
             SETVAL(dw0, BITS(comb.vb_req_data, 31, 0));
             SETVAL(dw1, BITS(comb.vb_req_data, 63, 32));
@@ -225,6 +221,25 @@ TEXT();
             IF (EZ(BIT(dw0, 30)));
                 TEXT("fmt[1]=0: read operation");
                 SETVAL(state, STATE_AR);
+                SWITCH (BITS(dw0, 28, 24));
+                CASE (CONST("0x1", 5));
+                    TEXT("Read Locked request (in case of error becomes PCIE_CPL_LOCKED_READ_NODATA:");
+                    SETVAL(resp_cpl, pcie_cfg_->PCIE_CPL_LOCKED_READ);
+                    SETONE(req_rd_locked);
+                    ENDCASE();
+                CASE (CONST("0x2", 5));
+                    TEXT("I/O Read request:");
+                    SETVAL(resp_cpl, pcie_cfg_->PCIE_CPL_DATA);
+                    ENDCASE();
+                CASE(CONST("0x5", 5));
+                    TEXT("Configuration Read request Root Port (type 1):");
+                    SETVAL(resp_cpl, pcie_cfg_->PCIE_CPL_DATA);
+                    ENDCASE();
+                CASEDEF();
+                    TEXT("Read request.");
+                    SETVAL(resp_cpl, pcie_cfg_->PCIE_CPL_DATA);
+                    ENDCASE();
+                ENDSWITCH();
 
                 TEXT();
                 IF (EZ(BIT(dw0, 29)));
@@ -244,6 +259,19 @@ TEXT();
                 TEXT("fmt[1] = 1: write operation");
                 SETVAL(state, STATE_AW);
                 SETVAL(xwstrb, BITS(dw1, 7, 0));
+                SWITCH (BITS(dw0, 28, 24));
+                CASE (CONST("0x2", 5));
+                    TEXT("I/O Write request:");
+                    SETVAL(resp_cpl, pcie_cfg_->PCIE_CPL_NODATA);
+                    ENDCASE();
+                CASE(CONST("0x5", 5));
+                    TEXT("Configuration Write request Root Port (type 1):");
+                    SETVAL(resp_cpl, pcie_cfg_->PCIE_CPL_NODATA);
+                    ENDCASE();
+                CASEDEF();
+                    TEXT("Write request. No completion.");
+                    ENDCASE();
+                ENDSWITCH();
 
                 TEXT();
                 IF (EZ(BIT(dw0, 29)));
@@ -271,10 +299,11 @@ TEXT();
         SETVAL(comb.vb_xmsto.ar_bits.addr, BITS(xaddr, DEC(amba->CFG_SYSBUS_ADDR_BITS), CONST("0")));
 #if 1
         TEXT("sram base address: 64'h0000000008000000");
-        SETVAL(comb.vb_xmsto.ar_bits.addr, ADD2(comb.vb_xmsto.ar_bits.addr, CONST("0x0000000008001000", "CFG_SYSBUS_ADDR_BITS")));
+        SETVAL(comb.vb_xmsto.ar_bits.addr, CC2(CONST("0x00008001", 36), BITS(comb.vb_xmsto.ar_bits.addr, 11, 0)));
 #endif
         SETVAL(comb.vb_xmsto.ar_bits.len, xlen);
         SETVAL(comb.vb_xmsto.ar_bits.size, xsize);
+        SETVAL(comb.vb_xmsto.ar_bits.lock, req_rd_locked);
         SETONE(resp_with_payload);
         IF(NZ(i_xmsti.ar_ready));
             IF (NZ(comb.v_single_tlp32));
@@ -322,6 +351,10 @@ TEXT();
             TEXT("Burst support: ");
             IF (NE(i_xmsti.r_resp, amba->AXI_RESP_OKAY));
                 SETVAL(resp_status, TLP_STATUS_ABORTED);
+                IF (NZ(req_rd_locked));
+                    TEXT("Error on Locked Read transaction:");
+                    SETVAL(resp_cpl, pcie_cfg_->PCIE_CPL_LOCKED_READ_NODATA);
+                ENDIF();
                 SETVAL(state, STATE_RESP_DW0DW1);
             ELSIF (NZ(xlen));
                 SETVAL(xlen, DEC(xlen));
@@ -337,7 +370,7 @@ TEXT();
         SETVAL(comb.vb_xmsto.aw_bits.addr, BITS(xaddr, DEC(amba->CFG_SYSBUS_ADDR_BITS), CONST("0")));
 #if 1
         TEXT("sram base address: 64'h0000000008000000");
-        SETVAL(comb.vb_xmsto.aw_bits.addr, ADD2(comb.vb_xmsto.aw_bits.addr, CONST("0x0000000008001000", "CFG_SYSBUS_ADDR_BITS")));
+        SETVAL(comb.vb_xmsto.aw_bits.addr, CC2(CONST("0x00008001", 36), BITS(comb.vb_xmsto.aw_bits.addr, 11, 0)));
 #endif
         SETVAL(comb.vb_xmsto.aw_bits.len, xlen);
         SETVAL(comb.vb_xmsto.aw_bits.size, xsize);
@@ -382,9 +415,15 @@ TEXT();
         SETONE(comb.vb_xmsto.b_ready);
         IF(NZ(i_xmsti.b_valid));
             SETVAL(xerr, i_xmsti.b_resp);
-            SETVAL(state, STATE_RESP_DW0DW1);
             IF (NE(i_xmsti.b_resp, amba->AXI_RESP_OKAY));
                 SETVAL(resp_status, TLP_STATUS_ABORTED);
+            ENDIF();
+            IF(EZ(resp_cpl));
+                TEXT("Posted write TLP without response");
+                SETVAL(state, STATE_RST);
+            ELSE();
+                TEXT("Non-posted write TLP with response");
+                SETVAL(state, STATE_RESP_DW0DW1);
             ENDIF();
         ENDIF();
         ENDCASE();
@@ -401,8 +440,7 @@ TEXT();
         SETBITS(comb.vb_resp_data, 19, 16, CONST("0", 4), "DW0[19:16] Reserved");
         SETBITS(comb.vb_resp_data, 22, 20, BITS(dw0, 22, 20), "DW0[22:20] TC");
         SETBIT(comb.vb_resp_data, 23, CONST("0", 1), "DW0[23] Reserved");
-        SETBITS(comb.vb_resp_data, 28, 24, CONST("0xA", 5), "DW0[28:224] Type: Completion data");
-        SETBITS(comb.vb_resp_data, 30, 29, CC2(resp_with_payload, CONST("0", 1)), "DW0[30:29] Fmt");
+        SETBITS(comb.vb_resp_data, 30, 24, resp_cpl, "DW0[30:24] {Fmt,Type} Completion");
         SETBIT(comb.vb_resp_data, 31, CONST("0", 1), "DW0[31] Reserved");
         SETBITS(comb.vb_resp_data, 43, 32, byte_cnt, "DW1[11:0] Byte Count");
         SETBIT(comb.vb_resp_data, 44, CONST("0", 1), "DW1[12] BCM");
@@ -426,7 +464,7 @@ TEXT();
             IF(NE(resp_status, TLP_STATUS_SUCCESS));
                 SETONE(comb.v_resp_last);
                 SETVAL(state, STATE_RST);
-            ELSIF (NZ(comb.v_single_tlp32));
+            ELSIF (AND2(NZ(comb.v_single_tlp32), NZ(resp_with_payload)));
                 TEXT("DW4 response with the single tlp32 payload");
                 SETVAL(comb.vb_resp_strob, CONST("0xFF", 8));
                 SETONE(comb.v_resp_last);

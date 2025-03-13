@@ -96,15 +96,6 @@ class pcie_dma : public ModuleObject {
     ParamLogic TLP_STATUS_UNSUPPORTED;
     ParamLogic TLP_STATUS_ABORTED;
     
-    TextLine _tlp0_;
-    TextLine _tlp1_;
-    ParamLogic TLP_FMT_TYPE_RD_MEM32;
-    ParamLogic TLP_FMT_TYPE_WR_MEM32;
-    ParamLogic TLP_FMT_TYPE_RD_MEM64;
-    ParamLogic TLP_FMT_TYPE_WR_MEM64;
-    ParamLogic TLP_FMT_TYPE_RD_IO32;
-    ParamLogic TLP_FMT_TYPE_WR_IO32;
-
     TextLine _state0_;
     TextLine _state1_;
     ParamLogic STATE_RST;
@@ -140,6 +131,7 @@ class pcie_dma : public ModuleObject {
     RegSignal dw1;
     RegSignal dw2;
     RegSignal dw3;
+    RegSignal req_rd_locked;
     RegSignal xlen;
     RegSignal xsize;
     RegSignal xaddr;
@@ -151,6 +143,7 @@ class pcie_dma : public ModuleObject {
     RegSignal resp_with_payload;
     RegSignal resp_data;
     RegSignal resp_status;
+    RegSignal resp_cpl;
     RegSignal byte_cnt;
 
     CombProcess comb;

@@ -23,6 +23,12 @@ pcie_cfg::pcie_cfg(GenObject *parent) :
     _text0_(this, "PCIE end-point config:"),
     CFG_PCIE_DATA_WIDTH(this, "CFG_PCIE_DATA_WIDTH", "64"),
     CFG_PCIE_DMAFIFO_DEPTH(this, "CFG_PCIE_DMAFIFO_DEPTH", "2", "FIFO depth in PCIE DMA engine"),
+    _text1_(this, ""),
+    _text2_(this, "Completions packets {Fmt[1:0], Type[4:0]} for non-posted TLPs:"),
+    PCIE_CPL_NODATA(this, "PCIE_CPL_NODATA", "7", "0x0A", "Completion without data (IOWr, CfgWr1, CfgWr2)"),
+    PCIE_CPL_DATA(this, "PCIE_CPL_DATA", "7", "0x4A", "Completion with data (MemRd, IORd, CfgRd1, CfgRd2)"),
+    PCIE_CPL_LOCKED_READ_NODATA(this, "PCIE_CPL_LOCKED_READ_NODATA", "7", "0x0B", "Completion for Locked Memory Read without Data (only when error)"),
+    PCIE_CPL_LOCKED_READ(this, "PCIE_CPL_LOCKED_READ", "7", "0x4B", "Completion for locked memory read"),
     _n_(this)
 {
     pcie_cfg_ = this;
