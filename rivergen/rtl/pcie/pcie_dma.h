@@ -42,7 +42,7 @@ class pcie_dma : public ModuleObject {
             vb_req_data(this, "vb_req_data", "64", RSTVAL_ZERO, NO_COMMENT),
             vb_req_strob(this, "vb_req_strob", "8", RSTVAL_ZERO, NO_COMMENT),
             v_req_last(this, "v_req_last", "1", RSTVAL_ZERO, NO_COMMENT),
-            v_single_tlp32(this, "v_single_tlp32", "1", RSTVAL_ZERO, "single 32-bit dma transaction, trnasmit as 4DW with TLP header"),
+            v_single_tlp(this, "v_single_tlp", "1", RSTVAL_ZERO, "single 32-bit dma transaction, trnasmit as 4DW with TLP header"),
             v_resp_valid(this, "v_resp_valid", "1", RSTVAL_ZERO, NO_COMMENT),
             vb_resp_data(this, "vb_resp_data", "64", RSTVAL_ZERO, NO_COMMENT),
             vb_resp_strob(this, "vb_resp_strob", "8", RSTVAL_ZERO, NO_COMMENT),
@@ -59,7 +59,7 @@ class pcie_dma : public ModuleObject {
         Logic vb_req_data;
         Logic vb_req_strob;
         Logic v_req_last;
-        Logic v_single_tlp32;
+        Logic v_single_tlp;
         Logic v_resp_valid;
         Logic vb_resp_data;
         Logic vb_resp_strob;
@@ -72,8 +72,8 @@ class pcie_dma : public ModuleObject {
     // io:
     InPort i_nrst;
     InPort i_clk;
-    InPort i_pcie_usr_rst;
-    InPort i_pcie_usr_clk;
+    InPort i_pcie_phy_nrst;
+    InPort i_pcie_phy_clk;
     TextLine _text0_;
     InPort i_pcie_completer_id;
     OutPort o_dma_state;
@@ -113,7 +113,6 @@ class pcie_dma : public ModuleObject {
     ParamI32D REQ_FIFO_WIDTH;
     ParamI32D RESP_FIFO_WIDTH;
 
-    Signal w_pcie_nrst;
     Signal wb_reqfifo_payload_i;
     Signal wb_reqfifo_payload_o;
     Signal w_reqfifo_full;

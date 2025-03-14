@@ -124,8 +124,8 @@ public:
     InStruct<types_amba::axi4_slave_out_type> i_ddr_xslvo;
 #if GENCFG_PCIE_ENABLE
     TextLine _pcie0_;
-    InPort i_pcie_usr_clk;
-    InPort i_pcie_usr_rst;
+    InPort i_pcie_phy_clk;
+    InPort i_pcie_phy_nrst;
     InPort i_pcie_completer_id;
     OutStruct<types_dma::pcie_dma64_out_type> o_pcie_dmao;
     InStruct<types_dma::pcie_dma64_in_type> i_pcie_dmai;

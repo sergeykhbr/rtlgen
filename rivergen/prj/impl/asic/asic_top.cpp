@@ -97,8 +97,8 @@ asic_top::asic_top(GenObject *parent, const char *name, const char *comment) :
     prci_apbi(this, "prci_apbi", NO_COMMENT),
     prci_apbo(this, "prci_apbo", NO_COMMENT),
 #if GENCFG_PCIE_ENABLE
-    pcie_usr_clk(this, "pcie_usr_clk", "1"),
-    pcie_usr_rst(this, "pcie_usr_rst", "1"),
+    w_pcie_phy_clk(this, "w_pcie_phy_clk", "1"),
+    w_pcie_phy_nrst(this, "w_pcie_phy_nrst", "1"),
     wb_pcie_completer_id(this, "wb_pcie_completer_id", "16", "Bus, Device, Function"),
     pcie_dmao(this, "pcie_dmao", NO_COMMENT),
     pcie_dmai(this, "pcie_dmai", NO_COMMENT),
@@ -247,8 +247,8 @@ TEXT();
         CONNECT(soc0, 0, soc0.o_ddr_xslvi, ddr_xslvi);
         CONNECT(soc0, 0, soc0.i_ddr_xslvo, ddr_xslvo);
 #if GENCFG_PCIE_ENABLE
-        CONNECT(soc0, 0, soc0.i_pcie_usr_clk, pcie_usr_clk);
-        CONNECT(soc0, 0, soc0.i_pcie_usr_rst, pcie_usr_rst);
+        CONNECT(soc0, 0, soc0.i_pcie_phy_clk, w_pcie_phy_clk);
+        CONNECT(soc0, 0, soc0.i_pcie_phy_nrst, w_pcie_phy_nrst);
         CONNECT(soc0, 0, soc0.i_pcie_completer_id, wb_pcie_completer_id);
         CONNECT(soc0, 0, soc0.o_pcie_dmao, pcie_dmao);
         CONNECT(soc0, 0, soc0.i_pcie_dmai, pcie_dmai);

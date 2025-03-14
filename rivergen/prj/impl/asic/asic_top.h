@@ -127,8 +127,8 @@ public:
     SignalStruct<types_amba::apb_out_type> prci_apbo;
 
 #if GENCFG_PCIE_ENABLE
-    Signal pcie_usr_clk;
-    Signal pcie_usr_rst;
+    Signal w_pcie_phy_clk;
+    Signal w_pcie_phy_nrst;
     Signal wb_pcie_completer_id;
     SignalStruct<types_dma::pcie_dma64_out_type> pcie_dmao;
     SignalStruct<types_dma::pcie_dma64_in_type> pcie_dmai;
