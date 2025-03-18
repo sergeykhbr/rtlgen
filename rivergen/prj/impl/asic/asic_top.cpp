@@ -97,8 +97,9 @@ asic_top::asic_top(GenObject *parent, const char *name, const char *comment) :
     prci_apbi(this, "prci_apbi", NO_COMMENT),
     prci_apbo(this, "prci_apbo", NO_COMMENT),
 #if GENCFG_PCIE_ENABLE
-    w_pcie_phy_clk(this, "w_pcie_phy_clk", "1"),
-    w_pcie_phy_nrst(this, "w_pcie_phy_nrst", "1"),
+    w_pcie_user_clk(this, "w_pcie_user_clk", "1"),
+    w_pcie_user_rst(this, "w_pcie_user_rst", "1"),
+    w_pcie_nrst(this, "w_pcie_nrst", "1"),
     wb_pcie_completer_id(this, "wb_pcie_completer_id", "16", "Bus, Device, Function"),
     pcie_dmao(this, "pcie_dmao", NO_COMMENT),
     pcie_dmai(this, "pcie_dmai", NO_COMMENT),
@@ -184,10 +185,13 @@ TEXT();
         CONNECT(prci0, 0, prci0.i_dmireset, w_dmreset);
         CONNECT(prci0, 0, prci0.i_sys_locked, w_pll_lock);
         CONNECT(prci0, 0, prci0.i_ddr_locked, w_ddr3_init_calib_complete);
+        CONNECT(prci0, 0, prci0.i_pcie_phy_clk, w_pcie_user_clk);
+        CONNECT(prci0, 0, prci0.i_pcie_phy_rst, w_pcie_user_rst);
         CONNECT(prci0, 0, prci0.i_pcie_phy_lnk_up, w_pcie_phy_lnk_up);
         CONNECT(prci0, 0, prci0.o_sys_rst, w_sys_rst);
         CONNECT(prci0, 0, prci0.o_sys_nrst, w_sys_nrst);
         CONNECT(prci0, 0, prci0.o_dbg_nrst, w_dbg_nrst);
+        CONNECT(prci0, 0, prci0.o_pcie_nrst, w_pcie_nrst);
         CONNECT(prci0, 0, prci0.i_mapinfo, prci_pmapinfo);
         CONNECT(prci0, 0, prci0.o_cfg, prci_dev_cfg);
         CONNECT(prci0, 0, prci0.i_apbi, prci_apbi);
@@ -247,8 +251,8 @@ TEXT();
         CONNECT(soc0, 0, soc0.o_ddr_xslvi, ddr_xslvi);
         CONNECT(soc0, 0, soc0.i_ddr_xslvo, ddr_xslvo);
 #if GENCFG_PCIE_ENABLE
-        CONNECT(soc0, 0, soc0.i_pcie_phy_clk, w_pcie_phy_clk);
-        CONNECT(soc0, 0, soc0.i_pcie_phy_nrst, w_pcie_phy_nrst);
+        CONNECT(soc0, 0, soc0.i_pcie_nrst, w_pcie_nrst);
+        CONNECT(soc0, 0, soc0.i_pcie_clk, w_pcie_user_clk);
         CONNECT(soc0, 0, soc0.i_pcie_completer_id, wb_pcie_completer_id);
         CONNECT(soc0, 0, soc0.o_pcie_dmao, pcie_dmao);
         CONNECT(soc0, 0, soc0.i_pcie_dmai, pcie_dmai);

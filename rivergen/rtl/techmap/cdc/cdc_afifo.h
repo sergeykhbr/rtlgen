@@ -24,6 +24,8 @@ class cdc_afifo : public ModuleObject {
  public:
     cdc_afifo(GenObject *parent, const char *name, const char *comment=NO_COMMENT);
 
+    virtual bool isAsyncResetParam() override { return false; }
+
  protected:
     class CombProcess : public ProcObject {
      public:
@@ -55,13 +57,12 @@ class cdc_afifo : public ModuleObject {
  public:
      TmplParamI32D abits;
      TmplParamI32D dbits;
+     InPort i_nrst;
      InPort i_wclk;
-     InPort i_wrstn;
      InPort i_wr;
      InPort i_wdata;
      OutPort o_wfull;
      InPort i_rclk;
-     InPort i_rrstn;
      InPort i_rd;
      OutPort o_rdata;
      OutPort o_rempty;

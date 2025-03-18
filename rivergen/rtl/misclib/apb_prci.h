@@ -50,10 +50,13 @@ class apb_prci : public ModuleObject {
     InPort i_dmireset;
     InPort i_sys_locked;
     InPort i_ddr_locked;
+    InPort i_pcie_phy_rst;
+    InPort i_pcie_phy_clk;
     InPort i_pcie_phy_lnk_up;
     OutPort o_sys_rst;
     OutPort o_sys_nrst;
     OutPort o_dbg_nrst;
+    OutPort o_pcie_nrst;
     InStruct<types_amba::mapinfo_type> i_mapinfo;
     OutStruct<types_pnp::dev_config_type> o_cfg;
     InStruct<types_amba::apb_in_type> i_apbi;
@@ -67,8 +70,10 @@ class apb_prci : public ModuleObject {
     RegSignal sys_rst;
     RegSignal sys_nrst;
     RegSignal dbg_nrst;
+    RegSignal pcie_nrst;
     RegSignal sys_locked;
     RegSignal ddr_locked;
+    RegSignal pcie_lnk_up;
     RegSignal resp_valid;
     RegSignal resp_rdata;
     RegSignal resp_err;

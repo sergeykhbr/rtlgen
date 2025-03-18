@@ -304,18 +304,17 @@ std::string ModuleObject::generate_all_proc_v_reset(std::string &xrst) {
         if (preg->getResetActive() == ACTIVE_NONE) {
             continue;
         }
-
-        ret += addspaces() + "if ";
+        ret += addspaces() + "if (";
         if (xrst.size()) {
             ret += "(";
         }
         if (isAsyncResetParam()) {
             if (SCV_is_sysc()) {
-                ret += "(!async_reset_ && ";
+                ret += "!async_reset_ && ";
             } else if (SCV_is_sv()) {
-                ret += "(~async_reset && ";
+                ret += "~async_reset && ";
             } else if (SCV_is_vhdl()) {
-                ret += "(not async_reset and ";
+                ret += "not async_reset and ";
             }
         }
         ret += preg->getResetPort()->getName();

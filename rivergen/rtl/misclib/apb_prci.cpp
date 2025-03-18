@@ -24,9 +24,12 @@ apb_prci::apb_prci(GenObject *parent, const char *name, const char *comment) :
     i_sys_locked(this, "i_sys_locked", "1"),
     i_ddr_locked(this, "i_ddr_locked", "1"),
     i_pcie_phy_lnk_up(this, "i_pcie_phy_lnk_up", "1", "PCIE PHY link status up"),
+    i_pcie_phy_rst(this, "i_pcie_phy_rst", "1", "PCIE user reset: active HIGH"),
+    i_pcie_phy_clk(this, "i_pcie_phy_clk", "1", "PCIE user clock: 62.5 MHz (default)"),
     o_sys_rst(this, "o_sys_rst", "1", "System reset except DMI. Active HIGH"),
     o_sys_nrst(this, "o_sys_nrst", "1", "System reset except DMI. Active LOW"),
     o_dbg_nrst(this, "o_dbg_nrst", "1", "Reset DMI. Active LOW"),
+    o_pcie_nrst(this, "o_pcie_nrst", "1", "Reset PCIE DMA. Active LOW. Reset until link is up."),
     i_mapinfo(this, "i_mapinfo", "interconnect slot information"),
     o_cfg(this, "o_cfg", "Device descriptor"),
     i_apbi(this, "i_apbi", "APB  Slave to Bridge interface"),
@@ -41,8 +44,10 @@ apb_prci::apb_prci(GenObject *parent, const char *name, const char *comment) :
     sys_rst(this, &i_clk, CLK_POSEDGE, &i_pwrreset, ACTIVE_HIGH, "sys_rst", "1", RSTVAL_ZERO, NO_COMMENT),
     sys_nrst(this, &i_clk, CLK_POSEDGE, &i_pwrreset, ACTIVE_HIGH, "sys_nrst", "1", RSTVAL_ZERO, NO_COMMENT),
     dbg_nrst(this, &i_clk, CLK_POSEDGE, &i_pwrreset, ACTIVE_HIGH, "dbg_nrst", "1", RSTVAL_ZERO, NO_COMMENT),
+    pcie_nrst(this, &i_clk, CLK_POSEDGE, &i_pwrreset, ACTIVE_HIGH, "pcie_nrst", "1", RSTVAL_ZERO, NO_COMMENT),
     sys_locked(this, &i_clk, CLK_POSEDGE, &i_pwrreset, ACTIVE_HIGH, "sys_locked", "1", RSTVAL_ZERO, NO_COMMENT),
     ddr_locked(this, &i_clk, CLK_POSEDGE, &i_pwrreset, ACTIVE_HIGH, "ddr_locked", "1", RSTVAL_ZERO, NO_COMMENT),
+    pcie_lnk_up(this, &i_clk, CLK_POSEDGE, &i_pwrreset, ACTIVE_HIGH, "pcie_lnk_up", "1", RSTVAL_ZERO, NO_COMMENT),
     resp_valid(this, &i_clk, CLK_POSEDGE, &i_pwrreset, ACTIVE_HIGH, "resp_valid", "1", RSTVAL_ZERO, NO_COMMENT),
     resp_rdata(this, &i_clk, CLK_POSEDGE, &i_pwrreset, ACTIVE_HIGH, "resp_rdata", "32", "'0", NO_COMMENT),
     resp_err(this, &i_clk, CLK_POSEDGE, &i_pwrreset, ACTIVE_HIGH, "resp_err", "1", RSTVAL_ZERO, NO_COMMENT),
@@ -75,17 +80,21 @@ apb_prci::apb_prci(GenObject *parent, const char *name, const char *comment) :
 }
 
 void apb_prci::proc_comb() {
+    SETVAL(sys_locked, i_sys_locked);
+    SETVAL(ddr_locked, i_ddr_locked);
+    SETVAL(pcie_lnk_up, i_pcie_phy_lnk_up);
     SETVAL(sys_rst, OR3(i_pwrreset, INV(i_sys_locked), i_dmireset));
     SETVAL(sys_nrst, INV(OR3(i_pwrreset, INV(i_sys_locked), i_dmireset)));
     SETVAL(dbg_nrst, INV(OR2(i_pwrreset, INV(i_sys_locked))));
+    SETVAL(pcie_nrst, INV_L(OR4(i_pwrreset, INV(i_sys_locked), INV(pcie_lnk_up), i_pcie_phy_rst)));
 
 TEXT();
     TEXT("Registers access:");
     SWITCH (BITS(wb_req_addr, 11, 2));
     CASE (CONST("0", 10), "0x00: pll statuses");
-        SETBIT(comb.vb_rdata, 0, i_sys_locked);
-        SETBIT(comb.vb_rdata, 1, i_ddr_locked);
-        SETBIT(comb.vb_rdata, 2, i_pcie_phy_lnk_up);
+        SETBIT(comb.vb_rdata, 0, sys_locked);
+        SETBIT(comb.vb_rdata, 1, ddr_locked);
+        SETBIT(comb.vb_rdata, 2, pcie_lnk_up);
         ENDCASE();
     CASE (CONST("1", 10), "0x04: reset status");
         SETBIT(comb.vb_rdata, 0, sys_nrst);
@@ -112,4 +121,5 @@ TEXT();
     SETVAL(o_sys_rst, sys_rst);
     SETVAL(o_sys_nrst, sys_nrst);
     SETVAL(o_dbg_nrst, dbg_nrst);
+    SETVAL(o_pcie_nrst, pcie_nrst);
 }

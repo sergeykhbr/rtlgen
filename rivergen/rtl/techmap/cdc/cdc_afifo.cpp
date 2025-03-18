@@ -20,27 +20,26 @@ cdc_afifo::cdc_afifo(GenObject *parent, const char *name, const char *comment) :
     ModuleObject(parent, "cdc_afifo", name, comment),
     abits(this, "abits", "3", "fifo log2(depth)"),
     dbits(this, "dbits", "32", "payload width"),
+    i_nrst(this, "i_nrst", "1", "reset active LOW"),
     i_wclk(this, "i_wclk", "1", "clock write"),
-    i_wrstn(this, "i_wrstn", "1", "write reset active LOW"),
     i_wr(this, "i_wr", "1", "write enable strob"),
     i_wdata(this, "i_wdata", "dbits", "write data"),
     o_wfull(this, "o_wfull", "1", "fifo is full in wclk domain"),
     i_rclk(this, "i_rclk", "1", "read clock"),
-    i_rrstn(this, "i_rrstn", "1", "read reset active LOW"),
     i_rd(this, "i_rd", "1", "read enable strob"),
     o_rdata(this, "o_rdata", "dbits", "fifo payload read"),
     o_rempty(this, "o_rempty", "1", "fifo is empty it rclk domain"),
     DEPTH(this, "DEPTH", "POW2(1,abits)"),
-    wgray(this, &i_wclk, CLK_POSEDGE, &i_wrstn, ACTIVE_LOW, "wgray", "ADD(abits,1)", RSTVAL_ZERO, NO_COMMENT),
-    wbin(this, &i_wclk, CLK_POSEDGE, &i_wrstn, ACTIVE_LOW, "wbin", "ADD(abits,1)", RSTVAL_ZERO, NO_COMMENT),
-    wq2_rgray(this, &i_wclk, CLK_POSEDGE, &i_wrstn, ACTIVE_LOW, "wq2_rgray", "ADD(abits,1)", RSTVAL_ZERO, NO_COMMENT),
-    wq1_rgray(this, &i_wclk, CLK_POSEDGE, &i_wrstn, ACTIVE_LOW, "wq1_rgray", "ADD(abits,1)", RSTVAL_ZERO, NO_COMMENT),
-    wfull(this, &i_wclk, CLK_POSEDGE, &i_wrstn, ACTIVE_LOW, "wfull", "1", RSTVAL_ZERO, NO_COMMENT),
-    rgray(this, &i_rclk, CLK_POSEDGE, &i_rrstn, ACTIVE_LOW, "rgray", "ADD(abits,1)", RSTVAL_ZERO, NO_COMMENT),
-    rbin(this, &i_rclk, CLK_POSEDGE, &i_rrstn, ACTIVE_LOW, "rbin", "ADD(abits,1)", RSTVAL_ZERO, NO_COMMENT),
-    rq2_wgray(this, &i_rclk, CLK_POSEDGE, &i_rrstn, ACTIVE_LOW, "rq2_wgray", "ADD(abits,1)", RSTVAL_ZERO, NO_COMMENT),
-    rq1_wgray(this, &i_rclk, CLK_POSEDGE, &i_rrstn, ACTIVE_LOW, "rq1_wgray", "ADD(abits,1)", RSTVAL_ZERO, NO_COMMENT),
-    rempty(this, &i_rclk, CLK_POSEDGE, &i_rrstn, ACTIVE_LOW, "rempty", "1", "1", NO_COMMENT),
+    wgray(this, &i_wclk, CLK_POSEDGE, &i_nrst, ACTIVE_LOW, "wgray", "ADD(abits,1)", RSTVAL_ZERO, NO_COMMENT),
+    wbin(this, &i_wclk, CLK_POSEDGE, &i_nrst, ACTIVE_LOW, "wbin", "ADD(abits,1)", RSTVAL_ZERO, NO_COMMENT),
+    wq2_rgray(this, &i_wclk, CLK_POSEDGE, &i_nrst, ACTIVE_LOW, "wq2_rgray", "ADD(abits,1)", RSTVAL_ZERO, NO_COMMENT),
+    wq1_rgray(this, &i_wclk, CLK_POSEDGE, &i_nrst, ACTIVE_LOW, "wq1_rgray", "ADD(abits,1)", RSTVAL_ZERO, NO_COMMENT),
+    wfull(this, &i_wclk, CLK_POSEDGE, &i_nrst, ACTIVE_LOW, "wfull", "1", RSTVAL_ZERO, NO_COMMENT),
+    rgray(this, &i_rclk, CLK_POSEDGE, &i_nrst, ACTIVE_LOW, "rgray", "ADD(abits,1)", RSTVAL_ZERO, NO_COMMENT),
+    rbin(this, &i_rclk, CLK_POSEDGE, &i_nrst, ACTIVE_LOW, "rbin", "ADD(abits,1)", RSTVAL_ZERO, NO_COMMENT),
+    rq2_wgray(this, &i_rclk, CLK_POSEDGE, &i_nrst, ACTIVE_LOW, "rq2_wgray", "ADD(abits,1)", RSTVAL_ZERO, NO_COMMENT),
+    rq1_wgray(this, &i_rclk, CLK_POSEDGE, &i_nrst, ACTIVE_LOW, "rq1_wgray", "ADD(abits,1)", RSTVAL_ZERO, NO_COMMENT),
+    rempty(this, &i_rclk, CLK_POSEDGE, &i_nrst, ACTIVE_LOW, "rempty", "1", "1", NO_COMMENT),
     mem(this, &i_wclk, CLK_POSEDGE, 0, ACTIVE_NONE, "mem", "dbits", "DEPTH", RSTVAL_NONE, NO_COMMENT),
     // process
     comb(this)
@@ -91,6 +90,9 @@ TEXT();
         SETONE(comb.v_rempty_next);
     ENDIF();
     SETVAL(rempty, comb.v_rempty_next);
+
+TEXT();
+    SYNC_RESET(*this);
 
 TEXT();
     SETVAL(o_wfull, wfull);

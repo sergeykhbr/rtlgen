@@ -73,7 +73,7 @@ types_pnp::types_pnp(GenObject *parent) :
     _didslv17_(this, "RIVER debug registers:"),
     OPTIMITECH_RIVER_DMI(this, "OPTIMITECH_RIVER_DMI", "16", "0x008a", NO_COMMENT),
     _didslv18_(this, "PCIE end-point APB controller:"),
-    OPTIMITECH_PCIE_CTRL(this, "OPTIMITECH_RIVER_DMI", "16", "0x008c", NO_COMMENT),
+    OPTIMITECH_PCIE_CTRL(this, "OPTIMITECH_PCIE_CTRL", "16", "0x008c", NO_COMMENT),
     _pnpcfg0_(this),
     _pnpcfg1_(this, "Plug'n'Play descriptor localparams."),
     _pnpcfg2_(this, "Undefined type of the descriptor (empty device)."),

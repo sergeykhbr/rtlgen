@@ -72,7 +72,6 @@ class pcie_dma : public ModuleObject {
     // io:
     InPort i_nrst;
     InPort i_clk;
-    InPort i_pcie_phy_nrst;
     InPort i_pcie_phy_clk;
     TextLine _text0_;
     InPort i_pcie_completer_id;
