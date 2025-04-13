@@ -14,7 +14,7 @@
 //  limitations under the License.
 // 
 
-#include "../../../prj/impl/asic/target_cfg.h"
+#include "../../../../prj/impl/asic/target_cfg.h"
 #include "dcache_lru.h"
 
 DCacheLru::DCacheLru(GenObject *parent, const char *name, const char *comment) :

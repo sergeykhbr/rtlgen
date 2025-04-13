@@ -1,5 +1,5 @@
 // 
-//  Copyright 2022 Sergey Khabarov, sergeykhbr@gmail.com
+//  Copyright 2025 Sergey Khabarov, sergeykhbr@gmail.com
 // 
 //  Licensed under the Apache License, Version 2.0 (the "License");
 //  you may not use this file except in compliance with the License.
@@ -18,34 +18,34 @@
 
 #include <api_rtlgen.h>
 #include <genconfig.h>
-#include "ambalib/types_amba.h"
-#include "ambalib/types_bus0.h"
-#include "ambalib/types_bus1.h"
-#include "ambalib/types_pnp.h"
-#include "ambalib/types_dma.h"
-#include "ambalib/axictrl_bus0.h"
-#include "ambalib/axi2apb_bus1.h"
-#include "misclib/apb_uart.h"
-#include "misclib/apb_gpio.h"
-#include "misclib/apb_pnp.h"
-#include "misclib/axi_sram.h"
-#include "misclib/axi_rom.h"
-#include "misclib/plic.h"
-#include "misclib/clint.h"
-#include "sdctrl/sdctrl.h"
-#include "pcie/pcie_dma.h"
-#include "pcie/apb_pcie.h"
-#include "riverlib/river_cfg.h"
-#include "riverlib/types_river.h"
-#include "riverlib/river_amba.h"
-#include "riverlib/workgroup.h"
-#include "techmap/cdc_axi_sync/cdc_axi_sync_tech.h"
+#include "../ambalib/types_amba.h"
+#include "../ambalib/types_bus0.h"
+#include "../ambalib/types_bus1.h"
+#include "../ambalib/types_pnp.h"
+#include "../ambalib/types_dma.h"
+#include "../ambalib/axictrl_bus0.h"
+#include "../ambalib/axi2apb_bus1.h"
+#include "../misclib/apb_uart.h"
+#include "../misclib/apb_gpio.h"
+#include "../misclib/apb_pnp.h"
+#include "../misclib/axi_sram.h"
+#include "../misclib/axi_rom.h"
+#include "../misclib/plic.h"
+#include "../misclib/clint.h"
+#include "../sdctrl/sdctrl.h"
+#include "../pcie_dma/pcie_dma.h"
+#include "../pcie_dma/apb_pcie.h"
+#include "../riverlib/river_cfg.h"
+#include "../riverlib/types_river.h"
+#include "../riverlib/river_amba.h"
+#include "../riverlib/workgroup.h"
+#include "../../sim/cdc_axi_sync/cdc_axi_sync_tech.h"
 
 using namespace sysvc;
 
-class riscv_soc : public ModuleObject {
+class accel_soc : public ModuleObject {
  public:
-    riscv_soc(GenObject *parent, const char *name, const char *comment=NO_COMMENT);
+    accel_soc(GenObject *parent, const char *name, const char *comment=NO_COMMENT);
 
     virtual GenObject *getResetPort() override { return &i_sys_nrst; }
 
@@ -202,13 +202,13 @@ public:
     CombProcess comb;
 };
 
-class riscv_soc_file : public FileObject {
+class accel_soc_file : public FileObject {
  public:
-    riscv_soc_file(GenObject *parent) :
-        FileObject(parent, "riscv_soc"),
-        riscv_soc_(this, "riscv_soc") { }
+    accel_soc_file(GenObject *parent) :
+        FileObject(parent, "accel_soc"),
+        accel_soc_(this, "accel_soc") { }
 
  private:
-    riscv_soc riscv_soc_;
+    accel_soc accel_soc_;
 };
 

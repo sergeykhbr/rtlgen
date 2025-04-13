@@ -20,7 +20,7 @@
 #include "../ambalib/types_amba.h"
 #include "../ambalib/types_pnp.h"
 #include "../ambalib/types_dma.h"
-#include "../techmap/cdc/cdc_afifo.h"
+#include "../cdc/cdc_afifo.h"
 #include "pcie_cfg.h"
 
 using namespace sysvc;

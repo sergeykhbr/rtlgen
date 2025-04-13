@@ -1,5 +1,5 @@
 // 
-//  Copyright 2022 Sergey Khabarov, sergeykhbr@gmail.com
+//  Copyright 2025 Sergey Khabarov, sergeykhbr@gmail.com
 // 
 //  Licensed under the Apache License, Version 2.0 (the "License");
 //  you may not use this file except in compliance with the License.
@@ -17,18 +17,24 @@
 #pragma once
 
 #include <api_rtlgen.h>
-#include "sim/sim_folder.h"
-#include "internal/internal_folder.h"
+#include "pcie_cfg.h"
+#include "pcie_dma.h"
+#include "apb_pcie.h"
 
-class rtl_folder : public FolderObject {
-  public:
-    rtl_folder(GenObject *parent) :
-        FolderObject(parent, "rtl"),
-        sim_folder_(this),
-        internal_folder_(this) {}
+class pcie_dma_folder : public FolderObject {
+ public:
+    pcie_dma_folder(GenObject *parent) :
+        FolderObject(parent, "pcie_dma"),
+        pcie_cfg_(this),
+        pcie_dma_file_(this),
+        apb_pcie_file_(this) {}
+
+    virtual std::string getLibName() override { return getName(); }
 
  protected:
     // subfolders:
-    sim_folder sim_folder_;
-    internal_folder internal_folder_;
+    // files
+    pcie_cfg pcie_cfg_;
+    pcie_dma_file pcie_dma_file_;
+    apb_pcie_file apb_pcie_file_;
 };

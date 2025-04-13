@@ -14,11 +14,11 @@
 //  limitations under the License.
 // 
 
-#include "riscv_soc.h"
-#include "../prj/impl/asic/target_cfg.h"
+#include "accel_soc.h"
+#include "../../../prj/impl/asic/target_cfg.h"
 
-riscv_soc::riscv_soc(GenObject *parent, const char *name, const char *comment) :
-    ModuleObject(parent, "riscv_soc", name, comment),
+accel_soc::accel_soc(GenObject *parent, const char *name, const char *comment) :
+    ModuleObject(parent, "accel_soc", name, comment),
     // simulation parameters
     sim_uart_speedup_rate(this, "sim_uart_speedup_rate", "0", "simulation UART speed-up: 0=no speed up, 1=2x, 2=4x, etc"),
     // Generic parameters
@@ -388,7 +388,7 @@ TEXT();
     proc_comb();
 }
 
-void riscv_soc::proc_comb() {
+void accel_soc::proc_comb() {
     river_cfg *cfg = glob_river_cfg_;
     types_amba *amba = glob_types_amba_;
 

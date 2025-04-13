@@ -1,5 +1,5 @@
 // 
-//  Copyright 2022 Sergey Khabarov, sergeykhbr@gmail.com
+//  Copyright 2025 Sergey Khabarov, sergeykhbr@gmail.com
 // 
 //  Licensed under the Apache License, Version 2.0 (the "License");
 //  you may not use this file except in compliance with the License.
@@ -17,18 +17,18 @@
 #pragma once
 
 #include <api_rtlgen.h>
-#include "sim/sim_folder.h"
-#include "internal/internal_folder.h"
+#include "gencpu64_soc.h"
 
-class rtl_folder : public FolderObject {
-  public:
-    rtl_folder(GenObject *parent) :
-        FolderObject(parent, "rtl"),
-        sim_folder_(this),
-        internal_folder_(this) {}
+class gencpu64_folder : public FolderObject {
+ public:
+    gencpu64_folder(GenObject *parent) :
+        FolderObject(parent, "gencpu64"),
+        gencpu64_soc_file_(this) {}
+
+    virtual std::string getLibName() override { return getName(); }
 
  protected:
     // subfolders:
-    sim_folder sim_folder_;
-    internal_folder internal_folder_;
+    // files
+    gencpu64_soc_file gencpu64_soc_file_;
 };

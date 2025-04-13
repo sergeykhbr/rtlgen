@@ -17,24 +17,18 @@
 #pragma once
 
 #include <api_rtlgen.h>
-#include "pcie_cfg.h"
-#include "pcie_dma.h"
-#include "apb_pcie.h"
+#include "accel_soc.h"
 
-class pcie_folder : public FolderObject {
+class accel_folder : public FolderObject {
  public:
-    pcie_folder(GenObject *parent) :
-        FolderObject(parent, "pcie"),
-        pcie_cfg_(this),
-        pcie_dma_file_(this),
-        apb_pcie_file_(this) {}
+    accel_folder(GenObject *parent) :
+        FolderObject(parent, "accel"),
+        accel_soc_file_(this) {}
 
     virtual std::string getLibName() override { return getName(); }
 
  protected:
     // subfolders:
     // files
-    pcie_cfg pcie_cfg_;
-    pcie_dma_file pcie_dma_file_;
-    apb_pcie_file apb_pcie_file_;
+    accel_soc_file accel_soc_file_;
 };

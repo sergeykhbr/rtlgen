@@ -14,7 +14,7 @@
 //  limitations under the License.
 // 
 
-#include "../../../prj/impl/asic/target_cfg.h"
+#include "../../../../prj/impl/asic/target_cfg.h"
 #include "l2cache_lru.h"
 
 L2CacheLru::L2CacheLru(GenObject *parent, const char *name, const char *comment) :

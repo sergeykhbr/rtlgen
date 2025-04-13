@@ -14,7 +14,7 @@
 //  limitations under the License.
 // 
 
-#include "../../../prj/impl/asic/target_cfg.h"
+#include "../../../../prj/impl/asic/target_cfg.h"
 #include "icache_lru.h"
 
 ICacheLru::ICacheLru(GenObject *parent, const char *name, const char *comment) :

@@ -17,17 +17,15 @@
 #pragma once
 
 #include <api_rtlgen.h>
-#include "../ambalib/types_amba.h"
-#include "../ambalib/types_pnp.h"
-#include "../ambalib/axi_slv.h"
-#include "../techmap/mem/rom_tech.h"
+#include "../../internal/ambalib/types_amba.h"
 
 using namespace sysvc;
 
-class axi_rom : public ModuleObject {
+class cdc_axi_sync_tech : public ModuleObject {
  public:
-    axi_rom(GenObject *parent, const char *name, const char *comment=NO_COMMENT);
+    cdc_axi_sync_tech(GenObject *parent, const char *name, const char *comment=NO_COMMENT);
 
+ protected:
     class CombProcess : public ProcObject {
      public:
         CombProcess(GenObject *parent) :
@@ -40,42 +38,27 @@ class axi_rom : public ModuleObject {
     void proc_comb();
 
  public:
-    TmplParamI32D abits;
-    DefParamString filename;
     // io:
-    InPort i_clk;
-    InPort i_nrst;
-    InStruct<types_amba::mapinfo_type> i_mapinfo;
-    OutStruct<types_pnp::dev_config_type> o_cfg;
+    InPort i_xslv_clk;
+    InPort i_xslv_nrst;
     InStruct<types_amba::axi4_slave_in_type> i_xslvi;
     OutStruct<types_amba::axi4_slave_out_type> o_xslvo;
-
-    Signal w_req_valid;
-    Signal wb_req_addr;
-    Signal wb_req_size;
-    Signal w_req_write;
-    Signal wb_req_wdata;
-    Signal wb_req_wstrb;
-    Signal w_req_last;
-    Signal w_req_ready;
-    Signal w_resp_valid;
-    Signal wb_resp_rdata;
-    Signal wb_resp_err;
-    Signal wb_req_addr_abits;
-
-    CombProcess comb;
-
-    axi_slv xslv0;
-    rom_tech tech0;
-};
-
-class axi_rom_file : public FileObject {
- public:
-    axi_rom_file(GenObject *parent) :
-        FileObject(parent, "axi_rom"),
-        axi_rom_(this, "axi_rom") {}
+    InPort i_xmst_clk;
+    InPort i_xmst_nrst;
+    OutStruct<types_amba::axi4_slave_in_type> o_xmsto;
+    InStruct<types_amba::axi4_slave_out_type> i_xmsti;
 
  private:
-    axi_rom axi_rom_;
+    CombProcess comb;
+};
+
+class cdc_axi_sync_tech_file : public FileObject {
+ public:
+    cdc_axi_sync_tech_file(GenObject *parent) :
+        FileObject(parent, "cdc_axi_sync_tech"),
+        cdc_axi_sync_tech_(this, "cdc_axi_sync_tech") {}
+
+ private:
+    cdc_axi_sync_tech cdc_axi_sync_tech_;
 };
 

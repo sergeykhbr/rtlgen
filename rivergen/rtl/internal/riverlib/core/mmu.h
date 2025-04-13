@@ -18,7 +18,7 @@
 
 #include <api_rtlgen.h>
 #include "../river_cfg.h"
-#include "../../techmap/mem/ram_mmu_tech.h"
+#include "../../mem/ram_mmu_tech.h"
 
 using namespace sysvc;
 

@@ -20,7 +20,7 @@
 #include "../ambalib/types_amba.h"
 #include "../ambalib/types_pnp.h"
 #include "../ambalib/axi_slv.h"
-#include "../techmap/mem/ram_bytes_tech.h"
+#include "../mem/ram_bytes_tech.h"
 
 using namespace sysvc;
 

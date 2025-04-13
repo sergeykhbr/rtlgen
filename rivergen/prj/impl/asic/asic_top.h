@@ -19,14 +19,19 @@
 #include <api_rtlgen.h>
 #include <genconfig.h>
 #include "target_cfg.h"
-#include "../../../rtl/ambalib/types_amba.h"
-#include "../../../rtl/ambalib/types_dma.h"
-#include "../../../rtl/ambalib/types_pnp.h"
-#include "../../../rtl/techmap/bufg/ids_tech.h"
-#include "../../../rtl/techmap/bufg/iobuf_tech.h"
-#include "../../../rtl/techmap/pll/SysPLL_tech.h"
-#include "../../../rtl/riscv_soc.h"
-#include "../../../rtl/misclib/apb_prci.h"
+#include "../../../rtl/internal/ambalib/types_amba.h"
+#include "../../../rtl/internal/ambalib/types_dma.h"
+#include "../../../rtl/internal/ambalib/types_pnp.h"
+#include "../../../rtl/internal/misclib/apb_prci.h"
+#include "../../../rtl/sim/io/ids_tech.h"
+#include "../../../rtl/sim/io/iobuf_tech.h"
+#include "../../../rtl/sim/pll/SysPLL_tech.h"
+#if CONFIG_RISCV_VHDL
+    #include "../../../rtl/internal/gencpu64/gencpu64_soc.h"
+#elif CONFIG_GPU3D
+    #include "../../../rtl/internal/accel/accel_soc.h"
+#endif
+
 
 using namespace sysvc;
 
@@ -146,7 +151,11 @@ public:
 #endif
     SysPLL_tech pll0;
     apb_prci prci0;
-    riscv_soc soc0;
+#if CONFIG_RISCV_VHDL
+    gencpu64_soc soc0;
+#elif CONFIG_GPU3D
+    accel_soc soc0;
+#endif
     // process
 };
 

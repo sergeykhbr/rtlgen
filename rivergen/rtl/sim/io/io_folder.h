@@ -20,10 +20,10 @@
 #include "ids_tech.h"
 #include "iobuf_tech.h"
 
-class bufg_folder : public FolderObject {
+class io_folder : public FolderObject {
  public:
-    bufg_folder(GenObject *parent) :
-        FolderObject(parent, "bufg"),
+    io_folder(GenObject *parent) :
+        FolderObject(parent, "io"),
         ids_tech_file_(this),
         iobuf_tech_file_(this) {}
 
