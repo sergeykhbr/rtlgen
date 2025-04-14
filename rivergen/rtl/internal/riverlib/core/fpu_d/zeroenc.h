@@ -29,7 +29,7 @@ class zeroenc : public ModuleObject {
         GenerateProcess(GenObject *parent) :
             ProcObject(parent, "gen0") {
         }
-        virtual bool isGenerate() override { return true; } // use generate instead of comb in sv and vhdl
+        virtual bool isAssign() override { return true; } // assignment out-of-process for sv and vhdl
 
      public:
     };

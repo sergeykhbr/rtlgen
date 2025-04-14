@@ -85,6 +85,7 @@ class GenObject {
     virtual bool isVector() { return false; }           // vector typedef of array of element
     virtual bool isModule() { return false; }
     virtual bool isOperation() { return false; }
+    virtual bool isAssign() { return false; }           // Assign operation should be executed outside of comb process
     virtual bool is2Dim() { return false; }             // If any of child entries has more than 1 dimension we cannot use assignment without cycle
     virtual bool isReg() { return false; }              // is register with posedge clock
     virtual bool isNReg() { return false; }             // is register with negedge clock
@@ -95,8 +96,12 @@ class GenObject {
     virtual bool isProcess() { return false; }
     virtual bool isInterface() { return false; }        // struct with parent = file (sc_trace method generated)
     virtual bool isGenVar() { return false; }           // Variable is used generate cycle: I32D analog for rtl
-    virtual bool isGenerate() { return false; }         // use generate instead of comb in sv and vhdl
     virtual bool isTop() { return false; }
+    virtual bool isMemory() { return false; }
+    virtual int  getMemoryAddrWidth() { return 0; }
+    virtual int  getMemoryDataWidth() { return 0; }
+    virtual bool isRom() { return false; }
+    virtual std::string getRomFile() { return ""; }
 
     virtual std::string v_prefix() { return std::string(""); }
     virtual std::string r_prefix() { return std::string(""); }
@@ -124,6 +129,8 @@ class GenObject {
     virtual bool isSvApiUsed() { return false; }        // readmemh/display or similar methods were used
     virtual void setSvApiUsed() {}                      // set usage of SV API from operation
     virtual std::string getLibName();                   // VHDL library. Default is "work"
+    virtual void addPostAssign(GenObject *p) {}         // assign inside of process moved out after the process
+    virtual std::string getPostAssign() { return "";}   // after process was ended
 
     virtual std::string generate() { return std::string(""); }
     virtual std::string getCopyValue(char *i,

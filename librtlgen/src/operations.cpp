@@ -2167,6 +2167,12 @@ void ENDGENERATE(const char *name, const char *comment) {
 std::string AssignOperation::generate() {
     std::string ret = addspaces();
     if (SCV_is_sv()) {
+        if (getParent() && getParent()->isProcess()) {
+            GenObject *proc = getParent();
+            proc->addPostAssign(this);
+            parent_ = 0;
+            return "";
+        }
         ret += "assign ";
     }
     ret += obj2varname(a_, "v");

@@ -314,29 +314,12 @@ std::string ModuleObject::generate_sv_mod_proc(GenObject *proc) {
     std::map<std::string, std::list<GenObject *>>regmap;
     std::map<std::string, bool> is2dm;
     std::string ret = "";
+    std::string combtext = "";
     std::string ln;
     std::string r, v;
     GenObject *preg;
     int tcnt = 0;
 
-    if (strstr(proc->getName().c_str(), "egisters")) {
-        // RAM, ROM exception where no registers but memory exists;
-        GenObject *clkport = 0;
-        for (auto &pp: getEntries()) {
-            if (pp->isInput() && pp->getName() == "i_clk") {
-                clkport = pp;
-            }
-        }
-        if (clkport == 0) {
-            SHOW_ERROR("Memory %s clock port not defined", getName().c_str());
-        } else {
-            ret += addspaces() + "always_ff @(posedge " + clkport->getName();
-        }
-        ret += ") begin: " + proc->getName() + "_proc\n";
-    } else if (proc->isGenerate() == false) {
-        ret += "always_comb\n";
-        ret += "begin: " + proc->getName() + "_proc\n";
-    }
     pushspaces();
     
     // process variables declaration
@@ -347,7 +330,7 @@ std::string ModuleObject::generate_sv_mod_proc(GenObject *proc) {
         preg = (*it->second.begin());
         r = preg->r_prefix();
         v = preg->v_prefix();
-        ret += addspaces() + getType() + "_" + r + "egisters " + v + ";\n";
+        combtext += addspaces() + getType() + "_" + r + "egisters " + v + ";\n";
     }
 
     for (auto &e: proc->getEntries()) {
@@ -361,46 +344,80 @@ std::string ModuleObject::generate_sv_mod_proc(GenObject *proc) {
         }
         ln += ";";
         e->addComment(ln);
-        ret += ln + "\n";
+        combtext += ln + "\n";
         tcnt++;
     }
     if (tcnt) {
-        ret += "\n";
+        combtext += "\n";
         tcnt = 0;
     }
 
     // nullify all local variables to avoid latches:
-    size_t ret_sz = ret.size();
+    size_t ret_sz = combtext.size();
     for (auto &e: proc->getEntries()) {
-        ret += generate_all_proc_nullify(e, "", "i");
+        combtext += generate_all_proc_nullify(e, "", "i");
     }
-    if (ret.size() != ret_sz) {
-        ret += "\n";
+    if (combtext.size() != ret_sz) {
+        combtext += "\n";
     }
 
     // v = r
-    tcnt = static_cast<int>(ret.size());
-    ret += generate_all_proc_r_to_v(false);
+    ret_sz = static_cast<int>(combtext.size());
+    combtext += generate_all_proc_r_to_v(false);
 
-    if (tcnt != static_cast<int>(ret.size())) {
-        ret += "\n";
+    if (ret_sz != combtext.size()) {
+        combtext += "\n";
     }
 
     // Generate operations:
-    for (auto &e: proc->getEntries()) {
-        if (e->isOperation()) {
-            ret += e->generate();
+    if (proc->isAssign()) {
+        // All entries inside of process should be executed out-of process:
+        for (auto &e: proc->getEntries()) {
+            proc->addPostAssign(e);
+        }
+    } else {
+        for (auto &e: proc->getEntries()) {
+            if (e->isOperation()) {
+                combtext += e->generate();
+            }
         }
     }
 
     // rin = v
-    ret += generate_all_proc_r_to_v(true);
+    combtext += generate_all_proc_r_to_v(true);
 
     popspaces();
-    if (proc->isGenerate() == false) {
+    // Do not generate empty process.
+    // Process could became empty if there is ASSIGN operator exists:
+    if (combtext.size()) {
+        if (strstr(proc->getName().c_str(), "egisters")) {
+            // RAM, ROM exception where no registers but memory exists;
+            GenObject *clkport = 0;
+            for (auto &pp: getEntries()) {
+                if (pp->isInput() && pp->getName() == "i_clk") {
+                    clkport = pp;
+                }
+            }
+            if (clkport == 0) {
+                SHOW_ERROR("Memory %s clock port not defined", getName().c_str());
+            } else {
+                ret += addspaces() + "always_ff @(posedge " + clkport->getName();
+            }
+            ret += ") begin: " + proc->getName() + "_proc\n";
+        } else {
+            ret += "always_comb\n";
+            ret += "begin: " + proc->getName() + "_proc\n";
+        }
+        ret += combtext;
         ret += "end: " + proc->getName() + "_proc\n";
     }
-    ret += "\n";
+
+    // Post assinment stage:
+    ret += proc->getPostAssign();
+
+    if (ret.size()) {
+        ret += "\n";
+    }
     return ret;
 }
 
@@ -580,7 +597,7 @@ std::string ModuleObject::generate_sv_mod_proc_registers() {
 }
 
 
-std::string ModuleObject::generate_sv_mod() {
+std::string ModuleObject::generate_sv_mod(bool no_pkg) {
     int tcnt = 0;
     std::string ret = "";
     std::string text;
@@ -650,7 +667,7 @@ std::string ModuleObject::generate_sv_mod() {
     for (auto &e: pkglst) {
         ret += "import " + e + "::*;\n";
     }
-    if (tmplparam.size() == 0) {
+    if (no_pkg == false) {
         ret += "import " + pf->getName() + "_pkg::*;\n";
         ret += "\n";
     } else {

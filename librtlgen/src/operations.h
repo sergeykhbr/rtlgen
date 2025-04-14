@@ -258,6 +258,25 @@ class AssignValueOperation : public SetValueOperation {
 };
 
 /**
+    Assigning value in the out-of-combination method:
+        a = 0
+        a = b
+ */
+class AssignOperation : public Operation {
+ public:
+    AssignOperation(GenObject &a, const char *comment)
+        : Operation(comment), a_(&a), b_(0) {}
+    AssignOperation(GenObject &a, GenObject &b, const char *comment)
+        : Operation(comment), a_(&a), b_(&b) {}
+
+    virtual bool isAssign() override { return true; }
+    virtual std::string generate() override;
+ protected:
+    GenObject *a_;
+    GenObject *b_;
+};
+
+/**
     Increment value (vhdl does not support += operation):
         a += b
         a[h:l] += b
@@ -994,22 +1013,5 @@ void INITIAL();
 void ENDINITIAL();
 void GENERATE(const char *name, const char *comment="");
 void ENDGENERATE(const char *name, const char *comment="");
-
-/**
-    Assigning value in the out-of-combination method:
-        a = 0
-        a = b
- */
-class AssignOperation : public Operation {
- public:
-    AssignOperation(GenObject &a, const char *comment)
-        : Operation(comment), a_(&a), b_(0) {}
-    AssignOperation(GenObject &a, GenObject &b, const char *comment)
-        : Operation(comment), a_(&a), b_(&b) {}
-    virtual std::string generate() override;
- protected:
-    GenObject *a_;
-    GenObject *b_;
-};
 
 }  // namespace sysvc

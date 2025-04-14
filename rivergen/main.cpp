@@ -36,5 +36,7 @@ int main()
             prj->getFullPath().c_str());
     SCV_set_generator(VHDL_ALL);
     prj->generate();
+
+    SCV_memory_info();
     return 0;
 }

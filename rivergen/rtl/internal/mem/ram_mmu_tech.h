@@ -25,6 +25,9 @@ class ram_mmu_tech : public ModuleObject {
     ram_mmu_tech(GenObject *parent, const char *name, const char *comment=NO_COMMENT);
 
     virtual bool isVcd() override { return false; }     // disable tracing
+    virtual bool isMemory() override { return true; }
+    virtual int  getMemoryAddrWidth() override { return static_cast<int>(abits.getValue()); }
+    virtual int  getMemoryDataWidth() override { return static_cast<int>(dbits.getValue()); }
 
     class RegistersProcess : public ProcObject {
      public:

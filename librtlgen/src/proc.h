@@ -28,9 +28,12 @@ class ProcObject : public GenObject {
 
     virtual std::string getName() override { return name_; }
     virtual bool isProcess() override { return true; }
+    virtual void addPostAssign(GenObject *p) override { return listPostAssign_.push_back(p); }
+    virtual std::string getPostAssign() override;
 
  protected:
     std::string name_;
+    std::list<GenObject *> listPostAssign_;         // assign inside of process moved out after end of process
 };
 
 }  // namespace sysvc

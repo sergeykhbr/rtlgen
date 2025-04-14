@@ -28,4 +28,20 @@ ProcObject::ProcObject(GenObject *parent,
     Operation::start(this);
 }
 
+std::string ProcObject::getPostAssign() {
+    std::string ret = "";
+    if (!SCV_is_sv()) {
+        return ret;
+    }
+
+    if (listPostAssign_.size()) {
+        ret += "\n";
+    }
+
+    for (auto &p: listPostAssign_) {
+        ret += p->generate();
+    }
+    return ret;
+}
+
 }

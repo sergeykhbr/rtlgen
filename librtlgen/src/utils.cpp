@@ -29,6 +29,7 @@ namespace sysvc {
 
 //static std::map<GenObject *, std::list<GenObject *>> Namespaces_;
 static std::list<GenObject *> listGlobalTypes_;
+static std::list<GenObject *> listMemories_;
 static GenObject *localmodule_ = 0;
 static EGenerateType gentype_ = GEN_UNDEFINED;
 static int spaces_ = 0;
@@ -78,6 +79,16 @@ void SCV_add_module(GenObject *m) {
         if (!pfile->isFile()) {
             SHOW_ERROR("Module %s defined out of file",
                         m->getName().c_str());
+        }
+    } else if (SCV_get_module_class(m)->isMemory()) {
+        // Add memories that exists on top-level excluding all intermediate levels:
+        GenObject *parent = m->getParent();
+        while (parent) {
+            if (parent->isTop()) {
+                listMemories_.push_back(m);
+                break;
+            }
+            parent = parent->getParent();
         }
     }
 
@@ -319,6 +330,28 @@ int SCV_is_vhdl_pkg() {
         return gentype_;
     }
     return 0;
+}
+
+void SCV_memory_info() {
+    std::string fullname;
+    GenObject *parent;
+    for (auto &p : listMemories_) {
+        fullname = p->getName();
+        parent = p->getParent();
+        while (parent) {
+            if (parent->isModule()) {
+                fullname = "." + fullname;
+                if (parent->getDepth() > 1) {
+                    fullname = "[n]" + fullname;
+                }
+                fullname = parent->getName() + fullname;
+            }
+            parent = parent->getParent();
+        }
+        SCV_printf("%25s: %s: abits:%d, dbits:%d",
+            p->getType().c_str(), fullname.c_str(),
+            p->getMemoryAddrWidth(), p->getMemoryDataWidth());
+    }
 }
 
 }

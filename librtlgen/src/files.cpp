@@ -374,6 +374,7 @@ void FileObject::generate_sysv() {
     bool skip_pkg = false;
     ModuleObject *mod;
     std::list <GenObject *> tmplparlist;
+    std::string pkgline = "";
     for (auto &p: getEntries()) {
         if (p->isModule() && p->isTypedef()) {
             is_module = true;
@@ -385,27 +386,30 @@ void FileObject::generate_sysv() {
                 // do not create package for template modules: queue, ram,  etc.
                 skip_pkg = true;
             } else {
-                out += mod->generate_sv_pkg();
+                pkgline += mod->generate_sv_pkg();
             }
         } else if (p->isFunction()) {
-            out += p->generate();
+            pkgline += p->generate();
         } else if (p->isParam() && !p->isParamGeneric()) {
             if (p->isStruct() || p->isString()) {
                 // Do all others params in a such way
-                out += p->generate();
+                pkgline += p->generate();
             } else {
                 ln = addspaces() + "localparam ";
                 ln += p->getType() + " ";
                 ln += p->getName() + " = " + p->generate() + ";";
                 p->addComment(ln);
-                out += ln + "\n";
+                pkgline += ln + "\n";
             }
         } else {
-            out += p->generate();
+            pkgline += p->generate();
         }
     }
+    if (pkgline.size() == 0) {
+        skip_pkg = true;
+    }
 
-    out += "endpackage: " + getName() + "_pkg\n";
+    out += pkgline + "endpackage: " + getName() + "_pkg\n";
 
     if (!skip_pkg) {
         SCV_write_file(filename.c_str(), out.c_str(), out.size());
@@ -427,7 +431,7 @@ void FileObject::generate_sysv() {
         for (auto &p: getEntries()) {
             if (p->isModule() && p->isTypedef()) {
                 SCV_set_local_module(p);
-                out += static_cast<ModuleObject *>(p)->generate_sv_mod();
+                out += static_cast<ModuleObject *>(p)->generate_sv_mod(skip_pkg);
             } else {
                 out += p->generate();  // REMOVE ME: No entries except module in file
             }

@@ -79,4 +79,7 @@ int SCV_is_dir_exists(const char *path);
 void SCV_create_dir(const char *path);
 void SCV_write_file(const char *fname, const char *buf, size_t sz);
 
+// Output memory instances information
+void SCV_memory_info();
+
 }  // namespace sysvc

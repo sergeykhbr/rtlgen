@@ -40,10 +40,12 @@ ram_tech::ram_tech(GenObject *parent, const char *name, const char *comment) :
 void ram_tech::registers() {
     IF (NZ(i_wena));
         SETARRITEM(mem, TO_INT(i_addr), mem, i_wdata);
+        SETVAL(rdata, i_wdata);
+    ELSE();
+        SETVAL(rdata, ARRITEM(mem, TO_INT(i_addr), mem));
     ENDIF();
-    SETVAL(rdata, ARRITEM(mem, TO_INT(i_addr), mem));
 
 TEXT();
-    SETVAL(o_rdata, rdata);
+    ASSIGN(o_rdata, rdata);
 }
 

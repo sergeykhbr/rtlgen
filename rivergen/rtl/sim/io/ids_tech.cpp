@@ -31,6 +31,6 @@ ids_tech::ids_tech(GenObject *parent, const char *name, const char *comment) :
 }
 
 void ids_tech::proc_comb() {
-    SETVAL(o_clk, i_clk_p);
+    ASSIGN(o_clk, i_clk_p);
 }
 

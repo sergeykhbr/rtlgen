@@ -44,7 +44,7 @@ class ModuleObject : public GenObject {
     virtual std::string generate_sysc_h();
     virtual std::string generate_sysc_cpp();
     virtual std::string generate_sv_pkg();
-    virtual std::string generate_sv_mod();
+    virtual std::string generate_sv_mod(bool no_pkg);
     virtual std::string generate_vhdl_pkg();
     virtual std::string generate_vhdl_mod();
 

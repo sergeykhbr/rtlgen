@@ -37,7 +37,6 @@ class Workgroup : public ModuleObject {
     Workgroup(GenObject *parent, const char *name, const char *comment=NO_COMMENT);
 
     virtual GenObject *getResetPort() override { return &i_cores_nrst; }
-    virtual bool isTop() override { return true; }
 
     class CombProcess : public ProcObject {
      public:

@@ -26,6 +26,9 @@ class ram_bytes_tech : public ModuleObject {
     ram_bytes_tech(GenObject *parent, const char *name, const char *comment=NO_COMMENT);
 
     virtual bool isVcd() override { return false; }     // disable tracing
+    virtual bool isMemory() override { return true; }
+    virtual int  getMemoryAddrWidth() override { return static_cast<int>(abits.getValue()); }
+    virtual int  getMemoryDataWidth() override { return static_cast<int>(dbits.getValue()); }
 
     class CombProcess : public ProcObject {
      public:
