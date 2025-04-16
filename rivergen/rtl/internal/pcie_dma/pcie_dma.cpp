@@ -30,6 +30,8 @@ pcie_dma::pcie_dma(GenObject *parent, const char *name, const char *comment) :
     o_xmst_cfg(this, "o_xmst_cfg", "PCIE DMA master interface descriptor"),
     i_xmsti(this, "i_xmsti"),
     o_xmsto(this, "o_xmsto"),
+    _text2_(this, "Debug signals:"),
+    o_dbg_pcie_dmai(this, "o_dbg_pcie_dmai"),
     // params
     _fmt0_(this, ""),
     _fmt1_(this, "fmt: indicates the size of the header"),
@@ -499,4 +501,13 @@ TEXT();
     SETVAL(w_reqfifo_rd, comb.v_req_ready);
     SETVAL(o_xmst_cfg, comb.vb_xmst_cfg);
     SETVAL(o_xmsto, comb.vb_xmsto);
+    TEXT("Debug signals");
+    SETVAL(o_dbg_pcie_dmai.valid, INV_L(w_reqfifo_empty));
+    SETVAL(o_dbg_pcie_dmai.data, comb.vb_req_data);
+    SETVAL(o_dbg_pcie_dmai.strob, comb.vb_req_strob);
+    SETVAL(o_dbg_pcie_dmai.last, comb.v_req_last);
+    SETZERO(o_dbg_pcie_dmai.ready);
+    SETZERO(o_dbg_pcie_dmai.bar_hit);
+    SETZERO(o_dbg_pcie_dmai.ecrc_err);
+    SETZERO(o_dbg_pcie_dmai.err_fwd);
 }

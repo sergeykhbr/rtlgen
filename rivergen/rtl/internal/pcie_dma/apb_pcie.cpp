@@ -26,6 +26,7 @@ apb_pcie::apb_pcie(GenObject *parent, const char *name, const char *comment) :
     o_apbo(this, "o_apbo", "APB output interface"),
     i_pcie_completer_id(this, "i_pcie_completer_id", "16", "Bus, Device, Function"),
     i_dma_state(this, "i_dma_state", "4", "DMA engine brief state"),
+    i_dbg_pcie_dmai(this, "i_dbg_pcie_dmai", "Debugging request from async fifo"),
     // params
     // signals
     w_req_valid(this, "w_req_valid", "1"),
@@ -36,6 +37,9 @@ apb_pcie::apb_pcie(GenObject *parent, const char *name, const char *comment) :
     resp_valid(this, "resp_valid", "1", "0"),
     resp_rdata(this, "resp_rdata", "32", "'0", NO_COMMENT),
     resp_err(this, "resp_err", "1", "0"),
+    req_cnt(this, "req_cnt", "4", RSTVAL_ZERO, NO_COMMENT),
+    req_data_arr(this, &i_clk, CLK_POSEDGE, 0, ACTIVE_NONE, "req_data_arr",
+            "64", "16", RSTVAL_NONE, NO_COMMENT),
     //
     comb(this),
     pslv0(this, "pslv0", NO_COMMENT)
@@ -66,18 +70,33 @@ apb_pcie::apb_pcie(GenObject *parent, const char *name, const char *comment) :
 
 void apb_pcie::proc_comb() {
 TEXT();
+    IF (NZ(i_dbg_pcie_dmai.valid));
+        SETVAL(req_cnt, INC(req_cnt));
+        SETARRITEM(req_data_arr, TO_INT(req_cnt), req_data_arr, i_dbg_pcie_dmai.data);
+    ENDIF();
+
+TEXT();
     SETZERO(resp_err);
     TEXT("Registers access:");
-    SWITCH (BITS(wb_req_addr, 11, 2));
-    CASE (CONST("0", 10), "0x00: link status");
+    IF (EQ(BITS(wb_req_addr, 11, 2), CONST("0", 10)));
+        TEXT("0x00: link status");
         SETBITS(comb.vb_rdata, 3, 0, i_dma_state);
-        ENDCASE();
-    CASE (CONST("1", 10), "0x04: bus, device, function");
+    ELSIF (EQ(BITS(wb_req_addr, 11, 2), CONST("1", 10)));
+        TEXT("0x04: bus, device, function");
         SETBITS(comb.vb_rdata, 15, 0, i_pcie_completer_id);
-        ENDCASE();
-    CASEDEF();
-        ENDCASE();
-    ENDSWITCH();
+    ELSIF (EQ(BITS(wb_req_addr, 11, 2), CONST("2", 10)));
+        TEXT("0x08: request counter");
+        SETBITS(comb.vb_rdata, 3, 0, req_cnt);
+    ELSIF (EQ(BITS(wb_req_addr, 11, 7), CONST("1", 5)));
+        TEXT("0x040..0x04F: debug buffer");
+        IF (EZ(BIT(wb_req_addr, 2)));
+            SETVAL(comb.vb_rdata,
+                   BITS(ARRITEM(req_data_arr, TO_INT(BITS(wb_req_addr, 6, 3)), req_data_arr), 31, 0));
+        ELSE();
+            SETVAL(comb.vb_rdata,
+                   BITS(ARRITEM(req_data_arr, TO_INT(BITS(wb_req_addr, 6, 3)), req_data_arr), 63, 32));
+        ENDIF();
+    ENDIF();
 
 TEXT();
     SETVAL(resp_valid, w_req_valid);

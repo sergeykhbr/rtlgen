@@ -18,6 +18,7 @@
 
 #include <api_rtlgen.h>
 #include "../ambalib/types_amba.h"
+#include "../ambalib/types_dma.h"
 #include "../ambalib/types_pnp.h"
 #include "../ambalib/apb_slv.h"
 
@@ -50,6 +51,7 @@ class apb_pcie : public ModuleObject {
     OutStruct<types_amba::apb_out_type> o_apbo;
     InPort i_pcie_completer_id;
     InPort i_dma_state;
+    InStruct<types_dma::pcie_dma64_in_type> i_dbg_pcie_dmai;
 
     Signal w_req_valid;
     Signal wb_req_addr;
@@ -59,6 +61,8 @@ class apb_pcie : public ModuleObject {
     RegSignal resp_valid;
     RegSignal resp_rdata;
     RegSignal resp_err;
+    RegSignal req_cnt;
+    RegArray req_data_arr;
 
     CombProcess comb;
 

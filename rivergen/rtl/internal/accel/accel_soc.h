@@ -177,6 +177,7 @@ public:
     Signal wb_ext_irqs;
 #if GENCFG_PCIE_ENABLE
     Signal wb_pcie_dma_state;
+    types_dma::pcie_dma64_in_type wb_dbg_pcie_dmai;
 #endif
 
     // Sub-module instances:

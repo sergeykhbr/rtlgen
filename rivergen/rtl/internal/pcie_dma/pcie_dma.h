@@ -82,6 +82,8 @@ class pcie_dma : public ModuleObject {
     OutStruct<types_pnp::dev_config_type> o_xmst_cfg;
     InStruct<types_amba::axi4_master_in_type> i_xmsti;
     OutStruct<types_amba::axi4_master_out_type> o_xmsto;
+    TextLine _text2_;
+    OutStruct<types_dma::pcie_dma64_in_type> o_dbg_pcie_dmai;
     
     TextLine _fmt0_;
     TextLine _fmt1_;
