@@ -152,6 +152,9 @@ void ModuleObject::getSortedRegsMap(
         if (!clkport || p->getClockEdge() == CLK_ALWAYS) {
             continue;
         }
+        if (p->isProcess()) {
+            continue;
+        }
         if (p->r_prefix().size() == 0) {
             SHOW_ERROR("%s::%s r-preifx not defined",
                         getName().c_str(), p->getName().c_str());

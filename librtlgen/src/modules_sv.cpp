@@ -387,22 +387,15 @@ std::string ModuleObject::generate_sv_mod_proc(GenObject *proc) {
     combtext += generate_all_proc_r_to_v(true);
 
     popspaces();
+    // TODO: move memory into usual proc generation
+    //       The following fragment only for memory generation.
+    //       NO REGISTERS only LogicArray
     // Do not generate empty process.
     // Process could became empty if there is ASSIGN operator exists:
     if (combtext.size()) {
-        if (strstr(proc->getName().c_str(), "egisters")) {
-            // RAM, ROM exception where no registers but memory exists;
-            GenObject *clkport = 0;
-            for (auto &pp: getEntries()) {
-                if (pp->isInput() && pp->getName() == "i_clk") {
-                    clkport = pp;
-                }
-            }
-            if (clkport == 0) {
-                SHOW_ERROR("Memory %s clock port not defined", getName().c_str());
-            } else {
-                ret += addspaces() + "always_ff @(posedge " + clkport->getName();
-            }
+        GenObject *clkport = proc->getClockPort();
+        if (clkport) {
+            ret += addspaces() + "always_ff @(posedge " + clkport->getName();
             ret += ") begin: " + proc->getName() + "_proc\n";
         } else {
             ret += "always_comb\n";

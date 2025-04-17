@@ -21,9 +21,33 @@ namespace sysvc {
 
 ProcObject::ProcObject(GenObject *parent,
                        const char *name,
+                       GenObject *clk,
+                       EClockEdge edge,
+                       GenObject *rst,
+                       EResetActive active,
                        const char *comment)
-    : GenObject(parent, comment) {
+    : GenObject(parent, comment) ,
+    clk_(clk),
+    edge_(edge),
+    rst_(rst),
+    active_(active) {
     name_ = std::string(name);
+
+    if (clk == 0 && strstr(name, "egisters")) {
+        // Proc could be defined inside of module only (parent != 0).
+        if (strcmp(name, "registers")) {
+            bool st = true;
+        }
+        for (auto &p : parent->getEntries()) {
+            if (p->isInput() && p->getName() == "i_clk") {
+                clk_ = p;
+                edge_ = CLK_POSEDGE;
+            } else if (p->isInput() && p->getName() == "i_nrst") {
+                rst_ = p;
+                active_ = ACTIVE_LOW;
+            }
+        }
+    }
 
     Operation::start(this);
 }

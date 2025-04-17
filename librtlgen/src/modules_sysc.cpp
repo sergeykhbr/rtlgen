@@ -512,6 +512,7 @@ std::string ModuleObject::generate_sysc_sensitivity(GenObject *obj,
     if (prefix == "") {
         // Check exceptions only on first level
         if (obj->isTypedef()
+            || obj->isProcess()
             || (obj->isOutput() && !obj->isInput())     // ignore out structures
             || obj->getName() == "i_clk") {
             return ret;
@@ -865,18 +866,14 @@ std::string ModuleObject::generate_sysc_constructor() {
         ret += "\n";
         ret += addspaces() + "SC_METHOD(" + p->getName() + ");\n";
 
+        // TODO: move memory into usual proc generation
         // RAM, ROM exception where no registers but memory exists;
-        if (strstr(p->getName().c_str(), "egisters")) {
-            GenObject *clkport = 0;
-            for (auto &pp: getEntries()) {
-                if (pp->isInput() && pp->getName() == "i_clk") {
-                    clkport = pp;
-                }
-            }
-            if (clkport == 0) {
-                SHOW_ERROR("Memory %s clock port not defined", getName().c_str());
-            } else {
-                ret += addspaces() + "sensitive << " + clkport->getName() + ".pos();\n";
+        clkport = p->getClockPort();
+        if (clkport) {
+            ret += addspaces() + "sensitive << " + clkport->getName() + ".pos();\n";
+            rstport = p->getResetPort();
+            if (rstport) {
+                ret += addspaces() + "sensitive << " + rstport->getName() + ";\n";
             }
         } else {
             ln = std::string("i");
