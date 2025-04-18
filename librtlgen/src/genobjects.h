@@ -42,6 +42,7 @@ class GenObject {
  public:
     GenObject(GenObject *parent, const char *comment);       // 
 
+    virtual void postInit() {}
     virtual std::list<GenObject *> &getEntries() { return entries_; }
     virtual GenObject *getParent() { return parent_; }
     virtual std::string getComment() { return comment_; }

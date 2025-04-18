@@ -39,6 +39,13 @@ class ProcObject : public GenObject {
     virtual void addPostAssign(GenObject *p) override { return listPostAssign_.push_back(p); }
     virtual std::string getPostAssign() override;
 
+    virtual std::string generate() override;
+
+ protected:
+    virtual std::string generate_sysc_h();
+    virtual std::string generate_sysc_cpp();
+    virtual std::string generate_sv(bool async_on_off);
+
  protected:
     std::string name_;
     std::list<GenObject *> listPostAssign_;         // assign inside of process moved out after end of process
@@ -54,6 +61,23 @@ class CombinationalProcess : public ProcObject {
                          const char *name,
                          const char *comment = NO_COMMENT)
         : ProcObject(parent, name, 0, CLK_ALWAYS, 0, ACTIVE_NONE, comment) {}
+};
+
+/**
+    This process is created automatically if the module contains registers:
+ */
+class RegisterCopyProcess : public ProcObject {
+ public:
+    RegisterCopyProcess(GenObject *parent,
+                        const char *name,
+                        GenObject *clk,
+                        EClockEdge edge,
+                        GenObject *rst,
+                        EResetActive active)
+        : ProcObject(parent, name, clk, edge, rst, active, NO_COMMENT) {}
+
+ protected:
+    virtual std::string generate_sv(bool async_on_off) override;
 };
 
 }  // namespace sysvc

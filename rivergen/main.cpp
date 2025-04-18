@@ -22,6 +22,8 @@ int main()
     SCV_init();
 
     RiverProject *prj = new RiverProject("_generated");
+    prj->postInit();
+
     printf("Generating SystemC into '%s' subfolder\n",
             prj->getFullPath().c_str());
     SCV_set_generator(SYSC_ALL);
