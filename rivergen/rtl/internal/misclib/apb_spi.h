@@ -28,10 +28,10 @@ class apb_spi : public ModuleObject {
  public:
     apb_spi(GenObject *parent, const char *name, const char *comment);
 
-    class CombProcess : public ProcObject {
+    class CombProcess : public CombinationalProcess {
      public:
         CombProcess(GenObject *parent) :
-            ProcObject(parent, "comb"),
+            CombinationalProcess(parent, "comb"),
             v_posedge(this, "v_posedge", "1"),
             v_negedge(this, "v_negedge", "1"),
             v_txfifo_re(this, "v_txfifo_re", "1"),

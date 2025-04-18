@@ -50,10 +50,10 @@ class gencpu64_soc : public ModuleObject {
 
     virtual GenObject *getResetPort() override { return &i_sys_nrst; }
 
-    class CombProcess : public ProcObject {
+    class CombProcess : public CombinationalProcess {
      public:
         CombProcess(GenObject* parent)
-            : ProcObject(parent, "comb"),
+            : CombinationalProcess(parent, "comb"),
             v_gnd1(this, "v_gnd1", "1", "0", NO_COMMENT),
             vb_ext_irqs(this, "vb_ext_irqs", "SOC_PLIC_IRQ_TOTAL") {
         }

@@ -64,10 +64,10 @@ class plic : public ModuleObject {
         Signal irq_prio;
     };
 
-    class CombProcess : public ProcObject {
+    class CombProcess : public CombinationalProcess {
      public:
         CombProcess(GenObject *parent) :
-            ProcObject(parent, "comb"),
+            CombinationalProcess(parent, "comb"),
             vrdata(this, "vrdata", "CFG_SYSBUS_DATA_BITS", "'0", NO_COMMENT),
             vb_irq_idx(this, "vb_irq_idx", "10", "ctxmax", "Currently selected most prio irq"),
             vb_irq_prio(this, "vb_irq_prio", "10", "ctxmax", "Currently selected prio level"),

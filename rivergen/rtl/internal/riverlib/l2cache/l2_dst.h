@@ -26,10 +26,10 @@ class L2Destination : public ModuleObject {
  public:
     L2Destination(GenObject *parent, const char *name, const char *comment=NO_COMMENT);
 
-    class CombProcess : public ProcObject {
+    class CombProcess : public CombinationalProcess {
      public:
         CombProcess(GenObject *parent) :
-            ProcObject(parent, "comb"),
+            CombinationalProcess(parent, "comb"),
             vcoreo(this, "vcoreo", "ADD(CFG_SLOT_L1_TOTAL,1)", "axi4_l1_out_none", NO_COMMENT),
             vlxi(this, "vlxi", "CFG_SLOT_L1_TOTAL", "axi4_l1_in_none", NO_COMMENT),
             vb_src_aw(this, "vb_src_aw", "CFG_SLOT_L1_TOTAL", "'0", NO_COMMENT),

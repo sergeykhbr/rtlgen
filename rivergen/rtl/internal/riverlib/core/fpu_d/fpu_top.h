@@ -30,11 +30,11 @@ class FpuTop : public ModuleObject {
  public:
     FpuTop(GenObject *parent, const char *name, const char *comment=NO_COMMENT);
 
-    class CombProcess : public ProcObject {
+    class CombProcess : public CombinationalProcess {
      public:
         CombProcess(GenObject *parent) :
             iv(this, "iv", "Instr_FPU_Total", "'0", NO_COMMENT),
-            ProcObject(parent, "comb") {
+            CombinationalProcess(parent, "comb") {
         }
 
      public:

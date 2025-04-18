@@ -26,10 +26,10 @@ class imul53 : public ModuleObject {
  public:
     imul53(GenObject *parent, const char *name, const char *comment=NO_COMMENT);
 
-    class CombProcess : public ProcObject {
+    class CombProcess : public CombinationalProcess {
      public:
         CombProcess(GenObject *parent) :
-            ProcObject(parent, "comb"),
+            CombinationalProcess(parent, "comb"),
             v_ena(this, "v_ena", "1", "0", NO_COMMENT),
             vb_mux(this, "vb_mux", "57", "17", NO_COMMENT),
             vb_sel(this, "vb_sel", "57", "'0", NO_COMMENT),

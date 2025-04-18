@@ -54,7 +54,7 @@ vip_uart_top::vip_uart_top(GenObject *parent, const char *name, const char *comm
     tx0(this, "tx0", NO_COMMENT),
     U8ToString(this),
     comb(this),
-    reg(this)
+    reg(this, &w_clk, &i_nrst)
 {
     Operation::start(this);
     INITIAL();

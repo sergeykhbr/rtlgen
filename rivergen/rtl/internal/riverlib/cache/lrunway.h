@@ -27,10 +27,10 @@ class lrunway : public ModuleObject {
 
     virtual bool isVcd() override { return false; }      // no need to trace
 
-    class CombProcess : public ProcObject {
+    class CombProcess : public CombinationalProcess {
      public:
         CombProcess(GenObject *parent) :
-            ProcObject(parent, "comb"),
+            CombinationalProcess(parent, "comb"),
             vb_tbl_rdata(this, "wb_tbl_rdata", "LINE_WIDTH", "'0", NO_COMMENT),
             vb_tbl_wadr(this, "vb_tbl_wadr", "abits", "'0", NO_COMMENT),
             vb_tbl_wdata_init(this, "vb_tbl_wdata_init", "LINE_WIDTH", "'0", NO_COMMENT),

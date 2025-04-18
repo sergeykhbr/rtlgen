@@ -16,6 +16,7 @@
 
 #include "proc.h"
 #include "operations.h"
+#include <cstring>
 
 namespace sysvc {
 

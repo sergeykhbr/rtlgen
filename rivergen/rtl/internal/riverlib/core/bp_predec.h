@@ -25,9 +25,9 @@ class BpPreDecoder : public ModuleObject {
  public:
     BpPreDecoder(GenObject *parent, const char *name, const char *depth);
 
-    class CombProcess : public ProcObject {
+    class CombProcess : public CombinationalProcess {
      public:
-        CombProcess(GenObject *parent) : ProcObject(parent, "comb"),
+        CombProcess(GenObject *parent) : CombinationalProcess(parent, "comb"),
             vb_tmp(this, "vb_tmp", "32", "'0", NO_COMMENT),
             vb_npc(this, "vb_npc", "RISCV_ARCH", "'0", NO_COMMENT),
             vb_pc(this, "vb_pc", "RISCV_ARCH", "'0", NO_COMMENT),

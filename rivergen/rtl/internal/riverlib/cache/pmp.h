@@ -25,10 +25,10 @@ class PMP : public ModuleObject {
  public:
     PMP(GenObject *parent, const char *name, const char *comment=NO_COMMENT);
 
-    class CombProcess : public ProcObject {
+    class CombProcess : public CombinationalProcess {
      public:
         CombProcess(GenObject *parent) :
-            ProcObject(parent, "comb"),
+            CombinationalProcess(parent, "comb"),
             v_r(this, "v_r", "1"),
             v_w(this, "v_w", "1"),
             v_x(this, "v_x", "1"),

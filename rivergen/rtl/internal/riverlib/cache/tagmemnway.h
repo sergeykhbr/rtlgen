@@ -27,10 +27,10 @@ class TagMemNWay : public ModuleObject {
  public:
     TagMemNWay(GenObject *parent, const char *name, const char *comment = NO_COMMENT);
 
-    class CombProcess : public ProcObject {
+    class CombProcess : public CombinationalProcess {
      public:
         CombProcess(GenObject *parent) :
-            ProcObject(parent, "comb"),
+            CombinationalProcess(parent, "comb"),
             vb_raddr(this, "vb_raddr", "abus", "'0", NO_COMMENT),
             vb_rdata(this, "vb_rdata", "MUL(8,POW2(1,lnbits))", "'0", NO_COMMENT),
             vb_rflags(this, "vb_rflags", "flbits", "'0", NO_COMMENT),

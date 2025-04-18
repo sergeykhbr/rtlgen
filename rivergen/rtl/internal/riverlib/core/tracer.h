@@ -56,9 +56,9 @@ class Tracer : public ModuleObject {
         I32D iwaddr;
     };
 
-    class CombProcess : public ProcObject {
+    class CombProcess : public CombinationalProcess {
      public:
-        CombProcess(GenObject *parent) : ProcObject(parent, "comb"),
+        CombProcess(GenObject *parent) : CombinationalProcess(parent, "comb"),
             wcnt(this, "wcnt", "0", NO_COMMENT),
             xcnt(this, "xcnt", "0", NO_COMMENT),
             rcnt(this, "rcnt", "0", NO_COMMENT),
@@ -87,7 +87,9 @@ class Tracer : public ModuleObject {
 
     class RegistersProcess : public ProcObject {
      public:
-        RegistersProcess(GenObject *parent) : ProcObject(parent, "registers") {
+        RegistersProcess(GenObject *parent, GenObject *clk, GenObject *rst)
+            : ProcObject(parent, "registers",
+                         clk, CLK_POSEDGE, rst, ACTIVE_LOW, NO_COMMENT) {
         }
     public:
     };

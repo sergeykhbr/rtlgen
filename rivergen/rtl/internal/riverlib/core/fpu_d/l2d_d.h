@@ -25,10 +25,10 @@ class Long2Double : public ModuleObject {
  public:
     Long2Double(GenObject *parent, const char *name, const char *comment=NO_COMMENT);
 
-    class CombProcess : public ProcObject {
+    class CombProcess : public CombinationalProcess {
      public:
         CombProcess(GenObject *parent) :
-            ProcObject(parent, "comb"),
+            CombinationalProcess(parent, "comb"),
             v_ena(this, "v_ena", "1", "0", NO_COMMENT),
             mantAlign(this, "mantAlign", "64", "'0", NO_COMMENT),
             lshift(this, "lshift", "6", "'0", NO_COMMENT),

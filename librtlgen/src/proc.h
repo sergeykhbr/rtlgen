@@ -24,10 +24,10 @@ class ProcObject : public GenObject {
  public:
     ProcObject(GenObject *parent,
                const char *name,
-               GenObject *clk = 0,
-               EClockEdge edge = CLK_ALWAYS,
-               GenObject *rst = 0,
-               EResetActive active = ACTIVE_NONE,
+               GenObject *clk,
+               EClockEdge edge,
+               GenObject *rst,
+               EResetActive active,
                const char *comment = NO_COMMENT);
 
     virtual std::string getName() override { return name_; }
@@ -46,6 +46,14 @@ class ProcObject : public GenObject {
     EClockEdge edge_;
     GenObject *rst_;
     EResetActive active_;
+};
+
+class CombinationalProcess : public ProcObject {
+ public:
+    CombinationalProcess(GenObject *parent,
+                         const char *name,
+                         const char *comment = NO_COMMENT)
+        : ProcObject(parent, name, 0, CLK_ALWAYS, 0, ACTIVE_NONE, comment) {}
 };
 
 }  // namespace sysvc

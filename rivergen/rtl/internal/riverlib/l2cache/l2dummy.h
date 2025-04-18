@@ -26,10 +26,10 @@ class L2Dummy : public ModuleObject {
  public:
     L2Dummy(GenObject *parent, const char *name, const char *comment=NO_COMMENT);
 
-    class CombProcess : public ProcObject {
+    class CombProcess : public CombinationalProcess {
      public:
         CombProcess(GenObject *parent) :
-            ProcObject(parent, "comb"),
+            CombinationalProcess(parent, "comb"),
             vl1o(this, "vl1o", "CFG_SLOT_L1_TOTAL", "axi4_l1_out_none", NO_COMMENT),
             vlxi(this, "vlxi", "CFG_SLOT_L1_TOTAL", "axi4_l1_in_none", NO_COMMENT),
             vl2o(this, "vl2o", "axi4_l2_out_none", NO_COMMENT),

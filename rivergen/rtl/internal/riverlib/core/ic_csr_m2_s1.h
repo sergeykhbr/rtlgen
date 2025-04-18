@@ -25,9 +25,9 @@ class ic_csr_m2_s1 : public ModuleObject {
  public:
     ic_csr_m2_s1(GenObject *parent, const char *name, const char *comment=NO_COMMENT);
 
-    class CombProcess : public ProcObject {
+    class CombProcess : public CombinationalProcess {
      public:
-        CombProcess(GenObject *parent) : ProcObject(parent, "comb") {
+        CombProcess(GenObject *parent) : CombinationalProcess(parent, "comb") {
             Operation::start(this);
             ic_csr_m2_s1 *p = static_cast<ic_csr_m2_s1 *>(parent);
             p->proc_comb();

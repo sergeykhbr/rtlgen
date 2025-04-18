@@ -26,10 +26,10 @@ class DoubleMul : public ModuleObject {
  public:
     DoubleMul(GenObject *parent, const char *name, const char *comment=NO_COMMENT);
 
-    class CombProcess : public ProcObject {
+    class CombProcess : public CombinationalProcess {
      public:
         CombProcess(GenObject *parent) :
-            ProcObject(parent, "comb"),
+            CombinationalProcess(parent, "comb"),
             vb_ena(this, "vb_ena", "5", "'0", NO_COMMENT),
             signA(this, "signA", "1", "0", NO_COMMENT),
             signB(this, "signB", "1", "0", NO_COMMENT),

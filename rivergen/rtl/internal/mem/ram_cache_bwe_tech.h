@@ -30,10 +30,10 @@ class ram_cache_bwe_tech : public ModuleObject {
     virtual int  getMemoryAddrWidth() override { return static_cast<int>(abits.getValue()); }
     virtual int  getMemoryDataWidth() override { return static_cast<int>(dbits.getValue()); }
 
-    class CombProcess : public ProcObject {
+    class CombProcess : public CombinationalProcess {
      public:
         CombProcess(GenObject *parent) :
-            ProcObject(parent, "comb"),
+            CombinationalProcess(parent, "comb"),
             vb_rdata(this, "vb_rdata", "dbits") {
         }
 

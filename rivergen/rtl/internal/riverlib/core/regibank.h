@@ -25,9 +25,9 @@ class RegIntBank : public ModuleObject {
  public:
     RegIntBank(GenObject *parent, const char *name, const char *comment=NO_COMMENT);
 
-    class CombProcess : public ProcObject {
+    class CombProcess : public CombinationalProcess {
      public:
-        CombProcess(GenObject *parent) : ProcObject(parent, "comb"),
+        CombProcess(GenObject *parent) : CombinationalProcess(parent, "comb"),
             int_daddr(this, "int_daddr", "0", NO_COMMENT),
             int_waddr(this, "int_waddr", "0", NO_COMMENT),
             int_radr1(this, "int_radr1", "0", NO_COMMENT),

@@ -25,10 +25,10 @@ class PMA : public ModuleObject {
  public:
     PMA(GenObject *parent, const char *name, const char *comment=NO_COMMENT);
 
-    class CombProcess : public ProcObject {
+    class CombProcess : public CombinationalProcess {
      public:
         CombProcess(GenObject *parent) :
-            ProcObject(parent, "comb"),
+            CombinationalProcess(parent, "comb"),
             v_icached(this, "v_icached", "1"),
             v_dcached(this, "v_dcached", "1") {
         }

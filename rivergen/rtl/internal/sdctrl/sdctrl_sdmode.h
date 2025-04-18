@@ -25,10 +25,10 @@ class sdctrl_sdmode : public ModuleObject {
  public:
     sdctrl_sdmode(GenObject *parent, const char *name, const char *comment=NO_COMMENT);
 
-    class CombProcess : public ProcObject {
+    class CombProcess : public CombinationalProcess {
      public:
         CombProcess(GenObject *parent) :
-            ProcObject(parent, "comb"),
+            CombinationalProcess(parent, "comb"),
             v_dat0(this, "v_dat0", "1"),
             v_dat1(this, "v_dat1", "1"),
             v_dat2(this, "v_dat2", "1"),

@@ -24,10 +24,10 @@ class zeroenc : public ModuleObject {
  public:
     zeroenc(GenObject *parent, const char *name, const char *comment=NO_COMMENT);
 
-    class GenerateProcess : public ProcObject {
+    class GenerateProcess : public CombinationalProcess {
      public:
         GenerateProcess(GenObject *parent) :
-            ProcObject(parent, "gen0") {
+            CombinationalProcess(parent, "gen0") {
         }
         virtual bool isAssign() override { return true; } // assignment out-of-process for sv and vhdl
 

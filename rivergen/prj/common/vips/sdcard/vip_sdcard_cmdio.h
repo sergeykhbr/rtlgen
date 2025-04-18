@@ -26,10 +26,10 @@ class vip_sdcard_cmdio : public ModuleObject {
  public:
     vip_sdcard_cmdio(GenObject *parent, const char *name, const char *comment);
 
-    class CombProcess : public ProcObject {
+    class CombProcess : public CombinationalProcess {
      public:
         CombProcess(GenObject *parent) :
-            ProcObject(parent, "comb"),
+            CombinationalProcess(parent, "comb"),
             vb_cmd_txshift(this, "vb_cmd_txshift", "48", "'0", NO_COMMENT),
             v_crc7_clear(this, "v_crc7_clear", "1"),
             v_crc7_next(this, "v_crc7_next", "1"),

@@ -30,10 +30,10 @@ class apb_prci : public ModuleObject {
     virtual GenObject *getResetPort() override { return &i_pwrreset; }
     virtual EResetActive getResetActive() override { return ACTIVE_HIGH; }
 
-    class CombProcess : public ProcObject {
+    class CombProcess : public CombinationalProcess {
      public:
         CombProcess(GenObject *parent) :
-            ProcObject(parent, "comb"),
+            CombinationalProcess(parent, "comb"),
             vb_rdata(this, "vb_rdata", "32", "'0", NO_COMMENT) {
         }
 

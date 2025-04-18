@@ -25,10 +25,10 @@ class sdctrl_spimode : public ModuleObject {
  public:
     sdctrl_spimode(GenObject *parent, const char *name, const char *comment=NO_COMMENT);
 
-    class CombProcess : public ProcObject {
+    class CombProcess : public CombinationalProcess {
      public:
         CombProcess(GenObject *parent) :
-            ProcObject(parent, "comb"),
+            CombinationalProcess(parent, "comb"),
             v_dat(this, "v_dat", "1"),
             vb_cmd_req_arg(this, "vb_cmd_req_arg", "32", "'0", NO_COMMENT),
             v_data_req_ready(this, "v_data_req_ready", "1"),

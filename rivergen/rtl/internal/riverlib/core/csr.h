@@ -25,9 +25,9 @@ class CsrRegs : public ModuleObject {
  public:
     CsrRegs(GenObject *parent, const char *name, const char *comment=NO_COMMENT);
 
-    class CombProcess : public ProcObject {
+    class CombProcess : public CombinationalProcess {
      public:
-        CombProcess(GenObject *parent) : ProcObject(parent, "comb"),
+        CombProcess(GenObject *parent) : CombinationalProcess(parent, "comb"),
             iM(this, "iM", &TO_INT(glob_river_cfg_->PRV_M), NO_COMMENT),
             iH(this, "iH", &TO_INT(glob_river_cfg_->PRV_H), NO_COMMENT),
             iS(this, "iS", &TO_INT(glob_river_cfg_->PRV_S), NO_COMMENT),

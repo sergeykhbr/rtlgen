@@ -29,10 +29,10 @@ class SysPLL_tech : public ModuleObject {
     virtual EResetActive getResetActive() override { return ACTIVE_HIGH; }
 
  protected:
-    class CombProcess : public ProcObject {
+    class CombProcess : public CombinationalProcess {
      public:
         CombProcess(GenObject *parent) :
-            ProcObject(parent, "comb") {
+            CombinationalProcess(parent, "comb") {
         }
 
      public:

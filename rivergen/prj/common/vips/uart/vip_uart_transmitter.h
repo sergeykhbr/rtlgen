@@ -24,10 +24,10 @@ class vip_uart_transmitter : public ModuleObject {
  public:
     vip_uart_transmitter(GenObject *parent, const char *name, const char *comment);
 
-    class CombProcess : public ProcObject {
+    class CombProcess : public CombinationalProcess {
      public:
         CombProcess(GenObject *parent) :
-            ProcObject(parent, "comb"),
+            CombinationalProcess(parent, "comb"),
             v_next(this, "v_next", "1") {
         }
 

@@ -27,10 +27,10 @@ class apb_gpio : public ModuleObject {
  public:
     apb_gpio(GenObject *parent, const char *name, const char *comment=NO_COMMENT);
 
-    class CombProcess : public ProcObject {
+    class CombProcess : public CombinationalProcess {
      public:
         CombProcess(GenObject *parent) :
-            ProcObject(parent, "comb"),
+            CombinationalProcess(parent, "comb"),
             vb_rdata(this, "vb_rdata", "32", "'0", NO_COMMENT) {
         }
 

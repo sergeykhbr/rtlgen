@@ -25,10 +25,10 @@ class IntMul : public ModuleObject {
  public:
     IntMul(GenObject *parent, const char *name, const char *comment=NO_COMMENT);
 
-    class CombProcess : public ProcObject {
+    class CombProcess : public CombinationalProcess {
      public:
         CombProcess(GenObject *parent) :
-            ProcObject(parent, "comb"),
+            CombinationalProcess(parent, "comb"),
             vb_a1(this, "vb_a1", "RISCV_ARCH", "'0", NO_COMMENT),
             vb_a2(this, "vb_a2", "RISCV_ARCH", "'0", NO_COMMENT),
             wb_mux_lvl0(this, "wb_mux_lvl0", "2", "'0", NO_COMMENT),

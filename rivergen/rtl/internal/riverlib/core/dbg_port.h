@@ -26,9 +26,9 @@ class DbgPort : public ModuleObject {
  public:
     DbgPort(GenObject *parent, const char *name, const char *comment=NO_COMMENT);
 
-    class CombProcess : public ProcObject {
+    class CombProcess : public CombinationalProcess {
      public:
-        CombProcess(GenObject *parent) : ProcObject(parent, "comb"),
+        CombProcess(GenObject *parent) : CombinationalProcess(parent, "comb"),
             vb_stack_raddr(this, "vb_stack_raddr", "CFG_LOG2_STACK_TRACE_ADDR", "'0", NO_COMMENT),
             v_stack_we(this, "v_stack_we", "1"),
             vb_stack_waddr(this, "vb_stack_waddr", "CFG_LOG2_STACK_TRACE_ADDR", "'0", NO_COMMENT),

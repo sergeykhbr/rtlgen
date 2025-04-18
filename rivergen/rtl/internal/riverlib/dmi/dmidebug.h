@@ -29,10 +29,10 @@ class dmidebug : public ModuleObject {
  public:
     dmidebug(GenObject *parent, const char *name, const char *comment=NO_COMMENT);
 
-    class CombProcess : public ProcObject {
+    class CombProcess : public CombinationalProcess {
      public:
         CombProcess(GenObject* parent)
-            : ProcObject(parent, "comb"),
+            : CombinationalProcess(parent, "comb"),
             vcfg(this, "vcfg", "dev_config_none", NO_COMMENT),
             vapbo(this, "vapbo", "apb_out_none", NO_COMMENT),
             vb_req_type(this, "vb_req_type", "DPortReq_Total", "'0", NO_COMMENT),

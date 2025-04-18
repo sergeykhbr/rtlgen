@@ -28,8 +28,8 @@ class rom_inferred_2x32 : public ModuleObject {
 
     class RegistersProcess : public ProcObject {
      public:
-        RegistersProcess(GenObject *parent) :
-            ProcObject(parent, "registers") {
+        RegistersProcess(GenObject *parent, GenObject *clk) :
+            ProcObject(parent, "registers", clk, CLK_POSEDGE, 0, ACTIVE_NONE, NO_COMMENT) {
         }
     };
 

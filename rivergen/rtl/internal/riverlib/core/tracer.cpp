@@ -65,7 +65,7 @@ Tracer::Tracer(GenObject *parent, const char *name, const char *comment) :
     TraceOutput(this),
     // process
     comb(this),
-    reg(this)
+    reg(this, &i_clk, &i_nrst)
 {
     Operation::start(this);
     INITIAL();

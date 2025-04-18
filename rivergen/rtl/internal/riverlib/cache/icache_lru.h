@@ -26,10 +26,10 @@ class ICacheLru : public ModuleObject {
  public:
     ICacheLru(GenObject *parent, const char *name, const char *comment=NO_COMMENT);
 
-    class CombProcess : public ProcObject {
+    class CombProcess : public CombinationalProcess {
      public:
         CombProcess(GenObject *parent) :
-            ProcObject(parent, "comb"),
+            CombinationalProcess(parent, "comb"),
             t_cache_line_i(this, "t_cache_line_i", "L1CACHE_LINE_BITS"),
             v_req_ready(this, "v_req_ready", "1"),
             v_resp_valid(this, "v_resp_valid", "1"),

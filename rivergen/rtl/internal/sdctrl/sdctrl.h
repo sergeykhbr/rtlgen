@@ -36,10 +36,10 @@ class sdctrl : public ModuleObject {
  public:
     sdctrl(GenObject *parent, const char *name, const char *comment=NO_COMMENT);
 
-    class CombProcess : public ProcObject {
+    class CombProcess : public CombinationalProcess {
      public:
         CombProcess(GenObject *parent) :
-            ProcObject(parent, "comb"),
+            CombinationalProcess(parent, "comb"),
             v_cmd_dir(this, "v_cmd_dir", "1", "DIR_OUTPUT"),
             v_cmd_in(this, "v_cmd_in", "1"),
             v_cmd_out(this, "v_cmd_out", "1", "1"),

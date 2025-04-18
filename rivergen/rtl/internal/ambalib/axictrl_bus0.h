@@ -28,10 +28,10 @@ class axictrl_bus0 : public ModuleObject {
  public:
     axictrl_bus0(GenObject *parent, const char *name, const char *comment=NO_COMMENT);
 
-    class CombProcess : public ProcObject {
+    class CombProcess : public CombinationalProcess {
      public:
         CombProcess(GenObject *parent) :
-            ProcObject(parent, "comb"),
+            CombinationalProcess(parent, "comb"),
             vmsti(this, "vmsti", "ADD(CFG_BUS0_XMST_TOTAL,1)", "axi4_master_in_none", NO_COMMENT),
             vmsto(this, "vmsto", "ADD(CFG_BUS0_XMST_TOTAL,1)", "axi4_master_out_none", NO_COMMENT),
             vslvi(this, "vslvi", "ADD(CFG_BUS0_XSLV_TOTAL,1)", "axi4_slave_in_none", NO_COMMENT),

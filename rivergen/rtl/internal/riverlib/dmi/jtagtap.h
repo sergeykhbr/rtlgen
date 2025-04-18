@@ -29,10 +29,10 @@ class jtagtap : public ModuleObject {
     virtual EResetActive getResetActive() override { return ACTIVE_HIGH; }
     virtual GenObject *getClockPort() override { return &i_tck; }
 
-    class CombProcess : public ProcObject {
+    class CombProcess : public CombinationalProcess {
      public:
         CombProcess(GenObject* parent)
-            : ProcObject(parent, "comb"),
+            : CombinationalProcess(parent, "comb"),
             vb_dr(this, "vb_dr", "drlen", "'0", NO_COMMENT),
             v_dmi_req_valid(this, "v_dmi_req_valid", "1"),
             v_dmi_req_write(this, "v_dmi_req_write", "1"),

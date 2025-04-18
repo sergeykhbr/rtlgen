@@ -38,10 +38,10 @@ class Workgroup : public ModuleObject {
 
     virtual GenObject *getResetPort() override { return &i_cores_nrst; }
 
-    class CombProcess : public ProcObject {
+    class CombProcess : public CombinationalProcess {
      public:
         CombProcess(GenObject* parent)
-            : ProcObject(parent, "comb"),
+            : CombinationalProcess(parent, "comb"),
             vb_xmst_cfg(this, "vb_xmst_cfg", "dev_config_none", NO_COMMENT),
             v_flush_l2(this, "v_flush_l2", "1"),
             vb_halted(this, "vb_halted", "CFG_CPU_MAX", "'0", NO_COMMENT),

@@ -28,10 +28,10 @@ class vip_spi_top : public ModuleObject {
 
     virtual GenObject *getClockPort() override { return &w_clk; }
 
-    class CombProcess : public ProcObject {
+    class CombProcess : public CombinationalProcess {
      public:
         CombProcess(GenObject *parent) :
-            ProcObject(parent, "comb"),
+            CombinationalProcess(parent, "comb"),
             rdata(this, "rdata" ,"32", "'0", NO_COMMENT),
             vb_gpio_in(this, "vb_gpio_in", "1") {
         }

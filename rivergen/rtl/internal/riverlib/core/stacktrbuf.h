@@ -27,9 +27,9 @@ class StackTraceBuffer : public ModuleObject {
 
     virtual bool isVcd() override { return false; }     // disable tracing
 
-    class CombProcess : public ProcObject {
+    class CombProcess : public CombinationalProcess {
      public:
-        CombProcess(GenObject *parent) : ProcObject(parent, "comb")
+        CombProcess(GenObject *parent) : CombinationalProcess(parent, "comb")
         {
             Operation::start(this);
             StackTraceBuffer *p = static_cast<StackTraceBuffer *>(parent);

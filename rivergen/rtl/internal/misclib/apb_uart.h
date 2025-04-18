@@ -27,10 +27,10 @@ class apb_uart : public ModuleObject {
  public:
     apb_uart(GenObject *parent, const char *name, const char *comment=NO_COMMENT);
 
-    class CombProcess : public ProcObject {
+    class CombProcess : public CombinationalProcess {
      public:
         CombProcess(GenObject *parent) :
-            ProcObject(parent, "comb"),
+            CombinationalProcess(parent, "comb"),
             vb_rdata(this, "vb_rdata", "32", "'0", NO_COMMENT),
             vb_tx_wr_cnt_next(this, "vb_tx_wr_cnt_next", "log2_fifosz", "'0", NO_COMMENT),
             v_tx_fifo_full(this, "v_tx_fifo_full", "1"),

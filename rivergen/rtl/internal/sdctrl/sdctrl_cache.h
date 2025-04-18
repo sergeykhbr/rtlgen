@@ -26,10 +26,10 @@ class sdctrl_cache : public ModuleObject {
  public:
     sdctrl_cache(GenObject *parent, const char *name, const char *comment=NO_COMMENT);
 
-    class CombProcess : public ProcObject {
+    class CombProcess : public CombinationalProcess {
      public:
         CombProcess(GenObject *parent) :
-            ProcObject(parent, "comb"),
+            CombinationalProcess(parent, "comb"),
             vb_cache_line_i_modified(this, "vb_cache_line_i_modified", "SDCACHE_LINE_BITS", "'0", NO_COMMENT),
             vb_line_rdata_o_modified(this, "vb_line_rdata_o_modified", "SDCACHE_LINE_BITS", "'0", NO_COMMENT),
             vb_line_rdata_o_wstrb(this, "vb_line_rdata_o_wstrb", "SDCACHE_BYTES_PER_LINE", "'0", NO_COMMENT),

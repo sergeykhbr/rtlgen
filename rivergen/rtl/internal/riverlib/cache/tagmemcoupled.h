@@ -28,10 +28,10 @@ class TagMemCoupled : public ModuleObject {
 
     virtual bool isVcd() override { return false; }     // disable tracing
 
-    class CombProcess : public ProcObject {
+    class CombProcess : public CombinationalProcess {
      public:
         CombProcess(GenObject *parent) :
-            ProcObject(parent, "comb"),
+            CombinationalProcess(parent, "comb"),
             v_addr_sel(this, "v_addr_sel", "1"),
             v_addr_sel_r(this, "v_addr_sel_r", "1"),
             v_use_overlay(this, "v_use_overlay", "1"),

@@ -27,10 +27,10 @@ class ic_axi4_to_l1 : public ModuleObject {
  public:
     ic_axi4_to_l1(GenObject *parent, const char *name, const char *comment=NO_COMMENT);
 
-    class CombProcess : public ProcObject {
+    class CombProcess : public CombinationalProcess {
      public:
         CombProcess(GenObject* parent)
-            : ProcObject(parent, "comb"),
+            : CombinationalProcess(parent, "comb"),
             vb_xmsti(this, "vb_xmsti", "axi4_master_in_none", NO_COMMENT),
             vb_l1o(this, "vb_l1o", "axi4_l1_out_none", NO_COMMENT),
             idx(this, "idx", "SUB(CFG_LOG2_L1CACHE_BYTES_PER_LINE,3)", "0", "request always 64 bits"),

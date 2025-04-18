@@ -26,10 +26,10 @@ class ic_dport : public ModuleObject {
  public:
     ic_dport(GenObject *parent, const char *name, const char *comment=NO_COMMENT);
 
-    class CombProcess : public ProcObject {
+    class CombProcess : public CombinationalProcess {
      public:
         CombProcess(GenObject* parent)
-            : ProcObject(parent, "comb"),
+            : CombinationalProcess(parent, "comb"),
             vb_hartsel(this, "vb_hartsel", "CFG_LOG2_CPU_MAX", "'0", NO_COMMENT),
             vb_cpu_mask(this, "vb_cpu_mask", "CFG_CPU_MAX", "'0", NO_COMMENT),
             vb_req_ready_mask(this, "vb_req_ready_mask", "CFG_CPU_MAX", "'0", NO_COMMENT),

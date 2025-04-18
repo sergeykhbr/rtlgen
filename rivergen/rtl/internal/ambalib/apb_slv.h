@@ -26,10 +26,10 @@ class apb_slv : public ModuleObject {
  public:
     apb_slv(GenObject *parent, const char *name, const char *comment=NO_COMMENT);
 
-    class CombProcess : public ProcObject {
+    class CombProcess : public CombinationalProcess {
      public:
         CombProcess(GenObject *parent) :
-            ProcObject(parent, "comb"),
+            CombinationalProcess(parent, "comb"),
             vb_rdata(this, "vb_rdata", "32", "'0", NO_COMMENT),
             vcfg(this, "vcfg", "dev_config_none", NO_COMMENT),
             vapbo(this, "vapbo", "apb_out_none", NO_COMMENT) {

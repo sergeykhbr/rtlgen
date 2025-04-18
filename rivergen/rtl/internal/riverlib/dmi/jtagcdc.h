@@ -24,10 +24,10 @@ class jtagcdc : public ModuleObject {
  public:
     jtagcdc(GenObject *parent, const char *name, const char *comment=NO_COMMENT);
 
-    class CombProcess : public ProcObject {
+    class CombProcess : public CombinationalProcess {
      public:
         CombProcess(GenObject* parent)
-            : ProcObject(parent, "comb"),
+            : CombinationalProcess(parent, "comb"),
             vb_bus(this, "vb_bus", "CDC_REG_WIDTH", "'0", NO_COMMENT) {
         }
      public:

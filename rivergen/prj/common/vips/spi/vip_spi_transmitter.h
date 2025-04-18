@@ -24,10 +24,10 @@ class vip_spi_transmitter : public ModuleObject {
  public:
     vip_spi_transmitter(GenObject *parent, const char *name, const char *comment);
 
-    class CombProcess : public ProcObject {
+    class CombProcess : public CombinationalProcess {
      public:
         CombProcess(GenObject *parent) :
-            ProcObject(parent, "comb"),
+            CombinationalProcess(parent, "comb"),
             v_pos(this, "v_pos", "1"),
             v_neg(this, "v_neg", "1"),
             v_resp_ready(this, "v_resp_ready", "1") {

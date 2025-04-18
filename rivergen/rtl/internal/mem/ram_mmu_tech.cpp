@@ -29,7 +29,7 @@ ram_mmu_tech::ram_mmu_tech(GenObject *parent, const char *name, const char *comm
     rdata(this, "rdata", "dbits"),
     mem(this, "mem", "dbits", "DEPTH", NO_COMMENT),
     // process
-    rproc(this)
+    rproc(this, &i_clk)
 {
     Operation::start(this);
 

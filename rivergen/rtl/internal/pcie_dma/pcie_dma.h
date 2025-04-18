@@ -29,10 +29,10 @@ class pcie_dma : public ModuleObject {
  public:
     pcie_dma(GenObject *parent, const char *name, const char *comment=NO_COMMENT);
 
-    class CombProcess : public ProcObject {
+    class CombProcess : public CombinationalProcess {
      public:
         CombProcess(GenObject *parent) :
-            ProcObject(parent, "comb"),
+            CombinationalProcess(parent, "comb"),
             vb_xmst_cfg(this, "vb_xmst_cfg", "dev_config_none", NO_COMMENT),
             vb_xmsto(this, "vb_xmsto", "axi4_master_out_none", NO_COMMENT),
             vb_xbytes(this, "vb_xbytes", "XSIZE_TOTAL", RSTVAL_ZERO, "result of function call XSize2XBytes(xsize)"),

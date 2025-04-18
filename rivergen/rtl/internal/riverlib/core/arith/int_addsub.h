@@ -25,10 +25,10 @@ class IntAddSub : public ModuleObject {
  public:
     IntAddSub(GenObject *parent, const char *name, const char *comment=NO_COMMENT);
 
-    class CombProcess : public ProcObject {
+    class CombProcess : public CombinationalProcess {
      public:
         CombProcess(GenObject *parent) :
-            ProcObject(parent, "comb"),
+            CombinationalProcess(parent, "comb"),
             vb_rdata1(this, "vb_rdata1", "RISCV_ARCH", "'0", NO_COMMENT),
             vb_rdata2(this, "vb_rdata2", "RISCV_ARCH", "'0", NO_COMMENT),
             vb_add(this, "vb_add", "RISCV_ARCH", "'0", NO_COMMENT),

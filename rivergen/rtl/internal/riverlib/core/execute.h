@@ -81,9 +81,9 @@ class InstrExecute : public ModuleObject {
         Logic irqbus;
     };
 
-    class CombProcess : public ProcObject {
+    class CombProcess : public CombinationalProcess {
      public:
-        CombProcess(GenObject *parent) : ProcObject(parent, "comb"),
+        CombProcess(GenObject *parent) : CombinationalProcess(parent, "comb"),
             v_d_valid(this, "v_d_valid", "1"),
             v_csr_req_valid(this, "v_csr_req_valid", "1"),
             v_csr_resp_ready(this, "v_csr_resp_ready", "1"),

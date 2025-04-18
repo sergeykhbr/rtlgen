@@ -27,10 +27,10 @@ class cdc_afifo : public ModuleObject {
     virtual bool isAsyncResetParam() override { return false; }
 
  protected:
-    class CombProcess : public ProcObject {
+    class CombProcess : public CombinationalProcess {
      public:
         CombProcess(GenObject *parent) :
-            ProcObject(parent, "comb"),
+            CombinationalProcess(parent, "comb"),
             vb_waddr(this, "vb_waddr", "abits"),
             vb_raddr(this, "vb_raddr", "abits"),
             v_wfull_next(this, "v_wfull_next", "1"),

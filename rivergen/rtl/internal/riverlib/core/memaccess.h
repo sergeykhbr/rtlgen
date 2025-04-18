@@ -26,10 +26,10 @@ class MemAccess : public ModuleObject {
  public:
     MemAccess(GenObject *parent, const char *name, const char *comment=NO_COMMENT);
 
-    class CombProcess : public ProcObject {
+    class CombProcess : public CombinationalProcess {
      public:
         CombProcess(GenObject *parent) :
-            ProcObject(parent, "comb"),
+            CombinationalProcess(parent, "comb"),
             vb_req_addr(this, "vb_req_addr", "RISCV_ARCH", "'0", NO_COMMENT),
             vb_memop_wdata(this, "vb_memop_wdata", "64", "'0", NO_COMMENT),
             vb_memop_wstrb(this, "vb_memop_wstrb", "8", "'0", NO_COMMENT),

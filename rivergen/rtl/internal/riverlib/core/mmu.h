@@ -26,9 +26,9 @@ class Mmu : public ModuleObject {
  public:
     Mmu(GenObject *parent, const char *name, const char *comment=NO_COMMENT);
 
-    class CombProcess : public ProcObject {
+    class CombProcess : public CombinationalProcess {
      public:
-        CombProcess(GenObject *parent) : ProcObject(parent, "comb"),
+        CombProcess(GenObject *parent) : CombinationalProcess(parent, "comb"),
             v_core_req_x(this, "v_core_req_x", "1"),
             v_core_req_r(this, "v_core_req_r", "1"),
             v_core_req_w(this, "v_core_req_w", "1"),

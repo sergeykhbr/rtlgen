@@ -27,10 +27,10 @@ class TagMem : public ModuleObject {
  public:
     TagMem(GenObject *parent, const char *name, const char *comment=NO_COMMENT);
 
-    class CombProcess : public ProcObject {
+    class CombProcess : public CombinationalProcess {
      public:
         CombProcess(GenObject *parent) :
-            ProcObject(parent, "comb"),
+            CombinationalProcess(parent, "comb"),
             vb_index(this, "vb_index", "ibits", "'0", NO_COMMENT),
             vb_raddr(this, "vb_raddr", "abus", "'0", NO_COMMENT),
             vb_tagi_wdata(this, "vb_tagi_wdata", "TAG_WITH_FLAGS", "'0", NO_COMMENT),

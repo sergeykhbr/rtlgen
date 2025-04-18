@@ -25,9 +25,9 @@ class DecoderRvc : public ModuleObject {
  public:
     DecoderRvc(GenObject *parent, const char *name, const char *depth);
 
-    class CombProcess : public ProcObject {
+    class CombProcess : public CombinationalProcess {
      public:
-        CombProcess(GenObject *parent) : ProcObject(parent, "comb"),
+        CombProcess(GenObject *parent) : CombinationalProcess(parent, "comb"),
             v_error(this, "v_error", "1"),
             vb_instr(this, "vb_instr", "16", "'0", NO_COMMENT),
             vb_opcode1(this, "vb_opcode1", "5", "'0", NO_COMMENT),

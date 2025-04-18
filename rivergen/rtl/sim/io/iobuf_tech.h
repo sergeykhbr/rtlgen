@@ -25,10 +25,10 @@ class iobuf_tech : public ModuleObject {
     iobuf_tech(GenObject *parent, const char *name, const char *comment=NO_COMMENT);
 
  protected:
-    class CombProcess : public ProcObject {
+    class CombProcess : public CombinationalProcess {
      public:
         CombProcess(GenObject *parent) :
-            ProcObject(parent, "comb") {
+            CombinationalProcess(parent, "comb") {
         }
 
      public:

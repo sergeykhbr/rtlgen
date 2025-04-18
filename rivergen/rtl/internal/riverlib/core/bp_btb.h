@@ -25,9 +25,9 @@ class BpBTB : public ModuleObject {
  public:
     BpBTB(GenObject *parent, const char *name, const char *comment=NO_COMMENT);
 
-    class CombProcess : public ProcObject {
+    class CombProcess : public CombinationalProcess {
      public:
-        CombProcess(GenObject *parent) : ProcObject(parent, "comb"),
+        CombProcess(GenObject *parent) : CombinationalProcess(parent, "comb"),
             vb_addr(this, "vb_addr", "MUL(CFG_BP_DEPTH,RISCV_ARCH)", "'0", NO_COMMENT),
             vb_hit(this, "vb_hit", "CFG_BP_DEPTH", "'0", NO_COMMENT),
             t_addr(this, "t_addr", "RISCV_ARCH", "'0", NO_COMMENT),

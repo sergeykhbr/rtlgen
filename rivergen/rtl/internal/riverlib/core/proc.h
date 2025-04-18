@@ -98,10 +98,10 @@ class Processor : public ModuleObject {
     OutPort o_flushd_addr;
     InPort i_flushd_end;
 
-    class CombProcess : public ProcObject {
+    class CombProcess : public CombinationalProcess {
      public:
         CombProcess(GenObject *parent)
-            : ProcObject(parent, "comb")
+            : CombinationalProcess(parent, "comb")
             {
             Processor *p = static_cast<Processor *>(parent);
             Operation::start(this);

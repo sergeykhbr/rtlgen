@@ -24,10 +24,10 @@ class sfifo : public ModuleObject {
  public:
     sfifo(GenObject *parent, const char *name, const char *comment=NO_COMMENT);
 
-    class CombProcess : public ProcObject {
+    class CombProcess : public CombinationalProcess {
      public:
         CombProcess(GenObject *parent) :
-            ProcObject(parent, "comb"),
+            CombinationalProcess(parent, "comb"),
             v_full(this, "v_full", "1"),
             v_empty(this, "v_empty", "1") {
         }

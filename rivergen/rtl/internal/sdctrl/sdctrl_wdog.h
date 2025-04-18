@@ -24,10 +24,10 @@ class sdctrl_wdog : public ModuleObject {
  public:
     sdctrl_wdog(GenObject *parent, const char *name, const char *comment=NO_COMMENT);
 
-    class CombProcess : public ProcObject {
+    class CombProcess : public CombinationalProcess {
      public:
         CombProcess(GenObject *parent) :
-            ProcObject(parent, "comb") {
+            CombinationalProcess(parent, "comb") {
         }
 
      public:

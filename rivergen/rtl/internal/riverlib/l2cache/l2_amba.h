@@ -26,10 +26,10 @@ class L2Amba : public ModuleObject {
  public:
     L2Amba(GenObject *parent, const char *name, const char *comment=NO_COMMENT);
 
-    class CombProcess : public ProcObject {
+    class CombProcess : public CombinationalProcess {
      public:
         CombProcess(GenObject *parent) :
-            ProcObject(parent, "comb"),
+            CombinationalProcess(parent, "comb"),
             v_req_mem_ready(this, "v_req_mem_ready", "1"),
             v_resp_mem_valid(this, "v_resp_mem_valid", "1"),
             v_resp_mem_ack(this, "v_resp_mem_ack", "1"),

@@ -46,10 +46,10 @@ class vip_uart_top : public ModuleObject {
         STRING ostr;
     };
 
-    class CombProcess : public ProcObject {
+    class CombProcess : public CombinationalProcess {
      public:
         CombProcess(GenObject *parent) :
-            ProcObject(parent, "comb") {
+            CombinationalProcess(parent, "comb") {
         }
 
      public:
@@ -57,8 +57,12 @@ class vip_uart_top : public ModuleObject {
 
     class RegistersProcess : public ProcObject {
      public:
-        RegistersProcess(GenObject *parent) : ProcObject(parent, "registers") {
-        }
+        RegistersProcess(GenObject *parent,
+                        GenObject *clk,
+                        GenObject *rst)
+            : ProcObject(parent, "registers",
+                        clk, CLK_POSEDGE, rst, ACTIVE_LOW, NO_COMMENT) {
+            }
     public:
     };
 

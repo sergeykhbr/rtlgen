@@ -28,10 +28,10 @@ class apb_pnp : public ModuleObject {
     apb_pnp(GenObject *parent, const char *name, const char *comment=NO_COMMENT);
 
  protected:
-    class CombProcess : public ProcObject {
+    class CombProcess : public CombinationalProcess {
      public:
         CombProcess(GenObject *parent) :
-            ProcObject(parent, "comb"),
+            CombinationalProcess(parent, "comb"),
             cfgmap(this, "cfgmap", "32", "MUL(8,cfg_slots)", NO_COMMENT),
             vrdata(this, "vrdata", "32", "'0", NO_COMMENT) {
         }

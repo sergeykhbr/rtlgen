@@ -27,10 +27,10 @@ class InstrDecoder : public ModuleObject {
  public:
     InstrDecoder(GenObject *parent, const char *name, const char *comment=NO_COMMENT);
 
-    class CombProcess : public ProcObject {
+    class CombProcess : public CombinationalProcess {
      public:
         CombProcess(GenObject *parent) :
-            ProcObject(parent, "comb"),
+            CombinationalProcess(parent, "comb"),
             selidx(this, "selidx", "0", NO_COMMENT),
             shift_ena(this, "shift_ena", "1") {
 

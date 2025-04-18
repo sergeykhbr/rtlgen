@@ -30,10 +30,10 @@ class CacheTop : public ModuleObject {
  public:
     CacheTop(GenObject *parent, const char *name, const char *comment=NO_COMMENT);
 
-    class CombProcess : public ProcObject {
+    class CombProcess : public CombinationalProcess {
      public:
         CombProcess(GenObject *parent) :
-            ProcObject(parent, "comb"),
+            CombinationalProcess(parent, "comb"),
             vb_ctrl_bus(this, "vb_ctrl_bus", "QUEUE_WIDTH", "'0", NO_COMMENT),
             vb_data_bus(this, "vb_data_bus", "QUEUE_WIDTH", "'0", NO_COMMENT),
             vb_queue_bus(this, "vb_queue_bus", "QUEUE_WIDTH", "'0", NO_COMMENT),

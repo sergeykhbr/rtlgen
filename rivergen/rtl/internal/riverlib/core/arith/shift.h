@@ -25,10 +25,10 @@ class Shifter : public ModuleObject {
  public:
     Shifter(GenObject *parent, const char *name, const char *comment=NO_COMMENT);
 
-    class CombProcess : public ProcObject {
+    class CombProcess : public CombinationalProcess {
      public:
         CombProcess(GenObject *parent) :
-            ProcObject(parent, "comb"),
+            CombinationalProcess(parent, "comb"),
             wb_sll(this, "wb_sll", "64", "'0", NO_COMMENT),
             wb_sllw(this, "wb_sllw", "64", "'0", NO_COMMENT),
             wb_srl(this, "wb_srl", "64", "'0", NO_COMMENT),

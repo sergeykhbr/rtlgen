@@ -27,10 +27,10 @@ class RiverAmba : public ModuleObject {
  public:
     RiverAmba(GenObject *parent, const char *name, const char *depth);
 
-    class CombProcess : public ProcObject {
+    class CombProcess : public CombinationalProcess {
      public:
         CombProcess(GenObject* parent)
-            : ProcObject(parent, "comb"),
+            : CombinationalProcess(parent, "comb"),
             v_resp_mem_valid(this, "v_resp_mem_valid", "1"),
             v_mem_er_load_fault(this, "v_mem_er_load_fault", "1"),
             v_mem_er_store_fault(this, "v_mem_er_store_fault", "1"),

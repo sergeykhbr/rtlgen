@@ -28,10 +28,10 @@ class axi2apb_bus1 : public ModuleObject {
  public:
     axi2apb_bus1(GenObject *parent, const char *name, const char *comment=NO_COMMENT);
 
-    class CombProcess : public ProcObject {
+    class CombProcess : public CombinationalProcess {
      public:
         CombProcess(GenObject *parent) :
-            ProcObject(parent, "comb"),
+            CombinationalProcess(parent, "comb"),
             iselidx(this, "iselidx", "0", NO_COMMENT),
             vapbi(this, "vapbi", "ADD(CFG_BUS1_PSLV_TOTAL,1)", "apb_in_none", NO_COMMENT),
             vapbo(this, "vapbo", "ADD(CFG_BUS1_PSLV_TOTAL,1)", "apb_out_none", NO_COMMENT) {

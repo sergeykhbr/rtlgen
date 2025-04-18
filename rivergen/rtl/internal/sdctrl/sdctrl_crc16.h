@@ -24,10 +24,10 @@ class sdctrl_crc16 : public ModuleObject {
  public:
     sdctrl_crc16(GenObject *parent, const char *name, const char *comment=NO_COMMENT);
 
-    class CombProcess : public ProcObject {
+    class CombProcess : public CombinationalProcess {
      public:
         CombProcess(GenObject *parent) :
-            ProcObject(parent, "comb"),
+            CombinationalProcess(parent, "comb"),
             v_inv16(this, "v_inv16_0", "1"),
             vb_crc16(this, "vb_crc16_0", "16", "'0", NO_COMMENT) {
         }

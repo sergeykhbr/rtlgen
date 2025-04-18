@@ -25,9 +25,9 @@ class InstrFetch : public ModuleObject {
  public:
     InstrFetch(GenObject *parent, const char *name, const char *comment=NO_COMMENT);
 
-    class CombProcess : public ProcObject {
+    class CombProcess : public CombinationalProcess {
      public:
-        CombProcess(GenObject *parent) : ProcObject(parent, "comb") {
+        CombProcess(GenObject *parent) : CombinationalProcess(parent, "comb") {
             Operation::start(this);
             InstrFetch *p = static_cast<InstrFetch *>(parent);
             p->proc_comb();

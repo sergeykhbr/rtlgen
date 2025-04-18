@@ -27,10 +27,10 @@ class Queue : public ModuleObject {
 
     virtual bool isVcd() override { return false; }     // disable tracing
 
-    class CombProcess : public ProcObject {
+    class CombProcess : public CombinationalProcess {
      public:
         CombProcess(GenObject *parent) :
-            ProcObject(parent, "comb"),
+            CombinationalProcess(parent, "comb"),
             nempty(this, "nempty", "1"),
             vb_data_o(this, "vb_data_o", "dbits"),
             full(this, "full", "1"),

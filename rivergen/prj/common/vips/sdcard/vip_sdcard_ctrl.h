@@ -24,10 +24,10 @@ class vip_sdcard_ctrl : public ModuleObject {
  public:
     vip_sdcard_ctrl(GenObject *parent, const char *name, const char *comment);
 
-    class CombProcess : public ProcObject {
+    class CombProcess : public CombinationalProcess {
      public:
         CombProcess(GenObject *parent) :
-            ProcObject(parent, "comb"),
+            CombinationalProcess(parent, "comb"),
             v_resp_valid(this, "v_resp_valid", "1"),
             vb_resp_data32(this, "vb_resp_data32", "32", "'0", NO_COMMENT) {
         }

@@ -25,10 +25,10 @@ class Double2Long : public ModuleObject {
  public:
     Double2Long(GenObject *parent, const char *name, const char *comment=NO_COMMENT);
 
-    class CombProcess : public ProcObject {
+    class CombProcess : public CombinationalProcess {
      public:
         CombProcess(GenObject *parent) :
-            ProcObject(parent, "comb"),
+            CombinationalProcess(parent, "comb"),
             v_ena(this, "v_ena", "1", "0", NO_COMMENT),
             mantA(this, "mantA", "53", "'0", NO_COMMENT),
             expDif_gr(this, "expDif_gr", "1", "0", "greater than 1023 + 63"),

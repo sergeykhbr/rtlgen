@@ -25,10 +25,10 @@ class divstage64 : public ModuleObject {
  public:
     divstage64(GenObject *parent, const char *name, const char *comment=NO_COMMENT);
 
-    class CombProcess : public ProcObject {
+    class CombProcess : public CombinationalProcess {
      public:
         CombProcess(GenObject *parent) :
-            ProcObject(parent, "comb"),
+            CombinationalProcess(parent, "comb"),
             wb_bits(this, "wb_bits", "4", "'0", NO_COMMENT),
             wb_dif(this, "wb_dif", "64", "'0", NO_COMMENT),
             wb_divx1(this, "wb_divx1", "65"),

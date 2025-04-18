@@ -26,10 +26,10 @@ class idiv53 : public ModuleObject {
  public:
     idiv53(GenObject *parent, const char *name, const char *comment=NO_COMMENT);
 
-    class CombProcess : public ProcObject {
+    class CombProcess : public CombinationalProcess {
      public:
         CombProcess(GenObject *parent) :
-            ProcObject(parent, "comb"),
+            CombinationalProcess(parent, "comb"),
             v_ena(this, "v_ena", "1", "0", NO_COMMENT),
             vb_muxind(this, "vb_muxind", "56", "'0", NO_COMMENT),
             vb_bits(this, "vb_bits", "105", "'0", NO_COMMENT),

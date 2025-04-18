@@ -25,10 +25,10 @@ class sdctrl_cmd_transmitter : public ModuleObject {
  public:
     sdctrl_cmd_transmitter(GenObject *parent, const char *name, const char *comment=NO_COMMENT);
 
-    class CombProcess : public ProcObject {
+    class CombProcess : public CombinationalProcess {
      public:
         CombProcess(GenObject *parent) :
-            ProcObject(parent, "comb"),
+            CombinationalProcess(parent, "comb"),
             v_req_ready(this, "v_req_ready", "1"),
             vb_cmdshift(this, "vb_cmdshift", "48", "'0", NO_COMMENT),
             vb_resp_spistatus(this, "vb_resp_spistatus", "15", "'0", NO_COMMENT),

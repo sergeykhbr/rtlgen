@@ -26,10 +26,10 @@ class IntDiv : public ModuleObject {
  public:
     IntDiv(GenObject *parent, const char *name, const char *comment=NO_COMMENT);
 
-    class CombProcess : public ProcObject {
+    class CombProcess : public CombinationalProcess {
      public:
         CombProcess(GenObject *parent) :
-            ProcObject(parent, "comb"),
+            CombinationalProcess(parent, "comb"),
             v_invert64(this, "v_invert64", "1"),
             v_invert32(this, "v_invert32", "1"),
             vb_a1(this, "vb_a1", "64", "'0", NO_COMMENT),

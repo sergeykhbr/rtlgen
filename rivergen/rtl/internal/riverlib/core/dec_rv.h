@@ -25,9 +25,9 @@ class DecoderRv : public ModuleObject {
  public:
     DecoderRv(GenObject *parent, const char *name, const char *depth);
 
-    class CombProcess : public ProcObject {
+    class CombProcess : public CombinationalProcess {
      public:
-        CombProcess(GenObject *parent) : ProcObject(parent, "comb"),
+        CombProcess(GenObject *parent) : CombinationalProcess(parent, "comb"),
             v_error(this, "v_error", "1"),
             v_compressed(this, "v_compressed", "1"),
             vb_instr(this, "vb_instr", "32", "'0", NO_COMMENT),
