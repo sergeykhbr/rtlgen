@@ -74,7 +74,7 @@ TEXT();
     ENDIF();
 
 TEXT();
-    SYNC_RESET(*this);
+    SYNC_RESET();
 
 TEXT();
     SETVAL(o_rdata, ARRITEM(databuf, TO_INT(rd_cnt), databuf));

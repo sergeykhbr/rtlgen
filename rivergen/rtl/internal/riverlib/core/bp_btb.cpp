@@ -92,7 +92,7 @@ TEXT();
     ENDIF();
 
 TEXT();
-    SYNC_RESET(*this, &i_flush_pipeline);
+    SYNC_RESET(&i_flush_pipeline);
 
 TEXT();
     i = &FOR("i", CONST("0"), cfg->CFG_BP_DEPTH, "++");

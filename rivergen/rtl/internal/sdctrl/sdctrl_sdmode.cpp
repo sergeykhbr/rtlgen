@@ -339,7 +339,7 @@ TEXT();
     SETVAL(comb.v_dat3, BIT(data_data, 508));
 
 TEXT();
-    SYNC_RESET(*this);
+    SYNC_RESET();
 
 TEXT();
     SETVAL(o_dat0, comb.v_dat0);

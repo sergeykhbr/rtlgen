@@ -39,7 +39,7 @@ std::string FolderObject::generate() {
         SCV_create_dir(path.c_str());
     }
 
-    for (auto &p: entries_) {
+    for (auto &p: getEntries()) {
         p->generate();
     }
 

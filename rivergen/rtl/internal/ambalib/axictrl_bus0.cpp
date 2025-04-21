@@ -254,7 +254,7 @@ TEXT();
     SETARRITEM(comb.vslvi, comb.i_b_sidx, comb.vslvi.b_ready, ARRITEM(comb.vmsto, comb.i_b_midx, comb.vmsto.b_ready));
 
 TEXT();
-    SYNC_RESET(*this);
+    SYNC_RESET();
 
 TEXT();
      i = &FOR ("i", CONST("0"), bus0->CFG_BUS0_XMST_TOTAL, "++");

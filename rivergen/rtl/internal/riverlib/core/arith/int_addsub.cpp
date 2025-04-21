@@ -113,7 +113,7 @@ TEXT();
     SETVAL(res, comb.vb_res);
 
 TEXT();
-    SYNC_RESET(*this);
+    SYNC_RESET();
 
 TEXT();
     SETVAL(o_res, res);

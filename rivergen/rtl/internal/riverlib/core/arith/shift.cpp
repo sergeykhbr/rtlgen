@@ -124,7 +124,7 @@ TEXT();
     ENDIF();
 
 TEXT();
-    SYNC_RESET(*this);
+    SYNC_RESET();
 
 TEXT();
     SETVAL(o_res, res);

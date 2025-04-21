@@ -189,7 +189,7 @@ TEXT();
     ENDFOR();
 
 TEXT();
-    SYNC_RESET(*this, &NZ(i_flush_pipeline));
+    SYNC_RESET(&NZ(i_flush_pipeline));
 
 TEXT();
     SETVAL(o_pc, ARRITEM(wd, comb.selidx, wd.pc));

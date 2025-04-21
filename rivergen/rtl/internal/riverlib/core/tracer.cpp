@@ -1025,7 +1025,7 @@ TEXT();
     SETVAL(tr_rcnt, comb.rcnt_inc);
 
 TEXT();
-    SYNC_RESET(*this);
+    SYNC_RESET();
 
 }
 

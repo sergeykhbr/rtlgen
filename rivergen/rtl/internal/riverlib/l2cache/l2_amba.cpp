@@ -119,7 +119,7 @@ TEXT();
     ENDIF();
 
 TEXT();
-    SYNC_RESET(*this);
+    SYNC_RESET();
 
 TEXT();
     SETVAL(o_resp_data, i_msti.r_data, "can't directly pass to lower level");

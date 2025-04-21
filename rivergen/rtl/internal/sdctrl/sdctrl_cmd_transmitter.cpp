@@ -317,7 +317,7 @@ TEXT();
     ENDIF();
 
 TEXT();
-    SYNC_RESET(*this);
+    SYNC_RESET();
 
 TEXT();
     SETVAL(w_crc7_next, comb.v_crc7_next);

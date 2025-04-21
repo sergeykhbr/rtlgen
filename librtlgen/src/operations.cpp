@@ -14,10 +14,12 @@
 //  limitations under the License.
 // 
 
+#include "api_rtlgen.h"
 #include "operations.h"
 #include "array.h"
 #include "utils.h"
 #include "modules.h"
+#include "proc.h"
 #include "comments.h"
 #include <cstring>
 
@@ -62,15 +64,6 @@ std::string Operation::addtext(GenObject *obj, size_t curpos) {
     }
     return ret;
 }
-
-std::string Operation::v_name(std::string v) {
-    std::string ret = generate();
-    if (v.size()) {
-        ret += "." + v;
-    }
-    return ret;
-}
-
 
 std::string Operation::fullname(const char *prefix, std::string name, GenObject *obj) {
     if (!obj) {
@@ -145,7 +138,12 @@ std::string Operation::obj2varname(GenObject *obj, const char *prefix, bool read
     if (!obj) {
         return ret;
     }
-    ret = fullname(prefix, ret, obj);
+    EPorts portid = PORT_IN;
+    if (prefix[0] == 'r') {
+        portid = PORT_OUT;
+    }
+    ret = obj->nameInModule(portid);
+    //ret = fullname(prefix, ret, obj);
 
     if (read) {
         if (obj->isInput()
@@ -155,10 +153,6 @@ std::string Operation::obj2varname(GenObject *obj, const char *prefix, bool read
             }
         }
     }
-
-    // IT IS JUST A BEGINNING OF THE fullname() FUNCTION REMOVING. IN PROGRESS!!!
-    std::string tr = obj->r_name("");
-    std::string tv = obj->v_name("");
     return ret;
 }
 
@@ -291,10 +285,14 @@ SetValueOperation::SetValueOperation(GenObject *a,         // value to set
                                      bool h_as_width,      // interpret h as width argument for sv [start +: width] operation
                                      GenObject *h,         // MSB bit
                                      GenObject *l,         // LSB bit
+                                     bool non_blocking,
                                      GenObject *val,       // value to get
                                      const char *comment)
-    : GetValueOperation(a, idx, item, h_as_width, h, l, comment), v_(val) {
-    top_obj()->add_entry(this);
+    : GetValueOperation(a, idx, item, h_as_width, h, l, comment),
+        non_blocking_(non_blocking), v_(val) {
+    if (top_obj()) {
+        top_obj()->add_entry(this);
+    }
 }
 
 
@@ -310,10 +308,16 @@ std::string SetValueOperation::generate() {
     ret += GetValueOperation::getStrValue();
 
     if (SCV_is_vhdl()) {
-        if (isAssign()) {
+        if (non_blocking_) {
             ret += " <= ";
         } else {
             ret += " := ";
+        }
+    } else if (SCV_is_sv()) {
+        if (non_blocking_) {
+            ret += " <= ";
+        } else {
+            ret += " = ";
         }
     } else {
         ret += " = ";
@@ -1185,9 +1189,9 @@ Operation &IF_OTHERWISE(GenObject &cond, GenObject &a, GenObject &b, const char 
 
 
 // IF
-std::string IF_gen(GenObject **args) {
+std::string IfOperation::generate() {
     std::string ret = addspaces();
-    std::string A = Operation::obj2varname(args[1]);
+    std::string A = Operation::obj2varname(a_);
     pushspaces();
 
     if (A.c_str()[0] == '(') {
@@ -1199,37 +1203,33 @@ std::string IF_gen(GenObject **args) {
         ret += " {";
     } else {
         ret += " begin";
-        if (args[2]) {
-            ret += ": " + args[2]->getStrValue().substr(1, args[2]->getStrValue().size()-2);
+        if (genname_) {
+            ret += ": " + genname_->getStrValue()
+                    .substr(1, genname_->getStrValue().size() - 2);
         }
     }
-    ret += Operation::addtext(args[0], ret.size());
+    ret += Operation::addtext(this, ret.size());
     ret += "\n";
+    for (auto &p : getEntries()) {
+        ret += p->generate();
+    }
     return ret;
 }
 
-void IF(GenObject &a, const char *comment) {
-    Operation *p = new Operation(comment);
-    Operation::push_obj(p);
-    p->igen_ = IF_gen;
-    p->add_arg(p);
-    p->add_arg(&a);
-    p->add_arg(0);
+Operation &IF(GenObject &a, const char *comment) {
+    Operation *p = new IfOperation(&a, 0, comment);
+    return *p;
 }
 
-void IFGEN(GenObject &a, StringConst *name, const char *comment) {
-    Operation *p = new Operation(comment);
-    Operation::push_obj(p);
-    p->igen_ = IF_gen;
-    p->add_arg(p);
-    p->add_arg(&a);
-    p->add_arg(name);
+Operation &IFGEN(GenObject &a, StringConst *name, const char *comment) {
+    Operation *p = new IfOperation(&a, name, comment);
+    return *p;
 }
 
 // ELSE IF
-std::string ELSIF_gen(GenObject **args) {
+std::string ElseIfOperation::generate() {
     std::string ret = "";
-    std::string A = Operation::obj2varname(args[1]);
+    std::string A = Operation::obj2varname(a_);
 
     if (A.c_str()[0] == '(') {
     } else {
@@ -1241,33 +1241,30 @@ std::string ELSIF_gen(GenObject **args) {
     } else {
         ret += addspaces() + "end else if " + A + " begin";
     }
-    ret += Operation::addtext(args[0], ret.size());
+    ret += Operation::addtext(this, ret.size());
     ret += "\n";
     pushspaces();
     return ret;
 }
 
 void ELSIF(GenObject &a, const char *comment) {
-    Operation *p = new Operation(comment);
-    Operation::pop_obj();
-    Operation::push_obj(p);
-    p->igen_ = ELSIF_gen;
-    p->add_arg(p);
-    p->add_arg(&a);
+    new ElseIfOperation(&a, 0, comment);
 }
 
 // ELSE
-std::string ELSE_gen(GenObject **args) {
+std::string ElseOperation::generate() {
     std::string ret = "";
     popspaces();
     if (SCV_is_sysc()) {
         ret += addspaces() + "} else {\n";
     } else {
-        if (args[1]) {
+        if (genname_) {
             ret += addspaces();
-            ret += "end: " + args[1]->getStrValue().substr(1, args[1]->getStrValue().size()-2) + "_en\n";
+            ret += "end: " + genname_->getStrValue()
+                    .substr(1, genname_->getStrValue().size() - 2) + "_en\n";
             ret += addspaces();
-            ret += "else begin: " + args[1]->getStrValue().substr(1, args[1]->getStrValue().size()-2) + "_dis";
+            ret += "else begin: " + genname_->getStrValue()
+                    .substr(1, genname_->getStrValue().size() - 2) + "_dis";
         } else {
             ret += addspaces();
             ret += "end else begin";
@@ -1280,34 +1277,25 @@ std::string ELSE_gen(GenObject **args) {
 }
 
 void ELSE(const char *comment) {
-    Operation *p = new Operation(comment);
-    Operation::pop_obj();
-    Operation::push_obj(p);
-    p->igen_ = ELSE_gen;
-    p->add_arg(p);
-    p->add_arg(0);
+    new ElseOperation(0, comment);
 }
 
 void ELSEGEN(StringConst *name, const char *comment) {
-    Operation *p = new Operation(comment);
-    Operation::pop_obj();
-    Operation::push_obj(p);
-    p->igen_ = ELSE_gen;
-    p->add_arg(p);
-    p->add_arg(name);
+    new ElseOperation(name, comment);
 }
 
 
 // ENDIF
-std::string ENDIF_gen(GenObject **args) {
+std::string EndIfOperation::generate() {
     std::string ret = "";
     popspaces();
     if (SCV_is_sysc()) {
         ret = addspaces() + "}\n";
     } else {
         ret = addspaces() + "end";
-        if (args[1]) {
-            ret += ": " + args[1]->getStrValue().substr(1, args[1]->getStrValue().size()-2);
+        if (genname_) {
+            ret += ": " + genname_->getStrValue()
+                    .substr(1, genname_->getStrValue().size() - 2);
         }
         ret += "\n";
     }
@@ -1315,19 +1303,11 @@ std::string ENDIF_gen(GenObject **args) {
 }
 
 void ENDIF(const char *comment) {
-    Operation::pop_obj();
-    Operation *p = new Operation(comment);
-    p->igen_ = ENDIF_gen;
-    p->add_arg(p);
-    p->add_arg(0);
+    new EndIfOperation(0, comment);
 }
 
 void ENDIFGEN(StringConst *name, const char *comment) {
-    Operation::pop_obj();
-    Operation *p = new Operation(comment);
-    p->igen_ = ENDIF_gen;
-    p->add_arg(p);
-    p->add_arg(name);
+    new EndIfOperation(name, comment);
 }
 
 
@@ -1448,21 +1428,18 @@ void ENDSWITCH(const char *comment) {
 // GENVAR
 
 // FOR
-std::string FOR_gen(GenObject **args) {
+std::string ForOperation::generate() {
     std::string ret = addspaces();
-    GenObject *op = args[0];
-    std::string i = Operation::obj2varname(args[1]);
+    std::string i = Operation::obj2varname(i_);
     pushspaces();
-    std::string start = Operation::obj2varname(args[2]);
-    std::string end = Operation::obj2varname(args[3]);
-    std::string dir = Operation::obj2varname(args[4]);
-    GenObject *gename = args[5];
-
+    std::string start = Operation::obj2varname(start_);
+    std::string end = Operation::obj2varname(end_);
+    std::string dir = Operation::obj2varname(dir_);
 
     if (SCV_is_sysc()) {
         ret += "for (int " + i + " = ";
     } else {
-        if (args[1]->isGenVar()) {
+        if (genname_) {
             ret += "for (genvar " + i + " = ";
         } else {
             ret += "for (int " + i + " = ";
@@ -1484,25 +1461,27 @@ std::string FOR_gen(GenObject **args) {
         ret += " {\n";
     } else {
         ret += " begin";
-        if (gename) {
-            ret += ": " + gename->getStrValue().substr(1, gename->getStrValue().size()-2);
+        if (genname_) {
+            ret += ": " + genname_->getStrValue().substr(1,
+                                genname_->getStrValue().size()-2);
         }
         ret += "\n";
+    }
+    for (auto &p: getEntries()) {
+        ret += p->generate();
     }
     return ret;
 }
 
 GenObject &FOR(const char *i, GenObject &start, GenObject &end, const char *dir, const char *comment) {
-    Operation *p = new Operation(comment);
     I32D *ret = new I32D(NO_PARENT, i, &start, NO_COMMENT);
-    Operation::push_obj(p);
-    p->igen_ = FOR_gen;
-    p->add_arg(p);
-    p->add_arg(ret);
-    p->add_arg(&start);
-    p->add_arg(&end);
-    p->add_arg(new StringConst(dir));
-    p->add_arg(0);
+    Operation *p = new ForOperation(stackobj_[stackcnt_],
+                                    ret,
+                                    &start,
+                                    &end,
+                                    new StringConst(dir),
+                                    0,
+                                    comment);
     return *ret;
 }
 
@@ -1513,30 +1492,28 @@ GenObject &FORGEN(const char *i,
                   const char *dir,
                   StringConst *name,
                   const char *comment) {
-    Operation *p = new Operation(comment);
     I32D *ret = new GenVar(NO_PARENT, i, "0", NO_COMMENT);
-    Operation::push_obj(p);
-    p->igen_ = FOR_gen;
-    p->add_arg(p);
-    p->add_arg(ret);
-    p->add_arg(&start);
-    p->add_arg(&end);
-    p->add_arg(new StringConst(dir));
-    p->add_arg(name);
+    Operation *p = new ForOperation(Operation::top_obj(),
+                                    ret,
+                                    &start,
+                                    &end,
+                                    new StringConst(dir),
+                                    name,
+                                    comment);
     return *ret;
 }
 
 // ENDFOR
-std::string ENDFOR_gen(GenObject **args) {
+std::string EndForOperation::generate() {
     std::string ret = "";
     popspaces();
     if (SCV_is_sysc()) {
         ret = addspaces() + "}\n";
     } else {
-        GenObject *gename = args[1];
         ret = addspaces() + "end";
-        if (gename) {
-            ret += ": " + gename->getStrValue().substr(1, gename->getStrValue().size()-2);
+        if (genname_) {
+            ret += ": " + genname_->getStrValue().substr(1,
+                            genname_->getStrValue().size()-2);
         }
         ret += "\n";
     }
@@ -1544,19 +1521,11 @@ std::string ENDFOR_gen(GenObject **args) {
 }
 
 void ENDFOR(const char *comment) {
-    Operation::pop_obj();
-    Operation *p = new Operation(comment);
-    p->igen_ = ENDFOR_gen;
-    p->add_arg(p);
-    p->add_arg(0);
+    Operation *p = new EndForOperation(0, comment);
 }
 
 void ENDFORGEN(StringConst *name, const char *comment) {
-    Operation::pop_obj();
-    Operation *p = new Operation(comment);
-    p->igen_ = ENDFOR_gen;
-    p->add_arg(p);
-    p->add_arg(name);
+    Operation *p = new EndForOperation(name, comment);
 }
 
 
@@ -1610,20 +1579,55 @@ void ENDWHILE(const char *comment) {
 
 
 // Sync reset
-std::string SYNC_RESET_gen(GenObject **args) {
-    ModuleObject *m = static_cast<ModuleObject *>(args[1]);
-    std::string xrst = Operation::obj2varname(args[2]);
+std::string SyncResetOperation::generate() {
     std::string ret;
-    ret = m->generate_all_proc_v_reset(xrst);
+    GenObject *m;
+    if (!proc_->isProcess()) {
+        SHOW_ERROR("SYNC_RESET should be inside proc",
+                    proc_->getName().c_str());
+        return ret;
+    }
+    m = proc_->getParent();
+    if (!m || !m->isModule()) {
+        SHOW_ERROR("SYNC_RESET proc not in a module",
+                    proc_->getName().c_str());
+        return ret;
+    }
+    
+    std::list<RegTypedefStruct *> *reglist =
+        dynamic_cast<ProcObject *>(proc_)->getpSortedRegs();
+
+    if (reglist == 0) {
+        SHOW_ERROR("No registers in process %s", proc_->getName().c_str());
+        return ret;
+    }
+
+    GenObject *op = &INV_L(*m->getChildByName("async_reset"));
+    Operation::push_obj(NO_PARENT);
+    for (auto &r : *reglist) {
+        if (r->getResetActive() == ACTIVE_NONE) {
+            continue;
+        } else if (r->getResetActive() == ACTIVE_LOW) {
+            op = &AND2(*op, EZ(*r->getResetPort()));
+        } else if (r->getResetActive() == ACTIVE_HIGH) {
+            op = &AND2(*op, NZ(*r->getResetPort()));
+        }
+        if (xrst_) {
+            op = &OR2(*op, *xrst_);
+        }
+        op = &IF (*op);
+            SETVAL(*r->v_instance(), *r->rst_instance());
+        ENDIF();
+    }
+    Operation::pop_obj();
+    if (op) {
+        ret = op->generate();
+    }
     return ret;
 }
 
-void SYNC_RESET(GenObject &a, GenObject *xrst, const char *comment) {
-    Operation *p = new Operation(comment);
-    p->igen_ = SYNC_RESET_gen;
-    p->add_arg(p);
-    p->add_arg(&a);
-    p->add_arg(xrst);
+void SYNC_RESET(GenObject *xrst) {
+    new SyncResetOperation(Operation::top_obj(), xrst);
 }
 
 // CALLF
@@ -1879,9 +1883,9 @@ std::string NewOperation::generate_sc() {
     } else {
         ret += "\"" + instname_ + "\"";
     }
-    if (m_->isAsyncResetParam() && m_->getAsyncResetParam() == 0) {
+    /*if (m_->isAsyncResetParam() && m_->getAsyncResetParam() == 0) {
         ret += ", async_reset";
-    }
+    }*/
     std::list<GenObject *>genlist;
     m_->getParamList(genlist);
     for (auto &g : genlist) {
@@ -1919,17 +1923,18 @@ std::string NewOperation::generate_sv() {
     m_->getTmplParamList(genlist);
     m_->getParamList(genlist);    
     tcnt = 0;
-    if ((m_->isAsyncResetParam() && m_->getAsyncResetParam() == 0) || genlist.size()) {
+    if (//(m_->isAsyncResetParam() && m_->getAsyncResetParam() == 0) || 
+        genlist.size()) {
         ret += "#(\n";
         pushspaces();
-        if (m_->isAsyncResetParam() && m_->getAsyncResetParam() == 0) {
+        /*if (m_->isAsyncResetParam() && m_->getAsyncResetParam() == 0) {
             ret += addspaces() + ".async_reset(async_reset)";
             if (genlist.size()) {
                 ret += ",";
             }
             ret += "\n";
             tcnt++;
-        }
+        }*/
         for (auto &e : genlist) {
             ret += addspaces() + "." + e->getName();
 #if 1
@@ -1991,17 +1996,18 @@ std::string NewOperation::generate_vhdl() {
     m_->getTmplParamList(tmpllist);
     m_->getParamList(tmpllist);    
     tcnt = 0;
-    if ((m_->isAsyncResetParam() && m_->getAsyncResetParam() == 0) || tmpllist.size()) {
+    if (//(m_->isAsyncResetParam() && m_->getAsyncResetParam() == 0) || 
+    tmpllist.size()) {
         ret += "generic map (\n";
         pushspaces();
-        if (m_->isAsyncResetParam() && m_->getAsyncResetParam() == 0) {
+        /*if (m_->isAsyncResetParam() && m_->getAsyncResetParam() == 0) {
             ret += addspaces() + "async_reset => async_reset";
             if (tmpllist.size()) {
                 ret += ",";
             }
             ret += "\n";
             tcnt++;
-        }
+        }*/
         for (auto &e : tmpllist) {
             ret += addspaces();
 #if 1
@@ -2120,7 +2126,7 @@ void ENDINITIAL() {
 
 
 // GENERATE
-std::string GENERATE_gen(GenObject **args) {
+std::string GenerateOperation::generate() {
     std::string ret = "";
     if (SCV_is_sysc()) {
         ret += addspaces() + "// generate\n";
@@ -2128,19 +2134,19 @@ std::string GENERATE_gen(GenObject **args) {
         ret += addspaces() + "generate\n";
         pushspaces();
     }
+    for (auto &p : getEntries()) {
+        ret += p->generate();
+    }
     return ret;
 }
 
-void GENERATE(const char *name, const char *comment) {
-    Operation *p = new Operation(comment);
-    Operation::push_obj(p);
-    p->igen_ = GENERATE_gen;
-    p->add_arg(p);
-    p->add_arg(new StringConst(name));
+GenObject &GENERATE(const char *name, const char *comment) {
+    Operation *p = new GenerateOperation(new StringConst(name), comment);
+    return *p;
 }
 
 // ENDGENERATE
-std::string ENDGENERATE_gen(GenObject **args) {
+std::string EndGenerateOperation::generate() {
     std::string ret = "";
     if (SCV_is_sysc()) {
         ret += addspaces() + "// endgenerate\n";
@@ -2152,11 +2158,85 @@ std::string ENDGENERATE_gen(GenObject **args) {
 }
 
 void ENDGENERATE(const char *name, const char *comment) {
-    Operation::pop_obj();
-    Operation *p = new Operation(comment);
-    p->igen_ = ENDGENERATE_gen;
-    p->add_arg(p);
-    p->add_arg(new StringConst(name));
+    new EndGenerateOperation(new StringConst(name), comment);
+}
+
+// posedge/negedge of signal
+std::string EdgeOperation::generate() {
+    std::string ret = "";
+    if (SCV_is_sysc()) {
+        SHOW_ERROR("Not implemented %s", "edge");
+    } else if (SCV_is_sv()) {
+        if (edge_ == CLK_POSEDGE) {
+            ret += "posedge ";
+        } else if (edge_ == CLK_NEGEDGE) {
+            ret += "negedge ";
+        }
+        ret += obj_->getName();
+    }
+    return ret;
+};
+
+Operation &EDGE(GenObject &obj, EClockEdge edge) {
+    Operation *p = new EdgeOperation(&obj, edge);
+    return *p;
+}
+
+Operation &EDGE(GenObject &obj, EResetActive edge) {
+    EClockEdge clkedge = CLK_ALWAYS;
+    if (edge == ACTIVE_LOW) {
+        clkedge = CLK_NEGEDGE;
+    } else if (edge == ACTIVE_HIGH) {
+        clkedge = CLK_POSEDGE;
+    }
+    Operation *p = new EdgeOperation(&obj, clkedge);
+    return *p;
+}
+
+// always_ff
+std::string AlwaysFFOperation::generate() {
+    std::string ret = "";
+    if (SCV_is_sysc()) {
+        SHOW_ERROR("Not implemented %s", "always_ff");
+    } else if (SCV_is_sv()) {
+        ret += addspaces() + "always_ff @(";
+        ret += clk_->generate();
+        if (rst_) {
+            ret += ", " + rst_->generate();
+        }
+        ret += ") begin\n";
+        pushspaces();
+    }
+    for (auto &p : getEntries()) {
+        ret += p->generate();
+    }
+    return ret;
+}
+
+GenObject &ALWAYS_FF(GenObject &clk, const char *comment) {
+    Operation *p = new AlwaysFFOperation(&clk, 0, comment);
+    return *p;
+}
+
+GenObject &ALWAYS_FF(GenObject &clk, GenObject &rst, const char *comment) {
+    Operation *p = new AlwaysFFOperation(&clk, &rst, comment);
+    return *p;
+}
+
+// end of always_ff
+std::string EndAlwaysFFOperation::generate() {
+    std::string ret = "";
+    if (SCV_is_sysc()) {
+        SHOW_ERROR("Not implemented %s", "end");
+    } else if (SCV_is_sv()) {
+        popspaces();
+        ret += addspaces() + "end\n";
+    }
+    return ret;
+}
+
+void ENDALWAYS_FF(const char *comment) {
+    new EndAlwaysFFOperation(comment);
 }
 
 /**

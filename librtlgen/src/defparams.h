@@ -17,6 +17,7 @@
 #pragma once
 
 #include "params.h"
+#include "utils.h"
 
 namespace sysvc {
 
@@ -36,6 +37,13 @@ class DefParamType : public T {
     virtual bool isParamGeneric() override { return true; }
     virtual bool isGenericDep() override { return true; }
     virtual void setObjValue(GenObject *v) override { T::objValue_ = v; }
+    std::string nameInModule(EPorts portid) override {
+        std::string ret = T::nameInModule(portid);
+        if (SCV_is_sysc()) {
+            ret += "_";
+        }
+        return ret;
+    }
 };
 
 
@@ -114,6 +122,13 @@ class DefParamLogic : public ParamLogic {
     virtual bool isParamGeneric() override { return true; }
     virtual bool isGenericDep() override { return true; }
     virtual void setObjValue(GenObject *v) override { objValue_ = v; }
+    std::string nameInModule(EPorts portid) override {
+        std::string ret = ParamLogic::nameInModule(portid);
+        if (SCV_is_sysc()) {
+            ret += "_";
+        }
+        return ret;
+    }
 };
 
 /** Template paramaters is a special keys in sytemc. For SV and VHDL it is
@@ -141,6 +156,7 @@ class TmplParamLogic : public DefParamLogic {
 
     virtual bool isParamTemplate() override { return true; }
     virtual void setObjValue(GenObject *v) override { objValue_ = v; }
+
 };
 
 }  // namespace sysvc

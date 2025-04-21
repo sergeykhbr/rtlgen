@@ -132,7 +132,7 @@ TEXT();
     ENDSWITCH();
 
 TEXT();
-    SYNC_RESET(*this);
+    SYNC_RESET();
 
 TEXT();
     SETVAL(o_rdy, rdy);

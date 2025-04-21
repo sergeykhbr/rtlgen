@@ -485,7 +485,7 @@ TEXT();
     ENDSWITCH();
 
 TEXT();
-    SYNC_RESET(*this);
+    SYNC_RESET();
 
 TEXT();
     TEXT("Response FIFO inputs/outputs:");

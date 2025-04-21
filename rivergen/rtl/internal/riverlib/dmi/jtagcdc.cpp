@@ -85,7 +85,7 @@ TEXT();
     ENDIF();
 
 TEXT();
-    SYNC_RESET(*this);
+    SYNC_RESET();
 
 TEXT();
     SETVAL(o_dmi_req_valid, req_valid);

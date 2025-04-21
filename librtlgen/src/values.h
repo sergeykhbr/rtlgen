@@ -67,15 +67,12 @@ class GenValue : public GenObject {
     virtual EClockEdge getClockEdge() { return edge_; }
     virtual EResetActive getResetActive() override { return active_; }
 
-    virtual std::string v_prefix() override { return v_; }
-    virtual std::string r_prefix() override { return r_; }
-    virtual std::string v_name(std::string v) override;
-    virtual std::string r_name(std::string v) override;
+    virtual std::string nameInModule(EPorts portid) override;
+    virtual std::string v_prefix() override;
+    virtual std::string r_prefix() override;
 
  protected:
     std::string name_;
-    std::string v_;            // prefix v. nv. vx. v1. vx1. etc for registers
-    std::string r_;            // prefix r. rv. rx. r1. rx1. etc for registers
     GenObject *objValue_;
     GenObject *objClock_;
     GenObject *objReset_;

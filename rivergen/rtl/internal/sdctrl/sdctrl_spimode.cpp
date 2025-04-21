@@ -314,7 +314,7 @@ TEXT();
     SETVAL(comb.v_dat, OR2(dat_reading, BIT(data_data, 511)));
 
 TEXT();
-    SYNC_RESET(*this);
+    SYNC_RESET();
 
 TEXT();
     SETVAL(o_mosi, comb.v_dat);

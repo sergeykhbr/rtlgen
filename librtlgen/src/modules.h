@@ -18,6 +18,7 @@
 
 #include "genobjects.h"
 #include "logic.h"
+#include "structs.h"
 #include <iostream>
 #include <list>
 #include <map>
@@ -32,12 +33,14 @@ class ModuleObject : public GenObject {
     ModuleObject(GenObject *parent, const char *type,
                  const char *name, const char *comment);
 
+    virtual void postInit() override;
     virtual std::string getType() override { return type_; }
     virtual std::string getName() override { return name_; }
-    virtual bool isAsyncResetParam() override { return getResetPort() ? true: false; }
-    virtual GenObject *getAsyncResetParam() override;
-    virtual GenObject *getResetPort() override;
-    virtual GenObject *getClockPort() override;
+    virtual bool isAsyncResetParam() override;
+//    virtual GenObject *getAsyncResetParam() override;
+//    virtual GenObject *getResetPort() override;
+//    virtual GenObject *getClockPort() override;
+    virtual void registerModuleReg(GenObject *); // not a GenObject
 
     virtual std::string generate() override;
 
@@ -60,24 +63,18 @@ class ModuleObject : public GenObject {
     virtual void getSortedRegsMap(std::map<std::string, std::list<GenObject *>> &regmap,
                                   std::map<std::string, bool> &is2dm);
  protected:
-    std::string generate_all_proc_nullify(GenObject *obj, std::string prefix, std::string i);
-    std::string generate_all_proc_r_to_v(bool inverse);         // at the begin/end of main proc
- public:
-    std::string generate_all_proc_v_reset(std::string &xrst);   // operation SYNC_RESET calls it explicitly
+    //std::string generate_all_proc_nullify(GenObject *obj, std::string prefix, std::string i);
+    //std::string generate_all_proc_r_to_v(bool inverse);         // at the begin/end of main proc
+ //public:
+ //   std::string generate_all_proc_v_reset(std::string &xrst);   // operation SYNC_RESET calls it explicitly
  protected:
 
-    std::string generate_sv_pkg_localparam();
-    std::string generate_sv_pkg_reg_struct();
-    std::string generate_sv_pkg_struct();
     std::string generate_sv_mod_genparam();     // generic parameters
     std::string generate_sv_mod_param_strings();
     std::string generate_sv_mod_func(GenObject *func);
     std::string generate_sv_mod_signals();
     std::string generate_sv_mod_clock(GenObject *proc);
-    std::string generate_sv_mod_proc(GenObject *proc);
-    std::string generate_sv_mod_proc_registers();
-    std::string generate_sv_mod_proc_always(bool async_on_off);
-
+    
     std::string generate_sysc_h_reg_struct();
     std::string generate_sysc_h_struct();
     std::string generate_sysc_proc_registers();
@@ -104,7 +101,8 @@ class ModuleObject : public GenObject {
  protected:
     std::string type_;
     std::string name_;
-    Logic async_reset_;
+
+    std::list<RegTypedefStruct *> sorted_regs_;
 };
 
 }  // namespace sysvc

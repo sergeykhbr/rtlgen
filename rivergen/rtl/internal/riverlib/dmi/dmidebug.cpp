@@ -581,7 +581,7 @@ TEXT();
 
 
 TEXT();
-    SYNC_RESET(*this, &NZ(w_cdc_dmi_hardreset));
+    SYNC_RESET(&NZ(w_cdc_dmi_hardreset));
 
 TEXT();
     SETVAL(o_ndmreset, ndmreset);

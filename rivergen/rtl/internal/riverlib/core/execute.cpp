@@ -1217,7 +1217,7 @@ TEXT();
     ENDIF();
 
 TEXT();
-    SYNC_RESET(*this);
+    SYNC_RESET();
 
 TEXT();
     SETVAL(wb_rdata1, comb.vb_rdata1);

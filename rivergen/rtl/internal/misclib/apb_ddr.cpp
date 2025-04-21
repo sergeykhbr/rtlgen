@@ -107,5 +107,5 @@ TEXT();
     SETVAL(resp_rdata, comb.vb_rdata);
 
 TEXT();
-    SYNC_RESET(*this);
+    SYNC_RESET();
 }

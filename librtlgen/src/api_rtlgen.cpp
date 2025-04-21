@@ -501,14 +501,56 @@ Operation &RSH(GenObject &a, int sz, const char *comment) {
 }
 
 Operation &SETVAL(GenObject &a, GenObject &b, const char *comment) {
-    return *new SetValueOperation(&a,
-                                  0,    // [arridx]
-                                  0,    // .item
-                                  false,    // h as width
-                                  0,    // [h
-                                  0,    // :l]
-                                  &b,  // val
-                                  comment);
+    Operation *ret = 0;
+#if 1
+    if (a.getName() == "vb_def_mapinfo") {
+        bool st = true;
+    }
+#endif
+    if (a.getObjDepth()) {
+        GenObject *i = new I32D(NO_PARENT, "i", new DecConst(0), NO_COMMENT);;
+        ret = new ForOperation(Operation::top_obj(),
+                                i,
+                                new DecConst(0),
+                                a.getObjDepth(),
+                                new StringConst("++"),
+                                0,
+                                comment);
+
+        SETARRITEM(a, *i, a, ARRITEM(b, *i, b));
+
+        new EndForOperation(0, NO_COMMENT);
+    /*} else if (a.isStruct() 
+        && !b.isOperation() && !b.isParam() && !b.isConst()
+        && b.getObjValue() == 0) {
+        for (auto &p: a.getEntries()) {
+            ret = &SETVAL(*p, *b.getChildByName(p->getName()));
+        }*/
+    } else {
+        ret = new SetValueOperation(&a,
+                                      0,    // [arridx]
+                                      0,    // .item
+                                      false,    // h as width
+                                      0,    // [h
+                                      0,    // :l]
+                                      false,    // blocking
+                                      &b,  // val
+                                      comment);
+    }
+    return *ret;
+}
+
+Operation &SETVAL_NB(GenObject &a, GenObject &b, const char *comment) {
+    Operation *ret = new SetValueOperation(&a,
+                                    0,    // [arridx]
+                                    0,    // .item
+                                    false,    // h as width
+                                    0,    // [h
+                                    0,    // :l]
+                                    true,    // non-blocking
+                                    &b,  // val
+                                    comment);
+    return *ret;
 }
 
 // a = 0
@@ -540,6 +582,7 @@ Operation &SETBIT(GenObject &a, GenObject &b, GenObject &val, const char *commen
                                          false, // h_as_width
                                          &b,    // h
                                          0,     // l
+                                         false, // =
                                          &val,  // val
                                          comment);
     return *p;
@@ -552,6 +595,7 @@ Operation &SETBIT(GenObject &a, int b, GenObject &val, const char *comment) {
                                          false, // h_as_width
                                          new DecConst(b),    // h
                                          0,     // l
+                                         false, // =
                                          &val,  // val
                                          comment);
     return *p;
@@ -569,6 +613,7 @@ Operation &SETBITONE(GenObject &a, GenObject &b, const char *comment) {
                                          false, // h_as_width
                                          &b,    // h
                                          0,     // l
+                                         false, // =
                                          new DecLogicConst(new DecConst(1), 1),  // val
                                          comment);
     return *p;
@@ -604,6 +649,7 @@ Operation &SETBITZERO(GenObject &a, GenObject &b, const char *comment) {
                                          false, // h_as_width
                                          &b,    // h
                                          0,     // l
+                                         false, // =
                                          new DecLogicConst(new DecConst(1), 0),  // val
                                          comment);
     return *p;
@@ -639,6 +685,7 @@ Operation &SETBITS(GenObject &a, GenObject &h, GenObject &l, GenObject &val, con
                                          false, // h_as_width
                                          &h,    // h
                                          &l,     // l
+                                         false, // =
                                          &val,  // val
                                          comment);
     return *p;
@@ -665,6 +712,7 @@ Operation &SETBITSW(GenObject &a, GenObject &start, GenObject &width, GenObject 
                                          true, // h_as_width
                                          &width,    // h
                                          &start,     // l
+                                         false, // =
                                          &val,  // val
                                          comment);
     return *p;
@@ -686,6 +734,7 @@ Operation &SETARRITEM(GenObject &arr, GenObject &idx,
                                   false,    // h as width
                                   0,        // [h
                                   0,        // :l]
+                                  false, // =
                                   &val,     // val
                                   comment);
 }
@@ -702,6 +751,7 @@ Operation &SETARRITEM(GenObject &arr, int idx, GenObject &val) {
                                   false,    // h as width
                                   0,        // [h
                                   0,        // :l]
+                                  false, // =
                                   &val,     // val
                                   NO_COMMENT);
 }
@@ -757,6 +807,7 @@ Operation &SETARRITEMBIT(GenObject &arr, GenObject &idx,
                                   false,    // h as width
                                   &bitidx,  // [h
                                   0,        // :l]
+                                  false,    // =
                                   &val,     // val
                                   comment);
 }
@@ -773,10 +824,11 @@ Operation &SETARRITEMBITSW(GenObject &arr, GenObject &idx,
     return *new SetValueOperation(&arr,
                                   &idx,     // [arridx]
                                   &item,    // .item
-                                  true,      // interpret h (MSB) as width
-                                  &width,    // [h
-                                  &start,    // :l]
-                                  &val,      // val
+                                  true,     // interpret h (MSB) as width
+                                  &width,   // [h
+                                  &start,   // :l]
+                                  false,    // =
+                                  &val,     // val
                                   comment);
 }
 

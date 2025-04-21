@@ -19,10 +19,11 @@
 #include "utils.h"
 #include "array.h"
 #include "operations.h"
+#include <cstring>
 
 namespace sysvc {
 
-extern void detect_vr_prefixes(GenObject *obj, std::string &v, std::string &r);
+//extern void detect_vr_prefixes(GenObject *obj, std::string &v, std::string &r);
 
 StructObject::StructObject(GenObject *parent,
                            GenObject *clk,
@@ -45,7 +46,7 @@ StructObject::StructObject(GenObject *parent,
         SCV_get_cfg_type(this, type_.c_str());
     }
     // See signals.cpp
-    detect_vr_prefixes(this, v_, r_);
+    //detect_vr_prefixes(this, v_, r_);
 }
 
 StructObject::StructObject(GenObject *parent,
@@ -97,12 +98,13 @@ std::string StructObject::getStrValue() {
     }
 
     if (SCV_is_sysc()) {
-        ret += "{";
+        ret += "{\n";
     } else if (SCV_is_sv()) {
-        ret += "'{";
+        ret += "'{\n";
     } else if (SCV_is_vhdl()) {
-        ret += "(";
+        ret += "(\n";
     }
+    pushspaces();
 
     std::string checktype = getType();
     if (isVector()) {
@@ -128,18 +130,46 @@ std::string StructObject::getStrValue() {
         }
         popspaces();
     } else {
+            /*pushspaces();
+            for (auto &p: it->second) {
+                ln = addspaces() + p->getStrValue();
+                if (p != it->second.back()) {
+                    ln += ",";
+                }
+                while (ln.size() < 40) {
+                    ln += " ";
+                }
+                ln += "// " + p->getName();
+                ret += ln + "\n";
+            }
+            popspaces();*/
+
+        std::string ln;
         for (auto &p: getEntries()) {
             if (!p->isValue()) {
                 continue;
             }
-            ret += p->getStrValue();
-            if (p != getEntries().back()) {
-                ret += ", ";
+            ln = addspaces();
+            if (p->getObjDepth()) { 
+                ln += "{}";
+                SHOW_ERROR("2-dim constant %s:%s",
+                    getName().c_str(), p->getName().c_str());
+            } else {
+                ln += p->getStrValue();
             }
+            if (p != getEntries().back()) {
+                ln += ", ";
+            }
+            while (ln.size() < 40) {
+                ln += " ";
+            }
+            ln += "// " + p->getName();
+            ret += ln + "\n";
         }
     }
 
-
+    popspaces();
+    ret += addspaces();
     if (SCV_is_sysc()) {
         ret += "}";
     } else if (SCV_is_sv()) {
@@ -770,5 +800,32 @@ std::string StructObject::generate() {
     ret += "\n";
     return ret;
 }
+
+RegTypedefStruct::RegTypedefStruct(GenObject *parent,
+                                   GenObject *clk,
+                                   EClockEdge edge,
+                                   GenObject *rst,
+                                   EResetActive active,
+                                   const char *type,
+                                   const char *rstval)
+    : StructObject(parent, clk, edge, rst, active,
+                   type, type, rstval, NO_COMMENT), v_(0), rin_(0), r_(0) {
+}
+
+RegSignalInstance::RegSignalInstance(GenObject *parent,
+                                 RegTypedefStruct *p,
+                                 const char *name,
+                                 const char *rstval)
+    : StructObject(parent, 0, CLK_POSEDGE, 0, ACTIVE_NONE,
+                   p->getType().c_str(), name, rstval, NO_COMMENT),
+                   rstruct_(p) {
+}
+
+RegResetStruct::RegResetStruct(GenObject *parent,
+                                RegTypedefStruct *p,
+                                const char *name)
+    : RegSignalInstance(parent, p, name, "") {
+}
+
 
 }

@@ -17,6 +17,8 @@
 #pragma once
 
 #include "genobjects.h"
+#include "structs.h"
+#include <list>
 
 namespace sysvc {
 
@@ -30,6 +32,7 @@ class ProcObject : public GenObject {
                EResetActive active,
                const char *comment = NO_COMMENT);
 
+    virtual void postInit() override;
     virtual std::string getName() override { return name_; }
     virtual bool isProcess() override { return true; }
     virtual GenObject *getResetPort() override { return rst_; }     // reset port object
@@ -41,10 +44,15 @@ class ProcObject : public GenObject {
 
     virtual std::string generate() override;
 
+ public:
+    virtual void setSortedRegs(std::list<RegTypedefStruct *> *reglist);
+    virtual std::list<RegTypedefStruct *> *getpSortedRegs() { return reglist_; }
  protected:
     virtual std::string generate_sysc_h();
     virtual std::string generate_sysc_cpp();
     virtual std::string generate_sv(bool async_on_off);
+    virtual std::string generate_vhdl();
+    virtual std::string generate_localvar_sv();
 
  protected:
     std::string name_;
@@ -53,6 +61,7 @@ class ProcObject : public GenObject {
     EClockEdge edge_;
     GenObject *rst_;
     EResetActive active_;
+    std::list<RegTypedefStruct *> *reglist_;
 };
 
 class CombinationalProcess : public ProcObject {
@@ -61,6 +70,8 @@ class CombinationalProcess : public ProcObject {
                          const char *name,
                          const char *comment = NO_COMMENT)
         : ProcObject(parent, name, 0, CLK_ALWAYS, 0, ACTIVE_NONE, comment) {}
+
+    virtual void postInit() override;
 };
 
 /**
@@ -70,14 +81,18 @@ class RegisterCopyProcess : public ProcObject {
  public:
     RegisterCopyProcess(GenObject *parent,
                         const char *name,
-                        GenObject *clk,
-                        EClockEdge edge,
-                        GenObject *rst,
-                        EResetActive active)
-        : ProcObject(parent, name, clk, edge, rst, active, NO_COMMENT) {}
-
+                        RegTypedefStruct *r)
+        : ProcObject(parent,
+                     name,
+                     r->getClockPort(),
+                     r->getClockEdge(),
+                     r->getResetPort(),
+                     r->getResetActive(),
+                     NO_COMMENT), rstruct_(r) {}
  protected:
     virtual std::string generate_sv(bool async_on_off) override;
+ protected:
+    RegTypedefStruct *rstruct_;
 };
 
 }  // namespace sysvc

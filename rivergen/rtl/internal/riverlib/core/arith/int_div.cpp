@@ -226,7 +226,7 @@ TEXT();
     SETVAL(wb_divisor1_i, CC2(CONST("0", 4), divisor_i));
 
 TEXT();
-    SYNC_RESET(*this);
+    SYNC_RESET();
 
 TEXT();
     SETVAL(o_res, result);

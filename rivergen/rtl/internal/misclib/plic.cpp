@@ -249,7 +249,7 @@ TEXT();
     ENDFOR();
 
 TEXT();
-    SYNC_RESET(*this);
+    SYNC_RESET();
 
 TEXT();
     SETONE(w_req_ready);

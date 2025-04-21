@@ -106,7 +106,6 @@ class types_bus0 : public FileObject {
             sdctrl.addr_end.setObjValue(new HexConst(0x0001000000000));
 #endif
         }
-        virtual bool isParam() override { return true; }
 
      protected:
         StructVar<types_amba::mapinfo_type> bootrom;

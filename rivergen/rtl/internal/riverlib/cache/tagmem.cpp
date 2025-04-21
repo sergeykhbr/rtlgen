@@ -139,7 +139,7 @@ TEXT();
     SETVAL(snoop_tagaddr, comb.vb_snoop_tagaddr);
 
 TEXT();
-    SYNC_RESET(*this);
+    SYNC_RESET();
 
 TEXT();
     SETVAL(wb_index, comb.vb_index);

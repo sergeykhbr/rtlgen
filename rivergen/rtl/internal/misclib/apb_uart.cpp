@@ -407,7 +407,7 @@ TEXT();
     SETZERO(resp_err);
 
 TEXT();
-    SYNC_RESET(*this);
+    SYNC_RESET();
 
 TEXT();
     SETVAL(o_td, BIT(tx_shift, 0));

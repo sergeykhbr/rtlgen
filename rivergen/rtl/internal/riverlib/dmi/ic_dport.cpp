@@ -104,7 +104,7 @@ TEXT();
     ENDIF();
 
 TEXT();
-    SYNC_RESET(*this);
+    SYNC_RESET();
 
 TEXT();
     i = &FOR ("i", CONST("0"), cfg->CFG_CPU_MAX, "++");

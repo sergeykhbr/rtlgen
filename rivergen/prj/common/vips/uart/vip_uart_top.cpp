@@ -120,7 +120,7 @@ void vip_uart_top::proc_comb() {
     SETVAL(initdone, CC2(BIT(initdone, 0), CONST("1", 1)));
 
 TEXT();
-    SYNC_RESET(*this);
+    SYNC_RESET();
 }
 
 void vip_uart_top::proc_reg() {

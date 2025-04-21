@@ -66,7 +66,7 @@ TEXT();
 
 
 TEXT();
-    SYNC_RESET(*this);
+    SYNC_RESET();
 
 TEXT();
     SETVAL(o_crc16, comb.vb_crc16);

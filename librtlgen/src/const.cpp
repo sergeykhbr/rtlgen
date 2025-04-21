@@ -21,6 +21,18 @@
 
 namespace sysvc {
 
+std::string ConstObject::nameInModule(EPorts portid) {
+    std::string ret = "";
+    if (getParent()) {
+        ret += getParent()->nameInModule(portid);
+    }
+    if (ret.size()) {
+        ret += ".";
+    }
+    ret += getStrValue();
+    return ret;
+}
+
 std::string DecConst::getStrValue() {
     char tstr[32];
     RISCV_sprintf(tstr, sizeof(tstr), "%" RV_PRI64 "d", ui64_);
@@ -65,7 +77,7 @@ std::string FloatConst::getStrValue() {
 }
 
 StringConst::StringConst(const char *v, const char *comment)
-    : GenObject(NO_PARENT, comment) {
+    : ConstObject(NO_PARENT, comment) {
     strval_ = "\"" + std::string(v) + "\"";
 }
 

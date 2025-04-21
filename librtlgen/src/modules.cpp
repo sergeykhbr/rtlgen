@@ -21,6 +21,7 @@
 #include "utils.h"
 #include "files.h"
 #include "operations.h"
+#include "proc.h"
 #include <string.h>
 #include <algorithm>
 
@@ -30,8 +31,7 @@ ModuleObject::ModuleObject(GenObject *parent,
                            const char *type,
                            const char *name,
                            const char *comment)
-    : GenObject(parent, comment),
-    async_reset_(0, "async_reset", "1", "0", NO_COMMENT) {
+    : GenObject(parent, comment) {
     name_ = std::string(name);
     type_ = std::string(type);
     if (name_ == "") {
@@ -41,37 +41,164 @@ ModuleObject::ModuleObject(GenObject *parent,
     SCV_add_module(this);
 }
 
-GenObject *ModuleObject::getAsyncResetParam() {
-    for (auto &p: getEntries()) {
-        if (p->isParam()) {
-            if (p->getName() == "async_reset") {
-                return p;
-            }
-        }
+std::string reg_suffix(GenObject *p) {
+    std::string ret = "";
+    if (p->getClockEdge() == CLK_NEGEDGE) {
+        ret += "n";
     }
-    return 0;
+    if (p->getResetActive() == ACTIVE_NONE) {
+        ret += "x";
+    }
+    return ret;
 }
 
-GenObject *ModuleObject::getResetPort() {
-    for (auto &p: getEntries()) {
-        if (p->isInput()) {
-            if (p->getName() == "i_nrst") {
-                return p;
+void ModuleObject::registerModuleReg(GenObject *r) {
+    for (auto &p : sorted_regs_) {
+        if (p->getClockPort()->getName() != r->getClockPort()->getName()) {
+            continue;
+        }
+        if (p->getClockEdge() != r->getClockEdge()) {
+            continue;
+        }
+        if (p->getResetActive() != r->getResetActive()) {
+            continue;
+        }
+        if (p->getResetActive() != ACTIVE_NONE) {
+            if (p->getResetPort()->getName()
+                    != r->getResetPort()->getName()) {
+                continue;
             }
         }
+
+        // Check that this name already registered (for structs):
+        for (auto &check : p->getEntries()) {
+            if (check->getName() == r->getName()) {
+                if (!r->isStruct()) {
+                    SHOW_ERROR("Reg already registered %s",
+                                r->getName().c_str());
+                }
+                continue;
+            }
+        }
+
+        r->setParent(p);
+        p->add_entry(r);
+        getEntries().remove(r);
+        return;
     }
-    return 0;
+    
+    std::string r_suffix = reg_suffix(r);
+    std::string procname = "r" + r_suffix + "egisters";
+    std::string rstruct_type = getName() + "_" + procname;
+    std::string rstruct_rst = "";
+    if (r->getResetActive() != ACTIVE_NONE) {
+        rstruct_rst = getName() + "_r" + r_suffix + "_reset";
+    }
+
+    // New register typedef structure:
+    RegTypedefStruct *pnew = new RegTypedefStruct(this,
+                                          r->getClockPort(),
+                                          r->getClockEdge(),
+                                          r->getResetPort(),
+                                          r->getResetActive(),
+                                          rstruct_type.c_str(),   // type
+                                          rstruct_rst.c_str());         // rstval
+    r->setParent(pnew);
+    pnew->add_entry(r);
+    getEntries().remove(r);
+    sorted_regs_.push_back(pnew);
+
+    RegResetStruct *r_rst = 0;
+    RegSignalInstance *rin_inst = 0;
+    RegSignalInstance *v_inst = 0;
+    RegSignalInstance *r_inst = 0;
+
+    // "*_r_reset" value:
+    if (r->getResetActive() != ACTIVE_NONE) {
+        r_rst = new RegResetStruct(this,
+                                   pnew,
+                                   rstruct_rst.c_str());
+    }
+
+
+    std::list<GenObject *> proclist;
+    getCombProcess(proclist);
+
+    // "r" value (have input 'v' and output 'r' ports):
+    std::string r_name = "r" + r_suffix;
+    r_inst = new RegSignalInstance(this,
+                               pnew,
+                               r_name.c_str(),
+                               rstruct_rst.c_str());
+
+    if (proclist.size()) {
+        // "v" value:
+        std::string v_name = "v" + r_suffix;
+        v_inst = new RegSignalInstance(NO_PARENT,
+                                   pnew,
+                                   v_name.c_str(),
+                                   r_name.c_str());
+
+        // "rin" value:
+        std::string rin_name = "r" + r_suffix + "in";
+        rin_inst = new RegSignalInstance(this,
+                                         pnew,
+                                         rin_name.c_str(),
+                                         rstruct_rst.c_str());
+    }
+    
+    // Register flip-flop process
+    new RegisterCopyProcess(this,
+                            procname.c_str(),
+                            pnew);
+
+    pnew->setRegInstances(r_rst, v_inst, rin_inst, r_inst);
 }
 
-GenObject *ModuleObject::getClockPort() {
-    for (auto &p: getEntries()) {
-        if (p->isInput()) {
-            if (p->getName() == "i_clk") {
-                return p;
-            }
+void ModuleObject::postInit() {
+    GenObject * clkport;
+    GenObject * rstport;
+    GenObject *pAsyncReset = 0;
+
+    if (isAsyncResetParam()) {
+        pAsyncReset = 
+            new DefParamLogic(NO_PARENT, "async_reset", "1", "0", NO_COMMENT);
+        // Push front to provide less differences:
+        pAsyncReset->setParent(this);
+        getEntries().push_front(pAsyncReset);
+    }
+
+    // Sorting register and create v, rin, r structures
+    std::list<GenObject *> tentries = getEntries();
+    for (auto &p: tentries) {
+        clkport = p->getClockPort();
+        rstport = p->getResetPort();
+        if (!clkport || p->getClockEdge() == CLK_ALWAYS) {
+            continue;
+        }
+        if (p->isProcess()) {
+            continue;
+        }
+        registerModuleReg(p);
+    }
+
+    // Bind generated structures and comb processes:
+    std::list<GenObject *> proclist;
+    getCombProcess(proclist);
+    for (auto &p : proclist) {
+        dynamic_cast<ProcObject *>(p)->setSortedRegs(&sorted_regs_);
+    }
+
+    GenObject::postInit();
+
+    // Connect async_reset to sub-modules:
+    GenObject *pParam;
+    for (auto &m : getEntries()) {
+        pParam = m->getChildByName("async_reset");
+        if (pParam) {
+            pParam->setObjValue(pAsyncReset);
         }
     }
-    return 0;
 }
 
 std::string ModuleObject::generate() {
@@ -84,29 +211,22 @@ std::string ModuleObject::generate() {
     return ret;
 }
 
-void ModuleObject::getCombProcess(std::list<GenObject *> &proclist) {
-    std::map<std::string,std::list<GenObject *>> regmap;
-    std::map<std::string,bool> is2dm;
-    std::list<std::string> regproclist;
-
-    // list of registers process depending of clock and reset
-    getSortedRegsMap(regmap,is2dm);
-    for (std::map<std::string,std::list<GenObject *>>::iterator it = regmap.begin();
-        it != regmap.end(); ++it) {
-        regproclist.push_back(it->first + "egisters");
-    }
-
+bool ModuleObject::isAsyncResetParam() {
     for (auto &p: getEntries()) {
-        if (!p->isProcess()) {
-            continue;
+        if (p->getClockEdge() != CLK_ALWAYS
+            && p->getResetActive() != ACTIVE_NONE) {
+            return true;
         }
-        // Exclude process with name equals to <r>egisters process,
-        // because content of such process should be added to trigger action
-        if (std::find(regproclist.begin(),regproclist.end(),p->getName())
-            != regproclist.end()) {
-            continue;
+    }
+    return GenObject::isAsyncResetParam();
+}
+
+
+void ModuleObject::getCombProcess(std::list<GenObject *> &proclist) {
+    for (auto &p: getEntries()) {
+        if (p->isProcess() && p->getClockEdge() == CLK_ALWAYS) {
+            proclist.push_back(p);
         }
-        proclist.push_back(p);
     }
 }
 
@@ -167,7 +287,7 @@ void ModuleObject::getSortedRegsMap(
     }
 }
 
-std::string ModuleObject::generate_all_proc_nullify(GenObject *obj,
+/*std::string ModuleObject::generate_all_proc_nullify(GenObject *obj,
                                                     std::string prefix,
                                                     std::string i) {
     std::string ret = "";
@@ -222,14 +342,14 @@ std::string ModuleObject::generate_all_proc_nullify(GenObject *obj,
         ret += "\n";
     }
     return ret;
-}
+}*/
 
 /**
     v = r;      (inverse = false)
     or
     rin <= v    (inverse = true), SystemVerilog, VHDL
  */
-std::string ModuleObject::generate_all_proc_r_to_v(bool inverse) {
+/*std::string ModuleObject::generate_all_proc_r_to_v(bool inverse) {
     std::string ret;
     std::map<std::string, std::list<GenObject *>> regmap;
     std::map<std::string, bool> is2dm;
@@ -275,7 +395,7 @@ std::string ModuleObject::generate_all_proc_r_to_v(bool inverse) {
     }
     return ret;
 }
-
+*/
 /** Generate in process (synchronous) reset. Multiple resets are supported:
 
       if (!async_reset && i_rst0.read() == LOW) {
@@ -288,7 +408,7 @@ std::string ModuleObject::generate_all_proc_r_to_v(bool inverse) {
           module_type_r0(v0);
       }
  */
-std::string ModuleObject::generate_all_proc_v_reset(std::string &xrst) {
+/*std::string ModuleObject::generate_all_proc_v_reset(std::string &xrst) {
     std::map<std::string, std::list<GenObject *>>regmap;
     std::map<std::string, bool> is2dm;
     GenObject *preg;
@@ -377,7 +497,7 @@ std::string ModuleObject::generate_all_proc_v_reset(std::string &xrst) {
     }
     return ret;
 }
-
+*/
 
 
 }

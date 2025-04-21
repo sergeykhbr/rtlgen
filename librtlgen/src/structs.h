@@ -74,4 +74,74 @@ protected:
     std::string name_;
 };
 
+/**
+    Generate inside of module structure of registers
+ */
+class RegTypedefStruct : public StructObject {
+ public:
+    RegTypedefStruct(GenObject *parent,
+                        GenObject *clk,
+                        EClockEdge edge,
+                        GenObject *rst,
+                        EResetActive active,
+                        const char *type,
+                        const char *rstval);
+
+    std::string nameInModule(EPorts portid) override {
+        if (portid == PORT_OUT) {
+            return r_->getName();
+        } 
+        return v_->getName();
+    }
+    virtual void setRegInstances(GenObject *rst,
+                                 GenObject *v,
+                                 GenObject *rin,
+                                 GenObject *r) {
+        rst_ = rst;
+        v_ = v;
+        rin_ = rin;
+        r_ = r;
+    }
+    virtual GenObject *rst_instance() { return rst_; }
+    virtual GenObject *v_instance() { return v_; }
+    virtual GenObject *rin_instance() { return rin_; }
+    virtual GenObject *r_instance() { return r_; }
+ protected:
+    GenObject *rst_;
+    GenObject *v_;
+    GenObject *rin_;
+    GenObject *r_;
+};
+
+/**
+    Generate rin, r, v signal instances:
+ */
+class RegSignalInstance : public StructObject {
+ public:
+    RegSignalInstance(GenObject *parent,
+                    RegTypedefStruct *p,
+                    const char *name,
+                    const char *rstval);
+
+    virtual std::list<GenObject *> &getEntries() {
+        return rstruct_->getEntries();
+    }
+ protected:
+    RegTypedefStruct *rstruct_;
+};
+
+/**
+    Generate reset structure/function (*_r_reset)
+ */
+class RegResetStruct : public RegSignalInstance {
+ public:
+    RegResetStruct(GenObject *parent,
+                    RegTypedefStruct *p,
+                    const char *name);
+
+    virtual bool isParam() override { return true; }
+    virtual bool isConst() override { return true; }
+};
+
+
 }  // namespace sysvc

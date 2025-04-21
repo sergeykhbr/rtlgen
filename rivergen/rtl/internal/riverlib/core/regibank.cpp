@@ -103,7 +103,7 @@ TEXT();
     ENDIF();
 
 TEXT();
-    SYNC_RESET(*this);
+    SYNC_RESET();
 
 TEXT();
     SETVAL(o_ignored, AND4(i_wena, OR_REDUCE(i_waddr), i_inorder, INV(comb.v_inordered)));

@@ -280,7 +280,7 @@ TEXT();
     ENDSWITCH();
 
 TEXT();
-    SYNC_RESET(*this);
+    SYNC_RESET();
 
 TEXT();
     i = &FOR ("i", CONST("0"), cfg->CFG_SLOT_L1_TOTAL, "++");

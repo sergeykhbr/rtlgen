@@ -40,7 +40,7 @@ cdc_afifo::cdc_afifo(GenObject *parent, const char *name, const char *comment) :
     rq2_wgray(this, &i_rclk, CLK_POSEDGE, &i_nrst, ACTIVE_LOW, "rq2_wgray", "ADD(abits,1)", RSTVAL_ZERO, NO_COMMENT),
     rq1_wgray(this, &i_rclk, CLK_POSEDGE, &i_nrst, ACTIVE_LOW, "rq1_wgray", "ADD(abits,1)", RSTVAL_ZERO, NO_COMMENT),
     rempty(this, &i_rclk, CLK_POSEDGE, &i_nrst, ACTIVE_LOW, "rempty", "1", "1", NO_COMMENT),
-    mem(this, &i_wclk, CLK_POSEDGE, 0, ACTIVE_NONE, "mem", "dbits", "DEPTH", RSTVAL_NONE, NO_COMMENT),
+    mem(this, "mem", "dbits", "DEPTH", NO_COMMENT),
     // process
     comb(this)
 {
@@ -92,7 +92,7 @@ TEXT();
     SETVAL(rempty, comb.v_rempty_next);
 
 TEXT();
-    SYNC_RESET(*this);
+    SYNC_RESET();
 
 TEXT();
     SETVAL(o_wfull, wfull);

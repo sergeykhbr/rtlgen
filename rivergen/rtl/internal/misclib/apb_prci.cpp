@@ -115,7 +115,7 @@ TEXT();
     SETZERO(resp_err);
 
 TEXT();
-    SYNC_RESET(*this);
+    SYNC_RESET();
 
 TEXT();
     SETVAL(o_sys_rst, sys_rst);

@@ -156,14 +156,14 @@ std::string ModuleObject::generate_vhdl_mod_genparam() {
     ret += addspaces() + "generic (\n";
     pushspaces();
 
-    if (isAsyncResetParam() && getAsyncResetParam() == 0) {
+    /*if (isAsyncResetParam() && getAsyncResetParam() == 0) {
         ret += addspaces() + "async_reset : boolean := '0'";           // Mandatory generic parameter
         if (genparam.size()) {
             ret += ";";
         }
         ret += "\n";
         icnt++;
-    }
+    }*/
 
     for (auto &p : genparam) {
         ln = addspaces() + p->getName() + " : ";

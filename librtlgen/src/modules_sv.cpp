@@ -30,7 +30,7 @@
 
 namespace sysvc {
 
-std::string ModuleObject::generate_sv_pkg_localparam() {
+/*std::string ModuleObject::generate_sv_pkg_localparam() {
     std::string ret = "";
     std::string ln = "";
     std::string comment = "";
@@ -62,9 +62,9 @@ std::string ModuleObject::generate_sv_pkg_localparam() {
         ret += "\n";
     }
     return ret;
-}
+}*/
 
-std::string ModuleObject::generate_sv_pkg_reg_struct() {
+/*std::string ModuleObject::generate_sv_pkg_reg_struct() {
     std::map<std::string,std::list<GenObject *>> regmap;
     std::map<std::string,bool> is2dm;
     std::string ret = "";
@@ -116,17 +116,23 @@ std::string ModuleObject::generate_sv_pkg_reg_struct() {
         }
     }
     return ret;
-}
+}*/
 
-std::string ModuleObject::generate_sv_pkg_struct() {
+/*std::string ModuleObject::generate_sv_pkg_struct() {
     std::string ret = "";
     std::string ln = "";
     std::string tstr;
     int tcnt = 0;
+#if 1
+    if (getType() == "axictrl_bus0") {
+        bool v = true;
+    }
+#endif
 
     // struct definitions
     for (auto &p: getEntries()) {
-        if (p->isStruct() && p->isTypedef()) {
+        if (p->isStruct() && 
+            (p->isTypedef() || p->isConst())) {
             ret += p->generate();
             tcnt++;
         }
@@ -136,15 +142,26 @@ std::string ModuleObject::generate_sv_pkg_struct() {
         tcnt = 0;
     }
     // Register structure definition
-    ret += generate_sv_pkg_reg_struct();
+    //ret += generate_sv_pkg_reg_struct();
     return ret;
-}
+}*/
 
 
 std::string ModuleObject::generate_sv_pkg() {
     std::string ret = "";
-    ret += generate_sv_pkg_localparam();
-    ret += generate_sv_pkg_struct();
+    //ret += generate_sv_pkg_localparam();
+    //ret += generate_sv_pkg_struct();
+    for (auto &p: getEntries()) {
+        if ((p->isParam() && p->isString() && !p->isParamGeneric())
+            || (p->isParam() && !p->isParamGeneric() && !p->isGenericDep())
+            || (p->isStruct() && (p->isTypedef() || p->isConst()))) {
+            ret += p->generate();
+        }
+    }
+
+    if (ret.size()) {
+        ret += "\n";
+    }
     return ret;
 }
 
@@ -157,15 +174,6 @@ std::string ModuleObject::generate_sv_mod_genparam() {
     getParamList(genparam);
 
     pushspaces();
-    if (isAsyncResetParam() && getAsyncResetParam() == 0) {
-        ret += addspaces() + "parameter bit async_reset = 1'b0";           // Mandatory generic parameter
-        if (genparam.size()) {
-            ret += ",";
-        }
-        ret += "\n";
-        icnt++;
-    }
-
     for (auto &p : genparam) {
         ln = addspaces() + "parameter ";
         if (!p->isString()) {
@@ -222,8 +230,6 @@ std::string ModuleObject::generate_sv_mod_signals() {
     std::string ret = "";
     std::string ln;
     std::string text;
-    int tcnt = 0;
-    tcnt = 0;
     text = "";
     for (auto &p: getEntries()) {
         if (p->isComment()) {
@@ -234,8 +240,8 @@ std::string ModuleObject::generate_sv_mod_signals() {
             || p->isOutput()
             || p->isOperation()
             || p->isTypedef()
-            || p->isParam()
-            || p->getClockEdge() != CLK_ALWAYS) {
+            || p->isParam() ) {
+            //|| p->getClockEdge() != CLK_ALWAYS) {
             text = "";
             continue;
         }
@@ -263,9 +269,12 @@ std::string ModuleObject::generate_sv_mod_signals() {
         ln += ";";
         p->addComment(ln);
         ret += ln + "\n";
-        tcnt++;
+    }
+    if (ret.size()) {
+        ret += "\n";
     }
 
+    /*
     // r, rin:
     std::map<std::string,std::list<GenObject *>>regmap;
     std::map<std::string,bool> is2dm;
@@ -289,7 +298,7 @@ std::string ModuleObject::generate_sv_mod_signals() {
     if (tcnt) {
         ret += "\n";
         tcnt = 0;
-    }
+    }*/
     return ret;
 }
 
@@ -310,288 +319,9 @@ std::string ModuleObject::generate_sv_mod_clock(GenObject *p) {
     return ret;
 }
 
-std::string ModuleObject::generate_sv_mod_proc(GenObject *proc) {
-    std::map<std::string, std::list<GenObject *>>regmap;
-    std::map<std::string, bool> is2dm;
-    std::string ret = "";
-    std::string combtext = "";
-    std::string ln;
-    std::string r, v;
-    GenObject *preg;
-    int tcnt = 0;
-
-    pushspaces();
-    
-    // process variables declaration
-    getSortedRegsMap(regmap, is2dm);
-
-    for (std::map<std::string, std::list<GenObject *>>::iterator it = regmap.begin();
-        it != regmap.end(); ++it) {
-        preg = (*it->second.begin());
-        r = preg->r_prefix();
-        v = preg->v_prefix();
-        combtext += addspaces() + getType() + "_" + r + "egisters " + v + ";\n";
-    }
-
-    for (auto &e: proc->getEntries()) {
-        if (!e->isValue() && !e->isStruct()) {    // no structure inside of process, typedef can be removed
-            continue;
-        }
-
-        ln = addspaces() + e->getType() + " " + e->getName();
-        if (e->getObjDepth()) {
-            ln += "[0: " + e->getStrDepth() + "-1]";
-        }
-        ln += ";";
-        e->addComment(ln);
-        combtext += ln + "\n";
-        tcnt++;
-    }
-    if (tcnt) {
-        combtext += "\n";
-        tcnt = 0;
-    }
-
-    // nullify all local variables to avoid latches:
-    size_t ret_sz = combtext.size();
-    for (auto &e: proc->getEntries()) {
-        combtext += generate_all_proc_nullify(e, "", "i");
-    }
-    if (combtext.size() != ret_sz) {
-        combtext += "\n";
-    }
-
-    // v = r
-    ret_sz = static_cast<int>(combtext.size());
-    combtext += generate_all_proc_r_to_v(false);
-
-    if (ret_sz != combtext.size()) {
-        combtext += "\n";
-    }
-
-    // Generate operations:
-    if (proc->isAssign()) {
-        // All entries inside of process should be executed out-of process:
-        for (auto &e: proc->getEntries()) {
-            proc->addPostAssign(e);
-        }
-    } else {
-        for (auto &e: proc->getEntries()) {
-            if (e->isOperation()) {
-                combtext += e->generate();
-            }
-        }
-    }
-
-    // rin = v
-    combtext += generate_all_proc_r_to_v(true);
-
-    popspaces();
-    // TODO: move memory into usual proc generation
-    //       The following fragment only for memory generation.
-    //       NO REGISTERS only LogicArray
-    // Do not generate empty process.
-    // Process could became empty if there is ASSIGN operator exists:
-    if (combtext.size()) {
-        GenObject *clkport = proc->getClockPort();
-        if (clkport) {
-            ret += addspaces() + "always_ff @(posedge " + clkport->getName();
-            ret += ") begin: " + proc->getName() + "_proc\n";
-        } else {
-            ret += "always_comb\n";
-            ret += "begin: " + proc->getName() + "_proc\n";
-        }
-        ret += combtext;
-        ret += "end: " + proc->getName() + "_proc\n";
-    }
-
-    // Post assinment stage:
-    ret += proc->getPostAssign();
-
-    if (ret.size()) {
-        ret += "\n";
-    }
-    return ret;
-}
-
-std::string ModuleObject::generate_sv_mod_proc_always(bool async_on_off) {
-    std::map<std::string,std::list<GenObject *>> regmap;
-    std::map<std::string,bool> is2dm;
-    std::list<GenObject *> combproc;
-    std::string ret = "";
-    std::string r;
-    std::string procname;
-    EResetActive active;
-    std::string blkname = "rg_proc";  // to minimize differences. Could be removed later
-    GenObject *preg;
-    GenObject *resobj;
-    char i_idx[2] = {0};
-
-    const char *SV_STR_CLKEDGE[3] = {"*", "posedge", "negedge"};
-    const char *SV_STR_RSTEDGE[3] = {"", "negedge", "posedge"};
-    const char *SV_STR_ACTIVE[3] = {"", "1'b0", "1'b1"};
-
-    getCombProcess(combproc);
-    getSortedRegsMap(regmap, is2dm);
-
-    /**
-        always_ff @(posedge clk, negedge nrst) begin: rg_proc
-            if (nrst == 1'b0) begin
-                r <= ModuleType_r_reset;
-            end else begin
-                r <= rin;
-            end
-        end: rg_proc
-    */
-    for (std::map<std::string,std::list<GenObject *>>::iterator it = regmap.begin();
-        it != regmap.end(); it++) {
-        preg = (*it->second.begin());
-        resobj = preg->getResetPort();
-
-        r = it->first;                          // map sorted by v_prefix
-        blkname = r + "g_proc";                 // to minimize differences. Could be removed later
-        active = preg->getResetActive();
-        procname = r + "egisters";
-
-        ret += addspaces() + "always_ff @(";
-        ret += SV_STR_CLKEDGE[preg->getClockEdge()];
-        ret += std::string(" ") + preg->getClockPort()->getName();
-
-        if (async_on_off && active != ACTIVE_NONE) {
-            ret += std::string(", ") + SV_STR_RSTEDGE[active] + " ";
-            ret += resobj->getName();
-        }
-
-        ret += ") begin: " + blkname + "\n";
-        pushspaces();
-
-        if (async_on_off && active != ACTIVE_NONE) {
-            ret += addspaces() + "if (" + resobj->getName() + " == ";
-            ret += std::string(SV_STR_ACTIVE[active]) + ") begin\n";
-            pushspaces();
-                
-            // r <= reset
-            if (!is2dm[it->first]) {
-                ret += addspaces() + r + " <= " + getType() + "_" + r + "_reset;\n";
-            } else {
-                for (auto &p : it->second) {
-                    i_idx[0] = 'i';
-                    ret += p->getCopyValue(i_idx, r.c_str(), "<=", "");
-                }
-            }
-
-            popspaces();
-            ret += addspaces() + "end else begin\n";
-            pushspaces();
-        }
-
-        // r <= rin only if comb process exists in the module:
-        if (combproc.size()) {
-            if (!is2dm[it->first]) {
-                ret += addspaces() + r + " <= " + r + "in;\n";
-            } else {
-                for (auto &p : it->second) {
-                    i_idx[0] = 'i';
-                    ret += p->getCopyValue(i_idx, r.c_str(), "<=", (r + "in").c_str());
-                }
-            }
-
-            if (async_on_off && active != ACTIVE_NONE) {
-                popspaces();
-                ret += addspaces() + "end\n";
-            }
-        }
-
-        // additional operation on posedge clock events
-        for(auto &p : getEntries()) {
-            if(!p->isProcess() || p->getName() != procname) {
-                continue;
-            }
-            ret += "\n";
-            for(auto &s: p->getEntries()) {
-                ret += s->generate();
-            }
-        }
-
-        popspaces();
-        ret += addspaces() + "end: " + blkname + "\n";
-        ret += "\n";
-    }
-    return ret; 
-}
-
-/** There're 3 cases:
-        - 'async_reset' exists and registers with 'reset' exists. Need to generate 1 and 2.
-        - 'async_reset' disabled but regsiters with 'reset' exists (JTAG). Need to generate only 1.
-        - no 'async_reset' and no registers with reset. Need to generate only 2.
- */
-std::string ModuleObject::generate_sv_mod_proc_registers() {
-    std::string ret = "";
-
-    // Check if registers with reset exists in this module
-    bool reset_exists = false;
-    for (auto &p : getEntries()) {
-        if (p->getResetActive() != ACTIVE_NONE) {
-            reset_exists = true;
-            break;
-        }
-    }
-
-    // Async reset only if registers exists
-    if (isAsyncResetParam() && reset_exists) {
-        ret += "\n";            // remove me: just to minimize diff.
-        ret += "generate\n";
-        pushspaces();
-
-        ret += addspaces() + "if (async_reset) begin: async_rst_gen\n";
-        ret += "\n";
-        pushspaces();
-    }
-
-    if (reset_exists) {
-        /** case 1:
-                always_ff (posedge clk, negedge nrst) begin
-                    if (nrst == 0) begin
-                        r <= reset
-                    end else  begin
-                        r <= rin
-                    end if
-                end
-         */
-        ret += generate_sv_mod_proc_always(true);
-    }
-
-    if (isAsyncResetParam() && reset_exists) {
-        popspaces();
-        ret += addspaces() + "end: async_rst_gen\n";
-        ret += addspaces() + "else begin: no_rst_gen\n";
-        ret += "\n";
-        pushspaces();
-    }
-
-    if (isAsyncResetParam() && reset_exists
-        || !reset_exists) {
-        /** case 2:
-                always_ff (posedge clk) begin
-                    r <= rin
-                end
-         */
-        ret += generate_sv_mod_proc_always(false);
-    }
-
-    if (isAsyncResetParam() && reset_exists) {
-        popspaces();
-        ret += addspaces() + "end: no_rst_gen\n";
-        popspaces();
-        ret += "endgenerate\n";
-        ret += "\n";
-    }
-    return ret;
-}
-
 
 std::string ModuleObject::generate_sv_mod(bool no_pkg) {
-    int tcnt = 0;
+    size_t tcnt = 0;
     std::string ret = "";
     std::string text;
     std::string ln;
@@ -665,16 +395,17 @@ std::string ModuleObject::generate_sv_mod(bool no_pkg) {
         ret += "\n";
     } else {
         // insert pkg data for template modules: ram, queue, ..
-        ret += generate_sv_pkg_localparam();
+        //ret += generate_sv_pkg_localparam();
+        ret += generate_sv_pkg();
     }
 
     // static strings
     ret += generate_sv_mod_param_strings();
 
     // struct definitions:
-    if (tmplparam.size()) {
-        ret += generate_sv_pkg_struct();
-    }
+    //if (tmplparam.size()) {
+    //    ret += generate_sv_pkg_struct();
+    //}
 
 
     // Signal list:
@@ -689,12 +420,24 @@ std::string ModuleObject::generate_sv_mod(bool no_pkg) {
     }
 
     // Sub-module instantiation
+    tcnt = ret.size();
     for (auto &p: getEntries()) {
         if (p->isOperation()) {
             ret += p->generate();
         }
     }
+    if (tcnt != ret.size()) {
+        ret += "\n";
+    }
 
+    // Process
+    for (auto &p: getEntries()) {
+        if (!p->isProcess()) {
+            continue;
+        }
+        ret += p->generate();
+    }
+/*
     // Clock process
     for (auto &p: entries_) {
         if (!p->isClock()) {
@@ -712,6 +455,7 @@ std::string ModuleObject::generate_sv_mod(bool no_pkg) {
     }
 
     ret += generate_sv_mod_proc_registers();
+*/
 
     ret += "endmodule: " + getType() + "\n";
 

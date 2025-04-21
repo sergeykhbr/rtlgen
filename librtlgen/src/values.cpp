@@ -16,6 +16,7 @@
 
 #include "api_rtlgen.h"
 #include "values.h"
+#include "structs.h"
 #include "utils.h"
 #include <cstring>
 
@@ -31,8 +32,6 @@ GenValue::GenValue(GenObject *parent,
                    const char *comment) :
     GenObject(parent, comment),
     name_(std::string(name)),
-    v_(""),
-    r_(""),
     objValue_(0),
     objClock_(clk),
     objReset_(nrst),
@@ -55,7 +54,7 @@ GenValue::GenValue(GenObject *parent, const char *name, GenObject *val, const ch
     objValue_ = val;
 }
 
-std::string GenValue::v_name(std::string v) {
+/*std::string GenValue::v_name(std::string v) {
     std::string ret = "";
     ret = getName();
     if (v.size()) {
@@ -80,7 +79,59 @@ std::string GenValue::r_name(std::string v) {
         ret = getParent()->r_name(ret);
     }
     return ret;
+}*/
+
+std::string GenValue::nameInModule(EPorts portid) {
+    std::string ret = "";
+    if (getParent()) {
+        ret += getParent()->nameInModule(portid);
+    }
+    if (ret.size()) {
+        ret += ".";
+    }
+    ret += getName();
+    return ret;
 }
+
+
+std::string GenValue::v_prefix() {
+    // All register must be included into register structure owned by module
+    GenObject *tmp = this;
+    while (tmp) {
+        if (tmp->isStruct() && tmp->getParent()->isModule()) {
+            if (tmp->getClockEdge() != CLK_ALWAYS) {
+                bool st = true;
+            }
+            break;
+        }
+        tmp = tmp->getParent();
+        if (tmp->isModule()) {
+            // No need to search deeper, it is not a register
+            break;
+        }
+    }
+    return "";
+}
+
+std::string GenValue::r_prefix() {
+    // All register must be included into register structure owned by module
+    GenObject *tmp = this;
+    while (tmp) {
+        if (tmp->isStruct() && tmp->getParent()->isModule()) {
+            if (tmp->getClockEdge() != CLK_ALWAYS) {
+                bool st = true;
+            }
+            break;
+        }
+        tmp = tmp->getParent();
+        if (tmp->isModule()) {
+            // No need to search deeper, it is not a register
+            break;
+        }
+    }
+    return "";
+}
+
 
 
 std::string BOOL::getType() {

@@ -439,12 +439,19 @@ Operation &POW2(GenObject &sz, const char *comment=NO_COMMENT);
 Operation &RSH(GenObject &a, GenObject &sz, const char *comment=NO_COMMENT);
 Operation &RSH(GenObject &a, int sz, const char *comment=NO_COMMENT);
 
-/** Set value b into a (type could be checked to avoid different types assignment):
+/** Set value b into a:
     sysc: a = b;
     sv:   a = b;
     vhdl: a := b;
  */
 Operation &SETVAL(GenObject &a, GenObject &b, const char *comment=NO_COMMENT);
+
+/** Set non-blocking value b into a:
+    sysc: a = b;
+    sv:   a <= b;
+    vhdl: a <= b;
+ */
+Operation &SETVAL_NB(GenObject &a, GenObject &b, const char *comment=NO_COMMENT);
 
 /** Write 0 into variable:
     sysc: a = 0;

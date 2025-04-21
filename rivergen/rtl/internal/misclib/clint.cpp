@@ -123,7 +123,7 @@ TEXT();
     SETVAL(rdata, comb.vrdata);
 
 TEXT();
-    SYNC_RESET(*this);
+    SYNC_RESET();
 
 TEXT();
     i = &FOR ("i", CONST("0"), cpu_total, "++");

@@ -187,7 +187,7 @@ TEXT();
 
 
 TEXT();
-    SYNC_RESET(*this);
+    SYNC_RESET();
 
 TEXT();
      i = &FOR ("i", CONST("0"), bus1->CFG_BUS1_PSLV_TOTAL, "++");

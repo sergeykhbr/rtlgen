@@ -79,7 +79,7 @@ class cdc_afifo : public ModuleObject {
      RegSignal rq2_wgray;
      RegSignal rq1_wgray;
      RegSignal rempty;
-     RegArray mem;
+     LogicArray mem;
 
  private:
     CombProcess comb;

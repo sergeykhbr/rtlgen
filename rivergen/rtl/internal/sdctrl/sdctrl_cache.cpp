@@ -372,7 +372,7 @@ TEXT();
 
 
 TEXT();
-    SYNC_RESET(*this);
+    SYNC_RESET();
 
 TEXT();
     SETVAL(line_wdata_i, comb.vb_line_wdata);

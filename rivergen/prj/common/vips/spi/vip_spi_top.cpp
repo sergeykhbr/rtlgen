@@ -143,7 +143,7 @@ TEXT();
     SETVAL(resp_rdata, comb.rdata);
 
 TEXT();
-    SYNC_RESET(*this);
+    SYNC_RESET();
 
 TEXT();
     SETONE(w_req_ready);

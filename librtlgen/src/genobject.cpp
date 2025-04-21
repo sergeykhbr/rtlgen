@@ -28,6 +28,28 @@ GenObject::GenObject(GenObject *parent, const char *comment) {
     }
 }
 
+void GenObject::postInit() {
+    for (auto &p: getEntries()) {
+        p->postInit();
+    }
+}
+
+GenObject *GenObject::getChildByName(std::string name) {
+    for (auto &p : getEntries()) {
+        if (p->isOperation()) {
+            // Exclude operations from search
+            continue;
+        }
+        if (p->getName() == name) {
+            return p;
+        }
+    }
+    if (getSelector()) {
+        bool st = true;
+    }
+    return 0;
+}
+
 std::string GenObject::getFullPath() {
     std::string ret = "";
     if (parent_) {
@@ -44,6 +66,26 @@ GenObject *GenObject::getParentFile() {
         ret = parent_->getParentFile();
     }
     return ret;
+}
+
+GenObject *GenObject::getParentModule() {
+    GenObject *ret = this;
+    while (ret) {
+        if (ret->isModule()) {
+            return SCV_get_module_class(ret);
+        }
+        ret = ret->getParent();
+    }
+    return 0;
+}
+
+bool GenObject::isAsyncResetParam() {
+    for (auto &p : getEntries()) {
+        if (p->isAsyncResetParam()) {
+            return true;
+        }
+    }
+    return false;
 }
 
 GenObject *GenObject::getFile() {
@@ -92,23 +134,6 @@ bool GenObject::isIgnoreSignal() {
     }
     return false;
 }
-
-std::string GenObject::v_name(std::string v) {
-    std::string ret;   
-    if (v.size()) {
-        ret = v_prefix() + "." + v;
-    }
-    return v;
-}
-
-std::string GenObject::r_name(std::string v) {
-    std::string ret;   
-    if (v.size()) {
-        ret = r_prefix() + "." + v;
-    }
-    return v;
-}
-
 
 std::string GenObject::getLibName() {
     if (getParent()) {

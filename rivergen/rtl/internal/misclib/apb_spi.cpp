@@ -424,7 +424,7 @@ TEXT();
     SETZERO(resp_err);
 
 TEXT();
-    SYNC_RESET(*this);
+    SYNC_RESET();
 
 TEXT();
     SETVAL(o_sclk, AND2_L(level, cs));

@@ -213,14 +213,14 @@ std::string ModuleObject::generate_sysc_h() {
     // Constructor declaration:
     std::string space1 = addspaces() + getType() + "(";
     out += space1 + "sc_module_name name";
-    if (isAsyncResetParam() && getAsyncResetParam() == 0) {
+    /*if (isAsyncResetParam() && getAsyncResetParam() == 0) {
         ln = "";
         while (ln.size() < space1.size()) {
             ln += " ";
         }
         ln += "bool async_reset";           // Mandatory generic parameter
         out += ",\n" + ln;
-    }
+    }*/
     for (auto &p: getEntries()) {
         if (!p->isParamGeneric() || p->isParamTemplate()) {
             continue;
@@ -254,8 +254,9 @@ std::string ModuleObject::generate_sysc_h() {
 
     // Generic parameter local storage:
     tcnt = 0;
-    if (isAsyncResetParam() && getAsyncResetParam() == 0) {
-        out += addspaces() + async_reset_.getType() + " async_reset_;\n";
+    GenObject *pAsyncReset = getChildByName("async_reset");
+    if (pAsyncReset) {
+        out += addspaces() + pAsyncReset->getType() + " async_reset_;\n";
         tcnt++;
     }
     for (auto &p: getEntries()) {
@@ -447,7 +448,7 @@ std::string ModuleObject::generate_sysc_proc_registers() {
             pushspaces();
 
             // r <= reset
-            if (!is2dm[it->first]) {
+            /*if (!is2dm[it->first]) {
                 ret += addspaces() + getType() + "_" + r + "_reset(" + r + ");\n";
             } else {
                 char i_idx[2] = {0};
@@ -455,7 +456,7 @@ std::string ModuleObject::generate_sysc_proc_registers() {
                     i_idx[0] = 'i';
                     ret += p->getCopyValue(i_idx, r.c_str(), "=", "");
                 }
-            }
+            }*/
 
             popspaces();
             ret += addspaces() + "} else {\n";
@@ -772,14 +773,14 @@ std::string ModuleObject::generate_sysc_constructor() {
     }
     space1 += "::" + getType() + "(";
     ret += space1 + "sc_module_name name";
-    if (isAsyncResetParam() && getAsyncResetParam() == 0) {
+    /*if (isAsyncResetParam() && getAsyncResetParam() == 0) {
         ln = "";
         while (ln.size() < space1.size()) {
             ln += " ";
         }
         ln += "bool async_reset";           // Mandatory generic parameter
         ret += ",\n" + ln;
-    }
+    }*/
     for (auto &p: getEntries()) {
         if (!p->isParamGeneric() || p->isParamTemplate()) {
             continue;
@@ -816,9 +817,9 @@ std::string ModuleObject::generate_sysc_constructor() {
     ret += "\n";
     pushspaces();
     // local copy of the generic parameters:
-    if (isAsyncResetParam() && getAsyncResetParam() == 0) {
+    /*if (isAsyncResetParam() && getAsyncResetParam() == 0) {
         ret += addspaces() + "async_reset_ = async_reset;\n";
-    }
+    }*/
     for (auto &p: getEntries()) {
         if (p->isParamTemplate()) {
             // do nothing
@@ -1059,7 +1060,7 @@ std::string ModuleObject::generate_sysc_cpp() {
         out += generate_sysc_proc(p);
     }
 
-    out += generate_sysc_proc_registers();
+    //out += generate_sysc_proc_registers();
     return out;
 }
 
@@ -1103,15 +1104,15 @@ std::string ModuleObject::generate_sysc_proc(GenObject *proc) {
 
     // nullify all local variables to avoid latches:
     size_t ret_sz = ret.size();
-    for (auto &e: proc->getEntries()) {
+    /*for (auto &e: proc->getEntries()) {
         ret += generate_all_proc_nullify(e, "", "i");
-    }
+    }*/
     if (ret.size() != ret_sz) {
         ret += "\n";
     }
 
     tcnt = static_cast<int>(ret.size());
-    ret += generate_all_proc_r_to_v(false);
+    //ret += generate_all_proc_r_to_v(false);
 
     if (tcnt != static_cast<int>(ret.size())) {
         ret += "\n";

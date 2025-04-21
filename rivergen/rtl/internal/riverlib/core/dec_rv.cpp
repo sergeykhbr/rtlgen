@@ -1005,7 +1005,7 @@ TEXT();
     SETVAL(progbuf_ena, i_progbuf_ena);
 
 TEXT();
-    SYNC_RESET(*this, &NZ(i_flush_pipeline));
+    SYNC_RESET(&NZ(i_flush_pipeline));
 
 TEXT();
     SETVAL(o_pc, pc);

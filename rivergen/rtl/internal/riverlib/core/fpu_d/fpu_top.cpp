@@ -260,7 +260,7 @@ TEXT();
 
 
 TEXT();
-    SYNC_RESET(*this);
+    SYNC_RESET();
 
 TEXT();
     SETVAL(w_fadd_d, BIT(ivec, SUB2(CONST("Instr_FADD_D"), CONST("Instr_FADD_D"))));

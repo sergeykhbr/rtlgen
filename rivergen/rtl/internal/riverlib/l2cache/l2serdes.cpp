@@ -174,7 +174,7 @@ TEXT();
     ENDIF();
 
 TEXT();
-    SYNC_RESET(*this);
+    SYNC_RESET();
 
 TEXT();
     SETVAL(comb.vmsto.aw_valid, i_l2o.aw_valid);

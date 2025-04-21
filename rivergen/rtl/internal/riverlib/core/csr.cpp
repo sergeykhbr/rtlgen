@@ -1031,7 +1031,7 @@ TEXT();
 
 
 TEXT();
-    SYNC_RESET(*this);
+    SYNC_RESET();
 
 TEXT();
     SETVAL(o_req_ready, comb.v_req_ready);

@@ -23,16 +23,25 @@
 
 namespace sysvc {
 
-class DecConst : public GenObject {
+class ConstObject : public GenObject {
  public:
-    DecConst(uint64_t v, const char *comment=NO_COMMENT)
-        : GenObject(NO_PARENT, comment), ui64_(v) {}
-    DecConst(int v, const char *comment=NO_COMMENT)
-        : GenObject(NO_PARENT, comment), ui64_(static_cast<uint64_t>(v)) {}
+    ConstObject(GenObject *parent, const char *comment)
+        : GenObject(NO_PARENT, comment) {}
 
     virtual bool isConst() override { return true; }
-    virtual uint64_t getValue() override { return ui64_; }
     virtual std::string getName() override { return getStrValue(); }
+    std::string nameInModule(EPorts portid) override;
+};
+
+
+class DecConst : public ConstObject {
+ public:
+    DecConst(uint64_t v, const char *comment=NO_COMMENT)
+        : ConstObject(NO_PARENT, comment), ui64_(v) {}
+    DecConst(int v, const char *comment=NO_COMMENT)
+        : ConstObject(NO_PARENT, comment), ui64_(static_cast<uint64_t>(v)) {}
+
+    virtual uint64_t getValue() override { return ui64_; }
     virtual std::string getStrValue() override;
     virtual uint64_t getWidth() override { return 32; }
 
@@ -40,13 +49,11 @@ class DecConst : public GenObject {
     uint64_t ui64_;
 };
 
-class HexConst : public GenObject {
+class HexConst : public ConstObject {
  public:
-    HexConst(uint64_t v) : GenObject(NO_PARENT, NO_COMMENT), ui64_(v) {}
+    HexConst(uint64_t v) : ConstObject(NO_PARENT, NO_COMMENT), ui64_(v) {}
 
-    virtual bool isConst() override { return true; }
     virtual uint64_t getValue() override { return ui64_; }
-    virtual std::string getName() override { return getStrValue(); }
     virtual std::string getStrValue() override;
     virtual uint64_t getWidth() override { return 64; }
 
@@ -54,15 +61,13 @@ class HexConst : public GenObject {
     uint64_t ui64_;
 };
 
-class FloatConst : public GenObject {
+class FloatConst : public ConstObject {
  public:
     FloatConst(double v)
-        : GenObject(NO_PARENT, NO_COMMENT), f64_(v) {}
+        : ConstObject(NO_PARENT, NO_COMMENT), f64_(v) {}
 
-    virtual bool isConst() override { return true; }
     virtual bool isFloat() override { return true; }
     virtual double getFloatValue() override { return f64_; }
-    virtual std::string getName() override { return getStrValue(); }
     virtual std::string getStrValue() override;
     virtual uint64_t getWidth() override { return 64; }
 
@@ -71,13 +76,11 @@ class FloatConst : public GenObject {
 };
 
 // TODO: StringConst and StringVariable
-class StringConst : public GenObject {
+class StringConst : public ConstObject {
  public:
     StringConst(const char *val, const char *comment=NO_COMMENT);
 
-    virtual bool isConst() override { return true; }
     virtual bool isString() override { return true; }
-    virtual std::string getName() override { return getStrValue(); }
     virtual std::string getStrValue() override { return strval_; }
 
  protected:

@@ -36,6 +36,20 @@ class ArrayType {
         objDepth_ = SCV_parse_to_obj(parent, depth);
     }
  protected:
+    virtual std::string selectorName() {
+        std::string ret;
+        if (objArridx_ == 0) {
+            // Full vector connected to module IO-port case
+            return ret;
+        }
+        if (SCV_is_vhdl()) {
+            ret = "(" + objArridx_->nameInModule(PORT_OUT) + ")";
+        } else {
+            ret = "[" + objArridx_->nameInModule(PORT_OUT) + "]";
+        }
+        return ret;
+    }
+ protected:
     GenObject *objArridx_;                                    // Used in ARRAYITEM operation
     GenObject *objDepth_;
 };
@@ -57,6 +71,11 @@ class ObjectArray : public T,
     virtual std::string getStrDepth() override { return objDepth_->getName(); }
     virtual void setSelector(GenObject *sel) override { objArridx_ = sel; }           // Set object as an array index
     virtual GenObject *getSelector() override { return objArridx_; }                  // generate  Name[obj]
+    std::string nameInModule(EPorts portid) override {
+        std::string ret = T::nameInModule(portid);
+        ret += selectorName();
+        return ret;
+    }
 };
 
 
@@ -91,6 +110,11 @@ class ValueArray : public T,
     virtual std::string getStrDepth() override { return objDepth_->getName(); }
     virtual void setSelector(GenObject *sel) override { objArridx_ = sel; }           // Set object as an array index
     virtual GenObject *getSelector() override { return objArridx_; }                  // generate  Name[obj]
+    std::string nameInModule(EPorts portid) override {
+        std::string ret = T::nameInModule(portid);
+        ret += selectorName();
+        return ret;
+    }
 };
 
 // T = signal, logic, registers contains Width argument
@@ -122,6 +146,11 @@ class WireArray : public T,
     virtual std::string getStrDepth() override { return objDepth_->getName(); }
     virtual void setSelector(GenObject *sel) override { objArridx_ = sel; }           // Set object as an array index
     virtual GenObject *getSelector() override { return objArridx_; }                  // generate  Name[obj]
+    std::string nameInModule(EPorts portid) override {
+        std::string ret = T::nameInModule(portid);
+        ret += selectorName();
+        return ret;
+    }
 };
 
 // Argument 'width' added to ValueArray

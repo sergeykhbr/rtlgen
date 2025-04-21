@@ -295,7 +295,7 @@ TEXT();
     SETVAL(dport_rdata, comb.vrdata);
 
 TEXT();
-    SYNC_RESET(*this);
+    SYNC_RESET();
 
 TEXT();
     SETVAL(wb_stack_raddr, comb.vb_stack_raddr);

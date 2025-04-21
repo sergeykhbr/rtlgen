@@ -47,7 +47,7 @@ void sdctrl_err::proc_comb() {
     ENDIF();
 
 TEXT();
-    SYNC_RESET(*this);
+    SYNC_RESET();
 
 TEXT();
     SETVAL(o_err_code, code);

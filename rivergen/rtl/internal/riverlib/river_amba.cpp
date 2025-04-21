@@ -430,7 +430,7 @@ TEXT();
     ENDIF();
 
 TEXT();
-    SYNC_RESET(*this);
+    SYNC_RESET();
 
 TEXT();
     SETVAL(comb.vmsto.ac_ready, comb.v_snoop_next_ready);

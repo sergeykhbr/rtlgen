@@ -492,7 +492,7 @@ TEXT();
     ENDIF();
 
 TEXT();
-    SYNC_RESET(*this);
+    SYNC_RESET();
 
 TEXT();
     SETVAL(line_direct_access_i, comb.v_direct_access);

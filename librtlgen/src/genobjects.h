@@ -38,13 +38,21 @@ enum EResetActive {
     ACTIVE_HIGH
 };
 
+enum EPorts {
+    PORT_NONE,
+    PORT_IN,
+    PORT_OUT
+};
+
 class GenObject {
  public:
     GenObject(GenObject *parent, const char *comment);       // 
 
-    virtual void postInit() {}
+    virtual void postInit();
     virtual std::list<GenObject *> &getEntries() { return entries_; }
     virtual GenObject *getParent() { return parent_; }
+    virtual void setParent(GenObject *p) { parent_ = p; }
+    virtual GenObject *getChildByName(std::string name);
     virtual std::string getComment() { return comment_; }
     virtual std::string getType() { return std::string(""); }
     virtual std::string getName() { return std::string(""); }
@@ -56,8 +64,9 @@ class GenObject {
     virtual void add_dependency(GenObject *p) {}
 
     virtual GenObject *getParentFile();
-    virtual bool isAsyncResetParam() { return false; }  // jtagtap has its own trst signal but does not have async_reset
-    virtual GenObject *getAsyncResetParam() { return 0; }// async_reset declared as a local parameter at asic_top, no need to autogenerate it
+    virtual GenObject *getParentModule();
+    virtual bool isAsyncResetParam();                    // jtagtap has its own trst signal but does not have async_reset
+    //virtual GenObject *getAsyncResetParam() { return 0; }// async_reset declared as a local parameter at asic_top, no need to autogenerate it
     virtual GenObject *getResetPort() { return 0; }     // reset port object
     virtual GenObject *getClockPort() { return 0; }
     virtual EClockEdge getClockEdge() { return CLK_ALWAYS; }
@@ -104,10 +113,9 @@ class GenObject {
     virtual bool isRom() { return false; }
     virtual std::string getRomFile() { return ""; }
 
+    virtual std::string nameInModule(EPorts portid) { return std::string(""); } // Name inside module
     virtual std::string v_prefix() { return std::string(""); }
     virtual std::string r_prefix() { return std::string(""); }
-    virtual std::string v_name(std::string v);
-    virtual std::string r_name(std::string v);
 
     virtual uint64_t getValue() { return 0; }           // variable value used in calculations
     virtual double getFloatValue() { return 0; }

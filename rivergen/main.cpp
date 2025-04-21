@@ -24,20 +24,20 @@ int main()
     RiverProject *prj = new RiverProject("_generated");
     prj->postInit();
 
-    printf("Generating SystemC into '%s' subfolder\n",
-            prj->getFullPath().c_str());
-    SCV_set_generator(SYSC_ALL);
-    prj->generate();
+//    printf("Generating SystemC into '%s' subfolder\n",
+//            prj->getFullPath().c_str());
+//    SCV_set_generator(SYSC_ALL);
+//    prj->generate();
 
     printf("Generating SystemVerilog into '%s' subfolder\n",
             prj->getFullPath().c_str());
     SCV_set_generator(SV_ALL);
     prj->generate();
 
-    printf("Generating VHDL into '%s' subfolder\n",
-            prj->getFullPath().c_str());
-    SCV_set_generator(VHDL_ALL);
-    prj->generate();
+//    printf("Generating VHDL into '%s' subfolder\n",
+//            prj->getFullPath().c_str());
+//    SCV_set_generator(VHDL_ALL);
+//    prj->generate();
 
     SCV_memory_info();
     return 0;

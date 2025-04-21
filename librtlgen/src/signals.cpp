@@ -32,7 +32,7 @@ static GenObject* getModuleInput(GenObject *p, const char *portname) {
     return 0;
 }
 
-void detect_vr_prefixes(GenObject *obj, std::string &v, std::string &r) {
+/*void detect_vr_prefixes(GenObject *obj, std::string &v, std::string &r) {
     if (obj->getClockEdge() == CLK_ALWAYS) {
         return;
     }
@@ -66,7 +66,7 @@ void detect_vr_prefixes(GenObject *obj, std::string &v, std::string &r) {
         v += '0' + static_cast<char>(clkmap.size());
         r += '0' + static_cast<char>(clkmap.size());
     }
-}
+}*/
 
 
 Signal::Signal(GenObject *parent,
@@ -98,7 +98,7 @@ Signal::Signal(GenObject *parent,
                     getName().c_str());
         }
     }
-    detect_vr_prefixes(this, v_, r_);
+    //detect_vr_prefixes(this, v_, r_);
 }
 
 Signal1::Signal1(GenObject *parent,
@@ -130,7 +130,7 @@ Signal1::Signal1(GenObject *parent,
                     getName().c_str());
         }
     }
-    detect_vr_prefixes(this, v_, r_);
+    //detect_vr_prefixes(this, v_, r_);
 }
 
 

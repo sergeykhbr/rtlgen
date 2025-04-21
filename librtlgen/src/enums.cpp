@@ -28,7 +28,7 @@ EnumObject::EnumObject(GenObject *parent,
 
 void EnumObject::add_value(const char *name, const char *comment) {
     char tstr[64];
-    int total = static_cast<int>(entries_.size());
+    int total = static_cast<int>(getEntries().size());
     RISCV_sprintf(tstr, sizeof(tstr), "%d", total);
     new ParamI32D(this, name, tstr, comment);
 }
