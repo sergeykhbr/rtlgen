@@ -218,8 +218,6 @@ class LogicMemory : public LogicArray {
  public:
     LogicMemory(GenObject *parent, const char *name, const char *width, const char *depth,
         const char *comment) : LogicArray(parent, name, width, depth, comment) {}
-
-    virtual bool isResetDisabled() override { return true; }        // no registers reset
 };
 
 /**

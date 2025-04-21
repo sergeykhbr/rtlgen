@@ -19,6 +19,25 @@
 
 namespace sysvc {
 
+std::string ParamBOOL::generate() {
+    std::string ret = "";
+    ret += addspaces();
+    if (SCV_is_sysc()) {
+        ret += "static const ";
+    } else if (SCV_is_sv()) {
+        ret += "localparam ";
+    } else if (SCV_is_vhdl()) {
+        ret += "constant ";
+    }
+    ret += getType() + " ";
+
+    ret += getName();
+    ret += " = " + BOOL::getStrValue() + ";";
+    addComment(ret);
+    ret += "\n";
+    return ret;
+}
+
 std::string ParamString::generate() {
     std::string ret = "";
     ret += addspaces();
@@ -74,6 +93,101 @@ std::string ParamString::generate() {
         ret += ")";
     }
     ret += ";\n";
+    return ret;
+}
+
+std::string ParamI32D::generate() {
+    std::string ret = "";
+    ret += addspaces();
+    if (SCV_is_sysc()) {
+        ret += "static const ";
+    } else if (SCV_is_sv()) {
+        ret += "localparam ";
+    } else if (SCV_is_vhdl()) {
+        ret += "constant ";
+    }
+    ret += getType() + " ";
+
+    ret += getName();
+    ret += " = " + I32D::getStrValue() + ";";
+    addComment(ret);
+    ret += "\n";
+    return ret;
+}
+
+std::string ParamUI32D::generate() {
+    std::string ret = "";
+    ret += addspaces();
+    if (SCV_is_sysc()) {
+        ret += "static const ";
+    } else if (SCV_is_sv()) {
+        ret += "localparam ";
+    } else if (SCV_is_vhdl()) {
+        ret += "constant ";
+    }
+    ret += getType() + " ";
+
+    ret += getName();
+    ret += " = " + UI32D::getStrValue() + ";";
+    addComment(ret);
+    ret += "\n";
+    return ret;
+}
+
+std::string ParamUI64H::generate() {
+    std::string ret = "";
+    ret += addspaces();
+    if (SCV_is_sysc()) {
+        ret += "static const ";
+    } else if (SCV_is_sv()) {
+        ret += "localparam ";
+    } else if (SCV_is_vhdl()) {
+        ret += "constant ";
+    }
+    ret += getType() + " ";
+
+    ret += getName();
+    ret += " = " + UI64H::getStrValue() + ";";
+    addComment(ret);
+    ret += "\n";
+    return ret;
+}
+
+std::string ParamTIMESEC::generate() {
+    std::string ret = "";
+    ret += addspaces();
+    if (SCV_is_sysc()) {
+        ret += "static const ";
+    } else if (SCV_is_sv()) {
+        ret += "localparam ";
+    } else if (SCV_is_vhdl()) {
+        ret += "constant ";
+    }
+    ret += getType() + " ";
+
+    ret += getName();
+    ret += " = " + TIMESEC::getStrValue() + ";";
+    addComment(ret);
+    ret += "\n";
+    return ret;
+}
+
+std::string ParamLogic::generate() {
+    std::string ret = "";
+    ret += addspaces();
+    if (SCV_is_sysc()) {
+        ret += "static const ";
+    } else if (SCV_is_sv()) {
+        ret += "localparam ";
+    } else if (SCV_is_vhdl()) {
+        ret += "constant ";
+    }
+    ret += getType() + " ";
+
+    ret += getName();
+    ret += " = " + Logic::getStrValue() + ";";
+    addComment(ret);
+    ret += "\n";
     return ret;
 }
 

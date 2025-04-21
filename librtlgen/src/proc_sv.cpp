@@ -134,7 +134,7 @@ std::string RegisterCopyProcess::generate_sv(bool async_on_off) {
     GenObject *m = getParent();
     GenObject *clkport = getClockPort();
     GenObject *rstport = getResetPort();
-    std::string generate_name = "async_" + rstruct_->getName() + "_gen";
+    std::string generate_name = "async_" + rstruct_->r_instance()->getName();
 
     if (m == 0) {
         SHOW_ERROR("Process %s parent is zero", getName());
@@ -154,10 +154,12 @@ std::string RegisterCopyProcess::generate_sv(bool async_on_off) {
         }
 
         // Generate async_reset/!async_reset blocks:
+        StringConst *pNameEn = new StringConst((generate_name + "_en").c_str());
         StringConst *pName = new StringConst(generate_name.c_str());
+        StringConst *pNameDis = new StringConst((generate_name + "_dis").c_str());
         GenObject &block = 
         GENERATE("");
-        IFGEN(*async_reset, pName);
+        IFGEN(*async_reset, pNameEn);
             TEXT();
             ALWAYS_FF(EDGE(*clkport, getClockEdge()), EDGE(*rstport, getResetActive()));
                 IF (EQ(*rstport, CONST("0", 1)));
@@ -173,7 +175,7 @@ std::string RegisterCopyProcess::generate_sv(bool async_on_off) {
                 SETVAL_NB(*rstruct_->r_instance(), *rstruct_->rin_instance());
             ENDALWAYS_FF();
             TEXT();
-        ENDIFGEN(pName);
+        ENDIFGEN(pNameDis);
         ENDGENERATE("");
         ret += block.generate() + "\n";
     } else {

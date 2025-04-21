@@ -160,6 +160,8 @@ void ModuleObject::postInit() {
     GenObject * rstport;
     GenObject *pAsyncReset = 0;
 
+    SCV_set_local_module(this);
+
     if (isAsyncResetParam()) {
         pAsyncReset = 
             new DefParamLogic(NO_PARENT, "async_reset", "1", "0", NO_COMMENT);

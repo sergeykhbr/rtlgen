@@ -76,7 +76,7 @@ class types_bus0 : public FileObject {
             sram(this, "sram", "", "2, sram, 2MB"),
             plic(this, "plic", "", "3, plic"),
             bus1(this, "bus1", "", "4, APB bridge: uart1"),
-            ddr(this, "ddr", "", "5, ddr, 512 MB")
+            ddr(this, "ddr", "", "5, ddr, 1 GB")
 #if GENCFG_SD_CTRL_ENABLE
             ,sdctrl(this, "sdctrl", "", "6, sdctrl, 32 GB")
 #endif

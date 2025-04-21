@@ -47,8 +47,6 @@ class StructObject : public GenValue {
     virtual bool isTypedef() override;
     virtual bool isInterface() override;
     virtual std::string getStrValue() override;
-    virtual bool isReg() override;
-    virtual bool isNReg() override;
     virtual bool is2Dim() override;
     virtual std::string getCopyValue(char *i,
                                      const char *dst_prefix,

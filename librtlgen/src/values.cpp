@@ -54,32 +54,6 @@ GenValue::GenValue(GenObject *parent, const char *name, GenObject *val, const ch
     objValue_ = val;
 }
 
-/*std::string GenValue::v_name(std::string v) {
-    std::string ret = "";
-    ret = getName();
-    if (v.size()) {
-        ret += "." + v;
-    }
-    if (getParent()) {
-        ret = getParent()->v_name(ret);
-    }
-    return ret;
-}
-
-std::string GenValue::r_name(std::string v) {
-    std::string ret = "";
-    ret = getName();
-    if (SCV_is_sysc() && (isInput() || isSignal())) {
-        ret += ".read()";
-    }
-    if (v.size()) {
-        ret += "." + v;
-    }
-    if (getParent()) {
-        ret = getParent()->r_name(ret);
-    }
-    return ret;
-}*/
 
 std::string GenValue::nameInModule(EPorts portid) {
     std::string ret = "";
@@ -93,6 +67,17 @@ std::string GenValue::nameInModule(EPorts portid) {
     return ret;
 }
 
+std::string GenValue::generate() {
+    std::string ret;
+    ret = addspaces() + getType() + " " + getName();
+    if (getObjDepth()) {
+        ret += "[0: " + getStrDepth() + "-1]";
+    }
+    ret += ";";
+    addComment(ret);
+    ret += "\n";
+    return ret;
+}
 
 std::string GenValue::v_prefix() {
     // All register must be included into register structure owned by module

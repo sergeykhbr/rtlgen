@@ -180,34 +180,6 @@ std::string StructObject::getStrValue() {
     return ret;
 }
 
-bool StructObject::isReg() {
-    if (objClock_ && edge_ == CLK_POSEDGE) {
-        return true;
-    }
-    // TODO: remove me. Clock should be re-assigned to structure
-    //       while construct child objects.
-    for (auto &p: getEntries()) {
-        if (p->isReg()) {
-            return true;
-        }
-    }
-    return false;
-}
-
-bool StructObject::isNReg() {
-    if (objClock_ && edge_ == CLK_NEGEDGE) {
-        return true;
-    }
-    // TODO: remove me. Clock should be re-assigned to structure
-    //       while construct child objects.
-    for (auto &p: getEntries()) {
-        if (p->isNReg()) {
-            return true;
-        }
-    }
-    return false;
-}
-
 bool StructObject::is2Dim() {
     if (getDepth()) {
         return true;

@@ -388,19 +388,6 @@ void FileObject::generate_sysv() {
             } else {
                 pkgline += mod->generate_sv_pkg();
             }
-        } else if (p->isFunction()) {
-            pkgline += p->generate();
-        } else if (p->isParam() && !p->isParamGeneric()) {
-            if (p->isStruct() || p->isString()) {
-                // Do all others params in a such way
-                pkgline += p->generate();
-            } else {
-                ln = addspaces() + "localparam ";
-                ln += p->getType() + " ";
-                ln += p->getName() + " = " + p->generate() + ";";
-                p->addComment(ln);
-                pkgline += ln + "\n";
-            }
         } else {
             pkgline += p->generate();
         }

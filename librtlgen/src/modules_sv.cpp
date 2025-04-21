@@ -149,14 +149,28 @@ namespace sysvc {
 
 std::string ModuleObject::generate_sv_pkg() {
     std::string ret = "";
+    std::string comment = "";
+    bool prev_was_param = false;        // to minimize backward difference
     //ret += generate_sv_pkg_localparam();
     //ret += generate_sv_pkg_struct();
     for (auto &p: getEntries()) {
+        if (p->isComment()) {
+            comment = p->generate();
+            continue;
+        }
         if ((p->isParam() && p->isString() && !p->isParamGeneric())
             || (p->isParam() && !p->isParamGeneric() && !p->isGenericDep())
             || (p->isStruct() && (p->isTypedef() || p->isConst()))) {
+
+            if (p->isStruct() && prev_was_param) {
+                ret += "\n";
+            }
+            ret += comment;
             ret += p->generate();
+
+            prev_was_param = p->isParam();
         }
+        comment = "";
     }
 
     if (ret.size()) {
@@ -241,7 +255,6 @@ std::string ModuleObject::generate_sv_mod_signals() {
             || p->isOperation()
             || p->isTypedef()
             || p->isParam() ) {
-            //|| p->getClockEdge() != CLK_ALWAYS) {
             text = "";
             continue;
         }
@@ -274,31 +287,6 @@ std::string ModuleObject::generate_sv_mod_signals() {
         ret += "\n";
     }
 
-    /*
-    // r, rin:
-    std::map<std::string,std::list<GenObject *>>regmap;
-    std::map<std::string,bool> is2dm;
-    std::string r;
-    std::list<GenObject *> proclist;
-    getCombProcess(proclist);
-    getSortedRegsMap(regmap, is2dm);
-    for (std::map<std::string,std::list<GenObject *>>::iterator it = regmap.begin();
-        it != regmap.end(); it++) {
-        r = it->first;                          // map sorted by v_prefix
-        ret += getType() + "_" + r + "egisters " + r;
-        // rin should be defined only if comb process exists,
-        //      otherwise memarray without reset.
-        if (proclist.size()) {
-            ret += ", " + r + "in";
-        }
-        ret += ";\n";
-        tcnt++;
-    }
-
-    if (tcnt) {
-        ret += "\n";
-        tcnt = 0;
-    }*/
     return ret;
 }
 

@@ -47,9 +47,12 @@ class GenValue : public GenObject {
              const char *comment);
 
     virtual bool isValue() override { return true; }
+    virtual std::string generate() override;
 
     virtual std::string getName() override { return name_; }
-    virtual uint64_t getValue() override { return objValue_->getValue(); }
+    virtual uint64_t getValue() override {
+        return objValue_->getValue();
+    }
     virtual double getFloatValue() override { return objValue_->getFloatValue(); }
     virtual std::string getStrValue() override { return objValue_->getName(); }
     virtual GenObject *getObjValue() override { return objValue_; }
@@ -58,12 +61,9 @@ class GenValue : public GenObject {
     virtual bool isVcd() override { return vcd_enabled_; }
 
     /** Signal could be a register when it inside of register struct */
-    virtual bool isReg() override { return edge_ == CLK_POSEDGE; }      // remove me: use getClockEdge()
-    virtual bool isNReg() override { return edge_ == CLK_NEGEDGE; }     // remove me: use getClockEdge()
     virtual bool is2Dim() override { return getDepth() > 0; }
     virtual GenObject *getClockPort() override { return objClock_; }
     virtual GenObject *getResetPort() { return objReset_; }
-    virtual bool isResetDisabled() override { return objReset_ == 0 || active_ == ACTIVE_NONE; }
     virtual EClockEdge getClockEdge() { return edge_; }
     virtual EResetActive getResetActive() override { return active_; }
 
@@ -102,7 +102,6 @@ class STRING : public GenValue {
 
     virtual bool isString() override { return true; }
     virtual std::string getType();
-//    virtual std::string generate() override;
 };
 
 class FileValue : public GenValue {

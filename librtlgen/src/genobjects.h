@@ -97,9 +97,6 @@ class GenObject {
     virtual bool isOperation() { return false; }
     virtual bool isAssign() { return false; }           // Assign operation should be executed outside of comb process
     virtual bool is2Dim() { return false; }             // If any of child entries has more than 1 dimension we cannot use assignment without cycle
-    virtual bool isReg() { return false; }              // is register with posedge clock
-    virtual bool isNReg() { return false; }             // is register with negedge clock
-    virtual bool isResetDisabled() { return false; }    // Registers without reset usually implemented in memory bank
     virtual bool isClock() { return false; }
     virtual bool isFile() { return false; }
     virtual bool isFunction() { return false; }
