@@ -550,10 +550,22 @@ Operation &SETBITSW(GenObject &a, GenObject &start, GenObject &width, GenObject 
     sv:   arr[idx].item = val;
     vhdl: arr(idx).item := val;
  */
-Operation &SETARRITEM(GenObject &arr, GenObject &idx,
+Operation &SETARRITEM(GenObject &arr,
+                      GenObject &idx,
                       GenObject &item,
                       GenObject &val,
                       const char *comment=NO_COMMENT);
+
+/** Non-bocking write array item value:
+    sysc: arr[idx].item = val;
+    sv:   arr[idx].item <= val;
+    vhdl: arr(idx).item <= val;
+ */
+Operation &SETARRITEM_NB(GenObject &arr,
+                         GenObject &idx,
+                         GenObject &item,
+                         GenObject &val,
+                         const char *comment=NO_COMMENT);
 
 /** Write array item value (another format):
     sysc: arr[idx].item = val;

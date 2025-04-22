@@ -146,13 +146,8 @@ std::string RegisterCopyProcess::generate_sv(bool async_on_off) {
     }
     Operation::push_obj(NO_PARENT);
 
-    if (rstport && getResetActive() != ACTIVE_NONE) {
-        GenObject *async_reset = getParent()->getChildByName("async_reset");
-        if (async_reset == NULL) {
-            SHOW_ERROR("async_reset not found in %s", getName().c_str());
-            return ret;
-        }
-
+    GenObject *async_reset = getParent()->getChildByName("async_reset");
+    if (rstport && getResetActive() != ACTIVE_NONE && async_reset) {
         // Generate async_reset/!async_reset blocks:
         StringConst *pNameEn = new StringConst((generate_name + "_en").c_str());
         StringConst *pName = new StringConst(generate_name.c_str());
@@ -177,6 +172,16 @@ std::string RegisterCopyProcess::generate_sv(bool async_on_off) {
             TEXT();
         ENDIFGEN(pNameDis);
         ENDGENERATE("");
+        ret += block.generate() + "\n";
+    } else if (rstport && getResetActive() != ACTIVE_NONE) {
+        GenObject &block = 
+        ALWAYS_FF(EDGE(*clkport, getClockEdge()), EDGE(*rstport, getResetActive()));
+            IF (EQ(*rstport, CONST("0", 1)));
+                SETVAL_NB(*rstruct_->r_instance(), *rstruct_->r_instance()->getObjValue());
+            ELSE();
+                SETVAL_NB(*rstruct_->r_instance(), *rstruct_->rin_instance());
+            ENDIF();
+        ENDALWAYS_FF();
         ret += block.generate() + "\n";
     } else {
         GenObject &block = 

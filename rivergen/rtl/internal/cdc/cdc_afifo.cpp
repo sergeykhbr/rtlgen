@@ -42,12 +42,16 @@ cdc_afifo::cdc_afifo(GenObject *parent, const char *name, const char *comment) :
     rempty(this, &i_rclk, CLK_POSEDGE, &i_nrst, ACTIVE_LOW, "rempty", "1", "1", NO_COMMENT),
     mem(this, "mem", "dbits", "DEPTH", NO_COMMENT),
     // process
-    comb(this)
+    comb(this),
+    mreg(this, "mreg", &i_wclk, CLK_POSEDGE, 0, ACTIVE_NONE, NO_COMMENT)
 {
     Operation::start(this);
 
     Operation::start(&comb);
     proc_comb();
+
+    Operation::start(&mreg);
+    mem_ff();
 }
 
 void cdc_afifo::proc_comb() {
@@ -69,11 +73,6 @@ TEXT();
         SETONE(comb.v_wfull_next);
     ENDIF();
     SETVAL(wfull, comb.v_wfull_next);
-
-TEXT();
-    IF (NZ(AND2(i_wr, INV(wfull))));
-        SETARRITEM(mem, TO_INT(comb.vb_waddr), mem, i_wdata);
-    ENDIF();
 
 TEXT();
     TEXT("Write Gray pointer into read clock domain");
@@ -100,3 +99,8 @@ TEXT();
     SETVAL(o_rdata, ARRITEM(mem, TO_INT(comb.vb_raddr), mem));
 }
 
+void cdc_afifo::mem_ff() {
+    IF (NZ(AND2(i_wr, INV(wfull))));
+        SETARRITEM_NB(mem, TO_INT(BITS(wbin, DEC(abits), CONST("0"))), mem, i_wdata);
+    ENDIF();
+}

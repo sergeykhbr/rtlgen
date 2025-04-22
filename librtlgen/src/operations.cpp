@@ -218,14 +218,9 @@ GetValueOperation::GetValueOperation(GenObject *a,         // value to get
 }
 
 std::string GetValueOperation::getStrValue() {
+    a_->setSelector(idx_);
     std::string ret = obj2varname(a_, getRegPrefix().c_str(), isForceRead());
-    if (a_->getDepth() && idx_) {
-        if (SCV_is_vhdl()) {
-            ret += "(" + obj2varname(idx_, "r", true) + ")";
-        } else {
-            ret += "[" + obj2varname(idx_, "r", true) + "]";
-        }
-    } else if (idx_) {
+    if (!a_->getDepth() && idx_) {
         SHOW_ERROR("Array[%s] without depth", idx_->getStrValue().c_str());
     }
 
@@ -298,6 +293,15 @@ SetValueOperation::SetValueOperation(GenObject *a,         // value to set
 
 std::string SetValueOperation::generate() {
     std::string ret = addspaces();
+#if 1
+    GenObject *p = getParent();
+    while (p) {
+        if (p->getName() == "mreg") {
+            bool st = true;
+        }
+        p = p->getParent();
+    }
+#endif
     if (SCV_is_sysc() && a_->isClock()) {
         ret += "// ";   // do not clear clock module
     }
@@ -305,6 +309,12 @@ std::string SetValueOperation::generate() {
         ret += "assign ";
     }
 
+#if 1
+    if (std::string(GetValueOperation::getStrValue()) ==
+        "mem[int'(vb_raddr)][int'(r.wbin[(abits - 1): 0])]") {
+        bool st = true;
+    }
+#endif
     ret += GetValueOperation::getStrValue();
 
     if (SCV_is_vhdl()) {
@@ -1602,27 +1612,41 @@ std::string SyncResetOperation::generate() {
         return ret;
     }
 
-    GenObject *op = &INV_L(*m->getChildByName("async_reset"));
+    // "async_reset" could be forcibly disabled in module (cdc_afifo):
+    GenObject *async_reset = m->getChildByName("async_reset");
+    GenObject *op = 0;
     Operation::push_obj(NO_PARENT);
     for (auto &r : *reglist) {
         if (r->getResetActive() == ACTIVE_NONE) {
             continue;
         } else if (r->getResetActive() == ACTIVE_LOW) {
-            op = &AND2(*op, EZ(*r->getResetPort()));
+            if (async_reset) {
+                op = &AND2(INV_L(*async_reset), EZ(*r->getResetPort()));
+            } else {
+                op = &EZ(*r->getResetPort());
+            }
         } else if (r->getResetActive() == ACTIVE_HIGH) {
-            op = &AND2(*op, NZ(*r->getResetPort()));
+            if (async_reset) {
+                op = &AND2(INV_L(*async_reset), NZ(*r->getResetPort()));
+            } else {
+                op = &NZ(*r->getResetPort());
+            }
         }
         if (xrst_) {
-            op = &OR2(*op, *xrst_);
+            if (op) {
+                op = &OR2(*op, *xrst_);
+            } else {
+                op = xrst_;
+            }
         }
-        op = &IF (*op);
-            SETVAL(*r->v_instance(), *r->rst_instance());
-        ENDIF();
+        if (op) {
+            op = &IF (*op);
+                SETVAL(*r->v_instance(), *r->rst_instance());
+            ENDIF();
+            ret += op->generate();
+        }
     }
     Operation::pop_obj();
-    if (op) {
-        ret = op->generate();
-    }
     return ret;
 }
 

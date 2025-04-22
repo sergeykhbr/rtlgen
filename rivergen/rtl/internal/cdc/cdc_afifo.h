@@ -53,6 +53,7 @@ class cdc_afifo : public ModuleObject {
     };
 
     void proc_comb();
+    void mem_ff();
 
  public:
      TmplParamI32D abits;
@@ -83,6 +84,7 @@ class cdc_afifo : public ModuleObject {
 
  private:
     CombProcess comb;
+    ProcObject mreg;
 };
 
 class cdc_afifo_file : public FileObject {

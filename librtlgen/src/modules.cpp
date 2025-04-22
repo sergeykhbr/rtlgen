@@ -41,8 +41,13 @@ ModuleObject::ModuleObject(GenObject *parent,
     SCV_add_module(this);
 }
 
-std::string reg_suffix(GenObject *p) {
+std::string reg_suffix(GenObject *p, int unique_idx) {
     std::string ret = "";
+    if (unique_idx > 1) {
+        char tstr[16];
+        RISCV_sprintf(tstr, sizeof(tstr), "%d", unique_idx);
+        ret += std::string(tstr);
+    }
     if (p->getClockEdge() == CLK_NEGEDGE) {
         ret += "n";
     }
@@ -53,7 +58,13 @@ std::string reg_suffix(GenObject *p) {
 }
 
 void ModuleObject::registerModuleReg(GenObject *r) {
+    int same_clkrst_cnt = 1;        // to generate unique structure name
+    int add_reg_idx = 0;
     for (auto &p : sorted_regs_) {
+        if (r->getClockEdge() == p->getClockEdge()
+            && r->getResetActive() == p->getResetActive()) {
+            add_reg_idx = 1;
+        }
         if (p->getClockPort()->getName() != r->getClockPort()->getName()) {
             continue;
         }
@@ -86,8 +97,9 @@ void ModuleObject::registerModuleReg(GenObject *r) {
         getEntries().remove(r);
         return;
     }
+    same_clkrst_cnt += add_reg_idx;
     
-    std::string r_suffix = reg_suffix(r);
+    std::string r_suffix = reg_suffix(r, same_clkrst_cnt);
     std::string procname = "r" + r_suffix + "egisters";
     std::string rstruct_type = getName() + "_" + procname;
     std::string rstruct_rst = "";

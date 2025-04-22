@@ -724,7 +724,8 @@ Operation &SETBITSW(GenObject &a, GenObject &start, GenObject &width, GenObject 
     sv:   arr[idx].item = val;
     vhdl: arr(idx).item := val;
  */
-Operation &SETARRITEM(GenObject &arr, GenObject &idx,
+Operation &SETARRITEM(GenObject &arr,
+                      GenObject &idx,
                       GenObject &item,
                       GenObject &val,
                       const char *comment) {
@@ -735,6 +736,27 @@ Operation &SETARRITEM(GenObject &arr, GenObject &idx,
                                   0,        // [h
                                   0,        // :l]
                                   false, // =
+                                  &val,     // val
+                                  comment);
+}
+
+/** Non-blocking write array item value:
+    sysc: arr[idx].item = val;
+    sv:   arr[idx].item <= val;
+    vhdl: arr(idx).item <= val;
+ */
+Operation &SETARRITEM_NB(GenObject &arr,
+                         GenObject &idx,
+                         GenObject &item,
+                         GenObject &val,
+                         const char *comment) {
+    return *new SetValueOperation(&arr,
+                                  &idx,     // [arridx]
+                                  &item,    // .item
+                                  false,    // h as width
+                                  0,        // [h
+                                  0,        // :l]
+                                  true,     // <=
                                   &val,     // val
                                   comment);
 }
