@@ -41,22 +41,6 @@ ModuleObject::ModuleObject(GenObject *parent,
     SCV_add_module(this);
 }
 
-std::string reg_suffix(GenObject *p, int unique_idx) {
-    std::string ret = "";
-    if (unique_idx > 1) {
-        char tstr[16];
-        RISCV_sprintf(tstr, sizeof(tstr), "%d", unique_idx);
-        ret += std::string(tstr);
-    }
-    if (p->getClockEdge() == CLK_NEGEDGE) {
-        ret += "n";
-    }
-    if (p->getResetActive() == ACTIVE_NONE) {
-        ret += "x";
-    }
-    return ret;
-}
-
 void ModuleObject::registerModuleReg(GenObject *r) {
     int same_clkrst_cnt = 1;        // to generate unique structure name
     int add_reg_idx = 0;
@@ -99,13 +83,10 @@ void ModuleObject::registerModuleReg(GenObject *r) {
     }
     same_clkrst_cnt += add_reg_idx;
     
-    std::string r_suffix = reg_suffix(r, same_clkrst_cnt);
+    std::string r_suffix = RegTypedefStruct::reg_suffix(r, same_clkrst_cnt);
     std::string procname = "r" + r_suffix + "egisters";
     std::string rstruct_type = getName() + "_" + procname;
-    std::string rstruct_rst = "";
-    if (r->getResetActive() != ACTIVE_NONE) {
-        rstruct_rst = getName() + "_r" + r_suffix + "_reset";
-    }
+    std::string rstruct_rst = getName() + "_r" + r_suffix + "_reset";
 
     // New register typedef structure:
     RegTypedefStruct *pnew = new RegTypedefStruct(this,
@@ -113,55 +94,10 @@ void ModuleObject::registerModuleReg(GenObject *r) {
                                           r->getClockEdge(),
                                           r->getResetPort(),
                                           r->getResetActive(),
-                                          rstruct_type.c_str(),   // type
-                                          rstruct_rst.c_str());         // rstval
+                                          r_suffix.c_str(),
+                                          rstruct_type.c_str(),     // type
+                                          rstruct_rst.c_str());     // rstval
     sorted_regs_.push_back(pnew);
-
-    RegResetStruct *r_rst = 0;
-    RegSignalInstance *rin_inst = 0;
-    RegSignalInstance *v_inst = 0;
-    RegSignalInstance *r_inst = 0;
-
-    // "*_r_reset" value:
-    if (r->getResetActive() != ACTIVE_NONE) {
-        r_rst = new RegResetStruct(this,
-                                   pnew,
-                                   rstruct_rst.c_str());
-    }
-
-
-    std::list<GenObject *> proclist;
-    getCombProcess(proclist);
-
-    // "r" value (have input 'v' and output 'r' ports):
-    std::string r_name = "r" + r_suffix;
-    r_inst = new RegSignalInstance(this,
-                               pnew,
-                               r_name.c_str(),
-                               rstruct_rst.c_str());
-
-    if (proclist.size()) {
-        // "v" value:
-        std::string v_name = "v" + r_suffix;
-        v_inst = new RegSignalInstance(NO_PARENT,
-                                   pnew,
-                                   v_name.c_str(),
-                                   r_name.c_str());
-
-        // "rin" value:
-        std::string rin_name = "r" + r_suffix + "in";
-        rin_inst = new RegSignalInstance(this,
-                                         pnew,
-                                         rin_name.c_str(),
-                                         rstruct_rst.c_str());
-    }
-    
-    // Register flip-flop process
-    new RegisterCopyProcess(this,
-                            procname.c_str(),
-                            pnew);
-
-    pnew->setRegInstances(r_rst, v_inst, rin_inst, r_inst);
 
     r->setParent(pnew);
     pnew->add_entry(r);

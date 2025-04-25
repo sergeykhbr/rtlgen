@@ -79,6 +79,7 @@ class RegTypedefStruct : public StructObject {
                         EClockEdge edge,
                         GenObject *rst,
                         EResetActive active,
+                        const char *suffix,
                         const char *type,
                         const char *rstval);
 
@@ -89,70 +90,55 @@ class RegTypedefStruct : public StructObject {
         return v_->getName();
     }
 
-    virtual void add_entry(GenObject *obj) override {
-        StructObject::add_entry(obj);
-        RefObject *ref;
-        if (rst_) {
-            ref = new RefObject(rst_, obj, NO_COMMENT);
-            rst_->add_entry(ref);
-        }
-        ref = new RefObject(v_, obj, NO_COMMENT);
-        v_->add_entry(ref);
-        ref = new RefObject(rin_, obj, NO_COMMENT);
-        rin_->add_entry(ref);
-        ref = new RefObject(r_, obj, NO_COMMENT);
-        r_->add_entry(ref);
-    }
-
-    virtual void setRegInstances(GenObject *rst,
-                                 GenObject *v,
-                                 GenObject *rin,
-                                 GenObject *r) {
-        rst_ = rst;
-        v_ = v;
-        rin_ = rin;
-        r_ = r;
-    }
+    virtual void add_entry(GenObject *obj) override ;
 
     virtual GenObject *rst_instance() { return rst_; }
     virtual GenObject *v_instance() { return v_; }
     virtual GenObject *rin_instance() { return rin_; }
     virtual GenObject *r_instance() { return r_; }
+
+    static std::string reg_suffix(GenObject *p, int unique_idx);
+
  protected:
-    GenObject *rst_;
-    GenObject *v_;
-    GenObject *rin_;
-    GenObject *r_;
-};
+    /**
+        Generate rin, r, v signal instances:
+     */
+    class RegSignalInstance : public StructObject {
+     public:
+        RegSignalInstance(GenObject *parent,
+                        RegTypedefStruct *p,
+                        const char *name,
+                        const char *rstval);
+     protected:
+        RegTypedefStruct *rstruct_;
+    };
 
-/**
-    Generate rin, r, v signal instances:
- */
-class RegSignalInstance : public StructObject {
- public:
-    RegSignalInstance(GenObject *parent,
-                    RegTypedefStruct *p,
-                    const char *name,
-                    const char *rstval);
+    /**
+        Generate reset structure/function (*_r_reset)
+     */
+    class RefResetObject : public RefObject {
+     public:
+        RefResetObject(GenObject *parent, GenObject *ref, const char *comment)
+            : RefObject(parent, ref, comment) {
+        }
+        virtual std::string getName() override { return ref_->getStrValue(); }
+    };
 
-    //virtual std::list<GenObject *> &getEntries() {
-    //    return rstruct_->getEntries();
-    //}
+    class RegResetStruct : public RegSignalInstance {
+     public:
+        RegResetStruct(GenObject *parent,
+                        RegTypedefStruct *p,
+                        const char *name);
+
+        virtual bool isParam() override { return true; }
+        virtual bool isConst() override { return true; }
+    };
+
  protected:
-    RegTypedefStruct *rstruct_;
-};
-
-/**
-    Generate reset structure/function (*_r_reset)
- */
-class RegResetStruct : public RegSignalInstance {
- public:
-    RegResetStruct(GenObject *parent,
-                    RegTypedefStruct *p,
-                    const char *name);
-
-    virtual bool isParam() override { return true; }
-    virtual bool isConst() override { return true; }
+    RegResetStruct *rst_;
+    RegSignalInstance *v_;
+    RegSignalInstance *rin_;
+    RegSignalInstance *r_;
 };
 
 

@@ -941,6 +941,11 @@ class ArrItemOperation : public Operation {
         bool force_read, const char *comment)
         : Operation(NO_PARENT, comment), arr_(arr), idx_(idx),
         item_(item), force_read_(force_read) {
+        if (arr_ == 0) {
+            SHOW_ERROR("%s", "Array not defined");
+        } else if (item_ == 0) {
+            SHOW_ERROR("%s", "Array item not defined");
+        }
     }
 
     virtual std::string getName() override { return ""; }

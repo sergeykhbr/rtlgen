@@ -502,30 +502,24 @@ Operation &RSH(GenObject &a, int sz, const char *comment) {
 
 Operation &SETVAL(GenObject &a, GenObject &b, const char *comment) {
     Operation *ret = 0;
-#if 1
-    if (a.getName() == "vb_def_mapinfo") {
-        bool st = true;
-    }
-#endif
-    if (a.getObjDepth()) {
-        GenObject *i = new I32D(NO_PARENT, "i", new DecConst(0), NO_COMMENT);;
-        ret = new ForOperation(Operation::top_obj(),
-                                i,
-                                new DecConst(0),
-                                a.getObjDepth(),
-                                new StringConst("++"),
-                                0,
-                                comment);
-
-        SETARRITEM(a, *i, a, ARRITEM(b, *i, b));
-
-        new EndForOperation(0, NO_COMMENT);
-    /*} else if (a.isStruct() 
-        && !b.isOperation() && !b.isParam() && !b.isConst()
-        && b.getObjValue() == 0) {
-        for (auto &p: a.getEntries()) {
-            ret = &SETVAL(*p, *b.getChildByName(p->getName()));
-        }*/
+    if (a.is2Dim()) {
+        if (a.getObjDepth()) {
+            // Array
+            GenObject &i = FOR("i", CONST("0"), *a.getObjDepth(), "++");
+                SETARRITEM(a, i, a, ARRITEM(b, i, b));
+            ENDFOR();
+        } else {
+            // Struct
+            std::list<GenObject *>::iterator it1, it2;
+            for (it1 = a.getEntries().begin(), it2 = b.getEntries().begin();
+                it1 != a.getEntries().end() && it2 != b.getEntries().end();
+                ++it1, ++it2) {
+                if ((*it1)->isComment()) {
+                    continue;
+                }
+                SETVAL(*(*it1), *(*it2));
+            }
+        }
     } else {
         ret = new SetValueOperation(&a,
                                       0,    // [arridx]
@@ -550,11 +544,14 @@ Operation &SETVAL_NB(GenObject &a, GenObject &b, const char *comment) {
             ENDFOR();
         } else {
             // Struct
-            for (auto &p : a.getEntries()) {
-                if (p->isComment()) {
+            std::list<GenObject *>::iterator it1, it2;
+            for (it1 = a.getEntries().begin(), it2 = b.getEntries().begin();
+                it1 != a.getEntries().end() && it2 != b.getEntries().end();
+                ++it1, ++it2) {
+                if ((*it1)->isComment()) {
                     continue;
                 }
-                SETVAL_NB(*p, *b.getChildByName(p->getName()));
+                SETVAL_NB(*(*it1), *(*it2));
             }
         }
     } else {

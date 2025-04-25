@@ -19,6 +19,7 @@
 #include "utils.h"
 #include "array.h"
 #include "operations.h"
+#include "proc.h"
 #include <cstring>
 
 namespace sysvc {
@@ -779,13 +780,79 @@ RegTypedefStruct::RegTypedefStruct(GenObject *parent,
                                    EClockEdge edge,
                                    GenObject *rst,
                                    EResetActive active,
+                                   const char *suffix,
                                    const char *type,
                                    const char *rstval)
     : StructObject(parent, clk, edge, rst, active,
                    type, type, rstval, NO_COMMENT), rst_(0), v_(0), rin_(0), r_(0) {
+
+    std::string r_name = "r" + std::string(suffix);
+    std::string procname = r_name + "egisters";
+
+    // "*_r_reset" value:
+    if (active != ACTIVE_NONE) {
+        rst_ = new RegResetStruct(parent,
+                                  this,
+                                  rstval);
+    }
+
+    // "r" value (have input 'v' and output 'r' ports):
+    r_ = new RegSignalInstance(parent,
+                               this,
+                               r_name.c_str(),
+                               rstval);
+
+    
+    // "v" value:
+    std::string v_name = "v" + std::string(suffix);
+    v_ = new RegSignalInstance(NO_PARENT,
+                               this,
+                               v_name.c_str(),
+                               r_name.c_str());
+
+    // "rin" value:
+    std::string rin_name = r_name + "in";
+    rin_ = new RegSignalInstance(parent,
+                                this,
+                                rin_name.c_str(),
+                                rstval);
+
+    // Register flip-flop process
+    new RegisterCopyProcess(parent,
+                            procname.c_str(),
+                            this);
 }
 
-RegSignalInstance::RegSignalInstance(GenObject *parent,
+void RegTypedefStruct::add_entry(GenObject *obj) {
+    StructObject::add_entry(obj);
+    RefObject *ref;
+    if (rst_) {
+        ref = new RefResetObject(rst_, obj, NO_COMMENT);
+    }
+    ref = new RefObject(v_, obj, NO_COMMENT);
+    ref = new RefObject(rin_, obj, NO_COMMENT);
+    ref = new RefObject(r_, obj, NO_COMMENT);
+}
+
+
+std::string RegTypedefStruct::reg_suffix(GenObject *p, int unique_idx) {
+    std::string ret = "";
+    if (unique_idx > 1) {
+        char tstr[16];
+        RISCV_sprintf(tstr, sizeof(tstr), "%d", unique_idx);
+        ret += std::string(tstr);
+    }
+    if (p->getClockEdge() == CLK_NEGEDGE) {
+        ret += "n";
+    }
+    if (p->getResetActive() == ACTIVE_NONE) {
+        ret += "x";
+    }
+    return ret;
+}
+
+
+RegTypedefStruct::RegSignalInstance::RegSignalInstance(GenObject *parent,
                                  RegTypedefStruct *p,
                                  const char *name,
                                  const char *rstval)
@@ -794,7 +861,7 @@ RegSignalInstance::RegSignalInstance(GenObject *parent,
                    rstruct_(p) {
 }
 
-RegResetStruct::RegResetStruct(GenObject *parent,
+RegTypedefStruct::RegResetStruct::RegResetStruct(GenObject *parent,
                                 RegTypedefStruct *p,
                                 const char *name)
     : RegSignalInstance(parent, p, name, "") {
