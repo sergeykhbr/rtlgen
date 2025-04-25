@@ -425,6 +425,12 @@ std::string ModuleObject::generate_sv_mod(bool no_pkg) {
         }
         ret += p->generate();
     }
+#if 1
+    if (addspaces().size() != 0) {
+        const char *tname = getName().c_str();
+        bool lt = true;
+    }
+#endif
 /*
     // Clock process
     for (auto &p: entries_) {

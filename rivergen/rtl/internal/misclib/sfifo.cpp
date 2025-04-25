@@ -37,11 +37,15 @@ sfifo::sfifo(GenObject *parent, const char *name, const char *comment) :
     total_cnt(this, "total_cnt", "ADD(log2_depth,1)", "'0", NO_COMMENT),
     //
     comb(this)
+    //memproc(this, "memproc"),
 {
     Operation::start(this);
 
     Operation::start(&comb);
     proc_comb();
+
+    //Operation::start(&memproc);
+    //proc_memproc();
 }
 
 void sfifo::proc_comb() {
@@ -80,3 +84,8 @@ TEXT();
     SETVAL(o_rdata, ARRITEM(databuf, TO_INT(rd_cnt), databuf));
     SETVAL(o_count, total_cnt);
 }
+
+//void sfifo::proc_memproc() {
+//    SETARRITEM(databuf, TO_INT(wr_cnt), databuf, i_wdata);
+//}
+

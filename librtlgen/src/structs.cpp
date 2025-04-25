@@ -93,6 +93,11 @@ std::string StructObject::getType() {
 
 std::string StructObject::getStrValue() {
     std::string ret = "";
+#if 1
+if (getName() == "sfifo_r_reset") {
+    bool st = true;
+}
+#endif
     if (objValue_) {
         return objValue_->getName();
     }
@@ -130,30 +135,26 @@ std::string StructObject::getStrValue() {
         }
         popspaces();
     } else {
-            /*pushspaces();
-            for (auto &p: it->second) {
-                ln = addspaces() + p->getStrValue();
-                if (p != it->second.back()) {
-                    ln += ",";
-                }
-                while (ln.size() < 40) {
-                    ln += " ";
-                }
-                ln += "// " + p->getName();
-                ret += ln + "\n";
-            }
-            popspaces();*/
-
         std::string ln;
         for (auto &p: getEntries()) {
-            if (!p->isValue()) {
+            if (p->isComment()) {
                 continue;
             }
             ln = addspaces();
             if (p->getObjDepth()) { 
-                ln += "{}";
-                SHOW_ERROR("2-dim constant %s:%s",
-                    getName().c_str(), p->getName().c_str());
+                
+                ret += ln + "{\n";
+                pushspaces();
+                for (int i = 0; i < p->getDepth(); i++) {
+                    ret += addspaces() + p->getStrValue();
+                    if (i < p->getDepth() - 1) {
+                        ret += ",";
+                    }
+                    ret += "\n";
+                }
+
+                popspaces();
+                ln = addspaces() + "}";
             } else {
                 ln += p->getStrValue();
             }
@@ -192,7 +193,7 @@ bool StructObject::is2Dim() {
     return false;
 }
 
-std::string StructObject::getCopyValue(char *i,
+/*std::string StructObject::getCopyValue(char *i,
                                        const char *dst_prefix,
                                        const char *optype,
                                        const char *src_prefix) {
@@ -245,7 +246,7 @@ std::string StructObject::getCopyValue(char *i,
 
     }
     return ret;
-}
+}*/
 
 std::string StructObject::generate_interface_constructor() {
     std::string ret = "";
@@ -781,7 +782,7 @@ RegTypedefStruct::RegTypedefStruct(GenObject *parent,
                                    const char *type,
                                    const char *rstval)
     : StructObject(parent, clk, edge, rst, active,
-                   type, type, rstval, NO_COMMENT), v_(0), rin_(0), r_(0) {
+                   type, type, rstval, NO_COMMENT), rst_(0), v_(0), rin_(0), r_(0) {
 }
 
 RegSignalInstance::RegSignalInstance(GenObject *parent,

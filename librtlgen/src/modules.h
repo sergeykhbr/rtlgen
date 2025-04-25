@@ -37,9 +37,6 @@ class ModuleObject : public GenObject {
     virtual std::string getType() override { return type_; }
     virtual std::string getName() override { return name_; }
     virtual bool isAsyncResetParam() override;
-//    virtual GenObject *getAsyncResetParam() override;
-//    virtual GenObject *getResetPort() override;
-//    virtual GenObject *getClockPort() override;
     virtual void registerModuleReg(GenObject *); // not a GenObject
 
     virtual std::string generate() override;

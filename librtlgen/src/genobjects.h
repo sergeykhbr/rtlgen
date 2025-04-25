@@ -66,7 +66,6 @@ class GenObject {
     virtual GenObject *getParentFile();
     virtual GenObject *getParentModule();
     virtual bool isAsyncResetParam();                    // jtagtap has its own trst signal but does not have async_reset
-    //virtual GenObject *getAsyncResetParam() { return 0; }// async_reset declared as a local parameter at asic_top, no need to autogenerate it
     virtual GenObject *getResetPort() { return 0; }     // reset port object
     virtual GenObject *getClockPort() { return 0; }
     virtual EClockEdge getClockEdge() { return CLK_ALWAYS; }
@@ -130,6 +129,7 @@ class GenObject {
 
     virtual void setSelector(GenObject *sel) {}         // Set index object for array or logic
     virtual GenObject *getSelector() { return 0; }      // Array index or Logic bit index object which is setup and cleared by Operation
+
     virtual void disableVcd() {}                        // Exclude object from trace file
     virtual bool isVcd() { return true; }               // Add object to trace file (sc_trace), default is enabled
     virtual bool isSvApiUsed() { return false; }        // readmemh/display or similar methods were used
@@ -139,14 +139,6 @@ class GenObject {
     virtual std::string getPostAssign() { return "";}   // after process was ended
 
     virtual std::string generate() { return std::string(""); }
-    virtual std::string getCopyValue(char *i,
-                                     const char *dst_prefix,
-                                     const char *optype,
-                                     const char *src_prefix) {
-        // copy register values, like:
-        //      dst_prefix[i].regname =/<= src_prefix[i].regname
-        return std::string("");
-    }
 
  protected:
     GenObject *parent_;                     // All object could have/should have parent

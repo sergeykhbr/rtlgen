@@ -38,6 +38,7 @@ class sfifo : public ModuleObject {
     };
 
     void proc_comb();
+    //void proc_memproc();
 
  public:
     TmplParamI32D dbits;
@@ -53,12 +54,14 @@ class sfifo : public ModuleObject {
 
     ParamI32D DEPTH;
 
+    //LogicArray databuf;
     WireArray<RegSignal> databuf;
     RegSignal wr_cnt;
     RegSignal rd_cnt;
     RegSignal total_cnt;
 
     CombProcess comb;
+    //ProcObject memproc;
 };
 
 class sfifo_file : public FileObject {

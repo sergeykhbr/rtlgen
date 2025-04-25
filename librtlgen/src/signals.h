@@ -50,10 +50,6 @@ class Signal : public Logic {
                 name, width, val, comment) {}
 
     virtual bool isSignal() override { return true; }
-    virtual std::string getCopyValue(char *i,
-                                     const char *dst_prefix,
-                                     const char *optype,
-                                     const char *src_prefix) override;
 };
 
 /**
@@ -81,10 +77,6 @@ class Signal1 : public Logic1 {
 
 
     virtual bool isSignal() override { return true; }
-    virtual std::string getCopyValue(char *i,
-                                     const char *dst_prefix,
-                                     const char *optype,
-                                     const char *src_prefix) override;
 };
 
 // Always use sc_biguint in SystemC

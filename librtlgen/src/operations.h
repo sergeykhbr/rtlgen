@@ -29,12 +29,10 @@
 
 namespace sysvc {
 
-typedef std::string (*generate_type)(GenObject **args);
-
 class Operation : public GenObject {
  public:
-    Operation(const char *comment="");
-    Operation(GenObject *parent, const char *comment="");
+    Operation(const char *comment = NO_COMMENT);
+    Operation(GenObject *parent, const char *comment = NO_COMMENT);
 
     virtual bool isOperation() override { return true; }
     std::string nameInModule(EPorts portid) override { return generate(); }
@@ -44,31 +42,19 @@ class Operation : public GenObject {
     static void pop_obj();
     static GenObject *top_obj();
     static std::string obj2varname(GenObject *obj, const char *prefix="r", bool read=false);
-    static std::string fullname(const char *prefix, std::string name, GenObject *obj);
     static std::string addtext(GenObject *obj, size_t curpos);
 
-    virtual void add_arg(GenObject *arg) {
-        args[argcnt_++] = arg;
-    }
-    virtual bool isGen(generate_type t) { return t == igen_; }
-    virtual GenObject *getArg(int cnt) { return args[cnt]; }
-    virtual std::string getName() override { return getStrValue(); }
+    virtual std::string getName() override { return generate(); }
     virtual std::string getStrValue() override { return generate(); }
     virtual std::string generate() override {
-        std::string ret = igen_(args);
+        std::string ret;
         for (auto &e: getEntries()) {
-            if (e->isOperation()) {
-                ret += e->generate();
-            }
+            ret += e->generate();
         }
         return ret;
     }
-
-    generate_type igen_;
- protected:
-    GenObject *args[256];
-    int argcnt_;
 };
+
 
 class ConvertOperation : public Operation {
  public:
@@ -430,11 +416,73 @@ class ToBigOperation : public ConvertOperation {
     virtual std::string generate() override;
 };
 
+class SetZOperation : public Operation {
+ public:
+    SetZOperation(GenObject *a, const char *comment)
+        : Operation(comment), a_(a) {
+    }
+    virtual std::string getName() override { return ""; }
+    virtual std::string generate() override;
+ protected:
+    GenObject *a_;
+};
 
 Operation &SETZ(GenObject &a, const char *comment="");
+
+class SetStrOperation : public Operation {
+ public:
+    SetStrOperation(GenObject *a, GenObject *str, const char *comment)
+        : Operation(comment), a_(a), str_(str) {
+    }
+    virtual std::string getName() override { return ""; }
+    virtual std::string generate() override;
+ protected:
+    GenObject *a_;
+    GenObject *str_;
+};
+
 Operation &SETSTR(GenObject &a, const char *str, const char *comment="");
+
+
+class SetStrFmtOperation : public Operation {
+ public:
+    SetStrFmtOperation(GenObject *a,
+                       GenObject *fmt,
+                       bool add,
+                       const char *comment)
+        : Operation(comment), a_(a), fmt_(fmt), add_(add), cnt_(0) {
+    }
+    virtual std::string getName() override { return ""; }
+    virtual std::string generate() override;
+    virtual void addArgument(GenObject *arg) { 
+        args_[cnt_++] = arg;
+    }
+ protected:
+    GenObject *a_;
+    GenObject *fmt_;
+    bool add_;          // false: str = val, true : str += val
+    int cnt_;
+    GenObject *args_[256];
+};
 Operation &SETSTRF(GenObject &a, const char *fmt, size_t cnt, ...);
 Operation &ADDSTRF(GenObject &a, const char *fmt, size_t cnt, ...);
+
+class AddU8toStrOperation : public Operation {
+ public:
+    AddU8toStrOperation(GenObject *out,
+                        GenObject *in,
+                        GenObject *val,
+                        const char *comment)
+        : Operation(comment), out_(out), in_(in), val_(val) {
+    }
+    virtual std::string getName() override { return ""; }
+    virtual std::string generate() override;
+ protected:
+    GenObject *out_;
+    GenObject *in_;
+    GenObject *val_;
+};
+
 Operation &ADDSTRU8(GenObject &strout, GenObject &strin, GenObject &val);
 
 /**
@@ -887,10 +935,42 @@ class RshOperation : public Operation {
     GenObject *sz_;
 };
 
+class ArrItemOperation : public Operation {
+ public:
+    ArrItemOperation(GenObject *arr, GenObject *idx, GenObject *item,
+        bool force_read, const char *comment)
+        : Operation(NO_PARENT, comment), arr_(arr), idx_(idx),
+        item_(item), force_read_(force_read) {
+    }
+
+    virtual std::string getName() override { return ""; }
+    virtual std::string generate() override;
+ protected:
+    GenObject *arr_;
+    GenObject *idx_;
+    GenObject *item_;
+    bool force_read_;
+};
+
 Operation &ARRITEM(GenObject &arr, GenObject &idx, GenObject &item, const char *comment="");
 Operation &ARRITEM(GenObject &arr, int idx, GenObject &item, const char *comment="");
 Operation &ARRITEM(GenObject &arr, int idx);
 Operation &ARRITEM_B(GenObject &arr, GenObject &idx, GenObject &item, const char *comment="");  // .read() for signals and ports in bits operations
+
+class IfOtherwiseOperation : public Operation {
+ public:
+    IfOtherwiseOperation(GenObject *cond, GenObject *a, GenObject *b, const char *comment)
+        : Operation(NO_PARENT, comment), cond_(cond), a_(a), b_(b) {
+    }
+
+    virtual std::string getName() override { return ""; }
+    virtual std::string generate() override;
+ protected:
+    GenObject *cond_;
+    GenObject *a_;
+    GenObject *b_;
+};
+
 Operation &IF_OTHERWISE(GenObject &cond, GenObject &a, GenObject &b, const char *comment="");
 
 class IfOperation : public Operation {
@@ -900,6 +980,7 @@ class IfOperation : public Operation {
         push_obj(this);
     }
 
+    virtual std::string getName() override { return ""; }
     virtual std::string generate() override;
  protected:
     GenObject *a_;
@@ -948,7 +1029,44 @@ Operation &IFGEN(GenObject &a, StringConst *name, const char *comment = NO_COMME
 void ELSEGEN(StringConst *name, const char *comment = NO_COMMENT);
 void ENDIFGEN(StringConst *name, const char *comment = NO_COMMENT);
 
-void SWITCH(GenObject &a, const char *comment="");
+class SwitchOperation : public Operation {
+ public:
+    SwitchOperation(GenObject *a, const char *comment)
+        : Operation(comment), a_(a) {
+        push_obj(this);
+    }
+
+    virtual std::string getName() override { return ""; }
+    virtual std::string generate() override;
+ protected:
+    GenObject *a_;
+};
+
+class CaseOperation : public Operation {
+ public:
+    CaseOperation(GenObject *a, const char *comment)
+        : Operation(comment), a_(a) {}
+    virtual std::string generate() override;
+ protected:
+    GenObject *a_;
+};
+
+class EndCaseOperation : public Operation {
+ public:
+    EndCaseOperation(const char *comment) : Operation(comment) {
+    }
+    virtual std::string generate() override;
+};
+
+class EndSwitchOperation : public Operation {
+ public:
+    EndSwitchOperation(const char *comment) : Operation(comment) {
+        pop_obj();
+    }
+    virtual std::string generate() override;
+};
+
+Operation &SWITCH(GenObject &a, const char *comment="");
 void CASE(GenObject &a, const char *comment="");
 void CASEDEF(const char *comment="");
 void ENDCASE(const char *comment="");
@@ -971,6 +1089,7 @@ class ForOperation : public Operation {
             Operation::push_obj(this);  // for becomes top_obj.
         }
 
+    virtual std::string getName() override { return ""; }
     virtual std::string generate() override;
 
  protected:
@@ -1014,8 +1133,29 @@ GenObject &FORGEN(const char *i,
 void ENDFOR(const char *comment="");
 void ENDFORGEN(StringConst *name, const char *comment="");
 
-void WHILE(GenObject &a, const char *comment="");
-void ENDWHILE(const char *comment="");
+class WhileOperation : public Operation {
+ public:
+    WhileOperation(GenObject *a, const char *comment)
+        : Operation(comment), a_(a) {
+        push_obj(this);
+    }
+
+    virtual std::string getName() override { return ""; }
+    virtual std::string generate() override;
+ protected:
+    GenObject *a_;
+};
+
+class EndWhileOperation : public Operation {
+ public:
+    EndWhileOperation(const char *comment) : Operation(comment) {
+        pop_obj();
+    }
+    virtual std::string generate() override;
+};
+
+Operation &WHILE(GenObject &a, const char *comment = NO_COMMENT);
+void ENDWHILE(const char *comment = NO_COMMENT);
 
 // xrst is an additional reset signal
 /**
@@ -1034,15 +1174,97 @@ class SyncResetOperation : public Operation {
 };
 
 void SYNC_RESET(GenObject *xrst = 0);
+
 // call function
-void CALLF(GenObject *ret, GenObject &a, size_t argcnt, ...);
+class CallFuncOperation : public Operation {
+ public:
+    CallFuncOperation(GenObject *ret, GenObject *a)
+        : Operation(NO_COMMENT), ret_(ret), a_(a), cnt_(0) {
+    }
+    virtual std::string getName() override { return ""; }
+    virtual std::string generate() override;
+    virtual void addArgument(GenObject *arg) {
+        args_[cnt_++] = arg;
+    }
+ protected:
+    GenObject *ret_;
+    GenObject *a_;
+    int cnt_;
+    GenObject *args_[256];
+};
+
+Operation &CALLF(GenObject *ret, GenObject &a, size_t argcnt, ...);
+
 // write string into file
-void FOPEN(GenObject &f, GenObject &str);
-void FWRITE(GenObject &f, GenObject &str);
-void FWRITECHAR(GenObject &f, GenObject &str);
-void FFLUSH(GenObject &f);
-void READMEMH(GenObject &fname, GenObject &mem);
-void DISPLAYSTR(GenObject &str);
+class FileOpenOperation : public Operation {
+ public:
+    FileOpenOperation(GenObject *fname, GenObject *str, const char *comment)
+        : Operation(comment), fname_(fname), str_(str) {
+    }
+    virtual std::string getName() override { return ""; }
+    virtual std::string generate() override;
+ protected:
+    GenObject *fname_;
+    GenObject *str_;
+};
+
+Operation &FOPEN(GenObject &f, GenObject &str);
+
+class FileWriteOperation : public Operation {
+ public:
+    FileWriteOperation(GenObject *f, GenObject *str, bool byte, const char *comment)
+        : Operation(comment), f_(f), str_(str), byte_(byte) {
+    }
+    virtual std::string getName() override { return ""; }
+    virtual std::string generate() override;
+ protected:
+    GenObject *f_;
+    GenObject *str_;
+    bool byte_;
+};
+
+Operation &FWRITE(GenObject &f, GenObject &str);
+Operation &FWRITECHAR(GenObject &f, GenObject &str);
+
+class FileFlushOperation : public Operation {
+ public:
+    FileFlushOperation(GenObject *f, const char *comment)
+        : Operation(comment), f_(f) {
+    }
+    virtual std::string getName() override { return ""; }
+    virtual std::string generate() override;
+ protected:
+    GenObject *f_;
+};
+
+Operation &FFLUSH(GenObject &f);
+
+class ReadMemHexOperation : public Operation {
+ public:
+    ReadMemHexOperation(GenObject *f, GenObject *mem, const char *comment)
+        : Operation(comment), f_(f), mem_(mem) {
+    }
+    virtual std::string getName() override { return ""; }
+    virtual std::string generate() override;
+ protected:
+    GenObject *f_;
+    GenObject *mem_;
+};
+
+Operation &READMEMH(GenObject &fname, GenObject &mem);
+
+class DisplayStrOperation : public Operation {
+ public:
+    DisplayStrOperation(GenObject *str, const char *comment)
+        : Operation(comment), str_(str) {
+    }
+    virtual std::string getName() override { return ""; }
+    virtual std::string generate() override;
+ protected:
+    GenObject *str_;
+};
+
+Operation &DISPLAYSTR(GenObject &str);
 
 /**
     Create new module instance
@@ -1113,8 +1335,36 @@ class EndNewOperation : public Operation {
 };
 
 // RTL specific not used in SystemC
+class DeclareTStrOperation : public Operation {
+ public:
+    DeclareTStrOperation(const char *comment) : Operation(comment) {
+    }
+    virtual std::string getName() override { return ""; }
+    virtual std::string generate() override;
+};
+
 void DECLARE_TSTR();    // declare temporary string buffer
-void INITIAL();
+
+class InitialOperation : public Operation {
+ public:
+    InitialOperation(const char *comment) : Operation(comment) {
+        push_obj(this);
+    }
+    virtual std::string getName() override { return ""; }
+    virtual std::string generate() override;
+};
+
+Operation &INITIAL();
+
+class EndInitialOperation : public Operation {
+ public:
+    EndInitialOperation(const char *comment) : Operation(comment) {
+        pop_obj();
+    }
+    virtual std::string getName() override { return ""; }
+    virtual std::string generate() override;
+};
+
 void ENDINITIAL();
 
 /**

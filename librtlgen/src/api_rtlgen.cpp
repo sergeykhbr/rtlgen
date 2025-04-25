@@ -541,15 +541,33 @@ Operation &SETVAL(GenObject &a, GenObject &b, const char *comment) {
 }
 
 Operation &SETVAL_NB(GenObject &a, GenObject &b, const char *comment) {
-    Operation *ret = new SetValueOperation(&a,
-                                    0,    // [arridx]
-                                    0,    // .item
-                                    false,    // h as width
-                                    0,    // [h
-                                    0,    // :l]
-                                    true,    // non-blocking
-                                    &b,  // val
-                                    comment);
+    Operation *ret = 0;
+    if (a.is2Dim()) {
+        if (a.getObjDepth()) {
+            // Array
+            GenObject &i = FOR("i", CONST("0"), *a.getObjDepth(), "++");
+                SETARRITEM_NB(a, i, a, ARRITEM(b, i, b));
+            ENDFOR();
+        } else {
+            // Struct
+            for (auto &p : a.getEntries()) {
+                if (p->isComment()) {
+                    continue;
+                }
+                SETVAL_NB(*p, *b.getChildByName(p->getName()));
+            }
+        }
+    } else {
+        ret = new SetValueOperation(&a,
+                                        0,    // [arridx]
+                                        0,    // .item
+                                        false,    // h as width
+                                        0,    // [h
+                                        0,    // :l]
+                                        true,    // non-blocking
+                                        &b,  // val
+                                        comment);
+    }
     return *ret;
 }
 

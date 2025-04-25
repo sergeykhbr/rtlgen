@@ -181,18 +181,4 @@ static std::string copyreg(GenObject *r,
     return ret;
 }
 
-std::string Signal::getCopyValue(char *i,
-                                 const char *dst_prefix,
-                                 const char *optype,
-                                 const char *src_prefix) {
-    return copyreg(this, i, dst_prefix, optype, src_prefix);
-}
-
-std::string Signal1::getCopyValue(char *i,
-                                  const char *dst_prefix,
-                                  const char *optype,
-                                  const char *src_prefix) {
-    return copyreg(this, i, dst_prefix, optype, src_prefix);
-}
-
 }

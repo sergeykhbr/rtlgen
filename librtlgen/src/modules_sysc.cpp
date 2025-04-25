@@ -471,7 +471,7 @@ std::string ModuleObject::generate_sysc_proc_registers() {
                 char i_idx[2] = {0};
                 for (auto &p : it->second) {
                     i_idx[0] = 'i';
-                    ret += p->getCopyValue(i_idx, r.c_str(), "=", v.c_str());
+                    //ret += p->getCopyValue(i_idx, r.c_str(), "=", v.c_str());
                 }
             }
             if (active != ACTIVE_NONE) {

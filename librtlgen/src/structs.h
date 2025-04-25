@@ -17,6 +17,7 @@
 #pragma once
 
 #include "genobjects.h"
+#include "refobj.h"
 #include "values.h"
 #include <iostream>
 #include <list>
@@ -48,10 +49,6 @@ class StructObject : public GenValue {
     virtual bool isInterface() override;
     virtual std::string getStrValue() override;
     virtual bool is2Dim() override;
-    virtual std::string getCopyValue(char *i,
-                                     const char *dst_prefix,
-                                     const char *optype,
-                                     const char *src_prefix) override;
 
     virtual std::string generate() override;
 
@@ -91,6 +88,22 @@ class RegTypedefStruct : public StructObject {
         } 
         return v_->getName();
     }
+
+    virtual void add_entry(GenObject *obj) override {
+        StructObject::add_entry(obj);
+        RefObject *ref;
+        if (rst_) {
+            ref = new RefObject(rst_, obj, NO_COMMENT);
+            rst_->add_entry(ref);
+        }
+        ref = new RefObject(v_, obj, NO_COMMENT);
+        v_->add_entry(ref);
+        ref = new RefObject(rin_, obj, NO_COMMENT);
+        rin_->add_entry(ref);
+        ref = new RefObject(r_, obj, NO_COMMENT);
+        r_->add_entry(ref);
+    }
+
     virtual void setRegInstances(GenObject *rst,
                                  GenObject *v,
                                  GenObject *rin,
@@ -100,6 +113,7 @@ class RegTypedefStruct : public StructObject {
         rin_ = rin;
         r_ = r;
     }
+
     virtual GenObject *rst_instance() { return rst_; }
     virtual GenObject *v_instance() { return v_; }
     virtual GenObject *rin_instance() { return rin_; }
@@ -121,9 +135,9 @@ class RegSignalInstance : public StructObject {
                     const char *name,
                     const char *rstval);
 
-    virtual std::list<GenObject *> &getEntries() {
-        return rstruct_->getEntries();
-    }
+    //virtual std::list<GenObject *> &getEntries() {
+    //    return rstruct_->getEntries();
+    //}
  protected:
     RegTypedefStruct *rstruct_;
 };

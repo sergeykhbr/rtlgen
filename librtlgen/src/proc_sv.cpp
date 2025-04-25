@@ -158,7 +158,7 @@ std::string RegisterCopyProcess::generate_sv(bool async_on_off) {
             TEXT();
             ALWAYS_FF(EDGE(*clkport, getClockEdge()), EDGE(*rstport, getResetActive()));
                 IF (EQ(*rstport, CONST("0", 1)));
-                    SETVAL_NB(*rstruct_->r_instance(), *rstruct_->r_instance()->getObjValue());
+                    SETVAL_NB(*rstruct_->r_instance(), *rstruct_->rst_instance());
                 ELSE();
                     SETVAL_NB(*rstruct_->r_instance(), *rstruct_->rin_instance());
                 ENDIF();
@@ -177,7 +177,7 @@ std::string RegisterCopyProcess::generate_sv(bool async_on_off) {
         GenObject &block = 
         ALWAYS_FF(EDGE(*clkport, getClockEdge()), EDGE(*rstport, getResetActive()));
             IF (EQ(*rstport, CONST("0", 1)));
-                SETVAL_NB(*rstruct_->r_instance(), *rstruct_->r_instance()->getObjValue());
+                SETVAL_NB(*rstruct_->r_instance(), *rstruct_->rst_instance());
             ELSE();
                 SETVAL_NB(*rstruct_->r_instance(), *rstruct_->rin_instance());
             ENDIF();
