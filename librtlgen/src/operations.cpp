@@ -1211,17 +1211,18 @@ Operation &SWITCH(GenObject &a, const char *comment) {
 std::string CaseOperation::generate() {
     std::string ret = "";
     popspaces();
+    ret += addspaces();
     if (SCV_is_sysc()) {
         if (a_) {
             std::string A = Operation::obj2varname(a_);
-            ret += addspaces() + "case " + A + ":";
+            ret += "case " + A + ":";
         } else {
             ret += "default:";
         }
     } else {
         if (a_) {
             std::string A = Operation::obj2varname(a_);
-            ret += addspaces() + A + ": begin";
+            ret += A + ": begin";
         } else {
             ret += "default: begin";
         }
@@ -1419,7 +1420,6 @@ std::string EndWhileOperation::generate() {
 void ENDWHILE(const char *comment) {
     new EndWhileOperation(comment);
 }
-
 
 // Sync reset
 std::string SyncResetOperation::generate() {

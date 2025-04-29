@@ -113,24 +113,13 @@ class RegTypedefStruct : public StructObject {
         RegTypedefStruct *rstruct_;
     };
 
-    /**
-        Generate reset structure/function (*_r_reset)
-     */
-    class RefResetObject : public RefObject {
-     public:
-        RefResetObject(GenObject *parent, GenObject *ref, const char *comment)
-            : RefObject(parent, ref, comment) {
-        }
-        virtual std::string getName() override { return ref_->getStrValue(); }
-    };
-
     class RegResetStruct : public RegSignalInstance {
      public:
         RegResetStruct(GenObject *parent,
                         RegTypedefStruct *p,
                         const char *name);
 
-        virtual bool isParam() override { return true; }
+        //virtual bool isParam() override { return true; }
         virtual bool isConst() override { return true; }
     };
 

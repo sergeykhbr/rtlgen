@@ -26,19 +26,12 @@ class RefObject : public GenObject {
         : GenObject(parent, comment), ref_(ref) {
     }
 
-    virtual std::list<GenObject *> &getEntries() { return ref_->getEntries(); }
-    virtual GenObject *getChildByName(std::string name){ return ref_->getChildByName(name); }
-    virtual std::string getType() { return ref_->getType(); }
-    virtual std::string getName() { return ref_->getName(); }
-    virtual std::string getTypedef() { return ref_->getTypedef(); }
-    virtual std::string nameInModule(EPorts portid) {
-        std::string ret;
-        GenObject *saveParent = ref_->getParent();
-        ref_->setParent(getParent());
-        ret = ref_->nameInModule(portid);
-        ref_->setParent(saveParent);
-        return ret;
-    }
+    virtual std::list<GenObject *> &getEntries() override { return ref_->getEntries(); }
+    virtual GenObject *getChildByName(std::string name) override { return ref_->getChildByName(name); }
+    virtual std::string getType() override { return ref_->getType(); }
+    virtual std::string getName() override { return ref_->getName(); }
+    virtual std::string getTypedef() override { return ref_->getTypedef(); }
+    virtual std::string nameInModule(EPorts portid) override;
 
     virtual uint64_t getValue() { return ref_->getValue(); }
     virtual double getFloatValue() { return ref_->getFloatValue(); }
@@ -60,5 +53,18 @@ class RefObject : public GenObject {
  protected:
     GenObject *ref_;
 };
+
+/**
+    Generate reset structure/function (*_r_reset)
+    */
+class RefResetObject : public RefObject {
+    public:
+    RefResetObject(GenObject *parent, GenObject *ref, const char *comment)
+        : RefObject(parent, ref, comment) {
+    }
+
+    virtual std::string nameInModule(EPorts portid) override;
+};
+
 
 }  // namespace sysvc

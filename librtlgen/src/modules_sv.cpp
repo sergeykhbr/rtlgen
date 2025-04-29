@@ -254,7 +254,8 @@ std::string ModuleObject::generate_sv_mod_signals() {
             || p->isOutput()
             || p->isOperation()
             || p->isTypedef()
-            || p->isParam() ) {
+            || p->isParam()
+            || p->isConst()) {
             text = "";
             continue;
         }

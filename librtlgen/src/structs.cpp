@@ -95,7 +95,7 @@ std::string StructObject::getType() {
 std::string StructObject::getStrValue() {
     std::string ret = "";
 #if 1
-if (getName() == "sfifo_r_reset") {
+if (getParent() && getParent()->getName() == "sfifo_r_reset") {
     bool st = true;
 }
 #endif
@@ -112,19 +112,20 @@ if (getName() == "sfifo_r_reset") {
     }
     pushspaces();
 
+    // TODO: change implementation of vector
+    //       
     std::string checktype = getType();
     if (isVector()) {
         checktype = getTypedef();
     }
     if (getObjDepth()) {
         int d = static_cast<int>(getDepth());
-        ret += "\n";
         pushspaces();
         int tcnt = 0;
         std::string ln;
         for (auto &p: getEntries()) {
-            if (p->getType() != checktype) {
-                // Only the same type entry should be generated
+            if (isVector() && p->getType() != checktype) {
+                // FIXME: vector implemented very badly. Only the same type entry should be generated
                 continue;
             }
             ln = addspaces() + p->getStrValue();
@@ -700,7 +701,7 @@ std::string StructObject::generate() {
     std::string ret = "";
     std::string ln;
 
-    if (isParam()) {
+    if (isParam() || isConst()) {
         return generate_param();
     }
     if (isVector()) {
