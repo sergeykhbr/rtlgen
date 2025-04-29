@@ -52,8 +52,12 @@ Logic::Logic(GenObject *parent,
 
 
 std::string Logic::getType() {
+    bool is_number = false;
     std::string ret = "";
     std::string strw = getStrWidth();
+    if (strw.c_str()[0] >= '0' && strw.c_str()[0] <= '9') {
+        is_number = true;
+    }
 
     if (SCV_is_sysc()) {
         if (isParam() && !isParamGeneric() || isParamTemplate()) {
@@ -87,21 +91,13 @@ std::string Logic::getType() {
         }
         if (getWidth() > 1) {
             ret += " [";
-            if (strw.c_str()[0] >= '0' && strw.c_str()[0] <= '9') {
-                char tstr[256];
+            if (is_number) {
+                char tstr[64];
                 RISCV_sprintf(tstr, sizeof(tstr), "%d", getWidth() - 1);
                 ret += tstr;
             } else {
-                if (SCV_is_sv_pkg() && !objWidth_->isParamGeneric()) {
-                    GenObject *pfile = objWidth_;
-                    while (pfile && !pfile->isFile()) {
-                        pfile = pfile->getParent();
-                    }
-                    if (pfile) {
-                        ret += pfile->getName() + "_pkg::";
-                    }
-                }
-                ret += strw + "-1";
+                ret += strw;
+                ret += "-1";
             }
             ret += ":0]";
         }
@@ -110,12 +106,13 @@ std::string Logic::getType() {
             ret = std::string("std_logic");
         } else {
             ret += "std_logic_vector(";
-            if (strw.c_str()[0] >= '0' && strw.c_str()[0] <= '9') {
-                char tstr[256];
+            if (is_number) {
+                char tstr[64];
                 RISCV_sprintf(tstr, sizeof(tstr), "%d", getWidth() - 1);
                 ret += tstr;
             } else {
-                ret += strw + " - 1";
+                ret += strw;
+                ret += " - 1 downto 0)";
             }
             ret += " downto 0)";
         }

@@ -84,8 +84,9 @@ std::string ProcObject::generate_sv(bool async_on_off) {
         GenObject *clkport = getClockPort();
         GenObject *rstport = getResetPort();
         // proc prolog:
+        ret += addspaces();
         if (clkport) {
-            ret += addspaces() + "always_ff @(";
+            ret += "\nalways_ff @(";
             ret += SV_STR_CLKEDGE[getClockEdge()];
             ret += std::string(" ") + clkport->getName();
 
@@ -96,7 +97,7 @@ std::string ProcObject::generate_sv(bool async_on_off) {
 
             ret += ") ";
         } else {
-            ret += "always_comb\n" + addspaces();
+            ret += "\nalways_comb\n" + addspaces();
         }
         ret += "begin: " + getName() + "_proc\n";
 
@@ -157,7 +158,11 @@ std::string RegisterCopyProcess::generate_sv(bool async_on_off) {
         IFGEN(*async_reset, pNameEn);
             TEXT();
             ALWAYS_FF(EDGE(*clkport, getClockEdge()), EDGE(*rstport, getResetActive()));
-                IF (EQ(*rstport, CONST("0", 1)));
+                if (getResetActive() == ACTIVE_LOW) {
+                    IF (EZ(*rstport));
+                } else {
+                    IF (NZ(*rstport));
+                }
                     SETVAL_NB(*rstruct_->r_instance(), *rstruct_->rst_instance());
                 ELSE();
                     SETVAL_NB(*rstruct_->r_instance(), *rstruct_->rin_instance());
@@ -176,7 +181,11 @@ std::string RegisterCopyProcess::generate_sv(bool async_on_off) {
     } else if (rstport && getResetActive() != ACTIVE_NONE) {
         GenObject &block = 
         ALWAYS_FF(EDGE(*clkport, getClockEdge()), EDGE(*rstport, getResetActive()));
-            IF (EQ(*rstport, CONST("0", 1)));
+            if (getResetActive() == ACTIVE_LOW) {
+                IF (EZ(*rstport));
+            } else {
+                IF (NZ(*rstport));
+            }
                 SETVAL_NB(*rstruct_->r_instance(), *rstruct_->rst_instance());
             ELSE();
                 SETVAL_NB(*rstruct_->r_instance(), *rstruct_->rin_instance());

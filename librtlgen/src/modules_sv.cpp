@@ -158,6 +158,11 @@ std::string ModuleObject::generate_sv_pkg() {
             comment = p->generate();
             continue;
         }
+        if (p->isConst() && p->is2Dim()) {
+            // We can generate 2-dim reset structures but Vivado has an
+            // issue to use it. So skip it here.
+            continue;
+        }
         if ((p->isParam() && p->isString() && !p->isParamGeneric())
             || (p->isParam() && !p->isParamGeneric() && !p->isGenericDep())
             || (p->isStruct() && (p->isTypedef() || p->isConst()))) {
@@ -409,15 +414,15 @@ std::string ModuleObject::generate_sv_mod(bool no_pkg) {
     }
 
     // Sub-module instantiation
-    tcnt = ret.size();
+//    tcnt = ret.size();
     for (auto &p: getEntries()) {
         if (p->isOperation()) {
             ret += p->generate();
         }
     }
-    if (tcnt != ret.size()) {
-        ret += "\n";
-    }
+//    if (tcnt != ret.size()) {
+//        ret += "\n";
+//    }
 
     // Process
     for (auto &p: getEntries()) {
@@ -426,12 +431,6 @@ std::string ModuleObject::generate_sv_mod(bool no_pkg) {
         }
         ret += p->generate();
     }
-#if 1
-    if (addspaces().size() != 0) {
-        const char *tname = getName().c_str();
-        bool lt = true;
-    }
-#endif
 /*
     // Clock process
     for (auto &p: entries_) {

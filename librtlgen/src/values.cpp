@@ -54,6 +54,12 @@ GenValue::GenValue(GenObject *parent, const char *name, GenObject *val, const ch
     objValue_ = val;
 }
 
+std::string GenValue::getName() {
+    if (getParent() && getParent()->isFile() && SCV_is_sv_pkg()) {
+        return getParent()->getName() + "_pkg::" + name_;
+    }
+    return name_;
+}
 
 std::string GenValue::nameInModule(EPorts portid) {
     std::string ret = "";

@@ -49,7 +49,7 @@ class GenValue : public GenObject {
     virtual bool isValue() override { return true; }
     virtual std::string generate() override;
 
-    virtual std::string getName() override { return name_; }
+    virtual std::string getName() override;
     virtual uint64_t getValue() override {
         return objValue_->getValue();
     }

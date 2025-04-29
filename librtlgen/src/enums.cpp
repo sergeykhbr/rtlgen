@@ -66,13 +66,8 @@ std::string EnumObject::generate_sysc() {
 
 std::string EnumObject::generate_sysv() {
     std::string ret = "";
-    std::string ln = "";
     for (auto &p: getEntries()) {
-        ln = addspaces();
-        ln += "localparam " + p->getType() + " " + p->getName() + " = ";
-        ln += p->generate() + ";";       // FIXME to logic and generate() instead of int
-        p->addComment(ln);
-        ret += ln + "\n";
+        ret += p->generate();
     }
     return ret;
 }
