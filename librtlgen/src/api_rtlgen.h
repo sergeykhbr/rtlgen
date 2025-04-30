@@ -446,6 +446,13 @@ Operation &RSH(GenObject &a, int sz, const char *comment=NO_COMMENT);
  */
 Operation &SETVAL(GenObject &a, GenObject &b, const char *comment=NO_COMMENT);
 
+/** Set value b into a with delay:
+    sysc: a.write(b, T * SC_NS);
+    sv:   #T a = b;         (full equivalent a = #T b; for blocking assignment)
+    vhdl: a := b after T ns;
+ */
+Operation &SETVAL_DELAY(GenObject &a, GenObject &b, GenObject &T, const char *comment=NO_COMMENT);
+
 /** Set non-blocking value b into a:
     sysc: a = b;
     sv:   a <= b;

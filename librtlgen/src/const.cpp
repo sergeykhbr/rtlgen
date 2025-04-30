@@ -60,19 +60,18 @@ std::string HexConst::getStrValue() {
 
 std::string FloatConst::getStrValue() {
     char tstr[128];
-    int sz = RISCV_sprintf(tstr, sizeof(tstr), "%.f", f64_);
-    bool dot_found = false;
-    for (int i = 0; i < sz; i++) {
-        if (tstr[i] == '.') {
-            dot_found = true;
-            break;
-        }
+    char fmt[64];
+    int scale = 1;
+    double ftmp = f64_;
+    if (ftmp < 0) {
+        ftmp = -ftmp;
     }
-    if (!dot_found) {
-        tstr[sz++] = '.';
-        tstr[sz++] = '0';
-        tstr[sz] = '\0';
+    while (ftmp && ftmp < 0.1 && scale < 10) {
+        ftmp *= 10;
+        scale++;
     }
+    RISCV_sprintf(fmt, sizeof(fmt), "%%.%df", scale);
+    int sz = RISCV_sprintf(tstr, sizeof(tstr), fmt, f64_);
     return std::string(tstr);
 }
 

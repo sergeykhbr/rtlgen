@@ -28,20 +28,20 @@ vip_uart_receiver::vip_uart_receiver(GenObject *parent, const char *name, const 
     i_rdy_clr(this, "i_rdy_clr", "1"),
     o_data(this, "o_data", "8"),
     // params
-    startbit(this, "startbit", "2", "0", NO_COMMENT),
-    data(this, "data", "2", "1", NO_COMMENT),
-    stopbit(this, "stopbit", "2", "2", NO_COMMENT),
-    dummy(this, "dummy", "2", "3", NO_COMMENT),
+    startbit(this, "startbit", "2", "0x0", NO_COMMENT),
+    data(this, "data", "2", "0x1", NO_COMMENT),
+    stopbit(this, "stopbit", "2", "0x2", NO_COMMENT),
+    dummy(this, "dummy", "2", "0x3", NO_COMMENT),
     // signals
     // registers
-    rx(this, "rx", "1"),
-    state(this, "state", "2", "startbit"),
-    rdy(this, "rdy", "1"),
-    rdata(this, "rdata", "8"),
-    sample(this, "sample", "32"),
-    bitpos(this, "bitpos", "4"),
-    scratch(this, "scratch", "8"),
-    rx_err(this, "rx_err", "1"),
+    rx(this, "rx", "1", "0", NO_COMMENT),
+    state(this, "state", "2", "startbit", NO_COMMENT),
+    rdy(this, "rdy", "1", "0", NO_COMMENT),
+    rdata(this, "rdata", "8", "'0", NO_COMMENT),
+    sample(this, "sample", "32", "'0", NO_COMMENT),
+    bitpos(this, "bitpos", "4", "'0", NO_COMMENT),
+    scratch(this, "scratch", "8", "'0", NO_COMMENT),
+    rx_err(this, "rx_err", "1", "0", NO_COMMENT),
     //
     comb(this)
 {

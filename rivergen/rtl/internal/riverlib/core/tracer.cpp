@@ -65,7 +65,7 @@ Tracer::Tracer(GenObject *parent, const char *name, const char *comment) :
     TraceOutput(this),
     // process
     comb(this),
-    reg(this, &i_clk, &i_nrst)
+    proc_traceout_(this, &i_clk)
 {
     Operation::start(this);
     INITIAL();
@@ -77,8 +77,8 @@ Tracer::Tracer(GenObject *parent, const char *name, const char *comment) :
     Operation::start(&comb);
     proc_comb();
 
-    Operation::start(&reg);
-    proc_reg();
+    Operation::start(&proc_traceout_);
+    proc_traceout();
 }
 
 Tracer::FunctionTaskDisassembler::FunctionTaskDisassembler(GenObject *parent)
@@ -1081,7 +1081,7 @@ TEXT();
 
 }
 
-void Tracer::proc_reg() {
+void Tracer::proc_traceout() {
     IF (NE(outstr, *new StringConst("")));
         FWRITE(fl, outstr);
     ENDIF();

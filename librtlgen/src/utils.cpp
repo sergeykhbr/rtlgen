@@ -46,11 +46,6 @@ std::string addspaces() {
 
 void pushspaces() {
     spaces_++;
-#if 1
-    if (spaces_ > 8) {
-        bool st = true;
-    }
-#endif
 }
 
 void popspaces() {

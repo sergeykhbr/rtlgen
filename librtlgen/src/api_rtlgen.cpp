@@ -524,11 +524,31 @@ Operation &SETVAL(GenObject &a, GenObject &b, const char *comment) {
         ret = new SetValueOperation(&a,
                                       0,    // [arridx]
                                       0,    // .item
-                                      false,    // h as width
+                                      false,// h as width
                                       0,    // [h
                                       0,    // :l]
-                                      false,    // blocking
-                                      &b,  // val
+                                      false,// blocking
+                                      &b,   // val
+                                      0,    // delay
+                                      comment);
+    }
+    return *ret;
+}
+
+Operation &SETVAL_DELAY(GenObject &a, GenObject &b, GenObject &T, const char *comment) {
+    Operation *ret = 0;
+    if (a.is2Dim()) {
+        SHOW_ERROR("Unsupported SETVAL_DELAY %s", comment);
+    } else {
+        ret = new SetValueOperation(&a,
+                                      0,    // [arridx]
+                                      0,    // .item
+                                      false,// h as width
+                                      0,    // [h
+                                      0,    // :l]
+                                      false,// blocking
+                                      &b,   // val
+                                      &T,   // delay
                                       comment);
     }
     return *ret;
@@ -563,6 +583,7 @@ Operation &SETVAL_NB(GenObject &a, GenObject &b, const char *comment) {
                                         0,    // :l]
                                         true,    // non-blocking
                                         &b,  // val
+                                        0,        // delay
                                         comment);
     }
     return *ret;
@@ -599,6 +620,7 @@ Operation &SETBIT(GenObject &a, GenObject &b, GenObject &val, const char *commen
                                          0,     // l
                                          false, // =
                                          &val,  // val
+                                         0,        // delay
                                          comment);
     return *p;
 }
@@ -612,6 +634,7 @@ Operation &SETBIT(GenObject &a, int b, GenObject &val, const char *comment) {
                                          0,     // l
                                          false, // =
                                          &val,  // val
+                                         0,        // delay
                                          comment);
     return *p;
 }
@@ -630,6 +653,7 @@ Operation &SETBITONE(GenObject &a, GenObject &b, const char *comment) {
                                          0,     // l
                                          false, // =
                                          new DecLogicConst(new DecConst(1), 1),  // val
+                                         0,        // delay
                                          comment);
     return *p;
 }
@@ -666,6 +690,7 @@ Operation &SETBITZERO(GenObject &a, GenObject &b, const char *comment) {
                                          0,     // l
                                          false, // =
                                          new DecLogicConst(new DecConst(1), 0),  // val
+                                         0,        // delay
                                          comment);
     return *p;
 }
@@ -702,6 +727,7 @@ Operation &SETBITS(GenObject &a, GenObject &h, GenObject &l, GenObject &val, con
                                          &l,     // l
                                          false, // =
                                          &val,  // val
+                                         0,        // delay
                                          comment);
     return *p;
 }
@@ -729,6 +755,7 @@ Operation &SETBITSW(GenObject &a, GenObject &start, GenObject &width, GenObject 
                                          &start,     // l
                                          false, // =
                                          &val,  // val
+                                         0,        // delay
                                          comment);
     return *p;
 }
@@ -752,6 +779,7 @@ Operation &SETARRITEM(GenObject &arr,
                                   0,        // :l]
                                   false, // =
                                   &val,     // val
+                                  0,        // delay
                                   comment);
 }
 
@@ -773,6 +801,7 @@ Operation &SETARRITEM_NB(GenObject &arr,
                                   0,        // :l]
                                   true,     // <=
                                   &val,     // val
+                                  0,        // delay
                                   comment);
 }
 
@@ -790,6 +819,7 @@ Operation &SETARRITEM(GenObject &arr, int idx, GenObject &val) {
                                   0,        // :l]
                                   false, // =
                                   &val,     // val
+                                  0,        // delay
                                   NO_COMMENT);
 }
 
@@ -846,6 +876,7 @@ Operation &SETARRITEMBIT(GenObject &arr, GenObject &idx,
                                   0,        // :l]
                                   false,    // =
                                   &val,     // val
+                                  0,        // delay
                                   comment);
 }
 
@@ -866,6 +897,7 @@ Operation &SETARRITEMBITSW(GenObject &arr, GenObject &idx,
                                   &start,   // :l]
                                   false,    // =
                                   &val,     // val
+                                  0,        // delay
                                   comment);
 }
 

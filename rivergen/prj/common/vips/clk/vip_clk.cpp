@@ -34,5 +34,8 @@ vip_clk::vip_clk(GenObject *parent, const char *name, const char *comment) :
 }
 
 void vip_clk::proc_comb() {
-    SETVAL(o_clk, pll);
+    ALWAYS(0, NO_COMMENT);
+        SETVAL_DELAY(pll, INV(pll), MUL2(MUL2(*new FloatConst(0.5), *new FloatConst(1000000000)), period));
+    ENDALWAYS();
+    ASSIGN(o_clk, pll);
 }

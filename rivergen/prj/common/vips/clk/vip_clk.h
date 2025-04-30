@@ -30,6 +30,7 @@ class vip_clk : public ModuleObject {
         CombProcess(GenObject *parent) :
             CombinationalProcess(parent, "comb") {
         }
+        virtual bool isAssign() override { return true; }
 
      public:
     };

@@ -124,7 +124,7 @@ std::string ProcObject::generate() {
     } else if (SCV_is_sysc()) {
         return generate_sysc_cpp();
     } else if (SCV_is_sv()) {
-        return generate_sv(false);
+        return generate_sv();
     }
     return ret;
 }

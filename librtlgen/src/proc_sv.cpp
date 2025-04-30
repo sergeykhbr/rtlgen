@@ -49,7 +49,7 @@ std::string ProcObject::generate_localvar_sv() {
     return ret;
 }
 
-std::string ProcObject::generate_sv(bool async_on_off) {
+std::string ProcObject::generate_sv() {
     std::string ret = "";
     std::string bodytext;
     GenObject *m = getParent();
@@ -90,8 +90,8 @@ std::string ProcObject::generate_sv(bool async_on_off) {
             ret += SV_STR_CLKEDGE[getClockEdge()];
             ret += std::string(" ") + clkport->getName();
 
-            if (async_on_off && rstport->getResetActive() != ACTIVE_NONE) {
-                ret += std::string(", ") + SV_STR_RSTEDGE[rstport->getResetActive()] + " ";
+            if (rstport && getResetActive() != ACTIVE_NONE) {
+                ret += std::string(", ") + SV_STR_RSTEDGE[getResetActive()] + " ";
                 ret += rstport->getName();
             }
 
@@ -130,7 +130,7 @@ std::string ProcObject::generate_sv(bool async_on_off) {
             r <= rin;
         end: name_proc
 */
-std::string RegisterCopyProcess::generate_sv(bool async_on_off) {
+std::string RegisterCopyProcess::generate_sv() {
     std::string ret = "";
     GenObject *m = getParent();
     GenObject *clkport = getClockPort();
@@ -167,13 +167,13 @@ std::string RegisterCopyProcess::generate_sv(bool async_on_off) {
                 ELSE();
                     SETVAL_NB(*rstruct_->r_instance(), *rstruct_->rin_instance());
                 ENDIF();
-            ENDALWAYS_FF();
+            ENDALWAYS();
             TEXT();
         ELSEGEN(pName);
             TEXT();
             ALWAYS_FF(EDGE(*clkport, getClockEdge()));
                 SETVAL_NB(*rstruct_->r_instance(), *rstruct_->rin_instance());
-            ENDALWAYS_FF();
+            ENDALWAYS();
             TEXT();
         ENDIFGEN(pNameDis);
         ENDGENERATE("");
@@ -190,13 +190,13 @@ std::string RegisterCopyProcess::generate_sv(bool async_on_off) {
             ELSE();
                 SETVAL_NB(*rstruct_->r_instance(), *rstruct_->rin_instance());
             ENDIF();
-        ENDALWAYS_FF();
+        ENDALWAYS();
         ret += block.generate() + "\n";
     } else {
         GenObject &block = 
         ALWAYS_FF(EDGE(*clkport, getClockEdge()));
             SETVAL(*rstruct_->r_instance(), *rstruct_->rin_instance());
-        ENDALWAYS_FF();
+        ENDALWAYS();
         ret += block.generate() + "\n";
     }
 

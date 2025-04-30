@@ -194,6 +194,7 @@ class GetValueOperation : public Operation {
 /**
     Set value int variable:
         a = b
+        #T a = b
         a[h:l] = b
         a[arridx].item[h:l] = b
         a[arridx][h:l] = b
@@ -207,7 +208,8 @@ class SetValueOperation : public GetValueOperation {
                       GenObject *h,         // MSB bit
                       GenObject *l,         // LSB bit
                       bool non_blocking,    // false=blocking; true=non-blocking
-                      GenObject *val,
+                      GenObject *val,       // value to assign
+                      GenObject *delay,     // delay
                       const char *comment);
 
     virtual std::string getStrValue() override { return generate(); }
@@ -220,6 +222,7 @@ class SetValueOperation : public GetValueOperation {
 
  protected:
     GenObject *v_;
+    GenObject *T_;
     bool non_blocking_;
 };
 
@@ -238,7 +241,7 @@ class AssignValueOperation : public SetValueOperation {
                          GenObject *l,         // LSB bit
                          GenObject *val,
                          const char *comment)
-        : SetValueOperation(a, idx, item, h_as_width, h, l, true, val, comment) {}
+        : SetValueOperation(a, idx, item, h_as_width, h, l, false, val, 0, comment) {}
 
  protected:
     virtual bool isAssign() override { return true; }       // modificator to use out-of-process assign operator (<=)
@@ -280,7 +283,7 @@ class IncrementValueOperation : public SetValueOperation {
                       GenObject *l,         // LSB bit
                       GenObject *val,
                       const char *comment)
-        : SetValueOperation(a, idx, item, h_as_width, h, l, false, val, comment) {}
+        : SetValueOperation(a, idx, item, h_as_width, h, l, false, val, 0, comment) {}
 
     virtual std::string generate() override;
 };
@@ -1424,27 +1427,28 @@ Operation &EDGE(GenObject &obj, EClockEdge edge);
 Operation &EDGE(GenObject &obj, EResetActive edge);
 
 /**
-    always_ff block:
+    always, always_comb and always_ff blocks:
 */
-class AlwaysFFOperation : public Operation {
+class AlwaysOperation : public Operation {
  public:
-    AlwaysFFOperation(GenObject *clk, GenObject *rst, const char *comment)
-        : Operation(comment), clk_(clk), rst_(rst) {
+    AlwaysOperation(GenObject *cond, GenObject *clk, GenObject *rst, const char *comment)
+        : Operation(comment), cond_(cond), clk_(clk), rst_(rst) {
         push_obj(this);
     }
     virtual std::string getName() override { return ""; }
     virtual std::string generate() override;
  protected:
+    GenObject *cond_;
     GenObject *clk_;
     GenObject *rst_;
 };
 
 /**
-    End of always_ff block
+    End of always block
  */
-class EndAlwaysFFOperation : public Operation {
+class EndAlwaysOperation : public Operation {
  public:
-    EndAlwaysFFOperation(const char *comment)
+    EndAlwaysOperation(const char *comment)
         : Operation(comment) {
         pop_obj();
     }
@@ -1452,8 +1456,9 @@ class EndAlwaysFFOperation : public Operation {
     virtual std::string generate() override;
 };
 
+GenObject &ALWAYS(GenObject *cond, const char *comment=NO_COMMENT);
 GenObject &ALWAYS_FF(GenObject &clk, const char *comment=NO_COMMENT);
 GenObject &ALWAYS_FF(GenObject &clk, GenObject &rst, const char *comment=NO_COMMENT);
-void ENDALWAYS_FF(const char *comment=NO_COMMENT);
+void ENDALWAYS(const char *comment=NO_COMMENT);
 
 }  // namespace sysvc

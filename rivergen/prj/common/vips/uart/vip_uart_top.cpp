@@ -54,7 +54,7 @@ vip_uart_top::vip_uart_top(GenObject *parent, const char *name, const char *comm
     tx0(this, "tx0", NO_COMMENT),
     U8ToString(this),
     comb(this),
-    reg(this, &w_clk, &i_nrst)
+    proc_fileout_(this, &w_clk, &i_nrst)
 {
     Operation::start(this);
     INITIAL();
@@ -72,6 +72,7 @@ vip_uart_top::vip_uart_top(GenObject *parent, const char *name, const char *comm
 
 
     // Create and connet Sub-modules:
+TEXT();
     clk0.period.setObjValue(&pll_period);
     NEW(clk0, clk0.getName().c_str());
         CONNECT(clk0, 0, clk0.o_clk, w_clk);
@@ -102,8 +103,8 @@ TEXT();
     Operation::start(&comb);
     proc_comb();
 
-    Operation::start(&reg);
-    proc_reg();
+    Operation::start(&proc_fileout_);
+    proc_fileout();
 }
 
 vip_uart_top::FunctionU8ToString::FunctionU8ToString(GenObject *parent)
@@ -123,7 +124,7 @@ TEXT();
     SYNC_RESET();
 }
 
-void vip_uart_top::proc_reg() {
+void vip_uart_top::proc_fileout() {
 #ifdef FROST3
     IF (NZ(w_rx_rdy));
         FWRITECHAR(fl, wb_rdata);

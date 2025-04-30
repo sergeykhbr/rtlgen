@@ -55,18 +55,17 @@ class vip_uart_top : public ModuleObject {
      public:
     };
 
-    class RegistersProcess : public ProcObject {
+    class OutputProcess : public ProcObject {
      public:
-        RegistersProcess(GenObject *parent,
+        OutputProcess(GenObject *parent,
                         GenObject *clk,
                         GenObject *rst)
-            : ProcObject(parent, "registers",
+            : ProcObject(parent, "fileout",
                         clk, CLK_POSEDGE, rst, ACTIVE_LOW, NO_COMMENT) {
             }
-    public:
     };
 
-    void proc_reg();
+    void proc_fileout();
     void proc_comb();
 
  public:
@@ -106,7 +105,7 @@ class vip_uart_top : public ModuleObject {
 
     FunctionU8ToString U8ToString;
     CombProcess comb;
-    RegistersProcess reg;
+    OutputProcess proc_fileout_;
 };
 
 class vip_uart_top_file : public FileObject {

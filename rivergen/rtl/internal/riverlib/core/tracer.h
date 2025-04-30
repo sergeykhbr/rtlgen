@@ -85,17 +85,17 @@ class Tracer : public ModuleObject {
         Logic rcnt_inc;
     };
 
-    class RegistersProcess : public ProcObject {
+    class TraceoutProcess : public ProcObject {
      public:
-        RegistersProcess(GenObject *parent, GenObject *clk, GenObject *rst)
-            : ProcObject(parent, "registers",
-                         clk, CLK_POSEDGE, rst, ACTIVE_LOW, NO_COMMENT) {
+        TraceoutProcess(GenObject *parent, GenObject *clk)
+            : ProcObject(parent, "traceout",
+                         clk, CLK_POSEDGE, 0, ACTIVE_NONE, NO_COMMENT) {
         }
     public:
     };
 
     void proc_comb();
-    void proc_reg();
+    void proc_traceout();
 
  public:
     DefParamUI32D hartid;
@@ -280,7 +280,7 @@ class Tracer : public ModuleObject {
     FunctionTraceOutput TraceOutput;
     // process should be intialized last to make all signals available
     CombProcess comb;
-    RegistersProcess reg;
+    TraceoutProcess proc_traceout_;
 };
 
 class tracer_file : public FileObject {

@@ -27,19 +27,19 @@ vip_uart_transmitter::vip_uart_transmitter(GenObject *parent, const char *name, 
     o_full(this, "o_full", "1"),
     o_tx(this, "o_tx", "1"),
     // params
-    idle(this, "idle", "2", "0", NO_COMMENT),
-    startbit(this, "startbit", "2", "1", NO_COMMENT),
-    data(this, "data", "2", "2", NO_COMMENT),
-    stopbit(this, "stopbit", "2", "3", NO_COMMENT),
+    idle(this, "idle", "2", "0x0", NO_COMMENT),
+    startbit(this, "startbit", "2", "0x1", NO_COMMENT),
+    data(this, "data", "2", "0x2", NO_COMMENT),
+    stopbit(this, "stopbit", "2", "0x3", NO_COMMENT),
     // signals
     // registers
-    state(this, "state", "2", "idle"),
-    sample(this, "sample", "32"),
-    txdata_rdy(this, "txdata_rdy", "1"),
-    txdata(this, "txdata", "8"),
-    shiftreg(this, "shiftreg", "9", "'1"),
-    bitpos(this, "bitpos", "4"),
-    overflow(this, "overflow", "1"),
+    state(this, "state", "2", "idle", NO_COMMENT),
+    sample(this, "sample", "32", "'0", NO_COMMENT),
+    txdata_rdy(this, "txdata_rdy", "1", RSTVAL_ZERO, NO_COMMENT),
+    txdata(this, "txdata", "8", "'0", NO_COMMENT),
+    shiftreg(this, "shiftreg", "9", "'1", NO_COMMENT),
+    bitpos(this, "bitpos", "4", "'0", NO_COMMENT),
+    overflow(this, "overflow", "1", RSTVAL_ZERO, NO_COMMENT),
     //
     comb(this)
 {

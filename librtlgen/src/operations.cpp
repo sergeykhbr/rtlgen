@@ -213,9 +213,10 @@ SetValueOperation::SetValueOperation(GenObject *a,         // value to set
                                      GenObject *l,         // LSB bit
                                      bool non_blocking,
                                      GenObject *val,       // value to get
+                                     GenObject *delay,
                                      const char *comment)
     : GetValueOperation(a, idx, item, h_as_width, h, l, comment),
-        non_blocking_(non_blocking), v_(val) {
+        non_blocking_(non_blocking), v_(val), T_(delay) {
     if (top_obj()) {
         top_obj()->add_entry(this);
     }
@@ -224,16 +225,21 @@ SetValueOperation::SetValueOperation(GenObject *a,         // value to set
 
 std::string SetValueOperation::generate() {
     std::string ret = addspaces();
-    if (SCV_is_sysc() && a_->isClock()) {
-        ret += "// ";   // do not clear clock module
-    }
+    //if (SCV_is_sysc()) {
+        //ret += "// ";   // do not clear clock module
+    //}
     if (isAssign() && SCV_is_sv()) {
         ret += "assign ";
     }
 
+    if (SCV_is_sv() && T_) {
+        ret += "#(" + T_->generate() + ") ";
+    }
     ret += GetValueOperation::getStrValue();
 
-    if (SCV_is_vhdl()) {
+    if (SCV_is_sysc() && T_) {
+        ret += ".write(";
+    } else if (SCV_is_vhdl()) {
         if (non_blocking_) {
             ret += " <= ";
         } else {
@@ -248,7 +254,16 @@ std::string SetValueOperation::generate() {
     } else {
         ret += " = ";
     }
-    ret += obj2varname(v_, "r", false) + ";";
+    ret += obj2varname(v_, "r", false);
+
+    if (T_) {
+        if (SCV_is_sysc()) {
+            ret += ", " + T_->generate(), + " * SC_NS)";
+        } else if (SCV_is_vhdl()) {
+            ret += "delay " + T_->generate(), + " ns";
+        }
+    }
+    ret += ";";
     ret += addtext(this, ret.size());
     ret += "\n";
     return ret;
@@ -1971,17 +1986,27 @@ Operation &EDGE(GenObject &obj, EResetActive edge) {
 }
 
 // always_ff
-std::string AlwaysFFOperation::generate() {
+std::string AlwaysOperation::generate() {
     std::string ret = "";
     if (SCV_is_sysc()) {
         SHOW_ERROR("Not implemented %s", "always_ff");
     } else if (SCV_is_sv()) {
-        ret += addspaces() + "always_ff @(";
-        ret += clk_->generate();
+        ret += addspaces() + "always";
+        if (clk_) {
+            ret += "_ff @(";
+        }
+        if (cond_) {
+            ret += cond_->generate();
+        } else if (clk_) {
+            ret += clk_->generate();
+        }
         if (rst_) {
             ret += ", " + rst_->generate();
         }
-        ret += ") begin\n";
+        if (cond_ || clk_) {
+            ret += ")";
+        }
+        ret += " begin\n";
         pushspaces();
     }
     for (auto &p : getEntries()) {
@@ -1990,18 +2015,23 @@ std::string AlwaysFFOperation::generate() {
     return ret;
 }
 
+GenObject &ALWAYS(GenObject *cond, const char *comment) {
+    Operation *p = new AlwaysOperation(cond, 0, 0, comment);
+    return *p;
+}
+
 GenObject &ALWAYS_FF(GenObject &clk, const char *comment) {
-    Operation *p = new AlwaysFFOperation(&clk, 0, comment);
+    Operation *p = new AlwaysOperation(0, &clk, 0, comment);
     return *p;
 }
 
 GenObject &ALWAYS_FF(GenObject &clk, GenObject &rst, const char *comment) {
-    Operation *p = new AlwaysFFOperation(&clk, &rst, comment);
+    Operation *p = new AlwaysOperation(0, &clk, &rst, comment);
     return *p;
 }
 
 // end of always_ff
-std::string EndAlwaysFFOperation::generate() {
+std::string EndAlwaysOperation::generate() {
     std::string ret = "";
     if (SCV_is_sysc()) {
         SHOW_ERROR("Not implemented %s", "end");
@@ -2012,8 +2042,8 @@ std::string EndAlwaysFFOperation::generate() {
     return ret;
 }
 
-void ENDALWAYS_FF(const char *comment) {
-    new EndAlwaysFFOperation(comment);
+void ENDALWAYS(const char *comment) {
+    new EndAlwaysOperation(comment);
 }
 
 /**

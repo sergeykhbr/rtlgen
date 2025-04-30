@@ -94,11 +94,6 @@ std::string StructObject::getType() {
 
 std::string StructObject::getStrValue() {
     std::string ret = "";
-#if 1
-if (getParent() && getParent()->getName() == "sfifo_r_reset") {
-    bool st = true;
-}
-#endif
     if (objValue_) {
         return objValue_->getName();
     }
@@ -195,60 +190,6 @@ bool StructObject::is2Dim() {
     return false;
 }
 
-/*std::string StructObject::getCopyValue(char *i,
-                                       const char *dst_prefix,
-                                       const char *optype,
-                                       const char *src_prefix) {
-    std::string ret;
-    std::string dst = dst_prefix;
-    std::string src = src_prefix;
-    if (dst.size()) {
-        dst += "." + getName();
-    }
-    if (src.size()) {
-        src += "." + getName();
-    }
-    if (objValue_ && !is2Dim()) {
-        // reset value request:
-        ret = addspaces() + dst_prefix + " " + optype + " ";
-        ret += objValue_->getName() + ";\n";
-        return ret;
-    }
-
-    if (SCV_is_sysc() || SCV_is_sv()) {
-        char i_idx[2] = {i[0]};
-        if (getDepth()) {
-            ret += addspaces() + "for (int " + i + " = 0; " + i + " < ";
-            ret += getStrDepth() + "; " + i + "++) ";
-            if (SCV_is_sysc()) {
-                ret += "{\n";
-            } else {
-                ret += "begin\n";
-            }
-            dst += "[" + std::string(i) + "]";
-            if (src.size()) {
-                src += "[" + std::string(i) + "]";
-            }
-            pushspaces();
-            i_idx[0]++;
-        }
-
-        for (auto &p: getEntries()) {
-            ret += p->getCopyValue(i_idx, dst.c_str(), optype, src.c_str());
-        }
-
-        if (getDepth()) {
-            popspaces();
-            if (SCV_is_sysc()) {
-                ret += addspaces() + "}\n";
-            } else {
-                ret += addspaces() + "end\n";
-            }
-        }
-
-    }
-    return ret;
-}*/
 
 std::string StructObject::generate_interface_constructor() {
     std::string ret = "";

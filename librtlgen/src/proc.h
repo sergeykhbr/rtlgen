@@ -50,7 +50,7 @@ class ProcObject : public GenObject {
  protected:
     virtual std::string generate_sysc_h();
     virtual std::string generate_sysc_cpp();
-    virtual std::string generate_sv(bool async_on_off);
+    virtual std::string generate_sv();
     virtual std::string generate_vhdl();
     virtual std::string generate_localvar_sv();
 
@@ -90,7 +90,7 @@ class RegisterCopyProcess : public ProcObject {
                      r->getResetActive(),
                      NO_COMMENT), rstruct_(r) {}
  protected:
-    virtual std::string generate_sv(bool async_on_off) override;
+    virtual std::string generate_sv() override;
  protected:
     RegTypedefStruct *rstruct_;
 };
