@@ -66,8 +66,15 @@ class ModuleObject : public GenObject {
  //   std::string generate_all_proc_v_reset(std::string &xrst);   // operation SYNC_RESET calls it explicitly
  protected:
 
+    /**
+        module without package: no_gendep = false && only_gendep = false
+        module package:         no_gendep = true && only_gendep = false
+        module with package:    no_gendep = false && only_gendep = true
+   
+     */
+    std::string generate_sv_localparam(bool no_gendep, bool only_gendep);
+    std::string generate_sv_struct();
     std::string generate_sv_mod_genparam();     // generic parameters
-    std::string generate_sv_mod_param_strings();
     std::string generate_sv_mod_func(GenObject *func);
     std::string generate_sv_mod_signals();
     std::string generate_sv_mod_clock(GenObject *proc);

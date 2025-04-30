@@ -63,60 +63,40 @@ namespace sysvc {
     }
     return ret;
 }*/
-
-/*std::string ModuleObject::generate_sv_pkg_reg_struct() {
-    std::map<std::string,std::list<GenObject *>> regmap;
-    std::map<std::string,bool> is2dm;
+/**
+    module without package: no_gendep = false && only_gendep = false
+    module package:         no_gendep = true && only_gendep = false
+    module with package:    no_gendep = false && only_gendep = true
+   
+ */
+std::string ModuleObject::generate_sv_localparam(bool no_gendep,
+                                                 bool only_gendep) {
     std::string ret = "";
-    std::string ln = "";
-    std::string r;
-    std::string v;
-
-    getSortedRegsMap(regmap,is2dm);
-    for (std::map<std::string,std::list<GenObject *>>::iterator it = regmap.begin();
-        it != regmap.end(); it++) {
-        r = it->first;                          // map sorted by v_prefix
-        v = (*it->second.begin())->v_prefix();  // all obj in a list has the same v_prefix as the first one
-
-        ret += addspaces() + "typedef struct {\n";
-        pushspaces();
-        for (auto &p: it->second) {
-            ln = addspaces() + p->getType() + " " + p->getName();
-            if (p->getObjDepth()) {
-                ln += "[0: " + p->getStrDepth() + " - 1]";
-            }
-            ln += ";";
-            p->addComment(ln);
-            ret += ln + "\n";
+    std::string comment = "";
+    for (auto &p: getEntries()) {
+        if (p->isComment()) {
+            comment += p->generate();
+            continue;
         }
-        popspaces();
-        ret += addspaces() + "} " + getType();
-        ret += "_" + r + "egisters;\n";
+        if (!p->isParam() || p->isParamGeneric()) {
+            comment = "";
+            continue;
+        }
+        if (no_gendep && p->isGenericDep()
+            || only_gendep && !p->isGenericDep()) {
+            comment = "";
+            continue;
+        }
+        ret += comment;
+        ret += p->generate();
+        comment = "";
+    }
+
+    if (ret.size()) {
         ret += "\n";
-
-        // Generate reset function only for simple regs with defined reset:
-        if (!is2dm[it->first] && (*it->second.begin())->getResetActive() != ACTIVE_NONE) {
-            ret += addspaces();
-            ret += "const " + getType() + "_" + r + "egisters " + getType() + "_" + r + "_reset = '{\n";
-            pushspaces();
-            for (auto &p: it->second) {
-                ln = addspaces() + p->getStrValue();
-                if (p != it->second.back()) {
-                    ln += ",";
-                }
-                while (ln.size() < 40) {
-                    ln += " ";
-                }
-                ln += "// " + p->getName();
-                ret += ln + "\n";
-            }
-            popspaces();
-            ret += addspaces() + "};\n";
-            ret += "\n";
-        }
     }
     return ret;
-}*/
+}
 
 /*std::string ModuleObject::generate_sv_pkg_struct() {
     std::string ret = "";
@@ -146,41 +126,36 @@ namespace sysvc {
     return ret;
 }*/
 
-
-std::string ModuleObject::generate_sv_pkg() {
+std::string ModuleObject::generate_sv_struct() {
     std::string ret = "";
     std::string comment = "";
-    bool prev_was_param = false;        // to minimize backward difference
-    //ret += generate_sv_pkg_localparam();
-    //ret += generate_sv_pkg_struct();
     for (auto &p: getEntries()) {
         if (p->isComment()) {
-            comment = p->generate();
+            comment += p->generate();
             continue;
         }
         if (p->isConst() && p->is2Dim()) {
             // We can generate 2-dim reset structures but Vivado has an
             // issue to use it. So skip it here.
+            comment = "";
             continue;
         }
-        if ((p->isParam() && p->isString() && !p->isParamGeneric())
-            || (p->isParam() && !p->isParamGeneric() && !p->isGenericDep())
-            || (p->isStruct() && (p->isTypedef() || p->isConst()))) {
-
-            if (p->isStruct() && prev_was_param) {
-                ret += "\n";
-            }
+        if (p->isStruct() && (p->isTypedef() || p->isConst())) {
             ret += comment;
             ret += p->generate();
-
-            prev_was_param = p->isParam();
         }
         comment = "";
     }
+    return ret;
+}
 
-    if (ret.size()) {
-        ret += "\n";
-    }
+
+std::string ModuleObject::generate_sv_pkg() {
+    std::string ret = "";
+    std::string comment = "";
+    ret += generate_sv_localparam(true,     // no_gendep
+                                  false);   // only_gendep
+    ret += generate_sv_struct();
     return ret;
 }
 
@@ -208,35 +183,6 @@ std::string ModuleObject::generate_sv_mod_genparam() {
     }
     popspaces();
 
-    return ret;
-}
-
-std::string ModuleObject::generate_sv_mod_param_strings() {
-    std::string ret = "";
-    int tcnt = 0;
-    for (auto &p: getEntries()) {
-        if (!p->isParam() || p->isParamGeneric()) {
-            continue;
-        }
-        if (!p->isGenericDep()) {
-            continue;
-        }
-        /*if (p->isString()) {
-            // Vivado doesn't support string parameters
-            ret += "localparam " + p->getName();
-        } else {
-            ret += "localparam " + p->getType() + " " + p->getName();
-        }
-        if (p->getObjDepth()) {
-            ret += "[0: " + p->getStrDepth() +"-1]";
-        }
-        ret += " = " + p->generate() + ";\n";*/
-        ret += p->generate();
-        tcnt++;
-    }
-    if (tcnt) {
-        ret += "\n";
-    }
     return ret;
 }
 
@@ -388,20 +334,13 @@ std::string ModuleObject::generate_sv_mod(bool no_pkg) {
     if (no_pkg == false) {
         ret += "import " + pf->getName() + "_pkg::*;\n";
         ret += "\n";
+        ret += generate_sv_localparam(false,    // no_gendep
+                                      true);    // only_gendep
     } else {
-        // insert pkg data for template modules: ram, queue, ..
-        //ret += generate_sv_pkg_localparam();
-        ret += generate_sv_pkg();
+        ret += generate_sv_localparam(false,    // no_gendep
+                                      false);   // only_gendep
+        ret += generate_sv_struct();
     }
-
-    // static strings
-    ret += generate_sv_mod_param_strings();
-
-    // struct definitions:
-    //if (tmplparam.size()) {
-    //    ret += generate_sv_pkg_struct();
-    //}
-
 
     // Signal list:
     ret += generate_sv_mod_signals();

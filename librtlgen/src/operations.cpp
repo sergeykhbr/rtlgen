@@ -1015,6 +1015,7 @@ std::string ArrItemOperation::generate() {
     } else {
         ret = Operation::obj2varname(item_);
     }
+    arr_->setSelector(0);
     return ret;
 }
 
