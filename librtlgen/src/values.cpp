@@ -55,8 +55,21 @@ GenValue::GenValue(GenObject *parent, const char *name, GenObject *val, const ch
 }
 
 std::string GenValue::getName() {
-    if (getParent() && getParent()->isFile() && SCV_is_sv_pkg()) {
-        return getParent()->getName() + "_pkg::" + name_;
+    GenObject *pkg = 0;
+    GenObject *p = getParent();
+    // Add package if parent is File or part of Enum in file
+    while (p) {
+        if (p->isFile()) {
+            pkg = p;
+            break;
+        }
+        if (p->isModule()) {
+            break;
+        }
+        p = p->getParent();
+    }
+    if (SCV_is_sv_pkg() && pkg) {
+        return pkg->getName() + "_pkg::" + name_;
     }
     return name_;
 }

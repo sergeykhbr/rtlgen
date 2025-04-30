@@ -50,6 +50,8 @@ class Logic : public GenValue {
     virtual std::string generate() override;
 
  protected:
+    virtual int getMinWidthOfArray() { return 2; }
+ protected:
     GenObject *objWidth_;
     GenObject *objBitidx_;      // Bit selector used by Operations, cleared after each operation automatically
 };
@@ -74,7 +76,8 @@ class Logic1 : public Logic {
         const char *val, const char *comment)
         : Logic(parent, name, width, val, comment) {}
 
-    virtual std::string getType() override;
+ protected:
+    virtual int getMinWidthOfArray() override { return 1; }
 };
 
 // SystemC only use sc_biguint always

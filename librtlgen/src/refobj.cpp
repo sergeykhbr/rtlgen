@@ -31,6 +31,15 @@ std::string RefObject::nameInModule(EPorts portid) {
 std::string RefResetObject::nameInModule(EPorts portid) {
     std::string ret;
     GenObject *saveParent = ref_->getParent();
+#if 1
+    GenObject *m = getParent();
+    while (m && !m->isModule()) {
+        m = m->getParent();
+    }
+    if (m && m->getName() == "Tracer") {
+        bool st = true;
+    }
+#endif
     ref_->setParent(getParent());
     ret = ref_->getStrValue();
     ref_->setParent(saveParent);

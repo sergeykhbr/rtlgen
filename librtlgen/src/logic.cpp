@@ -77,7 +77,7 @@ std::string Logic::getType() {
                 ret += "sc_bv<" + strw + ">";
             } else if (getWidth() > 64 || isBigSC()) {
                 ret += "sc_biguint<" + strw + ">";
-            } else if (getWidth() <= 1) {
+            } else if (getWidth() < getMinWidthOfArray()) {
                 ret += "bool";
             } else {
                 ret += "sc_uint<" + strw + ">";
@@ -89,7 +89,7 @@ std::string Logic::getType() {
         } else {
             ret = std::string("logic");
         }
-        if (getWidth() > 1) {
+        if (getWidth() >= getMinWidthOfArray()) {
             ret += " [";
             if (is_number) {
                 char tstr[64];
@@ -102,7 +102,7 @@ std::string Logic::getType() {
             ret += ":0]";
         }
     } else if (SCV_is_vhdl()) {
-        if (getWidth() <= 1) {
+        if (getWidth() < getMinWidthOfArray()) {
             ret = std::string("std_logic");
         } else {
             ret += "std_logic_vector(";
@@ -153,7 +153,7 @@ std::string Logic::generate() {
         ret += ";\n";
     } else if (SCV_is_sv()) {
         ret += "typedef logic ";
-        if (getWidth() > 1) {
+        if (getWidth() >= getMinWidthOfArray()) {
             ret += "[" + strw + "-1:0] ";
         }
         ret += getType();
@@ -167,53 +167,10 @@ std::string Logic::generate() {
             ret += "(0 up " + getStrDepth() + " - 1)";
         }
         ret += "of std_logic_vector ";
-        if (getWidth() > 1) {
+        if (getWidth() >= getMinWidthOfArray()) {
             ret += "(" + strw + "-1 downto 0) ";
         }
         ret += ";\n";
-    }
-    return ret;
-}
-
-std::string Logic1::getType() {
-    std::string ret = "";
-
-    if (getWidth() == 1) {
-        std::string strw = getStrWidth();
-        if (SCV_is_sysc()) {
-            if (isParam() && !isParamGeneric()) {
-                ret += "bool";
-            } else {
-                ret += "sc_uint<" + strw + ">";
-            }
-        } else if (SCV_is_sv()) {
-            if (isParam() && !isParamGeneric()) {
-                ret = std::string("bit");
-            } else {
-                ret = std::string("logic");
-            }
-            if (strw.c_str()[0] >= '0' && strw.c_str()[0] <= '9') {
-                // do nothing in SV:
-            } else {
-                ret += " [";
-                if (SCV_is_sv_pkg() && !objWidth_->isParamGeneric()) {
-                    GenObject *pfile = objWidth_;
-                    while (pfile && !pfile->isFile()) {
-                        pfile = pfile->getParent();
-                    }
-                    if (pfile) {
-                        ret += pfile->getName() + "_pkg::";
-                    }
-                }
-                ret += strw + "-1";
-                ret += ":0]";
-            }
-        } else if (SCV_is_vhdl()) {
-            // vhdl
-            return Logic::getType();
-        }
-    } else {
-        return Logic::getType();
     }
     return ret;
 }

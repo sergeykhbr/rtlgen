@@ -195,7 +195,7 @@ std::string RegisterCopyProcess::generate_sv() {
     } else {
         GenObject &block = 
         ALWAYS_FF(EDGE(*clkport, getClockEdge()));
-            SETVAL(*rstruct_->r_instance(), *rstruct_->rin_instance());
+            SETVAL_NB(*rstruct_->r_instance(), *rstruct_->rin_instance());
         ENDALWAYS();
         ret += block.generate() + "\n";
     }

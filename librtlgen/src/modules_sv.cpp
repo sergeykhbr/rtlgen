@@ -30,39 +30,6 @@
 
 namespace sysvc {
 
-/*std::string ModuleObject::generate_sv_pkg_localparam() {
-    std::string ret = "";
-    std::string ln = "";
-    std::string comment = "";
-    int tcnt = 0;
-    // Local paramaters visible inside of module
-    for (auto &p: entries_) {
-        if (p->isComment()) {
-            comment += p->generate();
-            continue;
-        } else if (p->isParam() && p->isString() && !p->isParamGeneric()) {
-            ret += comment;
-            ret += p->generate();
-        } else if (p->isParam() && !p->isParamGeneric() && !p->isGenericDep()) {
-            ret += comment;
-            if (p->isString()) {
-                // Vivado doesn't support string parameters, skip type
-                ln = "localparam " + p->getName();
-            } else {
-                ln = "localparam " + p->getType() + " " + p->getName();
-            }
-            ln += " = " + p->getStrValue() + ";";
-            p->addComment(ln);
-            ret += ln + "\n";
-            tcnt++;
-        }
-        comment = "";
-    }
-    if (tcnt) {
-        ret += "\n";
-    }
-    return ret;
-}*/
 /**
     module without package: no_gendep = false && only_gendep = false
     module package:         no_gendep = true && only_gendep = false
@@ -97,34 +64,6 @@ std::string ModuleObject::generate_sv_localparam(bool no_gendep,
     }
     return ret;
 }
-
-/*std::string ModuleObject::generate_sv_pkg_struct() {
-    std::string ret = "";
-    std::string ln = "";
-    std::string tstr;
-    int tcnt = 0;
-#if 1
-    if (getType() == "axictrl_bus0") {
-        bool v = true;
-    }
-#endif
-
-    // struct definitions
-    for (auto &p: getEntries()) {
-        if (p->isStruct() && 
-            (p->isTypedef() || p->isConst())) {
-            ret += p->generate();
-            tcnt++;
-        }
-    }
-    if (tcnt) {
-        ret += "\n";
-        tcnt = 0;
-    }
-    // Register structure definition
-    //ret += generate_sv_pkg_reg_struct();
-    return ret;
-}*/
 
 std::string ModuleObject::generate_sv_struct() {
     std::string ret = "";
