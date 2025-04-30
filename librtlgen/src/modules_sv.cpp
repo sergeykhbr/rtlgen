@@ -221,7 +221,7 @@ std::string ModuleObject::generate_sv_mod_param_strings() {
         if (!p->isGenericDep()) {
             continue;
         }
-        if (p->isString()) {
+        /*if (p->isString()) {
             // Vivado doesn't support string parameters
             ret += "localparam " + p->getName();
         } else {
@@ -230,7 +230,8 @@ std::string ModuleObject::generate_sv_mod_param_strings() {
         if (p->getObjDepth()) {
             ret += "[0: " + p->getStrDepth() +"-1]";
         }
-        ret += " = " + p->generate() + ";\n";
+        ret += " = " + p->generate() + ";\n";*/
+        ret += p->generate();
         tcnt++;
     }
     if (tcnt) {
