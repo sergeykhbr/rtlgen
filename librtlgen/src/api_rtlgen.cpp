@@ -510,20 +510,34 @@ Operation *SETVAL_GENERIC(GenObject &a,
         // Vivado doesn't support 2-dimensional array assignment.
         // Set one-by-one item:
         p = new Operation(comment);      // empty block
+        GenObject *idx = 0;
         Operation::push_obj(p);
         if (a.getObjDepth()) {
             // Array
-            GenObject &i = FOR_INC(*a.getObjDepth());
-            SETARRIDX(a, i);
+            idx = &FOR_INC(*a.getObjDepth());
+            SETARRIDX(a, *idx);
         }
-        std::list<GenObject *>::iterator it1, it2;
-        for (it1 = a.getEntries().begin(), it2 = b.getEntries().begin();
-            it1 != a.getEntries().end() && it2 != b.getEntries().end();
-            ++it1, ++it2) {
-            if ((*it1)->isComment()) {
-                continue;
+        if (a.getEntries().size() == 0) {
+            p = new SetValueOperation(&a,
+                                      idx,        // [arridx]
+                                      0,        // .item
+                                      false,    // h as width
+                                      0,        // [h
+                                      0,        // :l]
+                                      blocking, // blocking
+                                      &b,       // val
+                                      T,        // delay
+                                      comment);
+        } else {
+            std::list<GenObject *>::iterator it1, it2;
+            for (it1 = a.getEntries().begin(), it2 = b.getEntries().begin();
+                it1 != a.getEntries().end() && it2 != b.getEntries().end();
+                ++it1, ++it2) {
+                if ((*it1)->isComment()) {
+                    continue;
+                }
+                SETVAL_GENERIC(*(*it1), blocking, *(*it2), T, NO_COMMENT);
             }
-            SETVAL_GENERIC(*(*it1), blocking, *(*it2), T, NO_COMMENT);
         }
 
         if (a.getObjDepth()) {

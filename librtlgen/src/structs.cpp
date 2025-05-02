@@ -833,5 +833,46 @@ RegTypedefStruct::RegResetStruct::RegResetStruct(GenObject *parent,
     : RegSignalInstance(parent, p, name, "") {
 }
 
+std::string RegTypedefStruct::RegResetStruct::generate() {
+    std::string ret = "";
+    ret += addspaces();
+    if (SCV_is_sysc()) {
+        ret += "static const ";
+        if (isVector()) {
+            ret += getTypedef();
+        } else {
+            ret += getType();
+        }
+        ret += " " + getName();
+        if (getObjDepth()) {
+            ret += "[" + getStrDepth() + "]";
+        }
+        // do not call getStrValue() for sysc structure containing Logic
+        // because we cannot directly assign value to template sc_uint<*>
+        // But we should do that for BUSx_MAP constants definitions:
+        bool islogic = false;
+        for (auto &p: getEntries()) {
+            if (p->isLogic()) {
+                islogic = true;
+                break;
+            }
+        }
+        if (!islogic) {
+            ret += " = " + RegSignalInstance::getStrValue();
+        }
+        ret += ";\n";
+    } else if (SCV_is_sv()) {
+        ret += "const " + getType() + " " + getName();
+        if (!isVector() && getObjDepth()) {
+            ret += "[" + getStrDepth() + "]";
+        }
+        ret += " = ";
+        ret += RegSignalInstance::getStrValue() + ";\n";
+    } else if (SCV_is_vhdl()) {
+        ret += "constant " + getName() + "of " + getType() + " := ";
+        ret += RegSignalInstance::getStrValue() + ";\n";
+    }
+    return ret;
+}
 
 }

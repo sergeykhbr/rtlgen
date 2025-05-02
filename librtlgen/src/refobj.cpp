@@ -27,14 +27,4 @@ std::string RefObject::nameInModule(EPorts portid) {
     return ret;
 }
 
-
-std::string RefResetObject::nameInModule(EPorts portid) {
-    std::string ret;
-    GenObject *saveParent = ref_->getParent();
-    ref_->setParent(getParent());
-    ret = ref_->getStrValue();
-    ref_->setParent(saveParent);
-    return ret;
-}
-
 }  // namespace sysvc

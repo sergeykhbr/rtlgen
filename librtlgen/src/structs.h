@@ -123,6 +123,8 @@ class RegTypedefStruct : public StructObject {
 
         virtual bool isConst() override { return true; }
         virtual bool isResetConst() override { return true; }
+        virtual std::string getStrValue() override { return getName(); }
+        virtual std::string generate() override;
     };
 
  protected:

@@ -112,7 +112,9 @@ class ValueArray : public T,
     virtual GenObject *getSelector() override { return objArridx_; }                  // generate  Name[obj]
     std::string nameInModule(EPorts portid) override {
         std::string ret = T::nameInModule(portid);
-        ret += selectorName();
+        if (!T::isResetConst()) {
+            ret += selectorName();
+        }
         return ret;
     }
 };
@@ -148,7 +150,9 @@ class WireArray : public T,
     virtual GenObject *getSelector() override { return objArridx_; }                  // generate  Name[obj]
     std::string nameInModule(EPorts portid) override {
         std::string ret = T::nameInModule(portid);
-        ret += selectorName();
+        if (!T::isResetConst()) {
+            ret += selectorName();
+        }
         return ret;
     }
 };
