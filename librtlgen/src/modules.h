@@ -76,7 +76,7 @@ class ModuleObject : public GenObject {
     std::string generate_sv_struct();
     std::string generate_sv_mod_genparam();     // generic parameters
     std::string generate_sv_mod_func(GenObject *func);
-    std::string generate_sv_mod_signals();
+    std::string generate_sv_mod_variables();
     
     std::string generate_sysc_h_reg_struct();
     std::string generate_sysc_h_struct();

@@ -24,8 +24,6 @@
 
 namespace sysvc {
 
-//extern void detect_vr_prefixes(GenObject *obj, std::string &v, std::string &r);
-
 StructObject::StructObject(GenObject *parent,
                            GenObject *clk,
                            EClockEdge edge,
@@ -46,8 +44,6 @@ StructObject::StructObject(GenObject *parent,
     } else {
         SCV_get_cfg_type(this, type_.c_str());
     }
-    // See signals.cpp
-    //detect_vr_prefixes(this, v_, r_);
 }
 
 StructObject::StructObject(GenObject *parent,
@@ -208,323 +204,6 @@ bool StructObject::is2Dim() {
     return false;
 }
 
-
-std::string StructObject::generate_interface_constructor() {
-    std::string ret = "";
-
-    ret += addspaces() + getType() + "() {\n";
-    pushspaces();
-    std::string prefix = "";
-    if (isVector()) {
-        prefix = getEntries().front()->getName() + "[i].";
-
-        ret += addspaces();
-        ret += "for (int i = 0; i < " + getEntries().front()->getStrDepth() + "; i++) {\n";
-        pushspaces();
-    }
-    for (auto& p : getEntries()) {
-        if (p->isComment()) {
-            ret += p->generate();
-        } else if (p->isStruct() && !p->isTypedef()) {
-            // 1 level of sub structures without recursive implementation
-            for (auto &p2 : p->getEntries()) {
-                if (p2->isComment()) {
-                    continue;
-                }
-                ret += addspaces();
-                ret += prefix + p->getName() + "." + p2->getName();
-                ret += " = " + p2->getStrValue() + ";\n";
-            }
-        } else {
-            ret += addspaces() + prefix + p->getName();
-            ret += " = " + p->getStrValue() + ";\n";
-        }
-    }
-    if (isVector()) {
-        popspaces();
-        ret += addspaces() + "}\n";
-    }
-    popspaces();
-    ret += addspaces() + "}\n";
-    ret += "\n";
-
-    return ret;
-}
-
-std::string StructObject::generate_interface_constructor_init() {
-    std::string ret = "";
-    int argcnt = 0;
-    int aligncnt;
-
-    ret += addspaces() + getType() + "(";
-    aligncnt = static_cast<int>(ret.size());
-    for (auto& p : getEntries()) {
-        if (p->isComment()) {
-            continue;
-        }
-        if (argcnt++) {
-            ret += ",\n";
-            for (int i = 0; i < aligncnt; i++) {
-                ret += " ";
-            }
-        }
-        ret += p->getType() + " " + p->getName() + "_";
-    }
-    ret += ") {\n";
-    pushspaces();
-    for (auto& p : getEntries()) {
-        if (p->isComment()) {
-            continue;
-        }
-        ret += addspaces();
-        ret += p->getName() + " = " + p->getName() + "_;\n";
-    }
-    popspaces();
-    ret += addspaces() + "}\n";
-    ret += "\n";
-
-    return ret;
-}
-
-/**
-    Redefine operator ==
-*/
-std::string StructObject::generate_interface_op_equal() {
-    std::string ret = "";
-    int tcnt = 0;
-
-    ret += addspaces() + "inline bool operator == (const " + getType() + " &rhs) const {\n";
-    pushspaces();
-    ret += addspaces() + "bool ret = true;\n";
-
-    std::string prefix = "";
-    if (isVector()) {
-        prefix = getEntries().front()->getName() + "[i].";
-
-        ret += addspaces();
-        ret += "for (int i = 0; i < " + getEntries().front()->getStrDepth() + "; i++) {\n";
-        pushspaces();
-    }
-
-    ret += addspaces() + "ret = ret";
-    pushspaces();
-    for (auto& p : getEntries()) {
-        if (p->isComment()) {
-        } else if (p->isStruct() && !p->isTypedef()) {
-            // 1 level of sub structures without recursive implementation
-            for (auto &p2 : p->getEntries()) {
-                if (p2->isComment()) {
-                    continue;
-                }
-                ret += "\n" + addspaces() + "&& ";
-                ret += "rhs." + prefix + p->getName() + "." + p2->getName() + " == ";
-                ret += prefix + p->getName() + "." + p2->getName();
-            }
-        } else {
-            ret += "\n" + addspaces() + "&& ";
-            ret += "rhs." + prefix + p->getName() + " == " + prefix + p->getName();
-        }
-    }
-    ret += ";\n";
-    popspaces();
-    if (isVector()) {
-        popspaces();
-        ret += addspaces() + "}\n";
-    }
-    ret += addspaces() + "return ret;\n";
-    popspaces();
-    ret += addspaces() + "}\n";
-    ret += "\n";
-
-    return ret;
-}
-
-/**
-    Redefine operator =
- */
-std::string StructObject::generate_interface_op_assign() {
-    std::string ret = "";
-
-    ret += addspaces() + "inline " + getType() + "& operator = (const " + getType() + " &rhs) {\n";
-    pushspaces();
-
-    std::string prefix = "";
-    if (isVector()) {
-        prefix = getEntries().front()->getName() + "[i].";
-
-        ret += addspaces();
-        ret += "for (int i = 0; i < " + getEntries().front()->getStrDepth() + "; i++) {\n";
-        pushspaces();
-    }
-    for (auto& p : getEntries()) {
-        if (p->isComment()) {
-        } else if (p->isStruct() && !p->isTypedef()) {
-            // 1 level of sub structures without recursive implementation
-            for (auto &p2 : p->getEntries()) {
-                if (p2->isComment()) {
-                    continue;
-                }
-                ret += addspaces();
-                ret += prefix + p->getName() + "." + p2->getName();
-                ret += " = rhs." + prefix + p->getName() + "." + p2->getName() + ";\n";
-            }
-        } else {
-            ret += addspaces();
-            ret += prefix + p->getName() + " = rhs." + prefix + p->getName() + ";\n";
-        }
-    }
-    if (isVector()) {
-        popspaces();
-        ret += addspaces() + "}\n";
-    }
-    ret += addspaces() + "return *this;\n";
-    popspaces();
-    ret += addspaces() + "}\n";
-    ret += "\n";
-
-    return ret;
-}
-
-std::string StructObject::generate_interface_op_bracket() {
-    std::string ret = "";
-    ret += addspaces() + getEntries().front()->getType();
-    ret += " operator [](int i) const { return ";
-    ret += getEntries().front()->getName() + "[i]; ";
-    ret += "}\n";
-
-    ret += addspaces() + getEntries().front()->getType();
-    ret += " &operator [](int i) { return ";
-    ret += getEntries().front()->getName() + "[i]; ";
-    ret += "}\n";
-    return ret;
-}
-
-/**
-    Redefine operator <<
- */
-std::string StructObject::generate_interface_op_stream() {
-    std::string ret = "";
-    int tcnt = 0;
-    std::string ln;
-    size_t tspace;
-
-    ln = addspaces() + "inline friend ostream &operator << (";
-    tspace = ln.size();
-    ret = ln + "ostream &os,\n";
-    ln = "";
-    while (ln.size() < tspace) {
-        ln += " ";
-    }
-    ret += ln + getType() + " const &v) {\n";
-    pushspaces();
-
-    std::string prefix = "";
-    if (isVector()) {
-        prefix = getEntries().front()->getName() + "[i].";
-
-        ret += addspaces();
-        ret += "for (int i = 0; i < " + getEntries().front()->getStrDepth() + "; i++) {\n";
-        pushspaces();
-    }
-    ret += addspaces() + "os << \"(\"\n";
-    for (auto& p : getEntries()) {
-        if (p->isComment()) {
-            // do nothing
-        } else if (p->isStruct() && !p->isTypedef()) {
-            // 1 level of sub structures without recursive implementation
-            for (auto &p2 : p->getEntries()) {
-                if (p2->isComment()) {
-                    continue;
-                }
-                if (tcnt++) {
-                    ret += " << \",\"\n";
-                }
-                ret += addspaces();
-                ret += "<< v." + prefix + p->getName() + "." + p2->getName();
-            }
-        } else {
-            if (tcnt++) {
-                ret += " << \",\"\n";
-            }
-            ret += addspaces();
-            ret += "<< v." + prefix + p->getName();
-        }
-    }
-    ret += " << \")\";\n";
-    if (isVector()) {
-        popspaces();
-        ret += addspaces() + "}\n";
-    }
-    ret += addspaces() + "return os;\n";
-    popspaces();
-    ret += addspaces() + "}\n";
-    ret += "\n";
-
-    return ret;
-}
-
-/**
-    Redefine method sc_trace(..)
- */
-std::string StructObject::generate_interface_sc_trace() {
-    std::string ret = "";
-    std::string ln;
-    size_t tspace;
-
-    ln = addspaces() + "inline friend void sc_trace(";
-    tspace = ln.size();
-    ret = ln + "sc_trace_file *tf,\n";
-    ln = "";
-    while (ln.size() < tspace) {
-        ln += " ";
-    }
-    ret += ln + "const " + getType() + "&v,\n";
-    ret += ln + "const std::string &NAME) {\n";
-    pushspaces();
-
-    std::string prefix = "";
-    std::string N_plus = "";
-    if (isVector()) {
-        prefix = getEntries().front()->getName() + "[i].";
-        N_plus = "N + ";
-
-        ret += addspaces() + "char N[16];\n";
-        ret += addspaces();
-        ret += "for (int i = 0; i < " + getEntries().front()->getStrDepth() + "; i++) {\n";
-        pushspaces();
-        ret += addspaces() + "sprintf(N, \"(%d)\", i);\n";
-    }
-    for (auto& p : getEntries()) {
-        if (p->isComment()) {
-            // do nothing
-        } else if (p->isStruct() && !p->isTypedef()) {
-            // 1 level of sub structures without recursive implementation
-            for (auto &p2 : p->getEntries()) {
-                if (p2->isComment()) {
-                    continue;
-                }
-                ret += addspaces();
-                ret += "sc_trace(tf, v." + prefix + p->getName() + "." + p2->getName() + ", NAME + ";
-                ret += N_plus + "\"_" + p->getName() + "_" + p2->getName() + "\");\n";
-            }
-        } else {
-            ret += addspaces();
-            ret += "sc_trace(tf, v." + prefix + p->getName() + ", NAME + ";
-            ret += N_plus + "\"_" + p->getName() + "\");\n";
-        }
-    }
-    if (isVector()) {
-        popspaces();
-        ret += addspaces() + "}\n";
-    }
-    popspaces();
-    ret += addspaces() + "}\n";
-    ret += "\n";
-
-    return ret;
-}
-
-
 std::string StructObject::generate_interface() {
     std::string ret = "";
     std::string ln;
@@ -537,14 +216,14 @@ std::string StructObject::generate_interface() {
         ret += addspaces() + " public:\n";
 
         pushspaces();
-        ret += generate_interface_constructor();
-        ret += generate_interface_constructor_init();
-        ret += generate_interface_op_equal();
-        ret += generate_interface_op_assign();
+        ret += generate_interface_sc_constructor();
+        ret += generate_interface_sc_constructor_init();
+        ret += generate_interface_sc_op_equal();
+        ret += generate_interface_sc_op_assign();
         ret += generate_interface_sc_trace();
-        ret += generate_interface_op_stream();
+        ret += generate_interface_sc_op_stream();
         if (isVector()) {
-            ret += generate_interface_op_bracket();
+            ret += generate_interface_sc_op_bracket();
         }
         popspaces();
         ret += addspaces() + " public:\n";
@@ -765,10 +444,10 @@ RegTypedefStruct::RegTypedefStruct(GenObject *parent,
     
     // "v" value:
     std::string v_name = "v" + std::string(suffix);
-    v_ = new RegSignalInstance(NO_PARENT,
-                               this,
-                               v_name.c_str(),
-                               r_name.c_str());
+    v_ = new RegVariableInstance(NO_PARENT,
+                                 this,
+                                 v_name.c_str(),
+                                 r_name.c_str());
 
     // "rin" value:
     std::string rin_name = r_name + "in";
@@ -820,8 +499,8 @@ std::string RegTypedefStruct::reg_suffix(GenObject *p, int unique_idx) {
     return ret;
 }
 
-
-RegTypedefStruct::RegSignalInstance::RegSignalInstance(GenObject *parent,
+// v
+RegTypedefStruct::RegVariableInstance::RegVariableInstance(GenObject *parent,
                                  RegTypedefStruct *p,
                                  const char *name,
                                  const char *rstval)
@@ -830,10 +509,18 @@ RegTypedefStruct::RegSignalInstance::RegSignalInstance(GenObject *parent,
                    rstruct_(p) {
 }
 
+// r, rin
+RegTypedefStruct::RegSignalInstance::RegSignalInstance(GenObject *parent,
+                                 RegTypedefStruct *p,
+                                 const char *name,
+                                 const char *rstval)
+    : RegVariableInstance(parent, p, name, rstval) {}
+
+// r_reset
 RegTypedefStruct::RegResetStruct::RegResetStruct(GenObject *parent,
                                 RegTypedefStruct *p,
                                 const char *name)
-    : RegSignalInstance(parent, p, name, "") {
+    : RegVariableInstance(parent, p, name, "") {
 }
 
 std::string RegTypedefStruct::RegResetStruct::generate() {
@@ -861,7 +548,7 @@ std::string RegTypedefStruct::RegResetStruct::generate() {
             }
         }
         if (!islogic) {
-            ret += " = " + RegSignalInstance::getStrValue();
+            ret += " = " + RegVariableInstance::getStrValue();
         }
         ret += ";\n";
     } else if (SCV_is_sv()) {
@@ -870,10 +557,10 @@ std::string RegTypedefStruct::RegResetStruct::generate() {
             ret += "[" + getStrDepth() + "]";
         }
         ret += " = ";
-        ret += RegSignalInstance::getStrValue() + ";\n";
+        ret += RegVariableInstance::getStrValue() + ";\n";
     } else if (SCV_is_vhdl()) {
         ret += "constant " + getName() + "of " + getType() + " := ";
-        ret += RegSignalInstance::getStrValue() + ";\n";
+        ret += RegVariableInstance::getStrValue() + ";\n";
     }
     return ret;
 }

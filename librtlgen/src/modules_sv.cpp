@@ -131,7 +131,7 @@ std::string ModuleObject::generate_sv_mod_func(GenObject *func) {
     return ret;
 }
 
-std::string ModuleObject::generate_sv_mod_signals() {
+std::string ModuleObject::generate_sv_mod_variables() {
     std::string ret = "";
     std::string ln;
     std::string text;
@@ -141,12 +141,16 @@ std::string ModuleObject::generate_sv_mod_signals() {
             text += p->generate();
             continue;
         }
+        // Signals and local variable (like int, string)
+        if (!p->isValue()) {
+            text = "";
+            continue;
+        }
         if (p->isInput()
             || p->isOutput()
-            || p->isOperation()
             || p->isTypedef()
-            || p->isParam()
-            || p->isConst()) {
+            || p->isConst()
+            || p->isParam()) {
             text = "";
             continue;
         }
@@ -156,17 +160,8 @@ std::string ModuleObject::generate_sv_mod_signals() {
             text = "";
             continue;
         }
-        if (!p->isSignal()
-                && !p->isValue()
-                && !p->isStruct()
-                && !p->isClock()) {
-            text = "";
-            continue;
-        }
-        if (text.size()) {
-            ret += text;
-            text = "";
-        }
+        ret += text;
+        text = "";
         ln = addspaces() + p->getType() + " " + p->getName();
         if (p->getDepth() && !p->isVector()) {
             ln += "[0: " + p->getStrDepth() + " - 1]";
@@ -264,7 +259,7 @@ std::string ModuleObject::generate_sv_mod(bool no_pkg) {
     }
 
     // Signal list:
-    ret += generate_sv_mod_signals();
+    ret += generate_sv_mod_variables();
 
     // Functions
     for (auto &p: getEntries()) {

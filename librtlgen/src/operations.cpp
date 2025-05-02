@@ -282,6 +282,7 @@ std::string SetValueOperation::generate() {
             ret += "delay " + T_->generate(), + " ns";
         }
     }
+    a_->setSelector(0);
     ret += ";";
     ret += addtext(this, ret.size());
     ret += "\n";

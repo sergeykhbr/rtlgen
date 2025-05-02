@@ -32,43 +32,6 @@ static GenObject* getModuleInput(GenObject *p, const char *portname) {
     return 0;
 }
 
-/*void detect_vr_prefixes(GenObject *obj, std::string &v, std::string &r) {
-    if (obj->getClockEdge() == CLK_ALWAYS) {
-        return;
-    }
-    std::map<std::string, int> clkmap;
-    GenObject *p = obj;
-    while (!p->isModule()) {
-        p = p->getParent();
-    }
-    for (auto &r: p->getEntries()) {
-        if (r->getClockPort() && r->getClockEdge() != CLK_ALWAYS) {
-            clkmap[r->getClockPort()->getName()]++;
-        }
-    }
-    if (obj->getResetActive() == ACTIVE_LOW) {
-        v = "v";
-        r = "r";
-    } else if (obj->getResetActive() == ACTIVE_HIGH) {
-        v = "vh";
-        r = "rh";
-    } else {
-        v = "vx";
-        r = "rx";
-    }
-    if (obj->getClockEdge() == CLK_NEGEDGE) {
-        v = "n" + v;
-        r = "n" + r;
-    }
-    // Several clocks defined
-    if (clkmap.size() > 1) {
-        // "v1", "r1" .. etc
-        v += '0' + static_cast<char>(clkmap.size());
-        r += '0' + static_cast<char>(clkmap.size());
-    }
-}*/
-
-
 Signal::Signal(GenObject *parent,
                      GenObject *clk,
                      EClockEdge edge,
@@ -98,7 +61,6 @@ Signal::Signal(GenObject *parent,
                     getName().c_str());
         }
     }
-    //detect_vr_prefixes(this, v_, r_);
 }
 
 Signal1::Signal1(GenObject *parent,
@@ -130,7 +92,6 @@ Signal1::Signal1(GenObject *parent,
                     getName().c_str());
         }
     }
-    //detect_vr_prefixes(this, v_, r_);
 }
 
 

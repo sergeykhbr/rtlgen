@@ -56,12 +56,12 @@ class StructObject : public GenValue {
     virtual std::string generate_interface();
     virtual std::string generate_vector_type();
     virtual std::string generate_param();
-    virtual std::string generate_interface_constructor();
-    virtual std::string generate_interface_constructor_init();
-    virtual std::string generate_interface_op_equal();      // operator ==
-    virtual std::string generate_interface_op_assign();     // operator =
-    virtual std::string generate_interface_op_stream();     // operator <<
-    virtual std::string generate_interface_op_bracket();    // operator [] for vector only
+    virtual std::string generate_interface_sc_constructor();
+    virtual std::string generate_interface_sc_constructor_init();
+    virtual std::string generate_interface_sc_op_equal();      // operator ==
+    virtual std::string generate_interface_sc_op_assign();     // operator =
+    virtual std::string generate_interface_sc_op_stream();     // operator <<
+    virtual std::string generate_interface_sc_op_bracket();    // operator [] for vector only
     virtual std::string generate_interface_sc_trace();      // sc_trace
 
 protected:
@@ -103,19 +103,31 @@ class RegTypedefStruct : public StructObject {
 
  protected:
     /**
-        Generate rin, r, v signal instances:
+        Generate v variable instances:
      */
-    class RegSignalInstance : public StructObject {
+    class RegVariableInstance : public StructObject {
+     public:
+        RegVariableInstance(GenObject *parent,
+                            RegTypedefStruct *p,
+                            const char *name,
+                            const char *rstval);
+     protected:
+        RegTypedefStruct *rstruct_;
+    };
+
+    /**
+        Generate rin, r signal instances:
+     */
+    class RegSignalInstance : public RegVariableInstance {
      public:
         RegSignalInstance(GenObject *parent,
                         RegTypedefStruct *p,
                         const char *name,
                         const char *rstval);
-     protected:
-        RegTypedefStruct *rstruct_;
+        virtual bool isSignal() override { return true; }
     };
 
-    class RegResetStruct : public RegSignalInstance {
+    class RegResetStruct : public RegVariableInstance {
      public:
         RegResetStruct(GenObject *parent,
                         RegTypedefStruct *p,
@@ -129,7 +141,7 @@ class RegTypedefStruct : public StructObject {
 
  protected:
     RegResetStruct *rst_;
-    RegSignalInstance *v_;
+    RegVariableInstance *v_;
     RegSignalInstance *rin_;
     RegSignalInstance *r_;
 };
