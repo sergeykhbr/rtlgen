@@ -814,6 +814,9 @@ std::string RegTypedefStruct::reg_suffix(GenObject *p, int unique_idx) {
     if (p->getResetActive() == ACTIVE_NONE) {
         ret += "x";
     }
+    if (p->getResetActive() == ACTIVE_HIGH) {
+        ret += "h";
+    }
     return ret;
 }
 

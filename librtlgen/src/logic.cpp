@@ -80,6 +80,7 @@ std::string Logic::getType() {
             } else if (getWidth() < getMinWidthOfArray()) {
                 ret += "bool";
             } else {
+                // Logic1 generates sc_uint<1> instead of bool:
                 ret += "sc_uint<" + strw + ">";
             }
         }
@@ -89,7 +90,7 @@ std::string Logic::getType() {
         } else {
             ret = std::string("logic");
         }
-        if (getWidth() >= getMinWidthOfArray()) {
+        if (getWidth() > 1 || getObjWidth()->isParam()) {
             ret += " [";
             if (is_number) {
                 char tstr[64];
@@ -102,7 +103,7 @@ std::string Logic::getType() {
             ret += ":0]";
         }
     } else if (SCV_is_vhdl()) {
-        if (getWidth() < getMinWidthOfArray()) {
+        if (getWidth() <= 1 || getObjWidth()->isParam()) {
             ret = std::string("std_logic");
         } else {
             ret += "std_logic_vector(";

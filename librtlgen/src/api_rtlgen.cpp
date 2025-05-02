@@ -511,13 +511,20 @@ Operation *SETVAL_GENERIC(GenObject &a,
         // Set one-by-one item:
         p = new Operation(comment);      // empty block
         GenObject *idx = 0;
+        bool child2dim = false;
         Operation::push_obj(p);
         if (a.getObjDepth()) {
             // Array
             idx = &FOR_INC(*a.getObjDepth());
             SETARRIDX(a, *idx);
         }
-        if (a.getEntries().size() == 0) {
+        for (auto &p : a.getEntries()) {
+            if (p->is2Dim()) {
+                child2dim = true;
+                break;
+            }
+        }
+        if (a.getEntries().size() == 0 || (a.getObjValue() && !child2dim)) {
             p = new SetValueOperation(&a,
                                       idx,        // [arridx]
                                       0,        // .item
