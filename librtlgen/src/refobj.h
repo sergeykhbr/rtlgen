@@ -26,8 +26,6 @@ class RefObject : public GenObject {
         : GenObject(parent, comment), ref_(ref) {
     }
 
-    virtual std::list<GenObject *> &getEntries() override { return ref_->getEntries(); }
-    virtual GenObject *getChildByName(std::string name) override { return ref_->getChildByName(name); }
     virtual std::string getType() override { return ref_->getType(); }
     virtual std::string getName() override { return ref_->getName(); }
     virtual std::string getTypedef() override { return ref_->getTypedef(); }

@@ -41,6 +41,8 @@ class Operation : public GenObject {
     static void push_obj(GenObject *obj);
     static void pop_obj();
     static GenObject *top_obj();
+    static GenObject *push_for(GenObject *idx);
+    static void pop_for();
     static std::string obj2varname(GenObject *obj, const char *prefix="r", bool read=false);
     static std::string addtext(GenObject *obj, size_t curpos);
 
@@ -1095,6 +1097,7 @@ class ForOperation : public Operation {
         : Operation(parent, comment),
         i_(i), start_(start), end_(end), dir_(dir), genname_(genname) {
             Operation::push_obj(this);  // for becomes top_obj.
+            i_ = Operation::push_for(i);
         }
 
     virtual std::string getName() override { return ""; }
@@ -1117,6 +1120,7 @@ class EndForOperation : public Operation {
                     const char *comment)
         : Operation(comment), genname_(genname) {
             Operation::pop_obj();
+            Operation::pop_for();
         }
 
     virtual std::string generate() override;
@@ -1124,6 +1128,9 @@ class EndForOperation : public Operation {
  protected:
     StringConst *genname_;
 };
+
+GenObject &FOR_INC(GenObject &end,
+                   const char *comment=NO_COMMENT);
 
 GenObject &FOR(const char *i,
                GenObject &start,

@@ -182,26 +182,8 @@ std::string ModuleObject::generate_sv_mod_signals() {
     return ret;
 }
 
-std::string ModuleObject::generate_sv_mod_clock(GenObject *p) {
-    std::string ret = "";
-
-    ret += addspaces() + "always begin\n";
-    pushspaces();
-
-    ret += addspaces() + "#(0.5 * ";
-    ret += "1000000000 * ";     // timescale default 1ns/10ps
-    ret += p->getStrValue() + ") ";
-    ret += p->getName() + " = ~" + p->getName() + ";\n";
-
-    popspaces();
-    ret += addspaces() + "end\n";
-    ret += "\n";
-    return ret;
-}
-
 
 std::string ModuleObject::generate_sv_mod(bool no_pkg) {
-    size_t tcnt = 0;
     std::string ret = "";
     std::string text;
     std::string ln;
@@ -293,15 +275,11 @@ std::string ModuleObject::generate_sv_mod(bool no_pkg) {
     }
 
     // Sub-module instantiation
-//    tcnt = ret.size();
     for (auto &p: getEntries()) {
         if (p->isOperation()) {
             ret += p->generate();
         }
     }
-//    if (tcnt != ret.size()) {
-//        ret += "\n";
-//    }
 
     // Process
     for (auto &p: getEntries()) {
@@ -310,29 +288,8 @@ std::string ModuleObject::generate_sv_mod(bool no_pkg) {
         }
         ret += p->generate();
     }
-/*
-    // Clock process
-    for (auto &p: entries_) {
-        if (!p->isClock()) {
-            continue;
-        }
-        ret += generate_sv_mod_clock(p);
-    }
-
-    // Process
-    std::list<GenObject *> combproc;
-    getCombProcess(combproc);
-    for (auto &p: combproc) {
-        ret += "\n";
-        ret += generate_sv_mod_proc(p);
-    }
-
-    ret += generate_sv_mod_proc_registers();
-*/
 
     ret += "endmodule: " + getType() + "\n";
-
-
     return ret;
 }
 

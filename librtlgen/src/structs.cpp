@@ -123,8 +123,25 @@ std::string StructObject::getStrValue() {
                 // FIXME: vector implemented very badly. Only the same type entry should be generated
                 continue;
             }
-            ln = addspaces() + p->getStrValue();
-            if (++tcnt < d) {
+            ln = addspaces();
+            if (p->getObjDepth()) { 
+                
+                ret += ln + "{\n";
+                pushspaces();
+                for (int i = 0; i < p->getDepth(); i++) {
+                    ret += addspaces() + p->getStrValue();
+                    if (i < p->getDepth() - 1) {
+                        ret += ",";
+                    }
+                    ret += "\n";
+                }
+
+                popspaces();
+                ln = addspaces() + "}";
+            } else {
+                ln += p->getStrValue();
+            }
+            if (p != getEntries().back()) {
                 ln += ",";
             }
             p->addComment(ln);
@@ -158,6 +175,7 @@ std::string StructObject::getStrValue() {
             if (p != getEntries().back()) {
                 ln += ", ";
             }
+            // Add variable name as a comment:
             while (ln.size() < 40) {
                 ln += " ";
             }
@@ -767,13 +785,19 @@ RegTypedefStruct::RegTypedefStruct(GenObject *parent,
 
 void RegTypedefStruct::add_entry(GenObject *obj) {
     StructObject::add_entry(obj);
-    RefObject *ref;
     if (rst_) {
-        ref = new RefResetObject(rst_, obj, NO_COMMENT);
+        add_ref_entry(rst_, obj);
     }
-    ref = new RefObject(v_, obj, NO_COMMENT);
-    ref = new RefObject(rin_, obj, NO_COMMENT);
-    ref = new RefObject(r_, obj, NO_COMMENT);
+    add_ref_entry(v_, obj);
+    add_ref_entry(rin_, obj);
+    add_ref_entry(r_, obj);
+}
+
+void RegTypedefStruct::add_ref_entry(GenObject *parent, GenObject *obj) {
+    RefObject *ref = new RefObject(parent, obj, NO_COMMENT);
+    for (auto &p: obj->getEntries()) {
+        add_ref_entry(ref, p);
+    }
 }
 
 

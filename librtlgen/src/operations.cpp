@@ -27,6 +27,8 @@ namespace sysvc {
 
 int stackcnt_ = 0;
 GenObject *stackobj_[256] = {0};
+int forcnt_ = 0;
+GenObject *stackfor_[8] = {0};
 
 Operation::Operation(GenObject *parent, const char *comment)
     : GenObject(parent, comment) {
@@ -52,6 +54,23 @@ void Operation::pop_obj() {
 
 GenObject *Operation::top_obj() {
     return stackobj_[stackcnt_];
+}
+
+GenObject *Operation::push_for(GenObject *idx) {
+    GenObject *ret = idx;
+    if (idx == 0) {
+        const char tname[2] = {'i' + static_cast<char>(forcnt_), 0};
+        ret = new I32D(NO_PARENT, tname, "0", NO_COMMENT);
+    }
+    stackfor_[++forcnt_] = ret;
+    return ret;
+}
+
+void Operation::pop_for() {
+    if (--forcnt_ < 0) {
+        SHOW_ERROR("Wrong FOR cycle stack index", forcnt_);
+        forcnt_ = 0;
+    }
 }
 
 std::string Operation::addtext(GenObject *obj, size_t curpos) {
@@ -1336,6 +1355,18 @@ std::string ForOperation::generate() {
     }
     return ret;
 }
+
+GenObject &FOR_INC(GenObject &end, const char *comment) {
+    new ForOperation(stackobj_[stackcnt_],
+                    0,
+                    new DecConst(0),
+                    &end,
+                    new StringConst("++"),
+                    0,
+                    comment);
+    return *stackfor_[forcnt_];
+}
+
 
 GenObject &FOR(const char *i, GenObject &start, GenObject &end, const char *dir, const char *comment) {
     I32D *ret = new I32D(NO_PARENT, i, &start, NO_COMMENT);

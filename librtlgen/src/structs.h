@@ -98,6 +98,8 @@ class RegTypedefStruct : public StructObject {
     virtual GenObject *r_instance() { return r_; }
 
     static std::string reg_suffix(GenObject *p, int unique_idx);
+ protected:
+    virtual void add_ref_entry(GenObject *parent, GenObject *obj);
 
  protected:
     /**
@@ -119,8 +121,8 @@ class RegTypedefStruct : public StructObject {
                         RegTypedefStruct *p,
                         const char *name);
 
-        //virtual bool isParam() override { return true; }
         virtual bool isConst() override { return true; }
+        virtual bool isResetConst() override { return true; }
     };
 
  protected:

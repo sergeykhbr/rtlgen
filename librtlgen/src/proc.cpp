@@ -40,8 +40,8 @@ ProcObject::ProcObject(GenObject *parent,
 }
 
 void ProcObject::postInit() {
-    GenObject tempobj(NO_PARENT, "tempobj");
-    Operation::push_obj(&tempobj);
+    GenObject vinitobj(NO_PARENT, "vinitobj");
+    Operation::push_obj(&vinitobj);
     int tcnt = 0;
 
     // nullify proc local variable:
@@ -50,13 +50,7 @@ void ProcObject::postInit() {
             continue;
         }
         if (p->getObjValue()) {
-            if (p->getObjDepth()) {
-                GenObject &i = FOR("i", CONST("0"), *p->getObjDepth(), "++");
-                    SETARRITEM(*p, i, *p, *p->getObjValue());
-                ENDFOR();
-            } else {
-                SETVAL(*p, *p->getObjValue());
-            }
+            SETVAL(*p, *p->getObjValue());
             tcnt++;
         }
     }
@@ -65,11 +59,11 @@ void ProcObject::postInit() {
     }
     Operation::pop_obj();
 
-    if (tempobj.getEntries().size()) {
+    if (vinitobj.getEntries().size()) {
         // It is better to insert after local vars declaration
         getEntries().insert(getEntries().begin(),
-                            tempobj.getEntries().begin(),
-                            tempobj.getEntries().end());
+                            vinitobj.getEntries().begin(),
+                            vinitobj.getEntries().end());
     }
     GenObject::postInit();
 }

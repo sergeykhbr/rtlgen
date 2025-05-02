@@ -65,7 +65,7 @@ class GenObject {
 
     virtual GenObject *getParentFile();
     virtual GenObject *getParentModule();
-    virtual bool isAsyncResetParam();                    // jtagtap has its own trst signal but does not have async_reset
+    virtual bool isAsyncResetParam();                   // Disable presence of async_reset parameter. jtagtap has its own trst signal but does not have async_reset
     virtual GenObject *getResetPort() { return 0; }     // reset port object
     virtual GenObject *getClockPort() { return 0; }
     virtual EClockEdge getClockEdge() { return CLK_ALWAYS; }
@@ -79,6 +79,7 @@ class GenObject {
     virtual bool isGenericDep() { return false; }       // depend on generic parameters (but not a template parameter)
     virtual bool isValue() { return false; }            // scalar value with the name (variable)
     virtual bool isConst() { return false; }            // scalar value with no name
+    virtual bool isResetConst();                        // true if parent is r_reset struct
     virtual bool isString() { return false; }
     virtual bool isFloat() { return false; }
     virtual bool isTypedef() { return false; }

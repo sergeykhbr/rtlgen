@@ -414,30 +414,6 @@ std::string ModuleObject::generate_vhdl_mod() {
             ret += p->generate();
         }
     }
-/*
-    // Clock process
-    for (auto &p: entries_) {
-        if (!p->isClock()) {
-            continue;
-        }
-        ret += generate_sv_mod_clock(p);
-    }
-
-    // Process
-    for (auto &p: entries_) {
-        if (!p->isProcess()) {
-            continue;
-        }
-        if (p->getName() == "registers") {
-            continue;
-        }
-        ret += generate_sv_mod_proc(p);
-    }
-
-    if (isRegProcess()) {
-        ret += generate_sv_mod_proc_registers();
-    }
-*/
 
     popspaces();
     ret += "end;\n";

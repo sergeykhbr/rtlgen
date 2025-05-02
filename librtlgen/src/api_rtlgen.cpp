@@ -500,92 +500,63 @@ Operation &RSH(GenObject &a, int sz, const char *comment) {
     return *p;
 }
 
-Operation &SETVAL(GenObject &a, GenObject &b, const char *comment) {
-    Operation *ret = 0;
+Operation *SETVAL_GENERIC(GenObject &a,
+                          bool blocking,
+                          GenObject &b,
+                          GenObject *T,
+                          const char *comment) {
+    Operation *p = 0;
     if (a.is2Dim()) {
+        // Vivado doesn't support 2-dimensional array assignment.
+        // Set one-by-one item:
+        p = new Operation(comment);      // empty block
+        Operation::push_obj(p);
         if (a.getObjDepth()) {
             // Array
-            GenObject &i = FOR("i", CONST("0"), *a.getObjDepth(), "++");
-                SETARRITEM(a, i, a, ARRITEM(b, i, b));
-            ENDFOR();
-        } else {
-            // Struct
-            std::list<GenObject *>::iterator it1, it2;
-            for (it1 = a.getEntries().begin(), it2 = b.getEntries().begin();
-                it1 != a.getEntries().end() && it2 != b.getEntries().end();
-                ++it1, ++it2) {
-                if ((*it1)->isComment()) {
-                    continue;
-                }
-                SETVAL(*(*it1), *(*it2));
-            }
+            GenObject &i = FOR_INC(*a.getObjDepth());
+            SETARRIDX(a, i);
         }
+        std::list<GenObject *>::iterator it1, it2;
+        for (it1 = a.getEntries().begin(), it2 = b.getEntries().begin();
+            it1 != a.getEntries().end() && it2 != b.getEntries().end();
+            ++it1, ++it2) {
+            if ((*it1)->isComment()) {
+                continue;
+            }
+            SETVAL_GENERIC(*(*it1), blocking, *(*it2), T, NO_COMMENT);
+        }
+
+        if (a.getObjDepth()) {
+            ENDFOR();
+        }
+        Operation::pop_obj();
     } else {
-        ret = new SetValueOperation(&a,
-                                      0,    // [arridx]
-                                      0,    // .item
-                                      false,// h as width
-                                      0,    // [h
-                                      0,    // :l]
-                                      false,// blocking
-                                      &b,   // val
-                                      0,    // delay
-                                      comment);
+        p = new SetValueOperation(&a,
+                                  0,        // [arridx]
+                                  0,        // .item
+                                  false,    // h as width
+                                  0,        // [h
+                                  0,        // :l]
+                                  blocking, // blocking
+                                  &b,       // val
+                                  T,        // delay
+                                  comment);
     }
+    return p;
+}
+
+Operation &SETVAL(GenObject &a, GenObject &b, const char *comment) {
+    Operation *ret = SETVAL_GENERIC(a, false, b, 0, comment);
     return *ret;
 }
 
 Operation &SETVAL_DELAY(GenObject &a, GenObject &b, GenObject &T, const char *comment) {
-    Operation *ret = 0;
-    if (a.is2Dim()) {
-        SHOW_ERROR("Unsupported SETVAL_DELAY %s", comment);
-    } else {
-        ret = new SetValueOperation(&a,
-                                      0,    // [arridx]
-                                      0,    // .item
-                                      false,// h as width
-                                      0,    // [h
-                                      0,    // :l]
-                                      false,// blocking
-                                      &b,   // val
-                                      &T,   // delay
-                                      comment);
-    }
+    Operation *ret = SETVAL_GENERIC(a, false, b, &T, comment);
     return *ret;
 }
 
 Operation &SETVAL_NB(GenObject &a, GenObject &b, const char *comment) {
-    Operation *ret = 0;
-    if (a.is2Dim()) {
-        if (a.getObjDepth()) {
-            // Array
-            GenObject &i = FOR("i", CONST("0"), *a.getObjDepth(), "++");
-                SETARRITEM_NB(a, i, a, ARRITEM(b, i, b));
-            ENDFOR();
-        } else {
-            // Struct
-            std::list<GenObject *>::iterator it1, it2;
-            for (it1 = a.getEntries().begin(), it2 = b.getEntries().begin();
-                it1 != a.getEntries().end() && it2 != b.getEntries().end();
-                ++it1, ++it2) {
-                if ((*it1)->isComment()) {
-                    continue;
-                }
-                SETVAL_NB(*(*it1), *(*it2));
-            }
-        }
-    } else {
-        ret = new SetValueOperation(&a,
-                                        0,    // [arridx]
-                                        0,    // .item
-                                        false,    // h as width
-                                        0,    // [h
-                                        0,    // :l]
-                                        true,    // non-blocking
-                                        &b,  // val
-                                        0,        // delay
-                                        comment);
-    }
+    Operation *ret = SETVAL_GENERIC(a, true, b, 0, comment);
     return *ret;
 }
 

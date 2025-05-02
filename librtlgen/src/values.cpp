@@ -76,6 +76,9 @@ std::string GenValue::getName() {
 
 std::string GenValue::nameInModule(EPorts portid) {
     std::string ret = "";
+    if (isResetConst()) {
+        return getStrValue();
+    }
     if (getParent()) {
         ret += getParent()->nameInModule(portid);
     }

@@ -88,6 +88,14 @@ bool GenObject::isAsyncResetParam() {
     return false;
 }
 
+bool GenObject::isResetConst() {
+    bool ret = false;
+    if (getParent()) {
+        ret = getParent()->isResetConst();
+    }
+    return ret;
+}
+
 GenObject *GenObject::getFile() {
     std::string ret = "";
     GenObject *pfile = this;
