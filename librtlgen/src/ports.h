@@ -45,6 +45,13 @@ class InPort : public Logic {
         std::string t1 = getName();     // gcc compatible t1 variable
         return t1;
     }
+    virtual std::string nameInModule(EPorts port) override {
+        std::string ret = Logic::nameInModule(port);
+        if (SCV_is_sysc()) {
+            ret += ".read()";
+        }
+        return ret;
+    }
 };
 
 class OutPort : public Logic {
@@ -80,6 +87,13 @@ class IoPort : public Logic {
         std::string t1 = getName();     // gcc compatible t1 variable
         return t1;
     }
+    virtual std::string nameInModule(EPorts port) override {
+        std::string ret = Logic::nameInModule(port);
+        if (SCV_is_sysc()) {
+            ret += ".read()";
+        }
+        return ret;
+    }
 };
 
 template<class T>
@@ -96,6 +110,13 @@ class InStruct : public T {
     virtual std::string getStrValue() override {
         std::string t1 = T::getName();     // gcc compatible t1 variable
         return t1;
+    }
+    virtual std::string nameInModule(EPorts port) override {
+        std::string ret = T::nameInModule(port);
+        if (SCV_is_sysc()) {
+            ret += ".read()";
+        }
+        return ret;
     }
 };
 

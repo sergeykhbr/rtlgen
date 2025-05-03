@@ -65,36 +65,12 @@ std::string ModuleObject::generate_sv_localparam(bool no_gendep,
     return ret;
 }
 
-std::string ModuleObject::generate_sv_struct() {
-    std::string ret = "";
-    std::string comment = "";
-    for (auto &p: getEntries()) {
-        if (p->isComment()) {
-            comment += p->generate();
-            continue;
-        }
-        if (p->isConst() && p->is2Dim()) {
-            // We can generate 2-dim reset structures but Vivado has an
-            // issue to use it. So skip it here.
-            comment = "";
-            continue;
-        }
-        if (p->isStruct() && (p->isTypedef() || p->isConst())) {
-            ret += comment;
-            ret += p->generate();
-        }
-        comment = "";
-    }
-    return ret;
-}
-
-
 std::string ModuleObject::generate_sv_pkg() {
     std::string ret = "";
     std::string comment = "";
     ret += generate_sv_localparam(true,     // no_gendep
                                   false);   // only_gendep
-    ret += generate_sv_struct();
+    ret += generate_all_struct();
     return ret;
 }
 
@@ -128,52 +104,6 @@ std::string ModuleObject::generate_sv_mod_genparam() {
 std::string ModuleObject::generate_sv_mod_func(GenObject *func) {
     std::string ret = "function ";
     ret += static_cast<FunctionObject *>(func)->generate();
-    return ret;
-}
-
-std::string ModuleObject::generate_sv_mod_variables() {
-    std::string ret = "";
-    std::string ln;
-    std::string text;
-    text = "";
-    for (auto &p: getEntries()) {
-        if (p->isComment()) {
-            text += p->generate();
-            continue;
-        }
-        // Signals and local variable (like int, string)
-        if (!p->isValue()) {
-            text = "";
-            continue;
-        }
-        if (p->isInput()
-            || p->isOutput()
-            || p->isTypedef()
-            || p->isConst()
-            || p->isParam()) {
-            text = "";
-            continue;
-        }
-        if (p->getName() == "") {
-            // todo: struct_def should be skipped (mark it as a typedef true). 
-            SHOW_ERROR("Unnamed entry of type %s", p->getType().c_str());
-            text = "";
-            continue;
-        }
-        ret += text;
-        text = "";
-        ln = addspaces() + p->getType() + " " + p->getName();
-        if (p->getDepth() && !p->isVector()) {
-            ln += "[0: " + p->getStrDepth() + " - 1]";
-        }
-        ln += ";";
-        p->addComment(ln);
-        ret += ln + "\n";
-    }
-    if (ret.size()) {
-        ret += "\n";
-    }
-
     return ret;
 }
 
@@ -255,11 +185,11 @@ std::string ModuleObject::generate_sv_mod(bool no_pkg) {
     } else {
         ret += generate_sv_localparam(false,    // no_gendep
                                       false);   // only_gendep
-        ret += generate_sv_struct();
+        ret += generate_all_struct();
     }
 
     // Signal list:
-    ret += generate_sv_mod_variables();
+    ret += generate_all_mod_variables();
 
     // Functions
     for (auto &p: getEntries()) {

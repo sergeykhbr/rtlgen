@@ -152,6 +152,50 @@ void ModuleObject::postInit() {
     }
 }
 
+/**
+    SystemC doesn't contain rin signal
+            r_reset implemented as a function
+    SV and VHDL contain rin
+            r_reset is a structure
+ */
+void ModuleObject::configureGenerator(ECfgGenType cfg) {
+    for (auto &r : sorted_regs_) {
+        // Initial state
+        getEntries().remove(r->rin_instance());
+        getEntries().remove(r->v_instance());
+        for (auto &p : getEntries()) {
+            if (p->isProcess() && p->getClockEdge() == CLK_ALWAYS) {
+                p->getEntries().remove(r->v_instance());
+                break;
+            }
+        }
+
+        if (cfg == CFG_GEN_SYSC) {
+            // set v as a module variable
+            r->v_instance()->setParent(this);
+            getEntries().push_front(r->v_instance());
+        } else if (cfg == CFG_GEN_SV || cfg == CFG_GEN_VHDL) {
+            // insert rin after r for better looking code:
+            auto lt = getEntries().begin();
+            for (auto &p : getEntries()) {
+                lt++;
+                if (p == r->r_instance()) {
+                    getEntries().insert(lt, r->rin_instance());
+                    break;
+                }
+            }
+            // add v to comb process variable
+            for (auto &p : getEntries()) {
+                if (p->isProcess() && p->getClockEdge() == CLK_ALWAYS) {
+                    p->getEntries().push_front(r->v_instance());
+                    r->v_instance()->setParent(p);
+                    break;
+                }
+            }
+        }
+    }
+}
+
 std::string ModuleObject::generate() {
     std::string ret = "";
     if (SCV_is_sysc_h()) {
@@ -237,5 +281,96 @@ void ModuleObject::getSortedRegsMap(
         is2dm[p->r_prefix()] |= p->is2Dim();
     }
 }
+
+std::string ModuleObject::generate_all_struct() {
+    std::string ret = "";
+    std::string comment = "";
+    for (auto &p: getEntries()) {
+        if (p->isComment()) {
+            comment += p->generate();
+            continue;
+        }
+        if (p->isConst() && p->is2Dim()) {
+            // We can generate 2-dim reset structures but Vivado has an
+            // issue to use it. So skip it here.
+            comment = "";
+            continue;
+        }
+        if (p->isStruct() && (p->isTypedef() || p->isConst())) {
+            ret += comment;
+            ret += p->generate();
+        }
+        comment = "";
+    }
+    return ret;
+}
+
+std::string ModuleObject::generate_all_mod_variables() {
+    std::string ret = "";
+    std::string ln;
+    std::string text;
+    text = "";
+    for (auto &p: getEntries()) {
+        if (p->isComment()) {
+            text += p->generate();
+            continue;
+        }
+        // Signals and local variable (like int, string)
+        if (!p->isValue()) {
+            text = "";
+            continue;
+        }
+        if (p->isInput()
+            || p->isOutput()
+            || p->isTypedef()
+            || p->isConst()
+            || p->isParam()) {
+            text = "";
+            continue;
+        }
+        if (p->getName() == "") {
+            // todo: struct_def should be skipped (mark it as a typedef true). 
+            SHOW_ERROR("Unnamed entry of type %s", p->getType().c_str());
+            text = "";
+            continue;
+        }
+        ret += text;
+        text = "";
+        ln = addspaces();
+        if (SCV_is_sysc() && p->isSignal() && !p->isIgnoreSignal()) {
+            ln += "sc_signal<";
+        }
+        ln += p->getType();
+        if (SCV_is_sysc() && p->isSignal() && !p->isIgnoreSignal()) {
+            ln += ">";
+        }
+        ln += " " + p->getName();
+        if (p->getDepth() && !p->isVector()) {
+            if (SCV_is_sysc()) {
+                ln += "[";
+            } else if (SCV_is_sv()) {
+                ln += "[0: ";
+            } else if (SCV_is_vhdl()) {
+                ln += "(0 upto ";
+            }
+            ln += p->getStrDepth();
+            if (SCV_is_sysc()) {
+                ln += "]";
+            } else if (SCV_is_sv()) {
+                ln += " - 1]";
+            } else if (SCV_is_vhdl()) {
+                ln += " - 1)";
+            }
+        }
+        ln += ";";
+        p->addComment(ln);
+        ret += ln + "\n";
+    }
+    if (ret.size()) {
+        ret += "\n";
+    }
+    return ret;
+}
+
 
 }

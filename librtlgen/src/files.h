@@ -50,7 +50,6 @@ class FileObject : public GenObject {
  private:
     void fullPath2vector(const char *fullpath, std::vector<std::string> &subs);
     std::string fullPath2fileRelative(const char *fullpath);
-    //void list_of_modules(GenObject *p, std::list<std::string> &fpath);
 
  protected:
     std::string name_;

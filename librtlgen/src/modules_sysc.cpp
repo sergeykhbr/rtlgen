@@ -30,7 +30,7 @@
 
 namespace sysvc {
 
-std::string ModuleObject::generate_sysc_h_reg_struct() {
+/*std::string ModuleObject::generate_sysc_h_reg_struct() {
     std::map<std::string, std::list<GenObject *>> regmap;
     std::map<std::string, bool> is2dm;
     std::list<GenObject *> comblist;
@@ -112,7 +112,7 @@ std::string ModuleObject::generate_sysc_h_struct() {
     // Register structure definition
     out += generate_sysc_h_reg_struct();
     return out;
-}
+}*/
 
 std::string ModuleObject::generate_sysc_h() {
     std::string out = "";
@@ -183,44 +183,23 @@ std::string ModuleObject::generate_sysc_h() {
 
     // Process declaration:
     out += "\n";
-    std::map<std::string, std::list<GenObject *>> regmap;
-    std::map<std::string, bool> is2dm;
-    std::list<GenObject *> combproclist;
-    std::list<std::string> regproclist;
-
-    // Combinational process excluding register process:
-    getCombProcess(combproclist);
-    for (auto &p: combproclist) {
+    tcnt = 0;
+    for (auto &p: getEntries()) {
+        if (!p->isProcess()) {
+            continue;
+        }
         out += addspaces() + "void " + p->getName() + "();\n";
+        tcnt++;
     }
-
-    // Registers processes:
-    getSortedRegsMap(regmap, is2dm);
-    for (std::map<std::string,std::list<GenObject *>>::iterator it = regmap.begin();
-        it != regmap.end(); ++it) {
-        regproclist.push_back(it->first + "egisters");
-    }
-    for (auto &reg_proc : regproclist) {
-        out += addspaces() + "void " + reg_proc + "();\n";
-    }
-
-    if (combproclist.size() || regproclist.size()) {
+    if (tcnt) {
         out += "\n";
         out += addspaces() + "SC_HAS_PROCESS(" + getType() + ");\n";
     }
 
-    out += "\n";
     // Constructor declaration:
+    out += "\n";
     std::string space1 = addspaces() + getType() + "(";
     out += space1 + "sc_module_name name";
-    /*if (isAsyncResetParam() && getAsyncResetParam() == 0) {
-        ln = "";
-        while (ln.size() < space1.size()) {
-            ln += " ";
-        }
-        ln += "bool async_reset";           // Mandatory generic parameter
-        out += ",\n" + ln;
-    }*/
     for (auto &p: getEntries()) {
         if (!p->isParamGeneric() || p->isParamTemplate()) {
             continue;
@@ -235,6 +214,7 @@ std::string ModuleObject::generate_sysc_h() {
         out += ln;
     }
     out += ");\n";
+
     // Destructor declaration
     if (isSubModules()) {
         out += addspaces() + "virtual ~" + getType() + "();\n";
@@ -254,11 +234,6 @@ std::string ModuleObject::generate_sysc_h() {
 
     // Generic parameter local storage:
     tcnt = 0;
-    GenObject *pAsyncReset = getChildByName("async_reset");
-    if (pAsyncReset) {
-        out += addspaces() + pAsyncReset->getType() + " async_reset_;\n";
-        tcnt++;
-    }
     for (auto &p: getEntries()) {
         if (p->isParamTemplate()) {
             // do nothing
@@ -318,61 +293,10 @@ std::string ModuleObject::generate_sysc_h() {
     }
 
     // struct definitions
-    out += generate_sysc_h_struct();
+    out += generate_all_struct();
 
     // Signals list
-    text = "";
-    for (auto &p: getEntries()) {
-        if (p->isComment()) {
-            text += p->generate();
-            continue;
-        }
-        if (p->isInput()
-            || p->isOutput()
-            || p->isOperation()
-            || p->isTypedef()
-            || p->isParam()
-            || p->getClockEdge() != CLK_ALWAYS) {
-            text = "";
-            continue;
-        }
-        if (p->getName() == "") {
-            SHOW_ERROR("Error: unnamed object of type %s", p->getType().c_str());
-            text = "";
-            continue;
-        }
-        if (!p->isSignal()
-                && !p->isValue()
-                && !p->isStruct()
-                && !p->isClock()) {
-                text = "";
-            continue;
-        }
-        if (text.size()) {
-            out += text;
-            text = "";
-        }
-        ln = addspaces();
-        if (p->isSignal() && !p->isIgnoreSignal()) {
-            ln += "sc_signal<";
-        }
-        ln += p->getType();
-        if (p->isSignal() && !p->isIgnoreSignal()) {
-            ln += ">";
-        }
-        ln += " " + p->getName();
-        if (p->getDepth() && !p->isVector()) {
-            ln += "[" + p->getStrDepth() + "]";
-        }
-        ln += ";";
-        p->addComment(ln);
-        out += ln + "\n";
-        tcnt++;
-    }
-    if (tcnt) {
-        out += "\n";
-        tcnt = 0;
-    }
+    out += generate_all_mod_variables();
 
     // Sub-module list
     for (auto &p: getEntries()) {
@@ -404,7 +328,7 @@ std::string ModuleObject::generate_sysc_h() {
     return out;
 }
 
-std::string ModuleObject::generate_sysc_proc_registers() {
+/*std::string ModuleObject::generate_sysc_proc_registers() {
     std::map<std::string, std::list<GenObject *>> regmap;
     std::map<std::string, bool> is2dm;
     std::list<GenObject *> combproc;
@@ -448,7 +372,7 @@ std::string ModuleObject::generate_sysc_proc_registers() {
             pushspaces();
 
             // r <= reset
-            /*if (!is2dm[it->first]) {
+            if (!is2dm[it->first]) {
                 ret += addspaces() + getType() + "_" + r + "_reset(" + r + ");\n";
             } else {
                 char i_idx[2] = {0};
@@ -456,7 +380,7 @@ std::string ModuleObject::generate_sysc_proc_registers() {
                     i_idx[0] = 'i';
                     ret += p->getCopyValue(i_idx, r.c_str(), "=", "");
                 }
-            }*/
+            }
 
             popspaces();
             ret += addspaces() + "} else {\n";
@@ -497,24 +421,25 @@ std::string ModuleObject::generate_sysc_proc_registers() {
         ret += "\n";
     }
     return ret;
-}
+}*/
 
 std::string ModuleObject::generate_sysc_sensitivity(GenObject *obj,
                                                     std::string prefix,
                                                     std::string i,
                                                     std::string &loop) {
     std::string ret = "";
-    if (!obj->isSignal()
-        && !obj->isStruct()
-        && !(obj->getClockEdge() == CLK_POSEDGE)
-        && !(obj->getClockEdge() == CLK_NEGEDGE)) {
-        return ret;
+#if 1
+    if (obj->getName() == "r") {
+        bool st = true;
     }
+#endif
     if (prefix == "") {
+        if (!obj->isSignal()) {
+            return ret;
+        }
         // Check exceptions only on first level
         if (obj->isTypedef()
             || obj->isProcess()
-            || (obj->isOutput() && !obj->isInput())     // ignore out structures
             || obj->getName() == "i_clk") {
             return ret;
         }
@@ -539,14 +464,9 @@ std::string ModuleObject::generate_sysc_sensitivity(GenObject *obj,
             ret += generate_sysc_sensitivity(e, prefix, i, loop);
         }
     } else {
-        if (obj->r_prefix().size()) {
-            prefix = obj->r_prefix() + "." + prefix;
-        }
-        if (!obj->isSignal()) {
-            SCV_printf("warning: non signal '%s' used as a trigger, "
-                "skip in the sensitivity list.", obj->getName().c_str());
-            return ret;
-        }
+        //if (obj->r_prefix().size()) {
+        //    prefix = obj->r_prefix() + "." + prefix;
+        //}
         ret += loop;
         ret += addspaces() + "sensitive << " + prefix + ";\n";
         loop = "";
@@ -773,14 +693,6 @@ std::string ModuleObject::generate_sysc_constructor() {
     }
     space1 += "::" + getType() + "(";
     ret += space1 + "sc_module_name name";
-    /*if (isAsyncResetParam() && getAsyncResetParam() == 0) {
-        ln = "";
-        while (ln.size() < space1.size()) {
-            ln += " ";
-        }
-        ln += "bool async_reset";           // Mandatory generic parameter
-        ret += ",\n" + ln;
-    }*/
     for (auto &p: getEntries()) {
         if (!p->isParamGeneric() || p->isParamTemplate()) {
             continue;
@@ -817,9 +729,6 @@ std::string ModuleObject::generate_sysc_constructor() {
     ret += "\n";
     pushspaces();
     // local copy of the generic parameters:
-    /*if (isAsyncResetParam() && getAsyncResetParam() == 0) {
-        ret += addspaces() + "async_reset_ = async_reset;\n";
-    }*/
     for (auto &p: getEntries()) {
         if (p->isParamTemplate()) {
             // do nothing
@@ -841,64 +750,32 @@ std::string ModuleObject::generate_sysc_constructor() {
     // Process sensitivity list:
     std::string prefix1 = "";
     std::string loop = "";
-    std::string r;
-    std::map<std::string, std::list<GenObject *>> regmap;
-    std::map<std::string, bool> is2dm;
-    std::list<std::string> regproclist;
     GenObject *rstport;
     GenObject *clkport;
-
-    getSortedRegsMap(regmap, is2dm);
-    for (std::map<std::string, std::list<GenObject *>>::iterator it = regmap.begin();
-        it != regmap.end(); ++it) {
-        regproclist.push_back(it->first + "egisters");
-    }
 
     for (auto &p: getEntries()) {
         if (!p->isProcess()) {
             continue;
         }
-        // Exclude process with name equals to <r>egisters process,
-        // because content of such process should be added to trigger action
-        if (std::find(regproclist.begin(), regproclist.end(), p->getName())
-            != regproclist.end()) {
-            continue;
-        }
+
         ret += "\n";
         ret += addspaces() + "SC_METHOD(" + p->getName() + ");\n";
-
-        // TODO: move memory into usual proc generation
-        // RAM, ROM exception where no registers but memory exists;
-        clkport = p->getClockPort();
-        if (clkport) {
-            ret += addspaces() + "sensitive << " + clkport->getName() + ".pos();\n";
+        if (p->getClockPort()) {
+            clkport = p->getClockPort();
             rstport = p->getResetPort();
             if (rstport) {
                 ret += addspaces() + "sensitive << " + rstport->getName() + ";\n";
+            }
+            if (clkport->isInput()) {
+                ret += addspaces() + "sensitive << " + clkport->getName() + ".pos();\n";
+            } else {
+                ret += addspaces() + "sensitive << " + clkport->getName() + ".posedge_event();\n";
             }
         } else {
             ln = std::string("i");
             for (auto &s: getEntries()) {
                 ret += generate_sysc_sensitivity(s, prefix1, ln, loop);
             }
-        }
-    }
-    // Generate registers processes depending of clock source and reset polarity
-    for (std::map<std::string, std::list<GenObject *>>::iterator it = regmap.begin();
-        it != regmap.end(); ++it) {
-        ret += "\n";
-        r = (*it->second.begin())->r_prefix();
-        rstport = (*it->second.begin())->getResetPort();
-        clkport = (*it->second.begin())->getClockPort();
-
-        ret += addspaces() + "SC_METHOD(" + r + "egisters);\n";
-        if (rstport) {
-            ret += addspaces() + "sensitive << " + rstport->getName() + ";\n";
-        }
-        if (clkport->isInput()) {
-            ret += addspaces() + "sensitive << " + clkport->getName() + ".pos();\n";
-        } else {
-            ret += addspaces() + "sensitive << " + clkport->getName() + ".posedge_event();\n";
         }
     }
     popspaces();
@@ -1055,8 +932,10 @@ std::string ModuleObject::generate_sysc_cpp() {
     }
 
     // Process
-    getCombProcess(proclist);
-    for (auto &p: proclist) {
+    for (auto &p: getEntries()) {
+        if (!p->isProcess()) {
+            continue;
+        }
         out += generate_sysc_proc(p);
     }
 
@@ -1100,22 +979,6 @@ std::string ModuleObject::generate_sysc_proc(GenObject *proc) {
     if (tcnt) {
         ret += "\n";
         tcnt = 0;
-    }
-
-    // nullify all local variables to avoid latches:
-    size_t ret_sz = ret.size();
-    /*for (auto &e: proc->getEntries()) {
-        ret += generate_all_proc_nullify(e, "", "i");
-    }*/
-    if (ret.size() != ret_sz) {
-        ret += "\n";
-    }
-
-    tcnt = static_cast<int>(ret.size());
-    //ret += generate_all_proc_r_to_v(false);
-
-    if (tcnt != static_cast<int>(ret.size())) {
-        ret += "\n";
     }
 
     // Generate operations:

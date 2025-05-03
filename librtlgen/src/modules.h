@@ -39,6 +39,7 @@ class ModuleObject : public GenObject {
     virtual bool isAsyncResetParam() override;
     virtual void registerModuleReg(GenObject *); // not a GenObject
 
+    virtual void configureGenerator(ECfgGenType) override;
     virtual std::string generate() override;
 
     virtual std::string generate_sysc_h();
@@ -60,11 +61,6 @@ class ModuleObject : public GenObject {
     virtual void getSortedRegsMap(std::map<std::string, std::list<GenObject *>> &regmap,
                                   std::map<std::string, bool> &is2dm);
  protected:
-    //std::string generate_all_proc_nullify(GenObject *obj, std::string prefix, std::string i);
-    //std::string generate_all_proc_r_to_v(bool inverse);         // at the begin/end of main proc
- //public:
- //   std::string generate_all_proc_v_reset(std::string &xrst);   // operation SYNC_RESET calls it explicitly
- protected:
 
     /**
         module without package: no_gendep = false && only_gendep = false
@@ -73,14 +69,12 @@ class ModuleObject : public GenObject {
    
      */
     std::string generate_sv_localparam(bool no_gendep, bool only_gendep);
-    std::string generate_sv_struct();
+    std::string generate_all_struct();
     std::string generate_sv_mod_genparam();     // generic parameters
     std::string generate_sv_mod_func(GenObject *func);
-    std::string generate_sv_mod_variables();
-    
-    std::string generate_sysc_h_reg_struct();
-    std::string generate_sysc_h_struct();
-    std::string generate_sysc_proc_registers();
+    std::string generate_all_mod_variables();
+
+//    std::string generate_sysc_proc_registers();
     std::string generate_sysc_param_strings();
     std::string generate_sysc_constructor();
     std::string generate_sysc_submodule_nullify();

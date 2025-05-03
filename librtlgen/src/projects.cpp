@@ -25,6 +25,17 @@ ProjectObject::ProjectObject(const char *name,
     name_ = std::string(name);
 }
 
+void ProjectObject::configureGenerator(ECfgGenType cfg) {
+    if (cfg == CFG_GEN_SYSC) {
+        SCV_set_generator(SYSC_ALL);
+    } else if (cfg == CFG_GEN_SV) {
+        SCV_set_generator(SV_ALL);
+    } else if (cfg == CFG_GEN_VHDL) {
+        SCV_set_generator(VHDL_ALL);
+    }
+    GenObject::configureGenerator(cfg);
+}
+
 
 std::string ProjectObject::generate() {
     if (!SCV_is_dir_exists(name_.c_str())) {

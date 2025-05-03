@@ -34,6 +34,12 @@ void GenObject::postInit() {
     }
 }
 
+void GenObject::configureGenerator(ECfgGenType cfg) {
+    for (auto &p: getEntries()) {
+        p->configureGenerator(cfg);
+    }
+}
+
 GenObject *GenObject::getChildByName(std::string name) {
     for (auto &p : getEntries()) {
         if (p->isOperation()) {

@@ -26,6 +26,8 @@ class ProjectObject : public GenObject {
     ProjectObject(const char *name,
                   const char *comment);
 
+    virtual void configureGenerator(ECfgGenType) override;
+
     virtual std::string getName() override { return name_; }
     virtual std::string getFullPath() override { return getName(); }
     virtual std::string generate() override;

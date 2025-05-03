@@ -96,8 +96,8 @@ std::string Operation::obj2varname(GenObject *obj, const char *prefix, bool read
     ret = obj->nameInModule(portid);
 
     if (read) {
-        if (obj->isInput()
-            || obj->isSignal()) {
+        if (!obj->isInput()         // Simplify me: .read() already added in ports.h
+            && obj->isSignal()) {
             if (SCV_is_sysc()) {
                 ret += ".read()";
             }
@@ -1578,9 +1578,7 @@ std::string FileOpenOperation::generate() {
     if (SCV_is_sysc()) {
         ret += " = fopen(";
         ret += Operation::obj2varname(str_);
-        if (fname_->isString()) {
-            ret += ".c_str()";
-        }
+        ret += ".c_str()";
         ret += ", \"wb\");\n";
     } else {
         ret += " = $fopen(" + Operation::obj2varname(str_) + ", \"wb\");\n";

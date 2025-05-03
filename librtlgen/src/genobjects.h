@@ -44,11 +44,18 @@ enum EPorts {
     PORT_OUT
 };
 
+enum ECfgGenType {
+    CFG_GEN_SV,
+    CFG_GEN_SYSC,
+    CFG_GEN_VHDL
+};
+
 class GenObject {
  public:
     GenObject(GenObject *parent, const char *comment);       // 
 
     virtual void postInit();
+    virtual void configureGenerator(ECfgGenType);
     virtual std::list<GenObject *> &getEntries() { return entries_; }
     virtual GenObject *getParent() { return parent_; }
     virtual void setParent(GenObject *p) { parent_ = p; }

@@ -103,53 +103,6 @@ std::string FileObject::fullPath2fileRelative(const char *fullpath) {
     return ret;
 }
 
-/*void FileObject::list_of_modules(GenObject *p, std::list<std::string> &fpath) {
-    GenObject *f = 0;
-    if (!p) {
-        return;
-    }
-    if (SCV_is_sv()) {
-        // no need to include submodules in system verilog
-        return;
-    }
-
-    if ((p->isModule() && p->isTypedef())
-        || p->isParam()) {
-        f = p->getParent();
-    } else if (p->isModule()) {
-        //f = SCV_get_module(p->getType().c_str());
-    }
-
-    // search file owner of the module
-    std::string tstr;
-    while (f) {
-        if (!f->isFile()) {
-            f = f->getParent();
-            continue;
-        }
-        tstr = f->getFullPath();
-        fpath.push_back(tstr);
-        break;
-    }
-
-    // Do not include sub-sub-module
-    f = p->getParent();
-    bool go_deeper = true;
-    while (f) {
-        if (f->isModule()) {
-            go_deeper = false;
-            break;
-        }
-        f = f->getParent();
-    }
-
-    if (go_deeper) {
-        for (auto &e: p->getEntries()) {
-            list_of_modules(e, fpath);
-        }
-    }
-}*/
-
 std::string FileObject::generate() {
     if (SCV_is_sysc()) {
         generate_sysc();
@@ -231,15 +184,7 @@ void FileObject::generate_sysc() {
         } else if (p->isFunction()) {
             out += p->generate();
         } else if (p->isParam() && !p->isParamGeneric()) {
-            if (p->isStruct() || p->isString()) {
-                // Do all others params in a such way
-                out += p->generate();
-            } else {
-                ln = addspaces() + "static const " + p->getType() + " ";
-                ln += p->getName() + " = " + p->generate() + ";";
-                p->addComment(ln);
-                out += ln + "\n";
-            }
+            out += p->generate();
         } else {
             out += p->generate();
         }

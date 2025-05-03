@@ -26,17 +26,17 @@ int main()
 
     printf("Generating SystemC into '%s' subfolder\n",
             prj->getFullPath().c_str());
-    SCV_set_generator(SYSC_ALL);
+    prj->configureGenerator(CFG_GEN_SYSC);
     prj->generate();
 
     printf("Generating SystemVerilog into '%s' subfolder\n",
             prj->getFullPath().c_str());
-    SCV_set_generator(SV_ALL);
+    prj->configureGenerator(CFG_GEN_SV);
     prj->generate();
 
 //    printf("Generating VHDL into '%s' subfolder\n",
 //            prj->getFullPath().c_str());
-//    SCV_set_generator(VHDL_ALL);
+//    prj->configureGenerator(CFG_GEN_VHDL);
 //    prj->generate();
 
     SCV_memory_info();
