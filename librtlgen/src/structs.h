@@ -19,6 +19,7 @@
 #include "genobjects.h"
 #include "refobj.h"
 #include "values.h"
+#include "funcs.h"
 #include <iostream>
 #include <list>
 
@@ -83,7 +84,9 @@ class RegTypedefStruct : public StructObject {
                         const char *type,
                         const char *rstval);
 
-    std::string nameInModule(EPorts portid) override {
+    virtual void configureGenerator(ECfgGenType) override;
+
+    virtual std::string nameInModule(EPorts portid, bool sc_read) override {
         if (portid == PORT_OUT) {
             return r_->getName();
         } 
@@ -93,6 +96,7 @@ class RegTypedefStruct : public StructObject {
     virtual void add_entry(GenObject *obj) override ;
 
     virtual GenObject *rst_instance() { return rst_; }
+    virtual GenObject *rst_func_instance() { return func_rst_; }
     virtual GenObject *v_instance() { return v_; }
     virtual GenObject *rin_instance() { return rin_; }
     virtual GenObject *r_instance() { return r_; }
@@ -139,8 +143,38 @@ class RegTypedefStruct : public StructObject {
         virtual std::string generate() override;
     };
 
+    class RegResetFunction : public FunctionObject {
+     public:
+        RegResetFunction(GenObject *parent,
+                        RegTypedefStruct *p,
+                        const char *name);
+        virtual void postInit() override;
+        virtual void getArgsList(std::list<GenObject *> &args) {
+            args.push_back(&iv_);
+        }
+        virtual bool isResetConst() override { return true; }
+        virtual std::string getType() override {
+            // This function exists only in SystemC, so no need to check SCV_..
+            return "void";
+        }
+        virtual GenObject *getIV() { return &iv_; }
+     protected:
+        RegTypedefStruct *rstruct_;
+        class LinkArgStructObject : public RegVariableInstance {
+         public:
+            LinkArgStructObject(GenObject *parent,
+                             RegTypedefStruct *p,
+                             const char *name)
+                : RegVariableInstance(parent, p, name, "") {}
+            virtual std::string getType() override {
+                return RegVariableInstance::getType() + "&";
+            }
+        } iv_;
+    };
+
  protected:
-    RegResetStruct *rst_;
+    RegResetStruct *rst_;           // SV and VHDL
+    RegResetFunction *func_rst_;    // SystemC reset
     RegVariableInstance *v_;
     RegSignalInstance *rin_;
     RegSignalInstance *r_;

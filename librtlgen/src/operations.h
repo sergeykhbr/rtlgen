@@ -35,7 +35,7 @@ class Operation : public GenObject {
     Operation(GenObject *parent, const char *comment = NO_COMMENT);
 
     virtual bool isOperation() override { return true; }
-    std::string nameInModule(EPorts portid) override { return generate(); }
+    std::string nameInModule(EPorts portid, bool sc_read) override { return generate(); }
 
     static void start(GenObject *owner);
     static void push_obj(GenObject *obj);

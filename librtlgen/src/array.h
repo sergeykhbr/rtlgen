@@ -43,9 +43,9 @@ class ArrayType {
             return ret;
         }
         if (SCV_is_vhdl()) {
-            ret = "(" + objArridx_->nameInModule(PORT_OUT) + ")";
+            ret = "(" + objArridx_->nameInModule(PORT_OUT, true) + ")";
         } else {
-            ret = "[" + objArridx_->nameInModule(PORT_OUT) + "]";
+            ret = "[" + objArridx_->nameInModule(PORT_OUT, true) + "]";
         }
         return ret;
     }
@@ -71,8 +71,8 @@ class ObjectArray : public T,
     virtual std::string getStrDepth() override { return objDepth_->getName(); }
     virtual void setSelector(GenObject *sel) override { objArridx_ = sel; }           // Set object as an array index
     virtual GenObject *getSelector() override { return objArridx_; }                  // generate  Name[obj]
-    std::string nameInModule(EPorts portid) override {
-        std::string ret = T::nameInModule(portid);
+    std::string nameInModule(EPorts portid, bool sc_read) override {
+        std::string ret = T::nameInModule(portid, sc_read);
         ret += selectorName();
         return ret;
     }
@@ -110,8 +110,8 @@ class ValueArray : public T,
     virtual std::string getStrDepth() override { return objDepth_->getName(); }
     virtual void setSelector(GenObject *sel) override { objArridx_ = sel; }           // Set object as an array index
     virtual GenObject *getSelector() override { return objArridx_; }                  // generate  Name[obj]
-    std::string nameInModule(EPorts portid) override {
-        std::string ret = T::nameInModule(portid);
+    std::string nameInModule(EPorts portid, bool sc_read) override {
+        std::string ret = T::nameInModule(portid, sc_read);
         if (!T::isResetConst()) {
             ret += selectorName();
         }
@@ -148,8 +148,8 @@ class WireArray : public T,
     virtual std::string getStrDepth() override { return objDepth_->getName(); }
     virtual void setSelector(GenObject *sel) override { objArridx_ = sel; }           // Set object as an array index
     virtual GenObject *getSelector() override { return objArridx_; }                  // generate  Name[obj]
-    std::string nameInModule(EPorts portid) override {
-        std::string ret = T::nameInModule(portid);
+    std::string nameInModule(EPorts portid, bool sc_read) override {
+        std::string ret = T::nameInModule(portid, sc_read);
         if (!T::isResetConst()) {
             ret += selectorName();
         }

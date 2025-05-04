@@ -194,6 +194,7 @@ void ModuleObject::configureGenerator(ECfgGenType cfg) {
             }
         }
     }
+    GenObject::configureGenerator(cfg);
 }
 
 std::string ModuleObject::generate() {
@@ -299,6 +300,15 @@ std::string ModuleObject::generate_all_struct() {
         if (p->isStruct() && (p->isTypedef() || p->isConst())) {
             ret += comment;
             ret += p->generate();
+        }
+        if (SCV_is_sysc_h()) {
+            // SystemC Reset function body in a same way as const structure
+            if (p->isFunction() && p->isResetConst()) {
+                SCV_set_generator(SYSC_ALL);
+                ret += generate_sysc_template_f_name(p->getType().c_str(), false);
+                ret += p->generate();
+                SCV_set_generator(SYSC_H);
+            }
         }
         comment = "";
     }

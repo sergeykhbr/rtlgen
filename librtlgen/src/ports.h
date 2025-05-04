@@ -39,18 +39,18 @@ class InPort : public Logic {
 
     virtual bool isSignal() override { return true; }
     virtual bool isInput() override { return true; }
+    virtual std::string nameInModule(EPorts port, bool sc_read) override {
+        std::string ret = Logic::nameInModule(port, sc_read);
+        if (SCV_is_sysc() && sc_read) {
+            ret += ".read()";
+        }
+        return ret;
+    }
 
     // ports should not have objValue. think how to fix that
     virtual std::string getStrValue() override {
         std::string t1 = getName();     // gcc compatible t1 variable
         return t1;
-    }
-    virtual std::string nameInModule(EPorts port) override {
-        std::string ret = Logic::nameInModule(port);
-        if (SCV_is_sysc()) {
-            ret += ".read()";
-        }
-        return ret;
     }
 };
 
@@ -81,18 +81,18 @@ class IoPort : public Logic {
     virtual bool isSignal() override { return true; }
     virtual bool isInput() override { return true; }
     virtual bool isOutput() override { return true; }
+    virtual std::string nameInModule(EPorts port, bool sc_read) override {
+        std::string ret = Logic::nameInModule(port, sc_read);
+        if (SCV_is_sysc() && sc_read) {
+            ret += ".read()";
+        }
+        return ret;
+    }
 
     // ports should not have objValue. think how to fix that
     virtual std::string getStrValue() override {
         std::string t1 = getName();     // gcc compatible t1 variable
         return t1;
-    }
-    virtual std::string nameInModule(EPorts port) override {
-        std::string ret = Logic::nameInModule(port);
-        if (SCV_is_sysc()) {
-            ret += ".read()";
-        }
-        return ret;
     }
 };
 
@@ -105,18 +105,18 @@ class InStruct : public T {
     virtual bool isSignal() override { return true; }
     virtual bool isInput() override { return true; }
     virtual bool isOutput() override { return false; }
+    virtual std::string nameInModule(EPorts port, bool sc_read) override {
+        std::string ret = T::nameInModule(port, sc_read);
+        if (SCV_is_sysc() && sc_read) {
+            ret += ".read()";
+        }
+        return ret;
+    }
     
     // ports should not have objValue. think how to fix that
     virtual std::string getStrValue() override {
         std::string t1 = T::getName();     // gcc compatible t1 variable
         return t1;
-    }
-    virtual std::string nameInModule(EPorts port) override {
-        std::string ret = T::nameInModule(port);
-        if (SCV_is_sysc()) {
-            ret += ".read()";
-        }
-        return ret;
     }
 };
 

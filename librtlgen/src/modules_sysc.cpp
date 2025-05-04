@@ -276,10 +276,14 @@ std::string ModuleObject::generate_sysc_h() {
         tcnt = 0;
     }
 
+    // struct definitions
+    out += generate_all_struct();
+
     // Functions declaration:
     tcnt = 0;
     for (auto &p: getEntries()) {
-        if (!p->isFunction()) {
+        if (!p->isFunction() || p->isResetConst()) {
+            // exclude r_reset function. Output it after structure definition
             continue;
         }
         tcnt++;
@@ -291,9 +295,6 @@ std::string ModuleObject::generate_sysc_h() {
         out += "\n";
         tcnt = 0;
     }
-
-    // struct definitions
-    out += generate_all_struct();
 
     // Signals list
     out += generate_all_mod_variables();
@@ -328,118 +329,17 @@ std::string ModuleObject::generate_sysc_h() {
     return out;
 }
 
-/*std::string ModuleObject::generate_sysc_proc_registers() {
-    std::map<std::string, std::list<GenObject *>> regmap;
-    std::map<std::string, bool> is2dm;
-    std::list<GenObject *> combproc;
-    std::string ret;
-    std::string v;
-    std::string r;
-    std::string resetname;
-    std::string procname;
-    EResetActive active;
-    GenObject *preg;
-    GenObject *resobj;
-    const char *SV_STR_ACTIVE[3] = {"", "0", "1"};
-
-    // All registers with selected posedge and reset level:
-    getCombProcess(combproc);
-    getSortedRegsMap(regmap, is2dm);
-
-    for (std::map<std::string, std::list<GenObject *>>::iterator it = regmap.begin();
-        it != regmap.end(); ++it) {
-        preg = (*it->second.begin());
-        resobj = preg->getResetPort();
-
-        r = preg->r_prefix();
-        v = preg->v_prefix();
-        active = preg->getResetActive();
-        procname = r + "egisters";
-
-        ret += generate_sysc_template_f_name();
-        ret += "::" + procname + "() {\n";
-        pushspaces();
-
-        if (active != ACTIVE_NONE) {
-            resetname = resobj->getName();
-
-            // Async Reset implementation
-            ret += addspaces() + "if (";
-            if (isAsyncResetParam()) {
-                ret += "async_reset_ && ";
-            }
-            ret += resetname + ".read() == " + SV_STR_ACTIVE[active] + ") {\n";
-            pushspaces();
-
-            // r <= reset
-            if (!is2dm[it->first]) {
-                ret += addspaces() + getType() + "_" + r + "_reset(" + r + ");\n";
-            } else {
-                char i_idx[2] = {0};
-                for (auto &p : it->second) {
-                    i_idx[0] = 'i';
-                    ret += p->getCopyValue(i_idx, r.c_str(), "=", "");
-                }
-            }
-
-            popspaces();
-            ret += addspaces() + "} else {\n";
-            pushspaces();
-        }
-
-        // Copy r <= v only if comb process exists in the module:
-        if (combproc.size()) {
-            if (!is2dm[it->first]) {
-                ret += addspaces() + r + " = " + v + ";\n";
-            } else {
-                char i_idx[2] = {0};
-                for (auto &p : it->second) {
-                    i_idx[0] = 'i';
-                    //ret += p->getCopyValue(i_idx, r.c_str(), "=", v.c_str());
-                }
-            }
-            if (active != ACTIVE_NONE) {
-                popspaces();
-                ret += addspaces() + "}\n";
-            }
-        }
-
-        // Let's check process name that should be added to this register
-        for (auto &p: getEntries()) {
-            if (!p->isProcess() || p->getName() != procname) {
-                continue;
-            }
-
-            ret += "\n";
-            for (auto &s : p->getEntries()) {
-                ret += s->getStrValue();
-            }
-        }
-
-        popspaces();
-        ret += addspaces() + "}\n";
-        ret += "\n";
-    }
-    return ret;
-}*/
-
 std::string ModuleObject::generate_sysc_sensitivity(GenObject *obj,
                                                     std::string prefix,
                                                     std::string i,
                                                     std::string &loop) {
     std::string ret = "";
-#if 1
-    if (obj->getName() == "r") {
-        bool st = true;
-    }
-#endif
     if (prefix == "") {
         if (!obj->isSignal()) {
             return ret;
         }
         // Check exceptions only on first level
         if (obj->isTypedef()
-            || obj->isProcess()
             || obj->getName() == "i_clk") {
             return ret;
         }
@@ -464,9 +364,6 @@ std::string ModuleObject::generate_sysc_sensitivity(GenObject *obj,
             ret += generate_sysc_sensitivity(e, prefix, i, loop);
         }
     } else {
-        //if (obj->r_prefix().size()) {
-        //    prefix = obj->r_prefix() + "." + prefix;
-        //}
         ret += loop;
         ret += addspaces() + "sensitive << " + prefix + ";\n";
         loop = "";
@@ -490,15 +387,12 @@ std::string ModuleObject::generate_sysc_vcd_entries(GenObject *obj,
                                                     std::string i,
                                                     std::string &loop) {    // do not print empty for loop cycle
     std::string ret = "";
-    if (!obj->isInput()
-        && !obj->isOutput()
-        && !obj->isStruct()
-        && !(obj->getClockEdge() == CLK_POSEDGE)
-        && !(obj->getClockEdge() == CLK_NEGEDGE)) {
-        return ret;
-    }
     if (prefix == "") {
         // Check exceptions only on first level
+        if (!obj->isSignal()
+            && !obj->isOutput()) {
+            return ret;
+        }
         if (!obj->isVcd()
             || obj->isTypedef()
             || obj->isVector()  // just to reduce number of traced data
@@ -605,7 +499,7 @@ std::string ModuleObject::generate_sysc_template_param(GenObject *p) {
     return ret;
 }
 
-std::string ModuleObject::generate_sysc_template_f_name(const char *rettype) {
+std::string ModuleObject::generate_sysc_template_f_name(const char *rettype, bool with_class_name) {
     std::string ret = "";
     int tcnt = 0;
     std::list<GenObject *> tmpllist;
@@ -629,7 +523,9 @@ std::string ModuleObject::generate_sysc_template_f_name(const char *rettype) {
     if (rettype[0]) {
         ret += " ";
     }
-    ret += getType();
+    if (with_class_name) {
+        ret += getType();
+    }
     if (tmpllist.size()) {
         ret += "<";
         for (auto &e: tmpllist) {
@@ -925,6 +821,10 @@ std::string ModuleObject::generate_sysc_cpp() {
     // Functions
     for (auto &p: getEntries()) {
         if (!p->isFunction()) {
+            continue;
+        }
+        if (p->isResetConst()) {
+            // "r_reset" function always in header file
             continue;
         }
         out += generate_sysc_func(p);

@@ -93,16 +93,13 @@ std::string Operation::obj2varname(GenObject *obj, const char *prefix, bool read
     if (prefix[0] == 'r') {
         portid = PORT_OUT;
     }
-    ret = obj->nameInModule(portid);
+    ret = obj->nameInModule(portid, read);
 
-    if (read) {
-        if (!obj->isInput()         // Simplify me: .read() already added in ports.h
-            && obj->isSignal()) {
-            if (SCV_is_sysc()) {
-                ret += ".read()";
-            }
-        }
-    }
+//    if (read && SCV_is_sysc()) {
+//        if (obj->isInput() || obj->isSignal()) {
+//            ret += ".read()";
+//        }
+//    }
     return ret;
 }
 
@@ -273,7 +270,7 @@ std::string SetValueOperation::generate() {
     } else {
         ret += " = ";
     }
-    ret += obj2varname(v_, "r", false);
+    ret += v_->nameInModule(PORT_OUT, true);
 
     if (T_) {
         if (SCV_is_sysc()) {
@@ -1218,7 +1215,7 @@ void ENDIFGEN(StringConst *name, const char *comment) {
 // SWITCH
 std::string SwitchOperation::generate() {
     std::string ret = addspaces();
-    std::string A = Operation::obj2varname(a_, "r", true);
+    std::string A = a_->nameInModule(PORT_OUT, true);
     pushspaces();
 
     if (A.c_str()[0] == '(') {
@@ -1522,7 +1519,11 @@ std::string SyncResetOperation::generate() {
         }
         if (op) {
             op = &IF (*op);
-                SETVAL(*r->v_instance(), *r->rst_instance());
+                if (SCV_is_sysc()) {
+                    CALLF(0, *r->rst_func_instance(), 1, r->v_instance());
+                } else {
+                    SETVAL(*r->v_instance(), *r->rst_instance());
+                }
             ENDIF();
             ret += op->generate();
         }

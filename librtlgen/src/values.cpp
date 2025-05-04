@@ -74,18 +74,21 @@ std::string GenValue::getName() {
     return name_;
 }
 
-std::string GenValue::nameInModule(EPorts portid) {
+std::string GenValue::nameInModule(EPorts portid, bool sc_read) {
     std::string ret = "";
     if (isResetConst()) {
         return getStrValue();
     }
     if (getParent()) {
-        ret += getParent()->nameInModule(portid);
+        ret += getParent()->nameInModule(portid, sc_read);
     }
     if (ret.size()) {
         ret += ".";
     }
     ret += getName();
+//    if (sc_read && SCV_is_sysc() && isSignal()) {
+//        ret += ".read()";
+//    }
     return ret;
 }
 

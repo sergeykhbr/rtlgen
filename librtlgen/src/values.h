@@ -67,7 +67,7 @@ class GenValue : public GenObject {
     virtual EClockEdge getClockEdge() { return edge_; }
     virtual EResetActive getResetActive() override { return active_; }
 
-    virtual std::string nameInModule(EPorts portid) override;
+    virtual std::string nameInModule(EPorts portid, bool sc_read) override;
     virtual std::string v_prefix() override;
     virtual std::string r_prefix() override;
 

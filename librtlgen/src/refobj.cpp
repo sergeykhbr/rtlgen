@@ -18,11 +18,11 @@
 
 namespace sysvc {
 
-std::string RefObject::nameInModule(EPorts portid) {
+std::string RefObject::nameInModule(EPorts portid, bool sc_read) {
     std::string ret;
     GenObject *saveParent = ref_->getParent();
     ref_->setParent(getParent());
-    ret = ref_->nameInModule(portid);
+    ret = ref_->nameInModule(portid, sc_read);
     ref_->setParent(saveParent);
     return ret;
 }

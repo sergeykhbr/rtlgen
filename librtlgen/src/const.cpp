@@ -21,10 +21,10 @@
 
 namespace sysvc {
 
-std::string ConstObject::nameInModule(EPorts portid) {
+std::string ConstObject::nameInModule(EPorts portid, bool sc_read) {
     std::string ret = "";
     if (getParent()) {
-        ret += getParent()->nameInModule(portid);
+        ret += getParent()->nameInModule(portid, sc_read);
     }
     if (ret.size()) {
         ret += ".";

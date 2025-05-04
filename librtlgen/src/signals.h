@@ -50,6 +50,14 @@ class Signal : public Logic {
                 name, width, val, comment) {}
 
     virtual bool isSignal() override { return true; }
+    virtual std::string nameInModule(EPorts port, bool sc_read) override {
+        std::string ret = Logic::nameInModule(port, sc_read);
+        if (SCV_is_sysc() && sc_read && getClockEdge() == CLK_ALWAYS) {
+            // registers grouped into r-structures
+            ret += ".read()";
+        }
+        return ret;
+    }
 };
 
 /**
@@ -77,6 +85,13 @@ class Signal1 : public Logic1 {
 
 
     virtual bool isSignal() override { return true; }
+    virtual std::string nameInModule(EPorts port, bool sc_read) override {
+        std::string ret = Logic::nameInModule(port, sc_read);
+        if (SCV_is_sysc() && sc_read && getClockEdge() == CLK_ALWAYS) {
+            ret += ".read()";
+        }
+        return ret;
+    }
 };
 
 // Always use sc_biguint in SystemC
@@ -90,6 +105,13 @@ class SignalBig : public Signal {
         : Signal(parent, name, width, val, comment) {}
 
     virtual bool isBigSC() override { return true; }
+    virtual std::string nameInModule(EPorts port, bool sc_read) override {
+        std::string ret = Logic::nameInModule(port, sc_read);
+        if (SCV_is_sysc() && sc_read && getClockEdge() == CLK_ALWAYS) {
+            ret += ".read()";
+        }
+        return ret;
+    }
 };
 
 template<class T>
@@ -99,6 +121,13 @@ class SignalStruct : public T {
         : T(parent, name, comment) {
     }
     virtual bool isSignal() override { return true; }
+    virtual std::string nameInModule(EPorts port, bool sc_read) override {
+        std::string ret = T::nameInModule(port, sc_read);
+        if (SCV_is_sysc() && sc_read && getClockEdge() == CLK_ALWAYS) {
+            ret += ".read()";
+        }
+        return ret;
+    }
 };
 
 

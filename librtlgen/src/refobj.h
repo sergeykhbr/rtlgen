@@ -29,7 +29,7 @@ class RefObject : public GenObject {
     virtual std::string getType() override { return ref_->getType(); }
     virtual std::string getName() override { return ref_->getName(); }
     virtual std::string getTypedef() override { return ref_->getTypedef(); }
-    virtual std::string nameInModule(EPorts portid) override;
+    virtual std::string nameInModule(EPorts portid, bool sc_read) override;
 
     virtual uint64_t getValue() { return ref_->getValue(); }
     virtual double getFloatValue() { return ref_->getFloatValue(); }

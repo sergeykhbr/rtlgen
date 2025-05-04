@@ -91,6 +91,7 @@ class RegisterCopyProcess : public ProcObject {
                      NO_COMMENT), rstruct_(r) {}
  protected:
     virtual std::string generate_sv() override;
+    virtual std::string generate_sysc_cpp() override;
  protected:
     RegTypedefStruct *rstruct_;
 };

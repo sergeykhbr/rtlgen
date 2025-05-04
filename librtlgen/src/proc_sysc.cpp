@@ -31,4 +31,44 @@ std::string ProcObject::generate_sysc_cpp() {
     return ret;
 }
 
+std::string RegisterCopyProcess::generate_sysc_cpp() {
+    std::string ret = "";
+    GenObject *m = getParent();
+    GenObject *clkport = getClockPort();
+    GenObject *rstport = getResetPort();
+    std::string generate_name = "async_" + rstruct_->r_instance()->getName();
+
+    if (m == 0) {
+        SHOW_ERROR("Process %s parent is zero", getName());
+        return ret;
+    }
+    if (clkport == 0) {
+        SHOW_ERROR("RegisterCopyProcess %s without clock", getName());
+        return ret;
+    }
+
+    Operation::push_obj(NO_PARENT);
+    GenObject *async_reset = getParent()->getChildByName("async_reset");
+    if (rstport && getResetActive() != ACTIVE_NONE) {
+        GenObject *block;
+        if (getResetActive() == ACTIVE_LOW) {
+            block = &IF (EZ(*rstport));
+        } else {
+            block = &IF (NZ(*rstport));
+        }
+            CALLF(0, *rstruct_->rst_func_instance(), 1, rstruct_->r_instance());
+        ELSE();
+            SETVAL(*rstruct_->r_instance(), *rstruct_->v_instance());
+        ENDIF();
+    } else {
+        GenObject &block = 
+        SETVAL(*rstruct_->r_instance(), *rstruct_->v_instance());
+        ret += block.generate() + "\n";
+    }
+
+    Operation::pop_obj();
+    return ret;
+}
+
+
 }  // namespace sysvc

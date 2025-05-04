@@ -30,7 +30,7 @@ class ConstObject : public GenObject {
 
     virtual bool isConst() override { return true; }
     virtual std::string getName() override { return getStrValue(); }
-    std::string nameInModule(EPorts portid) override;
+    std::string nameInModule(EPorts portid, bool sc_read) override;
 };
 
 

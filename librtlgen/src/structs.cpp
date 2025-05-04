@@ -14,6 +14,7 @@
 //  limitations under the License.
 // 
 
+#include "api_rtlgen.h"
 #include "structs.h"
 #include "files.h"
 #include "utils.h"
@@ -430,9 +431,13 @@ RegTypedefStruct::RegTypedefStruct(GenObject *parent,
 
     // "*_r_reset" value:
     if (active != ACTIVE_NONE) {
+        // module is owner:
         rst_ = new RegResetStruct(parent,
                                   this,
                                   rstval);
+        func_rst_ = new RegResetFunction(parent,
+                                         this,
+                                         rstval);
     }
 
     // "r" value (have input 'v' and output 'r' ports):
@@ -462,10 +467,33 @@ RegTypedefStruct::RegTypedefStruct(GenObject *parent,
                             this);
 }
 
+void RegTypedefStruct::configureGenerator(ECfgGenType cfg) {
+    if (getResetActive() == ACTIVE_NONE) {
+        return;
+    }
+    getParent()->getEntries().remove(rst_);
+    getParent()->getEntries().remove(func_rst_);
+
+    auto lt = getParent()->getEntries().begin();
+    for (auto &p: getParent()->getEntries()) {
+        lt++;
+        if (p == this) {
+            if (cfg == CFG_GEN_SYSC) {
+                getParent()->getEntries().insert(lt, func_rst_);
+            } else {
+                getParent()->getEntries().insert(lt, rst_);
+            }
+            break;
+        }
+    }
+    StructObject::configureGenerator(cfg);
+}
+
 void RegTypedefStruct::add_entry(GenObject *obj) {
     StructObject::add_entry(obj);
     if (rst_) {
         add_ref_entry(rst_, obj);
+        add_ref_entry(func_rst_->getIV(), obj);
     }
     add_ref_entry(v_, obj);
     add_ref_entry(rin_, obj);
@@ -522,6 +550,28 @@ RegTypedefStruct::RegResetStruct::RegResetStruct(GenObject *parent,
                                 const char *name)
     : RegVariableInstance(parent, p, name, "") {
 }
+
+RegTypedefStruct::RegResetFunction::RegResetFunction(GenObject *parent,
+                                RegTypedefStruct *p,
+                                const char *name)
+    : FunctionObject(parent, name), rstruct_(p), iv_(NO_PARENT, p, "iv") {
+}
+
+void RegTypedefStruct::RegResetFunction::postInit() {
+    std::list<GenObject *>::iterator it1, it2;
+    GenObject &rst = *rstruct_->rst_instance();
+    Operation::push_obj(this);
+    for (it1 = iv_.getEntries().begin(), it2 = rst.getEntries().begin();
+        it1 != iv_.getEntries().end() && it2 != rst.getEntries().end();
+        ++it1, ++it2) {
+        if ((*it1)->isComment()) {
+            continue;
+        }
+        SETVAL(*(*it1), *(*it2));
+    }
+    Operation::pop_obj();
+}
+
 
 std::string RegTypedefStruct::RegResetStruct::generate() {
     std::string ret = "";

@@ -117,7 +117,7 @@ class GenObject {
     virtual bool isRom() { return false; }
     virtual std::string getRomFile() { return ""; }
 
-    virtual std::string nameInModule(EPorts portid) { return std::string(""); } // Name inside module
+    virtual std::string nameInModule(EPorts portid, bool sc_read) { return std::string(""); } // Name inside module
     virtual std::string v_prefix() { return std::string(""); }
     virtual std::string r_prefix() { return std::string(""); }
 
