@@ -173,7 +173,15 @@ void ModuleObject::configureGenerator(ECfgGenType cfg) {
         if (cfg == CFG_GEN_SYSC) {
             // set v as a module variable
             r->v_instance()->setParent(this);
-            getEntries().push_front(r->v_instance());
+            // insert v just before r variable
+            auto lt = getEntries().begin();
+            for (auto &p : getEntries()) {
+                if (p == r->r_instance()) {
+                    getEntries().insert(lt, r->v_instance());
+                    break;
+                }
+                lt++;
+            }
         } else if (cfg == CFG_GEN_SV || cfg == CFG_GEN_VHDL) {
             // insert rin after r for better looking code:
             auto lt = getEntries().begin();

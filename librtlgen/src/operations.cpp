@@ -1742,8 +1742,8 @@ std::string NewOperation::generate_sc() {
                     ret += " ";
                 }
             }
-            ret += e->generate();
-            lasttmpl = e->generate(); // need to properly compute space value
+            ret += e->getStrValue();
+            lasttmpl = e->getStrValue(); // need to properly compute space value
             tcnt++;
         }
         ret += ">";
