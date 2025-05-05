@@ -21,12 +21,7 @@
 
 namespace sysvc {
 
-std::string ProcObject::generate_sysc_h() {
-    std::string ret = "";
-    return ret;
-}
-
-std::string ProcObject::generate_sysc_cpp() {
+std::string ProcObject::generate_sysc() {
     // Do no add return type, it depends of module's templates parameters
     std::string ret;
 
@@ -42,7 +37,7 @@ std::string ProcObject::generate_sysc_cpp() {
     return ret;
 }
 
-std::string RegisterCopyProcess::generate_sysc_cpp() {
+std::string RegisterCopyProcess::generate_sysc() {
     std::string ret = "";
     GenObject *m = getParent();
     GenObject *clkport = getClockPort();

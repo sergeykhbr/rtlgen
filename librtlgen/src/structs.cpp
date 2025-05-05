@@ -510,7 +510,7 @@ void RegTypedefStruct::add_ref_entry(GenObject *parent, GenObject *obj) {
 void RegTypedefStruct::add_refreset_entry(GenObject *parent, GenObject *obj) {
     RefObject *ref = new RefResetObject(parent, obj, NO_COMMENT);
     for (auto &p: obj->getEntries()) {
-        add_ref_entry(ref, p);
+        add_refreset_entry(ref, p);
     }
 }
 

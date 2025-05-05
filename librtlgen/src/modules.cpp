@@ -37,6 +37,8 @@ ModuleObject::ModuleObject(GenObject *parent,
     if (name_ == "") {
         SHOW_ERROR("%s", "Unnamed module");
     }
+    loopidx_[0] = 'i';
+    loopidx_[1] = '\0';
 
     SCV_add_module(this);
 }
@@ -289,8 +291,7 @@ std::string ModuleObject::generate_all_struct() {
             // SystemC Reset function body in a same way as const structure
             if (p->isFunction() && p->isResetConst()) {
                 SCV_set_generator(SYSC_ALL);
-                ret += generate_sysc_template_f_name(p->getType().c_str(), false);
-                ret += p->generate();
+                ret += addspaces() = "void " + p->generate() + "\n";
                 SCV_set_generator(SYSC_H);
             }
         }

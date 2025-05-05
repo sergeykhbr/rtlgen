@@ -154,10 +154,8 @@ std::string ProcObject::generate_all_localvar() {
 
 std::string ProcObject::generate() {
     std::string ret = "";
-    if (SCV_is_sysc_h()) {
-        return generate_sysc_h();
-    } else if (SCV_is_sysc()) {
-        return generate_sysc_cpp();
+    if (SCV_is_sysc()) {
+        return generate_sysc();
     } else if (SCV_is_sv()) {
         return generate_sv();
     }

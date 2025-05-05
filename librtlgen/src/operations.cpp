@@ -1042,11 +1042,7 @@ std::string RshOperation::generate() {
 std::string ArrItemOperation::generate() {
     std::string ret = "";
     arr_->setSelector(idx_);
-    if (force_read_) {
-        ret = Operation::obj2varname(item_, "r", true);
-    } else {
-        ret = Operation::obj2varname(item_);
-    }
+    ret = item_->nameInModule(PORT_OUT, true);
     arr_->setSelector(0);
     return ret;
 }

@@ -48,8 +48,7 @@ class ProcObject : public GenObject {
     virtual void setSortedRegs(std::list<RegTypedefStruct *> *reglist);
     virtual std::list<RegTypedefStruct *> *getpSortedRegs() { return reglist_; }
  protected:
-    virtual std::string generate_sysc_h();
-    virtual std::string generate_sysc_cpp();
+    virtual std::string generate_sysc();
     virtual std::string generate_sv();
     virtual std::string generate_vhdl();
     virtual std::string generate_all_localvar();
@@ -94,7 +93,7 @@ class RegisterCopyProcess : public ProcObject {
                      NO_COMMENT), rstruct_(r) {}
  protected:
     virtual std::string generate_sv() override;
-    virtual std::string generate_sysc_cpp() override;
+    virtual std::string generate_sysc() override;
  protected:
     RegTypedefStruct *rstruct_;
 };

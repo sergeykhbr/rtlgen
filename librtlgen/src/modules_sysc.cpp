@@ -153,12 +153,8 @@ std::string ModuleObject::generate_sysc_h() {
     for (auto &p: getEntries()) {
         if (p->isParamTemplate()) {
             // do nothing
-        } else if (p->isParamGeneric()) {
-            out += addspaces() + p->getType() + " " + p->getName() + "_;\n";
-            tcnt++;
-        } else if (p->isParam() && p->isGenericDep() && tmpllist.size() == 0) {
-            // No underscore symbol
-            out += addspaces() + p->getType() + " " + p->getName() + ";\n";
+        } else if (p->isParamGeneric() || p->isGenericDep()) {
+            out += addspaces() + p->getType() + " " + p->nameInModule(PORT_OUT, false) + ";\n";
             tcnt++;
         }
     }
@@ -180,8 +176,7 @@ std::string ModuleObject::generate_sysc_h() {
                 // Do nothing: This parameter depends of generic parameter (constrcutor argument)
             } else {
                 out += comment;
-                out += addspaces() + "static const " + p->getType() + " ";
-                out += p->getName() + " = " + p->getStrValue() + ";\n";
+                out += p->generate();
                 tcnt++;
             }
         }
@@ -271,6 +266,7 @@ std::string ModuleObject::generate_sysc_sensitivity(GenObject *obj,
         loop = addspaces();
         loop += "for (int " + i + " = 0; " + i + " < " + obj->getStrDepth() + "; " + i + "++) {\n";
         pushspaces();
+        loopidx_[0]++;
     }
 
     if (obj->isStruct() && !obj->isInterface()) {
@@ -286,6 +282,8 @@ std::string ModuleObject::generate_sysc_sensitivity(GenObject *obj,
     }
 
     if (obj->getObjDepth()) {
+        loopidx_[0]--;
+        obj->setSelector(0);
         // Insert end of 'for' loop if it was generated:
         if (loop == "") {
             popspaces();
@@ -298,88 +296,43 @@ std::string ModuleObject::generate_sysc_sensitivity(GenObject *obj,
     return ret;
 }
 
-std::string ModuleObject::generate_sysc_vcd_entries(GenObject *obj,
-                                                    std::string prefix,
-                                                    std::string i,
-                                                    std::string &loop) {    // do not print empty for loop cycle
+std::string ModuleObject::generate_sysc_vcd_entries(GenObject *obj) {
     std::string ret = "";
-    if (prefix == "") {
-        // Check exceptions only on first level
-        if (!obj->isSignal()
-            && !obj->isOutput()) {
-            return ret;
-        }
-        if (!obj->isVcd()
-            || obj->isTypedef()
-            || obj->isVector()  // just to reduce number of traced data
-            || (obj->getName() == "i_clk" || obj->getName() == "i_nrst") && !isTop()) {
-            return ret;
-        }
-    }
-
-
-    std::string objname = obj->getName();
+    I32D *idx = 0;
+    char tstr[256];
     if (obj->getObjDepth()) {
-        if (i != "i") {
-            // Currently double layer structures are not supported (tracer regs)
-            return ret;
-        }
-        loop = addspaces();
-        loop += "for (int i = 0; i < " + obj->getStrDepth() + "; i++) {\n";
+        idx = new I32D(NO_PARENT, loopidx_, "0", NO_COMMENT);
+        obj->setSelector(idx);
+
+        RISCV_sprintf(tstr, sizeof(tstr), "for (int %s = 0; %s < %s; %s++) {\n",
+            loopidx_, loopidx_, obj->getStrDepth().c_str(), loopidx_);
+        ret = addspaces() + tstr;
         pushspaces();
-        loop += addspaces() + "char tstr[1024];\n";
+        loopidx_[0]++;
     }
 
-    if (obj->isStruct() && !obj->isInterface()) {
-        if (prefix.size()) {
-            prefix += ".";
-        }
-        prefix += objname;
-        // VCD for each entry of the struct separetely
-        const char tidx[2] = {static_cast<char>(static_cast<int>(i.c_str()[0]) + 1), 0};
-        i = std::string(tidx);
-        for (auto &e: obj->getEntries()) {
-            ret += generate_sysc_vcd_entries(e, prefix, i, loop);
-        }
+    // Interface implements ofstream<< operator (all inputs/outputs):
+    if (obj->isInput() || obj->isOutput()) {
+        std::string tname = obj->nameInModule(PORT_OUT, false);
+        ret += addspaces() + "sc_trace(o_vcd, " + tname + ", " + tname + ".name());\n";
+    } else if (obj->getEntries().size() == 0) {
+        // r-structure entries:
+        std::string tname = obj->nameInModule(PORT_OUT, false);
+        ret += addspaces() + "sc_trace(o_vcd, " + tname;
+        ret += ", std::string(name()) + \"." + tname + "\");\n";
     } else {
-        std::string r = "";
-        std::string r_ = "";
-        if (obj->getClockEdge() != CLK_ALWAYS) {
-            r = obj->r_prefix() + ".";
-            r_ = obj->r_prefix() + "_";
-        }
-
-        if (prefix.size()) {
-            prefix += ".";
-        }
-        if (loop.size()) {
-            ret += loop;
-            loop = "";
-        }
-        if (obj->getObjDepth()) {
-            ret += addspaces();
-            ret += "RISCV_sprintf(tstr, sizeof(tstr), \"%s." + r_ + prefix + objname + "%d\", pn.c_str(), i);\n";
-            ret += addspaces() + "sc_trace(o_vcd, " + r + prefix + objname + "[i], tstr);\n";
-        } else if (obj->getParent()
-            && obj->getParent()->getObjDepth()) {
-            ret += addspaces();
-            ret += "RISCV_sprintf(tstr, sizeof(tstr), \"%s." + r_ + obj->getParent()->getName() + "%d_" + objname + "\", pn.c_str(), i);\n";
-            ret += addspaces() + "sc_trace(o_vcd, " + r + obj->getParent()->getName() + "[i]." + objname + ", tstr);\n";
-        } else if (r.size()) {
-            ret += addspaces() + "sc_trace(o_vcd, " + r + prefix + objname + ", pn + \"." + r_ + prefix + objname + "\");\n";
-        } else {
-            ret += addspaces() + "sc_trace(o_vcd, " + prefix + objname + ", " + prefix + objname + ".name());\n";
+        // Register structure
+        for (auto &e: obj->getEntries()) {
+            ret += generate_sysc_vcd_entries(e);
         }
     }
 
     if (obj->getObjDepth()) {
-        if (loop.size() == 0) {
-            popspaces();
-            ret += addspaces() + "}\n";
-        } else {
-            popspaces();
-            loop = "";
-        }
+        loopidx_[0]--;
+        obj->setSelector(0);
+        delete idx;
+        popspaces();
+        ret += addspaces() + "}\n";
     }
     return ret;
 }
@@ -658,9 +611,6 @@ std::string ModuleObject::generate_sysc_destructor() {
 
 std::string ModuleObject::generate_sysc_vcd() {
     std::string ret = "";
-    std::string ln = "";
-    std::string ln2 = "";
-    std::string loop = "";
 
     ret += generate_sysc_template_f_name("void");
     ret += "::generateVCD(sc_trace_file *i_vcd, sc_trace_file *o_vcd) {\n";
@@ -668,8 +618,24 @@ std::string ModuleObject::generate_sysc_vcd() {
     ret += addspaces() + "if (o_vcd) {\n";
     pushspaces();
     for (auto &p: getEntries()) {
-        ln2 = "i";
-        ret += generate_sysc_vcd_entries(p, ln, ln2, loop);
+        if (!p->isInput() && !p->isOutput()) {
+            continue;
+        }
+        if ((p->getName() == "i_clk" || p->getName() == "i_nrst") && !isTop()) {
+            continue;
+        }
+        if (!p->isVcd()) {
+            // specially disabled signals
+            continue;
+        }
+        if (p->isVector()) {
+            // just to reduce trace size
+            continue;
+        }
+        ret += generate_sysc_vcd_entries(p);
+    }
+    for (auto &p : sorted_regs_) {
+        ret += generate_sysc_vcd_entries(p->r_instance());
     }
     popspaces();
     ret += addspaces() + "}\n";
