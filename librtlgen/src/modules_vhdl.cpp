@@ -56,7 +56,7 @@ std::string ModuleObject::generate_vhdl_pkg_localparam() {
 }
 
 std::string ModuleObject::generate_vhdl_pkg_reg_struct() {
-    std::map<std::string, std::list<GenObject *>> regmap;
+    /*std::map<std::string, std::list<GenObject *>> regmap;
     std::map<std::string, bool> is2dm;
     std::string ret = "";
     std::string ln = "";
@@ -107,7 +107,8 @@ std::string ModuleObject::generate_vhdl_pkg_reg_struct() {
             ret += "\n";
         }
     }
-    return ret;
+    return ret;*/
+    return "";
 }
 
 
@@ -263,7 +264,7 @@ std::string ModuleObject::generate_vhdl_mod_signals() {
         tcnt++;
     }
 
-    std::map<std::string, std::list<GenObject *>> regmap;
+    /*std::map<std::string, std::list<GenObject *>> regmap;
     std::map<std::string, bool> is2dm;
     std::string r;
     getSortedRegsMap(regmap, is2dm);
@@ -275,7 +276,7 @@ std::string ModuleObject::generate_vhdl_mod_signals() {
     }
     if (regmap.size()) {
         ret += "\n";
-    }
+    }*/
     return ret;
 }
 

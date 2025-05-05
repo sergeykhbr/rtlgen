@@ -58,8 +58,6 @@ class ModuleObject : public GenObject {
     virtual void getTmplParamList(std::list<GenObject *> &genlist);
     virtual void getParamList(std::list<GenObject *> &genlist);
     virtual void getIoList(std::list<GenObject *> &genlist);
-    virtual void getSortedRegsMap(std::map<std::string, std::list<GenObject *>> &regmap,
-                                  std::map<std::string, bool> &is2dm);
  protected:
 
     /**
@@ -80,10 +78,8 @@ class ModuleObject : public GenObject {
     std::string generate_sysc_submodule_nullify();
     std::string generate_sysc_destructor();
     std::string generate_sysc_vcd();
-    std::string generate_sysc_func(GenObject *func);
-    std::string generate_sysc_proc(GenObject *proc);
     std::string generate_sysc_template_param(GenObject *p);
-    std::string generate_sysc_template_f_name(const char *rettype="void", bool with_class_name=true);
+    std::string generate_sysc_template_f_name(const char *rettype, bool with_class_name=true);
     std::string generate_sysc_sensitivity(GenObject *obj, std::string prefix, std::string i, std::string &loop);
     std::string generate_sysc_vcd_entries(GenObject *obj, std::string prefix, std::string i, std::string &loop);
 

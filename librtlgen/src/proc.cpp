@@ -71,8 +71,9 @@ void ProcObject::postInit() {
 void CombinationalProcess::postInit() {
     ProcObject::postInit();
 
-    // rin <= v;
-    Operation::push_obj(this);
+    // rin <= v; should be added for SV and VHDL, but not for SystemC
+    v2rin_ = new Operation(this, NO_COMMENT);
+    Operation::push_obj(v2rin_);
     if (reglist_->size()) {
         TEXT();
     }
@@ -82,6 +83,16 @@ void CombinationalProcess::postInit() {
     Operation::pop_obj();
 }
 
+void CombinationalProcess::configureGenerator(ECfgGenType cfg) {
+    ProcObject::configureGenerator(cfg);
+    // inital state
+    getEntries().remove(v2rin_);
+
+    // rin <= v;
+    if (cfg == CFG_GEN_SV || cfg == CFG_GEN_VHDL) {
+        getEntries().push_back(v2rin_);
+    }
+}
 
 void ProcObject::setSortedRegs(std::list<RegTypedefStruct *> *reglist) {
     reglist_ = reglist;
@@ -107,6 +118,36 @@ std::string ProcObject::getPostAssign() {
 
     for (auto &p: listPostAssign_) {
         ret += p->generate();
+    }
+    return ret;
+}
+
+// process variables declaration
+std::string ProcObject::generate_all_localvar() {
+    std::string ret = "";
+    std::string ln = "";
+
+    for (auto &e: getEntries()) {
+        if (!e->isValue()) {
+            continue;
+        }
+
+        ln = addspaces() + e->getType() + " " + e->getName();
+        if (e->getObjDepth()) {
+            if (SCV_is_sysc()) {
+                ln += "[" + e->getStrDepth() + "]";
+            } else if (SCV_is_sv()) {
+                ln += "[0: " + e->getStrDepth() + "-1]";
+            } else if (SCV_is_vhdl()) {
+                ln += "(0 upto " + e->getStrDepth() + " - 1)";
+            }
+        }
+        ln += ";";
+        e->addComment(ln);
+        ret += ln + "\n";
+    }
+    if (ret.size()) {
+        ret += "\n";
     }
     return ret;
 }

@@ -259,30 +259,6 @@ void ModuleObject::getIoList(std::list<GenObject *> &iolist) {
     }
 }
 
-void ModuleObject::getSortedRegsMap(
-    std::map<std::string, std::list<GenObject *>> &regmap,
-    std::map<std::string, bool>  &is2dm)
-{
-    for (auto &p : getEntries()) {
-        GenObject *clkport = p->getClockPort();
-        if (!clkport || p->getClockEdge() == CLK_ALWAYS) {
-            continue;
-        }
-        if (p->isProcess()) {
-            continue;
-        }
-        if (p->r_prefix().size() == 0) {
-            SHOW_ERROR("%s::%s r-preifx not defined",
-                        getName().c_str(), p->getName().c_str());
-        }
-        regmap[p->r_prefix()].push_back(p);
-        if (is2dm.find(p->r_prefix()) == is2dm.end()) {
-            is2dm[p->r_prefix()] = false;
-        }
-        is2dm[p->r_prefix()] |= p->is2Dim();
-    }
-}
-
 std::string ModuleObject::generate_all_struct() {
     std::string ret = "";
     std::string comment = "";

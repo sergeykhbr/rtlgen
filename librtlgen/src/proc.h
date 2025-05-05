@@ -52,7 +52,7 @@ class ProcObject : public GenObject {
     virtual std::string generate_sysc_cpp();
     virtual std::string generate_sv();
     virtual std::string generate_vhdl();
-    virtual std::string generate_localvar_sv();
+    virtual std::string generate_all_localvar();
 
  protected:
     std::string name_;
@@ -72,6 +72,9 @@ class CombinationalProcess : public ProcObject {
         : ProcObject(parent, name, 0, CLK_ALWAYS, 0, ACTIVE_NONE, comment) {}
 
     virtual void postInit() override;
+    virtual void configureGenerator(ECfgGenType) override;
+ protected:
+    GenObject *v2rin_;  // rin <= v code block
 };
 
 /**

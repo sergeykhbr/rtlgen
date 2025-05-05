@@ -27,7 +27,18 @@ std::string ProcObject::generate_sysc_h() {
 }
 
 std::string ProcObject::generate_sysc_cpp() {
-    std::string ret = "";
+    // Do no add return type, it depends of module's templates parameters
+    std::string ret;
+
+    // process variables declaration
+    ret = generate_all_localvar();
+
+    // Generate operations:
+    for (auto &e: getEntries()) {
+        if (e->isOperation() || e->isComment()) {
+            ret += e->generate();
+        }
+    }
     return ret;
 }
 
@@ -47,25 +58,33 @@ std::string RegisterCopyProcess::generate_sysc_cpp() {
         return ret;
     }
 
+    GenObject *block;
     Operation::push_obj(NO_PARENT);
     GenObject *async_reset = getParent()->getChildByName("async_reset");
     if (rstport && getResetActive() != ACTIVE_NONE) {
-        GenObject *block;
-        if (getResetActive() == ACTIVE_LOW) {
-            block = &IF (EZ(*rstport));
+        if (async_reset) {
+            // if (async_reset && i_nrst.read() == 0/1)
+            if (getResetActive() == ACTIVE_LOW) {
+                block = &IF (AND2(NZ(*async_reset), EZ(*rstport)));
+            } else {
+                block = &IF (AND2(NZ(*async_reset), NZ(*rstport)));
+            }
         } else {
-            block = &IF (NZ(*rstport));
+            // if (i_nrst.read() == 0/1)
+            if (getResetActive() == ACTIVE_LOW) {
+                block = &IF (EZ(*rstport));
+            } else {
+                block = &IF (NZ(*rstport));
+            }
         }
             CALLF(0, *rstruct_->rst_func_instance(), 1, rstruct_->r_instance());
         ELSE();
             SETVAL(*rstruct_->r_instance(), *rstruct_->v_instance());
         ENDIF();
     } else {
-        GenObject &block = 
-        SETVAL(*rstruct_->r_instance(), *rstruct_->v_instance());
-        ret += block.generate() + "\n";
+        block = &SETVAL(*rstruct_->r_instance(), *rstruct_->v_instance());
     }
-
+    ret += block->generate();
     Operation::pop_obj();
     return ret;
 }

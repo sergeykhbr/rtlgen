@@ -52,4 +52,12 @@ class RefObject : public GenObject {
     GenObject *ref_;
 };
 
+class RefResetObject : public RefObject {
+ public:
+    RefResetObject(GenObject *parent, GenObject *ref, const char *comment)
+        : RefObject(parent, ref, comment) {
+    }
+    virtual std::string nameInModule(EPorts portid, bool sc_read) override;
+};
+
 }  // namespace sysvc

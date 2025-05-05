@@ -25,30 +25,6 @@ static const char *SV_STR_CLKEDGE[3] = {"*", "posedge", "negedge"};
 static const char *SV_STR_RSTEDGE[3] = {"", "negedge", "posedge"};
 static const char *SV_STR_ACTIVE[3] = {"", "1'b0", "1'b1"};
 
-// process variables declaration
-std::string ProcObject::generate_localvar_sv() {
-    std::string ret = "";
-    std::string ln = "";
-
-    for (auto &e: getEntries()) {
-        if (!e->isValue()) {
-            continue;
-        }
-
-        ln = addspaces() + e->getType() + " " + e->getName();
-        if (e->getObjDepth()) {
-            ln += "[0: " + e->getStrDepth() + "-1]";
-        }
-        ln += ";";
-        e->addComment(ln);
-        ret += ln + "\n";
-    }
-    if (ret.size()) {
-        ret += "\n";
-    }
-    return ret;
-}
-
 std::string ProcObject::generate_sv() {
     std::string ret = "";
     std::string bodytext;
@@ -65,7 +41,7 @@ std::string ProcObject::generate_sv() {
         }
     } else {
         pushspaces();
-        bodytext += generate_localvar_sv();
+        bodytext += generate_all_localvar();
 
         for (auto &e: getEntries()) {
             if (e->isOperation()) {

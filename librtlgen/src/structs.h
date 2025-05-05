@@ -104,6 +104,7 @@ class RegTypedefStruct : public StructObject {
     static std::string reg_suffix(GenObject *p, int unique_idx);
  protected:
     virtual void add_ref_entry(GenObject *parent, GenObject *obj);
+    virtual void add_refreset_entry(GenObject *parent, GenObject *obj);
 
  protected:
     /**

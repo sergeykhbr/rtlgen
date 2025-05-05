@@ -1540,7 +1540,7 @@ void SYNC_RESET(GenObject *xrst) {
 std::string CallFuncOperation::generate() {
     std::string ret = addspaces();
     if (ret_) {
-        ret += Operation::obj2varname(ret_, "v") + " = ";
+        ret += ret_->nameInModule(PORT_IN, false) + " = ";
     }
     ret += a_->getName();
     ret += "(";
@@ -1550,7 +1550,7 @@ std::string CallFuncOperation::generate() {
         if (i > 0) {
             ret += ",\n" + addspaces();
         }
-        ret += Operation::obj2varname(args_[i]);
+        ret += args_[i]->nameInModule(PORT_OUT, true);
     }
     popspaces();
     popspaces();

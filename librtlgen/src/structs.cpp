@@ -492,8 +492,8 @@ void RegTypedefStruct::configureGenerator(ECfgGenType cfg) {
 void RegTypedefStruct::add_entry(GenObject *obj) {
     StructObject::add_entry(obj);
     if (rst_) {
-        add_ref_entry(rst_, obj);
-        add_ref_entry(func_rst_->getIV(), obj);
+        add_refreset_entry(rst_, obj);
+        add_refreset_entry(func_rst_->getIV(), obj);
     }
     add_ref_entry(v_, obj);
     add_ref_entry(rin_, obj);
@@ -502,6 +502,13 @@ void RegTypedefStruct::add_entry(GenObject *obj) {
 
 void RegTypedefStruct::add_ref_entry(GenObject *parent, GenObject *obj) {
     RefObject *ref = new RefObject(parent, obj, NO_COMMENT);
+    for (auto &p: obj->getEntries()) {
+        add_ref_entry(ref, p);
+    }
+}
+
+void RegTypedefStruct::add_refreset_entry(GenObject *parent, GenObject *obj) {
+    RefObject *ref = new RefResetObject(parent, obj, NO_COMMENT);
     for (auto &p: obj->getEntries()) {
         add_ref_entry(ref, p);
     }

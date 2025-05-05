@@ -30,90 +30,6 @@
 
 namespace sysvc {
 
-/*std::string ModuleObject::generate_sysc_h_reg_struct() {
-    std::map<std::string, std::list<GenObject *>> regmap;
-    std::map<std::string, bool> is2dm;
-    std::list<GenObject *> comblist;
-    std::string out = "";
-    std::string ln = "";
-    std::string r;
-    std::string v;
-    
-    getCombProcess(comblist);
-    getSortedRegsMap(regmap, is2dm);
-    for (std::map<std::string, std::list<GenObject *>>::iterator it = regmap.begin();
-        it != regmap.end(); it++) {
-        r = it->first;                          // map sorted by v_prefix
-        v = (*it->second.begin())->v_prefix();  // all obj in a list has the same v_prefix as the first one
-
-        out += addspaces() + "struct " + getType() + "_" + r + "egisters {\n";
-        pushspaces();
-        for (auto &p: it->second) {
-            ln = addspaces();
-
-            if (p->isSignal() && !p->isIgnoreSignal()) {
-                // some structure are not defined as a signal but probably should be
-                ln += "sc_signal<";
-            }
-            ln += p->getType();
-            if (p->isSignal() && !p->isIgnoreSignal()) {
-                ln += ">";
-            }
-            ln += " " + p->getName();
-            if (p->getObjDepth()) {
-                ln += "[" + p->getStrDepth() + "]";
-            }
-            ln += ";";
-            p->addComment(ln);
-            out += ln + "\n";
-        }
-        popspaces();
-        out += addspaces() + "} ";
-        if (comblist.size()) {
-            // To exclude memories implementation without reset and comb logic
-            out += v + ", ";
-        }
-        out += r + ";\n";
-
-        out += "\n";
-        // Generate reset function only for simple regs with defined reset:
-        if (!is2dm[it->first] && (*it->second.begin())->getResetActive() != ACTIVE_NONE) {
-            out += addspaces() + "void " + getType();
-            out += "_" + r + "_reset(" + getType() + "_" + r +"egisters &iv) {\n";
-            pushspaces();
-            for (auto &p: it->second) {
-                out += addspaces() + "iv." + p->getName() + " = ";
-                out += p->getStrValue();
-                // TODO: add "_" for Generic value. Right now can not use generic param value as reset.
-                out += ";\n";
-            }
-            popspaces();
-            out += addspaces() + "}\n";
-            out += "\n";
-        }
-    }
-
-    return out;
-}
-
-std::string ModuleObject::generate_sysc_h_struct() {
-    std::string out = "";
-    int tcnt = 0;
-    for (auto &p: entries_) {
-        if (p->isStruct() && p->isTypedef()) {
-            out += p->generate();
-            tcnt++;
-        }
-    }
-    if (tcnt) {
-        out += "\n";
-        tcnt = 0;
-    }
-    // Register structure definition
-    out += generate_sysc_h_reg_struct();
-    return out;
-}*/
-
 std::string ModuleObject::generate_sysc_h() {
     std::string out = "";
     std::string ln;
@@ -745,19 +661,10 @@ std::string ModuleObject::generate_sysc_vcd() {
     std::string ln = "";
     std::string ln2 = "";
     std::string loop = "";
-    std::list<GenObject *> comblist;
-    std::map<std::string, std::list<GenObject *>> regmap;
-    std::map<std::string, bool> is2dm;
 
-    getCombProcess(comblist);
-    getSortedRegsMap(regmap,is2dm);
-
-    ret += generate_sysc_template_f_name();
+    ret += generate_sysc_template_f_name("void");
     ret += "::generateVCD(sc_trace_file *i_vcd, sc_trace_file *o_vcd) {\n";
     pushspaces();
-    if (regmap.size() && comblist.size()) {
-        ret += addspaces() + "std::string pn(name());\n";
-    }
     ret += addspaces() + "if (o_vcd) {\n";
     pushspaces();
     for (auto &p: getEntries()) {
@@ -827,7 +734,8 @@ std::string ModuleObject::generate_sysc_cpp() {
             // "r_reset" function always in header file
             continue;
         }
-        out += generate_sysc_func(p);
+        out += generate_sysc_template_f_name(p->getType().c_str()) + "::";
+        out += p->generate();
         out += "\n";
     }
 
@@ -836,62 +744,15 @@ std::string ModuleObject::generate_sysc_cpp() {
         if (!p->isProcess()) {
             continue;
         }
-        out += generate_sysc_proc(p);
+        out += generate_sysc_template_f_name("void") + "::";
+        out += p->getName() + "() {\n";
+        pushspaces();
+        out += p->generate();
+        popspaces();
+        out += "}\n";
+        out += "\n";
     }
-
-    //out += generate_sysc_proc_registers();
     return out;
-}
-
-std::string ModuleObject::generate_sysc_func(GenObject *func) {
-    std::string ret = "";
-    ret += generate_sysc_template_f_name(func->getType().c_str()) + "::";
-    ret += static_cast<FunctionObject *>(func)->generate();
-    return ret;
-}
-
-
-std::string ModuleObject::generate_sysc_proc(GenObject *proc) {
-    std::string ret = "";
-    std::string ln;
-    int tcnt = 0;
-
-    ret += generate_sysc_template_f_name();
-    ret += "::" + proc->getName() + "() {\n";
-    pushspaces();
-
-    // process variables declaration
-    tcnt = 0;
-    for (auto &e: proc->getEntries()) {
-        ln = "";
-        if (!e->isValue() && !e->isStruct()) {  // no need to check typedef inside of proc
-            continue;
-        }
-        ln += addspaces() + e->getType() + " " + e->getName();
-        if (e->getObjDepth()) {
-            ln += "[" + e->getStrDepth() + "]";
-        }
-        ln += ";";
-        e->addComment(ln);
-        ret += ln + "\n";
-        tcnt++;
-    }
-    if (tcnt) {
-        ret += "\n";
-        tcnt = 0;
-    }
-
-    // Generate operations:
-    for (auto &e: proc->getEntries()) {
-        if (e->isOperation()) {
-            ret += e->generate();
-        }
-    }
-
-    popspaces();
-    ret += "}\n";
-    ret += "\n";
-    return ret;
 }
 
 }
