@@ -205,6 +205,15 @@ bool StructObject::is2Dim() {
     return false;
 }
 
+bool StructObject::isSignal() {
+    for (auto &p: getEntries()) {
+        if (p->isSignal()) {
+            return true;
+        }
+    }
+    return false;
+}
+
 std::string StructObject::generate_interface() {
     std::string ret = "";
     std::string ln;

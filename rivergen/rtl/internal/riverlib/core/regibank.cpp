@@ -86,7 +86,7 @@ void RegIntBank::proc_comb() {
     SETVAL(comb.int_radr2, TO_INT(i_radr2));
 
 TEXT();
-    SETVAL(comb.next_tag, INC(ARRITEM_B(arr, comb.int_waddr, arr.tag)));
+    SETVAL(comb.next_tag, INC(ARRITEM(arr, comb.int_waddr, arr.tag)));
     IF (EQ(comb.next_tag, i_wtag));
         SETONE(comb.v_inordered);
     ENDIF();

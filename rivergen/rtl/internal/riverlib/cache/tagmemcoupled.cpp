@@ -167,7 +167,7 @@ TEXT();
 TEXT();
     TEXT("Form output:");
     IF (EZ(comb.v_addr_sel_r));
-        SETVAL(comb.vb_o_rdata, CC2(BITS(ARRITEM_B(lineo, ODD, lineo.rdata), 31, 0), ARRITEM(lineo, EVEN, lineo.rdata)));
+        SETVAL(comb.vb_o_rdata, CC2(BITS(ARRITEM(lineo, ODD, lineo.rdata), 31, 0), ARRITEM(lineo, EVEN, lineo.rdata)));
         SETVAL(comb.vb_raddr_tag, ARRITEM(lineo, EVEN, lineo.raddr));
         SETVAL(comb.vb_o_rflags, ARRITEM(lineo, EVEN, lineo.rflags));
 
@@ -179,7 +179,7 @@ TEXT();
             SETVAL(comb.v_o_hit_next, ARRITEM(lineo, ODD, lineo.hit));
         ENDIF();
     ELSE();
-        SETVAL(comb.vb_o_rdata, CC2(BITS(ARRITEM_B(lineo, EVEN, lineo.rdata), 31, 0), ARRITEM(lineo, ODD, lineo.rdata)));
+        SETVAL(comb.vb_o_rdata, CC2(BITS(ARRITEM(lineo, EVEN, lineo.rdata), 31, 0), ARRITEM(lineo, ODD, lineo.rdata)));
         SETVAL(comb.vb_raddr_tag, ARRITEM(lineo, ODD, lineo.raddr));
         SETVAL(comb.vb_o_rflags, ARRITEM(lineo, ODD, lineo.rflags));
 

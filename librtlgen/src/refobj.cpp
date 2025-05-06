@@ -18,19 +18,19 @@
 
 namespace sysvc {
 
-std::string RefObject::nameInModule(EPorts portid, bool sc_read) {
+std::string RefObject::nameInModule(EPorts portid, bool no_sc_read) {
     std::string ret;
     GenObject *saveParent = ref_->getParent();
     ref_->setParent(getParent());
-    ret = ref_->nameInModule(portid, sc_read);
+    ret = ref_->nameInModule(portid, no_sc_read);
     ref_->setParent(saveParent);
     return ret;
 }
-std::string RefResetObject::nameInModule(EPorts portid, bool sc_read) {
+std::string RefResetObject::nameInModule(EPorts portid, bool no_sc_read) {
     std::string ret;
     GenObject *saveParent = ref_->getParent();
     ref_->setParent(getParent());
-    ret = ref_->nameInModule(portid, false);    // do not add '.read()'
+    ret = ref_->nameInModule(portid, NO_SC_READ);
     ref_->setParent(saveParent);
     return ret;
 }

@@ -291,7 +291,7 @@ std::string ModuleObject::generate_all_struct() {
             // SystemC Reset function body in a same way as const structure
             if (p->isFunction() && p->isResetConst()) {
                 SCV_set_generator(SYSC_ALL);
-                ret += addspaces() = "void " + p->generate() + "\n";
+                ret += addspaces() + "void " + p->generate() + "\n";
                 SCV_set_generator(SYSC_H);
             }
         }

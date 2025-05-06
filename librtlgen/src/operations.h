@@ -35,7 +35,7 @@ class Operation : public GenObject {
     Operation(GenObject *parent, const char *comment = NO_COMMENT);
 
     virtual bool isOperation() override { return true; }
-    std::string nameInModule(EPorts portid, bool sc_read) override { return generate(); }
+    std::string nameInModule(EPorts portid, bool no_sc_read) override { return generate(); }
 
     static void start(GenObject *owner);
     static void push_obj(GenObject *obj);
@@ -943,9 +943,9 @@ class RshOperation : public Operation {
 class ArrItemOperation : public Operation {
  public:
     ArrItemOperation(GenObject *arr, GenObject *idx, GenObject *item,
-        bool force_read, const char *comment)
+        bool no_sc_read, const char *comment)
         : Operation(NO_PARENT, comment), arr_(arr), idx_(idx),
-        item_(item), force_read_(force_read) {
+        item_(item), no_sc_read_(no_sc_read) {
         if (arr_ == 0) {
             SHOW_ERROR("%s", "Array not defined");
         } else if (item_ == 0) {
@@ -959,13 +959,13 @@ class ArrItemOperation : public Operation {
     GenObject *arr_;
     GenObject *idx_;
     GenObject *item_;
-    bool force_read_;
+    bool no_sc_read_;
 };
 
 Operation &ARRITEM(GenObject &arr, GenObject &idx, GenObject &item, const char *comment="");
 Operation &ARRITEM(GenObject &arr, int idx, GenObject &item, const char *comment="");
 Operation &ARRITEM(GenObject &arr, int idx);
-Operation &ARRITEM_B(GenObject &arr, GenObject &idx, GenObject &item, const char *comment="");  // .read() for signals and ports in bits operations
+Operation &ARRITEM_B(GenObject &arr, GenObject &idx, GenObject &item, const char *comment="");  // no .read() for signals and ports in bits operations
 
 class IfOtherwiseOperation : public Operation {
  public:

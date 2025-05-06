@@ -62,21 +62,21 @@ TEXT();
 
 TEXT();
     i = &FOR ("i", DEC(cfg->CFG_PMP_TBL_SIZE), CONST("0"), "--");
-        IF (ANDx(2, &GE(i_iaddr, BITS(ARRITEM_B(tbl, *i, tbl.start_addr), DEC(cfg->CFG_CPU_ADDR_BITS), CONST("0"))),
-                    &LE(i_iaddr, BITS(ARRITEM_B(tbl, *i, tbl.end_addr), DEC(cfg->CFG_CPU_ADDR_BITS), CONST("0")))));
-            IF (ANDx(2, &NZ(BIT(ARRITEM_B(tbl, *i, tbl.flags), cfg->CFG_PMP_FL_V)),
-                        &OR2(i_ena, BIT(ARRITEM_B(tbl, *i, tbl.flags), cfg->CFG_PMP_FL_L))));
-                SETVAL(comb.v_x, BIT(ARRITEM_B(tbl, *i, tbl.flags), cfg->CFG_PMP_FL_X));
+        IF (ANDx(2, &GE(i_iaddr, BITS(ARRITEM(tbl, *i, tbl.start_addr), DEC(cfg->CFG_CPU_ADDR_BITS), CONST("0"))),
+                    &LE(i_iaddr, BITS(ARRITEM(tbl, *i, tbl.end_addr), DEC(cfg->CFG_CPU_ADDR_BITS), CONST("0")))));
+            IF (ANDx(2, &NZ(BIT(ARRITEM(tbl, *i, tbl.flags), cfg->CFG_PMP_FL_V)),
+                        &OR2(i_ena, BIT(ARRITEM(tbl, *i, tbl.flags), cfg->CFG_PMP_FL_L))));
+                SETVAL(comb.v_x, BIT(ARRITEM(tbl, *i, tbl.flags), cfg->CFG_PMP_FL_X));
             ENDIF();
         ENDIF();
 
         TEXT();
-        IF (ANDx(2, &GE(i_daddr, BITS(ARRITEM_B(tbl, *i, tbl.start_addr), DEC(cfg->CFG_CPU_ADDR_BITS), CONST("0"))),
-                    &LE(i_daddr, BITS(ARRITEM_B(tbl, *i, tbl.end_addr), DEC(cfg->CFG_CPU_ADDR_BITS), CONST("0")))));
-            IF (ANDx(2, &NZ(BIT(ARRITEM_B(tbl, *i, tbl.flags), cfg->CFG_PMP_FL_V)),
-                        &OR2(i_ena, BIT(ARRITEM_B(tbl, *i, tbl.flags), cfg->CFG_PMP_FL_L))));
-                SETVAL(comb.v_r, BIT(ARRITEM_B(tbl, *i, tbl.flags), cfg->CFG_PMP_FL_R));
-                SETVAL(comb.v_w, BIT(ARRITEM_B(tbl, *i, tbl.flags), cfg->CFG_PMP_FL_W));
+        IF (ANDx(2, &GE(i_daddr, BITS(ARRITEM(tbl, *i, tbl.start_addr), DEC(cfg->CFG_CPU_ADDR_BITS), CONST("0"))),
+                    &LE(i_daddr, BITS(ARRITEM(tbl, *i, tbl.end_addr), DEC(cfg->CFG_CPU_ADDR_BITS), CONST("0")))));
+            IF (ANDx(2, &NZ(BIT(ARRITEM(tbl, *i, tbl.flags), cfg->CFG_PMP_FL_V)),
+                        &OR2(i_ena, BIT(ARRITEM(tbl, *i, tbl.flags), cfg->CFG_PMP_FL_L))));
+                SETVAL(comb.v_r, BIT(ARRITEM(tbl, *i, tbl.flags), cfg->CFG_PMP_FL_R));
+                SETVAL(comb.v_w, BIT(ARRITEM(tbl, *i, tbl.flags), cfg->CFG_PMP_FL_W));
             ENDIF();
         ENDIF();
     ENDFOR();

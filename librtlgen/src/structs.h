@@ -50,6 +50,7 @@ class StructObject : public GenValue {
     virtual bool isInterface() override;
     virtual std::string getStrValue() override;
     virtual bool is2Dim() override;
+    virtual bool isSignal() override;
 
     virtual std::string generate() override;
 
@@ -86,7 +87,7 @@ class RegTypedefStruct : public StructObject {
 
     virtual void configureGenerator(ECfgGenType) override;
 
-    virtual std::string nameInModule(EPorts portid, bool sc_read) override {
+    virtual std::string nameInModule(EPorts portid, bool no_sc_read) override {
         if (portid == PORT_OUT) {
             return r_->getName();
         } 

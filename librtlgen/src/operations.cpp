@@ -93,13 +93,7 @@ std::string Operation::obj2varname(GenObject *obj, const char *prefix, bool read
     if (prefix[0] == 'r') {
         portid = PORT_OUT;
     }
-    ret = obj->nameInModule(portid, read);
-
-//    if (read && SCV_is_sysc()) {
-//        if (obj->isInput() || obj->isSignal()) {
-//            ret += ".read()";
-//        }
-//    }
+    ret = obj->nameInModule(portid, !read);
     return ret;
 }
 
@@ -270,7 +264,7 @@ std::string SetValueOperation::generate() {
     } else {
         ret += " = ";
     }
-    ret += v_->nameInModule(PORT_OUT, true);
+    ret += v_->nameInModule(PORT_OUT);
 
     if (T_) {
         if (SCV_is_sysc()) {
@@ -1042,7 +1036,7 @@ std::string RshOperation::generate() {
 std::string ArrItemOperation::generate() {
     std::string ret = "";
     arr_->setSelector(idx_);
-    ret = item_->nameInModule(PORT_OUT, true);
+    ret = item_->nameInModule(PORT_OUT, no_sc_read_);
     arr_->setSelector(0);
     return ret;
 }
@@ -1063,7 +1057,7 @@ Operation &ARRITEM(GenObject &arr, int idx) {
 }
 
 Operation &ARRITEM_B(GenObject &arr, GenObject &idx, GenObject &item, const char *comment) {
-    Operation *p = new ArrItemOperation(&arr, &idx, &item, true, comment);
+    Operation *p = new ArrItemOperation(&arr, &idx, &item, NO_SC_READ, comment);
     return *p;
 }
 
@@ -1211,7 +1205,7 @@ void ENDIFGEN(StringConst *name, const char *comment) {
 // SWITCH
 std::string SwitchOperation::generate() {
     std::string ret = addspaces();
-    std::string A = a_->nameInModule(PORT_OUT, true);
+    std::string A = a_->nameInModule(PORT_OUT);
     pushspaces();
 
     if (A.c_str()[0] == '(') {
@@ -1536,7 +1530,7 @@ void SYNC_RESET(GenObject *xrst) {
 std::string CallFuncOperation::generate() {
     std::string ret = addspaces();
     if (ret_) {
-        ret += ret_->nameInModule(PORT_IN, false) + " = ";
+        ret += ret_->nameInModule(PORT_IN) + " = ";
     }
     ret += a_->getName();
     ret += "(";
@@ -1546,7 +1540,7 @@ std::string CallFuncOperation::generate() {
         if (i > 0) {
             ret += ",\n" + addspaces();
         }
-        ret += args_[i]->nameInModule(PORT_OUT, true);
+        ret += args_[i]->nameInModule(PORT_OUT);
     }
     popspaces();
     popspaces();

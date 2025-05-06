@@ -44,6 +44,8 @@ enum EPorts {
     PORT_OUT
 };
 
+static const bool NO_SC_READ = true;
+
 enum ECfgGenType {
     CFG_GEN_SV,
     CFG_GEN_SYSC,
@@ -108,7 +110,7 @@ class GenObject {
     virtual bool isFile() { return false; }
     virtual bool isFunction() { return false; }
     virtual bool isProcess() { return false; }
-    virtual bool isInterface() { return false; }        // struct with parent = file (sc_trace method generated)
+    virtual bool isInterface() { return false; }        // struct with redefined operators: <<, ofstream (inputs/outputs)
     virtual bool isGenVar() { return false; }           // Variable is used generate cycle: I32D analog for rtl
     virtual bool isTop() { return false; }
     virtual bool isMemory() { return false; }
@@ -117,7 +119,8 @@ class GenObject {
     virtual bool isRom() { return false; }
     virtual std::string getRomFile() { return ""; }
 
-    virtual std::string nameInModule(EPorts portid, bool sc_read) { return std::string(""); } // Name inside module
+    virtual std::string nameInModule(EPorts portid, bool no_sc_read) { return std::string(""); } // Name inside module
+    virtual std::string nameInModule(EPorts portid) { return nameInModule(portid, false); }
     virtual std::string v_prefix() { return std::string(""); }
     virtual std::string r_prefix() { return std::string(""); }
 

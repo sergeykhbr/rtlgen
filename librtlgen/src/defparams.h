@@ -37,8 +37,8 @@ class DefParamType : public T {
     virtual bool isParamGeneric() override { return true; }
     virtual bool isGenericDep() override { return true; }
     virtual void setObjValue(GenObject *v) override { T::objValue_ = v; }
-    std::string nameInModule(EPorts portid, bool sc_read) override {
-        std::string ret = T::nameInModule(portid, sc_read);
+    std::string nameInModule(EPorts portid, bool no_sc_read) override {
+        std::string ret = T::nameInModule(portid, no_sc_read);
         if (SCV_is_sysc() && !this->isParamTemplate()) {
             ret += "_";
         }
@@ -122,8 +122,8 @@ class DefParamLogic : public ParamLogic {
     virtual bool isParamGeneric() override { return true; }
     virtual bool isGenericDep() override { return true; }
     virtual void setObjValue(GenObject *v) override { objValue_ = v; }
-    std::string nameInModule(EPorts portid, bool sc_read) override {
-        std::string ret = ParamLogic::nameInModule(portid, sc_read);
+    std::string nameInModule(EPorts portid, bool no_sc_read) override {
+        std::string ret = ParamLogic::nameInModule(portid, no_sc_read);
         if (SCV_is_sysc() && !isParamTemplate()) {
             ret += "_";
         }

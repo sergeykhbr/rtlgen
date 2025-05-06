@@ -166,7 +166,7 @@ TEXT();
     IF (EQ(snoop, CONST("1")));
         i = &FOR("i", CONST("0"), NWAYS, "++");
             TEXT("tagmem already cleared snoop flags if there's no snoop hit");
-            IF (NZ(BIT(ARRITEM_B(way_o, *i, way_o.snoop_flags), FL_VALID)));
+            IF (NZ(BIT(ARRITEM(way_o, *i, way_o.snoop_flags), FL_VALID)));
                 SETVAL(comb.vb_snoop_flags, ARRITEM(way_o, *i, way_o.snoop_flags));
             ENDIF();
         ENDFOR();

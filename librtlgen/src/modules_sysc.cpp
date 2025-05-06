@@ -154,7 +154,7 @@ std::string ModuleObject::generate_sysc_h() {
         if (p->isParamTemplate()) {
             // do nothing
         } else if (p->isParamGeneric() || p->isGenericDep()) {
-            out += addspaces() + p->getType() + " " + p->nameInModule(PORT_OUT, false) + ";\n";
+            out += addspaces() + p->getType() + " " + p->nameInModule(PORT_OUT, NO_SC_READ) + ";\n";
             tcnt++;
         }
     }
@@ -240,58 +240,36 @@ std::string ModuleObject::generate_sysc_h() {
     return out;
 }
 
-std::string ModuleObject::generate_sysc_sensitivity(GenObject *obj,
-                                                    std::string prefix,
-                                                    std::string i,
-                                                    std::string &loop) {
+std::string ModuleObject::generate_sysc_sensitivity(GenObject *obj) {
     std::string ret = "";
-    if (prefix == "") {
-        if (!obj->isSignal()) {
-            return ret;
-        }
-        // Check exceptions only on first level
-        if (obj->isTypedef()
-            || obj->getName() == "i_clk") {
-            return ret;
-        }
-    }
-
-    if (prefix.size()) {
-        prefix += ".";
-    }
-    prefix += obj->getName();
-
+    I32D *idx = 0;
+    char tstr[256];
     if (obj->getObjDepth()) {
-        prefix += "[" + i + "]";
-        loop = addspaces();
-        loop += "for (int " + i + " = 0; " + i + " < " + obj->getStrDepth() + "; " + i + "++) {\n";
+        idx = new I32D(NO_PARENT, loopidx_, "0", NO_COMMENT);
+        obj->setSelector(idx);
+
+        RISCV_sprintf(tstr, sizeof(tstr), "for (int %s = 0; %s < %s; %s++) {\n",
+            loopidx_, loopidx_, obj->getStrDepth().c_str(), loopidx_);
+        ret = addspaces() + tstr;
         pushspaces();
         loopidx_[0]++;
     }
 
-    if (obj->isStruct() && !obj->isInterface()) {
-        const char tidx[2] = {static_cast<char>(static_cast<int>(i.c_str()[0]) + 1), 0};
-        i = std::string(tidx);
-        for (auto &e: obj->getEntries()) {
-            ret += generate_sysc_sensitivity(e, prefix, i, loop);
-        }
+    if (obj->isInterface() || obj->getEntries().size() == 0) {
+        // simple signals or interface structures (inputs) with redefined operator <<:
+        ret += addspaces() + "sensitive << " + obj->nameInModule(PORT_OUT, NO_SC_READ) + ";\n";
     } else {
-        ret += loop;
-        ret += addspaces() + "sensitive << " + prefix + ";\n";
-        loop = "";
+        for (auto &e: obj->getEntries()) {
+            ret += generate_sysc_sensitivity(e);
+        }
     }
 
     if (obj->getObjDepth()) {
         loopidx_[0]--;
         obj->setSelector(0);
-        // Insert end of 'for' loop if it was generated:
-        if (loop == "") {
-            popspaces();
-            ret += addspaces() + "}\n";
-        } else {
-            popspaces();
-            loop = "";
-        }
+        delete idx;
+        popspaces();
+        ret += addspaces() + "}\n";
     }
     return ret;
 }
@@ -313,16 +291,19 @@ std::string ModuleObject::generate_sysc_vcd_entries(GenObject *obj) {
 
     // Interface implements ofstream<< operator (all inputs/outputs):
     if (obj->isInput() || obj->isOutput()) {
-        std::string tname = obj->nameInModule(PORT_OUT, false);
+        std::string tname = obj->nameInModule(PORT_OUT, NO_SC_READ);
         ret += addspaces() + "sc_trace(o_vcd, " + tname + ", " + tname + ".name());\n";
     } else if (obj->getEntries().size() == 0) {
         // r-structure entries:
-        std::string tname = obj->nameInModule(PORT_OUT, false);
+        std::string tname = obj->nameInModule(PORT_OUT, NO_SC_READ);
         ret += addspaces() + "sc_trace(o_vcd, " + tname;
-        ret += ", std::string(name()) + \"." + tname + "\");\n";
+        ret += ", pn + \"." + tname + "\");\n";
     } else {
         // Register structure
         for (auto &e: obj->getEntries()) {
+            if (!e->isVcd()) {
+                continue;
+            }
             ret += generate_sysc_vcd_entries(e);
         }
     }
@@ -513,11 +494,6 @@ std::string ModuleObject::generate_sysc_constructor() {
     }
 
     // Process sensitivity list:
-    std::string prefix1 = "";
-    std::string loop = "";
-    GenObject *rstport;
-    GenObject *clkport;
-
     for (auto &p: getEntries()) {
         if (!p->isProcess()) {
             continue;
@@ -526,8 +502,8 @@ std::string ModuleObject::generate_sysc_constructor() {
         ret += "\n";
         ret += addspaces() + "SC_METHOD(" + p->getName() + ");\n";
         if (p->getClockPort()) {
-            clkport = p->getClockPort();
-            rstport = p->getResetPort();
+            GenObject *clkport = p->getClockPort();
+            GenObject *rstport = p->getResetPort();
             if (rstport) {
                 ret += addspaces() + "sensitive << " + rstport->getName() + ";\n";
             }
@@ -539,7 +515,13 @@ std::string ModuleObject::generate_sysc_constructor() {
         } else {
             ln = std::string("i");
             for (auto &s: getEntries()) {
-                ret += generate_sysc_sensitivity(s, prefix1, ln, loop);
+                if (!s->isSignal()) {
+                    continue;
+                }
+                if (s->isTypedef() || s->getName() == "i_clk") {
+                    continue;
+                }
+                ret += generate_sysc_sensitivity(s);
             }
         }
     }
@@ -615,6 +597,9 @@ std::string ModuleObject::generate_sysc_vcd() {
     ret += generate_sysc_template_f_name("void");
     ret += "::generateVCD(sc_trace_file *i_vcd, sc_trace_file *o_vcd) {\n";
     pushspaces();
+    if (sorted_regs_.size()) {
+        ret += addspaces() + "std::string pn(name());\n";
+    }
     ret += addspaces() + "if (o_vcd) {\n";
     pushspaces();
     for (auto &p: getEntries()) {

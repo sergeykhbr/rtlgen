@@ -284,7 +284,7 @@ TEXT();
         SETBITONE(comb.vb_e_imux, TO_INT(BITS(cmd_addr, 3, 0)));
         SETVAL(comb.wb_trap_cause, BITS(cmd_addr, 4, 0));
         SETVAL(cmd_data, comb.vb_xtvec_off_ideleg);
-        IF (EQ(ARRITEM_B(xmode, TO_INT(mode), xmode.xtvec_mode), CONST("1", 2)));
+        IF (EQ(ARRITEM(xmode, TO_INT(mode), xmode.xtvec_mode), CONST("1", 2)));
             TEXT("vectorized");
             SETVAL(cmd_data, ADD2(comb.vb_xtvec_off_ideleg,
                                   CC2(comb.wb_trap_cause, CONST("0", 2))));
@@ -414,12 +414,12 @@ TEXT();
     // User Counter/Timers
     ELSIF (EQ(cmd_addr, CONST("0xC00", 12)), "cycle: [URO] User Cycle counter for RDCYCLE pseudo-instruction");
         IF (ANDx(2, &EQ(mode, cfg->PRV_U), 
-                    &ORx(2, &EZ(BIT(ARRITEM_B(xmode, comb.iM, xmode.xcounteren), 0)),
-                            &EZ(BIT(ARRITEM_B(xmode, comb.iS, xmode.xcounteren), 0)))));
+                    &ORx(2, &EZ(BIT(ARRITEM(xmode, comb.iM, xmode.xcounteren), 0)),
+                            &EZ(BIT(ARRITEM(xmode, comb.iS, xmode.xcounteren), 0)))));
             TEXT("Available only if all more prv. bit CY are set");
             SETONE(cmd_exception);
         ELSIF (ANDx(2, &EQ(mode, cfg->PRV_S),
-                       &EZ(BIT(ARRITEM_B(xmode, comb.iM, xmode.xcounteren), 0))));
+                       &EZ(BIT(ARRITEM(xmode, comb.iM, xmode.xcounteren), 0))));
             TEXT("Available only if bit CY is set");
             SETONE(cmd_exception);
         ELSE();
@@ -427,12 +427,12 @@ TEXT();
         ENDIF();
     ELSIF (EQ(cmd_addr, CONST("0xC01", 12)), "time: [URO] User Timer for RDTIME pseudo-instruction");
         IF (ANDx(2, &EQ(mode, cfg->PRV_U), 
-                    &ORx(2, &EZ(BIT(ARRITEM_B(xmode, comb.iM, xmode.xcounteren), 1)),
-                            &EZ(BIT(ARRITEM_B(xmode, comb.iS, xmode.xcounteren), 1)))));
+                    &ORx(2, &EZ(BIT(ARRITEM(xmode, comb.iM, xmode.xcounteren), 1)),
+                            &EZ(BIT(ARRITEM(xmode, comb.iS, xmode.xcounteren), 1)))));
             TEXT("Available only if all more prv. bit TM are set");
             SETONE(cmd_exception);
         ELSIF (ANDx(2, &EQ(mode, cfg->PRV_S),
-                       &EZ(BIT(ARRITEM_B(xmode, comb.iM, xmode.xcounteren), 1))));
+                       &EZ(BIT(ARRITEM(xmode, comb.iM, xmode.xcounteren), 1))));
             TEXT("Available only if bit TM is set");
             SETONE(cmd_exception);
         ELSE();
@@ -440,12 +440,12 @@ TEXT();
         ENDIF();
     ELSIF (EQ(cmd_addr, CONST("0xC03", 12)), "insret: [URO] User Instructions-retired counter for RDINSTRET pseudo-instruction");
         IF (ANDx(2, &EQ(mode, cfg->PRV_U),
-                    &ORx(2, &EZ(BIT(ARRITEM_B(xmode, comb.iM, xmode.xcounteren), 2)),
-                            &EZ(BIT(ARRITEM_B(xmode, comb.iS, xmode.xcounteren), 2)))));
+                    &ORx(2, &EZ(BIT(ARRITEM(xmode, comb.iM, xmode.xcounteren), 2)),
+                            &EZ(BIT(ARRITEM(xmode, comb.iS, xmode.xcounteren), 2)))));
             TEXT("Available only if all more prv. bit IR are set");
             SETONE(cmd_exception);
         ELSIF (ANDx(2, &EQ(mode, cfg->PRV_S),
-                       &EZ(BIT(ARRITEM_B(xmode, comb.iM, xmode.xcounteren), 2))));
+                       &EZ(BIT(ARRITEM(xmode, comb.iM, xmode.xcounteren), 2))));
             TEXT("Available only if bit IR is set");
             SETONE(cmd_exception);
         ELSE();
@@ -733,7 +733,7 @@ TEXT();
                 SETBITSW(comb.vb_rdata, MUL2(CONST("8"), *i), CONST("8"),
                         ARRITEM(pmp, ADD2(comb.t_pmpcfgidx, *i), pmp.cfg));
                 IF (ANDx(2, &NZ(comb.v_csr_wena),
-                            &EZ(BIT(ARRITEM_B(pmp, ADD2(comb.t_pmpcfgidx, *i), pmp.cfg), 7))));
+                            &EZ(BIT(ARRITEM(pmp, ADD2(comb.t_pmpcfgidx, *i), pmp.cfg), 7))));
                     TEXT("[7] Bit L = locked cannot be modified upto reset");
                     SETARRITEM(pmp, ADD2(comb.t_pmpcfgidx, *i), pmp.cfg,
                                 BITSW(cmd_data, MUL2(CONST("8"), *i), CONST("8")));
@@ -755,7 +755,7 @@ TEXT();
             SETBITS(comb.vb_rdata, SUB2(cfg->RISCV_ARCH, CONST("3")), CONST("0"),
                     ARRITEM(pmp, comb.t_pmpdataidx, pmp.addr));
                 IF (ANDx(2, &NZ(comb.v_csr_wena),
-                            &EZ(BIT(ARRITEM_B(pmp, comb.t_pmpdataidx, pmp.cfg), 7))));
+                            &EZ(BIT(ARRITEM(pmp, comb.t_pmpdataidx, pmp.cfg), 7))));
                 SETARRITEM(pmp, comb.t_pmpdataidx, pmp.addr,
                         CC2(BITS(cmd_data, SUB2(cfg->RISCV_ARCH, CONST("3")), CONST("0")), CONST("0", 2)));
                 SETARRITEM(pmp, comb.t_pmpdataidx, pmp.mask, comb.vb_pmp_napot_mask);
@@ -867,7 +867,7 @@ TEXT();
         ELSE();
             SETONE(cmd_exception, "xret not matched to current mode");
         ENDIF();
-        IF (NE(ARRITEM_B(xmode, TO_INT(mode), xmode.xpp), cfg->PRV_M), "see page 21");
+        IF (NE(ARRITEM(xmode, TO_INT(mode), xmode.xpp), cfg->PRV_M), "see page 21");
             SETZERO(mprv);
         ENDIF();
     ENDIF();
@@ -950,38 +950,38 @@ TEXT();
 
         SETVAL(pmp_we, BIT(pmp_upd_ena, TO_INT(pmp_upd_cnt)));
         SETVAL(pmp_region, pmp_upd_cnt);
-        IF (EQ(BITS(ARRITEM_B(pmp, TO_INT(pmp_upd_cnt), pmp.cfg), 4, 3), CONST("0", 2)));
+        IF (EQ(BITS(ARRITEM(pmp, TO_INT(pmp_upd_cnt), pmp.cfg), 4, 3), CONST("0", 2)));
             TEXT("OFF: Null region (disabled)");
             SETZERO(pmp_start_addr);
-            SETVAL(pmp_end_addr, ARRITEM_B(pmp, TO_INT(pmp_upd_cnt), pmp.addr));
+            SETVAL(pmp_end_addr, ARRITEM(pmp, TO_INT(pmp_upd_cnt), pmp.addr));
             SETZERO(pmp_flags);
-        ELSIF (EQ(BITS(ARRITEM_B(pmp, TO_INT(pmp_upd_cnt), pmp.cfg), 4, 3), CONST("1", 2)));
+        ELSIF (EQ(BITS(ARRITEM(pmp, TO_INT(pmp_upd_cnt), pmp.cfg), 4, 3), CONST("1", 2)));
             TEXT("TOR: Top of range");
             IF (NZ(BIT(pmp_end_addr, 0)));
                 SETVAL(pmp_start_addr, INC(pmp_end_addr));
             ELSE();
                 SETVAL(pmp_start_addr, pmp_end_addr);
             ENDIF();
-            SETVAL(pmp_end_addr, DEC(ARRITEM_B(pmp, TO_INT(pmp_upd_cnt), pmp.addr)));
+            SETVAL(pmp_end_addr, DEC(ARRITEM(pmp, TO_INT(pmp_upd_cnt), pmp.addr)));
             SETVAL(pmp_flags, CC3(CONST("0x1", 1),
-                                  BIT(ARRITEM_B(pmp, TO_INT(pmp_upd_cnt), pmp.cfg), 7),
-                                  BITS(ARRITEM_B(pmp, TO_INT(pmp_upd_cnt), pmp.cfg), 2, 0)));
-        ELSIF (EQ(BITS(ARRITEM_B(pmp, TO_INT(pmp_upd_cnt), pmp.cfg), 4, 3), CONST("2", 2)));
+                                  BIT(ARRITEM(pmp, TO_INT(pmp_upd_cnt), pmp.cfg), 7),
+                                  BITS(ARRITEM(pmp, TO_INT(pmp_upd_cnt), pmp.cfg), 2, 0)));
+        ELSIF (EQ(BITS(ARRITEM(pmp, TO_INT(pmp_upd_cnt), pmp.cfg), 4, 3), CONST("2", 2)));
             TEXT("NA4: Naturally aligned four-bytes region");
-            SETVAL(pmp_start_addr, ARRITEM_B(pmp, TO_INT(pmp_upd_cnt), pmp.addr));
-            SETVAL(pmp_end_addr, OR2_L(ARRITEM_B(pmp, TO_INT(pmp_upd_cnt), pmp.addr), CONST("0x3", 2)));
+            SETVAL(pmp_start_addr, ARRITEM(pmp, TO_INT(pmp_upd_cnt), pmp.addr));
+            SETVAL(pmp_end_addr, OR2_L(ARRITEM(pmp, TO_INT(pmp_upd_cnt), pmp.addr), CONST("0x3", 2)));
             SETVAL(pmp_flags, CC3(CONST("0x1", 1),
-                                  BIT(ARRITEM_B(pmp, TO_INT(pmp_upd_cnt), pmp.cfg), 7),
-                                  BITS(ARRITEM_B(pmp, TO_INT(pmp_upd_cnt), pmp.cfg), 2, 0)));
+                                  BIT(ARRITEM(pmp, TO_INT(pmp_upd_cnt), pmp.cfg), 7),
+                                  BITS(ARRITEM(pmp, TO_INT(pmp_upd_cnt), pmp.cfg), 2, 0)));
         ELSE();
             TEXT("NAPOT: Naturally aligned power-of-two region, >=8 bytes");
-            SETVAL(pmp_start_addr, AND2_L(ARRITEM_B(pmp, TO_INT(pmp_upd_cnt), pmp.addr),
-                                          ARRITEM_B(pmp, TO_INT(pmp_upd_cnt), INV_L(pmp.mask))));
-            SETVAL(pmp_end_addr, OR2_L(ARRITEM_B(pmp, TO_INT(pmp_upd_cnt), pmp.addr),
-                                       ARRITEM_B(pmp, TO_INT(pmp_upd_cnt), pmp.mask)));
+            SETVAL(pmp_start_addr, AND2_L(ARRITEM(pmp, TO_INT(pmp_upd_cnt), pmp.addr),
+                                          ARRITEM(pmp, TO_INT(pmp_upd_cnt), INV_L(pmp.mask))));
+            SETVAL(pmp_end_addr, OR2_L(ARRITEM(pmp, TO_INT(pmp_upd_cnt), pmp.addr),
+                                       ARRITEM(pmp, TO_INT(pmp_upd_cnt), pmp.mask)));
             SETVAL(pmp_flags, CC3(CONST("0x1", 1),
-                                  BIT(ARRITEM_B(pmp, TO_INT(pmp_upd_cnt), pmp.cfg), 7),
-                                  BITS(ARRITEM_B(pmp, TO_INT(pmp_upd_cnt), pmp.cfg), 2, 0)));
+                                  BIT(ARRITEM(pmp, TO_INT(pmp_upd_cnt), pmp.cfg), 7),
+                                  BITS(ARRITEM(pmp, TO_INT(pmp_upd_cnt), pmp.cfg), 2, 0)));
         ENDIF();
     ELSE();
         SETZERO(pmp_upd_cnt);
