@@ -153,7 +153,9 @@ std::string ModuleObject::generate_sysc_h() {
     for (auto &p: getEntries()) {
         if (p->isParamTemplate()) {
             // do nothing
-        } else if (p->isParamGeneric() || p->isGenericDep()) {
+        } else if (p->isParamGeneric()
+               || (p->isGenericDep() && tmpllist.size() == 0)) {  // exclude gendep parameter as a static const
+            // class variables definitions:
             out += addspaces() + p->getType() + " " + p->nameInModule(PORT_OUT, NO_SC_READ) + ";\n";
             tcnt++;
         }

@@ -113,7 +113,7 @@ void ModuleObject::postInit() {
 
     SCV_set_local_module(this);
 
-    if (isAsyncResetParam()) {
+    if (isAsyncResetParam() && getChildByName("async_reset") == 0) {
         pAsyncReset = 
             new DefParamLogic(NO_PARENT, "async_reset", "1", "0", NO_COMMENT);
         // Push front to provide less differences:

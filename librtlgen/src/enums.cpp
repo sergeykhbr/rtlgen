@@ -52,7 +52,7 @@ std::string EnumObject::generate_sysc() {
     pushspaces();
     for (auto &p: getEntries()) {
         ln = addspaces() + p->getName() + " = ";
-        ln += p->generate();
+        ln += p->getStrValue();
         if (&p != &getEntries().back()) {
             ln += ",";
         }

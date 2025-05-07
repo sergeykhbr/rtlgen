@@ -45,9 +45,9 @@ ram_bytes_tech::ram_bytes_tech(GenObject *parent, const char *name, const char *
         NEW(mem, mem.getName().c_str(), &i);
             CONNECT(mem, &i, mem.i_clk, i_clk);
             CONNECT(mem, &i, mem.i_addr, wb_addr);
-            CONNECT(mem, &i, mem.i_wena, ARRITEM(wb_wena, i, wb_wena));
-            CONNECT(mem, &i, mem.i_wdata, ARRITEM(wb_wdata, i, wb_wdata));
-            CONNECT(mem, &i, mem.o_rdata, ARRITEM(wb_rdata, i, wb_rdata));
+            CONNECT(mem, &i, mem.i_wena, ARRITEM_B(wb_wena, i, wb_wena));
+            CONNECT(mem, &i, mem.i_wdata, ARRITEM_B(wb_wdata, i, wb_wdata));
+            CONNECT(mem, &i, mem.o_rdata, ARRITEM_B(wb_rdata, i, wb_rdata));
         ENDNEW();
     ENDFORGEN(new StringConst("memgen"));
 
@@ -59,7 +59,7 @@ ram_bytes_tech::ram_bytes_tech(GenObject *parent, const char *name, const char *
 void ram_bytes_tech::proc_comb() {
     SETVAL(wb_addr, BITS(i_addr, DEC(abits), log2_dbytes));
     GenObject &i = FOR("i", CONST("0"), dbytes, "++");
-        SETARRITEM(wb_wena, i, wb_wena, AND2(i_wena, ARRITEM(i_wstrb, i, i_wstrb)));
+        SETARRITEM(wb_wena, i, wb_wena, AND2(i_wena, BIT(i_wstrb, i)));
         SETARRITEM(wb_wdata, i, wb_wdata, BIG_TO_U64(BITSW(i_wdata, MUL2(CONST("8"), i), CONST("8"))));
         SETBITSW(comb.vb_rdata, MUL2(CONST("8"), i), CONST("8"), ARRITEM(wb_rdata, i, wb_rdata));
     ENDFOR();

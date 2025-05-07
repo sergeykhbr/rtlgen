@@ -19,7 +19,7 @@
 cdc_afifo::cdc_afifo(GenObject *parent, const char *name, const char *comment) :
     ModuleObject(parent, "cdc_afifo", name, comment),
     abits(this, "abits", "3", "fifo log2(depth)"),
-    dbits(this, "dbits", "32", "payload width"),
+    dbits(this, "dbits", "65", "payload width"),
     i_nrst(this, "i_nrst", "1", "reset active LOW"),
     i_wclk(this, "i_wclk", "1", "clock write"),
     i_wr(this, "i_wr", "1", "write enable strob"),

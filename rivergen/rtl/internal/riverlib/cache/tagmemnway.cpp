@@ -76,16 +76,16 @@ TagMemNWay::TagMemNWay(GenObject *parent, const char *name, const char *comment)
         NEW(wayx, wayx.getName().c_str(), &i);
             CONNECT(wayx, &i, wayx.i_clk, i_clk);
             CONNECT(wayx, &i, wayx.i_nrst, i_nrst);
-            CONNECT(wayx, &i, wayx.i_addr, ARRITEM(way_i, i, way_i.addr));
-            CONNECT(wayx, &i, wayx.i_wstrb, ARRITEM(way_i, i, way_i.wstrb));
-            CONNECT(wayx, &i, wayx.i_wdata, ARRITEM(way_i, i, way_i.wdata));
-            CONNECT(wayx, &i, wayx.i_wflags, ARRITEM(way_i, i, way_i.wflags));
-            CONNECT(wayx, &i, wayx.o_raddr, ARRITEM(way_o, i, way_o.raddr));
-            CONNECT(wayx, &i, wayx.o_rdata, ARRITEM(way_o, i, way_o.rdata));
-            CONNECT(wayx, &i, wayx.o_rflags, ARRITEM(way_o, i, way_o.rflags));
-            CONNECT(wayx, &i, wayx.o_hit, ARRITEM(way_o, i, way_o.hit));
-            CONNECT(wayx, &i, wayx.i_snoop_addr, ARRITEM(way_i, i, way_i.snoop_addr));
-            CONNECT(wayx, &i, wayx.o_snoop_flags, ARRITEM(way_o, i, way_o.snoop_flags));
+            CONNECT(wayx, &i, wayx.i_addr, ARRITEM_B(way_i, i, way_i.addr));
+            CONNECT(wayx, &i, wayx.i_wstrb, ARRITEM_B(way_i, i, way_i.wstrb));
+            CONNECT(wayx, &i, wayx.i_wdata, ARRITEM_B(way_i, i, way_i.wdata));
+            CONNECT(wayx, &i, wayx.i_wflags, ARRITEM_B(way_i, i, way_i.wflags));
+            CONNECT(wayx, &i, wayx.o_raddr, ARRITEM_B(way_o, i, way_o.raddr));
+            CONNECT(wayx, &i, wayx.o_rdata, ARRITEM_B(way_o, i, way_o.rdata));
+            CONNECT(wayx, &i, wayx.o_rflags, ARRITEM_B(way_o, i, way_o.rflags));
+            CONNECT(wayx, &i, wayx.o_hit, ARRITEM_B(way_o, i, way_o.hit));
+            CONNECT(wayx, &i, wayx.i_snoop_addr, ARRITEM_B(way_i, i, way_i.snoop_addr));
+            CONNECT(wayx, &i, wayx.o_snoop_flags, ARRITEM_B(way_o, i, way_o.snoop_flags));
 
         ENDNEW();
     ENDFORGEN(new StringConst("waygen"));

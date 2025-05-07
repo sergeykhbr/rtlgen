@@ -35,6 +35,8 @@ class pcie_dma : public ModuleObject {
             CombinationalProcess(parent, "comb"),
             vb_xmst_cfg(this, "vb_xmst_cfg", "dev_config_none", NO_COMMENT),
             vb_xmsto(this, "vb_xmsto", "axi4_master_out_none", NO_COMMENT),
+            vb_pcie_dmao(this, "vb_pcie_dmao", "pcie_dma64_out_none", NO_COMMENT),
+            vb_dbg_pcie_dmai(this, "vb_dbg_pcie_dmai", "pcie_dma64_in_none", NO_COMMENT),
             vb_xbytes(this, "vb_xbytes", "XSIZE_TOTAL", RSTVAL_ZERO, "result of function call XSize2XBytes(xsize)"),
             v_req_ready(this, "v_req_ready", "1", RSTVAL_ZERO, NO_COMMENT),
             vb_req_addr(this, "vb_req_addr", "64", "0", NO_COMMENT),
@@ -52,6 +54,8 @@ class pcie_dma : public ModuleObject {
      public:
         StructVar<types_pnp::dev_config_type> vb_xmst_cfg;
         StructVar<types_amba::axi4_master_out_type> vb_xmsto;
+        StructVar<types_dma::pcie_dma64_out_type> vb_pcie_dmao;
+        StructVar<types_dma::pcie_dma64_in_type> vb_dbg_pcie_dmai;
         Logic vb_xbytes;
         Logic v_req_ready;
         Logic vb_req_addr;
@@ -114,6 +118,8 @@ class pcie_dma : public ModuleObject {
     ParamI32D REQ_FIFO_WIDTH;
     ParamI32D RESP_FIFO_WIDTH;
 
+    Signal w_pcie_dmai_valid;       // systemc workaroung, cannot pass to port part of in structure
+    Signal w_pcie_dmai_ready;       // systemc workaroung, cannot pass to port part of in structure
     Signal wb_reqfifo_payload_i;
     Signal wb_reqfifo_payload_o;
     Signal w_reqfifo_full;

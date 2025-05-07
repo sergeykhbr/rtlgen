@@ -64,6 +64,8 @@ pcie_dma::pcie_dma(GenObject *parent, const char *name, const char *comment) :
                                                             &o_pcie_dmao.strob,
                                                             &o_pcie_dmao.data)),
     // signals
+    w_pcie_dmai_valid(this, "w_pcie_dmai_valid", "1", "SystemC workaround"),
+    w_pcie_dmai_ready(this, "w_pcie_dmai_ready", "1", "SystemC workaround"),
     wb_reqfifo_payload_i(this, "wb_reqfifo_payload_i", "REQ_FIFO_WIDTH"),
     wb_reqfifo_payload_o(this, "wb_reqfifo_payload_o", "REQ_FIFO_WIDTH"),
     w_reqfifo_full(this, "w_reqfifo_full", "1"),
@@ -107,7 +109,7 @@ pcie_dma::pcie_dma(GenObject *parent, const char *name, const char *comment) :
     NEW(reqfifo, reqfifo.getName().c_str());
         CONNECT(reqfifo, 0, reqfifo.i_nrst, i_nrst);
         CONNECT(reqfifo, 0, reqfifo.i_wclk, i_pcie_phy_clk);
-        CONNECT(reqfifo, 0, reqfifo.i_wr, i_pcie_dmai.valid);
+        CONNECT(reqfifo, 0, reqfifo.i_wr, w_pcie_dmai_valid);
         CONNECT(reqfifo, 0, reqfifo.i_wdata, wb_reqfifo_payload_i);
         CONNECT(reqfifo, 0, reqfifo.o_wfull, w_reqfifo_full);
         CONNECT(reqfifo, 0, reqfifo.i_rclk, i_clk);
@@ -126,7 +128,7 @@ pcie_dma::pcie_dma(GenObject *parent, const char *name, const char *comment) :
         CONNECT(respfifo, 0, respfifo.i_wdata, wb_respfifo_payload_i);
         CONNECT(respfifo, 0, respfifo.o_wfull, w_respfifo_full);
         CONNECT(respfifo, 0, respfifo.i_rclk, i_pcie_phy_clk);
-        CONNECT(respfifo, 0, respfifo.i_rd, i_pcie_dmai.ready);
+        CONNECT(respfifo, 0, respfifo.i_rd, w_pcie_dmai_ready);
         CONNECT(respfifo, 0, respfifo.o_rdata, wb_respfifo_payload_o);
         CONNECT(respfifo, 0, respfifo.o_rempty, w_respfifo_empty);
     ENDNEW();
@@ -137,14 +139,8 @@ pcie_dma::pcie_dma(GenObject *parent, const char *name, const char *comment) :
 
 void pcie_dma::proc_comb() {
     types_amba* amba = glob_types_amba_;
-    SETZERO(comb.v_req_ready);
-    SETZERO(comb.vb_req_addr);
-    SETZERO(comb.v_resp_valid);
-    SETZERO(comb.vb_resp_data);
-    SETZERO(comb.vb_resp_strob);
-    SETZERO(comb.v_resp_last);
-    SETZERO(comb.v_single_tlp);
-    SETVAL(comb.vb_xmsto, amba->axi4_master_out_none);
+    ASSIGN(w_pcie_dmai_valid, i_pcie_dmai.valid);
+    ASSIGN(w_pcie_dmai_ready, i_pcie_dmai.ready);
 
 TEXT();
     IF (EQ(BITS(dw0, 9, 0), CONST("1", 10)));
@@ -492,22 +488,20 @@ TEXT();
     SETVAL(wb_respfifo_payload_i, CCx(3, &comb.v_resp_last,
                                          &comb.vb_resp_strob,
                                          &comb.vb_resp_data));
-    SPLx(wb_respfifo_payload_o, 3, &o_pcie_dmao.last,
-                                   &o_pcie_dmao.strob,
-                                   &o_pcie_dmao.data);
-    SETVAL(o_pcie_dmao.ready, INV(w_reqfifo_full));
-    SETVAL(o_pcie_dmao.valid, INV(w_respfifo_empty));
+    SPLx(wb_respfifo_payload_o, 3, &comb.vb_pcie_dmao.last,
+                                   &comb.vb_pcie_dmao.strob,
+                                   &comb.vb_pcie_dmao.data);
+    SETVAL(comb.vb_pcie_dmao.ready, INV(w_reqfifo_full));
+    SETVAL(comb.vb_pcie_dmao.valid, INV(w_respfifo_empty));
+    SETVAL(o_pcie_dmao, comb.vb_pcie_dmao);
     SETVAL(w_respfifo_wr, comb.v_resp_valid);
     SETVAL(w_reqfifo_rd, comb.v_req_ready);
     SETVAL(o_xmst_cfg, comb.vb_xmst_cfg);
     SETVAL(o_xmsto, comb.vb_xmsto);
     TEXT("Debug signals");
-    SETVAL(o_dbg_pcie_dmai.valid, INV_L(w_reqfifo_empty));
-    SETVAL(o_dbg_pcie_dmai.data, comb.vb_req_data);
-    SETVAL(o_dbg_pcie_dmai.strob, comb.vb_req_strob);
-    SETVAL(o_dbg_pcie_dmai.last, comb.v_req_last);
-    SETZERO(o_dbg_pcie_dmai.ready);
-    SETZERO(o_dbg_pcie_dmai.bar_hit);
-    SETZERO(o_dbg_pcie_dmai.ecrc_err);
-    SETZERO(o_dbg_pcie_dmai.err_fwd);
+    SETVAL(comb.vb_dbg_pcie_dmai.valid, INV_L(w_reqfifo_empty));
+    SETVAL(comb.vb_dbg_pcie_dmai.data, comb.vb_req_data);
+    SETVAL(comb.vb_dbg_pcie_dmai.strob, comb.vb_req_strob);
+    SETVAL(comb.vb_dbg_pcie_dmai.last, comb.v_req_last);
+    SETVAL(o_dbg_pcie_dmai, comb.vb_dbg_pcie_dmai);
 }

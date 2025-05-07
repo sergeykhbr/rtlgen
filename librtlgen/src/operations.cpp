@@ -2010,7 +2010,7 @@ Operation &EDGE(GenObject &obj, EResetActive edge) {
 std::string AlwaysOperation::generate() {
     std::string ret = "";
     if (SCV_is_sysc()) {
-        SHOW_ERROR("Not implemented %s", "always_ff");
+        //SHOW_ERROR("Not implemented %s", "always_ff");
     } else if (SCV_is_sv()) {
         ret += addspaces() + "always";
         if (clk_) {
@@ -2055,7 +2055,7 @@ GenObject &ALWAYS_FF(GenObject &clk, GenObject &rst, const char *comment) {
 std::string EndAlwaysOperation::generate() {
     std::string ret = "";
     if (SCV_is_sysc()) {
-        SHOW_ERROR("Not implemented %s", "end");
+        //SHOW_ERROR("Not implemented %s", "end");
     } else if (SCV_is_sv()) {
         popspaces();
         ret += addspaces() + "end\n";
@@ -2083,14 +2083,14 @@ std::string AssignOperation::generate() {
         }
         ret += "assign ";
     }
-    ret += obj2varname(a_, "v");
+    ret += a_->nameInModule(PORT_IN);
     if (SCV_is_vhdl()) {
         ret += " <= ";
     } else {
         ret += " = ";
     }
     if (b_) {
-        ret += obj2varname(b_, "r");;
+        ret += b_->nameInModule(PORT_OUT);
     } else if (SCV_is_sysc()) {
         ret += "0";
     } else if (SCV_is_sv()) {

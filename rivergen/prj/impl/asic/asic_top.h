@@ -44,7 +44,7 @@ class asic_top : public ModuleObject {
     virtual bool isTop() override { return true; }
 
 public:
-    ParamBOOL async_reset;
+    //ParamBOOL async_reset;
     DefParamI32D sim_uart_speedup_rate;
 
     // Ports:

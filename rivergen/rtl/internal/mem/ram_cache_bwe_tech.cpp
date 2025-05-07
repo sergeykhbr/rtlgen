@@ -43,9 +43,9 @@ ram_cache_bwe_tech::ram_cache_bwe_tech(GenObject *parent, const char *name, cons
         NEW(rx, rx.getName().c_str(), &i);
             CONNECT(rx, &i, rx.i_clk, i_clk);
             CONNECT(rx, &i, rx.i_addr, i_addr);
-            CONNECT(rx, &i, rx.i_wena, ARRITEM(wb_we, i, wb_we));
-            CONNECT(rx, &i, rx.i_wdata, ARRITEM(wb_wdata, i, wb_wdata));
-            CONNECT(rx, &i, rx.o_rdata, ARRITEM(wb_rdata, i, wb_rdata));
+            CONNECT(rx, &i, rx.i_wena, ARRITEM_B(wb_we, i, wb_we));
+            CONNECT(rx, &i, rx.i_wdata, ARRITEM_B(wb_wdata, i, wb_wdata));
+            CONNECT(rx, &i, rx.o_rdata, ARRITEM_B(wb_rdata, i, wb_rdata));
         ENDNEW();
     ENDFORGEN(new StringConst("rxgen"));
 

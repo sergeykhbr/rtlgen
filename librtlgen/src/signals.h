@@ -52,7 +52,7 @@ class Signal : public Logic {
     virtual bool isSignal() override { return true; }
     virtual std::string nameInModule(EPorts port, bool no_sc_read) override {
         std::string ret = Logic::nameInModule(port, no_sc_read);
-        if (SCV_is_sysc() && !no_sc_read) {
+        if (SCV_is_sysc() && port == PORT_OUT && !no_sc_read) {
             // registers grouped into r-structures
             ret += ".read()";
         }
@@ -87,7 +87,7 @@ class Signal1 : public Logic1 {
     virtual bool isSignal() override { return true; }
     virtual std::string nameInModule(EPorts port, bool no_sc_read) override {
         std::string ret = Logic::nameInModule(port, no_sc_read);
-        if (SCV_is_sysc() && !no_sc_read) {
+        if (SCV_is_sysc() && port == PORT_OUT && !no_sc_read) {
             ret += ".read()";
         }
         return ret;
@@ -107,7 +107,7 @@ class SignalBig : public Signal {
     virtual bool isBigSC() override { return true; }
     virtual std::string nameInModule(EPorts port, bool no_sc_read) override {
         std::string ret = Logic::nameInModule(port, no_sc_read);
-        if (SCV_is_sysc() && !no_sc_read) {
+        if (SCV_is_sysc() && port == PORT_OUT && !no_sc_read) {
             ret += ".read()";
         }
         return ret;
@@ -123,7 +123,7 @@ class SignalStruct : public T {
     virtual bool isSignal() override { return true; }
     virtual std::string nameInModule(EPorts port, bool no_sc_read) override {
         std::string ret = T::nameInModule(port, no_sc_read);
-        if (SCV_is_sysc() && !no_sc_read) {
+        if (SCV_is_sysc() && port == PORT_OUT && !no_sc_read) {
             ret += ".read()";
         }
         return ret;
