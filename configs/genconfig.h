@@ -25,6 +25,7 @@
     #define GENCFG_HW_FPU_ENABLE            "true"
     #define GENCFG_SOC_HW_ID                "0x20220903"
 
+    #define GENCFG_XDMA_ENABLE              1       // enable AXI master DMA slot and potentially DMA itself
     #define GENCFG_SD_CTRL_ENABLE           1
     #define GENCFG_PCIE_ENABLE              0
     #define GENCFG_HDMI_ENABLE              0
@@ -47,6 +48,7 @@
     #define GENCFG_HW_FPU_ENABLE            "false"
     #define GENCFG_SOC_HW_ID                "0x20241103"
 
+    #define GENCFG_XDMA_ENABLE              0       // enable AXI master DMA slot and potentially DMA itself
     #define GENCFG_SD_CTRL_ENABLE           0
     #define GENCFG_PCIE_ENABLE              1
     #define GENCFG_HDMI_ENABLE              1

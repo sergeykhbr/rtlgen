@@ -131,8 +131,10 @@ class types_bus0 : public FileObject {
     TextLine _xmst4_;
     TextLine _xmst5_;
     ParamI32D CFG_BUS0_XMST_GROUP0;
+#if GENCFG_XDMA_ENABLE
     TextLine _xmst6_;
     ParamI32D CFG_BUS0_XMST_DMA;
+#endif
 #if GENCFG_PCIE_ENABLE
     TextLine _xmst7_;
     ParamI32D CFG_BUS0_XMST_PCIE;

@@ -66,7 +66,6 @@ class gencpu64_soc : public ModuleObject {
 
 public:
     DefParamI32D sim_uart_speedup_rate;
-    //ParamBOOL async_reset;
     // Ports:
     InPort i_sys_nrst;
     InPort i_sys_clk;

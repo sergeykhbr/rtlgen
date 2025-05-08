@@ -29,8 +29,10 @@ types_bus0::types_bus0(GenObject *parent) :
     _xmst4_(this, ""),
     _xmst5_(this, "Total number of CPU limited by config CFG_TOTAL_CPU_MAX"),
     CFG_BUS0_XMST_GROUP0(this, "CFG_BUS0_XMST_GROUP0", xmst_autoincr_++),
+#if GENCFG_XDMA_ENABLE
     _xmst6_(this, "DMA master interface generic index."),
     CFG_BUS0_XMST_DMA(this, "CFG_BUS0_XMST_DMA", xmst_autoincr_++),
+#endif
 #if GENCFG_PCIE_ENABLE
     _xmst7_(this, "PCIE DMA master interface."),
     CFG_BUS0_XMST_PCIE(this, "CFG_BUS0_XMST_PCIE", xmst_autoincr_++),

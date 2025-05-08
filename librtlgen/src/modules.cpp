@@ -113,7 +113,8 @@ void ModuleObject::postInit() {
 
     SCV_set_local_module(this);
 
-    if (isAsyncResetParam() && getChildByName("async_reset") == 0) {
+    pAsyncReset = getChildByName("async_reset");
+    if (isAsyncResetParam() && pAsyncReset == 0) {
         pAsyncReset = 
             new DefParamLogic(NO_PARENT, "async_reset", "1", "0", NO_COMMENT);
         // Push front to provide less differences:
@@ -147,9 +148,14 @@ void ModuleObject::postInit() {
     // Connect async_reset to sub-modules:
     GenObject *pParam;
     for (auto &m : getEntries()) {
+        if (!m->isModule()) {
+            continue;
+        }
         pParam = m->getChildByName("async_reset");
-        if (pParam) {
+        if (pParam && pAsyncReset) {
             pParam->setObjValue(pAsyncReset);
+        } else {
+            // USe default CFG_ASYNC_RESET value
         }
     }
 }

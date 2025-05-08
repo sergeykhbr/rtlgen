@@ -22,7 +22,6 @@ gencpu64_soc::gencpu64_soc(GenObject *parent, const char *name, const char *comm
     // simulation parameters
     sim_uart_speedup_rate(this, "sim_uart_speedup_rate", "0", "simulation UART speed-up: 0=no speed up, 1=2x, 2=4x, etc"),
     // Generic parameters
-    //async_reset(this, "async_reset", "CFG_ASYNC_RESET"),
     // Ports
     i_sys_nrst(this, "i_sys_nrst", "1", "Power-on system reset active LOW"),
     i_sys_clk(this, "i_sys_clk", "1", "System/Bus clock"),
@@ -424,7 +423,9 @@ void gencpu64_soc::proc_comb() {
 
     TEXT();
     TEXT("Nullify emty AXI-slots:");
+#if GENCFG_XDMA_ENABLE
     SETARRITEM(aximo, glob_bus0_cfg_->CFG_BUS0_XMST_DMA, aximo, amba->axi4_master_out_none);
+#endif
     SETVAL(acpo, amba->axi4_master_out_none);
 
     TEXT();

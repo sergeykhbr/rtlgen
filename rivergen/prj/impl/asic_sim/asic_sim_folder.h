@@ -17,13 +17,16 @@
 #pragma once
 
 #include <api_rtlgen.h>
+#include "asic_top_tb.h"
 
 class asic_sim_folder : public FolderObject {
   public:
     asic_sim_folder(GenObject *parent) :
-        FolderObject(parent, "asic_sim") {}
+        FolderObject(parent, "asic_sim"),
+        asic_top_tb_file_(this) {}
 
  protected:
     // subfolders:
     // files
+    asic_top_tb_file asic_top_tb_file_;
 };

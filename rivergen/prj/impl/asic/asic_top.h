@@ -39,12 +39,8 @@ class asic_top : public ModuleObject {
  public:
     asic_top(GenObject *parent, const char *name, const char *comment=NO_COMMENT);
 
-    virtual GenObject *getResetPort() override { return &i_rst; }
-    virtual EResetActive getResetActive() override { return ACTIVE_HIGH; }
-    virtual bool isTop() override { return true; }
-
 public:
-    //ParamBOOL async_reset;
+    DefParamLogic async_reset;
     DefParamI32D sim_uart_speedup_rate;
 
     // Ports:

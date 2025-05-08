@@ -22,7 +22,7 @@ vip_uart_top::vip_uart_top(GenObject *parent, const char *name, const char *comm
     baudrate(this, "baudrate", "115200"),
     scaler(this, "scaler", "8"),
     logpath(this, "logpath", "uart"),
-    pll_period(this, "pll_period", "DIV(1.0,MUL(MUL(2,scaler),baudrate))"),
+    pll_period(this, "pll_period", "DIV(1000000000.0,MUL(MUL(2,scaler),baudrate))", "ns timescaler"),
     EOF_0x0D(this, "EOF_0x0D", "8", "0x0D", NO_COMMENT),
     i_nrst(this, "i_nrst", "1"),
     i_rx(this, "i_rx", "1"),
