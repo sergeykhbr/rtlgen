@@ -31,6 +31,13 @@ class vip_clk : public ModuleObject {
             CombinationalProcess(parent, "comb") {
         }
         virtual bool isAssign() override { return true; }
+        virtual std::string getType() override {
+            std::string ret = "";
+            if (SCV_is_sysc()) {
+                ret = "SC_THREAD";
+            }
+            return ret;
+        }
 
      public:
     };
@@ -42,7 +49,6 @@ class vip_clk : public ModuleObject {
 
     // io:
     OutPort o_clk;
-    Clock pll;
 
     CombProcess comb;
 };

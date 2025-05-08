@@ -240,8 +240,7 @@ std::string ModuleObject::generate_vhdl_mod_signals() {
         if (p->getClockEdge() == CLK_POSEDGE || p->getClockEdge() == CLK_NEGEDGE
             || (!p->isSignal()
                 && !p->isValue()
-                && !p->isStruct()
-                && !p->isClock())) {
+                && !p->isStruct())) {
             text = "";
             continue;
         }

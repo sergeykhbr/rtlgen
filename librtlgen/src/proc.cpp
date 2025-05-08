@@ -39,6 +39,14 @@ ProcObject::ProcObject(GenObject *parent,
     Operation::start(this);
 }
 
+std::string ProcObject::getType() {
+    std::string ret = "";
+    if (SCV_is_sysc()) {
+        ret = "SC_METHOD";
+    }
+    return ret;
+}
+
 void ProcObject::postInit() {
     GenObject vinitobj(NO_PARENT, "vinitobj");
     Operation::push_obj(&vinitobj);

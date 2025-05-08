@@ -34,6 +34,7 @@ class ProcObject : public GenObject {
 
     virtual void postInit() override;
     virtual std::string getName() override { return name_; }
+    virtual std::string getType() override;
     virtual bool isProcess() override { return true; }
     virtual GenObject *getResetPort() override { return rst_; }     // reset port object
     virtual GenObject *getClockPort() override { return clk_; }

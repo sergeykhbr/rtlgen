@@ -99,17 +99,11 @@ std::string ModuleObject::generate_sysc_h() {
 
     // Process declaration:
     out += "\n";
-    tcnt = 0;
     for (auto &p: getEntries()) {
         if (!p->isProcess()) {
             continue;
         }
         out += addspaces() + "void " + p->getName() + "();\n";
-        tcnt++;
-    }
-    if (tcnt) {
-        out += "\n";
-        out += addspaces() + "SC_HAS_PROCESS(" + getType() + ");\n";
     }
 
     // Constructor declaration:
@@ -461,14 +455,10 @@ std::string ModuleObject::generate_sysc_constructor() {
     for (auto &p: getEntries()) {
         if (p->isInput()
             || p->isOutput()
-            || p->isClock()
             || p->isVector()) {
             ret += ",\n    " + p->getName() + "(\"" + p->getName() + "\"";
             if (p->isVector()) {
                 ret += ", " + p->getStrDepth();
-            } else if (p->isClock()) {
-                ret += ", " + p->getStrValue();
-                ret += ", SC_SEC";
             }
             ret += ")";
         }
@@ -502,7 +492,7 @@ std::string ModuleObject::generate_sysc_constructor() {
         }
 
         ret += "\n";
-        ret += addspaces() + "SC_METHOD(" + p->getName() + ");\n";
+        ret += addspaces() + p->getType() + "(" + p->getName() + ");\n";
         if (p->getClockPort()) {
             GenObject *clkport = p->getClockPort();
             GenObject *rstport = p->getResetPort();

@@ -106,7 +106,6 @@ class GenObject {
     virtual bool isOperation() { return false; }
     virtual bool isAssign() { return false; }           // Assign operation should be executed outside of comb process
     virtual bool is2Dim() { return false; }             // If any of child entries has more than 1 dimension we cannot use assignment without cycle
-    virtual bool isClock() { return false; }
     virtual bool isFile() { return false; }
     virtual bool isFunction() { return false; }
     virtual bool isProcess() { return false; }

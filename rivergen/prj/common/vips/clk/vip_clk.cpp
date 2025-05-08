@@ -20,14 +20,10 @@ vip_clk::vip_clk(GenObject *parent, const char *name, const char *comment) :
     ModuleObject(parent, "vip_clk", name, comment),
     period(this, "period", "1.0"),
     o_clk(this, "o_clk", "1"),
-    pll(this, "pll", "period"),
     //
     comb(this)
 {
     Operation::start(this);
-    INITIAL();
-        SETZERO(pll);
-    ENDINITIAL();
 
     Operation::start(&comb);
     proc_comb();
@@ -35,7 +31,7 @@ vip_clk::vip_clk(GenObject *parent, const char *name, const char *comment) :
 
 void vip_clk::proc_comb() {
     ALWAYS(0, NO_COMMENT);
-        SETVAL_DELAY(pll, INV(pll), MUL2(MUL2(*new FloatConst(0.5), *new FloatConst(1000000000)), period));
+        SETVAL_DELAY(o_clk, CONST("0", "1"), MUL2(*new FloatConst(0.5), period));
+        SETVAL_DELAY(o_clk, CONST("1", "1"), MUL2(*new FloatConst(0.5), period));
     ENDALWAYS();
-    ASSIGN(o_clk, pll);
 }

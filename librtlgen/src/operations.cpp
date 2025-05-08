@@ -245,11 +245,14 @@ std::string SetValueOperation::generate() {
     if (SCV_is_sv() && T_) {
         ret += "#(" + T_->generate() + ") ";
     }
+    if (SCV_is_sysc() && T_) {
+        ret += "wait(static_cast<int>" + T_->generate() + ", SC_NS);\n";
+        ret += addspaces();
+    }
+
     ret += GetValueOperation::getStrValue();
 
-    if (SCV_is_sysc() && T_) {
-        ret += ".write(";
-    } else if (SCV_is_vhdl()) {
+    if (SCV_is_vhdl()) {
         if (non_blocking_) {
             ret += " <= ";
         } else {
@@ -267,9 +270,7 @@ std::string SetValueOperation::generate() {
     ret += v_->nameInModule(PORT_OUT);
 
     if (T_) {
-        if (SCV_is_sysc()) {
-            ret += ", " + T_->generate(), + " * SC_NS)";
-        } else if (SCV_is_vhdl()) {
+        if (SCV_is_vhdl()) {
             ret += "delay " + T_->generate(), + " ns";
         }
     }
@@ -2010,7 +2011,8 @@ Operation &EDGE(GenObject &obj, EResetActive edge) {
 std::string AlwaysOperation::generate() {
     std::string ret = "";
     if (SCV_is_sysc()) {
-        //SHOW_ERROR("Not implemented %s", "always_ff");
+        ret += addspaces() + "while (true) {\n";
+        pushspaces();
     } else if (SCV_is_sv()) {
         ret += addspaces() + "always";
         if (clk_) {
@@ -2055,7 +2057,8 @@ GenObject &ALWAYS_FF(GenObject &clk, GenObject &rst, const char *comment) {
 std::string EndAlwaysOperation::generate() {
     std::string ret = "";
     if (SCV_is_sysc()) {
-        //SHOW_ERROR("Not implemented %s", "end");
+        popspaces();
+        ret += addspaces() + "}\n";
     } else if (SCV_is_sv()) {
         popspaces();
         ret += addspaces() + "end\n";

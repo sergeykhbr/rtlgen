@@ -141,7 +141,6 @@ void GenObject::addComment(std::string &out) {
 
 bool GenObject::isIgnoreSignal() {
     if (isInput()
-        || isClock() 
         || isVector()
         || (isStruct() && !isInterface())) {
         return true;
