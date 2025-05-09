@@ -20,28 +20,15 @@
 
 using namespace sysvc;
 
-class ram_dp_fifo_tech : public ModuleObject {
+class cdc_dp_mem : public ModuleObject {
  public:
-    ram_dp_fifo_tech(GenObject *parent, const char *name, const char *comment);
+    cdc_dp_mem(GenObject *parent, const char *name, const char *comment);
 
+    virtual bool isAsyncResetParam() override { return false; }
     virtual bool isVcd() override { return false; }     // disable tracing
 
-    class WrRegistersProcess : public ProcObject {
-     public:
-        WrRegistersProcess(GenObject *parent, GenObject *clk) :
-            ProcObject(parent, "wr", clk, CLK_POSEDGE, 0, ACTIVE_NONE, NO_COMMENT) {
-        }
-    };
-
-    class RdRegistersProcess : public ProcObject {
-     public:
-        RdRegistersProcess(GenObject *parent, GenObject *clk) :
-            ProcObject(parent, "rd", clk, CLK_POSEDGE, 0, ACTIVE_NONE, NO_COMMENT) {
-        }
-    };
-
-    void r1egisters();
-    void r2egisters();
+    void proc_wproc();
+    void proc_rproc();
 
  public:
     TmplParamI32D abits;
@@ -60,17 +47,17 @@ class ram_dp_fifo_tech : public ModuleObject {
     LogicMemory mem;
 
     // process should be intialized last to make all signals available
-    WrRegistersProcess wproc;
-    RdRegistersProcess rproc;
+    ProcObject wproc;
+    ProcObject rproc;
 };
 
-class ram_dp_fifo_tech_file : public FileObject {
+class cdc_dp_mem_file : public FileObject {
  public:
-    ram_dp_fifo_tech_file(GenObject *parent) :
-        FileObject(parent, "ram_dp_fifo_tech"),
-        ram_dp_fifo_tech_(this, "ram_dp_fifo_tech", NO_COMMENT) {}
+    cdc_dp_mem_file(GenObject *parent) :
+        FileObject(parent, "cdc_dp_mem"),
+        cdc_dp_mem_(this, "cdc_dp_mem", NO_COMMENT) {}
 
  private:
-    ram_dp_fifo_tech ram_dp_fifo_tech_;
+    cdc_dp_mem cdc_dp_mem_;
 };
 

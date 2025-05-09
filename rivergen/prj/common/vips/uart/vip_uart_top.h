@@ -69,6 +69,7 @@ class vip_uart_top : public ModuleObject {
     void proc_comb();
 
  public:
+    DefParamLogic async_reset;
     DefParamI32D instnum;
     DefParamI32D baudrate;
     DefParamI32D scaler;

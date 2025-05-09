@@ -59,6 +59,7 @@ asic_top_tb::asic_top_tb(GenObject *parent, const char *name) :
     ENDNEW();
 
 TEXT();
+    uart1.async_reset.setObjValue(new DecConst(1));
     uart1.baudrate.setObjValue(&sim_uart_baudrate);
     uart1.scaler.setObjValue(new DecConst(8));
     uart1.logpath.setObjValue(new StringConst("uart1"));

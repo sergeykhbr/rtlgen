@@ -14,41 +14,41 @@
 //  limitations under the License.
 // 
 
-#include "ram_dp_fifo_tech.h"
+#include "cdc_dp_mem.h"
 
-ram_dp_fifo_tech::ram_dp_fifo_tech(GenObject *parent, const char *name, const char *comment) :
-    ModuleObject(parent, "ram_dp_fifo_tech", name, comment),
+cdc_dp_mem::cdc_dp_mem(GenObject *parent, const char *name, const char *comment) :
+    ModuleObject(parent, "cdc_dp_mem", name, comment),
     abits(this, "abits", "6", NO_COMMENT),
-    dbits(this, "dbits", "8", NO_COMMENT),
+    dbits(this, "dbits", "65", NO_COMMENT),
     i_wclk(this, "i_wclk", "1", "Write clock"),
     i_wena(this, "i_wena", "1"),
-    i_waddr(this, "i_addr", "abits write address"),
+    i_waddr(this, "i_addr", "abits", "write address"),
     i_wdata(this, "i_wdata", "dbits"),
     i_rclk(this, "i_rclk", "1", "Read clock"),
-    i_raddr(this, "i_raddr", "abits read address"),
+    i_raddr(this, "i_raddr", "abits", "read address"),
     o_rdata(this, "o_rdata", "dbits"),
     DEPTH(this, "DEPTH", "POW2(1,abits)"),
     mem(this, "mem", "dbits", "DEPTH", NO_COMMENT),
     // process
-    wproc(this, &i_wclk),
-    rproc(this, &i_rclk)
+    wproc(this, "wproc", &i_wclk, CLK_POSEDGE, 0, ACTIVE_NONE, NO_COMMENT),
+    rproc(this, "rproc", 0, CLK_ALWAYS, 0, ACTIVE_NONE, NO_COMMENT)
 {
     Operation::start(this);
 
     Operation::start(&wproc);
-    r1egisters();
+    proc_wproc();
 
     Operation::start(&rproc);
-    r2egisters();
+    proc_rproc();
 }
 
-void ram_dp_fifo_tech::r1egisters() {
+void cdc_dp_mem::proc_wproc() {
     IF (NZ(i_wena));
         SETARRITEM(mem, TO_INT(i_waddr), mem, i_wdata);
     ENDIF();
 }
 
-void ram_dp_fifo_tech::r2egisters() {
+void cdc_dp_mem::proc_rproc() {
     ASSIGN(o_rdata, ARRITEM(mem, TO_INT(i_raddr), mem));
 }
 

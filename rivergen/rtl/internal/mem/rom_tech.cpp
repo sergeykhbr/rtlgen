@@ -33,10 +33,6 @@ rom_tech::rom_tech(GenObject *parent, const char *name, const char *comment) :
 {
     Operation::start(this);
 
-    TEXT("if (dbits != 64) begin");
-    TEXT("    TODO: GENERATE assert");
-    TEXT("else");
-
     inf0.abits.setObjValue(&SUB2(abits, log2_dbytes));
     inf0.filename.setObjValue(&filename);
     NEW(inf0, inf0.getName().c_str());
@@ -45,13 +41,11 @@ rom_tech::rom_tech(GenObject *parent, const char *name, const char *comment) :
         CONNECT(inf0, 0, inf0.o_rdata, o_rdata);
     ENDNEW();
 
-    TEXT("endif");
-
     Operation::start(&comb);
     proc_comb();
 }
 
 void rom_tech::proc_comb() {
-    SETVAL(wb_addr, BITS(i_addr, DEC(abits), log2_dbytes));
+    ASSIGN(wb_addr, BITS(i_addr, DEC(abits), log2_dbytes));
 }
 

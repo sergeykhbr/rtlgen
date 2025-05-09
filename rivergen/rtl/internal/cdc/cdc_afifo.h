@@ -17,6 +17,8 @@
 #pragma once
 
 #include <api_rtlgen.h>
+#include "cdc_dp_mem.h"
+#include "cdc_afifo_gray.h"
 
 using namespace sysvc;
 
@@ -27,33 +29,9 @@ class cdc_afifo : public ModuleObject {
     virtual bool isAsyncResetParam() override { return false; }
 
  protected:
-    class CombProcess : public CombinationalProcess {
-     public:
-        CombProcess(GenObject *parent) :
-            CombinationalProcess(parent, "comb"),
-            vb_waddr(this, "vb_waddr", "abits"),
-            vb_raddr(this, "vb_raddr", "abits"),
-            v_wfull_next(this, "v_wfull_next", "1"),
-            v_rempty_next(this, "v_rempty_next", "1"),
-            vb_wgraynext(this, "vb_wgraynext", "ADD(abits,1)"),
-            vb_wbinnext(this, "vb_wbinnext", "ADD(abits,1)"),
-            vb_rgraynext(this, "vb_rgraynext", "ADD(abits,1)"),
-            vb_rbinnext(this, "vb_rbinnext", "ADD(abits,1)") {
-        }
-
-     public:
-        Logic vb_waddr;
-        Logic vb_raddr;
-        Logic v_wfull_next;
-        Logic v_rempty_next;
-        Logic vb_wgraynext;
-        Logic vb_wbinnext;
-        Logic vb_rgraynext;
-        Logic vb_rbinnext;
-    };
-
     void proc_comb();
-    void mem_ff();
+    void proc_wff();
+    void proc_rff();
 
  public:
      TmplParamI32D abits;
@@ -68,23 +46,30 @@ class cdc_afifo : public ModuleObject {
      OutPort o_rdata;
      OutPort o_rempty;
 
-     ParamI32D DEPTH;
-
-     RegSignal wgray;
-     RegSignal wbin;
-     RegSignal wq2_rgray;
-     RegSignal wq1_rgray;
-     RegSignal wfull;
-     RegSignal rgray;
-     RegSignal rbin;
-     RegSignal rq2_wgray;
-     RegSignal rq1_wgray;
-     RegSignal rempty;
-     LogicArray mem;
-
  private:
-    CombProcess comb;
-    ProcObject mreg;
+    Signal w_wr_ena;
+    Signal wb_wgray_addr;
+    Signal wb_wgray;
+    Logic q1_wgray;
+    Signal q2_wgray;
+    Signal w_wgray_full;
+    Signal w_wgray_empty_unused;
+
+    Signal w_rd_ena;
+    Signal wb_rgray_addr;
+    Signal wb_rgray;
+    Logic q1_rgray;
+    Signal q2_rgray;
+    Signal w_rgray_full_unused;
+    Signal w_rgray_empty;
+
+    cdc_dp_mem mem0;
+    cdc_afifo_gray wgray0;
+    cdc_afifo_gray rgray0;
+
+    ProcObject comb;
+    ProcObject wff;
+    ProcObject rff;
 };
 
 class cdc_afifo_file : public FileObject {

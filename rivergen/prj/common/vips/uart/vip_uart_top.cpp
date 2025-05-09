@@ -18,6 +18,7 @@
 
 vip_uart_top::vip_uart_top(GenObject *parent, const char *name, const char *comment) :
     ModuleObject(parent, "vip_uart_top", name, comment),
+    async_reset(this, "async_reset", "1", "1", "Use async clock, otherwise symbols is not synchronized"),
     instnum(this, "instnum", "0"),
     baudrate(this, "baudrate", "115200"),
     scaler(this, "scaler", "8"),

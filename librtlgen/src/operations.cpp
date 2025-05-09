@@ -235,15 +235,12 @@ SetValueOperation::SetValueOperation(GenObject *a,         // value to set
 
 std::string SetValueOperation::generate() {
     std::string ret = addspaces();
-    //if (SCV_is_sysc()) {
-        //ret += "// ";   // do not clear clock module
-    //}
     if (isAssign() && SCV_is_sv()) {
         ret += "assign ";
     }
 
     if (SCV_is_sv() && T_) {
-        ret += "#(" + T_->generate() + ") ";
+        ret += "#(" + T_->generate() + ") "; // timescale 1ns/10ps
     }
     if (SCV_is_sysc() && T_) {
         ret += "wait(static_cast<int>" + T_->generate() + ", SC_NS);\n";
