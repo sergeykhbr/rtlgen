@@ -323,7 +323,7 @@ TEXT();
         ENDIF();
         ENDCASE();
     CASE(STATE_R);
-        SETVAL(comb.vb_xmsto.r_ready, INV_L(w_reqfifo_full));
+        SETVAL(comb.vb_xmsto.r_ready, INV_L(w_respfifo_full));
         SETVAL(comb.v_resp_valid, i_xmsti.r_valid);
         SETVAL(comb.vb_resp_strob, CONST("0xFF", 8));
         SETVAL(comb.v_resp_last, INV_L(OR_REDUCE(xlen)));
