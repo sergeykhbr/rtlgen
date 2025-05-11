@@ -17,6 +17,7 @@
 #pragma once
 
 #include <api_rtlgen.h>
+#include "../mem/ram_bytes_tech.h"
 
 using namespace sysvc;
 
@@ -30,12 +31,10 @@ class pio_ep_mem_access : public ModuleObject {
     class CombProcess : public CombinationalProcess {
      public:
         CombProcess(GenObject *parent) :
-            CombinationalProcess(parent, "comb"),
-            vb_rdata(this, "vb_rdata", "32", "'0") {
+            CombinationalProcess(parent, "comb") {
         }
 
      public:
-        Logic vb_rdata;
     };
 
     void proc_comb();
@@ -47,7 +46,7 @@ class pio_ep_mem_access : public ModuleObject {
     InPort i_clk;
     TextLine _t0_;
     InPort i_rd_addr;
-    OutPort i_rd_be;
+    InPort i_rd_be;
     OutPort o_rd_data;
     TextLine _t1_;
     InPort i_wr_addr;
@@ -55,6 +54,11 @@ class pio_ep_mem_access : public ModuleObject {
     InPort i_wr_data;
     InPort i_wr_en;
     OutPort o_wr_busy;
+
+    Signal wb_addr;
+    Logic r_wr_busy;
+
+    ram_bytes_tech ram0;
 
     CombProcess comb;
     ProcObject reqff;

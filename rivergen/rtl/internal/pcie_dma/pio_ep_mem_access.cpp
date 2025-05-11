@@ -32,13 +32,26 @@ pio_ep_mem_access::pio_ep_mem_access(GenObject *parent, const char *name, const 
     o_wr_busy(this, "o_wr_busy", "1", NO_COMMENT),
     // params
     // signals
+    wb_addr(this, "wb_addr", "11", NO_COMMENT),
     // registers
+    r_wr_busy(this, "r_wr_busy", "1", RSTVAL_ZERO, NO_COMMENT),
     //
     comb(this),
-    reqff(this, "reqff", &i_clk, CLK_POSEDGE, 0, ACTIVE_NONE, NO_COMMENT)
+    reqff(this, "reqff", &i_clk, CLK_POSEDGE, 0, ACTIVE_NONE, NO_COMMENT),
+    ram0(this, "ram0")
 {
     Operation::start(this);
 
+    ram0.abits.setObjValue(new DecConst(11));
+    ram0.log2_dbytes.setObjValue(new DecConst(2));
+    NEW(ram0, ram0.getName().c_str());
+        CONNECT(ram0, 0, ram0.i_clk, i_clk);
+        CONNECT(ram0, 0, ram0.i_addr, wb_addr);
+        CONNECT(ram0, 0, ram0.i_wena, i_wr_en);
+        CONNECT(ram0, 0, ram0.i_wstrb, i_wr_be);
+        CONNECT(ram0, 0, ram0.i_wdata, i_wr_data);
+        CONNECT(ram0, 0, ram0.o_rdata, o_rd_data);
+    ENDNEW();
 
     Operation::start(&comb);
     proc_comb();
@@ -48,7 +61,18 @@ pio_ep_mem_access::pio_ep_mem_access(GenObject *parent, const char *name, const 
 }
 
 void pio_ep_mem_access::proc_comb() {
+    IF (NZ(i_wr_en));
+        SETVAL(wb_addr, i_wr_addr);
+    ELSE();
+        SETVAL(wb_addr, i_rd_addr);
+    ENDIF();
+    ASSIGN(o_wr_busy, r_wr_busy);
 }
 
 void pio_ep_mem_access::proc_reqff() {
+    IF (EZ(i_nrst));
+        SETVAL_NB(r_wr_busy, CONST("0"));
+    ELSE();
+        SETVAL_NB(r_wr_busy, i_wr_en);
+    ENDIF();
 }
