@@ -38,10 +38,10 @@ apb_pcie::apb_pcie(GenObject *parent, const char *name, const char *comment) :
     resp_rdata(this, "resp_rdata", "32", "'0", NO_COMMENT),
     resp_err(this, "resp_err", "1", "0"),
     req_cnt(this, "req_cnt", "4", RSTVAL_ZERO, NO_COMMENT),
-    req_data_arr(this, &i_clk, CLK_POSEDGE, 0, ACTIVE_NONE, "req_data_arr",
-            "64", "16", RSTVAL_NONE, NO_COMMENT),
+    req_data_arr(this, "req_data_arr", "64", "16", NO_COMMENT),
     //
     comb(this),
+    reqff(this, "reqff", &i_clk, CLK_POSEDGE, 0, ACTIVE_NONE, NO_COMMENT),
     pslv0(this, "pslv0", NO_COMMENT)
 {
     Operation::start(this);
@@ -66,16 +66,12 @@ apb_pcie::apb_pcie(GenObject *parent, const char *name, const char *comment) :
 
     Operation::start(&comb);
     proc_comb();
+
+    Operation::start(&reqff);
+    proc_reqff();
 }
 
 void apb_pcie::proc_comb() {
-TEXT();
-    IF (NZ(i_dbg_pcie_dmai.valid));
-        SETVAL(req_cnt, INC(req_cnt));
-        SETARRITEM(req_data_arr, TO_INT(req_cnt), req_data_arr, i_dbg_pcie_dmai.data);
-    ENDIF();
-
-TEXT();
     SETZERO(resp_err);
     TEXT("Registers access:");
     IF (EQ(BITS(wb_req_addr, 11, 2), CONST("0", 10)));
@@ -104,4 +100,11 @@ TEXT();
 
 TEXT();
     SYNC_RESET();
+}
+
+void apb_pcie::proc_reqff() {
+    IF (NZ(i_dbg_pcie_dmai.valid));
+        SETARRITEM_NB(req_data_arr, TO_INT(req_cnt), req_data_arr, i_dbg_pcie_dmai.data);
+        SETVAL_NB(req_cnt, INC(req_cnt));
+    ENDIF();
 }

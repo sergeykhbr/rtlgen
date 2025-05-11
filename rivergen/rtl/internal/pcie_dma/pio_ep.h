@@ -1,5 +1,5 @@
 // 
-//  Copyright 2022 Sergey Khabarov, sergeykhbr@gmail.com
+//  Copyright 2025 Sergey Khabarov, sergeykhbr@gmail.com
 // 
 //  Licensed under the Apache License, Version 2.0 (the "License");
 //  you may not use this file except in compliance with the License.
@@ -17,17 +17,16 @@
 #pragma once
 
 #include <api_rtlgen.h>
-#include "../ambalib/types_amba.h"
-#include "../ambalib/types_dma.h"
-#include "../ambalib/types_pnp.h"
-#include "../ambalib/apb_slv.h"
 
 using namespace sysvc;
 
-class apb_pcie : public ModuleObject {
+class pio_ep : public ModuleObject {
  public:
-    apb_pcie(GenObject *parent, const char *name, const char *comment);
+    pio_ep(GenObject *parent, const char *name, const char *comment);
 
+    virtual bool isAsyncResetParam() override { return false; }
+
+ protected:
     class CombProcess : public CombinationalProcess {
      public:
         CombProcess(GenObject *parent) :
@@ -43,41 +42,41 @@ class apb_pcie : public ModuleObject {
     void proc_reqff();
 
  public:
+    TmplParamI32D C_DATA_WIDTH;
+    TmplParamI32D KEEP_WIDTH;
     // io:
-    InPort i_clk;
     InPort i_nrst;
-    InStruct<types_amba::mapinfo_type> i_mapinfo;
-    OutStruct<types_pnp::dev_config_type> o_cfg;
-    InStruct<types_amba::apb_in_type> i_apbi;
-    OutStruct<types_amba::apb_out_type> o_apbo;
-    InPort i_pcie_completer_id;
-    InPort i_dma_state;
-    InStruct<types_dma::pcie_dma64_in_type> i_dbg_pcie_dmai;
-
-    Signal w_req_valid;
-    Signal wb_req_addr;
-    Signal w_req_write;
-    Signal wb_req_wdata;
-
-    RegSignal resp_valid;
-    RegSignal resp_rdata;
-    RegSignal resp_err;
-    Logic req_cnt;
-    LogicArray req_data_arr;
+    InPort i_clk;
+    TextLine _t0_;
+    InPort i_s_axis_tx_tready;
+    OutPort o_s_axis_tx_tdata;
+    OutPort o_s_axis_tx_tkeep;
+    OutPort o_s_axis_tx_tlast;
+    OutPort o_s_axis_tx_tvalid;
+    OutPort o_tx_src_dsc;
+    TextLine _t1_;
+    InPort i_m_axis_rx_tdata;
+    InPort i_m_axis_rx_tkeep;
+    InPort i_m_axis_rx_tlast;
+    InPort i_m_axis_rx_tvalid;
+    OutPort o_m_axis_rx_tready;
+    InPort i_m_axis_rx_tuser;
+    TextLine _t2_;
+    OutPort o_req_compl;
+    OutPort o_compl_done;
+    InPort i_cfg_completer_id;
 
     CombProcess comb;
     ProcObject reqff;
-
-    apb_slv pslv0;
 };
 
-class apb_pcie_file : public FileObject {
+class pio_ep_file : public FileObject {
  public:
-    apb_pcie_file(GenObject *parent) :
-        FileObject(parent, "apb_pcie"),
-        apb_pcie_(this, "apb_pcie", NO_COMMENT) {}
+    pio_ep_file(GenObject *parent) :
+        FileObject(parent, "PIO_EP"),
+        pio_ep_(this, "PIO_EP", NO_COMMENT) {}
 
  private:
-    apb_pcie apb_pcie_;
+    pio_ep pio_ep_;
 };
 

@@ -46,6 +46,9 @@ namespace sysvc {
     vhdl: -- text
  */
 void TEXT(const char *comment=NO_COMMENT);
+/** The same but out of comb process in System Verilog
+ */
+void TEXT_ASSIGN(const char *comment=NO_COMMENT);
 
 /** Generate constant all 0:
     sysc: 0
@@ -412,6 +415,7 @@ Operation &CALCWIDTHx(size_t cnt, ...);
     
  */
 Operation &SPLx(GenObject &a, size_t cnt, ...);     // cplit concatated bus
+Operation &SPLx_ASSIGN(GenObject &a, size_t cnt, ...);     // cplit concatated bus
 
 
 

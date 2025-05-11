@@ -40,11 +40,11 @@ class cdc_afifo : public ModuleObject {
      InPort i_wclk;
      InPort i_wr;
      InPort i_wdata;
-     OutPort o_wfull;
+     OutPort o_wready;
      InPort i_rclk;
      InPort i_rd;
      OutPort o_rdata;
-     OutPort o_rempty;
+     OutPort o_rvalid;
 
  private:
     Signal w_wr_ena;

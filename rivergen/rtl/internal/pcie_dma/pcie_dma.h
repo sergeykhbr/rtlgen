@@ -122,14 +122,14 @@ class pcie_dma : public ModuleObject {
     Signal w_pcie_dmai_ready;       // systemc workaroung, cannot pass to port part of in structure
     Signal wb_reqfifo_payload_i;
     Signal wb_reqfifo_payload_o;
-    Signal w_reqfifo_full;
-    Signal w_reqfifo_empty;
+    Signal w_reqfifo_wready;
+    Signal w_reqfifo_rvalid;
     Signal w_reqfifo_rd;
 
     Signal wb_respfifo_payload_i;
     Signal wb_respfifo_payload_o;
-    Signal w_respfifo_full;
-    Signal w_respfifo_empty;
+    Signal w_respfifo_wready;
+    Signal w_respfifo_rvalid;
     Signal w_respfifo_wr;
 
     RegSignal state;

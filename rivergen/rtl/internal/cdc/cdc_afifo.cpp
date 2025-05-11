@@ -24,11 +24,11 @@ cdc_afifo::cdc_afifo(GenObject *parent, const char *name, const char *comment) :
     i_wclk(this, "i_wclk", "1", "clock write"),
     i_wr(this, "i_wr", "1", "write enable strob"),
     i_wdata(this, "i_wdata", "dbits", "write data"),
-    o_wfull(this, "o_wfull", "1", "fifo is full in wclk domain"),
+    o_wready(this, "o_wready", "1", "ready to accept (fifo is not full) in wclk domain"),
     i_rclk(this, "i_rclk", "1", "read clock"),
     i_rd(this, "i_rd", "1", "read enable strob"),
     o_rdata(this, "o_rdata", "dbits", "fifo payload read"),
-    o_rempty(this, "o_rempty", "1", "fifo is empty it rclk domain"),
+    o_rvalid(this, "o_rvalid", "1", "new valid data (fifo is not empty) in rclk domain"),
     w_wr_ena(this, "w_wr_ena", "1"),
     wb_wgray_addr(this, "wb_wgray_addr", "abits"),
     wb_wgray(this, "wgray", "ADD(abits,1)"),
@@ -105,8 +105,8 @@ TEXT();
 void cdc_afifo::proc_comb() {
     ASSIGN(w_wr_ena, AND2_L(i_wr, INV_L(w_wgray_full)));
     ASSIGN(w_rd_ena, AND2_L(i_rd, INV_L(w_rgray_empty)));
-    ASSIGN(o_wfull, w_wgray_full);
-    ASSIGN(o_rempty, w_rgray_empty);
+    ASSIGN(o_wready, INV_L(w_wgray_full));
+    ASSIGN(o_rvalid, INV_L(w_rgray_empty));
 }
 
 void cdc_afifo::proc_wff() {

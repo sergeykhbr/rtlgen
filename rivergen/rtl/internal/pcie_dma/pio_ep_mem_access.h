@@ -1,5 +1,5 @@
 // 
-//  Copyright 2022 Sergey Khabarov, sergeykhbr@gmail.com
+//  Copyright 2025 Sergey Khabarov, sergeykhbr@gmail.com
 // 
 //  Licensed under the Apache License, Version 2.0 (the "License");
 //  you may not use this file except in compliance with the License.
@@ -17,17 +17,16 @@
 #pragma once
 
 #include <api_rtlgen.h>
-#include "../ambalib/types_amba.h"
-#include "../ambalib/types_dma.h"
-#include "../ambalib/types_pnp.h"
-#include "../ambalib/apb_slv.h"
 
 using namespace sysvc;
 
-class apb_pcie : public ModuleObject {
+class pio_ep_mem_access : public ModuleObject {
  public:
-    apb_pcie(GenObject *parent, const char *name, const char *comment);
+    pio_ep_mem_access(GenObject *parent, const char *name, const char *comment);
 
+    virtual bool isAsyncResetParam() override { return false; }
+
+ protected:
     class CombProcess : public CombinationalProcess {
      public:
         CombProcess(GenObject *parent) :
@@ -44,40 +43,30 @@ class apb_pcie : public ModuleObject {
 
  public:
     // io:
-    InPort i_clk;
     InPort i_nrst;
-    InStruct<types_amba::mapinfo_type> i_mapinfo;
-    OutStruct<types_pnp::dev_config_type> o_cfg;
-    InStruct<types_amba::apb_in_type> i_apbi;
-    OutStruct<types_amba::apb_out_type> o_apbo;
-    InPort i_pcie_completer_id;
-    InPort i_dma_state;
-    InStruct<types_dma::pcie_dma64_in_type> i_dbg_pcie_dmai;
-
-    Signal w_req_valid;
-    Signal wb_req_addr;
-    Signal w_req_write;
-    Signal wb_req_wdata;
-
-    RegSignal resp_valid;
-    RegSignal resp_rdata;
-    RegSignal resp_err;
-    Logic req_cnt;
-    LogicArray req_data_arr;
+    InPort i_clk;
+    TextLine _t0_;
+    InPort i_rd_addr;
+    OutPort i_rd_be;
+    OutPort o_rd_data;
+    TextLine _t1_;
+    InPort i_wr_addr;
+    InPort i_wr_be;
+    InPort i_wr_data;
+    InPort i_wr_en;
+    OutPort o_wr_busy;
 
     CombProcess comb;
     ProcObject reqff;
-
-    apb_slv pslv0;
 };
 
-class apb_pcie_file : public FileObject {
+class pio_ep_mem_access_file : public FileObject {
  public:
-    apb_pcie_file(GenObject *parent) :
-        FileObject(parent, "apb_pcie"),
-        apb_pcie_(this, "apb_pcie", NO_COMMENT) {}
+    pio_ep_mem_access_file(GenObject *parent) :
+        FileObject(parent, "PIO_EP_MEM_ACCESS"),
+        pio_ep_mem_access_(this, "PIO_EP_MEM_ACCESS", NO_COMMENT) {}
 
  private:
-    apb_pcie apb_pcie_;
+    pio_ep_mem_access pio_ep_mem_access_;
 };
 

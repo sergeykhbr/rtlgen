@@ -23,6 +23,10 @@ void TEXT(const char *comment) {
     new TextOperation(comment);
 }
 
+void TEXT_ASSIGN(const char *comment) {
+    new TextAssignOperation(comment);
+}
+
 Operation &ALLZEROS(const char *comment) {
     return *new AllConstOperation(0, comment);
 }
@@ -445,7 +449,10 @@ Operation &CCx(size_t cnt, ...) {
 
 // SPLx
 Operation &SPLx(GenObject &a, size_t cnt, ...) {
-    Operation *p = new SplitOperation(&a, NO_COMMENT);
+    Operation *p = new SplitOperation(&a,
+                                     false,         // assign
+                                     false,         // non-blocking
+                                     NO_COMMENT);
     GenObject *obj;
     va_list arg;
     va_start(arg, cnt);
@@ -455,6 +462,36 @@ Operation &SPLx(GenObject &a, size_t cnt, ...) {
     }
     va_end(arg);
     return *p;
+}
+
+Operation &SPLx_ASSIGN(GenObject &a, size_t cnt, ...) {
+    Operation *block = new EmptyAssignOperation(NO_COMMENT);
+    Operation::push_obj(block);
+    GenObject *obj;
+    va_list arg;
+    int low = 0;
+    int high = static_cast<int>(a.getWidth()) - 1;
+    int w;
+    va_start(arg, cnt);
+    for (int i = 0; i < cnt; i++) {
+        obj = va_arg(arg, GenObject *);
+
+        w = static_cast<int>(obj->getWidth());
+        low = high - w + 1;
+        if (w == 0) {
+            SHOW_ERROR("%s zero width", obj->getName().c_str());
+        } else if (low < 0) {
+            SHOW_ERROR("%s wrong width < 0", obj->getName().c_str());
+        } else if (w == 1) {
+            ASSIGN(*obj, BIT(a, low));
+        } else {
+            ASSIGN(*obj, BITS(a, high, low));
+        }
+        high -= w;
+    }
+    va_end(arg);
+    Operation::pop_obj();
+    return *block;
 }
 
 // CALCWIDTHx

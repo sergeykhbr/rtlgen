@@ -57,6 +57,13 @@ class Operation : public GenObject {
     }
 };
 
+class EmptyAssignOperation : public Operation {
+ public:
+    EmptyAssignOperation(const char *comment = NO_COMMENT)
+        : Operation (comment) {}
+    virtual bool isAssign() override { return true; }
+};
+
 
 class ConvertOperation : public Operation {
  public:
@@ -298,6 +305,12 @@ class TextOperation : public Operation {
  public:
     TextOperation(const char *comment) : Operation(top_obj(), comment) {}
     virtual std::string generate() override;
+};
+
+class TextAssignOperation : public TextOperation {
+ public:
+    TextAssignOperation(const char *comment) : TextOperation(comment) {}
+    virtual bool isAssign() override { return true; }
 };
 
 /**
@@ -860,14 +873,16 @@ class CCxOperation : public NStandardOperandsOperation {
  */
 class SplitOperation : public Operation {
  public:
-    SplitOperation(GenObject *a, const char *comment)
-        : Operation(top_obj(), comment), a_(a) {}
+    SplitOperation(GenObject *a, bool assign, bool no_block, const char *comment)
+        : Operation(top_obj(), comment), a_(a), assign_(assign), no_block_(no_block) {}
 
     virtual std::string getStrValue() override { return std::string(""); }
     virtual std::string generate() override;
 
  protected:
     GenObject *a_;
+    bool assign_;
+    bool no_block_;
 };
 
 /**

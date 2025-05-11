@@ -68,13 +68,13 @@ pcie_dma::pcie_dma(GenObject *parent, const char *name, const char *comment) :
     w_pcie_dmai_ready(this, "w_pcie_dmai_ready", "1", "SystemC workaround"),
     wb_reqfifo_payload_i(this, "wb_reqfifo_payload_i", "REQ_FIFO_WIDTH"),
     wb_reqfifo_payload_o(this, "wb_reqfifo_payload_o", "REQ_FIFO_WIDTH"),
-    w_reqfifo_full(this, "w_reqfifo_full", "1"),
-    w_reqfifo_empty(this, "w_reqfifo_empty", "1"),
+    w_reqfifo_wready(this, "w_reqfifo_wready", "1"),
+    w_reqfifo_rvalid(this, "w_reqfifo_rvalid", "1"),
     w_reqfifo_rd(this, "w_reqfifo_rd", "1"),
     wb_respfifo_payload_i(this, "wb_respfifo_payload_i", "RESP_FIFO_WIDTH"),
     wb_respfifo_payload_o(this, "wb_respfifo_payload_o", "RESP_FIFO_WIDTH"),
-    w_respfifo_full(this, "w_respfifo_full", "1"),
-    w_respfifo_empty(this, "w_respfifo_empty", "1"),
+    w_respfifo_wready(this, "w_respfifo_wready", "1"),
+    w_respfifo_rvalid(this, "w_respfifo_rvalid", "1"),
     w_respfifo_wr(this, "w_respfifo_wr", "1"),
     // registers
     state(this, "state", "4", "STATE_RST", NO_COMMENT),
@@ -111,11 +111,11 @@ pcie_dma::pcie_dma(GenObject *parent, const char *name, const char *comment) :
         CONNECT(reqfifo, 0, reqfifo.i_wclk, i_pcie_phy_clk);
         CONNECT(reqfifo, 0, reqfifo.i_wr, w_pcie_dmai_valid);
         CONNECT(reqfifo, 0, reqfifo.i_wdata, wb_reqfifo_payload_i);
-        CONNECT(reqfifo, 0, reqfifo.o_wfull, w_reqfifo_full);
+        CONNECT(reqfifo, 0, reqfifo.o_wready, w_reqfifo_wready);
         CONNECT(reqfifo, 0, reqfifo.i_rclk, i_clk);
         CONNECT(reqfifo, 0, reqfifo.i_rd, w_reqfifo_rd);
         CONNECT(reqfifo, 0, reqfifo.o_rdata, wb_reqfifo_payload_o);
-        CONNECT(reqfifo, 0, reqfifo.o_rempty, w_reqfifo_empty);
+        CONNECT(reqfifo, 0, reqfifo.o_rvalid, w_reqfifo_rvalid);
     ENDNEW();
 
     TEXT("DMA (40 MHz) -> PCIE EP (200 MHz)");
@@ -126,11 +126,11 @@ pcie_dma::pcie_dma(GenObject *parent, const char *name, const char *comment) :
         CONNECT(respfifo, 0, respfifo.i_wclk, i_clk);
         CONNECT(respfifo, 0, respfifo.i_wr, w_respfifo_wr);
         CONNECT(respfifo, 0, respfifo.i_wdata, wb_respfifo_payload_i);
-        CONNECT(respfifo, 0, respfifo.o_wfull, w_respfifo_full);
+        CONNECT(respfifo, 0, respfifo.o_wready, w_respfifo_wready);
         CONNECT(respfifo, 0, respfifo.i_rclk, i_pcie_phy_clk);
         CONNECT(respfifo, 0, respfifo.i_rd, w_pcie_dmai_ready);
         CONNECT(respfifo, 0, respfifo.o_rdata, wb_respfifo_payload_o);
-        CONNECT(respfifo, 0, respfifo.o_rempty, w_respfifo_empty);
+        CONNECT(respfifo, 0, respfifo.o_rvalid, w_respfifo_rvalid);
     ENDNEW();
 
     Operation::start(&comb);
@@ -192,7 +192,7 @@ TEXT("Temporary register");
         SETZERO(req_rd_locked);
         SETZERO(resp_cpl);
         SETZERO(resp_with_payload);
-        IF (EZ(w_reqfifo_empty));
+        IF (NZ(w_reqfifo_rvalid));
             SETVAL(dw0, BITS(comb.vb_req_data, 31, 0));
             SETVAL(dw1, BITS(comb.vb_req_data, 63, 32));
             SETVAL(state, STATE_DW3DW4);
@@ -209,7 +209,7 @@ TEXT();
         SETVAL(xlen, DEC(BITS(dw0, 7, 0)), "warning: Actual size of Length is 10 bits. 0 is 1024 DWs (4096 Bytes)");
         SETVAL(dw2, BITS(comb.vb_req_data, 31, 0));
         SETZERO(dw3);
-        IF (EZ(w_reqfifo_empty));
+        IF (NZ(w_reqfifo_rvalid));
             TEXT("fmt[0] = 1 when 4DW header is used");
             IF (NZ(BIT(dw0, 29)));
                 SETVAL(dw3, BITS(comb.vb_req_data, 63, 32));
@@ -323,7 +323,7 @@ TEXT();
         ENDIF();
         ENDCASE();
     CASE(STATE_R);
-        SETVAL(comb.vb_xmsto.r_ready, INV_L(w_respfifo_full));
+        SETVAL(comb.vb_xmsto.r_ready, w_respfifo_wready);
         SETVAL(comb.v_resp_valid, i_xmsti.r_valid);
         SETVAL(comb.vb_resp_strob, CONST("0xFF", 8));
         SETVAL(comb.v_resp_last, INV_L(OR_REDUCE(xlen)));
@@ -341,7 +341,7 @@ TEXT();
         ENDIF();
 
         TEXT();
-        IF(AND2(NZ(i_xmsti.r_valid), EZ(w_respfifo_full)));
+        IF(AND2(NZ(i_xmsti.r_valid), NZ(w_respfifo_wready)));
             TEXT("Burst support: ");
             IF (NE(i_xmsti.r_resp, amba->AXI_RESP_OKAY));
                 SETVAL(resp_status, TLP_STATUS_ABORTED);
@@ -394,11 +394,11 @@ TEXT();
             ENDIF();
         ELSE();
             SETVAL(comb.v_req_ready, i_xmsti.w_ready);
-            SETVAL(comb.vb_xmsto.w_valid, INV_L(w_reqfifo_empty));
+            SETVAL(comb.vb_xmsto.w_valid, w_reqfifo_rvalid);
             SETVAL(comb.vb_xmsto.w_strb, comb.vb_req_strob);
             SETVAL(comb.vb_xmsto.w_data, comb.vb_req_data);
             SETVAL(comb.vb_xmsto.w_last, INV_L(OR_REDUCE(xlen)));
-            IF(AND2(EZ(w_reqfifo_empty), NZ(i_xmsti.w_ready)));
+            IF(AND2(NZ(w_reqfifo_rvalid), NZ(i_xmsti.w_ready)));
                 IF (NZ(comb.v_req_last));
                     SETVAL(state, STATE_B);
                 ENDIF();
@@ -440,7 +440,7 @@ TEXT();
         SETBIT(comb.vb_resp_data, 44, CONST("0", 1), "DW1[12] BCM");
         SETBITS(comb.vb_resp_data, 47, 45, resp_status, "DW1[15:13] Status");
         SETBITS(comb.vb_resp_data, 63, 48, i_pcie_completer_id, "DW1[31:16] Completer ID");
-        IF (EZ(w_respfifo_full));
+        IF (NZ(w_respfifo_wready));
             SETVAL(state, STATE_RESP_DW2DW3);
         ENDIF();
         ENDCASE();
@@ -454,7 +454,7 @@ TEXT();
         SETBITS(comb.vb_resp_data, 15, 8, BITS(dw1, 15, 8), "DW2[15:8] Tag");
         SETBITS(comb.vb_resp_data, 31, 16, BITS(dw1, 31, 16), "DW2[31:16] Requester ID");
         SETBITS(comb.vb_resp_data, 63, 32, BITS(xrdata, 31, 0), "DW3[31:0] payload (ignored by strob 0F)");
-        IF (EZ(w_respfifo_full));
+        IF (NZ(w_respfifo_wready));
             IF(NE(resp_status, TLP_STATUS_SUCCESS));
                 SETONE(comb.v_resp_last);
                 SETVAL(state, STATE_RST);
@@ -491,15 +491,15 @@ TEXT();
     SPLx(wb_respfifo_payload_o, 3, &comb.vb_pcie_dmao.last,
                                    &comb.vb_pcie_dmao.strob,
                                    &comb.vb_pcie_dmao.data);
-    SETVAL(comb.vb_pcie_dmao.ready, INV(w_reqfifo_full));
-    SETVAL(comb.vb_pcie_dmao.valid, INV(w_respfifo_empty));
+    SETVAL(comb.vb_pcie_dmao.ready, w_reqfifo_wready);
+    SETVAL(comb.vb_pcie_dmao.valid, w_respfifo_rvalid);
     SETVAL(o_pcie_dmao, comb.vb_pcie_dmao);
     SETVAL(w_respfifo_wr, comb.v_resp_valid);
     SETVAL(w_reqfifo_rd, comb.v_req_ready);
     SETVAL(o_xmst_cfg, comb.vb_xmst_cfg);
     SETVAL(o_xmsto, comb.vb_xmsto);
     TEXT("Debug signals");
-    SETVAL(comb.vb_dbg_pcie_dmai.valid, INV_L(w_reqfifo_empty));
+    SETVAL(comb.vb_dbg_pcie_dmai.valid, AND2_L(w_reqfifo_rvalid, comb.v_req_ready));
     SETVAL(comb.vb_dbg_pcie_dmai.data, comb.vb_req_data);
     SETVAL(comb.vb_dbg_pcie_dmai.strob, comb.vb_req_strob);
     SETVAL(comb.vb_dbg_pcie_dmai.last, comb.v_req_last);

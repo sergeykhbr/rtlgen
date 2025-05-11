@@ -2075,12 +2075,12 @@ void ENDALWAYS(const char *comment) {
 std::string AssignOperation::generate() {
     std::string ret = addspaces();
     if (SCV_is_sv()) {
-        if (getParent() && getParent()->isProcess()) {
+        /*if (getParent() && getParent()->isProcess()) {
             GenObject *proc = getParent();
             proc->addPostAssign(this);
             parent_ = 0;
             return "";
-        }
+        }*/
         ret += "assign ";
     }
     ret += a_->nameInModule(PORT_IN);

@@ -18,6 +18,11 @@
 
 #include <api_rtlgen.h>
 #include "pcie_cfg.h"
+#include "pio_ep_mem_access.h"
+#include "pio_rx_engine.h"
+#include "pio_tx_engine.h"
+#include "pio_ep.h"
+#include "pcie_io.h"
 #include "pcie_dma.h"
 #include "apb_pcie.h"
 
@@ -26,6 +31,11 @@ class pcie_dma_folder : public FolderObject {
     pcie_dma_folder(GenObject *parent) :
         FolderObject(parent, "pcie_dma"),
         pcie_cfg_(this),
+        pio_ep_mem_access_file_(this),
+        pio_rx_engine_file_(this),
+        pio_tx_engine_file_(this),
+        pio_ep_file_(this),
+        pcie_io_file_(this),
         pcie_dma_file_(this),
         apb_pcie_file_(this) {}
 
@@ -35,6 +45,11 @@ class pcie_dma_folder : public FolderObject {
     // subfolders:
     // files
     pcie_cfg pcie_cfg_;
+    pio_ep_mem_access_file pio_ep_mem_access_file_;
+    pio_rx_engine_file pio_rx_engine_file_;
+    pio_tx_engine_file pio_tx_engine_file_;
+    pio_ep_file pio_ep_file_;
+    pcie_io_file pcie_io_file_;
     pcie_dma_file pcie_dma_file_;
     apb_pcie_file apb_pcie_file_;
 };
