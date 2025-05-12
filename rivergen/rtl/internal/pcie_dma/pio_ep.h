@@ -17,6 +17,9 @@
 #pragma once
 
 #include <api_rtlgen.h>
+#include "pio_ep_mem_access.h"
+#include "pio_rx_engine.h"
+#include "pio_tx_engine.h"
 
 using namespace sysvc;
 
@@ -30,16 +33,11 @@ class pio_ep : public ModuleObject {
     class CombProcess : public CombinationalProcess {
      public:
         CombProcess(GenObject *parent) :
-            CombinationalProcess(parent, "comb"),
-            vb_rdata(this, "vb_rdata", "32", "'0") {
+            CombinationalProcess(parent, "comb") {
         }
-
-     public:
-        Logic vb_rdata;
     };
 
     void proc_comb();
-    void proc_reqff();
 
  public:
     TmplParamI32D C_DATA_WIDTH;
@@ -66,8 +64,32 @@ class pio_ep : public ModuleObject {
     OutPort o_compl_done;
     InPort i_cfg_completer_id;
 
+    Signal wb_rd_addr;
+    Signal wb_rd_be;
+    Signal wb_rd_data;
+    Signal wb_wr_addr;
+    Signal wb_wr_be;
+    Signal wb_wr_data;
+    Signal w_wr_en;
+    Signal w_wr_busy;
+    Signal w_req_compl_int;
+    Signal w_req_compl_wd;
+    Signal w_compl_done_int;
+    Signal wb_req_tc;
+    Signal w_req_td;
+    Signal w_req_ep;
+    Signal wb_req_attr;
+    Signal wb_req_len;
+    Signal wb_req_rid;
+    Signal wb_req_tag;
+    Signal wb_req_be;
+    Signal wb_req_addr;
+
+    pio_ep_mem_access EP_MEM_inst;
+    pio_rx_engine EP_RX_inst;
+    pio_tx_engine EP_TX_inst;
+
     CombProcess comb;
-    ProcObject reqff;
 };
 
 class pio_ep_file : public FileObject {

@@ -31,11 +31,15 @@ class pio_tx_engine : public ModuleObject {
      public:
         CombProcess(GenObject *parent) :
             CombinationalProcess(parent, "comb"),
-            vb_rdata(this, "vb_rdata", "32", "'0") {
+            vb_add_be20(this, "vb_add_be20", "2", "'0"),
+            vb_add_be21(this, "vb_add_be21", "2", "'0"),
+            vb_s_axis_tx_tdata(this, "vb_s_axis_tx_tdata", "C_DATA_WIDTH", "'0") {
         }
 
      public:
-        Logic vb_rdata;
+        Logic vb_add_be20;
+        Logic vb_add_be21;
+        Logic vb_s_axis_tx_tdata;
     };
 
     void proc_comb();
@@ -73,6 +77,28 @@ class pio_tx_engine : public ModuleObject {
     OutPort o_rd_be;
     InPort i_rd_data;
     InPort i_completer_id;
+
+    TextLine _fmt0_;
+    ParamLogic PIO_CPLD_FMT_TYPE;
+    ParamLogic PIO_CPL_FMT_TYPE;
+    ParamLogic PIO_TX_RST_STATE;
+    ParamLogic PIO_TX_CPLD_QW1_FIRST;
+    ParamLogic PIO_TX_CPLD_QW1_TEMP;
+    ParamLogic PIO_TX_CPLD_QW1;
+
+    RegSignal s_axis_tx_tdata;
+    RegSignal s_axis_tx_tkeep;
+    RegSignal s_axis_tx_tlast;
+    RegSignal s_axis_tx_tvalid;
+    RegSignal compl_done;
+    RegSignal rd_be;
+    RegSignal byte_count;
+    RegSignal lower_addr;
+    RegSignal req_compl_q;
+    RegSignal req_compl_wd_q;
+    RegSignal compl_busy_i;
+    RegSignal state;
+    Logic w_compl_wd;
 
     CombProcess comb;
     ProcObject reqff;
