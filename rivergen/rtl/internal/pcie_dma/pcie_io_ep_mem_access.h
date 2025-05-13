@@ -21,9 +21,9 @@
 
 using namespace sysvc;
 
-class pio_ep_mem_access : public ModuleObject {
+class pcie_io_ep_mem_access : public ModuleObject {
  public:
-    pio_ep_mem_access(GenObject *parent, const char *name, const char *comment);
+    pcie_io_ep_mem_access(GenObject *parent, const char *name, const char *comment);
 
     virtual bool isAsyncResetParam() override { return false; }
 
@@ -64,13 +64,13 @@ class pio_ep_mem_access : public ModuleObject {
     ProcObject reqff;
 };
 
-class pio_ep_mem_access_file : public FileObject {
+class pcie_io_ep_mem_access_file : public FileObject {
  public:
-    pio_ep_mem_access_file(GenObject *parent) :
-        FileObject(parent, "PIO_EP_MEM_ACCESS"),
-        pio_ep_mem_access_(this, "PIO_EP_MEM_ACCESS", NO_COMMENT) {}
+    pcie_io_ep_mem_access_file(GenObject *parent) :
+        FileObject(parent, "pcie_io_ep_mem_access"),
+        pcie_io_ep_mem_access_(this, "pcie_io_ep_mem_access", NO_COMMENT) {}
 
  private:
-    pio_ep_mem_access pio_ep_mem_access_;
+    pcie_io_ep_mem_access pcie_io_ep_mem_access_;
 };
 

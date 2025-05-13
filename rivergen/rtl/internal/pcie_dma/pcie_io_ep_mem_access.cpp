@@ -14,10 +14,10 @@
 //  limitations under the License.
 // 
 
-#include "pio_ep_mem_access.h"
+#include "pcie_io_ep_mem_access.h"
 
-pio_ep_mem_access::pio_ep_mem_access(GenObject *parent, const char *name, const char *comment) :
-    ModuleObject(parent, "PIO_EP_MEM_ACCESS", name, comment),
+pcie_io_ep_mem_access::pcie_io_ep_mem_access(GenObject *parent, const char *name, const char *comment) :
+    ModuleObject(parent, "pcie_io_ep_mem_access", name, comment),
     i_nrst(this, "i_nrst", "1", NO_COMMENT),
     i_clk(this, "i_clk", "1", "System bus clock"),
     _t0_(this, "Read Port"),
@@ -26,7 +26,7 @@ pio_ep_mem_access::pio_ep_mem_access(GenObject *parent, const char *name, const 
     o_rd_data(this, "o_rd_data", "32", NO_COMMENT),
     _t1_(this, "Write Port"),
     i_wr_addr(this, "i_wr_addr", "11", NO_COMMENT),
-    i_wr_be(this, "i_wr_be", "8", NO_COMMENT),
+    i_wr_be(this, "i_wr_be", "4", NO_COMMENT),
     i_wr_data(this, "i_wr_data", "32", NO_COMMENT),
     i_wr_en(this, "i_wr_en", "1", NO_COMMENT),
     o_wr_busy(this, "o_wr_busy", "1", NO_COMMENT),
@@ -60,7 +60,7 @@ pio_ep_mem_access::pio_ep_mem_access(GenObject *parent, const char *name, const 
     proc_reqff();
 }
 
-void pio_ep_mem_access::proc_comb() {
+void pcie_io_ep_mem_access::proc_comb() {
     IF (NZ(i_wr_en));
         SETVAL(wb_addr, i_wr_addr);
     ELSE();
@@ -69,7 +69,7 @@ void pio_ep_mem_access::proc_comb() {
     ASSIGN(o_wr_busy, r_wr_busy);
 }
 
-void pio_ep_mem_access::proc_reqff() {
+void pcie_io_ep_mem_access::proc_reqff() {
     IF (EZ(i_nrst));
         SETVAL_NB(r_wr_busy, CONST("0"));
     ELSE();

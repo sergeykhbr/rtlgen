@@ -22,6 +22,7 @@
 #include "../ambalib/types_dma.h"
 #include "../cdc/cdc_afifo.h"
 #include "pcie_cfg.h"
+#include "pcie_io_ep.h"
 
 using namespace sysvc;
 
@@ -32,42 +33,9 @@ class pcie_dma : public ModuleObject {
     class CombProcess : public CombinationalProcess {
      public:
         CombProcess(GenObject *parent) :
-            CombinationalProcess(parent, "comb"),
-            vb_xmst_cfg(this, "vb_xmst_cfg", "dev_config_none", NO_COMMENT),
-            vb_xmsto(this, "vb_xmsto", "axi4_master_out_none", NO_COMMENT),
-            vb_pcie_dmao(this, "vb_pcie_dmao", "pcie_dma64_out_none", NO_COMMENT),
-            vb_dbg_pcie_dmai(this, "vb_dbg_pcie_dmai", "pcie_dma64_in_none", NO_COMMENT),
-            vb_xbytes(this, "vb_xbytes", "XSIZE_TOTAL", RSTVAL_ZERO, "result of function call XSize2XBytes(xsize)"),
-            v_req_ready(this, "v_req_ready", "1", RSTVAL_ZERO, NO_COMMENT),
-            vb_req_addr(this, "vb_req_addr", "64", "0", NO_COMMENT),
-            vb_req_addr1_0(this, "vb_req_addr1_0", "2", RSTVAL_ZERO, "address[1:0] restored from strob field be[3:0]"),
-            vb_req_data(this, "vb_req_data", "64", RSTVAL_ZERO, NO_COMMENT),
-            vb_req_strob(this, "vb_req_strob", "8", RSTVAL_ZERO, NO_COMMENT),
-            v_req_last(this, "v_req_last", "1", RSTVAL_ZERO, NO_COMMENT),
-            v_single_tlp(this, "v_single_tlp", "1", RSTVAL_ZERO, "single 32-bit dma transaction, trnasmit as 4DW with TLP header"),
-            v_resp_valid(this, "v_resp_valid", "1", RSTVAL_ZERO, NO_COMMENT),
-            vb_resp_data(this, "vb_resp_data", "64", RSTVAL_ZERO, NO_COMMENT),
-            vb_resp_strob(this, "vb_resp_strob", "8", RSTVAL_ZERO, NO_COMMENT),
-            v_resp_last(this, "v_resp_last", "1", RSTVAL_ZERO, NO_COMMENT) {
+            CombinationalProcess(parent, "comb") {
         }
-
      public:
-        StructVar<types_pnp::dev_config_type> vb_xmst_cfg;
-        StructVar<types_amba::axi4_master_out_type> vb_xmsto;
-        StructVar<types_dma::pcie_dma64_out_type> vb_pcie_dmao;
-        StructVar<types_dma::pcie_dma64_in_type> vb_dbg_pcie_dmai;
-        Logic vb_xbytes;
-        Logic v_req_ready;
-        Logic vb_req_addr;
-        Logic vb_req_addr1_0;
-        Logic vb_req_data;
-        Logic vb_req_strob;
-        Logic v_req_last;
-        Logic v_single_tlp;
-        Logic v_resp_valid;
-        Logic vb_resp_data;
-        Logic vb_resp_strob;
-        Logic v_resp_last;
     };
 
     void proc_comb();
@@ -90,29 +58,8 @@ class pcie_dma : public ModuleObject {
     OutStruct<types_dma::pcie_dma64_in_type> o_dbg_pcie_dmai;
     
     TextLine _fmt0_;
-    TextLine _fmt1_;
-    ParamLogic TLP_FMT_3DW_NOPAYLOAD;
-    ParamLogic TLP_FMT_4DW_NOPAYLOAD;
-    ParamLogic TLP_FMT_3DW_PAYLOAD;
-    ParamLogic TLP_FMT_4DW_PAYLOAD;
-    TextLine _stat0_;
-    TextLine _stat1_;
-    ParamLogic TLP_STATUS_SUCCESS;
-    ParamLogic TLP_STATUS_UNSUPPORTED;
-    ParamLogic TLP_STATUS_ABORTED;
-    
-    TextLine _state0_;
-    TextLine _state1_;
-    ParamLogic STATE_RST;
-    ParamLogic STATE_DW3DW4;
-    ParamLogic STATE_AR;
-    ParamLogic STATE_R_SINGLE32;
-    ParamLogic STATE_R;
-    ParamLogic STATE_AW;
-    ParamLogic STATE_W;
-    ParamLogic STATE_B;
-    ParamLogic STATE_RESP_DW0DW1;
-    ParamLogic STATE_RESP_DW2DW3;
+    ParamI32D C_DATA_WIDTH;
+    ParamI32D KEEP_WIDTH;
 
     TextLine _fifo0_;
     ParamI32D REQ_FIFO_WIDTH;
@@ -132,30 +79,22 @@ class pcie_dma : public ModuleObject {
     Signal w_respfifo_rvalid;
     Signal w_respfifo_wr;
 
-    RegSignal state;
-    RegSignal dw0;
-    RegSignal dw1;
-    RegSignal dw2;
-    RegSignal dw3;
-    RegSignal req_rd_locked;
-    RegSignal xlen;
-    RegSignal xsize;
-    RegSignal xaddr;
-    RegSignal xwstrb;
-    RegSignal xwdata;
-    RegSignal xwena;    // AXI light: RW and W at the same time without burst
-    RegSignal xrdata;
-    RegSignal xerr;
-    RegSignal resp_with_payload;
-    RegSignal resp_data;
-    RegSignal resp_status;
-    RegSignal resp_cpl;
-    RegSignal byte_cnt;
+    Signal wb_m_axis_rx_tuser;
+    Signal w_m_axis_rx_tlast;
+    Signal wb_m_axis_rx_tkeep;
+    Signal wb_m_axis_rx_tdata;
+    Signal w_s_axis_tx_tlast;
+    Signal wb_s_axis_tx_tkeep;
+    Signal wb_s_axis_tx_tdata;
+    Signal w_tx_src_dsc;
+    Signal w_req_compl;
+    Signal w_compl_done;
 
     CombProcess comb;
 
     cdc_afifo reqfifo;
     cdc_afifo respfifo;
+    pcie_io_ep PIO_EP_inst;
 };
 
 class pcie_dma_file : public FileObject {

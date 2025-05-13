@@ -14,10 +14,10 @@
 //  limitations under the License.
 // 
 
-#include "pio_tx_engine.h"
+#include "pcie_io_tx_engine.h"
 
-pio_tx_engine::pio_tx_engine(GenObject *parent, const char *name, const char *comment) :
-    ModuleObject(parent, "PIO_TX_ENGINE", name, comment),
+pcie_io_tx_engine::pcie_io_tx_engine(GenObject *parent, const char *name, const char *comment) :
+    ModuleObject(parent, "pcie_io_tx_engine", name, comment),
     C_DATA_WIDTH(this, "C_DATA_WIDTH", "64", NO_COMMENT),
     KEEP_WIDTH(this, "KEEP_WIDTH", "DIV(C_DATA_WIDTH,8)", NO_COMMENT),
     i_nrst(this, "i_nrst", "1", NO_COMMENT),
@@ -42,7 +42,7 @@ pio_tx_engine::pio_tx_engine(GenObject *parent, const char *name, const char *co
     i_req_rid(this, "i_req_rid", "16", NO_COMMENT),
     i_req_tag(this, "i_req_tag", "8", NO_COMMENT),
     i_req_be(this, "i_req_be", "8", NO_COMMENT),
-    i_req_addr(this, "i_req_addr", "12", NO_COMMENT),
+    i_req_addr(this, "i_req_addr", "13", NO_COMMENT),
     _t3_(this, ""),
     o_rd_addr(this, "o_rd_addr", "11", NO_COMMENT),
     o_rd_be(this, "o_rd_be", "4", NO_COMMENT),
@@ -85,7 +85,7 @@ pio_tx_engine::pio_tx_engine(GenObject *parent, const char *name, const char *co
     proc_reqff();
 }
 
-void pio_tx_engine::proc_comb() {
+void pcie_io_tx_engine::proc_comb() {
     SETVAL(rd_be, i_req_be);
     TEXT("Calculate byte count based on byte enable");
     SETVAL(comb.vb_add_be20, ADD2(CC2(CONST("0", 1), BIT(rd_be, 3)), CC2(CONST("0", 1), BIT(rd_be, 2))));
@@ -226,5 +226,5 @@ TEXT_ASSIGN();
     ASSIGN(o_rd_addr, BITS(i_req_addr, 12, 2));
 }
 
-void pio_tx_engine::proc_reqff() {
+void pcie_io_tx_engine::proc_reqff() {
 }

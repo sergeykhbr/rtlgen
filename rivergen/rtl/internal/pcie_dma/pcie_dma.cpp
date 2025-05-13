@@ -34,30 +34,13 @@ pcie_dma::pcie_dma(GenObject *parent, const char *name, const char *comment) :
     o_dbg_pcie_dmai(this, "o_dbg_pcie_dmai"),
     // params
     _fmt0_(this, ""),
-    _fmt1_(this, "fmt: indicates the size of the header"),
-    TLP_FMT_3DW_NOPAYLOAD(this, "TLP_FMT_3DW_NOPAYLOAD", "2", "0", "3DW header without payload"),
-    TLP_FMT_4DW_NOPAYLOAD(this, "TLP_FMT_4DW_NOPAYLOAD", "2", "1", "4DW header without payload"),
-    TLP_FMT_3DW_PAYLOAD(this, "TLP_FMT_3DW_PAYLOAD", "2", "2", "3DW header with payload"),
-    TLP_FMT_4DW_PAYLOAD(this, "TLP_FMT_4DW_PAYLOAD", "2", "3", "4DW header with payload"),
-    _stat0_(this, ""),
-    _stat1_(this, "TLP Completion Status"),
-    TLP_STATUS_SUCCESS(this, "TLP_STATUS_SUCCESS", "3", "0", "Successful completion"),
-    TLP_STATUS_UNSUPPORTED(this, "TLP_STATUS_UNSUPPORTED", "3", "1", "Unsupported Request (UR)"),
-    TLP_STATUS_ABORTED(this, "TLP_STATUS_ABORTED", "3", "4", "Completer Abort (CA)"),
-    _state0_(this, ""),
-    _state1_(this, "State machine to parse TLP"),
-    STATE_RST(this, "STATE_RST", "8", "0x0", NO_COMMENT),
-    STATE_DW3DW4(this, "STATE_DW3DW4", "8", "1", NO_COMMENT),
-    STATE_AR(this, "STATE_AR", "8", "2", NO_COMMENT),
-    STATE_R_SINGLE32(this, "STATE_R_SINGLE32", "8", "3", NO_COMMENT),
-    STATE_R(this, "STATE_R", "8", "4", NO_COMMENT),
-    STATE_AW(this, "STATE_AW", "8", "5", NO_COMMENT),
-    STATE_W(this, "STATE_W", "8", "6", NO_COMMENT),
-    STATE_B(this, "STATE_B", "8", "7", NO_COMMENT),
-    STATE_RESP_DW0DW1(this, "STATE_RESP_DW0DW1", "8", "8", NO_COMMENT),
-    STATE_RESP_DW2DW3(this, "STATE_RESP_DW2DW3", "8", "9", NO_COMMENT),
+    C_DATA_WIDTH(this, "C_DATA_WIDTH", "64", NO_COMMENT),
+    KEEP_WIDTH(this, "KEEP_WIDTH", "DIV(C_DATA_WIDTH,8)", NO_COMMENT),
     _fifo0_(this, ""),
-    REQ_FIFO_WIDTH(this, "REQ_FIFO_WIDTH", &CALCWIDTHx(3, &i_pcie_dmai.last,
+    REQ_FIFO_WIDTH(this, "REQ_FIFO_WIDTH", &CALCWIDTHx(6, &i_pcie_dmai.bar_hit,
+                                                          &i_pcie_dmai.ecrc_err,
+                                                          &i_pcie_dmai.err_fwd,
+                                                          &i_pcie_dmai.last,
                                                           &i_pcie_dmai.strob,
                                                           &i_pcie_dmai.data)),
     RESP_FIFO_WIDTH(this, "RESP_FIFO_WIDTH", &CALCWIDTHx(3, &o_pcie_dmao.last,
@@ -76,30 +59,22 @@ pcie_dma::pcie_dma(GenObject *parent, const char *name, const char *comment) :
     w_respfifo_wready(this, "w_respfifo_wready", "1"),
     w_respfifo_rvalid(this, "w_respfifo_rvalid", "1"),
     w_respfifo_wr(this, "w_respfifo_wr", "1"),
+    wb_m_axis_rx_tuser(this, "wb_m_axis_rx_tuser", "9"),
+    w_m_axis_rx_tlast(this, "w_m_axis_rx_tlast", "1"),
+    wb_m_axis_rx_tkeep(this, "wb_m_axis_rx_tkeep", "KEEP_WIDTH"),
+    wb_m_axis_rx_tdata(this, "wb_m_axis_rx_tdata", "C_DATA_WIDTH"),
+    w_s_axis_tx_tlast(this, "w_s_axis_tx_tlast", "1"),
+    wb_s_axis_tx_tkeep(this, "wb_s_axis_tx_tkeep", "KEEP_WIDTH"),
+    wb_s_axis_tx_tdata(this, "wb_s_axis_tx_tdata", "C_DATA_WIDTH"),
+    w_tx_src_dsc(this, "w_tx_src_dsc", "1"),
+    w_req_compl(this, "w_req_compl", "1"),
+    w_compl_done(this, "w_compl_done", "1"),
     // registers
-    state(this, "state", "4", "STATE_RST", NO_COMMENT),
-    dw0(this, "dw0", "32", RSTVAL_ZERO, NO_COMMENT),
-    dw1(this, "dw1", "32", RSTVAL_ZERO, NO_COMMENT),
-    dw2(this, "dw2", "32", RSTVAL_ZERO, NO_COMMENT),
-    dw3(this, "dw3", "32", RSTVAL_ZERO, NO_COMMENT),
-    req_rd_locked(this, "req_rd_locked", "1", RSTVAL_ZERO, "Read locked request"),
-    xlen(this, "xlen", "8", "0", "AXI Burst Len - 1"),
-    xsize(this, "xsize", "3", "0", "AXI Burst size: 0=1B, 1=2B, 2=4B, 3=8B,.."),
-    xaddr(this, "xaddr", "CFG_SYSBUS_ADDR_BITS", "0", "AXI request address"),
-    xwstrb(this, "xwstrb", "CFG_SYSBUS_DATA_BYTES", RSTVAL_ZERO, NO_COMMENT),
-    xwdata(this, "xwdata", "CFG_SYSBUS_DATA_BITS", RSTVAL_ZERO, NO_COMMENT),
-    xwena(this, "xwena", "1", RSTVAL_ZERO, "AXI light: RW and W at the same time without burst"),
-    xrdata(this, "xrdata", "CFG_SYSBUS_DATA_BITS", RSTVAL_ZERO, NO_COMMENT),
-    xerr(this, "xerr", "2", "AXI_RESP_OKAY", NO_COMMENT),
-    resp_with_payload(this, "resp_with_payload", "1", RSTVAL_ZERO, "TLP with payload"),
-    resp_data(this, "resp_data", "64", RSTVAL_ZERO, NO_COMMENT),
-    resp_status(this, "resp_status", "3", "TLP_STATUS_SUCCESS", NO_COMMENT),
-    resp_cpl(this, "resp_cpl", "7", RSTVAL_ZERO, "Completion packet"),
-    byte_cnt(this, "byte_cnt", "12", RSTVAL_ZERO, "Byte counter to send in payload"),
     //
     comb(this),
     reqfifo(this, "reqfifo"),
-    respfifo(this, "respfifo")
+    respfifo(this, "respfifo"),
+    PIO_EP_inst(this, "PIO_EP_inst", NO_COMMENT)
 {
     Operation::start(this);
 
@@ -133,375 +108,74 @@ pcie_dma::pcie_dma(GenObject *parent, const char *name, const char *comment) :
         CONNECT(respfifo, 0, respfifo.o_rvalid, w_respfifo_rvalid);
     ENDNEW();
 
+TEXT();
+    PIO_EP_inst.C_DATA_WIDTH.setObjValue(&C_DATA_WIDTH);
+    PIO_EP_inst.KEEP_WIDTH.setObjValue(&KEEP_WIDTH);
+    NEW(PIO_EP_inst, PIO_EP_inst.getName().c_str());
+        CONNECT(PIO_EP_inst, 0, PIO_EP_inst.i_nrst, i_nrst);
+        CONNECT(PIO_EP_inst, 0, PIO_EP_inst.i_clk, i_clk);
+        CONNECT(PIO_EP_inst, 0, PIO_EP_inst.i_s_axis_tx_tready, w_respfifo_wready);
+        CONNECT(PIO_EP_inst, 0, PIO_EP_inst.o_s_axis_tx_tdata, wb_s_axis_tx_tdata);
+        CONNECT(PIO_EP_inst, 0, PIO_EP_inst.o_s_axis_tx_tkeep, wb_s_axis_tx_tkeep);
+        CONNECT(PIO_EP_inst, 0, PIO_EP_inst.o_s_axis_tx_tlast, w_s_axis_tx_tlast);
+        CONNECT(PIO_EP_inst, 0, PIO_EP_inst.o_s_axis_tx_tvalid, w_respfifo_wr);
+        CONNECT(PIO_EP_inst, 0, PIO_EP_inst.o_tx_src_dsc, w_tx_src_dsc);
+        CONNECT(PIO_EP_inst, 0, PIO_EP_inst.i_m_axis_rx_tdata, wb_m_axis_rx_tdata);
+        CONNECT(PIO_EP_inst, 0, PIO_EP_inst.i_m_axis_rx_tkeep, wb_m_axis_rx_tkeep);
+        CONNECT(PIO_EP_inst, 0, PIO_EP_inst.i_m_axis_rx_tlast, w_m_axis_rx_tlast);
+        CONNECT(PIO_EP_inst, 0, PIO_EP_inst.i_m_axis_rx_tvalid, w_reqfifo_rvalid);
+        CONNECT(PIO_EP_inst, 0, PIO_EP_inst.o_m_axis_rx_tready, w_reqfifo_rd);
+        CONNECT(PIO_EP_inst, 0, PIO_EP_inst.i_m_axis_rx_tuser, wb_m_axis_rx_tuser);
+        CONNECT(PIO_EP_inst, 0, PIO_EP_inst.o_req_compl, w_req_compl);
+        CONNECT(PIO_EP_inst, 0, PIO_EP_inst.o_compl_done, w_compl_done);
+        CONNECT(PIO_EP_inst, 0, PIO_EP_inst.i_cfg_completer_id, i_pcie_completer_id);
+    ENDNEW();
+
+
     Operation::start(&comb);
     proc_comb();
 }
 
 void pcie_dma::proc_comb() {
     types_amba* amba = glob_types_amba_;
+    ASSIGN(o_xmst_cfg.descrsize, glob_pnp_cfg_->PNP_CFG_DEV_DESCR_BYTES);
+    ASSIGN(o_xmst_cfg.descrtype, glob_pnp_cfg_->PNP_CFG_TYPE_MASTER);
+    ASSIGN(o_xmst_cfg.vid, glob_pnp_cfg_->VENDOR_OPTIMITECH);
+    ASSIGN(o_xmst_cfg.did, glob_pnp_cfg_->OPTIMITECH_PCIE_DMA);
+    ASSIGN(o_xmsto, amba->axi4_master_out_none);
+    TEXT_ASSIGN();
+    ASSIGN(o_dma_state, ALLZEROS());
+    ASSIGN(o_dbg_pcie_dmai, glob_types_dma_->pcie_dma64_in_none);
+
+    TEXT_ASSIGN();
     ASSIGN(w_pcie_dmai_valid, i_pcie_dmai.valid);
     ASSIGN(w_pcie_dmai_ready, i_pcie_dmai.ready);
 
-TEXT();
-    IF (EQ(BITS(dw0, 9, 0), CONST("1", 10)));
-        TEXT("DW0[9:0] = Length number of DW (4-bytes) for 32/64 bars");
-        SETONE(comb.v_single_tlp);
-    ENDIF();
-    SETVAL(comb.vb_xmst_cfg.descrsize, glob_pnp_cfg_->PNP_CFG_DEV_DESCR_BYTES);
-    SETVAL(comb.vb_xmst_cfg.descrtype, glob_pnp_cfg_->PNP_CFG_TYPE_MASTER);
-    SETVAL(comb.vb_xmst_cfg.vid, glob_pnp_cfg_->VENDOR_OPTIMITECH);
-    SETVAL(comb.vb_xmst_cfg.did, glob_pnp_cfg_->OPTIMITECH_PCIE_DMA);
-    CALLF(&comb.vb_xbytes, amba->XSizeToBytes, 1, &xsize);
+    TEXT_ASSIGN();
+    TEXT_ASSIGN("PCIE PHY clock to system clock AFIFO:");
+    ASSIGN(wb_reqfifo_payload_i, CCx(6, &i_pcie_dmai.bar_hit,
+                                        &i_pcie_dmai.ecrc_err,
+                                        &i_pcie_dmai.err_fwd,
+                                        &i_pcie_dmai.last,
+                                        &i_pcie_dmai.strob,
+                                        &i_pcie_dmai.data));
 
-TEXT();
-    TEXT("Request address bits [1:0] are not transmitted, should be restored from BE[3:0]:");
-    TEXT("be[3:0] => addr[1:0]");
-    TEXT("0000    => 00");
-    TEXT("xxx1    => 00");
-    TEXT("xx10    => 01");
-    TEXT("x100    => 10");
-    TEXT("1000    => 11");
-    IF (NZ(BIT(dw1, 0)));
-        SETVAL(comb.vb_req_addr1_0, CONST("0", 2));
-    ELSIF(NZ(BIT(dw1, 1)));
-        SETVAL(comb.vb_req_addr1_0, CONST("1", 2));
-    ELSIF(NZ(BIT(dw1, 2)));
-        SETVAL(comb.vb_req_addr1_0, CONST("2", 2));
-    ELSIF(NZ(BIT(dw1, 3)));
-        SETVAL(comb.vb_req_addr1_0, CONST("3", 2));
-    ELSE();
-        SETVAL(comb.vb_req_addr1_0, CONST("0", 2));
-    ENDIF();
+TEXT_ASSIGN();
+    SPLx_ASSIGN(wb_reqfifo_payload_o, 4, &wb_m_axis_rx_tuser,
+                                         &w_m_axis_rx_tlast,
+                                         &wb_m_axis_rx_tkeep,
+                                         &wb_m_axis_rx_tdata);
 
-TEXT();
-    TEXT("Request FIFO inputs/outputs:");
-    SETVAL(wb_reqfifo_payload_i, CCx(3, &i_pcie_dmai.last,
-                                       &i_pcie_dmai.strob,
-                                       &i_pcie_dmai.data));
-TEXT();
-    SPLx(wb_reqfifo_payload_o, 3, &comb.v_req_last,
-                                 &comb.vb_req_strob,
-                                 &comb.vb_req_data);
+TEXT_ASSIGN();
+    TEXT_ASSIGN("System Clock to PCIE PHY clock AFIFO:");
+    ASSIGN(wb_respfifo_payload_i, CCx(3, &w_s_axis_tx_tlast,
+                                         &wb_s_axis_tx_tkeep,
+                                         &wb_s_axis_tx_tdata));
 
-TEXT();
-TEXT("Temporary register");
-    SWITCH(state);
-    CASE(STATE_RST);
-        SETONE(comb.v_req_ready);
-        SETVAL(resp_status, TLP_STATUS_SUCCESS);
-        SETZERO(req_rd_locked);
-        SETZERO(resp_cpl);
-        SETZERO(resp_with_payload);
-        IF (NZ(w_reqfifo_rvalid));
-            SETVAL(dw0, BITS(comb.vb_req_data, 31, 0));
-            SETVAL(dw1, BITS(comb.vb_req_data, 63, 32));
-            SETVAL(state, STATE_DW3DW4);
-        ENDIF();
-        ENDCASE();
-
-TEXT();
-    CASE(STATE_DW3DW4);
-        TEXT("64-bits BAR could use 3DW header because if addr[63:32] is zero");
-        TEXT("TLP behaviour is undefined (Xilinx example ignores it):");
-        TEXT("  dw2 = addr[63:32]");
-        TEXT("  dw3 = {addr[31:2], 00}");
-        SETONE(comb.v_req_ready);
-        SETVAL(xlen, DEC(BITS(dw0, 7, 0)), "warning: Actual size of Length is 10 bits. 0 is 1024 DWs (4096 Bytes)");
-        SETVAL(dw2, BITS(comb.vb_req_data, 31, 0));
-        SETZERO(dw3);
-        IF (NZ(w_reqfifo_rvalid));
-            TEXT("fmt[0] = 1 when 4DW header is used");
-            IF (NZ(BIT(dw0, 29)));
-                SETVAL(dw3, BITS(comb.vb_req_data, 63, 32));
-            ENDIF();
-            IF (EZ(BIT(dw0, 30)));
-                TEXT("fmt[1]=0: read operation");
-                SETVAL(state, STATE_AR);
-                SWITCH (BITS(dw0, 28, 24), "DW0[28:24] = Type[4:0]");
-                CASE (CONST("0x1", 5));
-                    TEXT("Read Locked request (in case of error becomes PCIE_CPL_LOCKED_READ_NODATA:");
-                    SETVAL(resp_cpl, pcie_cfg_->PCIE_CPL_LOCKED_READ);
-                    SETONE(req_rd_locked);
-                    ENDCASE();
-                CASE (CONST("0x2", 5));
-                    TEXT("I/O Read request:");
-                    SETVAL(resp_cpl, pcie_cfg_->PCIE_CPL_DATA);
-                    ENDCASE();
-                CASE(CONST("0x5", 5));
-                    TEXT("Configuration Read request Root Port (type 1):");
-                    SETVAL(resp_cpl, pcie_cfg_->PCIE_CPL_DATA);
-                    ENDCASE();
-                CASEDEF();
-                    TEXT("Read request.");
-                    SETVAL(resp_cpl, pcie_cfg_->PCIE_CPL_DATA);
-                    ENDCASE();
-                ENDSWITCH();
-
-                TEXT();
-                SETVAL(byte_cnt, CC2(BITS(dw0, 7, 0), CONST("0", 2)));
-                IF (EZ(BIT(dw0, 29)));
-                    TEXT("fmt[0]=0: 3DW header (32-bits address):");
-                    SETVAL(xsize, CONST("2", 3));
-                    SETBITS(comb.vb_req_addr, 31, 0, CC2(BITS(comb.vb_req_data, 31, 2), comb.vb_req_addr1_0));
-                ELSE();
-                    TEXT("fmt[0]=1: 4DW header (64-bits address):");
-                    SETVAL(xsize, CONST("3", 3));
-                    SETVAL(comb.vb_req_addr, CC3(BITS(comb.vb_req_data, 31, 0),
-                                                 BITS(comb.vb_req_data, 63, 34),
-                                                 comb.vb_req_addr1_0));
-                ENDIF();
-            ELSE();
-                TEXT("fmt[1] = 1: write operation");
-                SETVAL(state, STATE_AW);
-                SETVAL(xwstrb, BITS(dw1, 7, 0));
-                SWITCH (BITS(dw0, 28, 24), "DW0[28:24] = Type[4:0]");
-                CASE (CONST("0x2", 5));
-                    TEXT("I/O Write request:");
-                    SETVAL(resp_cpl, pcie_cfg_->PCIE_CPL_NODATA);
-                    ENDCASE();
-                CASE(CONST("0x5", 5));
-                    TEXT("Configuration Write request Root Port (type 1):");
-                    SETVAL(resp_cpl, pcie_cfg_->PCIE_CPL_NODATA);
-                    ENDCASE();
-                CASEDEF();
-                    TEXT("Write request. No completion.");
-                    ENDCASE();
-                ENDSWITCH();
-
-                TEXT();
-                SETVAL(byte_cnt, CC2(BITS(dw0, 7, 0), CONST("0", 2)));
-                IF (EZ(BIT(dw0, 29)));
-                    TEXT("fmt[0]=0: 3DW header (32-bits address):");
-                    SETVAL(xsize, CONST("2", 3));
-                    SETBITS(comb.vb_req_addr, 31, 0, CC2(BITS(comb.vb_req_data, 31, 2), comb.vb_req_addr1_0));
-                    SETVAL(xwdata, CC2(BITS(comb.vb_req_data, 63, 32), BITS(comb.vb_req_data, 63, 32)));
-                    SETVAL(xwena, comb.v_req_last, "AXI Light: burst transactions are no supported");
-                ELSE();
-                    TEXT("fmt[0]=1: 4DW header (64-bits address):");
-                    SETVAL(xsize, CONST("3", 3));
-                    SETVAL(comb.vb_req_addr, CC3(BITS(comb.vb_req_data, 31, 0),
-                                                 BITS(comb.vb_req_data, 63, 34),
-                                                 comb.vb_req_addr1_0));
-                ENDIF();
-            ENDIF();
-        ENDIF();
-        SETVAL(xaddr, BITS(comb.vb_req_addr, DEC(amba->CFG_SYSBUS_ADDR_BITS), CONST("0")));
-        ENDCASE();
-
-    CASE(STATE_AR);
-        SETONE(comb.vb_xmsto.ar_valid);
-        SETVAL(comb.vb_xmsto.ar_bits.addr, BITS(xaddr, DEC(amba->CFG_SYSBUS_ADDR_BITS), CONST("0")));
-#if 1
-        TEXT("sram base address: 64'h0000000008000000");
-        SETVAL(comb.vb_xmsto.ar_bits.addr, CC2(CONST("0x00008001", 36), BITS(comb.vb_xmsto.ar_bits.addr, 11, 0)));
-#endif
-        SETVAL(comb.vb_xmsto.ar_bits.len, xlen);
-        SETVAL(comb.vb_xmsto.ar_bits.size, xsize);
-        SETVAL(comb.vb_xmsto.ar_bits.lock, req_rd_locked);
-        SETONE(resp_with_payload);
-        IF(NZ(i_xmsti.ar_ready));
-            IF (NZ(comb.v_single_tlp));
-                TEXT("3DW header + DW 32-bits payload");
-                SETVAL(state, STATE_R_SINGLE32);
-            ELSE();
-                TEXT("3DW header only");
-                SETVAL(state, STATE_RESP_DW0DW1);
-            ENDIF();
-        ENDIF();
-        ENDCASE();
-    CASE(STATE_R_SINGLE32);
-        TEXT("32-bit single transactions (no bulk). MEM32 and IO only:");
-        SETONE(comb.vb_xmsto.r_ready);
-        SETVAL(xerr, i_xmsti.r_resp);
-        IF (EZ(BIT(xaddr, 2)));
-            SETVAL(xrdata, CC2(BITS(i_xmsti.r_data, 31, 0), BITS(i_xmsti.r_data, 31, 0)));
-        ELSE();
-            SETVAL(xrdata, CC2(BITS(i_xmsti.r_data, 63, 32), BITS(i_xmsti.r_data, 63, 32)));
-        ENDIF();
-        IF(NZ(i_xmsti.r_valid));
-            SETVAL(state, STATE_RESP_DW0DW1);
-        ENDIF();
-        ENDCASE();
-    CASE(STATE_R);
-        SETVAL(comb.vb_xmsto.r_ready, w_respfifo_wready);
-        SETVAL(comb.v_resp_valid, i_xmsti.r_valid);
-        SETVAL(comb.vb_resp_strob, CONST("0xFF", 8));
-        SETVAL(comb.v_resp_last, INV_L(OR_REDUCE(xlen)));
-        SETVAL(xerr, i_xmsti.r_resp);
-        IF (EQ(xsize, CONST("2", 3)));
-            TEXT("32-bit transactions:");
-            IF (EZ(BIT(xaddr, 2)));
-                SETVAL(comb.vb_resp_data, CC2(BITS(i_xmsti.r_data, 31, 0), BITS(i_xmsti.r_data, 31, 0)));
-            ELSE();
-                SETVAL(comb.vb_resp_data, CC2(BITS(i_xmsti.r_data, 63, 32), BITS(i_xmsti.r_data, 63, 32)));
-            ENDIF();
-        ELSE();
-            TEXT("64-bit transactions:");
-            SETVAL(comb.vb_resp_data, i_xmsti.r_data);
-        ENDIF();
-
-        TEXT();
-        IF(AND2(NZ(i_xmsti.r_valid), NZ(w_respfifo_wready)));
-            TEXT("Burst support: ");
-            IF (NE(i_xmsti.r_resp, amba->AXI_RESP_OKAY));
-                SETVAL(resp_status, TLP_STATUS_ABORTED);
-                IF (NZ(req_rd_locked));
-                    TEXT("Error on Locked Read transaction:");
-                    SETVAL(resp_cpl, pcie_cfg_->PCIE_CPL_LOCKED_READ_NODATA);
-                ENDIF();
-                SETVAL(state, STATE_RESP_DW0DW1);
-            ELSIF (NZ(xlen));
-                SETVAL(xlen, DEC(xlen));
-                SETVAL(xaddr, ADD2(xaddr, comb.vb_xbytes));
-                SETVAL(byte_cnt, SUB2(byte_cnt, comb.vb_xbytes));
-            ELSE();
-                SETVAL(state, STATE_RST);
-            ENDIF();
-        ENDIF();
-        ENDCASE();
-    CASE(STATE_AW);
-        SETONE(comb.vb_xmsto.aw_valid);
-        SETVAL(comb.vb_xmsto.aw_bits.addr, BITS(xaddr, DEC(amba->CFG_SYSBUS_ADDR_BITS), CONST("0")));
-#if 1
-        TEXT("sram base address: 64'h0000000008000000");
-        SETVAL(comb.vb_xmsto.aw_bits.addr, CC2(CONST("0x00008001", 36), BITS(comb.vb_xmsto.aw_bits.addr, 11, 0)));
-#endif
-        SETVAL(comb.vb_xmsto.aw_bits.len, xlen);
-        SETVAL(comb.vb_xmsto.aw_bits.size, xsize);
-        SETVAL(comb.vb_xmsto.w_valid, xwena);
-        SETVAL(comb.vb_xmsto.w_last, xwena);
-        SETVAL(comb.vb_xmsto.w_strb, xwstrb);
-        SETVAL(comb.vb_xmsto.w_data, CC2(BITS(xwdata, 31, 0), BITS(xwdata, 31, 0)));
-        IF(NZ(i_xmsti.aw_ready));
-            IF (AND2(NZ(xwena), NZ(i_xmsti.w_ready)));
-                TEXT("AXI light: no burst transactions:");
-                SETVAL(state, STATE_B);
-                SETZERO(xwena);
-            ELSE();
-                SETVAL(state, STATE_W);
-            ENDIF();
-        ENDIF();
-        ENDCASE();
-    CASE(STATE_W);
-        IF (NZ(xwena));
-            SETZERO(xwena);
-            SETONE(comb.vb_xmsto.w_valid);
-            SETVAL(comb.vb_xmsto.w_strb, xwstrb);
-            SETVAL(comb.vb_xmsto.w_data, xwdata);
-            SETONE(comb.vb_xmsto.w_last);
-            IF(NZ(i_xmsti.w_ready));
-                SETVAL(state, STATE_B);
-            ENDIF();
-        ELSE();
-            SETVAL(comb.v_req_ready, i_xmsti.w_ready);
-            SETVAL(comb.vb_xmsto.w_valid, w_reqfifo_rvalid);
-            SETVAL(comb.vb_xmsto.w_strb, comb.vb_req_strob);
-            SETVAL(comb.vb_xmsto.w_data, comb.vb_req_data);
-            SETVAL(comb.vb_xmsto.w_last, INV_L(OR_REDUCE(xlen)));
-            IF(AND2(NZ(w_reqfifo_rvalid), NZ(i_xmsti.w_ready)));
-                IF (NZ(comb.v_req_last));
-                    SETVAL(state, STATE_B);
-                ENDIF();
-            ENDIF();
-        ENDIF();
-        ENDCASE();
-    CASE(STATE_B);
-        SETONE(comb.vb_xmsto.b_ready);
-        IF(NZ(i_xmsti.b_valid));
-            SETVAL(xerr, i_xmsti.b_resp);
-            IF (NE(i_xmsti.b_resp, amba->AXI_RESP_OKAY));
-                SETVAL(resp_status, TLP_STATUS_ABORTED);
-            ENDIF();
-            IF(EZ(resp_cpl));
-                TEXT("Posted write TLP without response");
-                SETVAL(state, STATE_RST);
-            ELSE();
-                TEXT("Non-posted write TLP with response");
-                SETVAL(state, STATE_RESP_DW0DW1);
-            ENDIF();
-        ENDIF();
-        ENDCASE();
-
-TEXT();
-    CASE(STATE_RESP_DW0DW1);
-        SETONE(comb.v_resp_valid);
-        SETVAL(comb.vb_resp_strob, CONST("0xFF", 8));
-        SETBITS(comb.vb_resp_data, 9, 0, BITS(dw0, 9, 0), "DW0[9:0] Length");
-        SETBITS(comb.vb_resp_data, 11, 10, CONST("0", 2), "DW0[11:10] Reserved");
-        SETBITS(comb.vb_resp_data, 13, 12, BITS(dw0, 13, 12), "DW0[13:12] Attr");
-        SETBIT(comb.vb_resp_data, 14, BIT(dw0, 14), "DW0[14] EP");
-        SETBIT(comb.vb_resp_data, 15, BIT(dw0, 15), "DW0[15] TD");
-        SETBITS(comb.vb_resp_data, 19, 16, CONST("0", 4), "DW0[19:16] Reserved");
-        SETBITS(comb.vb_resp_data, 22, 20, BITS(dw0, 22, 20), "DW0[22:20] TC");
-        SETBIT(comb.vb_resp_data, 23, CONST("0", 1), "DW0[23] Reserved");
-        SETBITS(comb.vb_resp_data, 30, 24, resp_cpl, "DW0[30:24] {Fmt,Type} Completion");
-        SETBIT(comb.vb_resp_data, 31, CONST("0", 1), "DW0[31] Reserved");
-        SETBITS(comb.vb_resp_data, 43, 32, byte_cnt, "DW1[11:0] Byte Count");
-        SETBIT(comb.vb_resp_data, 44, CONST("0", 1), "DW1[12] BCM");
-        SETBITS(comb.vb_resp_data, 47, 45, resp_status, "DW1[15:13] Status");
-        SETBITS(comb.vb_resp_data, 63, 48, i_pcie_completer_id, "DW1[31:16] Completer ID");
-        IF (NZ(w_respfifo_wready));
-            SETVAL(state, STATE_RESP_DW2DW3);
-        ENDIF();
-        ENDCASE();
-
-TEXT();
-    CASE(STATE_RESP_DW2DW3);
-        SETONE(comb.v_resp_valid);
-        SETVAL(comb.vb_resp_strob, CONST("0x0F", 8));
-        SETBITS(comb.vb_resp_data, 6, 0, BITS(xaddr, 6, 0), "DW2[6:0] Low Address");
-        SETBIT(comb.vb_resp_data, 7, CONST("0", 1), "DW2[7] Reserved");
-        SETBITS(comb.vb_resp_data, 15, 8, BITS(dw1, 15, 8), "DW2[15:8] Tag");
-        SETBITS(comb.vb_resp_data, 31, 16, BITS(dw1, 31, 16), "DW2[31:16] Requester ID");
-        SETBITS(comb.vb_resp_data, 63, 32, BITS(xrdata, 31, 0), "DW3[31:0] payload (ignored by strob 0F)");
-        IF (NZ(w_respfifo_wready));
-            IF(NE(resp_status, TLP_STATUS_SUCCESS));
-                SETONE(comb.v_resp_last);
-                SETVAL(state, STATE_RST);
-            ELSIF (AND2(NZ(comb.v_single_tlp), NZ(resp_with_payload)));
-                TEXT("DW4 response with the single DW payload");
-                SETVAL(comb.vb_resp_strob, CONST("0xFF", 8));
-                SETONE(comb.v_resp_last);
-                SETVAL(state, STATE_RST);
-            ELSIF (NZ(resp_with_payload));
-                TEXT("DW3 response only if: payload not a single tlp32");
-                SETVAL(state, STATE_R);
-            ELSE();
-                TEXT("DW3 without payload");
-                SETONE(comb.v_resp_last);
-                SETVAL(state, STATE_RST);
-            ENDIF();
-        ENDIF();
-        ENDCASE();
-
-TEXT();
-    CASEDEF();
-        SETVAL(state, STATE_RST);
-        ENDCASE();
-    ENDSWITCH();
-
-TEXT();
-    SYNC_RESET();
-
-TEXT();
-    TEXT("Response FIFO inputs/outputs:");
-    SETVAL(wb_respfifo_payload_i, CCx(3, &comb.v_resp_last,
-                                         &comb.vb_resp_strob,
-                                         &comb.vb_resp_data));
-    SPLx(wb_respfifo_payload_o, 3, &comb.vb_pcie_dmao.last,
-                                   &comb.vb_pcie_dmao.strob,
-                                   &comb.vb_pcie_dmao.data);
-    SETVAL(comb.vb_pcie_dmao.ready, w_reqfifo_wready);
-    SETVAL(comb.vb_pcie_dmao.valid, w_respfifo_rvalid);
-    SETVAL(o_pcie_dmao, comb.vb_pcie_dmao);
-    SETVAL(w_respfifo_wr, comb.v_resp_valid);
-    SETVAL(w_reqfifo_rd, comb.v_req_ready);
-    SETVAL(o_xmst_cfg, comb.vb_xmst_cfg);
-    SETVAL(o_xmsto, comb.vb_xmsto);
-    TEXT("Debug signals");
-    SETVAL(comb.vb_dbg_pcie_dmai.valid, AND2_L(w_reqfifo_rvalid, comb.v_req_ready));
-    SETVAL(comb.vb_dbg_pcie_dmai.data, comb.vb_req_data);
-    SETVAL(comb.vb_dbg_pcie_dmai.strob, comb.vb_req_strob);
-    SETVAL(comb.vb_dbg_pcie_dmai.last, comb.v_req_last);
-    SETVAL(o_dbg_pcie_dmai, comb.vb_dbg_pcie_dmai);
+TEXT_ASSIGN();
+    ASSIGN(o_pcie_dmao.valid, w_respfifo_rvalid);
+    ASSIGN(o_pcie_dmao.ready, w_reqfifo_wready);
+    SPLx_ASSIGN(wb_respfifo_payload_o, 3, &o_pcie_dmao.last,
+                                          &o_pcie_dmao.strob,
+                                          &o_pcie_dmao.data);
 }

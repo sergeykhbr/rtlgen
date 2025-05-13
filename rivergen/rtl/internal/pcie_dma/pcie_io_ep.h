@@ -17,16 +17,15 @@
 #pragma once
 
 #include <api_rtlgen.h>
-#include "../cdc/cdc_afifo.h"
-#include "pio_ep.h"
+#include "pcie_io_ep_mem_access.h"
+#include "pcie_io_rx_engine.h"
+#include "pcie_io_tx_engine.h"
 
 using namespace sysvc;
 
-class pcie_io : public ModuleObject {
+class pcie_io_ep : public ModuleObject {
  public:
-    pcie_io(GenObject *parent, const char *name, const char *comment);
-
-    virtual bool isAsyncResetParam() override { return false; }
+    pcie_io_ep(GenObject *parent, const char *name, const char *comment);
 
  protected:
     class CombProcess : public CombinationalProcess {
@@ -37,16 +36,13 @@ class pcie_io : public ModuleObject {
     };
 
     void proc_comb();
-    void proc_reqff();
 
  public:
     TmplParamI32D C_DATA_WIDTH;
     TmplParamI32D KEEP_WIDTH;
     // io:
+    InPort i_nrst;
     InPort i_clk;
-    InPort i_user_clk;
-    InPort i_user_reset;
-    InPort i_user_lnk_up;
     TextLine _t0_;
     InPort i_s_axis_tx_tready;
     OutPort o_s_axis_tx_tdata;
@@ -62,52 +58,45 @@ class pcie_io : public ModuleObject {
     OutPort o_m_axis_rx_tready;
     InPort i_m_axis_rx_tuser;
     TextLine _t2_;
-    InPort i_cfg_to_turnoff;
-    OutPort o_cfg_turnoff_ok;
+    OutPort o_req_compl;
+    OutPort o_compl_done;
     InPort i_cfg_completer_id;
 
-    TextLine _fifo0_;
-    ParamI32D REQ_FIFO_WIDTH;
-    ParamI32D RESP_FIFO_WIDTH;
+    Signal wb_rd_addr;
+    Signal wb_rd_be;
+    Signal wb_rd_data;
+    Signal wb_wr_addr;
+    Signal wb_wr_be;
+    Signal wb_wr_data;
+    Signal w_wr_en;
+    Signal w_wr_busy;
+    Signal w_req_compl_int;
+    Signal w_req_compl_wd;
+    Signal w_compl_done_int;
+    Signal wb_req_tc;
+    Signal w_req_td;
+    Signal w_req_ep;
+    Signal wb_req_attr;
+    Signal wb_req_len;
+    Signal wb_req_rid;
+    Signal wb_req_tag;
+    Signal wb_req_be;
+    Signal wb_req_addr;
 
-    Signal wb_reqfifo_payload_i;
-    Signal wb_reqfifo_payload_o;
-    Signal w_m_axis_rx_tready;
-    Signal w_m_axis_rx_tvalid;
-    Signal wb_m_axis_rx_tdata;
-    Signal wb_m_axis_rx_tkeep;
-    Signal w_m_axis_rx_tlast;
-    Signal wb_m_axis_rx_tuser;
-
-    Signal wb_respfifo_payload_i;
-    Signal wb_respfifo_payload_o;
-    Signal w_s_axis_tx_tready;
-    Signal w_s_axis_tx_tvalid;
-    Signal w_tx_src_dsc;
-    Signal w_s_axis_tx_tlast;
-    Signal wb_s_axis_tx_tkeep;
-    Signal wb_s_axis_tx_tdata;
-    TextLine _t4_;
-    Signal w_req_compl;
-    Signal w_compl_done;
-    Logic r_trn_pending;
-    Logic r_cfg_turnoff_ok;
+    pcie_io_ep_mem_access EP_MEM_inst;
+    pcie_io_rx_engine EP_RX_inst;
+    pcie_io_tx_engine EP_TX_inst;
 
     CombProcess comb;
-    ProcObject reqff;
-
-    cdc_afifo reqfifo;
-    cdc_afifo respfifo;
-    pio_ep PIO_EP_inst;
 };
 
-class pcie_io_file : public FileObject {
+class pcie_io_ep_file : public FileObject {
  public:
-    pcie_io_file(GenObject *parent) :
-        FileObject(parent, "pcie_io"),
-        pcie_io_(this, "pcie_io", NO_COMMENT) {}
+    pcie_io_ep_file(GenObject *parent) :
+        FileObject(parent, "pcie_io_ep"),
+        pcie_io_ep_(this, "pcie_io_ep", NO_COMMENT) {}
 
  private:
-    pcie_io pcie_io_;
+    pcie_io_ep pcie_io_ep_;
 };
 

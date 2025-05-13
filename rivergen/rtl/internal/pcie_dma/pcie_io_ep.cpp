@@ -14,10 +14,10 @@
 //  limitations under the License.
 // 
 
-#include "pio_ep.h"
+#include "pcie_io_ep.h"
 
-pio_ep::pio_ep(GenObject *parent, const char *name, const char *comment) :
-    ModuleObject(parent, "PIO_EP", name, comment),
+pcie_io_ep::pcie_io_ep(GenObject *parent, const char *name, const char *comment) :
+    ModuleObject(parent, "pcie_io_ep", name, comment),
     C_DATA_WIDTH(this, "C_DATA_WIDTH", "64", NO_COMMENT),
     KEEP_WIDTH(this, "KEEP_WIDTH", "DIV(C_DATA_WIDTH,8)", NO_COMMENT),
     i_nrst(this, "i_nrst", "1", NO_COMMENT),
@@ -35,18 +35,18 @@ pio_ep::pio_ep(GenObject *parent, const char *name, const char *comment) :
     i_m_axis_rx_tlast(this, "i_m_axis_rx_tlast", "1", NO_COMMENT),
     i_m_axis_rx_tvalid(this, "i_m_axis_rx_tvalid", "1", NO_COMMENT),
     o_m_axis_rx_tready(this, "o_m_axis_rx_tready", "1", NO_COMMENT),
-    i_m_axis_rx_tuser(this, "i_m_axis_rx_tuser", "22", NO_COMMENT),
+    i_m_axis_rx_tuser(this, "i_m_axis_rx_tuser", "9", NO_COMMENT),
     _t2_(this, ""),
     o_req_compl(this, "o_req_compl", "1", NO_COMMENT),
     o_compl_done(this, "o_compl_done", "1", NO_COMMENT),
     i_cfg_completer_id(this, "i_cfg_completer_id", "16", "Bus, Device, Function"),
     // params
     // signals
-    wb_rd_addr(this, "wb_rd_addr", "10", NO_COMMENT),
+    wb_rd_addr(this, "wb_rd_addr", "11", NO_COMMENT),
     wb_rd_be(this, "wb_rd_be", "4", NO_COMMENT),
     wb_rd_data(this, "wb_rd_data", "32", NO_COMMENT),
     wb_wr_addr(this, "wb_wr_addr", "11", NO_COMMENT),
-    wb_wr_be(this, "wb_wr_be", "8", NO_COMMENT),
+    wb_wr_be(this, "wb_wr_be", "4", NO_COMMENT),
     wb_wr_data(this, "wb_wr_data", "32", NO_COMMENT),
     w_wr_en(this, "w_wr_en", "1", NO_COMMENT),
     w_wr_busy(this, "w_wr_busy", "1", NO_COMMENT),
@@ -149,7 +149,7 @@ TEXT();
     proc_comb();
 }
 
-void pio_ep::proc_comb() {
+void pcie_io_ep::proc_comb() {
     ASSIGN(o_req_compl, w_req_compl_int);
     ASSIGN(o_compl_done, w_compl_done_int);
 }

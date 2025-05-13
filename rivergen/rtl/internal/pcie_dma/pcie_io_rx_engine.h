@@ -20,9 +20,9 @@
 
 using namespace sysvc;
 
-class pio_rx_engine : public ModuleObject {
+class pcie_io_rx_engine : public ModuleObject {
  public:
-    pio_rx_engine(GenObject *parent, const char *name, const char *comment);
+    pcie_io_rx_engine(GenObject *parent, const char *name, const char *comment);
 
     virtual bool isAsyncResetParam() override { return false; }
 
@@ -31,15 +31,14 @@ class pio_rx_engine : public ModuleObject {
      public:
         CombProcess(GenObject *parent) :
             CombinationalProcess(parent, "comb"),
-            vb_rdata(this, "vb_rdata", "32", "'0") {
+            vb_region_select(this, "vb_region_select", "2", "'0") {
         }
 
      public:
-        Logic vb_rdata;
+        Logic vb_region_select;
     };
 
     void proc_comb();
-    void proc_reqff();
 
  public:
     TmplParamI32D C_DATA_WIDTH;
@@ -75,17 +74,56 @@ class pio_rx_engine : public ModuleObject {
     OutPort o_wr_en;                         // Memory Write Enable
     InPort i_wr_busy;                        // Memory Write Busy
 
+    TextLine _t4_;
+    ParamLogic PIO_RX_MEM_RD32_FMT_TYPE;
+    ParamLogic PIO_RX_MEM_WR32_FMT_TYPE;
+    ParamLogic PIO_RX_MEM_RD64_FMT_TYPE;
+    ParamLogic PIO_RX_MEM_WR64_FMT_TYPE;
+    ParamLogic PIO_RX_IO_RD32_FMT_TYPE;
+    ParamLogic PIO_RX_IO_WR32_FMT_TYPE;
+    TextLine _t5_;
+    ParamLogic PIO_RX_RST_STATE;
+    ParamLogic PIO_RX_MEM_RD32_DW1DW2;
+    ParamLogic PIO_RX_MEM_WR32_DW1DW2;
+    ParamLogic PIO_RX_MEM_RD64_DW1DW2;
+    ParamLogic PIO_RX_MEM_WR64_DW1DW2;
+    ParamLogic PIO_RX_MEM_WR64_DW3;
+    ParamLogic PIO_RX_WAIT_STATE;
+    ParamLogic PIO_RX_IO_WR_DW1DW2;
+    ParamLogic PIO_RX_IO_MEM_WR_WAIT_STATE;
+
+    Logic w_sop;
+
+    RegSignal m_axis_rx_tready;
+    RegSignal req_compl;
+    RegSignal req_compl_wd;
+    RegSignal req_tc;
+    RegSignal req_td;
+    RegSignal req_ep;
+    RegSignal req_attr;
+    RegSignal req_len;
+    RegSignal req_rid;
+    RegSignal req_tag;
+    RegSignal req_be;
+    RegSignal req_addr;
+    RegSignal wr_addr;
+    RegSignal wr_be;
+    RegSignal wr_data;
+    RegSignal wr_en;
+    RegSignal state;
+    RegSignal tlp_type;
+    RegSignal in_packet_q;
+
     CombProcess comb;
-    ProcObject reqff;
 };
 
-class pio_rx_engine_file : public FileObject {
+class pcie_io_rx_engine_file : public FileObject {
  public:
-    pio_rx_engine_file(GenObject *parent) :
-        FileObject(parent, "PIO_RX_ENGINE"),
-        pio_rx_engine_(this, "PIO_RX_ENGINE", NO_COMMENT) {}
+    pcie_io_rx_engine_file(GenObject *parent) :
+        FileObject(parent, "pcie_io_rx_engine"),
+        pcie_io_rx_engine_(this, "pcie_io_rx_engine", NO_COMMENT) {}
 
  private:
-    pio_rx_engine pio_rx_engine_;
+    pcie_io_rx_engine pcie_io_rx_engine_;
 };
 

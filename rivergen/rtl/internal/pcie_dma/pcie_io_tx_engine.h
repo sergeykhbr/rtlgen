@@ -20,9 +20,9 @@
 
 using namespace sysvc;
 
-class pio_tx_engine : public ModuleObject {
+class pcie_io_tx_engine : public ModuleObject {
  public:
-    pio_tx_engine(GenObject *parent, const char *name, const char *comment);
+    pcie_io_tx_engine(GenObject *parent, const char *name, const char *comment);
 
     virtual bool isAsyncResetParam() override { return false; }
 
@@ -104,13 +104,13 @@ class pio_tx_engine : public ModuleObject {
     ProcObject reqff;
 };
 
-class pio_tx_engine_file : public FileObject {
+class pcie_io_tx_engine_file : public FileObject {
  public:
-    pio_tx_engine_file(GenObject *parent) :
-        FileObject(parent, "PIO_TX_ENGINE"),
-        pio_tx_engine_(this, "PIO_TX_ENGINE", NO_COMMENT) {}
+    pcie_io_tx_engine_file(GenObject *parent) :
+        FileObject(parent, "pcie_io_tx_engine"),
+        pcie_io_tx_engine_(this, "pcie_io_tx_engine", NO_COMMENT) {}
 
  private:
-    pio_tx_engine pio_tx_engine_;
+    pcie_io_tx_engine pcie_io_tx_engine_;
 };
 
