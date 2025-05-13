@@ -64,8 +64,6 @@ pcie_io_tx_engine::pcie_io_tx_engine(GenObject *parent, const char *name, const 
     s_axis_tx_tvalid(this, "s_axis_tx_tvalid", "1", RSTVAL_ZERO, NO_COMMENT),
     compl_done(this, "compl_done", "1", RSTVAL_ZERO, NO_COMMENT),
     rd_be(this, "rd_be", "4", "'0", NO_COMMENT),
-    byte_count(this, "byte_count", "12", "'0", NO_COMMENT),
-    lower_addr(this, "lower_addr", "7", "'0", NO_COMMENT),
     req_compl_q(this, "req_compl_q", "1", RSTVAL_ZERO, NO_COMMENT),
     req_compl_wd_q(this, "req_compl_wd_q", "1", "1", NO_COMMENT),
     compl_busy_i(this, "compl_busy_i", "1", RSTVAL_ZERO, NO_COMMENT),
@@ -90,7 +88,7 @@ void pcie_io_tx_engine::proc_comb() {
     TEXT("Calculate byte count based on byte enable");
     SETVAL(comb.vb_add_be20, ADD2(CC2(CONST("0", 1), BIT(rd_be, 3)), CC2(CONST("0", 1), BIT(rd_be, 2))));
     SETVAL(comb.vb_add_be21, ADD2(CC2(CONST("0", 1), BIT(rd_be, 1)), CC2(CONST("0", 1), BIT(rd_be, 0))));
-    SETVAL(byte_count, ADD2(CC2(CONST("0", 2), comb.vb_add_be20), CC2(CONST("0", 2), comb.vb_add_be21)));
+    SETVAL(comb.vb_byte_count, ADD2(CC2(CONST("0", 2), comb.vb_add_be20), CC2(CONST("0", 2), comb.vb_add_be21)));
 
 TEXT();
     SETVAL(req_compl_q, i_req_compl);
@@ -99,15 +97,15 @@ TEXT();
 TEXT();
     IF (EZ(w_compl_wd));
         TEXT("Request without payload");
-        SETZERO(lower_addr);
+        SETZERO(comb.vb_lower_addr);
     ELSIF (NZ(BIT(rd_be, 0)));
-        SETZERO(lower_addr);
+        SETZERO(comb.vb_lower_addr);
     ELSIF (NZ(BIT(rd_be, 1)));
-        SETVAL(lower_addr, CC2(BITS(i_req_addr, 6, 2), CONST("1", 2)));
+        SETVAL(comb.vb_lower_addr, CC2(BITS(i_req_addr, 6, 2), CONST("1", 2)));
     ELSIF (NZ(BIT(rd_be, 2)));
-        SETVAL(lower_addr, CC2(BITS(i_req_addr, 6, 2), CONST("2", 2)));
+        SETVAL(comb.vb_lower_addr, CC2(BITS(i_req_addr, 6, 2), CONST("2", 2)));
     ELSIF (NZ(BIT(rd_be, 3)));
-        SETVAL(lower_addr, CC2(BITS(i_req_addr, 6, 2), CONST("3", 2)));
+        SETVAL(comb.vb_lower_addr, CC2(BITS(i_req_addr, 6, 2), CONST("3", 2)));
     ENDIF();
 
 TEXT();
@@ -144,7 +142,7 @@ TEXT();
             SETBITS(comb.vb_s_axis_tx_tdata, 63, 48, i_completer_id);
             SETBITS(comb.vb_s_axis_tx_tdata, 47, 45, CONST("0", 3));
             SETBIT(comb.vb_s_axis_tx_tdata, 44, CONST("0", 1));
-            SETBITS(comb.vb_s_axis_tx_tdata, 43, 32, byte_count);
+            SETBITS(comb.vb_s_axis_tx_tdata, 43, 32, comb.vb_byte_count);
             SETBIT(comb.vb_s_axis_tx_tdata, 31, CONST("0", 1));
             IF (NZ(req_compl_wd_q));
                 SETBITS(comb.vb_s_axis_tx_tdata, 30, 24, PIO_CPLD_FMT_TYPE);
@@ -183,7 +181,7 @@ TEXT();
             SETBITS(comb.vb_s_axis_tx_tdata, 31, 16, i_req_rid);
             SETBITS(comb.vb_s_axis_tx_tdata, 15, 8, i_req_tag);
             SETBIT(comb.vb_s_axis_tx_tdata, 7, CONST("0", 1));
-            SETBITS(comb.vb_s_axis_tx_tdata, 6, 0, lower_addr);
+            SETBITS(comb.vb_s_axis_tx_tdata, 6, 0, comb.vb_lower_addr);
             SETVAL(s_axis_tx_tdata, comb.vb_s_axis_tx_tdata);
 
             TEXT();
