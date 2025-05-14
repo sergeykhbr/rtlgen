@@ -36,12 +36,21 @@ class pcie_dma : public ModuleObject {
             CombinationalProcess(parent, "comb"),
             vb_xmst_cfg(this, "vb_xmst_cfg", NO_COMMENT),
             vb_xmsto(this, "vb_xmsto", NO_COMMENT),
-            vb_pcie_dmao(this, "vb_pcie_dmao", NO_COMMENT) {
+            vb_pcie_dmao(this, "vb_pcie_dmao", NO_COMMENT),
+            vb_m_axis_rx_tuser(this, "vb_m_axis_rx_tuser", "9"),
+            v_m_axis_rx_tlast(this, "v_m_axis_rx_tlast", "1"),
+            vb_m_axis_rx_tkeep(this, "vb_m_axis_rx_tkeep", "KEEP_WIDTH"),
+            vb_m_axis_rx_tdata(this, "vb_m_axis_rx_tdata", "C_DATA_WIDTH") {
         }
      public:
         types_pnp::dev_config_type vb_xmst_cfg;
         types_amba::axi4_master_out_type vb_xmsto;
         types_dma::pcie_dma64_out_type vb_pcie_dmao;
+        // SystemC fix use variable to split FIFO bus:
+        Logic vb_m_axis_rx_tuser;
+        Logic v_m_axis_rx_tlast;
+        Logic vb_m_axis_rx_tkeep;
+        Logic vb_m_axis_rx_tdata;
     };
 
     void proc_comb();
@@ -61,7 +70,11 @@ class pcie_dma : public ModuleObject {
     InStruct<types_amba::axi4_master_in_type> i_xmsti;
     OutStruct<types_amba::axi4_master_out_type> o_xmsto;
     TextLine _text2_;
-    OutStruct<types_dma::pcie_dma64_in_type> o_dbg_pcie_dmai;
+    OutPort o_dbg_mem_valid;
+    OutPort o_dbg_mem_wren;
+    OutPort o_dbg_mem_wstrb;
+    OutPort o_dbg_mem_addr;
+    OutPort o_dbg_mem_data;
     
     TextLine _fmt0_;
     ParamI32D C_DATA_WIDTH;

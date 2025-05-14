@@ -31,8 +31,18 @@ class pcie_io_ep : public ModuleObject {
     class CombProcess : public CombinationalProcess {
      public:
         CombProcess(GenObject *parent) :
-            CombinationalProcess(parent, "comb") {
+            CombinationalProcess(parent, "comb"),
+            v_mem_valid(this, "v_mem_valid", "1", RSTVAL_ZERO),
+            v_mem_wren(this, "v_mem_wren", "1", RSTVAL_ZERO),
+            vb_mem_addr(this, "vb_mem_addr", "13", "'0"),
+            vb_mem_wstrb(this, "vb_mem_wstrb", "8", "'0"),
+            vb_mem_data(this, "vb_mem_data", "32", "'0") {
         }
+        Logic v_mem_valid;
+        Logic v_mem_wren;
+        Logic vb_mem_addr;
+        Logic vb_mem_wstrb;
+        Logic vb_mem_data;
     };
 
     void proc_comb();
@@ -61,6 +71,13 @@ class pcie_io_ep : public ModuleObject {
     OutPort o_req_compl;
     OutPort o_compl_done;
     InPort i_cfg_completer_id;
+    TextLine _t3_;
+    OutPort o_mem_valid;
+    OutPort o_mem_wren;
+    OutPort o_mem_wstrb;
+    OutPort o_mem_addr;
+    OutPort o_mem_data;
+
 
     Signal wb_rd_addr;
     Signal wb_rd_be;

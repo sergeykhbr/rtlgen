@@ -31,7 +31,11 @@ pcie_dma::pcie_dma(GenObject *parent, const char *name, const char *comment) :
     i_xmsti(this, "i_xmsti"),
     o_xmsto(this, "o_xmsto"),
     _text2_(this, "Debug signals:"),
-    o_dbg_pcie_dmai(this, "o_dbg_pcie_dmai"),
+    o_dbg_mem_valid(this, "o_dbg_mem_valid", "1"),
+    o_dbg_mem_wren(this, "o_dbg_mem_wren", "1"),
+    o_dbg_mem_wstrb(this, "o_dbg_mem_wstrb", "8"),
+    o_dbg_mem_addr(this, "o_dbg_mem_addr", "13"),
+    o_dbg_mem_data(this, "o_dbg_mem_data", "32"),
     // params
     _fmt0_(this, ""),
     C_DATA_WIDTH(this, "C_DATA_WIDTH", "64", NO_COMMENT),
@@ -129,6 +133,11 @@ TEXT();
         CONNECT(PIO_EP_inst, 0, PIO_EP_inst.o_req_compl, w_req_compl);
         CONNECT(PIO_EP_inst, 0, PIO_EP_inst.o_compl_done, w_compl_done);
         CONNECT(PIO_EP_inst, 0, PIO_EP_inst.i_cfg_completer_id, i_pcie_completer_id);
+        CONNECT(PIO_EP_inst, 0, PIO_EP_inst.o_mem_valid, o_dbg_mem_valid);
+        CONNECT(PIO_EP_inst, 0, PIO_EP_inst.o_mem_wren, o_dbg_mem_wren);
+        CONNECT(PIO_EP_inst, 0, PIO_EP_inst.o_mem_wstrb, o_dbg_mem_wstrb);
+        CONNECT(PIO_EP_inst, 0, PIO_EP_inst.o_mem_addr, o_dbg_mem_addr);
+        CONNECT(PIO_EP_inst, 0, PIO_EP_inst.o_mem_data, o_dbg_mem_data);
     ENDNEW();
 
 
@@ -148,26 +157,29 @@ void pcie_dma::proc_comb() {
     
     TEXT();
     SETVAL(o_dma_state, ALLZEROS());
-    SETVAL(o_dbg_pcie_dmai, glob_types_dma_->pcie_dma64_in_none);
 
     TEXT_ASSIGN();
     ASSIGN(w_pcie_dmai_valid, i_pcie_dmai.valid);
     ASSIGN(w_pcie_dmai_ready, i_pcie_dmai.ready);
 
-    TEXT_ASSIGN();
-    TEXT_ASSIGN("PCIE PHY clock to system clock AFIFO:");
+    TEXT();
+    TEXT("PCIE PHY clock to system clock AFIFO:");
     ASSIGN(wb_reqfifo_payload_i, CCx(6, &i_pcie_dmai.bar_hit,
                                         &i_pcie_dmai.ecrc_err,
                                         &i_pcie_dmai.err_fwd,
                                         &i_pcie_dmai.last,
                                         &i_pcie_dmai.strob,
                                         &i_pcie_dmai.data));
-
-TEXT_ASSIGN();
-    SPLx_ASSIGN(wb_reqfifo_payload_o, 4, &wb_m_axis_rx_tuser,
-                                         &w_m_axis_rx_tlast,
-                                         &wb_m_axis_rx_tkeep,
-                                         &wb_m_axis_rx_tdata);
+    TEXT();
+    TEXT("SystemC limitation, cannot assign directly to signal:");
+    SPLx(wb_reqfifo_payload_o, 4, &comb.vb_m_axis_rx_tuser,
+                                  &comb.v_m_axis_rx_tlast,
+                                  &comb.vb_m_axis_rx_tkeep,
+                                  &comb.vb_m_axis_rx_tdata);
+    SETVAL(wb_m_axis_rx_tuser, comb.vb_m_axis_rx_tuser);
+    SETVAL(w_m_axis_rx_tlast, comb.v_m_axis_rx_tlast);
+    SETVAL(wb_m_axis_rx_tkeep, comb.vb_m_axis_rx_tkeep);
+    SETVAL(wb_m_axis_rx_tdata, comb.vb_m_axis_rx_tdata);
 
 TEXT_ASSIGN();
     TEXT_ASSIGN("System Clock to PCIE PHY clock AFIFO:");

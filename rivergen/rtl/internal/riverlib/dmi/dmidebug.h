@@ -151,8 +151,8 @@ public:
     TextLine _t0_;
     ParamI32D CDC_REG_WIDTH;
     Signal w_reqfifo_wready_unused;
-    Signal wb_reqfifo_payload_i;
-    Signal wb_reqfifo_payload_o;
+    SignalBig wb_reqfifo_payload_i;
+    SignalBig wb_reqfifo_payload_o;
 
     // regs
     RegSignal bus_jtag;

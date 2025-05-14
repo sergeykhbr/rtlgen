@@ -40,6 +40,12 @@ pcie_io_ep::pcie_io_ep(GenObject *parent, const char *name, const char *comment)
     o_req_compl(this, "o_req_compl", "1", NO_COMMENT),
     o_compl_done(this, "o_compl_done", "1", NO_COMMENT),
     i_cfg_completer_id(this, "i_cfg_completer_id", "16", "Bus, Device, Function"),
+    _t3_(this, "Memory access signals:"),
+    o_mem_valid(this, "o_mem_valid", "1"),
+    o_mem_wren(this, "o_mem_wren", "1"),
+    o_mem_wstrb(this, "o_mem_wstrb", "8"),
+    o_mem_addr(this, "o_mem_addr", "13"),
+    o_mem_data(this, "o_mem_data", "32"),
     // params
     // signals
     wb_rd_addr(this, "wb_rd_addr", "11", NO_COMMENT),
@@ -152,4 +158,19 @@ TEXT();
 void pcie_io_ep::proc_comb() {
     ASSIGN(o_req_compl, w_req_compl_int);
     ASSIGN(o_compl_done, w_compl_done_int);
+
+    IF (NZ(w_req_compl_int));
+        SETONE(comb.v_mem_valid);
+        SETVAL(comb.v_mem_wren, w_wr_en);
+        SETVAL(comb.vb_mem_wstrb, wb_wr_be);
+        SETVAL(comb.vb_mem_addr, wb_req_addr);
+        SETVAL(comb.vb_mem_data, wb_wr_data);
+    ENDIF();
+
+
+    SETVAL(o_mem_valid, comb.v_mem_valid);
+    SETVAL(o_mem_wren, comb.v_mem_wren);
+    SETVAL(o_mem_wstrb, CC2(CONST("0", 4), comb.vb_mem_wstrb));
+    SETVAL(o_mem_addr, comb.vb_mem_addr);
+    SETVAL(o_mem_data, comb.vb_mem_data);
 }
