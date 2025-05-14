@@ -138,14 +138,17 @@ TEXT();
 
 void pcie_dma::proc_comb() {
     types_amba* amba = glob_types_amba_;
-    ASSIGN(o_xmst_cfg.descrsize, glob_pnp_cfg_->PNP_CFG_DEV_DESCR_BYTES);
-    ASSIGN(o_xmst_cfg.descrtype, glob_pnp_cfg_->PNP_CFG_TYPE_MASTER);
-    ASSIGN(o_xmst_cfg.vid, glob_pnp_cfg_->VENDOR_OPTIMITECH);
-    ASSIGN(o_xmst_cfg.did, glob_pnp_cfg_->OPTIMITECH_PCIE_DMA);
-    ASSIGN(o_xmsto, amba->axi4_master_out_none);
-    TEXT_ASSIGN();
-    ASSIGN(o_dma_state, ALLZEROS());
-    ASSIGN(o_dbg_pcie_dmai, glob_types_dma_->pcie_dma64_in_none);
+    SETVAL(comb.vb_xmst_cfg.descrsize, glob_pnp_cfg_->PNP_CFG_DEV_DESCR_BYTES);
+    SETVAL(comb.vb_xmst_cfg.descrtype, glob_pnp_cfg_->PNP_CFG_TYPE_MASTER);
+    SETVAL(comb.vb_xmst_cfg.vid, glob_pnp_cfg_->VENDOR_OPTIMITECH);
+    SETVAL(comb.vb_xmst_cfg.did, glob_pnp_cfg_->OPTIMITECH_PCIE_DMA);
+
+    SETVAL(o_xmst_cfg, comb.vb_xmst_cfg);
+    SETVAL(o_xmsto, amba->axi4_master_out_none);
+    
+    TEXT();
+    SETVAL(o_dma_state, ALLZEROS());
+    SETVAL(o_dbg_pcie_dmai, glob_types_dma_->pcie_dma64_in_none);
 
     TEXT_ASSIGN();
     ASSIGN(w_pcie_dmai_valid, i_pcie_dmai.valid);
@@ -172,10 +175,11 @@ TEXT_ASSIGN();
                                          &wb_s_axis_tx_tkeep,
                                          &wb_s_axis_tx_tdata));
 
-TEXT_ASSIGN();
-    ASSIGN(o_pcie_dmao.valid, w_respfifo_rvalid);
-    ASSIGN(o_pcie_dmao.ready, w_reqfifo_wready);
-    SPLx_ASSIGN(wb_respfifo_payload_o, 3, &o_pcie_dmao.last,
-                                          &o_pcie_dmao.strob,
-                                          &o_pcie_dmao.data);
+TEXT();
+    SETVAL(comb.vb_pcie_dmao.valid, w_respfifo_rvalid);
+    SETVAL(comb.vb_pcie_dmao.ready, w_reqfifo_wready);
+    SPLx(wb_respfifo_payload_o, 3, &comb.vb_pcie_dmao.last,
+                                   &comb.vb_pcie_dmao.strob,
+                                   &comb.vb_pcie_dmao.data);
+    SETVAL(o_pcie_dmao, comb.vb_pcie_dmao);
 }

@@ -33,9 +33,15 @@ class pcie_dma : public ModuleObject {
     class CombProcess : public CombinationalProcess {
      public:
         CombProcess(GenObject *parent) :
-            CombinationalProcess(parent, "comb") {
+            CombinationalProcess(parent, "comb"),
+            vb_xmst_cfg(this, "vb_xmst_cfg", NO_COMMENT),
+            vb_xmsto(this, "vb_xmsto", NO_COMMENT),
+            vb_pcie_dmao(this, "vb_pcie_dmao", NO_COMMENT) {
         }
      public:
+        types_pnp::dev_config_type vb_xmst_cfg;
+        types_amba::axi4_master_out_type vb_xmsto;
+        types_dma::pcie_dma64_out_type vb_pcie_dmao;
     };
 
     void proc_comb();

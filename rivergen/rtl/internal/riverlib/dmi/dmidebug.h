@@ -20,7 +20,7 @@
 #include "../../ambalib/types_pnp.h"
 #include "../river_cfg.h"
 #include "../types_river.h"
-#include "jtagcdc.h"
+#include "../../cdc/cdc_afifo.h"
 #include "jtagtap.h"
 
 using namespace sysvc;
@@ -42,6 +42,10 @@ class dmidebug : public ModuleObject {
             hsel(this, "hsel", "0", NO_COMMENT),
             v_cmd_busy(this, "v_cmd_busy", "1"),
             v_cdc_dmi_req_ready(this, "v_cdc_dmi_req_ready", "1"),
+            v_cdc_dmi_req_write(this, "v_cdc_dmi_req_write", "1"),
+            vb_cdc_dmi_req_addr(this, "vb_cdc_dmi_req_addr", "7"),
+            vb_cdc_dmi_req_data(this, "vb_cdc_dmi_req_data", "32"),
+            v_cdc_dmi_hardreset(this, "v_cdc_dmi_hardreset", "1"),
             vb_arg1(this, "vb_arg1", "64", "'0", NO_COMMENT),
             t_command(this, "t_command", "32", "'0", NO_COMMENT),
             t_progbuf(this, "t_progbuf", "MUL(32,CFG_PROGBUF_REG_TOTAL)", "'0", NO_COMMENT),
@@ -57,6 +61,10 @@ class dmidebug : public ModuleObject {
         I32D hsel;
         Logic v_cmd_busy;
         Logic v_cdc_dmi_req_ready;
+        Logic v_cdc_dmi_req_write;
+        Logic vb_cdc_dmi_req_addr;
+        Logic vb_cdc_dmi_req_data;
+        Logic v_cdc_dmi_hardreset;
         Logic vb_arg1;
         Logic t_command;
         Logic t_progbuf;
@@ -132,13 +140,19 @@ public:
     Signal w_tap_dmi_hardreset;
     Signal w_cdc_dmi_req_valid;
     Signal w_cdc_dmi_req_ready;
-    Signal w_cdc_dmi_req_write;
-    Signal wb_cdc_dmi_req_addr;
-    Signal wb_cdc_dmi_req_data;
-    Signal w_cdc_dmi_hardreset;
+    //Signal w_cdc_dmi_req_write;
+    //Signal wb_cdc_dmi_req_addr;
+    //Signal wb_cdc_dmi_req_data;
+    //Signal w_cdc_dmi_hardreset;
     Signal wb_jtag_dmi_resp_data;
     Signal w_jtag_dmi_busy;
     Signal w_jtag_dmi_error;
+
+    TextLine _t0_;
+    ParamI32D CDC_REG_WIDTH;
+    Signal w_reqfifo_wready_unused;
+    Signal wb_reqfifo_payload_i;
+    Signal wb_reqfifo_payload_o;
 
     // regs
     RegSignal bus_jtag;
@@ -185,7 +199,7 @@ public:
     // process
     CombProcess comb;
     // sub-modules:
-    jtagcdc cdc;
+    cdc_afifo cdc;
     jtagtap tap;
 };
 

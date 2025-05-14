@@ -41,18 +41,19 @@ apb_prci::apb_prci(GenObject *parent, const char *name, const char *comment) :
     w_req_write(this, "w_req_write", "1"),
     wb_req_wdata(this, "wb_req_wdata", "32"),
     // registers
-    sys_rst(this, &i_clk, CLK_POSEDGE, &i_pwrreset, ACTIVE_HIGH, "sys_rst", "1", RSTVAL_ZERO, NO_COMMENT),
-    sys_nrst(this, &i_clk, CLK_POSEDGE, &i_pwrreset, ACTIVE_HIGH, "sys_nrst", "1", RSTVAL_ZERO, NO_COMMENT),
-    dbg_nrst(this, &i_clk, CLK_POSEDGE, &i_pwrreset, ACTIVE_HIGH, "dbg_nrst", "1", RSTVAL_ZERO, NO_COMMENT),
-    pcie_nrst(this, &i_clk, CLK_POSEDGE, &i_pwrreset, ACTIVE_HIGH, "pcie_nrst", "1", RSTVAL_ZERO, NO_COMMENT),
-    sys_locked(this, &i_clk, CLK_POSEDGE, &i_pwrreset, ACTIVE_HIGH, "sys_locked", "1", RSTVAL_ZERO, NO_COMMENT),
-    ddr_locked(this, &i_clk, CLK_POSEDGE, &i_pwrreset, ACTIVE_HIGH, "ddr_locked", "1", RSTVAL_ZERO, NO_COMMENT),
-    pcie_lnk_up(this, &i_clk, CLK_POSEDGE, &i_pwrreset, ACTIVE_HIGH, "pcie_lnk_up", "1", RSTVAL_ZERO, NO_COMMENT),
-    resp_valid(this, &i_clk, CLK_POSEDGE, &i_pwrreset, ACTIVE_HIGH, "resp_valid", "1", RSTVAL_ZERO, NO_COMMENT),
-    resp_rdata(this, &i_clk, CLK_POSEDGE, &i_pwrreset, ACTIVE_HIGH, "resp_rdata", "32", "'0", NO_COMMENT),
-    resp_err(this, &i_clk, CLK_POSEDGE, &i_pwrreset, ACTIVE_HIGH, "resp_err", "1", RSTVAL_ZERO, NO_COMMENT),
+    r_sys_rst(this, "r_sys_rst", "1", "1", NO_COMMENT),
+    r_sys_nrst(this, "r_sys_nrst", "1", RSTVAL_ZERO, NO_COMMENT),
+    r_dbg_nrst(this, "r_dbg_nrst", "1", RSTVAL_ZERO, NO_COMMENT),
+    rb_pcie_nrst(this, "rb_pcie_nrst", "2", RSTVAL_ZERO, NO_COMMENT),
+    r_sys_locked(this, "r_sys_locked", "1", RSTVAL_ZERO, NO_COMMENT),
+    rb_ddr_locked(this, "rb_ddr_locked", "2", RSTVAL_ZERO, NO_COMMENT),
+    rb_pcie_lnk_up(this, "rb_pcie_lnk_up", "2", RSTVAL_ZERO, NO_COMMENT),
+    resp_valid(this, &i_clk, CLK_POSEDGE, &r_sys_nrst, ACTIVE_LOW, "resp_valid", "1", RSTVAL_ZERO, NO_COMMENT),
+    resp_rdata(this, &i_clk, CLK_POSEDGE, &r_sys_nrst, ACTIVE_LOW, "resp_rdata", "32", "'0", NO_COMMENT),
+    resp_err(this, &i_clk, CLK_POSEDGE, &r_sys_nrst, ACTIVE_LOW, "resp_err", "1", RSTVAL_ZERO, NO_COMMENT),
     //
     comb(this),
+    reqff(this, "reqff", &i_clk, CLK_POSEDGE, &i_pwrreset, ACTIVE_HIGH, NO_COMMENT),
     pslv0(this, "pslv0", NO_COMMENT)
 {
     Operation::start(this);
@@ -61,7 +62,7 @@ apb_prci::apb_prci(GenObject *parent, const char *name, const char *comment) :
     pslv0.did.setObjValue(&glob_pnp_cfg_->OPTIMITECH_PRCI);
     NEW(pslv0, pslv0.getName().c_str());
         CONNECT(pslv0, 0, pslv0.i_clk, i_clk);
-        CONNECT(pslv0, 0, pslv0.i_nrst, sys_nrst);
+        CONNECT(pslv0, 0, pslv0.i_nrst, r_sys_nrst);
         CONNECT(pslv0, 0, pslv0.i_mapinfo, i_mapinfo);
         CONNECT(pslv0, 0, pslv0.o_cfg, o_cfg);
         CONNECT(pslv0, 0, pslv0.i_apbi, i_apbi);
@@ -77,28 +78,23 @@ apb_prci::apb_prci(GenObject *parent, const char *name, const char *comment) :
 
     Operation::start(&comb);
     proc_comb();
+
+    Operation::start(&reqff);
+    proc_reqff();
 }
 
 void apb_prci::proc_comb() {
-    SETVAL(sys_locked, i_sys_locked);
-    SETVAL(ddr_locked, i_ddr_locked);
-    SETVAL(pcie_lnk_up, i_pcie_phy_lnk_up);
-    SETVAL(sys_rst, OR3(i_pwrreset, INV(i_sys_locked), i_dmireset));
-    SETVAL(sys_nrst, INV(OR3(i_pwrreset, INV(i_sys_locked), i_dmireset)));
-    SETVAL(dbg_nrst, INV(OR2(i_pwrreset, INV(i_sys_locked))));
-    SETVAL(pcie_nrst, INV_L(OR4(i_pwrreset, INV(i_sys_locked), INV(pcie_lnk_up), i_pcie_phy_rst)));
-
 TEXT();
     TEXT("Registers access:");
     SWITCH (BITS(wb_req_addr, 11, 2));
     CASE (CONST("0", 10), "0x00: pll statuses");
-        SETBIT(comb.vb_rdata, 0, sys_locked);
-        SETBIT(comb.vb_rdata, 1, ddr_locked);
-        SETBIT(comb.vb_rdata, 2, pcie_lnk_up);
+        SETBIT(comb.vb_rdata, 0, r_sys_locked);
+        SETBIT(comb.vb_rdata, 1, BIT(rb_ddr_locked, 1));
+        SETBIT(comb.vb_rdata, 2, BIT(rb_pcie_lnk_up, 1));
         ENDCASE();
     CASE (CONST("1", 10), "0x04: reset status");
-        SETBIT(comb.vb_rdata, 0, sys_nrst);
-        SETBIT(comb.vb_rdata, 1, dbg_nrst);
+        SETBIT(comb.vb_rdata, 0, r_sys_nrst);
+        SETBIT(comb.vb_rdata, 1, r_dbg_nrst);
         IF (NZ(w_req_valid));
             IF (NZ(w_req_write));
                 TEXT("todo:");
@@ -118,8 +114,29 @@ TEXT();
     SYNC_RESET();
 
 TEXT();
-    SETVAL(o_sys_rst, sys_rst);
-    SETVAL(o_sys_nrst, sys_nrst);
-    SETVAL(o_dbg_nrst, dbg_nrst);
-    SETVAL(o_pcie_nrst, pcie_nrst);
+    SETVAL(o_sys_rst, r_sys_rst);
+    SETVAL(o_sys_nrst, r_sys_nrst);
+    SETVAL(o_dbg_nrst, r_dbg_nrst);
+    SETVAL(o_pcie_nrst, BIT(rb_pcie_nrst, 1));
+}
+
+void apb_prci::proc_reqff() {
+    IF (NZ(i_pwrreset));
+        SETVAL_NB(r_sys_locked, CONST("0", 1));
+        SETVAL_NB(rb_ddr_locked, ALLZEROS());
+        SETVAL_NB(rb_pcie_lnk_up, ALLZEROS());
+        SETVAL_NB(r_sys_rst, CONST("1", 1));
+        SETVAL_NB(r_sys_nrst, CONST("0", 1));
+        SETVAL_NB(r_dbg_nrst, CONST("0", 1));
+        SETVAL_NB(rb_pcie_nrst, ALLZEROS());
+    ELSE();
+        SETVAL_NB(r_sys_locked, i_sys_locked);
+        SETVAL_NB(rb_ddr_locked, CC2(BIT(rb_ddr_locked, 0), i_ddr_locked));
+        SETVAL_NB(rb_pcie_lnk_up, CC2(BIT(rb_pcie_lnk_up, 0), i_pcie_phy_lnk_up));
+        SETVAL_NB(r_sys_rst, OR2(INV(i_sys_locked), i_dmireset));
+        SETVAL_NB(r_sys_nrst, AND2_L(i_sys_locked, INV_L(i_dmireset)));
+        SETVAL_NB(r_dbg_nrst, i_sys_locked);
+        SETVAL_NB(rb_pcie_nrst, CC2(BIT(rb_pcie_nrst, 0),
+                                    AND2_L(i_pcie_phy_lnk_up, INV_L(i_pcie_phy_rst))));
+    ENDIF();
 }

@@ -82,13 +82,17 @@ dmidebug::dmidebug(GenObject *parent, const char *name, const char *comment) :
     w_tap_dmi_hardreset(this, "w_tap_dmi_hardreset", "1"),
     w_cdc_dmi_req_valid(this, "w_cdc_dmi_req_valid", "1"),
     w_cdc_dmi_req_ready(this, "w_cdc_dmi_req_ready", "1"),
-    w_cdc_dmi_req_write(this, "w_cdc_dmi_req_write", "1"),
-    wb_cdc_dmi_req_addr(this, "wb_cdc_dmi_req_addr", "7"),
-    wb_cdc_dmi_req_data(this, "wb_cdc_dmi_req_data", "32"),
-    w_cdc_dmi_hardreset(this, "w_cdc_dmi_hardreset", "1"),
     wb_jtag_dmi_resp_data(this, "wb_jtag_dmi_resp_data", "32"),
     w_jtag_dmi_busy(this, "w_jtag_dmi_busy", "1"),
     w_jtag_dmi_error(this, "w_jtag_dmi_error", "1"),
+    _t0_(this),
+    CDC_REG_WIDTH(this, "CDC_REG_WIDTH", &CALCWIDTHx(4, &w_tap_dmi_hardreset,
+                                                    &wb_tap_dmi_req_addr,
+                                                    &wb_tap_dmi_req_data,
+                                                    &w_tap_dmi_req_write)),
+    w_reqfifo_wready_unused(this, "w_reqfifo_wready_unused", "1", RSTVAL_ZERO, NO_COMMENT),
+    wb_reqfifo_payload_i(this, "wb_reqfifo_payload_i", "CDC_REG_WIDTH", RSTVAL_ZERO, NO_COMMENT),
+    wb_reqfifo_payload_o(this, "wb_reqfifo_payload_o", "CDC_REG_WIDTH", RSTVAL_ZERO, NO_COMMENT),
     // registers
     bus_jtag(this, "bus_jtag", "1"),
     jtag_resp_data(this, "jtag_resp_data", "32", "'0", NO_COMMENT),
@@ -156,20 +160,18 @@ dmidebug::dmidebug(GenObject *parent, const char *name, const char *comment) :
     ENDNEW();
 
 TEXT();
+    cdc.abits.setObjValue(new DecConst(3));
+    cdc.dbits.setObjValue(&CDC_REG_WIDTH);
     NEW(cdc, cdc.getName().c_str());
         CONNECT(cdc, 0, cdc.i_nrst, i_nrst);
-        CONNECT(cdc, 0, cdc.i_clk, i_clk);
-        CONNECT(cdc, 0, cdc.i_dmi_req_valid, w_tap_dmi_req_valid);
-        CONNECT(cdc, 0, cdc.i_dmi_req_write, w_tap_dmi_req_write);
-        CONNECT(cdc, 0, cdc.i_dmi_req_addr, wb_tap_dmi_req_addr);
-        CONNECT(cdc, 0, cdc.i_dmi_req_data, wb_tap_dmi_req_data);
-        CONNECT(cdc, 0, cdc.i_dmi_hardreset, w_tap_dmi_hardreset);
-        CONNECT(cdc, 0, cdc.o_dmi_req_valid, w_cdc_dmi_req_valid);
-        CONNECT(cdc, 0, cdc.i_dmi_req_ready, w_cdc_dmi_req_ready);
-        CONNECT(cdc, 0, cdc.o_dmi_req_write, w_cdc_dmi_req_write);
-        CONNECT(cdc, 0, cdc.o_dmi_req_addr, wb_cdc_dmi_req_addr);
-        CONNECT(cdc, 0, cdc.o_dmi_req_data, wb_cdc_dmi_req_data);
-        CONNECT(cdc, 0, cdc.o_dmi_hardreset, w_cdc_dmi_hardreset);
+        CONNECT(cdc, 0, cdc.i_wclk, i_tck);
+        CONNECT(cdc, 0, cdc.i_wr, w_tap_dmi_req_valid);
+        CONNECT(cdc, 0, cdc.i_wdata, wb_reqfifo_payload_i);
+        CONNECT(cdc, 0, cdc.o_wready, w_reqfifo_wready_unused);
+        CONNECT(cdc, 0, cdc.i_rclk, i_clk);
+        CONNECT(cdc, 0, cdc.i_rd, w_cdc_dmi_req_ready);
+        CONNECT(cdc, 0, cdc.o_rdata, wb_reqfifo_payload_o);
+        CONNECT(cdc, 0, cdc.o_rvalid, w_cdc_dmi_req_valid);
     ENDNEW();
 
     Operation::start(&comb);
@@ -185,6 +187,13 @@ void dmidebug::proc_comb() {
     SETVAL(comb.vcfg.addr_end, i_mapinfo.addr_end);
     SETVAL(comb.vcfg.vid, pnp->VENDOR_OPTIMITECH);
     SETVAL(comb.vcfg.did, pnp->OPTIMITECH_RIVER_DMI);
+
+TEXT();
+    SPLx(wb_reqfifo_payload_o, 4, &comb.v_cdc_dmi_hardreset,
+                                  &comb.vb_cdc_dmi_req_addr,
+                                  &comb.vb_cdc_dmi_req_data,
+                                  &comb.v_cdc_dmi_req_write);
+
 
 TEXT();
     SETVAL(comb.vb_hartselnext, BITS(wdata, DEC(ADD2(CONST("16"), cfg->CFG_LOG2_CPU_MAX)), CONST("16")));
@@ -211,10 +220,10 @@ TEXT();
             SETONE(comb.v_cdc_dmi_req_ready);
             SETONE(bus_jtag);
             SETVAL(dmstate, DM_STATE_ACCESS);
-            SETVAL(regidx, wb_cdc_dmi_req_addr);
-            SETVAL(wdata, wb_cdc_dmi_req_data);
-            SETVAL(regwr, w_cdc_dmi_req_write);
-            SETVAL(regrd, INV_L(w_cdc_dmi_req_write));
+            SETVAL(regidx, comb.vb_cdc_dmi_req_addr);
+            SETVAL(wdata, comb.vb_cdc_dmi_req_data);
+            SETVAL(regwr, comb.v_cdc_dmi_req_write);
+            SETVAL(regrd, INV_L(comb.v_cdc_dmi_req_write));
         ELSIF (ORx(2, &AND2(NZ(i_apbi.pselx), EZ(i_apbi.pwrite)),
                       &AND3(NZ(i_apbi.pselx), NZ(i_apbi.penable), NZ(i_apbi.pwrite))));
             SETZERO(bus_jtag);
@@ -581,7 +590,7 @@ TEXT();
 
 
 TEXT();
-    SYNC_RESET(&NZ(w_cdc_dmi_hardreset));
+    SYNC_RESET(&NZ(comb.v_cdc_dmi_hardreset));
 
 TEXT();
     SETVAL(o_ndmreset, ndmreset);
@@ -609,4 +618,10 @@ TEXT();
 TEXT();
     SETVAL(o_cfg, comb.vcfg);
     SETVAL(o_apbo, comb.vapbo);
+
+TEXT_ASSIGN();
+    ASSIGN(wb_reqfifo_payload_i, CCx(4, &w_tap_dmi_hardreset,
+                                        &wb_tap_dmi_req_addr,
+                                        &wb_tap_dmi_req_data,
+                                        &w_tap_dmi_req_write));
 }

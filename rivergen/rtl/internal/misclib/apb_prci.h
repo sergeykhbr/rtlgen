@@ -27,9 +27,6 @@ class apb_prci : public ModuleObject {
  public:
     apb_prci(GenObject *parent, const char *name, const char *comment);
 
-    virtual GenObject *getResetPort() override { return &i_pwrreset; }
-    virtual EResetActive getResetActive() override { return ACTIVE_HIGH; }
-
     class CombProcess : public CombinationalProcess {
      public:
         CombProcess(GenObject *parent) :
@@ -42,6 +39,7 @@ class apb_prci : public ModuleObject {
     };
 
     void proc_comb();
+    void proc_reqff();
 
  public:
     // io:
@@ -67,18 +65,19 @@ class apb_prci : public ModuleObject {
     Signal w_req_write;
     Signal wb_req_wdata;
 
-    RegSignal sys_rst;
-    RegSignal sys_nrst;
-    RegSignal dbg_nrst;
-    RegSignal pcie_nrst;
-    RegSignal sys_locked;
-    RegSignal ddr_locked;
-    RegSignal pcie_lnk_up;
+    Logic r_sys_rst;
+    Signal r_sys_nrst;
+    Logic r_dbg_nrst;
+    Logic rb_pcie_nrst;
+    Logic r_sys_locked;
+    Logic rb_ddr_locked;
+    Logic rb_pcie_lnk_up;
     RegSignal resp_valid;
     RegSignal resp_rdata;
     RegSignal resp_err;
 
     CombProcess comb;
+    ProcObject reqff;
 
     apb_slv pslv0;
 };
