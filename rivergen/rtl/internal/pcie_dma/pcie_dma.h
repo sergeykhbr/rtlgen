@@ -20,6 +20,7 @@
 #include "../ambalib/types_amba.h"
 #include "../ambalib/types_pnp.h"
 #include "../ambalib/types_dma.h"
+#include "../ambalib/axi_dma.h"
 #include "../cdc/cdc_afifo.h"
 #include "pcie_cfg.h"
 #include "pcie_io_ep.h"
@@ -109,11 +110,27 @@ class pcie_dma : public ModuleObject {
     Signal w_req_compl;
     Signal w_compl_done;
 
+    Signal w_req_mem_ready;
+    Signal w_req_mem_valid;
+    Signal w_req_mem_64;
+    Signal w_req_mem_write;
+    Signal wb_req_mem_bytes;
+    Signal wb_req_mem_addr;
+    Signal wb_req_mem_strob;
+    Signal wb_req_mem_data;
+    Signal w_req_mem_last;
+    Signal wb_resp_mem_data;
+    Signal w_resp_mem_valid;
+    Signal w_resp_mem_fault;
+    Signal w_resp_mem_ready;
+
+
     CombProcess comb;
 
     cdc_afifo reqfifo;
     cdc_afifo respfifo;
     pcie_io_ep PIO_EP_inst;
+    axi_dma xdma0;
 };
 
 class pcie_dma_file : public FileObject {

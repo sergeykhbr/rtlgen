@@ -41,11 +41,19 @@ pcie_io_ep::pcie_io_ep(GenObject *parent, const char *name, const char *comment)
     o_compl_done(this, "o_compl_done", "1", NO_COMMENT),
     i_cfg_completer_id(this, "i_cfg_completer_id", "16", "Bus, Device, Function"),
     _t3_(this, "Memory access signals:"),
-    o_mem_valid(this, "o_mem_valid", "1"),
-    o_mem_wren(this, "o_mem_wren", "1"),
-    o_mem_wstrb(this, "o_mem_wstrb", "8"),
-    o_mem_addr(this, "o_mem_addr", "13"),
-    o_mem_data(this, "o_mem_data", "32"),
+    i_req_mem_ready(this, "i_req_mem_ready", "1", "Ready to accept next memory request"),
+    o_req_mem_valid(this, "o_req_mem_valid", "1", "Request data is valid to accept"),
+    o_req_mem_64(this, "o_req_mem_64", "1", "0=32-bits; 1=64-bits"),
+    o_req_mem_write(this, "o_req_mem_write", "1", "0=read; 1=write operation"),
+    o_req_mem_bytes(this, "o_req_mem_bytes", "10", "0=1024 B; 4=DWORD; 8=QWORD; ..."),
+    o_req_mem_addr(this, "o_req_mem_addr", "13", "Address to read/write"),
+    o_req_mem_strob(this, "o_req_mem_strob", "8", "Byte enabling write strob"),
+    o_req_mem_data(this, "o_req_mem_data", "64", "Data to write"),
+    o_req_mem_last(this, "o_req_mem_last", "1", "Last data payload in a sequence"),
+    i_resp_mem_data(this, "i_resp_mem_data", "64", "Read data value"),
+    i_resp_mem_valid(this, "i_resp_mem_valid", "1", "Read/Write data is valid. All write transaction with valid response."),
+    i_resp_mem_fault(this, "i_resp_mem_fault", "1", "Error on memory access"),
+    o_resp_mem_ready(this, "o_resp_mem_ready", "1", "Ready to accept response"),
     // params
     // signals
     wb_rd_addr(this, "wb_rd_addr", "11", NO_COMMENT),
@@ -77,6 +85,7 @@ pcie_io_ep::pcie_io_ep(GenObject *parent, const char *name, const char *comment)
 {
     Operation::start(this);
 
+    TEXT();
     NEW(EP_MEM_inst, EP_MEM_inst.getName().c_str());
       CONNECT(EP_MEM_inst, 0, EP_MEM_inst.i_nrst, i_nrst);
       CONNECT(EP_MEM_inst, 0, EP_MEM_inst.i_clk, i_clk);
@@ -119,6 +128,20 @@ TEXT();
         CONNECT(EP_RX_inst, 0, EP_RX_inst.o_wr_data, wb_wr_data);
         CONNECT(EP_RX_inst, 0, EP_RX_inst.o_wr_en, w_wr_en);
         CONNECT(EP_RX_inst, 0, EP_RX_inst.i_wr_busy, w_wr_busy);
+        CONNECT(EP_RX_inst, 0, EP_RX_inst.i_req_mem_ready, i_req_mem_ready);
+        CONNECT(EP_RX_inst, 0, EP_RX_inst.o_req_mem_valid, o_req_mem_valid);
+        CONNECT(EP_RX_inst, 0, EP_RX_inst.o_req_mem_64, o_req_mem_64);
+        CONNECT(EP_RX_inst, 0, EP_RX_inst.o_req_mem_write, o_req_mem_write);
+        CONNECT(EP_RX_inst, 0, EP_RX_inst.o_req_mem_bytes, o_req_mem_bytes);
+        CONNECT(EP_RX_inst, 0, EP_RX_inst.o_req_mem_addr, o_req_mem_addr);
+        CONNECT(EP_RX_inst, 0, EP_RX_inst.o_req_mem_strob, o_req_mem_strob);
+        CONNECT(EP_RX_inst, 0, EP_RX_inst.o_req_mem_data, o_req_mem_data);
+        CONNECT(EP_RX_inst, 0, EP_RX_inst.o_req_mem_last, o_req_mem_last);
+        CONNECT(EP_RX_inst, 0, EP_RX_inst.i_resp_mem_data, i_resp_mem_data);
+        CONNECT(EP_RX_inst, 0, EP_RX_inst.i_resp_mem_valid, i_resp_mem_valid);
+        CONNECT(EP_RX_inst, 0, EP_RX_inst.i_resp_mem_fault, i_resp_mem_fault);
+        CONNECT(EP_RX_inst, 0, EP_RX_inst.o_resp_mem_ready, o_resp_mem_ready);
+
     ENDNEW();
 
 TEXT();
@@ -166,11 +189,4 @@ void pcie_io_ep::proc_comb() {
         SETVAL(comb.vb_mem_addr, wb_req_addr);
         SETVAL(comb.vb_mem_data, wb_wr_data);
     ENDIF();
-
-
-    SETVAL(o_mem_valid, comb.v_mem_valid);
-    SETVAL(o_mem_wren, comb.v_mem_wren);
-    SETVAL(o_mem_wstrb, CC2(CONST("0", 4), comb.vb_mem_wstrb));
-    SETVAL(o_mem_addr, comb.vb_mem_addr);
-    SETVAL(o_mem_data, comb.vb_mem_data);
 }

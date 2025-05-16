@@ -49,6 +49,20 @@ pcie_io_rx_engine::pcie_io_rx_engine(GenObject *parent, const char *name, const 
     o_wr_data(this, "o_wr_data", "32", "Memory Write Data"),
     o_wr_en(this, "o_wr_en", "1", "Memory Write Enable"),
     i_wr_busy(this, "i_wr_busy", "1", "Memory Write Busy"),
+    _t33_(this, ""),
+    i_req_mem_ready(this, "i_req_mem_ready", "1", "Ready to accept next memory request"),
+    o_req_mem_valid(this, "o_req_mem_valid", "1", "Request data is valid to accept"),
+    o_req_mem_64(this, "o_req_mem_64", "1", "0=32-bits; 1=64-bits"),
+    o_req_mem_write(this, "o_req_mem_write", "1", "0=read; 1=write operation"),
+    o_req_mem_bytes(this, "o_req_mem_bytes", "10", "0=1024 B; 4=DWORD; 8=QWORD; ..."),
+    o_req_mem_addr(this, "o_req_mem_addr", "13", "Address to read/write"),
+    o_req_mem_strob(this, "o_req_mem_strob", "8", "Byte enabling write strob"),
+    o_req_mem_data(this, "o_req_mem_data", "64", "Data to write"),
+    o_req_mem_last(this, "o_req_mem_last", "1", "Last data payload in a sequence"),
+    i_resp_mem_data(this, "i_resp_mem_data", "64", "Read data value"),
+    i_resp_mem_valid(this, "i_resp_mem_valid", "1", "Read/Write data is valid. All write transaction with valid response."),
+    i_resp_mem_fault(this, "i_resp_mem_fault", "1", "Error on memory access"),
+    o_resp_mem_ready(this, "o_resp_mem_ready", "1", "Ready to accept response"),
     // params
     _t4_(this),
     PIO_RX_MEM_RD32_FMT_TYPE(this, "PIO_RX_MEM_RD32_FMT_TYPE", "7", "0x00", NO_COMMENT),
@@ -280,6 +294,9 @@ TEXT();
             SETZERO(m_axis_rx_tready);
             SETVAL(wr_addr, CC2(BITS(comb.vb_region_select, 1, 0),
                                 BITS(i_m_axis_rx_tdata, 10, 2)));
+            SETVAL(req_addr, CC3(BITS(comb.vb_region_select, 1, 0),
+                                 BITS(i_m_axis_rx_tdata, 10, 2),
+                                 CONST("0", 2)));
             SETVAL(state, PIO_RX_WAIT_STATE);
         ELSE();
             SETVAL(state, PIO_RX_MEM_WR32_DW1DW2);
@@ -307,6 +324,9 @@ TEXT();
             SETZERO(m_axis_rx_tready);
             SETVAL(wr_addr, CC2(BITS(comb.vb_region_select, 1, 0),
                                 BITS(i_m_axis_rx_tdata, 42, 34)));
+            SETVAL(req_addr, CC3(BITS(comb.vb_region_select, 1, 0),
+                                 BITS(i_m_axis_rx_tdata, 42, 34),
+                                 CONST("0", 2)));
             SETVAL(state, PIO_RX_MEM_WR64_DW3);
         ELSE();
             SETVAL(state, PIO_RX_MEM_WR64_DW1DW2);
@@ -333,6 +353,9 @@ TEXT();
             SETZERO(m_axis_rx_tready);
             SETVAL(wr_addr, CC2(BITS(comb.vb_region_select, 1, 0),
                                 BITS(i_m_axis_rx_tdata, 10, 2)));
+            SETVAL(req_addr, CC3(BITS(comb.vb_region_select, 1, 0),
+                                 BITS(i_m_axis_rx_tdata, 10, 2),
+                                 CONST("0", 2)));
             SETONE(req_compl);
             SETZERO(req_compl_wd);
             SETVAL(state, PIO_RX_WAIT_STATE);
@@ -394,5 +417,16 @@ TEXT_ASSIGN();
     ASSIGN(o_wr_be, BITS(wr_be, 3, 0));
     ASSIGN(o_wr_data, wr_data);
     ASSIGN(o_wr_en, wr_en);
+
+TEXT_ASSIGN();
+    ASSIGN(o_req_mem_valid, OR2_L(wr_en, req_compl));
+    ASSIGN(o_req_mem_64, CONST("0", 1));
+    ASSIGN(o_req_mem_write, wr_en);
+    ASSIGN(o_req_mem_bytes, CC2(req_len, CONST("0", 2)));
+    ASSIGN(o_req_mem_addr, req_addr);
+    ASSIGN(o_req_mem_strob, wr_be);
+    ASSIGN(o_req_mem_data, CC2(CONST("0", 32), wr_data));
+    ASSIGN(o_req_mem_last, CONST("1", 1));
+    ASSIGN(o_resp_mem_ready, CONST("1", 1));
 }
 

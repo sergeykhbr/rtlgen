@@ -41,7 +41,7 @@ apb_pcie::apb_pcie(GenObject *parent, const char *name, const char *comment) :
     resp_valid(this, "resp_valid", "1", "0"),
     resp_rdata(this, "resp_rdata", "32", "'0", NO_COMMENT),
     resp_err(this, "resp_err", "1", "0"),
-    req_cnt(this, "req_cnt", "4", RSTVAL_ZERO, NO_COMMENT),
+    req_cnt(this, "req_cnt", "31", RSTVAL_ZERO, NO_COMMENT),
     req_data_arr(this, "req_data_arr", "64", "16", NO_COMMENT),
     //
     comb(this),
@@ -86,7 +86,7 @@ void apb_pcie::proc_comb() {
         SETBITS(comb.vb_rdata, 15, 0, i_pcie_completer_id);
     ELSIF (EQ(BITS(wb_req_addr, 11, 2), CONST("2", 10)));
         TEXT("0x08: request counter");
-        SETBITS(comb.vb_rdata, 3, 0, req_cnt);
+        SETVAL(comb.vb_rdata, req_cnt);
     ELSIF (EQ(BITS(wb_req_addr, 11, 7), CONST("1", 5)));
         TEXT("0x040..0x04F: debug buffer");
         IF (EZ(BIT(wb_req_addr, 2)));
@@ -108,7 +108,7 @@ TEXT();
 
 void apb_pcie::proc_reqff() {
     IF (NZ(i_dbg_mem_valid));
-        SETARRITEM_NB(req_data_arr, TO_INT(req_cnt), req_data_arr,
+        SETARRITEM_NB(req_data_arr, TO_INT(BITS(req_cnt, 3, 0)), req_data_arr,
                     CC4(i_dbg_mem_wren, CONST("0", 18), i_dbg_mem_addr, i_dbg_mem_data));
         SETVAL_NB(req_cnt, INC(req_cnt));
     ENDIF();

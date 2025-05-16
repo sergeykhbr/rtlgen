@@ -73,12 +73,26 @@ pcie_dma::pcie_dma(GenObject *parent, const char *name, const char *comment) :
     w_tx_src_dsc(this, "w_tx_src_dsc", "1"),
     w_req_compl(this, "w_req_compl", "1"),
     w_compl_done(this, "w_compl_done", "1"),
+    w_req_mem_ready(this, "w_req_mem_ready", "1", RSTVAL_ZERO, NO_COMMENT),
+    w_req_mem_valid(this, "w_req_mem_valid", "1", RSTVAL_ZERO, NO_COMMENT),
+    w_req_mem_64(this, "w_req_mem_64", "1", RSTVAL_ZERO, "0=32-bits; 1=64-bits"),
+    w_req_mem_write(this, "w_req_mem_write", "1", RSTVAL_ZERO, "0=read; 1=write operation"),
+    wb_req_mem_bytes(this, "wb_req_mem_bytes", "10", RSTVAL_ZERO, "0=1024 B; 4=DWORD; 8=QWORD; ..."),
+    wb_req_mem_addr(this, "wb_req_mem_addr", "13", "'0", NO_COMMENT),
+    wb_req_mem_strob(this, "wb_req_mem_strob", "8", "'0", NO_COMMENT),
+    wb_req_mem_data(this, "wb_req_mem_data", "64", "'0", NO_COMMENT),
+    w_req_mem_last(this, "w_req_mem_last", "1", RSTVAL_ZERO, NO_COMMENT),
+    wb_resp_mem_data(this, "wb_resp_mem_data", "64", "'0", NO_COMMENT),
+    w_resp_mem_valid(this, "w_resp_mem_valid", "1", RSTVAL_ZERO, NO_COMMENT),
+    w_resp_mem_fault(this, "w_resp_mem_fault", "1", RSTVAL_ZERO, NO_COMMENT),
+    w_resp_mem_ready(this, "w_resp_mem_ready", "1", RSTVAL_ZERO, NO_COMMENT),
     // registers
     //
     comb(this),
     reqfifo(this, "reqfifo"),
     respfifo(this, "respfifo"),
-    PIO_EP_inst(this, "PIO_EP_inst", NO_COMMENT)
+    PIO_EP_inst(this, "PIO_EP_inst", NO_COMMENT),
+    xdma0(this, "xdma0", NO_COMMENT)
 {
     Operation::start(this);
 
@@ -133,11 +147,42 @@ TEXT();
         CONNECT(PIO_EP_inst, 0, PIO_EP_inst.o_req_compl, w_req_compl);
         CONNECT(PIO_EP_inst, 0, PIO_EP_inst.o_compl_done, w_compl_done);
         CONNECT(PIO_EP_inst, 0, PIO_EP_inst.i_cfg_completer_id, i_pcie_completer_id);
-        CONNECT(PIO_EP_inst, 0, PIO_EP_inst.o_mem_valid, o_dbg_mem_valid);
-        CONNECT(PIO_EP_inst, 0, PIO_EP_inst.o_mem_wren, o_dbg_mem_wren);
-        CONNECT(PIO_EP_inst, 0, PIO_EP_inst.o_mem_wstrb, o_dbg_mem_wstrb);
-        CONNECT(PIO_EP_inst, 0, PIO_EP_inst.o_mem_addr, o_dbg_mem_addr);
-        CONNECT(PIO_EP_inst, 0, PIO_EP_inst.o_mem_data, o_dbg_mem_data);
+        CONNECT(PIO_EP_inst, 0, PIO_EP_inst.i_req_mem_ready, w_req_mem_ready);
+        CONNECT(PIO_EP_inst, 0, PIO_EP_inst.o_req_mem_valid, w_req_mem_valid);
+        CONNECT(PIO_EP_inst, 0, PIO_EP_inst.o_req_mem_64, w_req_mem_64);
+        CONNECT(PIO_EP_inst, 0, PIO_EP_inst.o_req_mem_write, w_req_mem_write);
+        CONNECT(PIO_EP_inst, 0, PIO_EP_inst.o_req_mem_bytes, wb_req_mem_bytes);
+        CONNECT(PIO_EP_inst, 0, PIO_EP_inst.o_req_mem_addr, wb_req_mem_addr);
+        CONNECT(PIO_EP_inst, 0, PIO_EP_inst.o_req_mem_strob, wb_req_mem_strob);
+        CONNECT(PIO_EP_inst, 0, PIO_EP_inst.o_req_mem_data, wb_req_mem_data);
+        CONNECT(PIO_EP_inst, 0, PIO_EP_inst.o_req_mem_last, w_req_mem_last);
+        CONNECT(PIO_EP_inst, 0, PIO_EP_inst.i_resp_mem_data, wb_resp_mem_data);
+        CONNECT(PIO_EP_inst, 0, PIO_EP_inst.i_resp_mem_valid, w_resp_mem_valid);
+        CONNECT(PIO_EP_inst, 0, PIO_EP_inst.i_resp_mem_fault, w_resp_mem_fault);
+        CONNECT(PIO_EP_inst, 0, PIO_EP_inst.o_resp_mem_ready, w_resp_mem_ready);
+    ENDNEW();
+
+    TEXT();
+    xdma0.abits.setObjValue(new DecConst(13));
+    xdma0.userbits.setObjValue(new DecConst(1));
+    NEW(xdma0, xdma0.getName().c_str());
+        CONNECT(xdma0, 0, xdma0.i_nrst, i_nrst);
+        CONNECT(xdma0, 0, xdma0.i_clk, i_clk);
+        CONNECT(xdma0, 0, xdma0.o_req_mem_ready, w_req_mem_ready);
+        CONNECT(xdma0, 0, xdma0.i_req_mem_valid, w_req_mem_valid);
+        CONNECT(xdma0, 0, xdma0.i_req_mem_64, w_req_mem_64);
+        CONNECT(xdma0, 0, xdma0.i_req_mem_write, w_req_mem_write);
+        CONNECT(xdma0, 0, xdma0.i_req_mem_bytes, wb_req_mem_bytes);
+        CONNECT(xdma0, 0, xdma0.i_req_mem_addr, wb_req_mem_addr);
+        CONNECT(xdma0, 0, xdma0.i_req_mem_strob, wb_req_mem_strob);
+        CONNECT(xdma0, 0, xdma0.i_req_mem_data, wb_req_mem_data);
+        CONNECT(xdma0, 0, xdma0.i_req_mem_last, w_req_mem_last);
+        CONNECT(xdma0, 0, xdma0.o_resp_mem_data, wb_resp_mem_data);
+        CONNECT(xdma0, 0, xdma0.o_resp_mem_valid, w_resp_mem_valid);
+        CONNECT(xdma0, 0, xdma0.o_resp_mem_fault, w_resp_mem_fault);
+        CONNECT(xdma0, 0, xdma0.i_resp_mem_ready, w_resp_mem_ready);
+        CONNECT(xdma0, 0, xdma0.i_msti, i_xmsti);
+        CONNECT(xdma0, 0, xdma0.o_msto, o_xmsto);
     ENDNEW();
 
 
@@ -153,7 +198,6 @@ void pcie_dma::proc_comb() {
     SETVAL(comb.vb_xmst_cfg.did, glob_pnp_cfg_->OPTIMITECH_PCIE_DMA);
 
     SETVAL(o_xmst_cfg, comb.vb_xmst_cfg);
-    SETVAL(o_xmsto, amba->axi4_master_out_none);
     
     TEXT();
     SETVAL(o_dma_state, ALLZEROS());
@@ -194,4 +238,10 @@ TEXT();
                                    &comb.vb_pcie_dmao.strob,
                                    &comb.vb_pcie_dmao.data);
     SETVAL(o_pcie_dmao, comb.vb_pcie_dmao);
+
+    ASSIGN(o_dbg_mem_valid, w_req_mem_valid);
+    ASSIGN(o_dbg_mem_wren, w_req_mem_write);
+    ASSIGN(o_dbg_mem_wstrb, wb_req_mem_strob);
+    ASSIGN(o_dbg_mem_addr, wb_req_mem_addr);
+    ASSIGN(o_dbg_mem_data, BITS(wb_req_mem_data, 31, 0));
 }

@@ -72,12 +72,19 @@ class pcie_io_ep : public ModuleObject {
     OutPort o_compl_done;
     InPort i_cfg_completer_id;
     TextLine _t3_;
-    OutPort o_mem_valid;
-    OutPort o_mem_wren;
-    OutPort o_mem_wstrb;
-    OutPort o_mem_addr;
-    OutPort o_mem_data;
-
+    InPort i_req_mem_ready;
+    OutPort o_req_mem_valid;
+    OutPort o_req_mem_64;
+    OutPort o_req_mem_write;
+    OutPort o_req_mem_bytes;
+    OutPort o_req_mem_addr;
+    OutPort o_req_mem_strob;
+    OutPort o_req_mem_data;
+    OutPort o_req_mem_last;
+    InPort i_resp_mem_data;
+    InPort i_resp_mem_valid;
+    InPort i_resp_mem_fault;
+    OutPort o_resp_mem_ready;
 
     Signal wb_rd_addr;
     Signal wb_rd_be;
