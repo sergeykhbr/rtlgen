@@ -132,11 +132,8 @@ accel_soc::accel_soc(GenObject *parent, const char *name, const char *comment) :
     wb_ext_irqs(this, "wb_ext_irqs", "SOC_PLIC_IRQ_TOTAL"),
 #if GENCFG_PCIE_ENABLE
     wb_pcie_dma_state(this, "wb_pcie_dma_state", "4"),
-    w_dbg_mem_valid(this, "w_dbg_mem_valid", "1"),
-    w_dbg_mem_wren(this, "w_dbg_mem_wren", "1"),
-    wb_dbg_mem_addr(this, "wb_dbg_mem_addr", "13"),
-    wb_dbg_mem_wstrb(this, "wb_dbg_mem_wstrb", "8"),
-    wb_dbg_mem_data(this, "wb_dbg_mem_data", "32"),
+    w_dbg_valid(this, "w_dbg_valid", "1"),
+    w_dbg_payload(this, "w_dbg_payload", "64"),
 #endif
     // submodules:
     bus0(this, "bus0"),
@@ -356,11 +353,8 @@ TEXT();
         CONNECT(pcidma0, 0, pcidma0.i_xmsti, ARRITEM(aximi, glob_bus0_cfg_->CFG_BUS0_XMST_PCIE, aximi));
         CONNECT(pcidma0, 0, pcidma0.o_xmsto, ARRITEM(aximo, glob_bus0_cfg_->CFG_BUS0_XMST_PCIE, aximo));
         CONNECT(pcidma0, 0, pcidma0.o_dma_state, wb_pcie_dma_state);
-        CONNECT(pcidma0, 0, pcidma0.o_dbg_mem_valid, w_dbg_mem_valid);
-        CONNECT(pcidma0, 0, pcidma0.o_dbg_mem_wren, w_dbg_mem_wren);
-        CONNECT(pcidma0, 0, pcidma0.o_dbg_mem_wstrb, wb_dbg_mem_wstrb);
-        CONNECT(pcidma0, 0, pcidma0.o_dbg_mem_addr, wb_dbg_mem_addr);
-        CONNECT(pcidma0, 0, pcidma0.o_dbg_mem_data, wb_dbg_mem_data);
+        CONNECT(pcidma0, 0, pcidma0.o_dbg_valid, w_dbg_valid);
+        CONNECT(pcidma0, 0, pcidma0.o_dbg_payload, w_dbg_payload);
     ENDNEW();
 
 TEXT();
@@ -373,11 +367,8 @@ TEXT();
         CONNECT(ppcie0, 0, ppcie0.o_apbo, ARRITEM(apbo, glob_bus1_cfg_->CFG_BUS1_PSLV_PCIE, apbo));
         CONNECT(ppcie0, 0, ppcie0.i_pcie_completer_id, i_pcie_completer_id);
         CONNECT(ppcie0, 0, ppcie0.i_dma_state, wb_pcie_dma_state);
-        CONNECT(ppcie0, 0, ppcie0.i_dbg_mem_valid, w_dbg_mem_valid);
-        CONNECT(ppcie0, 0, ppcie0.i_dbg_mem_wren, w_dbg_mem_wren);
-        CONNECT(ppcie0, 0, ppcie0.i_dbg_mem_wstrb, wb_dbg_mem_wstrb);
-        CONNECT(ppcie0, 0, ppcie0.i_dbg_mem_addr, wb_dbg_mem_addr);
-        CONNECT(ppcie0, 0, ppcie0.i_dbg_mem_data, wb_dbg_mem_data);
+        CONNECT(ppcie0, 0, ppcie0.i_dbg_valid, w_dbg_valid);
+        CONNECT(ppcie0, 0, ppcie0.i_dbg_payload, w_dbg_payload);
     ENDNEW();
 #endif  // GENCFG_PCIE_ENABLE
 

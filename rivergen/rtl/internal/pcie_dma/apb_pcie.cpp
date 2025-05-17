@@ -26,11 +26,8 @@ apb_pcie::apb_pcie(GenObject *parent, const char *name, const char *comment) :
     o_apbo(this, "o_apbo", "APB output interface"),
     i_pcie_completer_id(this, "i_pcie_completer_id", "16", "Bus, Device, Function"),
     i_dma_state(this, "i_dma_state", "4", "DMA engine brief state"),
-    i_dbg_mem_valid(this, "i_dbg_mem_valid", "1"),
-    i_dbg_mem_wren(this, "i_dbg_mem_wren", "1"),
-    i_dbg_mem_wstrb(this, "i_dbg_mem_wstrb", "8"),
-    i_dbg_mem_addr(this, "i_dbg_mem_addr", "13"),
-    i_dbg_mem_data(this, "i_dbg_mem_data", "32"),
+    i_dbg_valid(this, "i_dbg_valid", "1"),
+    i_dbg_payload(this, "i_dbg_payload", "64"),
     // params
     // signals
     w_req_valid(this, "w_req_valid", "1"),
@@ -107,9 +104,8 @@ TEXT();
 }
 
 void apb_pcie::proc_reqff() {
-    IF (NZ(i_dbg_mem_valid));
-        SETARRITEM_NB(req_data_arr, TO_INT(BITS(req_cnt, 3, 0)), req_data_arr,
-                    CC4(i_dbg_mem_wren, CONST("0", 18), i_dbg_mem_addr, i_dbg_mem_data));
+    IF (NZ(i_dbg_valid));
+        SETARRITEM_NB(req_data_arr, TO_INT(BITS(req_cnt, 3, 0)), req_data_arr, i_dbg_payload);
         SETVAL_NB(req_cnt, INC(req_cnt));
     ENDIF();
 }

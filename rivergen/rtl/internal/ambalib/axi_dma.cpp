@@ -40,6 +40,8 @@ axi_dma::axi_dma(GenObject *parent, const char *name, const char *depth) :
     i_resp_mem_ready(this, "i_resp_mem_ready", "1", "Ready to accept response"),
     i_msti(this, "i_msti", "AXI master input"),
     o_msto(this, "o_msto", "AXI master output"),
+    o_dbg_valid(this, "o_dbg_valid", "1"),
+    o_dbg_payload(this, "o_dbg_payload", "64"),
     // params
     state_idle(this, "state_idle", "3", "0", NO_COMMENT),
     state_ar(this, "state_ar", "3", "1", NO_COMMENT),
@@ -70,6 +72,8 @@ axi_dma::axi_dma(GenObject *parent, const char *name, const char *depth) :
     resp_data(this, "resp_data", "CFG_SYSBUS_DATA_BITS", "'0", NO_COMMENT),
     resp_error(this, "resp_error", "1", RSTVAL_ZERO, NO_COMMENT),
     user_count(this, "user_count", "CFG_SYSBUS_USER_BITS", "'0", NO_COMMENT),
+    dbg_valid(this, "dbg_valid", "1", "0", NO_COMMENT),
+    dbg_payload(this, "dbg_payload", "64", "'0", NO_COMMENT),
     // functions
     // submodules:
     comb(this)
@@ -168,6 +172,7 @@ void axi_dma::proc_comb() {
     ENDIF();
 
 TEXT();
+    SETZERO(dbg_valid);
     SWITCH (state);
     CASE(state_idle);
         SETONE(req_ready);
@@ -201,7 +206,14 @@ TEXT();
                 SETVAL(req_wdata, i_req_mem_data);
                 SETVAL(req_wstrb, i_req_mem_strob);
                 SETVAL(state, state_aw);
+                SETONE(dbg_valid);
             ENDIF();
+            TEXT("debug interface:");
+            SETVAL(dbg_payload, CCx(5, &CONST("0x1", 1),            // [63]
+                                    &BITS(i_req_mem_addr, 12, 0),   // [62:50]
+                                    &i_req_mem_bytes,               // [49:40]
+                                    &i_req_mem_strob,               // [39:32]
+                                    &BITS(i_req_mem_data, 31, 0)));
         ENDIF();
         ENDCASE();
     CASE(state_ar);
@@ -231,6 +243,11 @@ TEXT();
     CASE(state_r_wait_accept);
         IF (NZ(i_resp_mem_ready));
             SETZERO(resp_valid);
+            TEXT("debug interface:");
+            SETONE(dbg_valid);
+            SETVAL(dbg_payload, CC3(CONST("0x0", 1),                // [63]
+                                    BITS(dbg_payload, 62, 32),      // [62:32]
+                                    BITS(resp_data, 31, 0)));
 
             TEXT();
             IF (NZ(resp_last));

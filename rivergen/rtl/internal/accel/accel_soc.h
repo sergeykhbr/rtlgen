@@ -176,11 +176,8 @@ public:
     Signal wb_ext_irqs;
 #if GENCFG_PCIE_ENABLE
     Signal wb_pcie_dma_state;
-    Signal w_dbg_mem_valid;
-    Signal w_dbg_mem_wren;
-    Signal wb_dbg_mem_addr;
-    Signal wb_dbg_mem_wstrb;
-    Signal wb_dbg_mem_data;
+    Signal w_dbg_valid;
+    Signal w_dbg_payload;
 #endif
 
     // Sub-module instances:

@@ -31,11 +31,8 @@ pcie_dma::pcie_dma(GenObject *parent, const char *name, const char *comment) :
     i_xmsti(this, "i_xmsti"),
     o_xmsto(this, "o_xmsto"),
     _text2_(this, "Debug signals:"),
-    o_dbg_mem_valid(this, "o_dbg_mem_valid", "1"),
-    o_dbg_mem_wren(this, "o_dbg_mem_wren", "1"),
-    o_dbg_mem_wstrb(this, "o_dbg_mem_wstrb", "8"),
-    o_dbg_mem_addr(this, "o_dbg_mem_addr", "13"),
-    o_dbg_mem_data(this, "o_dbg_mem_data", "32"),
+    o_dbg_valid(this, "o_dbg_valid", "1"),
+    o_dbg_payload(this, "o_dbg_payload", "64"),
     // params
     _fmt0_(this, ""),
     C_DATA_WIDTH(this, "C_DATA_WIDTH", "64", NO_COMMENT),
@@ -184,6 +181,8 @@ TEXT();
         CONNECT(xdma0, 0, xdma0.i_resp_mem_ready, w_resp_mem_ready);
         CONNECT(xdma0, 0, xdma0.i_msti, i_xmsti);
         CONNECT(xdma0, 0, xdma0.o_msto, o_xmsto);
+        CONNECT(xdma0, 0, xdma0.o_dbg_valid, o_dbg_valid);
+        CONNECT(xdma0, 0, xdma0.o_dbg_payload, o_dbg_payload);
     ENDNEW();
 
 
@@ -243,10 +242,4 @@ TEXT();
                                    &comb.vb_pcie_dmao.strob,
                                    &comb.vb_pcie_dmao.data);
     SETVAL(o_pcie_dmao, comb.vb_pcie_dmao);
-
-    ASSIGN(o_dbg_mem_valid, w_req_mem_valid);
-    ASSIGN(o_dbg_mem_wren, w_req_mem_write);
-    ASSIGN(o_dbg_mem_wstrb, wb_req_mem_strob);
-    ASSIGN(o_dbg_mem_addr, wb_req_mem_addr);
-    ASSIGN(o_dbg_mem_data, BITS(wb_req_mem_data, 31, 0));
 }

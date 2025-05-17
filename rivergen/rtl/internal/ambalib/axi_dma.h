@@ -65,6 +65,8 @@ public:
     InPort i_resp_mem_ready;
     InStruct<types_amba::axi4_master_in_type> i_msti;
     OutStruct<types_amba::axi4_master_out_type> o_msto;
+    OutPort o_dbg_valid;
+    OutPort o_dbg_payload;
 
     ParamLogic state_idle;
     ParamLogic state_ar;
@@ -95,6 +97,8 @@ public:
     RegSignal resp_data;
     RegSignal resp_error;
     RegSignal1 user_count;
+    RegSignal dbg_valid;
+    RegSignal dbg_payload;
 
     // functions
     // Sub-module instances:

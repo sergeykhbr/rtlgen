@@ -71,11 +71,8 @@ class pcie_dma : public ModuleObject {
     InStruct<types_amba::axi4_master_in_type> i_xmsti;
     OutStruct<types_amba::axi4_master_out_type> o_xmsto;
     TextLine _text2_;
-    OutPort o_dbg_mem_valid;
-    OutPort o_dbg_mem_wren;
-    OutPort o_dbg_mem_wstrb;
-    OutPort o_dbg_mem_addr;
-    OutPort o_dbg_mem_data;
+    OutPort o_dbg_valid;
+    OutPort o_dbg_payload;
     
     TextLine _fmt0_;
     ParamI32D C_DATA_WIDTH;

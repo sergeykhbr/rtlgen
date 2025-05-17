@@ -52,11 +52,8 @@ class apb_pcie : public ModuleObject {
     OutStruct<types_amba::apb_out_type> o_apbo;
     InPort i_pcie_completer_id;
     InPort i_dma_state;
-    InPort i_dbg_mem_valid;
-    InPort i_dbg_mem_wren;
-    InPort i_dbg_mem_wstrb;
-    InPort i_dbg_mem_addr;
-    InPort i_dbg_mem_data;
+    InPort i_dbg_valid;
+    InPort i_dbg_payload;
 
     Signal w_req_valid;
     Signal wb_req_addr;
