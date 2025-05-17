@@ -107,8 +107,6 @@ class pcie_dma : public ModuleObject {
     Signal wb_s_axis_tx_tkeep;
     Signal wb_s_axis_tx_tdata;
     Signal w_tx_src_dsc;
-    Signal w_req_compl;
-    Signal w_compl_done;
 
     Signal w_req_mem_ready;
     Signal w_req_mem_valid;

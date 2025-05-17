@@ -36,9 +36,6 @@ pcie_io_ep::pcie_io_ep(GenObject *parent, const char *name, const char *comment)
     i_m_axis_rx_tvalid(this, "i_m_axis_rx_tvalid", "1", NO_COMMENT),
     o_m_axis_rx_tready(this, "o_m_axis_rx_tready", "1", NO_COMMENT),
     i_m_axis_rx_tuser(this, "i_m_axis_rx_tuser", "9", NO_COMMENT),
-    _t2_(this, ""),
-    o_req_compl(this, "o_req_compl", "1", NO_COMMENT),
-    o_compl_done(this, "o_compl_done", "1", NO_COMMENT),
     i_cfg_completer_id(this, "i_cfg_completer_id", "16", "Bus, Device, Function"),
     _t3_(this, "Memory access signals:"),
     i_req_mem_ready(this, "i_req_mem_ready", "1", "Ready to accept next memory request"),
@@ -56,14 +53,6 @@ pcie_io_ep::pcie_io_ep(GenObject *parent, const char *name, const char *comment)
     o_resp_mem_ready(this, "o_resp_mem_ready", "1", "Ready to accept response"),
     // params
     // signals
-    wb_rd_addr(this, "wb_rd_addr", "11", NO_COMMENT),
-    wb_rd_be(this, "wb_rd_be", "4", NO_COMMENT),
-    wb_rd_data(this, "wb_rd_data", "32", NO_COMMENT),
-    wb_wr_addr(this, "wb_wr_addr", "11", NO_COMMENT),
-    wb_wr_be(this, "wb_wr_be", "4", NO_COMMENT),
-    wb_wr_data(this, "wb_wr_data", "32", NO_COMMENT),
-    w_wr_en(this, "w_wr_en", "1", NO_COMMENT),
-    w_wr_busy(this, "w_wr_busy", "1", NO_COMMENT),
     w_req_compl_int(this, "w_req_compl_int", "1", NO_COMMENT),
     w_req_compl_wd(this, "w_req_compl_wd", "1", NO_COMMENT),
     w_compl_done_int(this, "w_compl_done_int", "1", NO_COMMENT),
@@ -78,28 +67,12 @@ pcie_io_ep::pcie_io_ep(GenObject *parent, const char *name, const char *comment)
     wb_req_addr(this, "wb_req_addr", "13", NO_COMMENT),
     // registers
     //
-    EP_MEM_inst(this, "EP_MEM_inst", NO_COMMENT),
     EP_RX_inst(this, "EP_RX_inst", NO_COMMENT),
     EP_TX_inst(this, "EP_TX_inst", NO_COMMENT),
     comb(this)
 {
     Operation::start(this);
 
-    TEXT();
-    NEW(EP_MEM_inst, EP_MEM_inst.getName().c_str());
-      CONNECT(EP_MEM_inst, 0, EP_MEM_inst.i_nrst, i_nrst);
-      CONNECT(EP_MEM_inst, 0, EP_MEM_inst.i_clk, i_clk);
-      CONNECT(EP_MEM_inst, 0, EP_MEM_inst.i_rd_addr, wb_rd_addr);
-      CONNECT(EP_MEM_inst, 0, EP_MEM_inst.i_rd_be, wb_rd_be);
-      CONNECT(EP_MEM_inst, 0, EP_MEM_inst.o_rd_data, wb_rd_data);
-      CONNECT(EP_MEM_inst, 0, EP_MEM_inst.i_wr_addr, wb_wr_addr);
-      CONNECT(EP_MEM_inst, 0, EP_MEM_inst.i_wr_be, wb_wr_be);
-      CONNECT(EP_MEM_inst, 0, EP_MEM_inst.i_wr_data, wb_wr_data);
-      CONNECT(EP_MEM_inst, 0, EP_MEM_inst.i_wr_en, w_wr_en);
-      CONNECT(EP_MEM_inst, 0, EP_MEM_inst.o_wr_busy, w_wr_busy);
-    ENDNEW();
-
-TEXT();
     EP_RX_inst.C_DATA_WIDTH.setObjValue(&C_DATA_WIDTH);
     EP_RX_inst.KEEP_WIDTH.setObjValue(&KEEP_WIDTH);
     NEW(EP_RX_inst, EP_RX_inst.getName().c_str());
@@ -123,11 +96,6 @@ TEXT();
         CONNECT(EP_RX_inst, 0, EP_RX_inst.o_req_tag, wb_req_tag);
         CONNECT(EP_RX_inst, 0, EP_RX_inst.o_req_be, wb_req_be);
         CONNECT(EP_RX_inst, 0, EP_RX_inst.o_req_addr, wb_req_addr);
-        CONNECT(EP_RX_inst, 0, EP_RX_inst.o_wr_addr, wb_wr_addr);
-        CONNECT(EP_RX_inst, 0, EP_RX_inst.o_wr_be, wb_wr_be);
-        CONNECT(EP_RX_inst, 0, EP_RX_inst.o_wr_data, wb_wr_data);
-        CONNECT(EP_RX_inst, 0, EP_RX_inst.o_wr_en, w_wr_en);
-        CONNECT(EP_RX_inst, 0, EP_RX_inst.i_wr_busy, w_wr_busy);
         CONNECT(EP_RX_inst, 0, EP_RX_inst.i_req_mem_ready, i_req_mem_ready);
         CONNECT(EP_RX_inst, 0, EP_RX_inst.o_req_mem_valid, o_req_mem_valid);
         CONNECT(EP_RX_inst, 0, EP_RX_inst.o_req_mem_64, o_req_mem_64);
@@ -137,11 +105,7 @@ TEXT();
         CONNECT(EP_RX_inst, 0, EP_RX_inst.o_req_mem_strob, o_req_mem_strob);
         CONNECT(EP_RX_inst, 0, EP_RX_inst.o_req_mem_data, o_req_mem_data);
         CONNECT(EP_RX_inst, 0, EP_RX_inst.o_req_mem_last, o_req_mem_last);
-        CONNECT(EP_RX_inst, 0, EP_RX_inst.i_resp_mem_data, i_resp_mem_data);
         CONNECT(EP_RX_inst, 0, EP_RX_inst.i_resp_mem_valid, i_resp_mem_valid);
-        CONNECT(EP_RX_inst, 0, EP_RX_inst.i_resp_mem_fault, i_resp_mem_fault);
-        CONNECT(EP_RX_inst, 0, EP_RX_inst.o_resp_mem_ready, o_resp_mem_ready);
-
     ENDNEW();
 
 TEXT();
@@ -168,9 +132,10 @@ TEXT();
         CONNECT(EP_TX_inst, 0, EP_TX_inst.i_req_tag, wb_req_tag);
         CONNECT(EP_TX_inst, 0, EP_TX_inst.i_req_be, wb_req_be);
         CONNECT(EP_TX_inst, 0, EP_TX_inst.i_req_addr, wb_req_addr);
-        CONNECT(EP_TX_inst, 0, EP_TX_inst.o_rd_addr, wb_rd_addr);
-        CONNECT(EP_TX_inst, 0, EP_TX_inst.o_rd_be, wb_rd_be);
-        CONNECT(EP_TX_inst, 0, EP_TX_inst.i_rd_data, wb_rd_data);
+        CONNECT(EP_TX_inst, 0, EP_TX_inst.i_dma_resp_valid, i_resp_mem_valid);
+        CONNECT(EP_TX_inst, 0, EP_TX_inst.i_dma_resp_fault, i_resp_mem_fault);
+        CONNECT(EP_TX_inst, 0, EP_TX_inst.i_dma_resp_data, i_resp_mem_data);
+        CONNECT(EP_TX_inst, 0, EP_TX_inst.o_dma_resp_ready, o_resp_mem_ready);
         CONNECT(EP_TX_inst, 0, EP_TX_inst.i_completer_id, i_cfg_completer_id);
     ENDNEW();
 
@@ -179,14 +144,4 @@ TEXT();
 }
 
 void pcie_io_ep::proc_comb() {
-    ASSIGN(o_req_compl, w_req_compl_int);
-    ASSIGN(o_compl_done, w_compl_done_int);
-
-    IF (NZ(w_req_compl_int));
-        SETONE(comb.v_mem_valid);
-        SETVAL(comb.v_mem_wren, w_wr_en);
-        SETVAL(comb.vb_mem_wstrb, wb_wr_be);
-        SETVAL(comb.vb_mem_addr, wb_req_addr);
-        SETVAL(comb.vb_mem_data, wb_wr_data);
-    ENDIF();
 }

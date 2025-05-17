@@ -67,9 +67,6 @@ class pcie_io_ep : public ModuleObject {
     InPort i_m_axis_rx_tvalid;
     OutPort o_m_axis_rx_tready;
     InPort i_m_axis_rx_tuser;
-    TextLine _t2_;
-    OutPort o_req_compl;
-    OutPort o_compl_done;
     InPort i_cfg_completer_id;
     TextLine _t3_;
     InPort i_req_mem_ready;
@@ -86,14 +83,6 @@ class pcie_io_ep : public ModuleObject {
     InPort i_resp_mem_fault;
     OutPort o_resp_mem_ready;
 
-    Signal wb_rd_addr;
-    Signal wb_rd_be;
-    Signal wb_rd_data;
-    Signal wb_wr_addr;
-    Signal wb_wr_be;
-    Signal wb_wr_data;
-    Signal w_wr_en;
-    Signal w_wr_busy;
     Signal w_req_compl_int;
     Signal w_req_compl_wd;
     Signal w_compl_done_int;
@@ -107,7 +96,6 @@ class pcie_io_ep : public ModuleObject {
     Signal wb_req_be;
     Signal wb_req_addr;
 
-    pcie_io_ep_mem_access EP_MEM_inst;
     pcie_io_rx_engine EP_RX_inst;
     pcie_io_tx_engine EP_TX_inst;
 

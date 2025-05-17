@@ -71,8 +71,6 @@ pcie_dma::pcie_dma(GenObject *parent, const char *name, const char *comment) :
     wb_s_axis_tx_tkeep(this, "wb_s_axis_tx_tkeep", "KEEP_WIDTH"),
     wb_s_axis_tx_tdata(this, "wb_s_axis_tx_tdata", "C_DATA_WIDTH"),
     w_tx_src_dsc(this, "w_tx_src_dsc", "1"),
-    w_req_compl(this, "w_req_compl", "1"),
-    w_compl_done(this, "w_compl_done", "1"),
     w_req_mem_ready(this, "w_req_mem_ready", "1", RSTVAL_ZERO, NO_COMMENT),
     w_req_mem_valid(this, "w_req_mem_valid", "1", RSTVAL_ZERO, NO_COMMENT),
     w_req_mem_64(this, "w_req_mem_64", "1", RSTVAL_ZERO, "0=32-bits; 1=64-bits"),
@@ -144,8 +142,6 @@ TEXT();
         CONNECT(PIO_EP_inst, 0, PIO_EP_inst.i_m_axis_rx_tvalid, w_reqfifo_rvalid);
         CONNECT(PIO_EP_inst, 0, PIO_EP_inst.o_m_axis_rx_tready, w_reqfifo_rd);
         CONNECT(PIO_EP_inst, 0, PIO_EP_inst.i_m_axis_rx_tuser, wb_m_axis_rx_tuser);
-        CONNECT(PIO_EP_inst, 0, PIO_EP_inst.o_req_compl, w_req_compl);
-        CONNECT(PIO_EP_inst, 0, PIO_EP_inst.o_compl_done, w_compl_done);
         CONNECT(PIO_EP_inst, 0, PIO_EP_inst.i_cfg_completer_id, i_pcie_completer_id);
         CONNECT(PIO_EP_inst, 0, PIO_EP_inst.i_req_mem_ready, w_req_mem_ready);
         CONNECT(PIO_EP_inst, 0, PIO_EP_inst.o_req_mem_valid, w_req_mem_valid);

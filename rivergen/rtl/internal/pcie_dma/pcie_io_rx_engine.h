@@ -67,12 +67,6 @@ class pcie_io_rx_engine : public ModuleObject {
     OutPort o_req_tag;                       // Memory Read Tag
     OutPort o_req_be;                        // Memory Read Byte Enables
     OutPort o_req_addr;                      // Memory Read Address
-    TextLine _t3_;
-    OutPort o_wr_addr;                       // Memory Write Address
-    OutPort o_wr_be;                         // Memory Write Byte Enable
-    OutPort o_wr_data;                       // Memory Write Data
-    OutPort o_wr_en;                         // Memory Write Enable
-    InPort i_wr_busy;                        // Memory Write Busy
     TextLine _t33_;
     InPort i_req_mem_ready;
     OutPort o_req_mem_valid;
@@ -83,10 +77,7 @@ class pcie_io_rx_engine : public ModuleObject {
     OutPort o_req_mem_strob;
     OutPort o_req_mem_data;
     OutPort o_req_mem_last;
-    InPort i_resp_mem_data;
     InPort i_resp_mem_valid;
-    InPort i_resp_mem_fault;
-    OutPort o_resp_mem_ready;
 
     TextLine _t4_;
     ParamLogic PIO_RX_MEM_RD32_FMT_TYPE;
@@ -102,15 +93,16 @@ class pcie_io_rx_engine : public ModuleObject {
     ParamLogic PIO_RX_MEM_RD64_DW1DW2;
     ParamLogic PIO_RX_MEM_WR64_DW1DW2;
     ParamLogic PIO_RX_MEM_WR64_DW3;
-    ParamLogic PIO_RX_WAIT_STATE;
     ParamLogic PIO_RX_IO_WR_DW1DW2;
-    ParamLogic PIO_RX_IO_MEM_WR_WAIT_STATE;
-
-    Logic w_sop;
+    ParamLogic PIO_RX_WAIT_DMA_RESP;
+    ParamLogic PIO_RX_WAIT_TX_COMPLETION;
+    TextLine _tlp_resp0_;
+    ParamLogic TLP_NON_POSTED;
+    ParamLogic TLP_POSTED;
+    ParamLogic TLP_COMPLETION;
 
     RegSignal m_axis_rx_tready;
-    RegSignal req_compl;
-    RegSignal req_compl_wd;
+    RegSignal req_valid;
     RegSignal req_tc;
     RegSignal req_td;
     RegSignal req_ep;
@@ -122,11 +114,11 @@ class pcie_io_rx_engine : public ModuleObject {
     RegSignal req_addr;
     RegSignal wr_addr;
     RegSignal wr_be;
-    RegSignal wr_data;
     RegSignal wr_en;
+    RegSignal wr_data;
     RegSignal state;
     RegSignal tlp_type;
-    RegSignal in_packet_q;
+    RegSignal tlp_resp;
 
     CombProcess comb;
 };

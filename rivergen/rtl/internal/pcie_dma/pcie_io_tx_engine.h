@@ -77,9 +77,10 @@ class pcie_io_tx_engine : public ModuleObject {
     InPort i_req_be;
     InPort i_req_addr;
     TextLine _t3_;
-    OutPort o_rd_addr;
-    OutPort o_rd_be;
-    InPort i_rd_data;
+    InPort i_dma_resp_valid;
+    InPort i_dma_resp_fault;
+    InPort i_dma_resp_data;
+    OutPort o_dma_resp_ready;
     InPort i_completer_id;
 
     TextLine _fmt0_;
@@ -87,7 +88,6 @@ class pcie_io_tx_engine : public ModuleObject {
     ParamLogic PIO_CPL_FMT_TYPE;
     ParamLogic PIO_TX_RST_STATE;
     ParamLogic PIO_TX_CPLD_QW1_FIRST;
-    ParamLogic PIO_TX_CPLD_QW1_TEMP;
     ParamLogic PIO_TX_CPLD_QW1;
 
     RegSignal s_axis_tx_tdata;
@@ -95,12 +95,11 @@ class pcie_io_tx_engine : public ModuleObject {
     RegSignal s_axis_tx_tlast;
     RegSignal s_axis_tx_tvalid;
     RegSignal compl_done;
+    RegSignal req_addr;
     RegSignal rd_be;
-    RegSignal req_compl_q;
+    RegSignal rd_data;
     RegSignal req_compl_wd_q;
-    RegSignal compl_busy_i;
     RegSignal state;
-    Logic w_compl_wd;
 
     CombProcess comb;
     ProcObject reqff;

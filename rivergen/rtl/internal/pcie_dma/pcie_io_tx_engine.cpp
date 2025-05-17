@@ -44,9 +44,10 @@ pcie_io_tx_engine::pcie_io_tx_engine(GenObject *parent, const char *name, const 
     i_req_be(this, "i_req_be", "8", NO_COMMENT),
     i_req_addr(this, "i_req_addr", "13", NO_COMMENT),
     _t3_(this, ""),
-    o_rd_addr(this, "o_rd_addr", "11", NO_COMMENT),
-    o_rd_be(this, "o_rd_be", "4", NO_COMMENT),
-    i_rd_data(this, "i_rd_data", "32", NO_COMMENT),
+    i_dma_resp_valid(this, "i_dma_resp_valid", "1", NO_COMMENT),
+    i_dma_resp_fault(this, "i_dma_resp_fault", "1", "Error on memory access"),
+    i_dma_resp_data(this, "i_dma_resp_data", "64", NO_COMMENT),
+    o_dma_resp_ready(this, "o_dma_resp_ready", "1", "Ready to accept response"),
     i_completer_id(this, "i_completer_id", "16", NO_COMMENT),
     // params
     _fmt0_(this, ""),
@@ -54,7 +55,6 @@ pcie_io_tx_engine::pcie_io_tx_engine(GenObject *parent, const char *name, const 
     PIO_CPL_FMT_TYPE(this, "PIO_CPL_FMT_TYPE", "7", "0x0A", NO_COMMENT),
     PIO_TX_RST_STATE(this, "PIO_TX_RST_STATE", "2", "0x0", NO_COMMENT),
     PIO_TX_CPLD_QW1_FIRST(this, "PIO_TX_CPLD_QW1_FIRST", "2", "0x1", NO_COMMENT),
-    PIO_TX_CPLD_QW1_TEMP(this, "PIO_TX_CPLD_QW1_TEMP", "2", "0x2", NO_COMMENT),
     PIO_TX_CPLD_QW1(this, "PIO_TX_CPLD_QW1", "2", "0x3", NO_COMMENT),
     // signals
     // registers
@@ -63,12 +63,11 @@ pcie_io_tx_engine::pcie_io_tx_engine(GenObject *parent, const char *name, const 
     s_axis_tx_tlast(this, "s_axis_tx_tlast", "1", RSTVAL_ZERO, NO_COMMENT),
     s_axis_tx_tvalid(this, "s_axis_tx_tvalid", "1", RSTVAL_ZERO, NO_COMMENT),
     compl_done(this, "compl_done", "1", RSTVAL_ZERO, NO_COMMENT),
+    req_addr(this, "req_addr", "13", "'0", NO_COMMENT),
     rd_be(this, "rd_be", "4", "'0", NO_COMMENT),
-    req_compl_q(this, "req_compl_q", "1", RSTVAL_ZERO, NO_COMMENT),
+    rd_data(this, "rd_data", "31", "'0", NO_COMMENT),
     req_compl_wd_q(this, "req_compl_wd_q", "1", "1", NO_COMMENT),
-    compl_busy_i(this, "compl_busy_i", "1", RSTVAL_ZERO, NO_COMMENT),
     state(this, "state", "2", "PIO_TX_RST_STATE", NO_COMMENT),
-    w_compl_wd(this, "w_compl_wd", "1", RSTVAL_ZERO, NO_COMMENT),
     //
     comb(this),
     reqff(this, "reqff", &i_clk, CLK_POSEDGE, 0, ACTIVE_NONE, NO_COMMENT)
@@ -84,54 +83,51 @@ pcie_io_tx_engine::pcie_io_tx_engine(GenObject *parent, const char *name, const 
 }
 
 void pcie_io_tx_engine::proc_comb() {
-    SETVAL(rd_be, i_req_be);
     TEXT("Calculate byte count based on byte enable");
     SETVAL(comb.vb_add_be20, ADD2(CC2(CONST("0", 1), BIT(rd_be, 3)), CC2(CONST("0", 1), BIT(rd_be, 2))));
     SETVAL(comb.vb_add_be21, ADD2(CC2(CONST("0", 1), BIT(rd_be, 1)), CC2(CONST("0", 1), BIT(rd_be, 0))));
     SETVAL(comb.vb_byte_count, ADD2(CC2(CONST("0", 2), comb.vb_add_be20), CC2(CONST("0", 2), comb.vb_add_be21)));
 
 TEXT();
-    SETVAL(req_compl_q, i_req_compl);
-    SETVAL(req_compl_wd_q, i_req_compl_wd);
-
-TEXT();
-    IF (EZ(w_compl_wd));
+    TEXT("The completer field 'lower address' DWORD[2][6:0]:\n");
+    TEXT("For completions other than for memory reads, this value is set to 0.\n");
+    TEXT("For memory reads it is the lower byte address of the first byte in\n");
+    TEXT("the returned data (or partial data). This is set for the first\n");
+    TEXT("(or only) completion and will be 0 in the lower 7 bits from then on,\n");
+    TEXT("as the completions, if split, must be naturally aligned to a read\n");
+    TEXT("completion boundary (RCB), which is usually 128 bytes\n");
+    TEXT("(though 64 bytes in root complex).\n");
+    IF (EZ(req_compl_wd_q));
         TEXT("Request without payload");
         SETZERO(comb.vb_lower_addr);
     ELSIF (NZ(BIT(rd_be, 0)));
         SETZERO(comb.vb_lower_addr);
     ELSIF (NZ(BIT(rd_be, 1)));
-        SETVAL(comb.vb_lower_addr, CC2(BITS(i_req_addr, 6, 2), CONST("1", 2)));
+        SETVAL(comb.vb_lower_addr, CC2(BITS(req_addr, 6, 2), CONST("1", 2)));
     ELSIF (NZ(BIT(rd_be, 2)));
-        SETVAL(comb.vb_lower_addr, CC2(BITS(i_req_addr, 6, 2), CONST("2", 2)));
+        SETVAL(comb.vb_lower_addr, CC2(BITS(req_addr, 6, 2), CONST("2", 2)));
     ELSIF (NZ(BIT(rd_be, 3)));
-        SETVAL(comb.vb_lower_addr, CC2(BITS(i_req_addr, 6, 2), CONST("3", 2)));
+        SETVAL(comb.vb_lower_addr, CC2(BITS(req_addr, 6, 2), CONST("3", 2)));
     ENDIF();
 
 TEXT();
-    SETZERO(compl_done);
-    IF (NZ(req_compl_q));
-        SETONE(compl_busy_i);
-    ENDIF();
     SWITCH(state);
     CASE (PIO_TX_RST_STATE);
-        IF (NZ(compl_busy_i));
-            SETZERO(s_axis_tx_tdata);
-            SETVAL(s_axis_tx_tkeep, CONST("0xFF", 8));
-            SETZERO(s_axis_tx_tlast);
-            SETZERO(s_axis_tx_tvalid);
-            IF (NZ(i_s_axis_tx_tready));
-                SETVAL(state, PIO_TX_CPLD_QW1_FIRST);
+        SETZERO(s_axis_tx_tvalid);
+        SETVAL(s_axis_tx_tkeep, CONST("0xFF", 8));
+        SETZERO(s_axis_tx_tdata);
+        SETZERO(s_axis_tx_tlast);
+        SETZERO(compl_done);
+        IF (AND2(NZ(i_req_compl), NZ(i_dma_resp_valid)));
+            SETVAL(req_addr, i_req_addr);
+            IF (NZ(BIT(req_addr, 2)));
+                SETVAL(rd_data, BITS(i_dma_resp_data, 63, 32));
             ELSE();
-                SETVAL(state, PIO_TX_RST_STATE);
+                SETVAL(rd_data, BITS(i_dma_resp_data, 31, 0));
             ENDIF();
-        ELSE();
-            SETZERO(s_axis_tx_tlast);
-            SETZERO(s_axis_tx_tvalid);
-            SETZERO(s_axis_tx_tdata);
-            SETVAL(s_axis_tx_tkeep, CONST("0xFF", 8));
-            SETZERO(compl_done);
-            SETVAL(state, PIO_TX_RST_STATE);
+            SETVAL(rd_be, i_req_be);
+            SETVAL(req_compl_wd_q, i_req_compl_wd);
+            SETVAL(state, PIO_TX_CPLD_QW1_FIRST);
         ENDIF();
     ENDCASE();
 
@@ -159,16 +155,11 @@ TEXT();
             SETBITS(comb.vb_s_axis_tx_tdata, 9, 0, i_req_len);
             SETVAL(s_axis_tx_tdata, comb.vb_s_axis_tx_tdata);
             SETVAL(s_axis_tx_tkeep, CONST("0xFF", 8));
-            SETVAL(state, PIO_TX_CPLD_QW1_TEMP);
+            SETVAL(state, PIO_TX_CPLD_QW1);
+            SETONE(s_axis_tx_tvalid);
         ELSE();
             SETVAL(state, PIO_TX_RST_STATE);
         ENDIF();
-    ENDCASE();
-
-    TEXT();
-    CASE (PIO_TX_CPLD_QW1_TEMP);
-        SETONE(s_axis_tx_tvalid);
-        SETVAL(state, PIO_TX_CPLD_QW1);
     ENDCASE();
 
     TEXT();
@@ -177,7 +168,7 @@ TEXT();
             SETONE(s_axis_tx_tlast);
             SETONE(s_axis_tx_tvalid);
             TEXT("Swap DWORDS for AXI");
-            SETBITS(comb.vb_s_axis_tx_tdata, 63, 32, i_rd_data);
+            SETBITS(comb.vb_s_axis_tx_tdata, 63, 32, rd_data);
             SETBITS(comb.vb_s_axis_tx_tdata, 31, 16, i_req_rid);
             SETBITS(comb.vb_s_axis_tx_tdata, 15, 8, i_req_tag);
             SETBIT(comb.vb_s_axis_tx_tdata, 7, CONST("0", 1));
@@ -192,7 +183,6 @@ TEXT();
                 SETVAL(s_axis_tx_tkeep, CONST("0x0F", 8));
             ENDIF();
             SETONE(compl_done);
-            SETZERO(compl_busy_i);
             SETVAL(state, PIO_TX_RST_STATE);
         ELSE();
             SETVAL(state, PIO_TX_CPLD_QW1);
@@ -207,21 +197,16 @@ TEXT();
 
 
 TEXT_ASSIGN();
-    ASSIGN(w_compl_wd, req_compl_wd_q);
     ASSIGN(o_s_axis_tx_tdata, s_axis_tx_tdata);
     ASSIGN(o_s_axis_tx_tkeep, s_axis_tx_tkeep);
     ASSIGN(o_s_axis_tx_tlast, s_axis_tx_tlast);
     ASSIGN(o_s_axis_tx_tvalid, s_axis_tx_tvalid);
+    ASSIGN(o_dma_resp_ready, CONST("1", 1));
     ASSIGN(o_compl_done, compl_done);
-    ASSIGN(o_rd_be, rd_be);
 
 TEXT_ASSIGN();
     TEXT_ASSIGN("Unused discontinue");
     ASSIGN(o_tx_src_dsc, CONST("0", 1));
-
-TEXT_ASSIGN();
-    TEXT_ASSIGN("Present address and byte enable to memory module");
-    ASSIGN(o_rd_addr, BITS(i_req_addr, 12, 2));
 }
 
 void pcie_io_tx_engine::proc_reqff() {
