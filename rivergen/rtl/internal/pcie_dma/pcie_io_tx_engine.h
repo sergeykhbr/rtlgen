@@ -31,17 +31,11 @@ class pcie_io_tx_engine : public ModuleObject {
      public:
         CombProcess(GenObject *parent) :
             CombinationalProcess(parent, "comb"),
-            vb_add_be20(this, "vb_add_be20", "2", "'0"),
-            vb_add_be21(this, "vb_add_be21", "2", "'0"),
-            vb_byte_count(this, "vb_byte_count", "12", "'0"),
             vb_lower_addr(this, "vb_lower_addr", "7", "'0"),
             vb_s_axis_tx_tdata(this, "vb_s_axis_tx_tdata", "C_DATA_WIDTH", "'0") {
         }
 
      public:
-        Logic vb_add_be20;
-        Logic vb_add_be21;
-        Logic vb_byte_count;
         Logic vb_lower_addr;
         Logic vb_s_axis_tx_tdata;
     };
@@ -76,9 +70,12 @@ class pcie_io_tx_engine : public ModuleObject {
     InPort i_req_tag;
     InPort i_req_be;
     InPort i_req_addr;
+    InPort i_req_bytes;
     TextLine _t3_;
     InPort i_dma_resp_valid;
+    InPort i_dma_resp_last;
     InPort i_dma_resp_fault;
+    InPort i_dma_resp_addr;
     InPort i_dma_resp_data;
     OutPort o_dma_resp_ready;
     InPort i_completer_id;

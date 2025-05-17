@@ -46,7 +46,6 @@ pcie_io_rx_engine::pcie_io_rx_engine(GenObject *parent, const char *name, const 
     _t33_(this, ""),
     i_req_mem_ready(this, "i_req_mem_ready", "1", "Ready to accept next memory request"),
     o_req_mem_valid(this, "o_req_mem_valid", "1", "Request data is valid to accept"),
-    o_req_mem_64(this, "o_req_mem_64", "1", "0=32-bits; 1=64-bits"),
     o_req_mem_write(this, "o_req_mem_write", "1", "0=read; 1=write operation"),
     o_req_mem_bytes(this, "o_req_mem_bytes", "10", "0=1024 B; 4=DWORD; 8=QWORD; ..."),
     o_req_mem_addr(this, "o_req_mem_addr", "13", "Address to read/write"),
@@ -88,11 +87,12 @@ pcie_io_rx_engine::pcie_io_rx_engine(GenObject *parent, const char *name, const 
     req_rid(this, "req_rid", "16", RSTVAL_ZERO, NO_COMMENT),
     req_tag(this, "req_tag", "8", RSTVAL_ZERO, NO_COMMENT),
     req_be(this, "req_be", "8", RSTVAL_ZERO, NO_COMMENT),
+    req_bytes(this, "req_bytes", "10", "'0", NO_COMMENT),
     req_addr(this, "req_addr", "13", RSTVAL_ZERO, NO_COMMENT),
     wr_addr(this, "wr_addr", "11", RSTVAL_ZERO, NO_COMMENT),
-    wr_be(this, "wr_be", "8", RSTVAL_ZERO, NO_COMMENT),
     wr_en(this, "wr_en", "1", RSTVAL_ZERO, NO_COMMENT),
-    wr_data(this, "wr_data", "64", RSTVAL_ZERO, NO_COMMENT),
+    wr_data(this, "wr_data", "64", "'0", NO_COMMENT),
+    wr_strob(this, "wr_strob", "8", "'0", NO_COMMENT),
     state(this, "state", "8", "PIO_RX_RST_STATE", NO_COMMENT),
     tlp_type(this, "tlp_type", "8", RSTVAL_ZERO, NO_COMMENT),
     tlp_resp(this, "tlp_resp", "2", "TLP_NON_POSTED", NO_COMMENT),
@@ -116,31 +116,48 @@ TEXT();
     ENDIF();
 
 TEXT();
-    SETZERO(wr_en);
+    IF (NZ(BIT(req_be, 0)));
+        SETZERO(comb.vb_req_addr_1_0);
+    ELSIF (NZ(BIT(req_be, 1)));
+        SETVAL(comb.vb_req_addr_1_0, CONST("1", 2));
+    ELSIF (NZ(BIT(req_be, 2)));
+        SETVAL(comb.vb_req_addr_1_0, CONST("2", 2));
+    ELSIF (NZ(BIT(req_be, 3)));
+        SETVAL(comb.vb_req_addr_1_0, CONST("3", 2));
+    ENDIF();
+
+TEXT();
+    TEXT("Calculate byte count based on byte enable");
+    SETVAL(comb.vb_add_be20, ADD2(CC2(CONST("0", 1), BIT(req_be, 3)), CC2(CONST("0", 1), BIT(req_be, 2))));
+    SETVAL(comb.vb_add_be21, ADD2(CC2(CONST("0", 1), BIT(req_be, 1)), CC2(CONST("0", 1), BIT(req_be, 0))));
+    IF (EQ(req_len, CONST("1", 10)));
+        SETVAL(comb.vb_req_bytes, ADD2(CC2(CONST("0", 8), comb.vb_add_be20), CC2(CONST("0", 8), comb.vb_add_be21)));
+    ELSE ();
+        SETVAL(comb.vb_req_bytes, CC2(req_len, CONST("0", 2)));
+    ENDIF();
 
 TEXT();
     SWITCH(state);
     CASE(PIO_RX_RST_STATE);
         SETONE(m_axis_rx_tready);
-        SETZERO(tlp_resp);
+        SETZERO(tlp_resp, "Connected to Tx, should be set only after full header received");
 
         TEXT();
         IF (NZ(i_m_axis_rx_tvalid));
             SETVAL(tlp_type, BITS(i_m_axis_rx_tdata, 31, 24));
+            SETVAL(req_tc, BITS(i_m_axis_rx_tdata, 22, 20));
+            SETVAL(req_td, BIT(i_m_axis_rx_tdata, 15));
+            SETVAL(req_ep, BIT(i_m_axis_rx_tdata, 14));
+            SETVAL(req_attr, BITS(i_m_axis_rx_tdata, 13, 12));
             SETVAL(req_len, BITS(i_m_axis_rx_tdata, 9, 0));
+            SETVAL(req_rid, BITS(i_m_axis_rx_tdata, 63, 48));
+            SETVAL(req_tag, BITS(i_m_axis_rx_tdata, 47, 40));
+            SETVAL(req_be, BITS(i_m_axis_rx_tdata, 39, 32));
 
             TEXT();
             SWITCH(BITS(i_m_axis_rx_tdata, 30, 24));
             CASE(PIO_RX_MEM_RD32_FMT_TYPE);
                 IF (EQ(BITS(i_m_axis_rx_tdata, 9, 0), CONST("1", 10)));
-                    SETVAL(req_tc, BITS(i_m_axis_rx_tdata, 22, 20));
-                    SETVAL(req_td, BIT(i_m_axis_rx_tdata, 15));
-                    SETVAL(req_ep, BIT(i_m_axis_rx_tdata, 14));
-                    SETVAL(req_attr, BITS(i_m_axis_rx_tdata, 13, 12));
-                    SETVAL(req_len, BITS(i_m_axis_rx_tdata, 9, 0));
-                    SETVAL(req_rid, BITS(i_m_axis_rx_tdata, 63, 48));
-                    SETVAL(req_tag, BITS(i_m_axis_rx_tdata, 47, 40));
-                    SETVAL(req_be, BITS(i_m_axis_rx_tdata, 39, 32));
                     SETVAL(state, PIO_RX_MEM_RD32_DW1DW2);
                 ELSE();
                     SETVAL(state, PIO_RX_RST_STATE);
@@ -150,7 +167,6 @@ TEXT();
             TEXT();
             CASE(PIO_RX_MEM_WR32_FMT_TYPE);
                 IF (EQ(BITS(i_m_axis_rx_tdata, 9, 0), CONST("1", 10)));
-                    SETVAL(wr_be, BITS(i_m_axis_rx_tdata, 39, 32));
                     SETVAL(state, PIO_RX_MEM_WR32_DW1DW2);
                 ELSE();
                     SETVAL(state, PIO_RX_RST_STATE);
@@ -160,14 +176,6 @@ TEXT();
             TEXT();
             CASE(PIO_RX_MEM_RD64_FMT_TYPE);
                 IF (EQ(BITS(i_m_axis_rx_tdata, 9, 0), CONST("1", 10)));
-                    SETVAL(req_tc, BITS(i_m_axis_rx_tdata, 22, 20));
-                    SETVAL(req_td, BIT(i_m_axis_rx_tdata, 15));
-                    SETVAL(req_ep, BIT(i_m_axis_rx_tdata, 14));
-                    SETVAL(req_attr, BITS(i_m_axis_rx_tdata, 13, 12));
-                    SETVAL(req_len, BITS(i_m_axis_rx_tdata, 9, 0));
-                    SETVAL(req_rid, BITS(i_m_axis_rx_tdata, 63, 48));
-                    SETVAL(req_tag, BITS(i_m_axis_rx_tdata, 47, 40));
-                    SETVAL(req_be, BITS(i_m_axis_rx_tdata, 39, 32));
                     SETVAL(state, PIO_RX_MEM_RD64_DW1DW2);
                 ELSE();
                     SETVAL(state, PIO_RX_RST_STATE);
@@ -177,7 +185,6 @@ TEXT();
             TEXT();
             CASE(PIO_RX_MEM_WR64_FMT_TYPE);
                 IF (EQ(BITS(i_m_axis_rx_tdata, 9, 0), CONST("1", 10)));
-                    SETVAL(wr_be, BITS(i_m_axis_rx_tdata, 39, 32));
                     SETVAL(state, PIO_RX_MEM_WR64_DW1DW2);
                 ELSE();
                     SETVAL(state, PIO_RX_RST_STATE);
@@ -187,14 +194,6 @@ TEXT();
             TEXT();
             CASE(PIO_RX_IO_RD32_FMT_TYPE);
                 IF (EQ(BITS(i_m_axis_rx_tdata, 9, 0), CONST("1", 10)));
-                    SETVAL(req_tc, BITS(i_m_axis_rx_tdata, 22, 20));
-                    SETVAL(req_td, BIT(i_m_axis_rx_tdata, 15));
-                    SETVAL(req_ep, BIT(i_m_axis_rx_tdata, 14));
-                    SETVAL(req_attr, BITS(i_m_axis_rx_tdata, 13, 12));
-                    SETVAL(req_len, BITS(i_m_axis_rx_tdata, 9, 0));
-                    SETVAL(req_rid, BITS(i_m_axis_rx_tdata, 63, 48));
-                    SETVAL(req_tag, BITS(i_m_axis_rx_tdata, 47, 40));
-                    SETVAL(req_be, BITS(i_m_axis_rx_tdata, 39, 32));
                     SETVAL(state, PIO_RX_MEM_RD32_DW1DW2);
                 ELSE();
                     SETVAL(state, PIO_RX_RST_STATE);
@@ -204,15 +203,6 @@ TEXT();
             TEXT();
             CASE(PIO_RX_IO_WR32_FMT_TYPE);
                 IF (EQ(BITS(i_m_axis_rx_tdata, 9, 0), CONST("1", 10)));
-                    SETVAL(req_tc, BITS(i_m_axis_rx_tdata, 22, 20));
-                    SETVAL(req_td, BIT(i_m_axis_rx_tdata, 15));
-                    SETVAL(req_ep, BIT(i_m_axis_rx_tdata, 14));
-                    SETVAL(req_attr, BITS(i_m_axis_rx_tdata, 13, 12));
-                    SETVAL(req_len, BITS(i_m_axis_rx_tdata, 9, 0));
-                    SETVAL(req_rid, BITS(i_m_axis_rx_tdata, 63, 48));
-                    SETVAL(req_tag, BITS(i_m_axis_rx_tdata, 47, 40));
-                    SETVAL(req_be, BITS(i_m_axis_rx_tdata, 39, 32));
-                    SETVAL(wr_be, BITS(i_m_axis_rx_tdata, 39, 32));
                     SETVAL(state, PIO_RX_IO_WR_DW1DW2);
                 ELSE();
                     SETVAL(state, PIO_RX_RST_STATE);
@@ -236,7 +226,8 @@ TEXT();
             SETONE(req_valid);
             SETVAL(req_addr, CC3(BITS(comb.vb_region_select, 1, 0),
                                  BITS(i_m_axis_rx_tdata, 10, 2),
-                                 CONST("0", 2)));
+                                 comb.vb_req_addr_1_0));
+            SETVAL(req_bytes, comb.vb_req_bytes);
             SETVAL(tlp_resp, TLP_POSTED);
             SETVAL(state, PIO_RX_WAIT_DMA_RESP);
         ELSE();
@@ -254,11 +245,14 @@ TEXT();
                                 BITS(i_m_axis_rx_tdata, 10, 2)));
             SETVAL(req_addr, CC3(BITS(comb.vb_region_select, 1, 0),
                                  BITS(i_m_axis_rx_tdata, 10, 2),
-                                 CONST("0", 2)));
+                                 comb.vb_req_addr_1_0));
+            SETVAL(req_bytes, comb.vb_req_bytes);
             SETVAL(wr_data, CC2(BITS(i_m_axis_rx_tdata, 63, 32),
                                 BITS(i_m_axis_rx_tdata, 63, 32)));
             IF (NZ(BIT(i_m_axis_rx_tdata, 2)));
-                SETVAL(wr_be, CC2(BITS(wr_be, 3, 0), BITS(wr_be, 7, 4)));
+                SETVAL(wr_strob, CC2(BITS(req_be, 3, 0), BITS(req_be, 7, 4)));
+            ELSE();
+                SETVAL(wr_strob, req_be);
             ENDIF();
             SETVAL(tlp_resp, TLP_NON_POSTED);
             SETVAL(state, PIO_RX_WAIT_DMA_RESP);
@@ -274,7 +268,8 @@ TEXT();
             SETONE(req_valid);
             SETVAL(req_addr, CC3(BITS(comb.vb_region_select, 1, 0),
                                  BITS(i_m_axis_rx_tdata, 42, 34),
-                                 CONST("0", 2)));
+                                 comb.vb_req_addr_1_0));
+            SETVAL(req_bytes, comb.vb_req_bytes);
             SETVAL(tlp_resp, TLP_POSTED);
             SETVAL(state, PIO_RX_WAIT_DMA_RESP);
         ELSE();
@@ -289,9 +284,12 @@ TEXT();
                                 BITS(i_m_axis_rx_tdata, 42, 34)));
             SETVAL(req_addr, CC3(BITS(comb.vb_region_select, 1, 0),
                                  BITS(i_m_axis_rx_tdata, 42, 34),
-                                 CONST("0", 2)));
+                                 comb.vb_req_addr_1_0));
+            SETVAL(req_bytes, comb.vb_req_bytes);
             IF (NZ(BIT(i_m_axis_rx_tdata, 34)));
-                SETVAL(wr_be, CC2(BITS(wr_be, 3, 0), BITS(wr_be, 7, 4)));
+                SETVAL(wr_strob, CC2(BITS(req_be, 3, 0), BITS(req_be, 7, 4)));
+            ELSE();
+                SETVAL(wr_strob, req_be);
             ENDIF();
             SETVAL(state, PIO_RX_MEM_WR64_DW3);
         ELSE();
@@ -324,11 +322,14 @@ TEXT();
                                 BITS(i_m_axis_rx_tdata, 10, 2)));
             SETVAL(req_addr, CC3(BITS(comb.vb_region_select, 1, 0),
                                  BITS(i_m_axis_rx_tdata, 10, 2),
-                                 CONST("0", 2)));
+                                 comb.vb_req_addr_1_0));
+            SETVAL(req_bytes, comb.vb_req_bytes);
             SETVAL(wr_data, CC2(BITS(i_m_axis_rx_tdata, 63, 32),
                                 BITS(i_m_axis_rx_tdata, 63, 32)));
             IF (NZ(BIT(i_m_axis_rx_tdata, 2)));
-                SETVAL(wr_be, CC2(BITS(wr_be, 3, 0), BITS(wr_be, 7, 4)));
+                SETVAL(wr_strob, CC2(BITS(req_be, 3, 0), BITS(req_be, 7, 4)));
+            ELSE();
+                SETVAL(wr_strob, req_be);
             ENDIF();
             SETVAL(tlp_resp, TLP_COMPLETION);
             SETVAL(state, PIO_RX_WAIT_DMA_RESP);
@@ -348,6 +349,7 @@ TEXT();
                 SETVAL(state, PIO_RX_WAIT_TX_COMPLETION);
             ELSE();
                 SETONE(m_axis_rx_tready);
+                SETZERO(wr_en);
                 SETVAL(state, PIO_RX_RST_STATE);
             ENDIF();
         ENDIF();
@@ -355,7 +357,8 @@ TEXT();
 
     TEXT();
     CASE(PIO_RX_WAIT_TX_COMPLETION);
-        SETZERO(wr_en);
+        SETZERO(wr_en, "IO Write");
+        SETZERO(wr_strob);
         SETZERO(req_len);
         IF(NZ(i_compl_done));
             SETONE(m_axis_rx_tready);
@@ -385,11 +388,10 @@ TEXT_ASSIGN();
 
 TEXT_ASSIGN();
     ASSIGN(o_req_mem_valid, req_valid);
-    ASSIGN(o_req_mem_64, CONST("0", 1));
     ASSIGN(o_req_mem_write, wr_en);
-    ASSIGN(o_req_mem_bytes, CC2(req_len, CONST("0", 2)));
+    ASSIGN(o_req_mem_bytes, req_bytes);
     ASSIGN(o_req_mem_addr, req_addr);
-    ASSIGN(o_req_mem_strob, wr_be);
+    ASSIGN(o_req_mem_strob, wr_strob);
     ASSIGN(o_req_mem_data, wr_data);
     ASSIGN(o_req_mem_last, CONST("1", 1));
 }

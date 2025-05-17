@@ -110,16 +110,19 @@ class pcie_dma : public ModuleObject {
 
     Signal w_req_mem_ready;
     Signal w_req_mem_valid;
-    Signal w_req_mem_64;
     Signal w_req_mem_write;
     Signal wb_req_mem_bytes;
+    Signal wb_req_mem_addr_full;
     Signal wb_req_mem_addr;
     Signal wb_req_mem_strob;
     Signal wb_req_mem_data;
     Signal w_req_mem_last;
-    Signal wb_resp_mem_data;
     Signal w_resp_mem_valid;
+    Signal w_resp_mem_last;
     Signal w_resp_mem_fault;
+    Signal wb_resp_mem_addr_full;
+    Signal wb_resp_mem_addr;
+    Signal wb_resp_mem_data;
     Signal w_resp_mem_ready;
 
 

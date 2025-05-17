@@ -17,7 +17,6 @@
 #pragma once
 
 #include <api_rtlgen.h>
-#include "pcie_io_ep_mem_access.h"
 #include "pcie_io_rx_engine.h"
 #include "pcie_io_tx_engine.h"
 
@@ -71,16 +70,17 @@ class pcie_io_ep : public ModuleObject {
     TextLine _t3_;
     InPort i_req_mem_ready;
     OutPort o_req_mem_valid;
-    OutPort o_req_mem_64;
     OutPort o_req_mem_write;
     OutPort o_req_mem_bytes;
     OutPort o_req_mem_addr;
     OutPort o_req_mem_strob;
     OutPort o_req_mem_data;
     OutPort o_req_mem_last;
-    InPort i_resp_mem_data;
     InPort i_resp_mem_valid;
+    InPort i_resp_mem_last;
     InPort i_resp_mem_fault;
+    InPort i_resp_mem_addr;
+    InPort i_resp_mem_data;
     OutPort o_resp_mem_ready;
 
     Signal w_req_compl_int;
@@ -95,6 +95,7 @@ class pcie_io_ep : public ModuleObject {
     Signal wb_req_tag;
     Signal wb_req_be;
     Signal wb_req_addr;
+    Signal wb_req_bytes;
 
     pcie_io_rx_engine EP_RX_inst;
     pcie_io_tx_engine EP_TX_inst;

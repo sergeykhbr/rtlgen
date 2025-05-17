@@ -26,16 +26,17 @@ axi_dma::axi_dma(GenObject *parent, const char *name, const char *depth) :
     i_clk(this, "i_clk", "1", "CPU clock"),
     o_req_mem_ready(this, "o_req_mem_ready", "1", "Ready to accept next data"),
     i_req_mem_valid(this, "i_req_mem_valid", "1", "Request data is ready to accept"),
-    i_req_mem_64(this, "i_req_mem_64", "1", "0=32-bits; 1=64-bits"),
     i_req_mem_write(this, "i_req_mem_write", "1", "0=read; 1=write operation"),
     i_req_mem_bytes(this, "i_req_mem_bytes", "10", "0=1024 B; 4=DWORD; 8=QWORD; ..."),
     i_req_mem_addr(this, "i_req_mem_addr", "abits", "Address to read/write"),
     i_req_mem_strob(this, "i_req_mem_strob", "8", "Byte enabling write strob"),
     i_req_mem_data(this, "i_req_mem_data", "64", "Data to write"),
     i_req_mem_last(this, "i_req_mem_last", "1", "Last data payload in a sequence"),
-    o_resp_mem_data(this, "o_resp_mem_data", "64", "Read data value"),
     o_resp_mem_valid(this, "o_resp_mem_valid", "1", "Read/Write data is valid. All write transaction with valid response."),
+    o_resp_mem_last(this, "o_resp_mem_last", "1", "Last response in a sequence."),
     o_resp_mem_fault(this, "o_resp_mem_fault", "1", "Error on memory access"),
+    o_resp_mem_addr(this, "o_resp_mem_addr", "abits", "Read address value"),
+    o_resp_mem_data(this, "o_resp_mem_data", "64", "Read data value"),
     i_resp_mem_ready(this, "i_resp_mem_ready", "1", "Ready to accept response"),
     i_msti(this, "i_msti", "AXI master input"),
     o_msto(this, "o_msto", "AXI master output"),
@@ -64,6 +65,8 @@ axi_dma::axi_dma(GenObject *parent, const char *name, const char *depth) :
     req_last(this, "req_last", "1", RSTVAL_ZERO, NO_COMMENT),
     req_ready(this, "req_ready", "1", "1", NO_COMMENT),
     resp_valid(this, "resp_valid", "1", "'0", NO_COMMENT),
+    resp_last(this, "resp_last", "1", "'0", NO_COMMENT),
+    resp_addr(this, "resp_addr", "CFG_SYSBUS_ADDR_BITS", "'0", NO_COMMENT),
     resp_data(this, "resp_data", "CFG_SYSBUS_DATA_BITS", "'0", NO_COMMENT),
     resp_error(this, "resp_error", "1", RSTVAL_ZERO, NO_COMMENT),
     user_count(this, "user_count", "CFG_SYSBUS_USER_BITS", "'0", NO_COMMENT),
@@ -80,10 +83,88 @@ axi_dma::axi_dma(GenObject *parent, const char *name, const char *depth) :
 void axi_dma::proc_comb() {
     SETVAL(comb.vb_req_mem_bytes_m1, DEC(i_req_mem_bytes));
     SETVAL(comb.vb_req_addr_inc, req_addr);
-    IF (NZ(i_req_mem_64));
-        SETBITS(comb.vb_req_addr_inc, 9, 0, ADD2(BITS(req_addr, 9, 0), CONST("0x8", 10)));
-    ELSE();
+
+    TEXT();
+    TEXT("Byte swapping:");
+    IF (EQ(req_size, CONST("0", 3)));
+        SETBITS(comb.vb_req_addr_inc, 9, 0, ADD2(BITS(req_addr, 9, 0), CONST("0x1", 10)));
+        IF (EQ(BITS(req_addr, 2, 0), CONST("0", 3)));
+            SETBITS(comb.vb_r_data_swap, 31, 0, CC4(BITS(i_msti.r_data, 7, 0),
+                                             BITS(i_msti.r_data, 7, 0),
+                                             BITS(i_msti.r_data, 7, 0),
+                                             BITS(i_msti.r_data, 7, 0)));
+        ELSIF (EQ(BITS(req_addr, 2, 0), CONST("1", 3)));
+            SETBITS(comb.vb_r_data_swap, 31, 0, CC4(BITS(i_msti.r_data, 15, 8),
+                                             BITS(i_msti.r_data, 15, 8),
+                                             BITS(i_msti.r_data, 15, 8),
+                                             BITS(i_msti.r_data, 15, 8)));
+        ELSIF (EQ(BITS(req_addr, 2, 0), CONST("2", 3)));
+            SETBITS(comb.vb_r_data_swap, 31, 0, CC4(BITS(i_msti.r_data, 23, 16),
+                                             BITS(i_msti.r_data, 23, 16),
+                                             BITS(i_msti.r_data, 23, 16),
+                                             BITS(i_msti.r_data, 23, 16)));
+        ELSIF (EQ(BITS(req_addr, 2, 0), CONST("3", 3)));
+            SETBITS(comb.vb_r_data_swap, 31, 0, CC4(BITS(i_msti.r_data, 31, 24),
+                                             BITS(i_msti.r_data, 31, 24),
+                                             BITS(i_msti.r_data, 31, 24),
+                                             BITS(i_msti.r_data, 31, 24)));
+        ELSIF (EQ(BITS(req_addr, 2, 0), CONST("4", 3)));
+            SETBITS(comb.vb_r_data_swap, 31, 0, CC4(BITS(i_msti.r_data, 39, 32),
+                                             BITS(i_msti.r_data, 39, 32),
+                                             BITS(i_msti.r_data, 39, 32),
+                                             BITS(i_msti.r_data, 39, 32)));
+        ELSIF (EQ(BITS(req_addr, 2, 0), CONST("5", 3)));
+            SETBITS(comb.vb_r_data_swap, 31, 0, CC4(BITS(i_msti.r_data, 47, 40),
+                                             BITS(i_msti.r_data, 47, 40),
+                                             BITS(i_msti.r_data, 47, 40),
+                                             BITS(i_msti.r_data, 47, 40)));
+        ELSIF (EQ(BITS(req_addr, 2, 0), CONST("6", 3)));
+            SETBITS(comb.vb_r_data_swap, 31, 0, CC4(BITS(i_msti.r_data, 55, 48),
+                                             BITS(i_msti.r_data, 55, 48),
+                                             BITS(i_msti.r_data, 55, 48),
+                                             BITS(i_msti.r_data, 55, 48)));
+        ELSE();
+            SETBITS(comb.vb_r_data_swap, 31, 0, CC4(BITS(i_msti.r_data, 63, 56),
+                                             BITS(i_msti.r_data, 63, 56),
+                                             BITS(i_msti.r_data, 63, 56),
+                                             BITS(i_msti.r_data, 63, 56)));
+        ENDIF();
+        SETBITS(comb.vb_r_data_swap, 63, 32, BITS(comb.vb_r_data_swap, 31, 0));
+    ELSIF (EQ(req_size, CONST("1", 3)));
+        SETBITS(comb.vb_req_addr_inc, 9, 0, ADD2(BITS(req_addr, 9, 0), CONST("0x2", 10)));
+        IF (EQ(BITS(req_addr, 2, 1), CONST("0", 2)));
+            SETVAL(comb.vb_r_data_swap, CC4(BITS(i_msti.r_data, 15, 0),
+                                            BITS(i_msti.r_data, 15, 0),
+                                            BITS(i_msti.r_data, 15, 0),
+                                            BITS(i_msti.r_data, 15, 0)));
+        ELSIF (EQ(BITS(req_addr, 2, 1), CONST("1", 2)));
+            SETVAL(comb.vb_r_data_swap, CC4(BITS(i_msti.r_data, 31, 16),
+                                            BITS(i_msti.r_data, 31, 16),
+                                            BITS(i_msti.r_data, 31, 16),
+                                            BITS(i_msti.r_data, 31, 16)));
+        ELSIF (EQ(BITS(req_addr, 2, 1), CONST("2", 2)));
+            SETVAL(comb.vb_r_data_swap, CC4(BITS(i_msti.r_data, 47, 32),
+                                            BITS(i_msti.r_data, 47, 32),
+                                            BITS(i_msti.r_data, 47, 32),
+                                            BITS(i_msti.r_data, 47, 32)));
+        ELSE();
+            SETVAL(comb.vb_r_data_swap, CC4(BITS(i_msti.r_data, 63, 48),
+                                            BITS(i_msti.r_data, 63, 48),
+                                            BITS(i_msti.r_data, 63, 48),
+                                            BITS(i_msti.r_data, 63, 48)));
+        ENDIF();
+    ELSIF (EQ(req_size, CONST("2", 3)));
         SETBITS(comb.vb_req_addr_inc, 9, 0, ADD2(BITS(req_addr, 9, 0), CONST("0x4", 10)));
+        IF (EZ(BIT(req_addr, 2)));
+            SETVAL(comb.vb_r_data_swap, CC2(BITS(i_msti.r_data, 31, 0),
+                                            BITS(i_msti.r_data, 31, 0)));
+        ELSE();
+            SETVAL(comb.vb_r_data_swap, CC2(BITS(i_msti.r_data, 63, 32),
+                                            BITS(i_msti.r_data, 63, 32)));
+        ENDIF();
+    ELSE();
+        SETBITS(comb.vb_req_addr_inc, 9, 0, ADD2(BITS(req_addr, 9, 0), CONST("0x8", 10)));
+        SETVAL(comb.vb_r_data_swap, i_msti.r_data);
     ENDIF();
 
 TEXT();
@@ -91,16 +172,23 @@ TEXT();
     CASE(state_idle);
         SETONE(req_ready);
         SETZERO(resp_valid);
+        SETZERO(resp_last);
         IF (NZ(i_req_mem_valid));
             SETZERO(req_ready);
             SETVAL(req_addr, OR2_L(CONST("0x08000000", 48), CC2(ALLZEROS(), i_req_mem_addr)));
             SETVAL(req_last, i_req_mem_last);
-            IF (NZ(i_req_mem_64));
-                SETVAL(req_size, CONST("6", 3));
-                SETVAL(req_len, CC2(CONST("0", 1), BITS(comb.vb_req_mem_bytes_m1, 9, 3)));
+            IF (EQ(i_req_mem_bytes, CONST("1", 10)));
+                SETVAL(req_size, CONST("0", 3));
+                SETZERO(req_len);
+            ELSIF (EQ(i_req_mem_bytes, CONST("2", 10)));
+                SETVAL(req_size, CONST("1", 3));
+                SETZERO(req_len);
+            ELSIF (EQ(i_req_mem_bytes, CONST("4", 10)));
+                SETVAL(req_size, CONST("2", 3));
+                SETZERO(req_len);
             ELSE();
-                SETVAL(req_size, CONST("5", 3));
-                SETVAL(req_len, BITS(comb.vb_req_mem_bytes_m1, 9, 2));
+                SETVAL(req_size, CONST("3", 3));
+                SETVAL(req_len, CC2(CONST("0", 1), BITS(comb.vb_req_mem_bytes_m1, 9, 3)));
             ENDIF();
             IF (EZ(i_req_mem_write));
                 SETONE(ar_valid);
@@ -118,6 +206,7 @@ TEXT();
         ENDCASE();
     CASE(state_ar);
         IF (NZ(i_msti.ar_ready));
+            SETVAL(resp_addr, req_addr);
             SETZERO(ar_valid);
             SETONE(r_ready);
             SETVAL(state, state_r);
@@ -126,8 +215,9 @@ TEXT();
     CASE(state_r);
         IF (NZ(i_msti.r_valid));
             SETONE(resp_valid);
-            SETVAL(resp_data, i_msti.r_data);
-            SETVAL(req_last, i_msti.r_last);
+            SETVAL(resp_addr, req_addr);
+            SETVAL(resp_data, comb.vb_r_data_swap);
+            SETVAL(resp_last, i_msti.r_last);
             SETVAL(resp_error, BIT(i_msti.r_resp, 1));
             SETVAL(req_addr, comb.vb_req_addr_inc);
 
@@ -143,8 +233,8 @@ TEXT();
             SETZERO(resp_valid);
 
             TEXT();
-            IF (NZ(req_last));
-                SETZERO(req_last);
+            IF (NZ(resp_last));
+                SETZERO(resp_last);
                 SETVAL(user_count, INC(user_count));
                 SETONE(req_ready);
                 SETVAL(state, state_idle);
@@ -160,6 +250,7 @@ TEXT();
         IF (NZ(i_msti.aw_ready));
             SETZERO(aw_valid);
             SETVAL(state, state_w);
+            SETVAL(resp_addr, req_addr);
 
             TEXT();
             IF (AND2(w_valid, NZ(i_msti.w_ready)));
@@ -216,6 +307,7 @@ TEXT();
             SETVAL(user_count, INC(user_count));
             SETVAL(resp_error, BIT(i_msti.b_resp, 1));
             SETONE(resp_valid);
+            SETONE(resp_last);
         ENDIF();
         ENDCASE();
     ENDSWITCH();
@@ -225,10 +317,12 @@ TEXT();
     SYNC_RESET();
 
 TEXT();
-    SETVAL(o_req_mem_ready, req_ready);
     SETVAL(o_resp_mem_valid, resp_valid);
-    SETVAL(o_resp_mem_data, resp_data);
+    SETVAL(o_resp_mem_last, resp_last);
     SETVAL(o_resp_mem_fault, resp_error);
+    SETVAL(o_resp_mem_addr, resp_addr);
+    SETVAL(o_resp_mem_data, resp_data);
+    SETVAL(o_req_mem_ready, req_ready);
 
 TEXT();
     SETVAL(comb.vmsto.ar_valid, ar_valid);

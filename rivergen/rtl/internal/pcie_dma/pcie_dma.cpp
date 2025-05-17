@@ -73,16 +73,19 @@ pcie_dma::pcie_dma(GenObject *parent, const char *name, const char *comment) :
     w_tx_src_dsc(this, "w_tx_src_dsc", "1"),
     w_req_mem_ready(this, "w_req_mem_ready", "1", RSTVAL_ZERO, NO_COMMENT),
     w_req_mem_valid(this, "w_req_mem_valid", "1", RSTVAL_ZERO, NO_COMMENT),
-    w_req_mem_64(this, "w_req_mem_64", "1", RSTVAL_ZERO, "0=32-bits; 1=64-bits"),
     w_req_mem_write(this, "w_req_mem_write", "1", RSTVAL_ZERO, "0=read; 1=write operation"),
     wb_req_mem_bytes(this, "wb_req_mem_bytes", "10", RSTVAL_ZERO, "0=1024 B; 4=DWORD; 8=QWORD; ..."),
+    wb_req_mem_addr_full(this, "wb_req_mem_addr_full", "CFG_SYSBUS_ADDR_BITS", "'0", NO_COMMENT),
     wb_req_mem_addr(this, "wb_req_mem_addr", "13", "'0", NO_COMMENT),
     wb_req_mem_strob(this, "wb_req_mem_strob", "8", "'0", NO_COMMENT),
     wb_req_mem_data(this, "wb_req_mem_data", "64", "'0", NO_COMMENT),
     w_req_mem_last(this, "w_req_mem_last", "1", RSTVAL_ZERO, NO_COMMENT),
-    wb_resp_mem_data(this, "wb_resp_mem_data", "64", "'0", NO_COMMENT),
     w_resp_mem_valid(this, "w_resp_mem_valid", "1", RSTVAL_ZERO, NO_COMMENT),
+    w_resp_mem_last(this, "w_resp_mem_last", "1", RSTVAL_ZERO, NO_COMMENT),
     w_resp_mem_fault(this, "w_resp_mem_fault", "1", RSTVAL_ZERO, NO_COMMENT),
+    wb_resp_mem_addr_full(this, "wb_resp_mem_addr_full", "CFG_SYSBUS_ADDR_BITS", "'0", NO_COMMENT),
+    wb_resp_mem_addr(this, "wb_resp_mem_addr", "13", "'0", NO_COMMENT),
+    wb_resp_mem_data(this, "wb_resp_mem_data", "64", "'0", NO_COMMENT),
     w_resp_mem_ready(this, "w_resp_mem_ready", "1", RSTVAL_ZERO, NO_COMMENT),
     // registers
     //
@@ -145,16 +148,17 @@ TEXT();
         CONNECT(PIO_EP_inst, 0, PIO_EP_inst.i_cfg_completer_id, i_pcie_completer_id);
         CONNECT(PIO_EP_inst, 0, PIO_EP_inst.i_req_mem_ready, w_req_mem_ready);
         CONNECT(PIO_EP_inst, 0, PIO_EP_inst.o_req_mem_valid, w_req_mem_valid);
-        CONNECT(PIO_EP_inst, 0, PIO_EP_inst.o_req_mem_64, w_req_mem_64);
         CONNECT(PIO_EP_inst, 0, PIO_EP_inst.o_req_mem_write, w_req_mem_write);
         CONNECT(PIO_EP_inst, 0, PIO_EP_inst.o_req_mem_bytes, wb_req_mem_bytes);
         CONNECT(PIO_EP_inst, 0, PIO_EP_inst.o_req_mem_addr, wb_req_mem_addr);
         CONNECT(PIO_EP_inst, 0, PIO_EP_inst.o_req_mem_strob, wb_req_mem_strob);
         CONNECT(PIO_EP_inst, 0, PIO_EP_inst.o_req_mem_data, wb_req_mem_data);
         CONNECT(PIO_EP_inst, 0, PIO_EP_inst.o_req_mem_last, w_req_mem_last);
-        CONNECT(PIO_EP_inst, 0, PIO_EP_inst.i_resp_mem_data, wb_resp_mem_data);
         CONNECT(PIO_EP_inst, 0, PIO_EP_inst.i_resp_mem_valid, w_resp_mem_valid);
+        CONNECT(PIO_EP_inst, 0, PIO_EP_inst.i_resp_mem_last, w_resp_mem_last);
         CONNECT(PIO_EP_inst, 0, PIO_EP_inst.i_resp_mem_fault, w_resp_mem_fault);
+        CONNECT(PIO_EP_inst, 0, PIO_EP_inst.i_resp_mem_addr, wb_resp_mem_addr);
+        CONNECT(PIO_EP_inst, 0, PIO_EP_inst.i_resp_mem_data, wb_resp_mem_data);
         CONNECT(PIO_EP_inst, 0, PIO_EP_inst.o_resp_mem_ready, w_resp_mem_ready);
     ENDNEW();
 
@@ -166,16 +170,17 @@ TEXT();
         CONNECT(xdma0, 0, xdma0.i_clk, i_clk);
         CONNECT(xdma0, 0, xdma0.o_req_mem_ready, w_req_mem_ready);
         CONNECT(xdma0, 0, xdma0.i_req_mem_valid, w_req_mem_valid);
-        CONNECT(xdma0, 0, xdma0.i_req_mem_64, w_req_mem_64);
         CONNECT(xdma0, 0, xdma0.i_req_mem_write, w_req_mem_write);
         CONNECT(xdma0, 0, xdma0.i_req_mem_bytes, wb_req_mem_bytes);
-        CONNECT(xdma0, 0, xdma0.i_req_mem_addr, wb_req_mem_addr);
+        CONNECT(xdma0, 0, xdma0.i_req_mem_addr, wb_req_mem_addr_full);
         CONNECT(xdma0, 0, xdma0.i_req_mem_strob, wb_req_mem_strob);
         CONNECT(xdma0, 0, xdma0.i_req_mem_data, wb_req_mem_data);
         CONNECT(xdma0, 0, xdma0.i_req_mem_last, w_req_mem_last);
-        CONNECT(xdma0, 0, xdma0.o_resp_mem_data, wb_resp_mem_data);
         CONNECT(xdma0, 0, xdma0.o_resp_mem_valid, w_resp_mem_valid);
+        CONNECT(xdma0, 0, xdma0.o_resp_mem_last, w_resp_mem_last);
         CONNECT(xdma0, 0, xdma0.o_resp_mem_fault, w_resp_mem_fault);
+        CONNECT(xdma0, 0, xdma0.o_resp_mem_addr, wb_resp_mem_addr_full);
+        CONNECT(xdma0, 0, xdma0.o_resp_mem_data, wb_resp_mem_data);
         CONNECT(xdma0, 0, xdma0.i_resp_mem_ready, w_resp_mem_ready);
         CONNECT(xdma0, 0, xdma0.i_msti, i_xmsti);
         CONNECT(xdma0, 0, xdma0.o_msto, o_xmsto);
@@ -226,6 +231,10 @@ TEXT_ASSIGN();
     ASSIGN(wb_respfifo_payload_i, CCx(3, &w_s_axis_tx_tlast,
                                          &wb_s_axis_tx_tkeep,
                                          &wb_s_axis_tx_tdata));
+
+TEXT_ASSIGN();
+    ASSIGN(wb_req_mem_addr_full, CC2(ALLZEROS(), wb_req_mem_addr));
+    ASSIGN(wb_resp_mem_addr, BITS(wb_resp_mem_addr_full, 12, 0));
 
 TEXT();
     SETVAL(comb.vb_pcie_dmao.valid, w_respfifo_rvalid);

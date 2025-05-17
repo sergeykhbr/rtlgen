@@ -31,10 +31,18 @@ class pcie_io_rx_engine : public ModuleObject {
      public:
         CombProcess(GenObject *parent) :
             CombinationalProcess(parent, "comb"),
+            vb_req_addr_1_0(this, "vb_req_addr_1_0", "2", "'0"),
+            vb_add_be20(this, "vb_add_be20", "2", "'0"),
+            vb_add_be21(this, "vb_add_be21", "2", "'0"),
+            vb_req_bytes(this, "vb_req_bytes", "10", "'0"),
             vb_region_select(this, "vb_region_select", "2", "'0") {
         }
 
      public:
+        Logic vb_req_addr_1_0;
+        Logic vb_add_be20;
+        Logic vb_add_be21;
+        Logic vb_req_bytes;
         Logic vb_region_select;
     };
 
@@ -70,7 +78,6 @@ class pcie_io_rx_engine : public ModuleObject {
     TextLine _t33_;
     InPort i_req_mem_ready;
     OutPort o_req_mem_valid;
-    OutPort o_req_mem_64;
     OutPort o_req_mem_write;
     OutPort o_req_mem_bytes;
     OutPort o_req_mem_addr;
@@ -111,11 +118,12 @@ class pcie_io_rx_engine : public ModuleObject {
     RegSignal req_rid;
     RegSignal req_tag;
     RegSignal req_be;
+    RegSignal req_bytes;
     RegSignal req_addr;
     RegSignal wr_addr;
-    RegSignal wr_be;
     RegSignal wr_en;
     RegSignal wr_data;
+    RegSignal wr_strob;
     RegSignal state;
     RegSignal tlp_type;
     RegSignal tlp_resp;

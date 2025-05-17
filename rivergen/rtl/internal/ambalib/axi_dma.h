@@ -31,11 +31,13 @@ class axi_dma : public ModuleObject {
             : CombinationalProcess(parent, "comb"),
             vb_req_mem_bytes_m1(this, "vb_req_mem_bytes_m1", "10", "'0", NO_COMMENT),
             vb_req_addr_inc(this, "vb_req_addr_inc", "CFG_SYSBUS_ADDR_BITS", "'0", NO_COMMENT),
+            vb_r_data_swap(this, "vb_r_data_swap", "CFG_SYSBUS_DATA_BITS", "'0", NO_COMMENT),
             vmsto(this, "vmsto", "axi4_master_out_none", NO_COMMENT) {
         }
      public:
         Logic vb_req_mem_bytes_m1;
         Logic vb_req_addr_inc;
+        Logic vb_r_data_swap;
         StructVar<types_amba::axi4_master_out_type> vmsto;
     };
 
@@ -49,16 +51,17 @@ public:
     InPort i_clk;
     OutPort o_req_mem_ready;
     InPort i_req_mem_valid;
-    InPort i_req_mem_64;
     InPort i_req_mem_write;
     InPort i_req_mem_bytes;
     InPort i_req_mem_addr;
     InPort i_req_mem_strob;
     InPort i_req_mem_data;
     InPort i_req_mem_last;
-    OutPort o_resp_mem_data;
     OutPort o_resp_mem_valid;
+    OutPort o_resp_mem_last;
     OutPort o_resp_mem_fault;
+    OutPort o_resp_mem_addr;
+    OutPort o_resp_mem_data;
     InPort i_resp_mem_ready;
     InStruct<types_amba::axi4_master_in_type> i_msti;
     OutStruct<types_amba::axi4_master_out_type> o_msto;
@@ -87,6 +90,8 @@ public:
     RegSignal req_last;
     RegSignal req_ready;
     RegSignal resp_valid;
+    RegSignal resp_last;
+    RegSignal resp_addr;
     RegSignal resp_data;
     RegSignal resp_error;
     RegSignal1 user_count;

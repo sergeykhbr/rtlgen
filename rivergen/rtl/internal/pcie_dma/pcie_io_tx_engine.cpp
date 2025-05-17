@@ -43,9 +43,12 @@ pcie_io_tx_engine::pcie_io_tx_engine(GenObject *parent, const char *name, const 
     i_req_tag(this, "i_req_tag", "8", NO_COMMENT),
     i_req_be(this, "i_req_be", "8", NO_COMMENT),
     i_req_addr(this, "i_req_addr", "13", NO_COMMENT),
+    i_req_bytes(this, "i_req_bytes", "10", NO_COMMENT),
     _t3_(this, ""),
     i_dma_resp_valid(this, "i_dma_resp_valid", "1", NO_COMMENT),
+    i_dma_resp_last(this, "i_dma_resp_last", "1", NO_COMMENT),
     i_dma_resp_fault(this, "i_dma_resp_fault", "1", "Error on memory access"),
+    i_dma_resp_addr(this, "i_dma_resp_addr", "13", NO_COMMENT),
     i_dma_resp_data(this, "i_dma_resp_data", "64", NO_COMMENT),
     o_dma_resp_ready(this, "o_dma_resp_ready", "1", "Ready to accept response"),
     i_completer_id(this, "i_completer_id", "16", NO_COMMENT),
@@ -83,31 +86,19 @@ pcie_io_tx_engine::pcie_io_tx_engine(GenObject *parent, const char *name, const 
 }
 
 void pcie_io_tx_engine::proc_comb() {
-    TEXT("Calculate byte count based on byte enable");
-    SETVAL(comb.vb_add_be20, ADD2(CC2(CONST("0", 1), BIT(rd_be, 3)), CC2(CONST("0", 1), BIT(rd_be, 2))));
-    SETVAL(comb.vb_add_be21, ADD2(CC2(CONST("0", 1), BIT(rd_be, 1)), CC2(CONST("0", 1), BIT(rd_be, 0))));
-    SETVAL(comb.vb_byte_count, ADD2(CC2(CONST("0", 2), comb.vb_add_be20), CC2(CONST("0", 2), comb.vb_add_be21)));
-
-TEXT();
-    TEXT("The completer field 'lower address' DWORD[2][6:0]:\n");
-    TEXT("For completions other than for memory reads, this value is set to 0.\n");
-    TEXT("For memory reads it is the lower byte address of the first byte in\n");
-    TEXT("the returned data (or partial data). This is set for the first\n");
-    TEXT("(or only) completion and will be 0 in the lower 7 bits from then on,\n");
-    TEXT("as the completions, if split, must be naturally aligned to a read\n");
-    TEXT("completion boundary (RCB), which is usually 128 bytes\n");
-    TEXT("(though 64 bytes in root complex).\n");
+    TEXT("The completer field 'lower address' DWORD[2][6:0]:");
+    TEXT("For completions other than for memory reads, this value is set to 0.");
+    TEXT("For memory reads it is the lower byte address of the first byte in");
+    TEXT("the returned data (or partial data). This is set for the first");
+    TEXT("(or only) completion and will be 0 in the lower 7 bits from then on,");
+    TEXT("as the completions, if split, must be naturally aligned to a read");
+    TEXT("completion boundary (RCB), which is usually 128 bytes");
+    TEXT("(though 64 bytes in root complex).");
     IF (EZ(req_compl_wd_q));
         TEXT("Request without payload");
         SETZERO(comb.vb_lower_addr);
-    ELSIF (NZ(BIT(rd_be, 0)));
-        SETZERO(comb.vb_lower_addr);
-    ELSIF (NZ(BIT(rd_be, 1)));
-        SETVAL(comb.vb_lower_addr, CC2(BITS(req_addr, 6, 2), CONST("1", 2)));
-    ELSIF (NZ(BIT(rd_be, 2)));
-        SETVAL(comb.vb_lower_addr, CC2(BITS(req_addr, 6, 2), CONST("2", 2)));
-    ELSIF (NZ(BIT(rd_be, 3)));
-        SETVAL(comb.vb_lower_addr, CC2(BITS(req_addr, 6, 2), CONST("3", 2)));
+    ELSE();
+        SETVAL(comb.vb_lower_addr, BITS(req_addr, 6, 0));
     ENDIF();
 
 TEXT();
@@ -120,11 +111,7 @@ TEXT();
         SETZERO(compl_done);
         IF (AND2(NZ(i_req_compl), NZ(i_dma_resp_valid)));
             SETVAL(req_addr, i_req_addr);
-            IF (NZ(BIT(req_addr, 2)));
-                SETVAL(rd_data, BITS(i_dma_resp_data, 63, 32));
-            ELSE();
-                SETVAL(rd_data, BITS(i_dma_resp_data, 31, 0));
-            ENDIF();
+            SETVAL(rd_data, BITS(i_dma_resp_data, 31, 0));
             SETVAL(rd_be, i_req_be);
             SETVAL(req_compl_wd_q, i_req_compl_wd);
             SETVAL(state, PIO_TX_CPLD_QW1_FIRST);
@@ -138,7 +125,7 @@ TEXT();
             SETBITS(comb.vb_s_axis_tx_tdata, 63, 48, i_completer_id);
             SETBITS(comb.vb_s_axis_tx_tdata, 47, 45, CONST("0", 3));
             SETBIT(comb.vb_s_axis_tx_tdata, 44, CONST("0", 1));
-            SETBITS(comb.vb_s_axis_tx_tdata, 43, 32, comb.vb_byte_count);
+            SETBITS(comb.vb_s_axis_tx_tdata, 43, 32, i_req_bytes);
             SETBIT(comb.vb_s_axis_tx_tdata, 31, CONST("0", 1));
             IF (NZ(req_compl_wd_q));
                 SETBITS(comb.vb_s_axis_tx_tdata, 30, 24, PIO_CPLD_FMT_TYPE);
