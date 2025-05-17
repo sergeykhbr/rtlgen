@@ -209,8 +209,9 @@ TEXT();
                 SETONE(dbg_valid);
             ENDIF();
             TEXT("debug interface:");
-            SETVAL(dbg_payload, CCx(5, &CONST("0x1", 1),            // [63]
-                                    &BITS(i_req_mem_addr, 12, 0),   // [62:50]
+            SETVAL(dbg_payload, CCx(6, &CONST("0x1", 1),            // [63]
+                                    &BITS(i_req_mem_addr, 10, 0),   // [62:52]
+                                    &CONST("0x0", 2),               // [51:50]
                                     &i_req_mem_bytes,               // [49:40]
                                     &i_req_mem_strob,               // [39:32]
                                     &BITS(i_req_mem_data, 31, 0)));
@@ -366,4 +367,6 @@ TEXT();
 
 TEXT();
     SETVAL(o_msto, comb.vmsto);
+    SETVAL(o_dbg_valid, dbg_valid);
+    SETVAL(o_dbg_payload, dbg_payload);
 }
