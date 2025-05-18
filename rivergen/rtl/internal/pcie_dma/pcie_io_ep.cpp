@@ -52,6 +52,8 @@ pcie_io_ep::pcie_io_ep(GenObject *parent, const char *name, const char *comment)
     i_resp_mem_addr(this, "i_resp_mem_addr", "13", "Read address value"),
     i_resp_mem_data(this, "i_resp_mem_data", "64", "Read data value"),
     o_resp_mem_ready(this, "o_resp_mem_ready", "1", "Ready to accept response"),
+    _f0_(this),
+    SwapEndianess32(this),
     // params
     // signals
     w_req_compl_int(this, "w_req_compl_int", "1", NO_COMMENT),
@@ -67,6 +69,8 @@ pcie_io_ep::pcie_io_ep(GenObject *parent, const char *name, const char *comment)
     wb_req_be(this, "wb_req_be", "8", NO_COMMENT),
     wb_req_addr(this, "wb_req_addr", "13", NO_COMMENT),
     wb_req_bytes(this, "wb_req_bytes", "10", NO_COMMENT),
+    wb_req_mem_data(this, "wb_req_mem_data", "C_DATA_WIDTH", NO_COMMENT),
+    wb_resp_mem_data(this, "wb_resp_mem_data", "C_DATA_WIDTH", NO_COMMENT),
     // registers
     //
     EP_RX_inst(this, "EP_RX_inst", NO_COMMENT),
@@ -104,7 +108,7 @@ pcie_io_ep::pcie_io_ep(GenObject *parent, const char *name, const char *comment)
         CONNECT(EP_RX_inst, 0, EP_RX_inst.o_req_mem_bytes, wb_req_bytes);
         CONNECT(EP_RX_inst, 0, EP_RX_inst.o_req_mem_addr, o_req_mem_addr);
         CONNECT(EP_RX_inst, 0, EP_RX_inst.o_req_mem_strob, o_req_mem_strob);
-        CONNECT(EP_RX_inst, 0, EP_RX_inst.o_req_mem_data, o_req_mem_data);
+        CONNECT(EP_RX_inst, 0, EP_RX_inst.o_req_mem_data, wb_req_mem_data);
         CONNECT(EP_RX_inst, 0, EP_RX_inst.o_req_mem_last, o_req_mem_last);
         CONNECT(EP_RX_inst, 0, EP_RX_inst.i_resp_mem_valid, i_resp_mem_valid);
     ENDNEW();
@@ -138,7 +142,7 @@ TEXT();
         CONNECT(EP_TX_inst, 0, EP_TX_inst.i_dma_resp_last, i_resp_mem_last);
         CONNECT(EP_TX_inst, 0, EP_TX_inst.i_dma_resp_fault, i_resp_mem_fault);
         CONNECT(EP_TX_inst, 0, EP_TX_inst.i_dma_resp_addr, i_resp_mem_addr);
-        CONNECT(EP_TX_inst, 0, EP_TX_inst.i_dma_resp_data, i_resp_mem_data);
+        CONNECT(EP_TX_inst, 0, EP_TX_inst.i_dma_resp_data, wb_resp_mem_data);
         CONNECT(EP_TX_inst, 0, EP_TX_inst.o_dma_resp_ready, o_resp_mem_ready);
         CONNECT(EP_TX_inst, 0, EP_TX_inst.i_completer_id, i_cfg_completer_id);
     ENDNEW();
@@ -147,6 +151,25 @@ TEXT();
     proc_comb();
 }
 
+pcie_io_ep::SwapEndianess32_func::SwapEndianess32_func(GenObject *parent)
+    : FunctionObject(parent, "SwapEndianess32"),
+    ret(this, "ret", "64"),
+    dword(this, "dword", "64") {
+    SETBITS(ret, 31, 0, CCx(4, &BITS(dword, 7, 0),
+                               &BITS(dword, 15, 8),
+                               &BITS(dword, 23, 16),
+                               &BITS(dword, 31, 24)));
+    SETBITS(ret, 63, 32, CCx(4, &BITS(dword, 39, 32),
+                               &BITS(dword, 47, 40),
+                               &BITS(dword, 55, 48),
+                               &BITS(dword, 63, 56)));
+}
+
 void pcie_io_ep::proc_comb() {
+TEXT();
+    TEXT("Correct PCIe endieness:");
+    CALLF(&o_req_mem_data, SwapEndianess32, 1, &wb_req_mem_data);
+    CALLF(&wb_resp_mem_data, SwapEndianess32, 1, &i_resp_mem_data);
+
     ASSIGN(o_req_mem_bytes, wb_req_bytes);
 }

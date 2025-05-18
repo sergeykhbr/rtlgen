@@ -27,6 +27,19 @@ class pcie_io_ep : public ModuleObject {
     pcie_io_ep(GenObject *parent, const char *name, const char *comment);
 
  protected:
+    class SwapEndianess32_func : public FunctionObject {
+     public:
+        SwapEndianess32_func(GenObject *parent);
+        virtual std::string getType() override { return ret.getType(); }
+        virtual void getArgsList(std::list<GenObject *> &args) {
+            args.push_back(&dword);
+        }
+        virtual GenObject *getpReturn() { return &ret; }
+     protected:
+        Logic ret;
+        Logic dword;
+    };
+
     class CombProcess : public CombinationalProcess {
      public:
         CombProcess(GenObject *parent) :
@@ -96,6 +109,11 @@ class pcie_io_ep : public ModuleObject {
     Signal wb_req_be;
     Signal wb_req_addr;
     Signal wb_req_bytes;
+    Signal wb_req_mem_data;
+    Signal wb_resp_mem_data;
+
+    TextLine _f0_;
+    SwapEndianess32_func SwapEndianess32;
 
     pcie_io_rx_engine EP_RX_inst;
     pcie_io_tx_engine EP_TX_inst;

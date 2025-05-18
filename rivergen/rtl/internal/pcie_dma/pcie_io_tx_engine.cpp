@@ -68,7 +68,7 @@ pcie_io_tx_engine::pcie_io_tx_engine(GenObject *parent, const char *name, const 
     compl_done(this, "compl_done", "1", RSTVAL_ZERO, NO_COMMENT),
     req_addr(this, "req_addr", "13", "'0", NO_COMMENT),
     rd_be(this, "rd_be", "4", "'0", NO_COMMENT),
-    rd_data(this, "rd_data", "31", "'0", NO_COMMENT),
+    rd_data(this, "rd_data", "32", "'0", NO_COMMENT),
     req_compl_wd_q(this, "req_compl_wd_q", "1", "1", NO_COMMENT),
     state(this, "state", "2", "PIO_TX_RST_STATE", NO_COMMENT),
     //
