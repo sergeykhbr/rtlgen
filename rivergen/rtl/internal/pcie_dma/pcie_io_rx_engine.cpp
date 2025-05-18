@@ -75,6 +75,8 @@ pcie_io_rx_engine::pcie_io_rx_engine(GenObject *parent, const char *name, const 
     TLP_NON_POSTED(this, "TLP_NON_POSTED", "2", "0", "No response at all"),
     TLP_POSTED(this, "TLP_POSTED", "2", "3", "Response with data payload"),
     TLP_COMPLETION(this, "TLP_COMPLETION", "2", "1", "Response without payload"),
+    _f0_(this),
+    SwapEndianess32(this),
     // signals
     // registers
     m_axis_rx_tready(this, "m_axis_rx_tready", "1", RSTVAL_ZERO, NO_COMMENT),
@@ -105,6 +107,21 @@ pcie_io_rx_engine::pcie_io_rx_engine(GenObject *parent, const char *name, const 
     proc_comb();
 }
 
+pcie_io_rx_engine::SwapEndianess32_func::SwapEndianess32_func(GenObject *parent)
+    : FunctionObject(parent, "SwapEndianess32"),
+    ret(this, "ret", "64"),
+    dword(this, "dword", "64") {
+    SETBITS(ret, 31, 0, CCx(4, &BITS(dword, 7, 0),
+                               &BITS(dword, 15, 8),
+                               &BITS(dword, 23, 16),
+                               &BITS(dword, 31, 24)));
+    SETBITS(ret, 63, 32, CCx(4, &BITS(dword, 39, 32),
+                               &BITS(dword, 47, 40),
+                               &BITS(dword, 55, 48),
+                               &BITS(dword, 63, 56)));
+}
+
+
 void pcie_io_rx_engine::proc_comb() {
 TEXT();
     IF (EQ(BITS(i_m_axis_rx_tuser, 8, 2), CONST("0x01", 7)), "Select Mem32 region");
@@ -114,6 +131,10 @@ TEXT();
     ELSIF (EQ(BITS(i_m_axis_rx_tuser, 8, 2), CONST("0x40", 7)), "Select EROM region");
         SETVAL(comb.vb_region_select, CONST("0x3", 2));
     ENDIF();
+
+TEXT();
+    TEXT("Correct PCIe endieness:");
+    CALLF(&comb.vb_swapped, SwapEndianess32, 1, &i_m_axis_rx_tdata);
 
 TEXT();
     IF (NZ(BIT(req_be, 0)));
@@ -247,8 +268,8 @@ TEXT();
                                  BITS(i_m_axis_rx_tdata, 10, 2),
                                  comb.vb_req_addr_1_0));
             SETVAL(req_bytes, comb.vb_req_bytes);
-            SETVAL(wr_data, CC2(BITS(i_m_axis_rx_tdata, 63, 32),
-                                BITS(i_m_axis_rx_tdata, 63, 32)));
+            SETVAL(wr_data, CC2(BITS(comb.vb_swapped, 63, 32),
+                                BITS(comb.vb_swapped, 63, 32)));
             IF (NZ(BIT(i_m_axis_rx_tdata, 2)));
                 SETVAL(wr_strob, CC2(BITS(req_be, 3, 0), BITS(req_be, 7, 4)));
             ELSE();
@@ -303,8 +324,8 @@ TEXT();
             SETZERO(m_axis_rx_tready);
             SETONE(req_valid);
             SETONE(wr_en);
-            SETVAL(wr_data, CC2(BITS(i_m_axis_rx_tdata, 31, 0),
-                                BITS(i_m_axis_rx_tdata, 31, 0)));
+            SETVAL(wr_data, CC2(BITS(comb.vb_swapped, 31, 0),
+                                BITS(comb.vb_swapped, 31, 0)));
             SETVAL(tlp_resp, TLP_NON_POSTED);
             SETVAL(state, PIO_RX_WAIT_DMA_RESP);
         ELSE();
@@ -324,8 +345,8 @@ TEXT();
                                  BITS(i_m_axis_rx_tdata, 10, 2),
                                  comb.vb_req_addr_1_0));
             SETVAL(req_bytes, comb.vb_req_bytes);
-            SETVAL(wr_data, CC2(BITS(i_m_axis_rx_tdata, 63, 32),
-                                BITS(i_m_axis_rx_tdata, 63, 32)));
+            SETVAL(wr_data, CC2(BITS(comb.vb_swapped, 63, 32),
+                                BITS(comb.vb_swapped, 63, 32)));
             IF (NZ(BIT(i_m_axis_rx_tdata, 2)));
                 SETVAL(wr_strob, CC2(BITS(req_be, 3, 0), BITS(req_be, 7, 4)));
             ELSE();
@@ -350,6 +371,9 @@ TEXT();
             ELSE();
                 SETONE(m_axis_rx_tready);
                 SETZERO(wr_en);
+                SETZERO(wr_strob);
+                SETZERO(wr_data);
+                SETZERO(req_len);
                 SETVAL(state, PIO_RX_RST_STATE);
             ENDIF();
         ENDIF();
@@ -357,11 +381,12 @@ TEXT();
 
     TEXT();
     CASE(PIO_RX_WAIT_TX_COMPLETION);
-        SETZERO(wr_en, "IO Write");
-        SETZERO(wr_strob);
-        SETZERO(req_len);
         IF(NZ(i_compl_done));
             SETONE(m_axis_rx_tready);
+            SETZERO(wr_en, "IO Write");
+            SETZERO(wr_strob);
+            SETZERO(wr_data);
+            SETZERO(req_len);
             SETVAL(state, PIO_RX_RST_STATE);
         ENDIF();
     ENDCASE();

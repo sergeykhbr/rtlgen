@@ -27,6 +27,20 @@ class pcie_io_rx_engine : public ModuleObject {
     virtual bool isAsyncResetParam() override { return false; }
 
  protected:
+    class SwapEndianess32_func : public FunctionObject {
+     public:
+        SwapEndianess32_func(GenObject *parent);
+        virtual std::string getType() override { return ret.getType(); }
+        virtual void getArgsList(std::list<GenObject *> &args) {
+            args.push_back(&dword);
+        }
+        virtual GenObject *getpReturn() { return &ret; }
+     protected:
+        Logic ret;
+        Logic dword;
+    };
+
+
     class CombProcess : public CombinationalProcess {
      public:
         CombProcess(GenObject *parent) :
@@ -35,6 +49,7 @@ class pcie_io_rx_engine : public ModuleObject {
             vb_add_be20(this, "vb_add_be20", "2", "'0"),
             vb_add_be21(this, "vb_add_be21", "2", "'0"),
             vb_req_bytes(this, "vb_req_bytes", "10", "'0"),
+            vb_swapped(this, "vb_swapped", "64", "'0"),
             vb_region_select(this, "vb_region_select", "2", "'0") {
         }
 
@@ -43,6 +58,7 @@ class pcie_io_rx_engine : public ModuleObject {
         Logic vb_add_be20;
         Logic vb_add_be21;
         Logic vb_req_bytes;
+        Logic vb_swapped;
         Logic vb_region_select;
     };
 
@@ -107,6 +123,9 @@ class pcie_io_rx_engine : public ModuleObject {
     ParamLogic TLP_NON_POSTED;
     ParamLogic TLP_POSTED;
     ParamLogic TLP_COMPLETION;
+
+    TextLine _f0_;
+    SwapEndianess32_func SwapEndianess32;
 
     RegSignal m_axis_rx_tready;
     RegSignal req_valid;
