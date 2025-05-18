@@ -44,10 +44,10 @@ class cdc_afifo_gray : public ModuleObject {
 
     Logic wb_bin_next;
     Logic wb_gray_next;
-    Logic bin;
-    Logic gray;
-    Logic empty;
-    Logic full;
+    Signal bin;
+    Signal gray;
+    Signal empty;
+    Signal full;
 
     ProcObject comb;
     ProcObject ff;

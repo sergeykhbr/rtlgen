@@ -19,7 +19,7 @@
 axi_dma::axi_dma(GenObject *parent, const char *name, const char *depth) :
     ModuleObject(parent, "axi_dma", name, depth),
     // Generic parameters
-    abits(this, "abits", "48"),
+    abits(this, "abits", "48", "adress bits used"),
     userbits(this, "userbits", "1"),
     // Ports
     i_nrst(this, "i_nrst", "1", "Reset: active LOW"),

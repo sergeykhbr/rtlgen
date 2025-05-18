@@ -44,7 +44,7 @@ class axi_dma : public ModuleObject {
     void proc_comb();
 
 public:
-    DefParamI32D abits;
+    TmplParamI32D abits;
     DefParamI32D userbits;
     // Ports:
     InPort i_nrst;

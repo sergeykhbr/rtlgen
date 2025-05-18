@@ -1,5 +1,5 @@
 // 
-//  Copyright 2022 Sergey Khabarov, sergeykhbr@gmail.com
+//  Copyright 2025 Sergey Khabarov, sergeykhbr@gmail.com
 // 
 //  Licensed under the Apache License, Version 2.0 (the "License");
 //  you may not use this file except in compliance with the License.
@@ -14,13 +14,20 @@
 //  limitations under the License.
 // 
 
-#include "prj_river.h"
+#pragma once
 
-RiverProject::RiverProject(const char *rootpath) :
-    ProjectObject(rootpath, "River v3.0 CPU generator"),
-    target_folder_(this),
-    rtl_(this),
-    prj_(this),
-    pcie_dma_tb_folder_(&prj_)  // pull all TBs into /prj/tb
-{
-}
+#include <api_rtlgen.h>
+#include "pcie_dma_tb.h"
+
+class pcie_dma_tb_folder : public FolderObject {
+ public:
+    pcie_dma_tb_folder(GenObject *parent) :
+        FolderObject(parent, "tb"),
+        pcie_dma_tb_file_(this) {
+    }
+
+ protected:
+    // subfolders:
+    // files
+    pcie_dma_tb_file pcie_dma_tb_file_;
+};

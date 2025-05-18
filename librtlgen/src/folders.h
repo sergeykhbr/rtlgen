@@ -26,6 +26,7 @@ class FolderObject : public GenObject {
     FolderObject(GenObject *parent,
                  const char *name);
 
+    virtual bool isFolder() override { return true; }
     virtual std::string getName() override { return name_; }
     virtual std::string getFullPath() override;
     virtual std::string generate() override;
