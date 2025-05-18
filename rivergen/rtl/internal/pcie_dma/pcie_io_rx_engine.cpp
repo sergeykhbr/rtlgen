@@ -62,15 +62,17 @@ pcie_io_rx_engine::pcie_io_rx_engine(GenObject *parent, const char *name, const 
     PIO_RX_IO_RD32_FMT_TYPE(this, "PIO_RX_IO_RD32_FMT_TYPE", "7", "0x02", NO_COMMENT),
     PIO_RX_IO_WR32_FMT_TYPE(this, "PIO_RX_IO_WR32_FMT_TYPE", "7", "0x42", NO_COMMENT),
     _t5_(this),
-    PIO_RX_RST_STATE(this, "PIO_RX_RST_STATE", "8", "0x00", NO_COMMENT),
-    PIO_RX_MEM_RD32_DW1DW2(this, "PIO_RX_MEM_RD32_DW1DW2", "8", "0x01", NO_COMMENT),
-    PIO_RX_MEM_WR32_DW1DW2(this, "PIO_RX_MEM_WR32_DW1DW2", "8", "0x02", NO_COMMENT),
-    PIO_RX_MEM_RD64_DW1DW2(this, "PIO_RX_MEM_RD64_DW1DW2", "8", "0x04", NO_COMMENT),
-    PIO_RX_MEM_WR64_DW1DW2(this, "PIO_RX_MEM_WR64_DW1DW2", "8", "0x08", NO_COMMENT),
-    PIO_RX_MEM_WR64_DW3(this, "PIO_RX_MEM_WR64_DW3", "8", "0x10", NO_COMMENT),
-    PIO_RX_IO_WR_DW1DW2(this, "PIO_RX_IO_WR_DW1DW2", "8", "0x20", NO_COMMENT),
-    PIO_RX_WAIT_DMA_RESP(this, "PIO_RX_WAIT_DMA_RESP", "8", "0x40", NO_COMMENT),
-    PIO_RX_WAIT_TX_COMPLETION(this, "PIO_RX_WAIT_TX_COMPLETION", "8", "0x80", NO_COMMENT),
+    PIO_RX_RST_STATE(this, "PIO_RX_RST_STATE", "10", "0x00", NO_COMMENT),
+    PIO_RX_MEM_RD32_DW1DW2(this, "PIO_RX_MEM_RD32_DW1DW2", "10", "0x01", NO_COMMENT),
+    PIO_RX_MEM_WR32_DW1DW2(this, "PIO_RX_MEM_WR32_DW1DW2", "10", "0x02", NO_COMMENT),
+    PIO_RX_MEM_RD64_DW1DW2(this, "PIO_RX_MEM_RD64_DW1DW2", "10", "0x04", NO_COMMENT),
+    PIO_RX_MEM_WR64_DW1DW2(this, "PIO_RX_MEM_WR64_DW1DW2", "10", "0x08", NO_COMMENT),
+    PIO_RX_MEM_WR64_DW3(this, "PIO_RX_MEM_WR64_DW3", "10", "0x10", NO_COMMENT),
+    PIO_RX_IO_WR_DW1DW2(this, "PIO_RX_IO_WR_DW1DW2", "10", "0x20", NO_COMMENT),
+    PIO_RX_WAIT_DMA_RESP(this, "PIO_RX_WAIT_DMA_RESP", "10", "0x40", NO_COMMENT),
+    PIO_RX_WAIT_TX_COMPLETION(this, "PIO_RX_WAIT_TX_COMPLETION", "10", "0x80", NO_COMMENT),
+    PIO_RX_MEM_WR_BURST(this, "PIO_RX_MEM_WR_BURST", "10", "0x100", NO_COMMENT),
+    PIO_RX_MEM_WR_BURST_WAIT(this, "PIO_RX_MEM_WR_BURST_WAIT", "10", "0x200", NO_COMMENT),
     _tlp_resp0_(this, "TLP Response Types:"),
     TLP_NON_POSTED(this, "TLP_NON_POSTED", "2", "0", "No response at all"),
     TLP_POSTED(this, "TLP_POSTED", "2", "3", "Response with data payload"),
@@ -89,11 +91,10 @@ pcie_io_rx_engine::pcie_io_rx_engine(GenObject *parent, const char *name, const 
     req_be(this, "req_be", "8", RSTVAL_ZERO, NO_COMMENT),
     req_bytes(this, "req_bytes", "10", "'0", NO_COMMENT),
     req_addr(this, "req_addr", "13", RSTVAL_ZERO, NO_COMMENT),
-    wr_addr(this, "wr_addr", "11", RSTVAL_ZERO, NO_COMMENT),
     wr_en(this, "wr_en", "1", RSTVAL_ZERO, NO_COMMENT),
     wr_data(this, "wr_data", "64", "'0", NO_COMMENT),
     wr_strob(this, "wr_strob", "8", "'0", NO_COMMENT),
-    state(this, "state", "8", "PIO_RX_RST_STATE", NO_COMMENT),
+    state(this, "state", "10", "PIO_RX_RST_STATE", NO_COMMENT),
     tlp_type(this, "tlp_type", "8", RSTVAL_ZERO, NO_COMMENT),
     tlp_resp(this, "tlp_resp", "2", "TLP_NON_POSTED", NO_COMMENT),
     //
@@ -137,6 +138,11 @@ TEXT();
     ENDIF();
 
 TEXT();
+    IF(NZ(i_req_mem_ready));
+        SETZERO(req_valid);
+    ENDIF();
+
+TEXT();
     SWITCH(state);
     CASE(PIO_RX_RST_STATE);
         SETONE(m_axis_rx_tready);
@@ -166,11 +172,8 @@ TEXT();
 
             TEXT();
             CASE(PIO_RX_MEM_WR32_FMT_TYPE);
-                IF (EQ(BITS(i_m_axis_rx_tdata, 9, 0), CONST("1", 10)));
-                    SETVAL(state, PIO_RX_MEM_WR32_DW1DW2);
-                ELSE();
-                    SETVAL(state, PIO_RX_RST_STATE);
-                ENDIF();
+                SETVAL(state, PIO_RX_MEM_WR32_DW1DW2);
+                SETONE(wr_en);
             ENDCASE();
 
             TEXT();
@@ -236,11 +239,8 @@ TEXT();
     TEXT();
     CASE(PIO_RX_MEM_WR32_DW1DW2);
         IF (NZ(i_m_axis_rx_tvalid));
-            SETZERO(m_axis_rx_tready);
+            SETVAL(m_axis_rx_tready, i_req_mem_ready);
             SETONE(req_valid);
-            SETONE(wr_en);
-            SETVAL(wr_addr, CC2(BITS(comb.vb_region_select, 1, 0),
-                                BITS(i_m_axis_rx_tdata, 10, 2)));
             SETVAL(req_addr, CC3(BITS(comb.vb_region_select, 1, 0),
                                  BITS(i_m_axis_rx_tdata, 10, 2),
                                  comb.vb_req_addr_1_0));
@@ -252,8 +252,41 @@ TEXT();
             ELSE();
                 SETVAL(wr_strob, req_be);
             ENDIF();
-            SETVAL(tlp_resp, TLP_NON_POSTED);
-            SETVAL(state, PIO_RX_WAIT_DMA_RESP);
+
+            TEXT();
+            TEXT("Burst support:");
+            IF (NZ(i_m_axis_rx_tlast));
+                TEXT("Send response after full TLP received:");
+                SETZERO(m_axis_rx_tready);
+                SETVAL(tlp_resp, TLP_NON_POSTED);
+                SETVAL(state, PIO_RX_WAIT_DMA_RESP);
+            ELSE();
+                SETZERO(req_valid);
+                SETVAL(wr_strob, CONST("0xff", 8));
+                SETVAL(state, PIO_RX_MEM_WR_BURST);
+            ENDIF();
+        ENDIF();
+    ENDCASE();
+
+    TEXT();
+    CASE(PIO_RX_MEM_WR_BURST);
+        IF (NZ(i_m_axis_rx_tvalid));
+            SETVAL(m_axis_rx_tready, i_req_mem_ready);
+            SETONE(req_valid);
+            IF (EQ(i_m_axis_rx_tkeep, CONST("0xff", 8)));
+                SETVAL(wr_data, i_m_axis_rx_tdata);
+            ELSE();
+                SETVAL(wr_data, CC2(BITS(i_m_axis_rx_tdata, 31, 0),
+                                    BITS(wr_data, 31, 0)));
+            ENDIF();
+
+            TEXT();      
+            IF (NZ(i_m_axis_rx_tlast));
+                TEXT("Send response after full TLP received:");
+                SETZERO(m_axis_rx_tready);
+                SETVAL(tlp_resp, TLP_NON_POSTED);
+                SETVAL(state, PIO_RX_WAIT_DMA_RESP);
+            ENDIF();
         ENDIF();
     ENDCASE();
 
@@ -274,8 +307,6 @@ TEXT();
     TEXT();
     CASE(PIO_RX_MEM_WR64_DW1DW2);
         IF (NZ(i_m_axis_rx_tvalid));
-            SETVAL(wr_addr, CC2(BITS(comb.vb_region_select, 1, 0),
-                                BITS(i_m_axis_rx_tdata, 42, 34)));
             SETVAL(req_addr, CC3(BITS(comb.vb_region_select, 1, 0),
                                  BITS(i_m_axis_rx_tdata, 42, 34),
                                  comb.vb_req_addr_1_0));
@@ -308,8 +339,6 @@ TEXT();
             SETZERO(m_axis_rx_tready);
             SETONE(req_valid);
             SETONE(wr_en);
-            SETVAL(wr_addr, CC2(BITS(comb.vb_region_select, 1, 0),
-                                BITS(i_m_axis_rx_tdata, 10, 2)));
             SETVAL(req_addr, CC3(BITS(comb.vb_region_select, 1, 0),
                                  BITS(i_m_axis_rx_tdata, 10, 2),
                                  comb.vb_req_addr_1_0));
@@ -328,9 +357,6 @@ TEXT();
 
     TEXT();
     CASE(PIO_RX_WAIT_DMA_RESP);
-        IF (NZ(i_req_mem_ready));
-            SETZERO(req_valid);
-        ENDIF();
         IF (NZ(i_resp_mem_valid));
             IF (NZ(tlp_resp));
                 SETZERO(tlp_resp);
@@ -355,6 +381,17 @@ TEXT();
             SETZERO(wr_data);
             SETZERO(req_len);
             SETVAL(state, PIO_RX_RST_STATE);
+        ENDIF();
+    ENDCASE();
+
+    TEXT();
+    CASE(PIO_RX_MEM_WR_BURST_WAIT);
+        IF (NZ(i_req_mem_ready));
+            SETZERO(req_valid);
+        ENDIF();
+        IF (NZ(i_resp_mem_valid));
+            SETONE(m_axis_rx_tready);
+            SETVAL(state, PIO_RX_MEM_WR_BURST);
         ENDIF();
     ENDCASE();
 

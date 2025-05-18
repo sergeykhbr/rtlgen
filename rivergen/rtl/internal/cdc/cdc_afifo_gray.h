@@ -27,6 +27,16 @@ class cdc_afifo_gray : public ModuleObject {
     virtual bool isAsyncResetParam() override { return false; }
 
  protected:
+    class FFProcess : public ProcObject {
+     public:
+        FFProcess(GenObject *parent, GenObject *clk, GenObject *rst) :
+            ProcObject(parent, "proc_ff", clk, CLK_POSEDGE, rst, ACTIVE_LOW, NO_COMMENT),
+            vb_t1(this, "vb_t1", "ADD(abits,1)", "i_q2_gray", NO_COMMENT) {
+        }
+     public:
+        Logic vb_t1;
+    };
+
     void proc_comb();
     void proc_ff();
 
@@ -42,15 +52,15 @@ class cdc_afifo_gray : public ModuleObject {
     OutPort o_empty;
     OutPort o_full;
 
-    Logic wb_bin_next;
-    Logic wb_gray_next;
+    Signal wb_bin_next;
+    Signal wb_gray_next;
     Signal bin;
     Signal gray;
     Signal empty;
     Signal full;
 
     ProcObject comb;
-    ProcObject ff;
+    FFProcess ff;
 };
 
 class cdc_afifo_gray_file : public FileObject {

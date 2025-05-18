@@ -174,6 +174,7 @@ void pcie_dma_tb::test_proc() {
     TEXT();
     SETVAL(test.vb_dmai, glob_types_dma_->pcie_dma64_in_none);
     SWITCH(wb_clk_cnt);
+    TEXT("Wr32 to address [0x0104] <= 0x44332211");
     CASE(CONST("20"));
         SETONE(test.vb_dmai.valid);
         SETVAL(test.vb_dmai.strob, CONST("0xff", 8));
@@ -189,6 +190,7 @@ void pcie_dma_tb::test_proc() {
         SETBITS(test.vb_dmai.data, 63, 32, CONST("0x11223344", 32), "Data[31:0]");
     ENDCASE();
 
+    TEXT("Rd32 from address [0x0104] => ");
     CASE(CONST("40"));
         SETONE(test.vb_dmai.valid);
         SETVAL(test.vb_dmai.strob, CONST("0xff", 8));
@@ -201,6 +203,28 @@ void pcie_dma_tb::test_proc() {
         SETONE(test.vb_dmai.last);
         SETVAL(test.vb_dmai.strob, CONST("0x0f", 8));
         SETBITS(test.vb_dmai.data, 31, 0, CONST("0x0104", 32), "Addr");
+    ENDCASE();
+
+    TEXT();
+    TEXT("Write burst 64-bytes into 32-bits BAR");
+    CASE(CONST("100"));
+        SETONE(test.vb_dmai.valid);
+        SETVAL(test.vb_dmai.strob, CONST("0xff", 8));
+        SETBITS(test.vb_dmai.data, 31, 24, CONST("0x40", 7), "Wr32");
+        SETBITS(test.vb_dmai.data, 9, 0, CONST("0x02", 10), "Length");
+        SETBITS(test.vb_dmai.data, 39, 32, CONST("0xff", 8), "be");
+    ENDCASE();
+    CASE(CONST("101"));
+        SETONE(test.vb_dmai.valid);
+        SETVAL(test.vb_dmai.strob, CONST("0xff", 8));
+        SETBITS(test.vb_dmai.data, 31, 0, CONST("0x0108", 32), "Addr");
+        SETBITS(test.vb_dmai.data, 63, 32, CONST("0x11223344", 32), "Data[31:0]");
+    ENDCASE();
+    CASE(CONST("102"));
+        SETONE(test.vb_dmai.valid);
+        SETONE(test.vb_dmai.last);
+        SETVAL(test.vb_dmai.strob, CONST("0x0f", 8));
+        SETBITS(test.vb_dmai.data, 31, 0, CONST("0x55667788", 32), "Data[63:32]");
     ENDCASE();
 
     TEXT();

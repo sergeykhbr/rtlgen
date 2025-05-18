@@ -36,7 +36,7 @@ cdc_afifo_gray::cdc_afifo_gray(GenObject *parent, const char *name, const char *
     full(this, "full", "1", RSTVAL_ZERO, NO_COMMENT),
     // process
     comb(this, "proc_comb", 0, CLK_ALWAYS, 0, ACTIVE_NONE, NO_COMMENT),
-    ff(this, "proc_ff", &i_clk, CLK_POSEDGE, &i_nrst, ACTIVE_LOW, NO_COMMENT)
+    ff(this, &i_clk, &i_nrst)
 {
     Operation::start(this);
 
@@ -57,6 +57,7 @@ void cdc_afifo_gray::proc_comb() {
 }
 
 void cdc_afifo_gray::proc_ff() {
+    SETBITS(ff.vb_t1, abits, DEC(abits), INV_L(BITS(i_q2_gray, abits, DEC(abits))));
     IF (EZ(i_nrst));
         SETVAL_NB(bin, CONST("'0"));
         SETVAL_NB(gray, CONST("'0"));
@@ -70,8 +71,9 @@ void cdc_afifo_gray::proc_ff() {
         TEXT("    wb_gray_next[abits] != i_q2_ptr[abits]");
         TEXT("    wb_gray_next[abits-1] != i_q2_ptr[abits-1]");
         TEXT("    wb_gray_next[abits-2:0] == i_q2_ptr[abits-2:0]");
-        SETVAL_NB(full, EQ(wb_gray_next, CC2(INV_L(BITS(i_q2_gray, abits, DEC(abits))),
-                                             BITS(i_q2_gray, SUB2(abits, CONST("2")), CONST("0")))));
+//        SETVAL_NB(full, EQ(wb_gray_next, CC2(INV_L(BITS(i_q2_gray, abits, DEC(abits))),
+//                                             BITS(i_q2_gray, SUB2(abits, CONST("2")), CONST("0")))));
+        SETVAL_NB(full, EQ(wb_gray_next, ff.vb_t1));
     ENDIF();
 }
 
