@@ -96,8 +96,9 @@ class pcie_io_ep : public ModuleObject {
     InPort i_resp_mem_data;
     OutPort o_resp_mem_ready;
 
-    Signal w_req_compl_int;
-    Signal w_req_compl_wd;
+    Signal w_tx_ena;
+    Signal w_tx_completion;
+    Signal w_tx_with_data;
     Signal w_compl_done_int;
     Signal wb_req_tc;
     Signal w_req_td;

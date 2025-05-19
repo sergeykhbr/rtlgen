@@ -62,8 +62,9 @@ class pcie_io_rx_engine : public ModuleObject {
     OutPort o_m_axis_rx_tready;
     InPort i_m_axis_rx_tuser;
     TextLine _t1_;
-    OutPort o_req_compl;
-    OutPort o_req_compl_wd;  // req completion without data (IO WR32 request)
+    OutPort o_tx_ena;
+    OutPort o_tx_completion;
+    OutPort o_tx_with_data;
     InPort i_compl_done;
     TextLine _t2_;
     OutPort o_req_tc;                        // Memory Read TC
@@ -101,7 +102,6 @@ class pcie_io_rx_engine : public ModuleObject {
     ParamLogic PIO_RX_MEM_WR64_DW1DW2;
     ParamLogic PIO_RX_MEM_WR_BURST;
     ParamLogic PIO_RX_IO_WR_DW1DW2;
-    ParamLogic PIO_RX_WAIT_DMA_RESP;
     ParamLogic PIO_RX_WAIT_TX_COMPLETION;
     TextLine _tlp_resp0_;
     ParamLogic TLP_NON_POSTED;

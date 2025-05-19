@@ -30,8 +30,9 @@ pcie_io_rx_engine::pcie_io_rx_engine(GenObject *parent, const char *name, const 
     o_m_axis_rx_tready(this, "o_m_axis_rx_tready", "1", NO_COMMENT),
     i_m_axis_rx_tuser(this, "i_m_axis_rx_tuser", "9", NO_COMMENT),
     _t1_(this, ""),
-    o_req_compl(this, "o_req_compl", "1", ""),
-    o_req_compl_wd(this, "o_req_compl_wd", "1", "req completion without data (IO WR32 request)"),
+    o_tx_ena(this, "o_tx_ena", "1", "Trigger Tx engine to wait response from xDMA"),
+    o_tx_completion(this, "o_tx_completion", "1", "Transmit completion TLP"),
+    o_tx_with_data(this, "o_tx_with_data", "1", "Transmit TLP with payload"),
     i_compl_done(this, "i_compl_done", "1", ""),
     _t2_(this, ""),
     o_req_tc(this, "o_req_tc", "3", "Memory Read TC"),
@@ -62,19 +63,18 @@ pcie_io_rx_engine::pcie_io_rx_engine(GenObject *parent, const char *name, const 
     PIO_RX_IO_RD32_FMT_TYPE(this, "PIO_RX_IO_RD32_FMT_TYPE", "7", "0x02", NO_COMMENT),
     PIO_RX_IO_WR32_FMT_TYPE(this, "PIO_RX_IO_WR32_FMT_TYPE", "7", "0x42", NO_COMMENT),
     _t5_(this),
-    PIO_RX_RST_STATE(this, "PIO_RX_RST_STATE", "8", "0x00", NO_COMMENT),
-    PIO_RX_MEM_RD32_DW1DW2(this, "PIO_RX_MEM_RD32_DW1DW2", "8", "0x01", NO_COMMENT),
-    PIO_RX_MEM_WR32_DW1DW2(this, "PIO_RX_MEM_WR32_DW1DW2", "8", "0x02", NO_COMMENT),
-    PIO_RX_MEM_RD64_DW1DW2(this, "PIO_RX_MEM_RD64_DW1DW2", "8", "0x04", NO_COMMENT),
-    PIO_RX_MEM_WR64_DW1DW2(this, "PIO_RX_MEM_WR64_DW1DW2", "8", "0x08", NO_COMMENT),
-    PIO_RX_MEM_WR_BURST(this, "PIO_RX_MEM_WR_BURST", "8", "0x10", NO_COMMENT),
-    PIO_RX_IO_WR_DW1DW2(this, "PIO_RX_IO_WR_DW1DW2", "8", "0x20", "Burst disabled"),
-    PIO_RX_WAIT_DMA_RESP(this, "PIO_RX_WAIT_DMA_RESP", "8", "0x40", NO_COMMENT),
-    PIO_RX_WAIT_TX_COMPLETION(this, "PIO_RX_WAIT_TX_COMPLETION", "8", "0x80", NO_COMMENT),
+    PIO_RX_RST_STATE(this, "PIO_RX_RST_STATE", "7", "0x00", NO_COMMENT),
+    PIO_RX_MEM_RD32_DW1DW2(this, "PIO_RX_MEM_RD32_DW1DW2", "7", "0x01", NO_COMMENT),
+    PIO_RX_MEM_WR32_DW1DW2(this, "PIO_RX_MEM_WR32_DW1DW2", "7", "0x02", NO_COMMENT),
+    PIO_RX_MEM_RD64_DW1DW2(this, "PIO_RX_MEM_RD64_DW1DW2", "7", "0x04", NO_COMMENT),
+    PIO_RX_MEM_WR64_DW1DW2(this, "PIO_RX_MEM_WR64_DW1DW2", "7", "0x08", NO_COMMENT),
+    PIO_RX_MEM_WR_BURST(this, "PIO_RX_MEM_WR_BURST", "7", "0x10", NO_COMMENT),
+    PIO_RX_IO_WR_DW1DW2(this, "PIO_RX_IO_WR_DW1DW2", "7", "0x20", "Burst disabled"),
+    PIO_RX_WAIT_TX_COMPLETION(this, "PIO_RX_WAIT_TX_COMPLETION", "7", "0x40", NO_COMMENT),
     _tlp_resp0_(this, "TLP Response Types:"),
-    TLP_NON_POSTED(this, "TLP_NON_POSTED", "2", "0", "No response at all"),
-    TLP_POSTED(this, "TLP_POSTED", "2", "3", "Response with data payload"),
-    TLP_COMPLETION(this, "TLP_COMPLETION", "2", "1", "Response without payload"),
+    TLP_NON_POSTED(this, "TLP_NON_POSTED", "3", "0x1", "No response at all"),
+    TLP_COMPLETION(this, "TLP_COMPLETION", "3", "0x3", "Response without payload"),
+    TLP_POSTED(this, "TLP_POSTED", "3", "0x5", "Response with data payload"),
     // signals
     // registers
     m_axis_rx_tready(this, "m_axis_rx_tready", "1", RSTVAL_ZERO, NO_COMMENT),
@@ -95,9 +95,9 @@ pcie_io_rx_engine::pcie_io_rx_engine(GenObject *parent, const char *name, const 
     wr_strob(this, "wr_strob", "8", "'0", NO_COMMENT),
     wr_data_dw1(this, "wr_data_dw1", "32", "'0", "Odd word in a burst sequence"),
     wr_dw1_valid(this, "wr_dw1_valid", "1", "'0", "Not last DW1 was received in burst sequence"),
-    state(this, "state", "8", "PIO_RX_RST_STATE", NO_COMMENT),
+    state(this, "state", "7", "PIO_RX_RST_STATE", NO_COMMENT),
     tlp_type(this, "tlp_type", "8", RSTVAL_ZERO, NO_COMMENT),
-    tlp_resp(this, "tlp_resp", "2", "TLP_NON_POSTED", NO_COMMENT),
+    tlp_resp(this, "tlp_resp", "3", "'0", NO_COMMENT),
     //
     comb(this)
 {
@@ -151,10 +151,14 @@ TEXT();
     SWITCH(state);
     CASE(PIO_RX_RST_STATE);
         SETONE(m_axis_rx_tready);
-        SETZERO(tlp_resp, "Connected to Tx, should be set only after full header received");
+        SETZERO(tlp_resp);
+        SETZERO(wr_en, "IO Write");
+        SETZERO(wr_strob);
+        SETZERO(wr_data);
+        SETZERO(req_len);
 
         TEXT();
-        IF (NZ(i_m_axis_rx_tvalid));
+        IF (AND2(NZ(m_axis_rx_tready), NZ(i_m_axis_rx_tvalid)));
             SETVAL(tlp_type, BITS(i_m_axis_rx_tdata, 31, 24));
             SETVAL(req_tc, BITS(i_m_axis_rx_tdata, 22, 20));
             SETVAL(req_td, BIT(i_m_axis_rx_tdata, 15));
@@ -266,7 +270,7 @@ TEXT();
             IF (NZ(i_m_axis_rx_tlast));
                 TEXT("Send response after full TLP received:");
                 SETVAL(tlp_resp, TLP_NON_POSTED);
-                SETVAL(state, PIO_RX_WAIT_DMA_RESP);
+                SETVAL(state, PIO_RX_WAIT_TX_COMPLETION);
             ELSE();
                 SETONE(wr_dw1_valid);
                 SETVAL(wr_strob, CONST("0xff", 8));
@@ -321,7 +325,7 @@ TEXT();
                 TEXT("Send response after full TLP received:");
                 SETZERO(wr_dw1_valid, "Software has to use 8-bytes aligned burst transactions");
                 SETVAL(tlp_resp, TLP_NON_POSTED);
-                SETVAL(state, PIO_RX_WAIT_DMA_RESP);
+                SETVAL(state, PIO_RX_WAIT_TX_COMPLETION);
             ENDIF();
         ENDIF();
     ENDCASE();
@@ -343,24 +347,7 @@ TEXT();
                 SETVAL(wr_strob, req_be);
             ENDIF();
             SETVAL(tlp_resp, TLP_COMPLETION);
-            SETVAL(state, PIO_RX_WAIT_DMA_RESP);
-        ENDIF();
-    ENDCASE();
-
-    TEXT();
-    CASE(PIO_RX_WAIT_DMA_RESP);
-        IF (NZ(i_resp_mem_valid));
-            IF (NZ(tlp_resp));
-                SETZERO(tlp_resp);
-                SETVAL(state, PIO_RX_WAIT_TX_COMPLETION);
-            ELSE();
-                SETONE(m_axis_rx_tready);
-                SETZERO(wr_en);
-                SETZERO(wr_strob);
-                SETZERO(wr_data);
-                SETZERO(req_len);
-                SETVAL(state, PIO_RX_RST_STATE);
-            ENDIF();
+            SETVAL(state, PIO_RX_WAIT_TX_COMPLETION);
         ENDIF();
     ENDCASE();
 
@@ -372,6 +359,7 @@ TEXT();
             SETZERO(wr_strob);
             SETZERO(wr_data);
             SETZERO(req_len);
+            SETZERO(tlp_resp);
             SETVAL(state, PIO_RX_RST_STATE);
         ENDIF();
     ENDCASE();
@@ -384,8 +372,9 @@ TEXT();
 
 TEXT_ASSIGN();
     ASSIGN(o_m_axis_rx_tready, m_axis_rx_tready);
-    ASSIGN(o_req_compl, BIT(tlp_resp, 0));
-    ASSIGN(o_req_compl_wd, BIT(tlp_resp, 1));
+    ASSIGN(o_tx_ena, BIT(tlp_resp, 0));
+    ASSIGN(o_tx_completion, BIT(tlp_resp, 1));
+    ASSIGN(o_tx_with_data, BIT(tlp_resp, 2));
     ASSIGN(o_req_tc, req_tc);
     ASSIGN(o_req_td, req_td);
     ASSIGN(o_req_ep, req_ep);

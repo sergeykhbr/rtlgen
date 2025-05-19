@@ -57,8 +57,9 @@ class pcie_io_tx_engine : public ModuleObject {
     OutPort o_s_axis_tx_tvalid;
     OutPort o_tx_src_dsc;
     TextLine _t1_;
-    InPort i_req_compl;
-    InPort i_req_compl_wd;
+    InPort i_tx_ena;
+    InPort i_tx_completion;
+    InPort i_tx_with_data;
     OutPort o_compl_done;
     TextLine _t2_;
     InPort i_req_tc;
@@ -83,10 +84,10 @@ class pcie_io_tx_engine : public ModuleObject {
     TextLine _fmt0_;
     ParamLogic PIO_CPLD_FMT_TYPE;
     ParamLogic PIO_CPL_FMT_TYPE;
+    TextLine _states0_;
     ParamLogic PIO_TX_RST_STATE;
     ParamLogic PIO_TX_WAIT_DMA_RESP;
     ParamLogic PIO_TX_CPLD_QW1;
-    ParamLogic PIO_TX_RD_FIRST;
     ParamLogic PIO_TX_RD_BURST;
 
     RegSignal s_axis_tx_tdata;
@@ -94,8 +95,7 @@ class pcie_io_tx_engine : public ModuleObject {
     RegSignal s_axis_tx_tlast;
     RegSignal s_axis_tx_tvalid;
     RegSignal dma_resp_ready;
-    RegSignal compl_done;
-    RegSignal req_compl_wd_q;
+    RegSignal req_with_data;
     RegSignal req_addr;
     RegSignal req_rid;
     RegSignal req_tag;
@@ -103,6 +103,7 @@ class pcie_io_tx_engine : public ModuleObject {
     RegSignal rd_data;
     RegSignal rd_addr;
     RegSignal rd_last;
+    RegSignal rd_burst;
     RegSignal state;
 
     CombProcess comb;

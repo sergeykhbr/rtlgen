@@ -56,8 +56,9 @@ pcie_io_ep::pcie_io_ep(GenObject *parent, const char *name, const char *comment)
     SwapEndianess32(this),
     // params
     // signals
-    w_req_compl_int(this, "w_req_compl_int", "1", NO_COMMENT),
-    w_req_compl_wd(this, "w_req_compl_wd", "1", NO_COMMENT),
+    w_tx_ena(this, "w_tx_ena", "1", NO_COMMENT),
+    w_tx_completion(this, "w_tx_completion", "1", NO_COMMENT),
+    w_tx_with_data(this, "w_tx_with_data", "1", NO_COMMENT),
     w_compl_done_int(this, "w_compl_done_int", "1", NO_COMMENT),
     wb_req_tc(this, "wb_req_tc", "3", NO_COMMENT),
     w_req_td(this, "w_req_td", "1", NO_COMMENT),
@@ -90,8 +91,9 @@ pcie_io_ep::pcie_io_ep(GenObject *parent, const char *name, const char *comment)
         CONNECT(EP_RX_inst, 0, EP_RX_inst.i_m_axis_rx_tvalid, i_m_axis_rx_tvalid);
         CONNECT(EP_RX_inst, 0, EP_RX_inst.o_m_axis_rx_tready, o_m_axis_rx_tready);
         CONNECT(EP_RX_inst, 0, EP_RX_inst.i_m_axis_rx_tuser, i_m_axis_rx_tuser);
-        CONNECT(EP_RX_inst, 0, EP_RX_inst.o_req_compl, w_req_compl_int);
-        CONNECT(EP_RX_inst, 0, EP_RX_inst.o_req_compl_wd, w_req_compl_wd);
+        CONNECT(EP_RX_inst, 0, EP_RX_inst.o_tx_ena, w_tx_ena);
+        CONNECT(EP_RX_inst, 0, EP_RX_inst.o_tx_completion, w_tx_completion);
+        CONNECT(EP_RX_inst, 0, EP_RX_inst.o_tx_with_data, w_tx_with_data);
         CONNECT(EP_RX_inst, 0, EP_RX_inst.i_compl_done, w_compl_done_int);
         CONNECT(EP_RX_inst, 0, EP_RX_inst.o_req_tc, wb_req_tc);
         CONNECT(EP_RX_inst, 0, EP_RX_inst.o_req_td, w_req_td);
@@ -125,8 +127,9 @@ TEXT();
         CONNECT(EP_TX_inst, 0, EP_TX_inst.o_s_axis_tx_tlast, o_s_axis_tx_tlast);
         CONNECT(EP_TX_inst, 0, EP_TX_inst.o_s_axis_tx_tvalid, o_s_axis_tx_tvalid);
         CONNECT(EP_TX_inst, 0, EP_TX_inst.o_tx_src_dsc, o_tx_src_dsc);
-        CONNECT(EP_TX_inst, 0, EP_TX_inst.i_req_compl, w_req_compl_int);
-        CONNECT(EP_TX_inst, 0, EP_TX_inst.i_req_compl_wd, w_req_compl_wd);
+        CONNECT(EP_TX_inst, 0, EP_TX_inst.i_tx_ena, w_tx_ena);
+        CONNECT(EP_TX_inst, 0, EP_TX_inst.i_tx_completion, w_tx_completion);
+        CONNECT(EP_TX_inst, 0, EP_TX_inst.i_tx_with_data, w_tx_with_data);
         CONNECT(EP_TX_inst, 0, EP_TX_inst.o_compl_done, w_compl_done_int);
         CONNECT(EP_TX_inst, 0, EP_TX_inst.i_req_tc, wb_req_tc);
         CONNECT(EP_TX_inst, 0, EP_TX_inst.i_req_td, w_req_td);

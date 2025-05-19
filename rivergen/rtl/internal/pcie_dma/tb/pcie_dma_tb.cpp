@@ -206,7 +206,7 @@ void pcie_dma_tb::test_proc() {
     ENDCASE();
 
     TEXT();
-    TEXT("Write burst 64-bytes into 32-bits BAR");
+    TEXT("Write 1x64-bytes into 32-bits BAR");
     CASE(CONST("100"));
         SETONE(test.vb_dmai.valid);
         SETVAL(test.vb_dmai.strob, CONST("0xff", 8));
@@ -225,6 +225,49 @@ void pcie_dma_tb::test_proc() {
         SETONE(test.vb_dmai.last);
         SETVAL(test.vb_dmai.strob, CONST("0x0f", 8));
         SETBITS(test.vb_dmai.data, 31, 0, CONST("0x55667788", 32), "Data[63:32]");
+    ENDCASE();
+
+    TEXT();
+    TEXT("Write 2x64-bytes into 32-bits BAR");
+    CASE(CONST("103"));
+        SETONE(test.vb_dmai.valid);
+        SETVAL(test.vb_dmai.strob, CONST("0xff", 8));
+        SETBITS(test.vb_dmai.data, 31, 24, CONST("0x40", 7), "Wr32");
+        SETBITS(test.vb_dmai.data, 9, 0, CONST("0x02", 10), "Length");
+        SETBITS(test.vb_dmai.data, 39, 32, CONST("0xff", 8), "be");
+    ENDCASE();
+    CASE(CONST("104"));
+        SETONE(test.vb_dmai.valid);
+        SETVAL(test.vb_dmai.strob, CONST("0xff", 8));
+        SETBITS(test.vb_dmai.data, 31, 0, CONST("0x0108", 32), "Addr");
+        SETBITS(test.vb_dmai.data, 63, 32, CONST("0x44332211", 32), "Data[31:0]");
+    ENDCASE();
+    CASE(CONST("105"));
+        SETONE(test.vb_dmai.valid);
+        SETVAL(test.vb_dmai.strob, CONST("0xff", 8));
+        SETVAL(test.vb_dmai.data, CONST("0xaabbccdd88776655", 64));
+    ENDCASE();
+    CASE(CONST("106"));
+        SETONE(test.vb_dmai.valid);
+        SETONE(test.vb_dmai.last);
+        SETVAL(test.vb_dmai.strob, CONST("0x0f", 8));
+        SETBITS(test.vb_dmai.data, 31, 0, CONST("0xeeeeffff", 32), "Data");
+    ENDCASE();
+
+    TEXT();
+    TEXT("Read 1x64-bytes into 32-bits BAR");
+    CASE(CONST("130"));
+        SETONE(test.vb_dmai.valid);
+        SETVAL(test.vb_dmai.strob, CONST("0xff", 8));
+        SETBITS(test.vb_dmai.data, 31, 24, CONST("0x00", 7), "Rd32");
+        SETBITS(test.vb_dmai.data, 9, 0, CONST("0x02", 10), "Length");
+        SETBITS(test.vb_dmai.data, 39, 32, CONST("0xff", 8), "be");
+    ENDCASE();
+    CASE(CONST("131"));
+        SETONE(test.vb_dmai.valid);
+        SETONE(test.vb_dmai.last);
+        SETVAL(test.vb_dmai.strob, CONST("0x0f", 8));
+        SETBITS(test.vb_dmai.data, 31, 0, CONST("0x0108", 32), "Addr");
     ENDCASE();
 
     TEXT();
