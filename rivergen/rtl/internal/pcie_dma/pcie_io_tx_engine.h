@@ -84,18 +84,25 @@ class pcie_io_tx_engine : public ModuleObject {
     ParamLogic PIO_CPLD_FMT_TYPE;
     ParamLogic PIO_CPL_FMT_TYPE;
     ParamLogic PIO_TX_RST_STATE;
-    ParamLogic PIO_TX_CPLD_QW1_FIRST;
+    ParamLogic PIO_TX_WAIT_DMA_RESP;
     ParamLogic PIO_TX_CPLD_QW1;
+    ParamLogic PIO_TX_RD_FIRST;
+    ParamLogic PIO_TX_RD_BURST;
 
     RegSignal s_axis_tx_tdata;
     RegSignal s_axis_tx_tkeep;
     RegSignal s_axis_tx_tlast;
     RegSignal s_axis_tx_tvalid;
+    RegSignal dma_resp_ready;
     RegSignal compl_done;
-    RegSignal req_addr;
-    RegSignal rd_be;
-    RegSignal rd_data;
     RegSignal req_compl_wd_q;
+    RegSignal req_addr;
+    RegSignal req_rid;
+    RegSignal req_tag;
+    RegSignal req_be;
+    RegSignal rd_data;
+    RegSignal rd_addr;
+    RegSignal rd_last;
     RegSignal state;
 
     CombProcess comb;

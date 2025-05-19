@@ -99,12 +99,10 @@ class pcie_io_rx_engine : public ModuleObject {
     ParamLogic PIO_RX_MEM_WR32_DW1DW2;
     ParamLogic PIO_RX_MEM_RD64_DW1DW2;
     ParamLogic PIO_RX_MEM_WR64_DW1DW2;
-    ParamLogic PIO_RX_MEM_WR64_DW3;
+    ParamLogic PIO_RX_MEM_WR_BURST;
     ParamLogic PIO_RX_IO_WR_DW1DW2;
     ParamLogic PIO_RX_WAIT_DMA_RESP;
     ParamLogic PIO_RX_WAIT_TX_COMPLETION;
-    ParamLogic PIO_RX_MEM_WR_BURST;
-    ParamLogic PIO_RX_MEM_WR_BURST_WAIT;
     TextLine _tlp_resp0_;
     ParamLogic TLP_NON_POSTED;
     ParamLogic TLP_POSTED;
@@ -112,6 +110,7 @@ class pcie_io_rx_engine : public ModuleObject {
 
     RegSignal m_axis_rx_tready;
     RegSignal req_valid;
+    RegSignal req_last;
     RegSignal req_tc;
     RegSignal req_td;
     RegSignal req_ep;
@@ -125,6 +124,8 @@ class pcie_io_rx_engine : public ModuleObject {
     RegSignal wr_en;
     RegSignal wr_data;
     RegSignal wr_strob;
+    RegSignal wr_data_dw1;
+    RegSignal wr_dw1_valid;
     RegSignal state;
     RegSignal tlp_type;
     RegSignal tlp_resp;

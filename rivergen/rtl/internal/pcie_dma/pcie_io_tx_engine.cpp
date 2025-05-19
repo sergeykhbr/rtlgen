@@ -57,20 +57,27 @@ pcie_io_tx_engine::pcie_io_tx_engine(GenObject *parent, const char *name, const 
     PIO_CPLD_FMT_TYPE(this, "PIO_CPLD_FMT_TYPE", "7", "0x4A", NO_COMMENT),
     PIO_CPL_FMT_TYPE(this, "PIO_CPL_FMT_TYPE", "7", "0x0A", NO_COMMENT),
     PIO_TX_RST_STATE(this, "PIO_TX_RST_STATE", "2", "0x0", NO_COMMENT),
-    PIO_TX_CPLD_QW1_FIRST(this, "PIO_TX_CPLD_QW1_FIRST", "2", "0x1", NO_COMMENT),
-    PIO_TX_CPLD_QW1(this, "PIO_TX_CPLD_QW1", "2", "0x3", NO_COMMENT),
+    PIO_TX_WAIT_DMA_RESP(this, "PIO_TX_WAIT_DMA_RESP", "4", "0x1", NO_COMMENT),
+    PIO_TX_CPLD_QW1(this, "PIO_TX_CPLD_QW1", "4", "0x2", NO_COMMENT),
+    PIO_TX_RD_FIRST(this, "PIO_TX_RD_FIRST", "4", "0x4", NO_COMMENT),
+    PIO_TX_RD_BURST(this, "PIO_TX_RD_BURST", "4", "0x8", NO_COMMENT),
     // signals
     // registers
     s_axis_tx_tdata(this, "s_axis_tx_tdata", "C_DATA_WIDTH", "'0", NO_COMMENT),
     s_axis_tx_tkeep(this, "s_axis_tx_tkeep", "KEEP_WIDTH", "'0", NO_COMMENT),
     s_axis_tx_tlast(this, "s_axis_tx_tlast", "1", RSTVAL_ZERO, NO_COMMENT),
     s_axis_tx_tvalid(this, "s_axis_tx_tvalid", "1", RSTVAL_ZERO, NO_COMMENT),
+    dma_resp_ready(this, "dma_resp_ready", "1", RSTVAL_ZERO, NO_COMMENT),
     compl_done(this, "compl_done", "1", RSTVAL_ZERO, NO_COMMENT),
-    req_addr(this, "req_addr", "13", "'0", NO_COMMENT),
-    rd_be(this, "rd_be", "4", "'0", NO_COMMENT),
-    rd_data(this, "rd_data", "32", "'0", NO_COMMENT),
     req_compl_wd_q(this, "req_compl_wd_q", "1", "1", NO_COMMENT),
-    state(this, "state", "2", "PIO_TX_RST_STATE", NO_COMMENT),
+    req_addr(this, "req_addr", "13", "'0", NO_COMMENT),
+    req_rid(this, "req_rid", "16", NO_COMMENT),
+    req_tag(this, "req_tag", "8", NO_COMMENT),
+    req_be(this, "req_be", "4", "'0", NO_COMMENT),
+    rd_data(this, "rd_data", "64", "'0", NO_COMMENT),
+    rd_addr(this, "rd_addr", "13", "'0", NO_COMMENT),
+    rd_last(this, "rd_last", "1", "'0", NO_COMMENT),
+    state(this, "state", "4", "PIO_TX_RST_STATE", NO_COMMENT),
     //
     comb(this),
     reqff(this, "reqff", &i_clk, CLK_POSEDGE, 0, ACTIVE_NONE, NO_COMMENT)
@@ -102,26 +109,26 @@ void pcie_io_tx_engine::proc_comb() {
     ENDIF();
 
 TEXT();
+    IF (NZ(i_s_axis_tx_tready));
+        SETZERO(s_axis_tx_tvalid);
+        SETZERO(s_axis_tx_tlast);
+    ENDIF();
+    IF (NZ(i_dma_resp_valid));
+        SETZERO(dma_resp_ready);
+    ENDIF();
+    SETZERO(compl_done);
+
+TEXT();
     SWITCH(state);
     CASE (PIO_TX_RST_STATE);
-        SETZERO(s_axis_tx_tvalid);
-        SETVAL(s_axis_tx_tkeep, CONST("0xFF", 8));
         SETZERO(s_axis_tx_tdata);
-        SETZERO(s_axis_tx_tlast);
-        SETZERO(compl_done);
-        IF (AND2(NZ(i_req_compl), NZ(i_dma_resp_valid)));
+        SETZERO(s_axis_tx_tkeep);
+        IF (NZ(i_req_compl));
             SETVAL(req_addr, i_req_addr);
-            SETVAL(rd_data, BITS(i_dma_resp_data, 31, 0));
-            SETVAL(rd_be, i_req_be);
+            SETVAL(req_rid, i_req_rid);
+            SETVAL(req_tag, i_req_tag);
+            SETVAL(req_be, i_req_be);
             SETVAL(req_compl_wd_q, i_req_compl_wd);
-            SETVAL(state, PIO_TX_CPLD_QW1_FIRST);
-        ENDIF();
-    ENDCASE();
-
-    TEXT();
-    CASE (PIO_TX_CPLD_QW1_FIRST);
-        IF (NZ(i_s_axis_tx_tready));
-            SETZERO(s_axis_tx_tlast);
             SETBITS(comb.vb_s_axis_tx_tdata, 63, 48, i_completer_id);
             SETBITS(comb.vb_s_axis_tx_tdata, 47, 45, CONST("0", 3));
             SETBIT(comb.vb_s_axis_tx_tdata, 44, CONST("0", 1));
@@ -142,40 +149,89 @@ TEXT();
             SETBITS(comb.vb_s_axis_tx_tdata, 9, 0, i_req_len);
             SETVAL(s_axis_tx_tdata, comb.vb_s_axis_tx_tdata);
             SETVAL(s_axis_tx_tkeep, CONST("0xFF", 8));
+            IF (NZ(i_req_compl_wd));
+                TEXT("Send this TLP qword only on DMA response");
+                SETONE(dma_resp_ready);
+                SETVAL(state, PIO_TX_WAIT_DMA_RESP);
+            ELSE();
+                TEXT("Send now");
+                SETONE(s_axis_tx_tvalid);
+                SETVAL(state, PIO_TX_CPLD_QW1);
+            ENDIF();
+        ENDIF();
+    ENDCASE();
+
+    TEXT();
+    CASE (PIO_TX_WAIT_DMA_RESP);
+        IF (NZ(i_dma_resp_valid));
+            SETONE(s_axis_tx_tvalid, "Transmit DW1DW2");
+            SETVAL(rd_data, i_dma_resp_data);
+            SETVAL(rd_addr, i_dma_resp_addr);
+            SETVAL(rd_last, i_dma_resp_last);
             SETVAL(state, PIO_TX_CPLD_QW1);
-            SETONE(s_axis_tx_tvalid);
-        ELSE();
-            SETVAL(state, PIO_TX_RST_STATE);
         ENDIF();
     ENDCASE();
 
     TEXT();
     CASE (PIO_TX_CPLD_QW1);
         IF (NZ(i_s_axis_tx_tready));
-            SETONE(s_axis_tx_tlast);
             SETONE(s_axis_tx_tvalid);
+            SETVAL(s_axis_tx_tlast, rd_last);
             TEXT("Swap DWORDS for AXI");
-            SETBITS(comb.vb_s_axis_tx_tdata, 63, 32, rd_data);
-            SETBITS(comb.vb_s_axis_tx_tdata, 31, 16, i_req_rid);
-            SETBITS(comb.vb_s_axis_tx_tdata, 15, 8, i_req_tag);
+            IF (NZ(BIT(req_addr, 2)));
+                SETBITS(comb.vb_s_axis_tx_tdata, 63, 32, BITS(rd_data, 63, 32));
+            ELSE();
+                SETBITS(comb.vb_s_axis_tx_tdata, 63, 32, BITS(rd_data, 31, 0));
+            ENDIF();
+            SETBITS(comb.vb_s_axis_tx_tdata, 31, 16, req_rid);
+            SETBITS(comb.vb_s_axis_tx_tdata, 15, 8, req_tag);
             SETBIT(comb.vb_s_axis_tx_tdata, 7, CONST("0", 1));
             SETBITS(comb.vb_s_axis_tx_tdata, 6, 0, comb.vb_lower_addr);
             SETVAL(s_axis_tx_tdata, comb.vb_s_axis_tx_tdata);
 
             TEXT();
             TEXT("Mask data strob if data no need:");
-            IF (NZ(req_compl_wd_q));
+            IF (AND2(NZ(req_compl_wd_q), NZ(rd_last)));
                 SETVAL(s_axis_tx_tkeep, CONST("0xFF", 8));
             ELSE();
                 SETVAL(s_axis_tx_tkeep, CONST("0x0F", 8));
             ENDIF();
-            SETONE(compl_done);
-            SETVAL(state, PIO_TX_RST_STATE);
-        ELSE();
-            SETVAL(state, PIO_TX_CPLD_QW1);
+            SETVAL(compl_done, rd_last);
+            SETZERO(rd_last);
+            IF (NZ(rd_last));
+                SETVAL(state, PIO_TX_RST_STATE);
+            ELSE();
+                SETVAL(state, PIO_TX_RD_FIRST);
+            ENDIF();
         ENDIF();
     ENDCASE();
-    
+
+    TEXT();
+    CASE(PIO_TX_RD_BURST);
+        IF (NZ(i_s_axis_tx_tready));
+            SETONE(s_axis_tx_tvalid);
+            SETVAL(s_axis_tx_tdata, rd_data);
+            SETVAL(s_axis_tx_tkeep, CONST("0xFF", 8));
+            SETVAL(state, PIO_TX_RD_BURST);
+        ENDIF();
+    ENDCASE();
+
+    TEXT();
+    CASE(PIO_TX_RD_BURST);
+        SETVAL(dma_resp_ready, i_s_axis_tx_tready);
+        IF (AND3(NZ(i_s_axis_tx_tready), NZ(i_dma_resp_valid), NZ(dma_resp_ready)));
+            SETONE(s_axis_tx_tvalid);
+            SETVAL(s_axis_tx_tlast, i_dma_resp_last);
+            SETVAL(s_axis_tx_tdata, i_dma_resp_data);
+            SETVAL(compl_done, i_dma_resp_last);
+            SETVAL(dma_resp_ready, INV_L(i_dma_resp_last));
+            IF (NZ(i_dma_resp_last));
+                SETZERO(dma_resp_ready);
+                SETVAL(state, PIO_TX_RST_STATE);
+            ENDIF();
+        ENDIF();
+    ENDCASE();
+
     TEXT();
     CASEDEF();
         SETVAL(state, PIO_TX_RST_STATE);
@@ -188,7 +244,7 @@ TEXT_ASSIGN();
     ASSIGN(o_s_axis_tx_tkeep, s_axis_tx_tkeep);
     ASSIGN(o_s_axis_tx_tlast, s_axis_tx_tlast);
     ASSIGN(o_s_axis_tx_tvalid, s_axis_tx_tvalid);
-    ASSIGN(o_dma_resp_ready, CONST("1", 1));
+    ASSIGN(o_dma_resp_ready, dma_resp_ready);
     ASSIGN(o_compl_done, compl_done);
 
 TEXT_ASSIGN();
