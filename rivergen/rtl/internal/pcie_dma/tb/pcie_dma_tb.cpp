@@ -337,6 +337,13 @@ void pcie_dma_tb::test_proc() {
         SETBITS(test.vb_dmai.data, 31, 0, CONST("0x0", 32), "Addr[63:32]");
 
 
+    TEXT("Test FIFO full flag");
+    CASE(CONST("500"));
+        SETONE(test.vb_dmai.valid);
+        SETVAL(test.vb_dmai.strob, CONST("0xff", 8));
+        SETVAL(test.vb_dmai.data, CONST("0xCCCCCCCCDDDDDDDD", 64));
+    ENDCASE();
+
     TEXT();
     CASEDEF();
     ENDCASE();
