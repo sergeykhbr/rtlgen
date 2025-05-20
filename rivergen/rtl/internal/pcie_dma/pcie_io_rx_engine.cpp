@@ -183,29 +183,25 @@ TEXT();
 
             TEXT();
             CASE(PIO_RX_MEM_RD64_FMT_TYPE);
-                IF (EQ(BITS(i_m_axis_rx_tdata, 9, 0), CONST("1", 10)));
-                    SETVAL(state, PIO_RX_MEM_RD64_DW1DW2);
-                ENDIF();
+                SETVAL(state, PIO_RX_MEM_RD64_DW1DW2);
             ENDCASE();
 
             TEXT();
             CASE(PIO_RX_MEM_WR64_FMT_TYPE);
                 SETVAL(state, PIO_RX_MEM_WR64_DW1DW2);
+                SETONE(wr_en);
             ENDCASE();
 
             TEXT();
             CASE(PIO_RX_IO_RD32_FMT_TYPE);
-                IF (EQ(BITS(i_m_axis_rx_tdata, 9, 0), CONST("1", 10)));
-                    SETVAL(state, PIO_RX_MEM_RD32_DW1DW2);
-                ENDIF();
+                SETVAL(state, PIO_RX_MEM_RD32_DW1DW2);
             ENDCASE();
 
             TEXT();
             CASE(PIO_RX_IO_WR32_FMT_TYPE);
                 IF (EQ(BITS(i_m_axis_rx_tdata, 9, 0), CONST("1", 10)));
                     SETVAL(state, PIO_RX_IO_WR_DW1DW2);
-                ELSE();
-                    SETVAL(state, PIO_RX_RST_STATE);
+                    SETONE(wr_en);
                 ENDIF();
             ENDCASE();
 
