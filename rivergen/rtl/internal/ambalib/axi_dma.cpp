@@ -180,7 +180,7 @@ TEXT();
         SETZERO(resp_last);
         IF (NZ(i_req_mem_valid));
             SETZERO(req_ready);
-            SETVAL(req_addr, OR2_L(CONST("0x08000000", 48), CC2(ALLZEROS(), i_req_mem_addr)));
+            SETVAL(req_addr, CC2(ALLZEROS(), i_req_mem_addr));
             IF (EQ(i_req_mem_bytes, CONST("1", 10)));
                 SETVAL(req_size, CONST("0", 3));
                 SETZERO(req_len);

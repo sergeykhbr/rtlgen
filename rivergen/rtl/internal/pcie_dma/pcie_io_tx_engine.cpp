@@ -43,13 +43,13 @@ pcie_io_tx_engine::pcie_io_tx_engine(GenObject *parent, const char *name, const 
     i_req_rid(this, "i_req_rid", "16", NO_COMMENT),
     i_req_tag(this, "i_req_tag", "8", NO_COMMENT),
     i_req_be(this, "i_req_be", "8", NO_COMMENT),
-    i_req_addr(this, "i_req_addr", "13", NO_COMMENT),
+    i_req_addr(this, "i_req_addr", "CFG_PCIE_DMAADDR_WIDTH", NO_COMMENT),
     i_req_bytes(this, "i_req_bytes", "10", NO_COMMENT),
     _t3_(this, ""),
     i_dma_resp_valid(this, "i_dma_resp_valid", "1", NO_COMMENT),
     i_dma_resp_last(this, "i_dma_resp_last", "1", NO_COMMENT),
     i_dma_resp_fault(this, "i_dma_resp_fault", "1", "Error on memory access"),
-    i_dma_resp_addr(this, "i_dma_resp_addr", "13", NO_COMMENT),
+    i_dma_resp_addr(this, "i_dma_resp_addr", "CFG_PCIE_DMAADDR_WIDTH", NO_COMMENT),
     i_dma_resp_data(this, "i_dma_resp_data", "64", NO_COMMENT),
     o_dma_resp_ready(this, "o_dma_resp_ready", "1", "Ready to accept response"),
     i_completer_id(this, "i_completer_id", "16", NO_COMMENT),
@@ -71,12 +71,12 @@ pcie_io_tx_engine::pcie_io_tx_engine(GenObject *parent, const char *name, const 
     s_axis_tx_tvalid(this, "s_axis_tx_tvalid", "1", RSTVAL_ZERO, NO_COMMENT),
     dma_resp_ready(this, "dma_resp_ready", "1", RSTVAL_ZERO, NO_COMMENT),
     req_with_data(this, "req_with_data", "1", "0", NO_COMMENT),
-    req_addr(this, "req_addr", "13", "'0", NO_COMMENT),
+    req_addr(this, "req_addr", "CFG_PCIE_DMAADDR_WIDTH", "'0", NO_COMMENT),
     req_rid(this, "req_rid", "16", "'0", NO_COMMENT),
     req_tag(this, "req_tag", "8", "'0", NO_COMMENT),
     req_be(this, "req_be", "4", "'0", NO_COMMENT),
     rd_data(this, "rd_data", "64", "'0", NO_COMMENT),
-    rd_addr(this, "rd_addr", "13", "'0", NO_COMMENT),
+    rd_addr(this, "rd_addr", "CFG_PCIE_DMAADDR_WIDTH", "'0", NO_COMMENT),
     rd_last(this, "rd_last", "1", "'0", NO_COMMENT),
     rd_burst(this, "rd_burst", "1", "'0", NO_COMMENT),
     rd_odd(this, "rd_odd", "1", "'0", NO_COMMENT),
@@ -131,24 +131,24 @@ TEXT();
             SETVAL(req_tag, i_req_tag);
             SETVAL(req_be, i_req_be);
             SETVAL(req_with_data, i_tx_with_data);
-            SETBITS(comb.vb_s_axis_tx_tdata, 63, 48, i_completer_id);
-            SETBITS(comb.vb_s_axis_tx_tdata, 47, 45, CONST("0", 3));
-            SETBIT(comb.vb_s_axis_tx_tdata, 44, CONST("0", 1));
-            SETBITS(comb.vb_s_axis_tx_tdata, 43, 32, i_req_bytes);
-            SETBIT(comb.vb_s_axis_tx_tdata, 31, CONST("0", 1));
+            SETBITS(comb.vb_s_axis_tx_tdata, 63, 48, i_completer_id, "DW1[31:16] completer ID");
+            SETBITS(comb.vb_s_axis_tx_tdata, 47, 45, CONST("0", 3), "DW1[15:13] compl status");
+            SETBIT(comb.vb_s_axis_tx_tdata, 44, CONST("0", 1), "DW1[12] BCM (Byte Count Modified for PCI legacy support)");
+            SETBITS(comb.vb_s_axis_tx_tdata, 43, 32, i_req_bytes, "DW1[11:0] byte count");
+            SETBIT(comb.vb_s_axis_tx_tdata, 31, CONST("0", 1), "DW0[31] R");
             IF (NZ(i_tx_with_data));
-                SETBITS(comb.vb_s_axis_tx_tdata, 30, 24, PIO_CPLD_FMT_TYPE);
+                SETBITS(comb.vb_s_axis_tx_tdata, 30, 24, PIO_CPLD_FMT_TYPE, "DW0[30:29] fmt; DW0[28:24] type");
             ELSE();
-                SETBITS(comb.vb_s_axis_tx_tdata, 30, 24, PIO_CPL_FMT_TYPE);
+                SETBITS(comb.vb_s_axis_tx_tdata, 30, 24, PIO_CPL_FMT_TYPE, "DW0[30:29] fmt; DW0[28:24] type");
             ENDIF();
-            SETBIT(comb.vb_s_axis_tx_tdata, 23, CONST("0", 1));
-            SETBITS(comb.vb_s_axis_tx_tdata, 22, 20, i_req_tc);
-            SETBITS(comb.vb_s_axis_tx_tdata, 19, 16, CONST("0", 3));
-            SETBIT(comb.vb_s_axis_tx_tdata, 15, i_req_td);
-            SETBIT(comb.vb_s_axis_tx_tdata, 14, i_req_ep);
-            SETBITS(comb.vb_s_axis_tx_tdata, 13, 12, i_req_attr);
-            SETBITS(comb.vb_s_axis_tx_tdata, 11, 10, CONST("0", 2));
-            SETBITS(comb.vb_s_axis_tx_tdata, 9, 0, i_req_len);
+            SETBIT(comb.vb_s_axis_tx_tdata, 23, CONST("0", 1), "DW0[23] R");
+            SETBITS(comb.vb_s_axis_tx_tdata, 22, 20, i_req_tc, "DW0[22:20] TC");
+            SETBITS(comb.vb_s_axis_tx_tdata, 19, 16, CONST("0", 3), "DW0[19:16] R");
+            SETBIT(comb.vb_s_axis_tx_tdata, 15, i_req_td, "DW0[15] TD");
+            SETBIT(comb.vb_s_axis_tx_tdata, 14, i_req_ep, "DW0[14] EP");
+            SETBITS(comb.vb_s_axis_tx_tdata, 13, 12, i_req_attr, "DW0[13:12] attr");
+            SETBITS(comb.vb_s_axis_tx_tdata, 11, 10, CONST("0", 2), "DW0[11:10] R");
+            SETBITS(comb.vb_s_axis_tx_tdata, 9, 0, i_req_len, "DW0[9:0] length");
             SETVAL(s_axis_tx_tdata, comb.vb_s_axis_tx_tdata);
             SETVAL(s_axis_tx_tkeep, CONST("0xFF", 8));
             IF (NZ(i_tx_with_data));
@@ -197,10 +197,10 @@ TEXT();
             ELSE();
                 SETBITS(comb.vb_s_axis_tx_tdata, 63, 32, BITS(rd_data, 31, 0));
             ENDIF();
-            SETBITS(comb.vb_s_axis_tx_tdata, 31, 16, req_rid);
-            SETBITS(comb.vb_s_axis_tx_tdata, 15, 8, req_tag);
-            SETBIT(comb.vb_s_axis_tx_tdata, 7, CONST("0", 1));
-            SETBITS(comb.vb_s_axis_tx_tdata, 6, 0, comb.vb_lower_addr);
+            SETBITS(comb.vb_s_axis_tx_tdata, 31, 16, req_rid, "DW2[31:16] Requester ID");
+            SETBITS(comb.vb_s_axis_tx_tdata, 15, 8, req_tag, "DW2[15:8] tag");
+            SETBIT(comb.vb_s_axis_tx_tdata, 7, CONST("0", 1), "DW2[7] R");
+            SETBITS(comb.vb_s_axis_tx_tdata, 6, 0, comb.vb_lower_addr, "DW2[6:0] lower address");
             SETVAL(s_axis_tx_tdata, comb.vb_s_axis_tx_tdata);
 
             TEXT();

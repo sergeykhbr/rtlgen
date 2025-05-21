@@ -43,13 +43,13 @@ pcie_io_rx_engine::pcie_io_rx_engine(GenObject *parent, const char *name, const 
     o_req_rid(this, "o_req_rid", "16", "Memory Read Requestor ID"),
     o_req_tag(this, "o_req_tag", "8", "Memory Read Tag"),
     o_req_be(this, "o_req_be", "8", "Memory Read Byte Enables"),
-    o_req_addr(this, "o_req_addr", "13", "Memory Read Address"),
+    o_req_addr(this, "o_req_addr", "CFG_PCIE_DMAADDR_WIDTH", "Memory Read Address"),
     _t33_(this, ""),
     i_req_mem_ready(this, "i_req_mem_ready", "1", "Ready to accept next memory request"),
     o_req_mem_valid(this, "o_req_mem_valid", "1", "Request data is valid to accept"),
     o_req_mem_write(this, "o_req_mem_write", "1", "0=read; 1=write operation"),
     o_req_mem_bytes(this, "o_req_mem_bytes", "10", "0=1024 B; 4=DWORD; 8=QWORD; ..."),
-    o_req_mem_addr(this, "o_req_mem_addr", "13", "Address to read/write"),
+    o_req_mem_addr(this, "o_req_mem_addr", "CFG_PCIE_DMAADDR_WIDTH", "Address to read/write"),
     o_req_mem_strob(this, "o_req_mem_strob", "8", "Byte enabling write strob"),
     o_req_mem_data(this, "o_req_mem_data", "64", "Data to write"),
     o_req_mem_last(this, "o_req_mem_last", "1", "Last data payload in a sequence"),
@@ -89,7 +89,7 @@ pcie_io_rx_engine::pcie_io_rx_engine(GenObject *parent, const char *name, const 
     req_tag(this, "req_tag", "8", RSTVAL_ZERO, NO_COMMENT),
     req_be(this, "req_be", "8", RSTVAL_ZERO, NO_COMMENT),
     req_bytes(this, "req_bytes", "10", "'0", NO_COMMENT),
-    req_addr(this, "req_addr", "13", RSTVAL_ZERO, NO_COMMENT),
+    req_addr(this, "req_addr", "CFG_PCIE_DMAADDR_WIDTH", RSTVAL_ZERO, NO_COMMENT),
     wr_en(this, "wr_en", "1", RSTVAL_ZERO, NO_COMMENT),
     wr_data(this, "wr_data", "64", "'0", NO_COMMENT),
     wr_strob(this, "wr_strob", "8", "'0", NO_COMMENT),
@@ -109,12 +109,12 @@ pcie_io_rx_engine::pcie_io_rx_engine(GenObject *parent, const char *name, const 
 
 void pcie_io_rx_engine::proc_comb() {
 TEXT();
-    IF (EQ(BITS(i_m_axis_rx_tuser, 8, 2), CONST("0x01", 7)), "Select Mem32 region");
-        SETVAL(comb.vb_region_select, CONST("0x1", 2));
-    ELSIF (EQ(BITS(i_m_axis_rx_tuser, 8, 2), CONST("0x02", 7)), "Select Mem64 region");
-        SETVAL(comb.vb_region_select, CONST("0x2", 2));
-    ELSIF (EQ(BITS(i_m_axis_rx_tuser, 8, 2), CONST("0x40", 7)), "Select EROM region");
-        SETVAL(comb.vb_region_select, CONST("0x3", 2));
+    IF (EQ(BITS(i_m_axis_rx_tuser, 8, 2), CONST("0x01", 7)), "Select BAR0 region");
+        SETVAL(comb.vb_bar_offset, CONST("0x08000000", "CFG_PCIE_DMAADDR_WIDTH"), "BAR0, 32-bits, 2MB, SRAM");
+    ELSIF (EQ(BITS(i_m_axis_rx_tuser, 8, 2), CONST("0x02", 7)), "Select BAR1 region");
+        SETVAL(comb.vb_bar_offset, CONST("0x0", "CFG_PCIE_DMAADDR_WIDTH"), "BAR1, 32-bits, 1GB");
+    ELSIF (EQ(BITS(i_m_axis_rx_tuser, 8, 2), CONST("0x04", 7)), "Select BAR2 region");
+        SETVAL(comb.vb_bar_offset, CONST("0x80000000", "CFG_PCIE_DMAADDR_WIDTH"), "BAR2/BAR3 64-bits, 4GB to DDR");
     ENDIF();
 
 TEXT();
@@ -127,6 +127,11 @@ TEXT();
     ELSIF (NZ(BIT(req_be, 3)));
         SETVAL(comb.vb_req_addr_1_0, CONST("3", 2));
     ENDIF();
+    TEXT("Max implemented BAR is 4GB so take 32-bits of address");
+    SETVAL(comb.vb_addr_ldw, ADD2(comb.vb_bar_offset, BITS(i_m_axis_rx_tdata, 31, 0)));
+    SETBITS(comb.vb_addr_ldw, 1, 0, comb.vb_req_addr_1_0);
+    SETVAL(comb.vb_addr_mdw, ADD2(comb.vb_bar_offset, BITS(i_m_axis_rx_tdata, 63, 32)));
+    SETBITS(comb.vb_addr_mdw, 1, 0, comb.vb_req_addr_1_0);
 
 TEXT();
     TEXT("Calculate byte count based on byte enable");
@@ -220,9 +225,7 @@ TEXT();
         IF (NZ(i_m_axis_rx_tvalid));
             SETONE(req_valid);
             SETVAL(req_last, i_m_axis_rx_tlast);
-            SETVAL(req_addr, CC3(BITS(comb.vb_region_select, 1, 0),
-                                 BITS(i_m_axis_rx_tdata, 10, 2),
-                                 comb.vb_req_addr_1_0));
+            SETVAL(req_addr, comb.vb_addr_ldw);
             SETVAL(req_bytes, comb.vb_req_bytes);
             SETVAL(tlp_resp, TLP_POSTED);
             SETVAL(state, PIO_RX_WAIT_TX_COMPLETION);
@@ -233,9 +236,7 @@ TEXT();
     CASE(PIO_RX_MEM_RD64_DW1DW2);
         IF (NZ(i_m_axis_rx_tvalid));
             SETONE(req_valid);
-            SETVAL(req_addr, CC3(BITS(comb.vb_region_select, 1, 0),
-                                 BITS(i_m_axis_rx_tdata, 42, 34),
-                                 comb.vb_req_addr_1_0));
+            SETVAL(req_addr, comb.vb_addr_mdw);
             SETVAL(req_bytes, comb.vb_req_bytes);
             SETVAL(tlp_resp, TLP_POSTED);
             SETVAL(state, PIO_RX_WAIT_TX_COMPLETION);
@@ -247,9 +248,7 @@ TEXT();
         IF (NZ(i_m_axis_rx_tvalid));
             SETVAL(req_valid, i_m_axis_rx_tlast);
             SETVAL(req_last, i_m_axis_rx_tlast);
-            SETVAL(req_addr, CC3(BITS(comb.vb_region_select, 1, 0),
-                                 BITS(i_m_axis_rx_tdata, 10, 2),
-                                 comb.vb_req_addr_1_0));
+            SETVAL(req_addr, comb.vb_addr_ldw);
             SETVAL(req_bytes, comb.vb_req_bytes);
             SETVAL(wr_data, CC2(BITS(i_m_axis_rx_tdata, 63, 32),
                                 BITS(i_m_axis_rx_tdata, 63, 32)));
@@ -278,9 +277,7 @@ TEXT();
     TEXT();
     CASE(PIO_RX_MEM_WR64_DW1DW2);
         IF (NZ(i_m_axis_rx_tvalid));
-            SETVAL(req_addr, CC3(BITS(comb.vb_region_select, 1, 0),
-                                 BITS(i_m_axis_rx_tdata, 42, 34),
-                                 comb.vb_req_addr_1_0));
+            SETVAL(req_addr, comb.vb_addr_mdw);
             SETVAL(req_bytes, comb.vb_req_bytes);
             IF (NZ(BIT(i_m_axis_rx_tdata, 34)));
                 SETVAL(wr_strob, CC2(BITS(req_be, 3, 0), BITS(req_be, 7, 4)));
@@ -331,9 +328,7 @@ TEXT();
         IF (NZ(i_m_axis_rx_tvalid));
             SETONE(req_valid);
             SETONE(wr_en);
-            SETVAL(req_addr, CC3(BITS(comb.vb_region_select, 1, 0),
-                                 BITS(i_m_axis_rx_tdata, 10, 2),
-                                 comb.vb_req_addr_1_0));
+            SETVAL(req_addr, comb.vb_addr_ldw);
             SETVAL(req_bytes, comb.vb_req_bytes);
             SETVAL(wr_data, CC2(BITS(i_m_axis_rx_tdata, 63, 32),
                                 BITS(i_m_axis_rx_tdata, 63, 32)));

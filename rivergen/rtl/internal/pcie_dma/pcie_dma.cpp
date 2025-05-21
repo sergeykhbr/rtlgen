@@ -72,14 +72,14 @@ pcie_dma::pcie_dma(GenObject *parent, const char *name, const char *comment) :
     w_req_mem_valid(this, "w_req_mem_valid", "1", RSTVAL_ZERO, NO_COMMENT),
     w_req_mem_write(this, "w_req_mem_write", "1", RSTVAL_ZERO, "0=read; 1=write operation"),
     wb_req_mem_bytes(this, "wb_req_mem_bytes", "10", RSTVAL_ZERO, "0=1024 B; 4=DWORD; 8=QWORD; ..."),
-    wb_req_mem_addr(this, "wb_req_mem_addr", "13", "'0", NO_COMMENT),
+    wb_req_mem_addr(this, "wb_req_mem_addr", "CFG_PCIE_DMAADDR_WIDTH", "'0", NO_COMMENT),
     wb_req_mem_strob(this, "wb_req_mem_strob", "8", "'0", NO_COMMENT),
     wb_req_mem_data(this, "wb_req_mem_data", "64", "'0", NO_COMMENT),
     w_req_mem_last(this, "w_req_mem_last", "1", RSTVAL_ZERO, NO_COMMENT),
     w_resp_mem_valid(this, "w_resp_mem_valid", "1", RSTVAL_ZERO, NO_COMMENT),
     w_resp_mem_last(this, "w_resp_mem_last", "1", RSTVAL_ZERO, NO_COMMENT),
     w_resp_mem_fault(this, "w_resp_mem_fault", "1", RSTVAL_ZERO, NO_COMMENT),
-    wb_resp_mem_addr(this, "wb_resp_mem_addr", "13", "'0", NO_COMMENT),
+    wb_resp_mem_addr(this, "wb_resp_mem_addr", "CFG_PCIE_DMAADDR_WIDTH", "'0", NO_COMMENT),
     wb_resp_mem_data(this, "wb_resp_mem_data", "64", "'0", NO_COMMENT),
     w_resp_mem_ready(this, "w_resp_mem_ready", "1", RSTVAL_ZERO, NO_COMMENT),
     // registers
@@ -158,7 +158,7 @@ TEXT();
     ENDNEW();
 
     TEXT();
-    xdma0.abits.setObjValue(new DecConst(13));
+    xdma0.abits.setObjValue(&pcie_cfg_->CFG_PCIE_DMAADDR_WIDTH);
     xdma0.userbits.setObjValue(new DecConst(1));
     NEW(xdma0, xdma0.getName().c_str());
         CONNECT(xdma0, 0, xdma0.i_nrst, i_nrst);

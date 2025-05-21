@@ -173,6 +173,7 @@ void pcie_dma_tb::test_proc() {
 
     TEXT();
     SETVAL(test.vb_dmai, glob_types_dma_->pcie_dma64_in_none);
+    SETVAL(test.vb_dmai.bar_hit, CONST("0x01", 7), "BAR0");
     SWITCH(wb_clk_cnt);
     TEXT("Wr32 to address [0x0104] <= 0x44332211");
     CASE(CONST("20"));

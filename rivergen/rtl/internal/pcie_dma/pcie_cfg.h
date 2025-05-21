@@ -28,6 +28,7 @@ class pcie_cfg : public FileObject {
     TextLine _text0_;
     ParamI32D CFG_PCIE_DATA_WIDTH;
     ParamI32D CFG_PCIE_DMAFIFO_DEPTH;
+    ParamI32D CFG_PCIE_DMAADDR_WIDTH;
     TextLine _text1_;
     TextLine _text2_;
     ParamLogic PCIE_CPL_NODATA;

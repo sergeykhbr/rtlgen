@@ -35,7 +35,9 @@ class pcie_io_rx_engine : public ModuleObject {
             vb_add_be20(this, "vb_add_be20", "2", "'0"),
             vb_add_be21(this, "vb_add_be21", "2", "'0"),
             vb_req_bytes(this, "vb_req_bytes", "10", "'0"),
-            vb_region_select(this, "vb_region_select", "2", "'0") {
+            vb_bar_offset(this, "vb_bar_offset", "CFG_PCIE_DMAADDR_WIDTH", "'0"),
+            vb_addr_ldw(this, "vb_addr_ldw", "CFG_PCIE_DMAADDR_WIDTH", "'0"),
+            vb_addr_mdw(this, "vb_addr_mdw", "CFG_PCIE_DMAADDR_WIDTH", "'0") {
         }
 
      public:
@@ -43,7 +45,9 @@ class pcie_io_rx_engine : public ModuleObject {
         Logic vb_add_be20;
         Logic vb_add_be21;
         Logic vb_req_bytes;
-        Logic vb_region_select;
+        Logic vb_bar_offset;
+        Logic vb_addr_ldw;
+        Logic vb_addr_mdw;
     };
 
     void proc_comb();
