@@ -89,6 +89,7 @@ class pcie_io_tx_engine : public ModuleObject {
     ParamLogic PIO_TX_WAIT_DMA_RESP;
     ParamLogic PIO_TX_CPLD_QW1;
     ParamLogic PIO_TX_RD_BURST;
+    ParamLogic PIO_TX_RD_BURST_LAST;
 
     RegSignal s_axis_tx_tdata;
     RegSignal s_axis_tx_tkeep;
@@ -104,6 +105,7 @@ class pcie_io_tx_engine : public ModuleObject {
     RegSignal rd_addr;
     RegSignal rd_last;
     RegSignal rd_burst;
+    RegSignal rd_odd;
     RegSignal state;
 
     CombProcess comb;
