@@ -109,11 +109,11 @@ pcie_io_rx_engine::pcie_io_rx_engine(GenObject *parent, const char *name, const 
 
 void pcie_io_rx_engine::proc_comb() {
 TEXT();
-    IF (EQ(BITS(i_m_axis_rx_tuser, 8, 2), CONST("0x01", 7)), "Select BAR0 region");
+    IF (NZ(BIT(i_m_axis_rx_tuser, 2)), "Select BAR0 region");
         SETVAL(comb.vb_bar_offset, CONST("0x08000000", "CFG_PCIE_DMAADDR_WIDTH"), "BAR0, 32-bits, 2MB, SRAM");
-    ELSIF (EQ(BITS(i_m_axis_rx_tuser, 8, 2), CONST("0x02", 7)), "Select BAR1 region");
+    ELSIF (NZ(BIT(i_m_axis_rx_tuser, 3)), "Select BAR1 region");
         SETVAL(comb.vb_bar_offset, CONST("0x0", "CFG_PCIE_DMAADDR_WIDTH"), "BAR1, 32-bits, 1GB");
-    ELSIF (EQ(BITS(i_m_axis_rx_tuser, 8, 2), CONST("0x04", 7)), "Select BAR2 region");
+    ELSIF (EQ(BITS(i_m_axis_rx_tuser, 5, 4), CONST("0x3", 2)), "Select BAR2/BAR3");
         SETVAL(comb.vb_bar_offset, CONST("0x80000000", "CFG_PCIE_DMAADDR_WIDTH"), "BAR2/BAR3 64-bits, 4GB to DDR");
     ENDIF();
 
