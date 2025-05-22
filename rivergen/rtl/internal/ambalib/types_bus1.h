@@ -60,6 +60,9 @@ class types_bus1 : public FileObject {
 #if GENCFG_SD_CTRL_ENABLE
             spi(this, "spi", "", "SPI SD-card 4KB"),
 #endif
+#if GENCFG_HDMI_ENABLE
+            i2c(this, "i2c", "", "I2C master interface to ADV7511 HDMI transmitter"),
+#endif
             gpio(this, "gpio", "", "GPIO 4KB"),
             ddr(this, "ddr", "", "DDR MGMT 4KB"),
 #if GENCFG_PCIE_ENABLE
@@ -81,6 +84,10 @@ class types_bus1 : public FileObject {
             spi.addr_start.setObjValue(new HexConst(0x0000000050000));
             spi.addr_end.setObjValue(new HexConst(0x0000000051000));
 #endif
+#if GENCFG_HDMI_ENABLE
+            i2c.addr_start.setObjValue(new HexConst(0x0000000052000));
+            i2c.addr_end.setObjValue(new HexConst(0x0000000053000));
+#endif
 
             gpio.addr_start.setObjValue(new HexConst(0x0000000060000));
             gpio.addr_end.setObjValue(new HexConst(0x0000000061000));
@@ -101,6 +108,9 @@ class types_bus1 : public FileObject {
         StructVar<types_amba::mapinfo_type> dmi;
 #if GENCFG_SD_CTRL_ENABLE
         StructVar<types_amba::mapinfo_type> spi;
+#endif
+#if GENCFG_HDMI_ENABLE
+        StructVar<types_amba::mapinfo_type> i2c;
 #endif
         StructVar<types_amba::mapinfo_type> gpio;
         StructVar<types_amba::mapinfo_type> ddr;
@@ -127,6 +137,10 @@ class types_bus1 : public FileObject {
 #if GENCFG_SD_CTRL_ENABLE
     TextLine _pslv8_;
     ParamI32D CFG_BUS1_PSLV_SDCTRL_REG;
+#endif
+#if GENCFG_HDMI_ENABLE
+    TextLine _pslv81_;
+    ParamI32D CFG_BUS1_PSLV_I2C0;
 #endif
     TextLine _pslv9_;
     ParamI32D CFG_BUS1_PSLV_GPIO;

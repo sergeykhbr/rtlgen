@@ -48,6 +48,11 @@ asic_top::asic_top(GenObject *parent, const char *name, const char *comment) :
     i_sd_detected(this, "i_sd_detected", "1", "SD-card detected"),
     i_sd_protect(this, "i_sd_protect", "1", "SD-card write protect"),
 #endif
+#if GENCFG_HDMI_ENABLE
+    _i2c0_(this, "I2C master inerface to HDMI transmitter:"),
+    o_i2c0_scl(this, "o_i2c0_scl", "1", "I2C clock upto 400 kHz (default 100 kHz)"),
+    io_i2c0_sda(this, "io_i2c0_sda", "1", "I2C bi-directional data"),
+#endif
     // param
     //gpio_signal_vector_def_(this, ""),
     // Singals:
@@ -71,6 +76,12 @@ asic_top::asic_top(GenObject *parent, const char *name, const char *comment) :
     ib_sd_cd_dat3(this, "ib_sd_cd_dat3", "1"),
     ob_sd_cd_dat3(this, "ob_sd_cd_dat3", "1"),
     ob_sd_cd_dat3_direction(this, "ob_sd_cd_dat3_direction", "1"),
+#endif
+#if GENCFG_HDMI_ENABLE
+    ob_i2c0_scl(this, "ob_i2c0_scl", "1"),
+    ob_i2c0_sda(this, "ob_i2c0_sda", "1"),
+    ob_i2c0_sda_direction(this, "ob_i2c0_sda_direction", "1"),
+    ib_i2c0_sda(this, "ib_i2c0_sda", "1"),
 #endif
     w_sys_rst(this, "w_sys_rst", "1"),
     w_sys_nrst(this, "w_sys_nrst", "1"),
@@ -112,6 +123,10 @@ asic_top::asic_top(GenObject *parent, const char *name, const char *comment) :
     iosddat1(this, "iosddat1", NO_COMMENT),
     iosddat2(this, "iosddat2", NO_COMMENT),
     iosddat3(this, "iosddat3", NO_COMMENT),
+#endif
+#if GENCFG_HDMI_ENABLE
+    oi2c0scl(this, "oi2c0scl", NO_COMMENT),
+    ioi2c0sda(this, "ioi2c0sda", NO_COMMENT),
 #endif
     pll0(this, "pll0", NO_COMMENT),
     prci0(this, "prci0", NO_COMMENT),
@@ -167,6 +182,23 @@ TEXT();
         CONNECT(iosddat3, 0, iosddat3.t, ob_sd_cd_dat3_direction);
     ENDNEW();
 #endif
+
+#if GENCFG_HDMI_ENABLE
+TEXT();
+    NEW(oi2c0scl, oi2c0scl.getName().c_str());
+        CONNECT(oi2c0scl, 0, oi2c0scl.i, ob_i2c0_scl);
+        CONNECT(oi2c0scl, 0, oi2c0scl.o, o_i2c0_scl);
+    ENDNEW();
+
+TEXT();
+    NEW(ioi2c0sda, ioi2c0sda.getName().c_str());
+        CONNECT(ioi2c0sda, 0, ioi2c0sda.io, io_i2c0_sda);
+        CONNECT(ioi2c0sda, 0, ioi2c0sda.o, ib_i2c0_sda);
+        CONNECT(ioi2c0sda, 0, ioi2c0sda.i, ob_i2c0_sda);
+        CONNECT(ioi2c0sda, 0, ioi2c0sda.t, ob_i2c0_sda_direction);
+    ENDNEW();
+#endif
+
 
 TEXT();
     NEW(pll0, pll0.getName().c_str());
@@ -236,6 +268,12 @@ TEXT();
         CONNECT(soc0, 0, soc0.o_sd_cd_dat3_dir, ob_sd_cd_dat3_direction);
         CONNECT(soc0, 0, soc0.i_sd_detected, i_sd_detected);
         CONNECT(soc0, 0, soc0.i_sd_protect, i_sd_protect);
+#endif
+#if GENCFG_HDMI_ENABLE
+        CONNECT(soc0, 0, soc0.o_i2c0_scl, ob_i2c0_scl);
+        CONNECT(soc0, 0, soc0.i_i2c0_sda, ib_i2c0_sda);
+        CONNECT(soc0, 0, soc0.o_i2c0_sda, ob_i2c0_sda);
+        CONNECT(soc0, 0, soc0.o_i2c0_sda_dir, ob_i2c0_sda_direction);
 #endif
         CONNECT(soc0, 0, soc0.o_dmreset, w_dmreset);
         CONNECT(soc0, 0, soc0.o_prci_pmapinfo, prci_pmapinfo);

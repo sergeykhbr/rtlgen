@@ -36,6 +36,10 @@ types_bus1::types_bus1(GenObject *parent) :
     _pslv8_(this, "Configuration index of the SD-card control registers."),
     CFG_BUS1_PSLV_SDCTRL_REG(this, "CFG_BUS1_PSLV_SDCTRL_REG", autoincr_++),
 #endif
+#if GENCFG_HDMI_ENABLE
+    _pslv81_(this, "I2C master interface (for ADV7511 HDMI transmitter)"),
+    CFG_BUS1_PSLV_I2C0(this, "CFG_BUS1_PSLV_I2C0", autoincr_++),
+#endif
     _pslv9_(this, "Configuration index of the GPIO (General Purpose In/Out) module."),
     CFG_BUS1_PSLV_GPIO(this, "CFG_BUS1_PSLV_GPIO", autoincr_++),
     _pslv10_(this, "@brief DDR control register."),

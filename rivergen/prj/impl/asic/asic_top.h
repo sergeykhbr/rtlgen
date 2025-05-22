@@ -25,6 +25,8 @@
 #include "../../../rtl/internal/misclib/apb_prci.h"
 #include "../../../rtl/sim/io/ids_tech.h"
 #include "../../../rtl/sim/io/iobuf_tech.h"
+#include "../../../rtl/sim/io/ibuf_tech.h"
+#include "../../../rtl/sim/io/obuf_tech.h"
 #include "../../../rtl/sim/pll/SysPLL_tech.h"
 #if CONFIG_RISCV_VHDL
     #include "../../../rtl/internal/gencpu64/gencpu64_soc.h"
@@ -71,6 +73,11 @@ public:
     InPort i_sd_detected;
     InPort i_sd_protect;
 #endif
+#if GENCFG_HDMI_ENABLE
+    TextLine _i2c0_;
+    OutPort o_i2c0_scl;
+    IoPort io_i2c0_sda;
+#endif
 
     // Param
     //gpio_signal_vector gpio_signal_vector_def_;
@@ -96,6 +103,12 @@ public:
     Signal ib_sd_cd_dat3;
     Signal ob_sd_cd_dat3;
     Signal ob_sd_cd_dat3_direction;
+#endif
+#if GENCFG_HDMI_ENABLE
+    Signal ob_i2c0_scl;
+    Signal ob_i2c0_sda;
+    Signal ob_i2c0_sda_direction;
+    Signal ib_i2c0_sda;
 #endif
 
     Signal w_sys_rst;
@@ -144,6 +157,10 @@ public:
     iobuf_tech iosddat1;
     iobuf_tech iosddat2;
     iobuf_tech iosddat3;
+#endif
+#if GENCFG_HDMI_ENABLE
+    obuf_tech oi2c0scl;
+    iobuf_tech ioi2c0sda;
 #endif
     SysPLL_tech pll0;
     apb_prci prci0;

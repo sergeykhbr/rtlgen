@@ -14,26 +14,22 @@
 //  limitations under the License.
 // 
 
-#pragma once
-
-#include <api_rtlgen.h>
-#include "ids_tech.h"
 #include "ibuf_tech.h"
-#include "obuf_tech.h"
-#include "iobuf_tech.h"
 
-class io_folder : public FolderObject {
- public:
-    io_folder(GenObject *parent) :
-        FolderObject(parent, "io"),
-        ids_tech_file_(this),
-        ibuf_tech_file_(this),
-        obuf_tech_file_(this),
-        iobuf_tech_file_(this) {}
+ibuf_tech::ibuf_tech(GenObject *parent, const char *name, const char *comment) :
+    ModuleObject(parent, "ibuf_tech", name, comment),
+    i(this, "i", "1", "Input signal"),
+    o(this, "o", "1", "Output signal"),
+    // process
+    comb(this)
+{
+    Operation::start(this);
 
- protected:
-    ids_tech_file ids_tech_file_;
-    ibuf_tech_file ibuf_tech_file_;
-    obuf_tech_file obuf_tech_file_;
-    iobuf_tech_file iobuf_tech_file_;
-};
+    Operation::start(&comb);
+    proc_comb();
+}
+
+void ibuf_tech::proc_comb() {
+    ASSIGN(o, i);
+}
+

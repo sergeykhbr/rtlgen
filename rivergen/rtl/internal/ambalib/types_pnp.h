@@ -125,6 +125,8 @@ class types_pnp : public FileObject {
     ParamLogic OPTIMITECH_RIVER_DMI;
     TextLine _didslv18_;
     ParamLogic OPTIMITECH_PCIE_CTRL;
+    TextLine _didslv19_;
+    ParamLogic OPTIMITECH_I2C;
     TextLine _pnpcfg0_;
     TextLine _pnpcfg1_;
     TextLine _pnpcfg2_;
@@ -155,6 +157,9 @@ class types_pnp : public FileObject {
 #if GENCFG_SD_CTRL_ENABLE
     ParamI32D SOC_PNP_SDCTRL_REG;
     ParamI32D SOC_PNP_SDCTRL_MEM;
+#endif
+#if GENCFG_HDMI_ENABLE
+    ParamI32D SOC_PNP_I2C;
 #endif
 #if GENCFG_PCIE_ENABLE
     ParamI32D SOC_PNP_PCIE_DMA;

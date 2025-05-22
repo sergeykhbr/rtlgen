@@ -63,11 +63,14 @@ public:
     Signal w_uart1_rd;
     Signal w_uart1_td;
     Signal w_uart1_loopback_ena;
+#if GENCFG_HDMI_ENABLE
+    Signal w_i2c_scl;
+    Signal w_i2c_sda;
+#endif
     Logic wb_clk_cnt;
 
 #if GENCFG_SD_CTRL_ENABLE
 #endif
-
 #if GENCFG_SD_CTRL_ENABLE
 #endif
 

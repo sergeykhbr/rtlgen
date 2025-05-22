@@ -63,6 +63,13 @@ accel_soc::accel_soc(GenObject *parent, const char *name, const char *comment) :
     i_sd_detected(this, "i_sd_detected", "1", "SD-card detected"),
     i_sd_protect(this, "i_sd_protect", "1", "SD-card write protect"),
 #endif
+#if GENCFG_HDMI_ENABLE
+    _i2c0_(this, "I2C master interface for HDMI transmitter"),
+    o_i2c0_scl(this, "o_i2c0_scl", "1", "Clock up to 400 KHz. Default 100 KHz"),
+    o_i2c0_sda(this, "o_i2c0_sda", "1", "I2C output data"),
+    o_i2c0_sda_dir(this, "o_i2c0_sda_dir", "1", "output data tri-stte buffer control"),
+    i_i2c0_sda(this, "i_i2c0_sda", "1", "I2C input data"),
+#endif
     _prci0_(this, "PLL and Reset interfaces:"),
     o_dmreset(this, "o_dmreset", "1", "Debug reset request. Everything except DMI."),
     o_prci_pmapinfo(this, "o_prci_pmapinfo", "PRCI mapping information"),
@@ -146,6 +153,9 @@ accel_soc::accel_soc(GenObject *parent, const char *name, const char *comment) :
     gpio0(this, "gpio0"),
 #if GENCFG_SD_CTRL_ENABLE
     sdctrl0(this, "sdctrl0"),
+#endif
+#if GENCFG_HDMI_ENABLE
+    i2c0(this, "i2c0", NO_COMMENT),
 #endif
 #if GENCFG_PCIE_ENABLE
     pcidma0(this, "pcidma0"),
@@ -338,6 +348,22 @@ TEXT();
         CONNECT(sdctrl0, 0, sdctrl0.i_protect, i_sd_protect);
     ENDNEW();
 #endif
+#if GENCFG_HDMI_ENABLE
+TEXT();
+    NEW(i2c0, i2c0.getName().c_str());
+        CONNECT(i2c0, 0, i2c0.i_clk, i_sys_clk);
+        CONNECT(i2c0, 0, i2c0.i_nrst, i_sys_nrst);
+        CONNECT(i2c0, 0, i2c0.i_mapinfo, ARRITEM(bus1_mapinfo, glob_bus1_cfg_->CFG_BUS1_PSLV_I2C0, bus1_mapinfo));
+        CONNECT(i2c0, 0, i2c0.o_cfg, ARRITEM(dev_pnp, glob_pnp_cfg_->SOC_PNP_I2C, dev_pnp));
+        CONNECT(i2c0, 0, i2c0.i_apbi, ARRITEM(apbi, glob_bus1_cfg_->CFG_BUS1_PSLV_I2C0, apbi));
+        CONNECT(i2c0, 0, i2c0.o_apbo, ARRITEM(apbo, glob_bus1_cfg_->CFG_BUS1_PSLV_I2C0, apbo));
+        CONNECT(i2c0, 0, i2c0.o_scl, o_i2c0_scl);
+        CONNECT(i2c0, 0, i2c0.o_sda, o_i2c0_sda);
+        CONNECT(i2c0, 0, i2c0.o_sda_dir, o_i2c0_sda_dir);
+        CONNECT(i2c0, 0, i2c0.i_sda, i_i2c0_sda);
+    ENDNEW();
+#endif
+
 
 #if GENCFG_PCIE_ENABLE
 TEXT();

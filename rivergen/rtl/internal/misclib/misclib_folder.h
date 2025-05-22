@@ -23,6 +23,7 @@
 #include "apb_gpio.h"
 #include "apb_ddr.h"
 #include "apb_spi.h"
+#include "apb_i2c.h"
 #include "apb_pnp.h"
 #include "axi_sram.h"
 #include "axi_rom.h"
@@ -39,6 +40,7 @@ class misclib_folder : public FolderObject {
         apb_gpio_file_(this),
         apb_ddr_file_(this),
         apb_spi_file_(this),
+        apb_i2c_file_(this),
         apb_pnp_file_(this),
         axi_sram_file_(this),
         axi_rom_file_(this),
@@ -56,6 +58,7 @@ class misclib_folder : public FolderObject {
     apb_gpio_file apb_gpio_file_;
     apb_ddr_file apb_ddr_file_;
     apb_spi_file apb_spi_file_;
+    apb_i2c_file apb_i2c_file_;
     apb_pnp_file apb_pnp_file_;
     axi_sram_file axi_sram_file_;
     axi_rom_file axi_rom_file_;

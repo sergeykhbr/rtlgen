@@ -74,6 +74,8 @@ types_pnp::types_pnp(GenObject *parent) :
     OPTIMITECH_RIVER_DMI(this, "OPTIMITECH_RIVER_DMI", "16", "0x008a", NO_COMMENT),
     _didslv18_(this, "PCIE end-point APB controller:"),
     OPTIMITECH_PCIE_CTRL(this, "OPTIMITECH_PCIE_CTRL", "16", "0x008c", NO_COMMENT),
+    _didslv19_(this, "I2C master interface meant for ADV7511 HDMI transmitter"),
+    OPTIMITECH_I2C(this, "OPTIMITECH_I2C", "16", "0x008d", NO_COMMENT),
     _pnpcfg0_(this),
     _pnpcfg1_(this, "Plug'n'Play descriptor localparams."),
     _pnpcfg2_(this, "Undefined type of the descriptor (empty device)."),
@@ -104,6 +106,9 @@ types_pnp::types_pnp(GenObject *parent) :
 #if GENCFG_SD_CTRL_ENABLE
     SOC_PNP_SDCTRL_REG(this, "SOC_PNP_SDCTRL_REG", autoincr_++),
     SOC_PNP_SDCTRL_MEM(this, "SOC_PNP_SDCTRL_MEM", autoincr_++),
+#endif
+#if GENCFG_HDMI_ENABLE
+    SOC_PNP_I2C(this, "SOC_PNP_I2C", autoincr_++),
 #endif
 #if GENCFG_PCIE_ENABLE
     SOC_PNP_PCIE_DMA(this, "SOC_PNP_PCIE_DMA", autoincr_++),

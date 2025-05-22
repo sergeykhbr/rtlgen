@@ -26,6 +26,7 @@
 #include "../ambalib/axictrl_bus0.h"
 #include "../ambalib/axi2apb_bus1.h"
 #include "../misclib/apb_uart.h"
+#include "../misclib/apb_i2c.h"
 #include "../misclib/apb_gpio.h"
 #include "../misclib/apb_pnp.h"
 #include "../misclib/axi_sram.h"
@@ -105,6 +106,13 @@ public:
     OutPort o_sd_cd_dat3_dir;
     InPort i_sd_detected;
     InPort i_sd_protect;
+#endif
+#if GENCFG_HDMI_ENABLE
+    TextLine _i2c0_;
+    OutPort o_i2c0_scl;
+    OutPort o_i2c0_sda;
+    OutPort o_i2c0_sda_dir;
+    InPort i_i2c0_sda;
 #endif
     TextLine _prci0_;
     OutPort o_dmreset;
@@ -191,6 +199,9 @@ public:
     apb_gpio gpio0;
 #if GENCFG_SD_CTRL_ENABLE
     sdctrl sdctrl0;
+#endif
+#if GENCFG_HDMI_ENABLE
+    apb_i2c i2c0;
 #endif
 #if GENCFG_PCIE_ENABLE
     pcie_dma pcidma0;
