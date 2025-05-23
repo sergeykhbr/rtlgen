@@ -109,26 +109,25 @@ class apb_i2c : public ModuleObject {
 
     RegSignal scaler;
     RegSignal scaler_cnt;
-    RegSignal wdog;
-    RegSignal wdog_cnt;
-    RegSignal generate_crc;
-    RegSignal rx_ena;
-    RegSignal rx_synced;
-    RegSignal rx_data_block;    // wait 0xFE marker
     RegSignal level;
-    RegSignal cs;
+    TextLine _a01_;
+    TextLine _a0_;
+    TextLine _a1_;
+    TextLine _a2_;
+    TextLine _a3_;
+    TextLine _a4_;
+    TextLine _a5_;
+    TextLine _a6_;
+    TextLine _a7_;
+    RegSignal addr;
 
 
     RegSignal state;
+    RegSignal scl;
+    RegSignal sda;
+    RegSignal sda_dir;
     RegSignal shiftreg;
-    RegSignal ena_byte_cnt;
     RegSignal bit_cnt;
-    RegSignal tx_val;
-    RegSignal rx_val;
-    RegSignal rx_ready;
-    RegSignal crc7;
-    RegSignal crc16;
-    RegSignal spi_resp;
     RegSignal txmark;
     RegSignal rxmark;
     RegSignal resp_valid;

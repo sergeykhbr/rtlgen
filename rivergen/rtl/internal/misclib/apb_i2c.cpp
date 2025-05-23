@@ -60,24 +60,23 @@ apb_i2c::apb_i2c(GenObject *parent, const char *name, const char *comment) :
     // registers
     scaler(this, "scaler", "32", "'0", NO_COMMENT),
     scaler_cnt(this, "scaler_cnt", "32", "'0", NO_COMMENT),
-    wdog(this, "wdog", "16", "'0", NO_COMMENT),
-    wdog_cnt(this, "wdog_cnt", "16", "'0", NO_COMMENT),
-    generate_crc(this, "generate_crc", "1"),
-    rx_ena(this, "rx_ena", "1"),
-    rx_synced(this, "rx_synced", "1"),
-    rx_data_block(this, "rx_data_block", "1", "0", "Wait 0xFE start data block marker"),
     level(this, "level", "1", "1"),
-    cs(this, "cs", "1"),
+    _a01_(this, "Connection through PCA9548 I2C multiplexer with address: 0x74/0b01110100"),
+    _a0_(this, "Si570 Clock  (I2C switch position: 0), Addr = 0x5B"),
+    _a1_(this, "FMC HPC      (I2C switch position: 1), Addr = 0xXX"),
+    _a2_(this, "FMC LPC      (I2C switch position: 2), Addr = 0xXX"),
+    _a3_(this, "IIC EEPROM   (I2C switch position: 3), Addr = 0x54"),
+    _a4_(this, "SFP Module   (I2C switch position: 4), Addr = 0x50"),
+    _a5_(this, "ADV7511 HDMI (I2C switch position: 5), Addr = 0x39"),
+    _a6_(this, "DDR3 SODIMM  (I2C switch position: 6), Addr = 0x50, 0x18"),
+    _a7_(this, "Si5324 Clock (I2C switch position: 7), Addr = 0x68"),
+    addr(this, "addr", "7", "0x39", "ADV7511 HDMI"),
     state(this, "state", "3", "idle"),
-    ena_byte_cnt(this, "ena_byte_cnt", "16", "'0", NO_COMMENT),
-    bit_cnt(this, "bit_cnt", "3", "'0", NO_COMMENT),
-    tx_val(this, "tx_val", "8", "'0", NO_COMMENT),
-    rx_val(this, "rx_val", "8", "'0", NO_COMMENT),
+    scl(this, "scl", "1", RSTVAL_ZERO, NO_COMMENT),
+    sda(this, "sda", "1", RSTVAL_ZERO, NO_COMMENT),
+    sda_dir(this, "sda_dir", "1", RSTVAL_ZERO, NO_COMMENT),
     shiftreg(this, "shiftreg", "8", "'1"),
-    rx_ready(this, "rx_ready", "1"),
-    crc7(this, "crc7", "7", "'0", NO_COMMENT),
-    crc16(this, "crc16", "16", "'0", NO_COMMENT),
-    spi_resp(this, "spi_resp", "8", "'0", NO_COMMENT),
+    bit_cnt(this, "bit_cnt", "3", "'0", NO_COMMENT),
     txmark(this, "txmark", "log2_fifosz", "'0", NO_COMMENT),
     rxmark(this, "rxmark", "log2_fifosz", "'0", NO_COMMENT),
     resp_valid(this, "resp_valid", "1"),
@@ -152,31 +151,25 @@ void apb_i2c::proc_comb() {
         ENDIF();
     ENDIF();
 
-TEXT();
-    IF(EZ(rx_ena));
-        SETVAL(comb.vb_shiftreg_next, CC2(BITS(shiftreg, 6, 0), CONST("1", 1)));
-    ELSE();
-        SETVAL(comb.vb_shiftreg_next, CC2(BITS(shiftreg, 6, 0), i_sda));
-    ENDIF();
-    IF (NZ(cs));
-        IF(ORx(2, &AND2(NZ(comb.v_negedge), EZ(rx_ena)),
-                  &AND2(NZ(comb.v_posedge), NZ(rx_ena))));
-            SETVAL(shiftreg, comb.vb_shiftreg_next);
-        ENDIF();
-    ENDIF();
-
 
 TEXT();
     TEXT("Transmitter's state machine:");
     SWITCH (state);
     CASE(STATE_IDLE);
-        IF (NZ(ena_byte_cnt));
+        SETONE(sda);
+        SETONE(scl);
+        IF (AND2(NZ(comb.v_posedge), NZ(wb_rxfifo_count)));
+            TEXT("Start condition SDA goes LOW while SCL is HIGH");
+            SETZERO(sda);
+            SETVAL(state, STATE_HEADER);
         ENDIF();
     ENDCASE();
 
     TEXT();
     CASE(STATE_HEADER);
         IF(NZ(comb.v_negedge));
+            SETVAL(sda, BIT(shiftreg, 7));
+            SETVAL(shiftreg, CC2(BITS(shiftreg, 6, 0), CONST("0", 1)));
         ENDIF();
     ENDCASE();
 
@@ -270,8 +263,8 @@ TEXT();
     ENDSWITCH();
 
 TEXT();
-    SETVAL(w_rxfifo_we, rx_ready);
-    SETVAL(wb_rxfifo_wdata, rx_val);
+    //SETVAL(w_rxfifo_we, rx_ready);
+    //SETVAL(wb_rxfifo_wdata, rx_val);
     SETVAL(w_rxfifo_re, comb.v_rxfifo_re);
 
 TEXT();
@@ -288,7 +281,7 @@ TEXT();
     SYNC_RESET();
 
 TEXT();
-    SETVAL(o_scl, AND2_L(level, cs));
-    SETVAL(o_sda, OR2(rx_ena, BIT(shiftreg, 7)));
-    SETVAL(o_sda_dir, INV(cs));
+    SETVAL(o_scl, scl);
+    SETVAL(o_sda, sda);
+    SETVAL(o_sda_dir, sda_dir);
 }

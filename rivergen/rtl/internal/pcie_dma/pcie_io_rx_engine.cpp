@@ -111,9 +111,10 @@ void pcie_io_rx_engine::proc_comb() {
 TEXT();
     IF (NZ(BIT(i_m_axis_rx_tuser, 2)), "Select BAR0 region");
         SETVAL(comb.vb_bar_offset, CONST("0x08000000", "CFG_PCIE_DMAADDR_WIDTH"), "BAR0, 32-bits, 2MB, SRAM");
-    ELSIF (NZ(BIT(i_m_axis_rx_tuser, 3)), "Select BAR1 region");
-        SETVAL(comb.vb_bar_offset, CONST("0x0", "CFG_PCIE_DMAADDR_WIDTH"), "BAR1, 32-bits, 1GB");
-    ELSIF (EQ(BITS(i_m_axis_rx_tuser, 5, 4), CONST("0x3", 2)), "Select BAR2/BAR3");
+//    ELSIF (NZ(BIT(i_m_axis_rx_tuser, 3)), "Select BAR1 region");
+//        SETVAL(comb.vb_bar_offset, CONST("0x0", "CFG_PCIE_DMAADDR_WIDTH"), "BAR1, 32-bits, 1GB");
+//    ELSIF (EQ(BITS(i_m_axis_rx_tuser, 5, 4), CONST("0x3", 2)), "Select BAR2/BAR3");
+    ELSE();
         SETVAL(comb.vb_bar_offset, CONST("0x80000000", "CFG_PCIE_DMAADDR_WIDTH"), "BAR2/BAR3 64-bits, 4GB to DDR");
     ENDIF();
 
@@ -128,10 +129,12 @@ TEXT();
         SETVAL(comb.vb_req_addr_1_0, CONST("3", 2));
     ENDIF();
     TEXT("Max implemented BAR is 4GB so take 32-bits of address");
-    SETVAL(comb.vb_addr_ldw, ADD2(comb.vb_bar_offset, BITS(i_m_axis_rx_tdata, 31, 0)));
-    SETBITS(comb.vb_addr_ldw, 1, 0, comb.vb_req_addr_1_0);
-    SETVAL(comb.vb_addr_mdw, ADD2(comb.vb_bar_offset, BITS(i_m_axis_rx_tdata, 63, 32)));
-    SETBITS(comb.vb_addr_mdw, 1, 0, comb.vb_req_addr_1_0);
+    SETVAL(comb.vb_addr_ldw, CCx(3, &BITS(comb.vb_bar_offset, DEC(CONST("CFG_PCIE_DMAADDR_WIDTH")), CONST("16")),
+                                    &BITS(i_m_axis_rx_tdata, 15, 2),
+                                    &comb.vb_req_addr_1_0));
+    SETVAL(comb.vb_addr_mdw, CCx(3, &BITS(comb.vb_bar_offset, DEC(CONST("CFG_PCIE_DMAADDR_WIDTH")), CONST("16")),
+                                    &BITS(i_m_axis_rx_tdata, 47, 34),
+                                    &comb.vb_req_addr_1_0));
 
 TEXT();
     TEXT("Calculate byte count based on byte enable");
