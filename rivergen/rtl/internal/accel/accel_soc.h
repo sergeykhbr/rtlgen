@@ -187,6 +187,9 @@ public:
     Signal w_dbg_valid;
     Signal w_dbg_payload;
 #endif
+#if GENCFG_HDMI_ENABLE
+    Signal w_irq_i2c0;
+#endif
 
     // Sub-module instances:
     axictrl_bus0 bus0;

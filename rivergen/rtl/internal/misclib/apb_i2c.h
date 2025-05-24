@@ -32,40 +32,20 @@ class apb_i2c : public ModuleObject {
      public:
         CombProcess(GenObject *parent) :
             CombinationalProcess(parent, "comb"),
-            v_posedge(this, "v_posedge", "1"),
-            v_negedge(this, "v_negedge", "1"),
-            v_txfifo_re(this, "v_txfifo_re", "1"),
-            v_txfifo_we(this, "v_txfifo_we", "1"),
-            vb_txfifo_wdata(this, "vb_txfifo_wdata", "8", "'0", NO_COMMENT),
-            v_rxfifo_re(this, "v_rxfifo_re", "1"),
-            v_inv7(this, "v_inv7", "1"),
-            vb_crc7(this, "vb_crc7", "7", "'0", NO_COMMENT),
-            v_inv16(this, "v_inv16", "1"),
-            vb_crc16(this, "vb_crc16", "16", "'0", NO_COMMENT),
-            vb_rdata(this, "vb_rdata", "32", "'0", NO_COMMENT),
-            vb_shiftreg_next(this, "vb_shiftreg_next", "8", "'0", NO_COMMENT) {
+            v_change_data(this, "v_change_data", "1"),
+            v_latch_data(this, "v_latch_data", "1"),
+            vb_rdata(this, "vb_rdata", "32", "'0", NO_COMMENT) {
         }
 
      public:
-        Logic v_posedge;
-        Logic v_negedge;
-        Logic v_txfifo_re;
-        Logic v_txfifo_we;
-        Logic vb_txfifo_wdata;
-        Logic v_rxfifo_re;
-        Logic v_inv7;
-        Logic vb_crc7;
-        Logic v_inv16;
-        Logic vb_crc16;
+        Logic v_change_data;
+        Logic v_latch_data;
         Logic vb_rdata;
-        Logic vb_shiftreg_next;
     };
 
     void proc_comb();
 
  public:
-    TmplParamI32D log2_fifosz;
-    ParamI32D fifo_dbits;
     // io:
     InPort i_clk;
     InPort i_nrst;
@@ -77,9 +57,11 @@ class apb_i2c : public ModuleObject {
     OutPort o_sda;
     OutPort o_sda_dir;
     InPort i_sda;
+    OutPort o_irq;
     
     TextLine _state0_;
     ParamLogic STATE_IDLE;
+    ParamLogic STATE_START;
     ParamLogic STATE_HEADER;
     ParamLogic STATE_ACK_HEADER;
     ParamLogic STATE_RX_DATA;
@@ -87,28 +69,18 @@ class apb_i2c : public ModuleObject {
     ParamLogic STATE_TX_DATA;
     ParamLogic STATE_WAIT_ACK_DATA;
     ParamLogic STATE_STOP;
+    TextLine _t0_;
+    ParamLogic PIN_DIR_INPUT;
+    ParamLogic PIN_DIR_OUTPUT;
 
     Signal w_req_valid;
     Signal wb_req_addr;
     Signal w_req_write;
     Signal wb_req_wdata;
 
-    TextLine _rx0_;
-    Signal w_rxfifo_we;
-    Signal wb_rxfifo_wdata;
-    Signal w_rxfifo_re;
-    Signal wb_rxfifo_rdata;
-    Signal wb_rxfifo_count;
-
-    TextLine _tx0_;
-    Signal w_txfifo_we;
-    Signal wb_txfifo_wdata;
-    Signal w_txfifo_re;
-    Signal wb_txfifo_rdata;
-    Signal wb_txfifo_count;
-
     RegSignal scaler;
     RegSignal scaler_cnt;
+    RegSignal setup_time;
     RegSignal level;
     TextLine _a01_;
     TextLine _a0_;
@@ -120,16 +92,20 @@ class apb_i2c : public ModuleObject {
     TextLine _a6_;
     TextLine _a7_;
     RegSignal addr;
-
+    RegSignal R_nW;
+    RegSignal payload;
 
     RegSignal state;
-    RegSignal scl;
-    RegSignal sda;
+    RegSignal start;
     RegSignal sda_dir;
     RegSignal shiftreg;
     RegSignal bit_cnt;
-    RegSignal txmark;
-    RegSignal rxmark;
+    RegSignal byte_cnt;
+    RegSignal ack;
+    RegSignal err_ack_header;
+    RegSignal err_ack_data;
+    RegSignal irq;
+    RegSignal ie;
     RegSignal resp_valid;
     RegSignal resp_rdata;
     RegSignal resp_err;
@@ -137,8 +113,6 @@ class apb_i2c : public ModuleObject {
     CombProcess comb;
 
     apb_slv pslv0;
-    sfifo rxfifo;
-    sfifo txfifo;
 };
 
 class apb_i2c_file : public FileObject {

@@ -18,8 +18,6 @@
 
 apb_i2c::apb_i2c(GenObject *parent, const char *name, const char *comment) :
     ModuleObject(parent, "apb_i2c", name, comment),
-    log2_fifosz(this, "log2_fifosz", "9", NO_COMMENT),
-    fifo_dbits(this, "fifo_dbits", "8"),
     i_clk(this, "i_clk", "1", "CPU clock"),
     i_nrst(this, "i_nrst", "1", "Reset: active LOW"),
     i_mapinfo(this, "i_mapinfo", "interconnect slot information"),
@@ -27,39 +25,33 @@ apb_i2c::apb_i2c(GenObject *parent, const char *name, const char *comment) :
     i_apbi(this, "i_apbi", "APB  Slave to Bridge interface"),
     o_apbo(this, "o_apbo", "APB Bridge to Slave interface"),
     o_scl(this, "o_scl", "1", "Clock output upto 400 kHz (default 100 kHz)"),
-    o_sda(this, "o_sda", "1", "Data output"),
-    o_sda_dir(this, "o_sda_dir", "1", "Data tri-state buffer control"),
-    i_sda(this, "i_sda", "1"),
+    o_sda(this, "o_sda", "1", "Data output (tri-state buffer input)"),
+    o_sda_dir(this, "o_sda_dir", "1", "Data to control tri-state buffer"),
+    i_sda(this, "i_sda", "1", "Tri-state buffer output"),
+    o_irq(this, "o_irq", "1", "Interrupt request"),
     // params
     _state0_(this, "SPI states"),
-    STATE_IDLE(this, "STATE_IDLE", "7", "0x00", NO_COMMENT),
-    STATE_HEADER(this, "STATE_HEADER", "7", "0x01", NO_COMMENT),
-    STATE_ACK_HEADER(this, "STATE_ACK_HEADER", "7", "0x02", NO_COMMENT),
-    STATE_RX_DATA(this, "STATE_RX_DATA", "7", "0x04", NO_COMMENT),
-    STATE_ACK_DATA(this, "STATE_ACK_DATA", "7", "0x08", NO_COMMENT),
-    STATE_TX_DATA(this, "STATE_TX_DATA", "7", "0x10", NO_COMMENT),
-    STATE_WAIT_ACK_DATA(this, "STATE_WAIT_ACK_DATA", "7", "0x20", NO_COMMENT),
-    STATE_STOP(this, "STATE_STOP", "7", "0x40", NO_COMMENT),
+    STATE_IDLE(this, "STATE_IDLE", "8", "0x00", NO_COMMENT),
+    STATE_START(this, "STATE_START", "8", "0x01", NO_COMMENT),
+    STATE_HEADER(this, "STATE_HEADER", "8", "0x02", NO_COMMENT),
+    STATE_ACK_HEADER(this, "STATE_ACK_HEADER", "8", "0x04", NO_COMMENT),
+    STATE_RX_DATA(this, "STATE_RX_DATA", "8", "0x08", NO_COMMENT),
+    STATE_ACK_DATA(this, "STATE_ACK_DATA", "8", "0x10", NO_COMMENT),
+    STATE_TX_DATA(this, "STATE_TX_DATA", "8", "0x20", NO_COMMENT),
+    STATE_WAIT_ACK_DATA(this, "STATE_WAIT_ACK_DATA", "8", "0x40", NO_COMMENT),
+    STATE_STOP(this, "STATE_STOP", "8", "0x80", NO_COMMENT),
+    _t0_(this),
+    PIN_DIR_INPUT(this, "PIN_DIR_INPUT", "1", "0", NO_COMMENT),
+    PIN_DIR_OUTPUT(this, "PIN_DIR_OUTPUT", "1", "1", NO_COMMENT),
     // signals
     w_req_valid(this, "w_req_valid", "1"),
     wb_req_addr(this, "wb_req_addr", "32"),
     w_req_write(this, "w_req_write", "1"),
     wb_req_wdata(this, "wb_req_wdata", "32"),
-    _rx0_(this, "Rx FIFO signals:"),
-    w_rxfifo_we(this, "w_rxfifo_we", "1"),
-    wb_rxfifo_wdata(this, "wb_rxfifo_wdata", "8"),
-    w_rxfifo_re(this, "w_rxfifo_re", "1"),
-    wb_rxfifo_rdata(this, "wb_rxfifo_rdata", "8"),
-    wb_rxfifo_count(this, "wb_rxfifo_count", "ADD(log2_fifosz,1)"),
-    _tx0_(this, "Tx FIFO signals:"),
-    w_txfifo_we(this, "w_txfifo_we", "1"),
-    wb_txfifo_wdata(this, "wb_txfifo_wdata", "8"),
-    w_txfifo_re(this, "w_txfifo_re", "1"),
-    wb_txfifo_rdata(this, "wb_txfifo_rdata", "8"),
-    wb_txfifo_count(this, "wb_txfifo_count", "ADD(log2_fifosz,1)"),
     // registers
-    scaler(this, "scaler", "32", "'0", NO_COMMENT),
-    scaler_cnt(this, "scaler_cnt", "32", "'0", NO_COMMENT),
+    scaler(this, "scaler", "16", "'0", NO_COMMENT),
+    scaler_cnt(this, "scaler_cnt", "16", "'0", NO_COMMENT),
+    setup_time(this, "setup_time", "16", "0x1", "Interval after negedge of the clock pulsse"),
     level(this, "level", "1", "1"),
     _a01_(this, "Connection through PCA9548 I2C multiplexer with address: 0x74/0b01110100"),
     _a0_(this, "Si570 Clock  (I2C switch position: 0), Addr = 0x5B"),
@@ -70,23 +62,26 @@ apb_i2c::apb_i2c(GenObject *parent, const char *name, const char *comment) :
     _a5_(this, "ADV7511 HDMI (I2C switch position: 5), Addr = 0x39"),
     _a6_(this, "DDR3 SODIMM  (I2C switch position: 6), Addr = 0x50, 0x18"),
     _a7_(this, "Si5324 Clock (I2C switch position: 7), Addr = 0x68"),
-    addr(this, "addr", "7", "0x39", "ADV7511 HDMI"),
-    state(this, "state", "3", "idle"),
-    scl(this, "scl", "1", RSTVAL_ZERO, NO_COMMENT),
-    sda(this, "sda", "1", RSTVAL_ZERO, NO_COMMENT),
-    sda_dir(this, "sda_dir", "1", RSTVAL_ZERO, NO_COMMENT),
-    shiftreg(this, "shiftreg", "8", "'1"),
+    addr(this, "addr", "7", "0x74", "I2C multiplexer"),
+    R_nW(this, "R_nW", "1", "0", "0=Write; 1=read"),
+    payload(this, "payload", "32", "'0", NO_COMMENT),
+    state(this, "state", "8", "STATE_IDLE"),
+    start(this, "start", "1", RSTVAL_ZERO, NO_COMMENT),
+    sda_dir(this, "sda_dir", "1", "PIN_DIR_OUTPUT", NO_COMMENT),
+    shiftreg(this, "shiftreg", "8", "'1", NO_COMMENT),
     bit_cnt(this, "bit_cnt", "3", "'0", NO_COMMENT),
-    txmark(this, "txmark", "log2_fifosz", "'0", NO_COMMENT),
-    rxmark(this, "rxmark", "log2_fifosz", "'0", NO_COMMENT),
+    byte_cnt(this, "byte_cnt", "4", "'0", NO_COMMENT),
+    ack(this, "ack", "1", "0", NO_COMMENT),
+    err_ack_header(this, "err_ack_header", "1", "0", NO_COMMENT),
+    err_ack_data(this, "err_ack_data", "1", "0", NO_COMMENT),
+    irq(this, "irq", "1", "0", NO_COMMENT),
+    ie(this, "ie", "1", "0", NO_COMMENT),
     resp_valid(this, "resp_valid", "1"),
     resp_rdata(this, "resp_rdata", "32", "'0", NO_COMMENT),
     resp_err(this, "resp_err", "1"),
     //
     comb(this),
-    pslv0(this, "pslv0", NO_COMMENT),
-    rxfifo(this, "rxfifo", NO_COMMENT),
-    txfifo(this, "txfifo", NO_COMMENT)
+    pslv0(this, "pslv0", NO_COMMENT)
 {
     Operation::start(this);
 
@@ -108,32 +103,6 @@ apb_i2c::apb_i2c(GenObject *parent, const char *name, const char *comment) :
         CONNECT(pslv0, 0, pslv0.i_resp_err, resp_err);
     ENDNEW();
 
-TEXT();
-    rxfifo.dbits.setObjValue(&fifo_dbits);
-    rxfifo.log2_depth.setObjValue(&log2_fifosz);
-    NEW(rxfifo, rxfifo.getName().c_str());
-        CONNECT(rxfifo, 0, rxfifo.i_clk, i_clk);
-        CONNECT(rxfifo, 0, rxfifo.i_nrst, i_nrst);
-        CONNECT(rxfifo, 0, rxfifo.i_we, w_rxfifo_we);
-        CONNECT(rxfifo, 0, rxfifo.i_wdata, wb_rxfifo_wdata);
-        CONNECT(rxfifo, 0, rxfifo.i_re, w_rxfifo_re);
-        CONNECT(rxfifo, 0, rxfifo.o_rdata, wb_rxfifo_rdata);
-        CONNECT(rxfifo, 0, rxfifo.o_count, wb_rxfifo_count);
-    ENDNEW();
-
-TEXT();
-    txfifo.dbits.setObjValue(&fifo_dbits);
-    txfifo.log2_depth.setObjValue(&log2_fifosz);
-    NEW(txfifo, txfifo.getName().c_str());
-        CONNECT(txfifo, 0, txfifo.i_clk, i_clk);
-        CONNECT(txfifo, 0, txfifo.i_nrst, i_nrst);
-        CONNECT(txfifo, 0, txfifo.i_we, w_txfifo_we);
-        CONNECT(txfifo, 0, txfifo.i_wdata, wb_txfifo_wdata);
-        CONNECT(txfifo, 0, txfifo.i_re, w_txfifo_re);
-        CONNECT(txfifo, 0, txfifo.o_rdata, wb_txfifo_rdata);
-        CONNECT(txfifo, 0, txfifo.o_count, wb_txfifo_count);
-    ENDNEW();
-
     Operation::start(&comb);
     proc_comb();
 }
@@ -141,14 +110,26 @@ TEXT();
 void apb_i2c::proc_comb() {
     TEXT("system bus clock scaler to baudrate:");
     IF (NZ(scaler));
-        IF (EQ(scaler_cnt, DEC(scaler)));
+        IF (EZ(state));
+            SETZERO(scaler_cnt);
+            SETONE(level);
+        ELSIF (EQ(scaler_cnt, DEC(scaler)));
             SETZERO(scaler_cnt);
             SETVAL(level, INV(level));
-            SETVAL(comb.v_posedge, INV(level));
-            SETVAL(comb.v_negedge, (level));
         ELSE();
+            TEXT("The data on the SDA line must remain stable during the");
+            TEXT("HIGH period of the clock pulse.");
             SETVAL(scaler_cnt, INC(scaler_cnt));
+            IF (AND2(EQ(scaler_cnt, setup_time), EZ(level)));
+                SETVAL(comb.v_change_data, INV_L(level));
+                SETVAL(comb.v_latch_data, level);
+            ENDIF();
         ENDIF();
+    ENDIF();
+
+TEXT();
+    IF(NZ(comb.v_change_data));
+        SETVAL(shiftreg, CC2(BITS(shiftreg, 6, 0), i_sda));
     ENDIF();
 
 
@@ -156,50 +137,130 @@ TEXT();
     TEXT("Transmitter's state machine:");
     SWITCH (state);
     CASE(STATE_IDLE);
-        SETONE(sda);
-        SETONE(scl);
-        IF (AND2(NZ(comb.v_posedge), NZ(wb_rxfifo_count)));
+        SETZERO(start);
+        SETVAL(shiftreg, ALLONES());
+        SETVAL(sda_dir, PIN_DIR_OUTPUT);
+        IF (NZ(start));
             TEXT("Start condition SDA goes LOW while SCL is HIGH");
-            SETZERO(sda);
+            SETVAL(shiftreg, CC3(CONST("0", 1), addr, R_nW));
+            SETVAL(state, STATE_START);
+        ENDIF();
+    ENDCASE();
+
+    TEXT();
+    CASE(STATE_START);
+        IF(NZ(comb.v_change_data));
+            SETVAL(bit_cnt, CONST("7", 3));
             SETVAL(state, STATE_HEADER);
         ENDIF();
     ENDCASE();
 
     TEXT();
     CASE(STATE_HEADER);
-        IF(NZ(comb.v_negedge));
-            SETVAL(sda, BIT(shiftreg, 7));
-            SETVAL(shiftreg, CC2(BITS(shiftreg, 6, 0), CONST("0", 1)));
+        IF(NZ(comb.v_change_data));
+            IF (EZ(bit_cnt));
+                SETVAL(sda_dir, PIN_DIR_INPUT);
+                SETVAL(state, STATE_ACK_HEADER);
+            ELSE();
+                SETVAL(bit_cnt, DEC(bit_cnt));
+            ENDIF();
         ENDIF();
     ENDCASE();
 
     TEXT();
     CASE(STATE_ACK_HEADER);
+        IF(NZ(comb.v_latch_data));
+            SETVAL(ack, i_sda);
+        ENDIF();
+        IF(NZ(comb.v_change_data));
+            SETVAL(sda_dir, PIN_DIR_OUTPUT);
+            IF (EZ(ack));
+                SETVAL(bit_cnt, CONST("7", 3));
+                SETVAL(byte_cnt, CONST("1", 4));
+                IF (NZ(R_nW));
+                    SETVAL(state, STATE_RX_DATA);
+                    SETVAL(sda_dir, PIN_DIR_INPUT);
+                ELSE();
+                    SETVAL(shiftreg, BITS(payload, 7, 0));
+                    SETVAL(payload, CC2(CONST("0", 8), BITS(payload, 31, 8)));
+                    SETVAL(state, STATE_TX_DATA);
+                ENDIF();
+            ELSE();
+                SETONE(err_ack_header);
+                SETVAL(state, STATE_STOP);
+            ENDIF();
+        ENDIF();
     ENDCASE();
 
     TEXT();
     CASE(STATE_RX_DATA);
-        SETVAL(state, STATE_ACK_DATA);
+        IF(NZ(comb.v_latch_data));
+            SETVAL(shiftreg, CC2(BITS(shiftreg, 6, 0), i_sda));
+        ENDIF();
+        IF(NZ(comb.v_change_data));
+            IF (EZ(bit_cnt));
+                SETVAL(sda_dir, PIN_DIR_OUTPUT);
+                SETVAL(byte_cnt, DEC(byte_cnt));
+                SETVAL(payload, CC2(BITS(payload, 23, 0), shiftreg));
+                TEXT("A master receiver must signal an end of data to the");
+                TEXT("transmitter by not generating ACK on the last byte");
+                IF(NZ(OR_REDUCE(BITS(byte_cnt, 3, 1))));
+                    SETZERO(shiftreg);
+                ELSE();
+                    SETVAL(shiftreg, ALLONES());
+                ENDIF();
+                SETVAL(state, STATE_ACK_DATA);
+            ELSE();
+                SETVAL(bit_cnt, DEC(bit_cnt));
+            ENDIF();
+        ENDIF();
     ENDCASE();
 
     TEXT();
     CASE(STATE_ACK_DATA);
-        SETVAL(state, STATE_STOP);
+        IF(NZ(comb.v_change_data));
+            IF (EZ(byte_cnt));
+                SETVAL(state, STATE_STOP);
+            ELSE();
+                SETVAL(sda_dir, PIN_DIR_INPUT);
+                SETVAL(state, STATE_RX_DATA);
+            ENDIF();
+        ENDIF();
     ENDCASE();
 
     TEXT();
     CASE (STATE_TX_DATA);
-        SETVAL(state, STATE_WAIT_ACK_DATA);
+        IF(NZ(comb.v_change_data));
+            SETVAL(state, STATE_WAIT_ACK_DATA);
+        ENDIF();
     ENDCASE();
 
     TEXT();
     CASE (STATE_WAIT_ACK_DATA);
-        SETVAL(state, STATE_STOP);
+        IF (NZ(comb.v_latch_data));
+            SETVAL(ack, i_sda);
+        ENDIF();
+        IF(NZ(comb.v_change_data));
+            IF (OR2(NZ(ack), EZ(byte_cnt)));
+                SETVAL(err_ack_data, ack);
+                SETVAL(state, STATE_STOP);
+            ELSE();
+                SETVAL(shiftreg, BITS(payload, 7, 0));
+                SETVAL(payload, CC2(CONST("0", 8), BITS(payload, 31, 8)));
+                SETVAL(state, STATE_TX_DATA);
+            ENDIF();
+        ENDIF();
     ENDCASE();
 
     TEXT();
     CASE (STATE_STOP);
-        SETVAL(state, STATE_IDLE);
+        IF(NZ(comb.v_latch_data));
+            SETVAL(shiftreg, ALLONES());
+        ENDIF();
+        IF(NZ(comb.v_change_data));
+            SETVAL(state, STATE_IDLE);
+            SETVAL(irq, ie);
+        ENDIF();
     ENDCASE();
 
     TEXT();
@@ -214,63 +275,52 @@ TEXT();
     CASE (CONST("0x0", 10), "0x00: scldiv");
         SETVAL(comb.vb_rdata, scaler);
         IF (AND2(NZ(w_req_valid), NZ(w_req_write)));
-            SETVAL(scaler, BITS(wb_req_wdata, 30, 0));
+            SETVAL(scaler, BITS(wb_req_wdata, 15, 0));
+            SETVAL(setup_time, BITS(wb_req_wdata, 31, 16));
             SETZERO(scaler_cnt);
         ENDIF();
-        ENDCASE();
+    ENDCASE();
     CASE (CONST("0x1", 10), "0x04: status");
-        SETBIT(comb.vb_rdata, 0, i_sda, "[0] input SDA data bit");
-        SETBITS(comb.vb_rdata, 7, 1, state, "[7:1] state machine");
-        ENDCASE();
-    CASE (CONST("0x2", 10), "0x8: Tx FIFO Data");
-        SETBIT(comb.vb_rdata, 31, AND_REDUCE(wb_txfifo_count));
+        SETBITS(comb.vb_rdata, 7, 0, state, "[7:0] state machine");
+        SETBIT(comb.vb_rdata, 8, i_sda, "[8] input SDA data bit");
+        SETBIT(comb.vb_rdata, 9, err_ack_header);
+        SETBIT(comb.vb_rdata, 10, err_ack_data);
+        SETBIT(comb.vb_rdata, 12, ie);
+        SETBIT(comb.vb_rdata, 13, irq);
         IF (NZ(w_req_valid));
+            SETZERO(irq, "Reset irq on read");
             IF (NZ(w_req_write));
-                SETVAL(comb.v_txfifo_we, CONST("1", 1));
-                SETVAL(comb.vb_txfifo_wdata, BITS(wb_req_wdata, 7, 0));
+                SETZERO(err_ack_header);
+                SETZERO(err_ack_data);
+                SETVAL(ie, BIT(comb.vb_rdata, 12));
+                SETVAL(irq, BIT(comb.vb_rdata, 13));
             ENDIF();
         ENDIF();
-        ENDCASE();
-    CASE (CONST("0x3", 10), "0xC: Rx FIFO Data");
-        SETBITS(comb.vb_rdata, 7, 0, wb_rxfifo_rdata); 
-        SETBIT(comb.vb_rdata, 31, INV(OR_REDUCE(wb_rxfifo_count)));
+    ENDCASE();
+    CASE (CONST("0x2", 10), "0x8: Addr");
+        SETBIT(comb.vb_rdata, 31, R_nW);
+        SETBITS(comb.vb_rdata, 19, 16, byte_cnt);
+        SETBITS(comb.vb_rdata, 6, 0, addr);
         IF (NZ(w_req_valid));
             IF (NZ(w_req_write));
-                TEXT("do nothing:");
-            ELSE();
-                SETVAL(comb.v_rxfifo_re, CONST("1", 1));
+                SETVAL(R_nW, BIT(wb_req_wdata, 31));
+                SETVAL(byte_cnt, BITS(wb_req_wdata, 19, 16));
+                SETVAL(addr, BITS(wb_req_wdata, 6, 0));
+                SETONE(start);
             ENDIF();
         ENDIF();
-        ENDCASE();
-    CASE (CONST("0x4", 10), "0x10: Tx FIFO Watermark");
-        SETBITS(comb.vb_rdata, DEC(log2_fifosz), CONST("0"), txmark);
+    ENDCASE();
+    CASE (CONST("0x3", 10), "0xC: Payload");
+        SETVAL(comb.vb_rdata, payload); 
         IF (NZ(w_req_valid));
             IF (NZ(w_req_write));
-                SETVAL(txmark, BITS(wb_req_wdata, DEC(log2_fifosz), CONST("0")));
+                SETVAL(payload, wb_req_wdata);
             ENDIF();
         ENDIF();
-        ENDCASE();
-    CASE (CONST("0x5", 10), "0x14: Rx FIFO Watermark");
-        SETBITS(comb.vb_rdata, DEC(log2_fifosz), CONST("0"), rxmark);
-        IF (NZ(w_req_valid));
-            IF (NZ(w_req_write));
-                SETVAL(rxmark, BITS(wb_req_wdata, DEC(log2_fifosz), CONST("0")));
-            ENDIF();
-        ENDIF();
-        ENDCASE();
+    ENDCASE();
     CASEDEF();
-        ENDCASE();
+    ENDCASE();
     ENDSWITCH();
-
-TEXT();
-    //SETVAL(w_rxfifo_we, rx_ready);
-    //SETVAL(wb_rxfifo_wdata, rx_val);
-    SETVAL(w_rxfifo_re, comb.v_rxfifo_re);
-
-TEXT();
-    SETVAL(w_txfifo_we, comb.v_txfifo_we);
-    SETVAL(wb_txfifo_wdata, comb.vb_txfifo_wdata);
-    SETVAL(w_txfifo_re, comb.v_txfifo_re);
 
 TEXT();
     SETVAL(resp_valid, w_req_valid);
@@ -281,7 +331,7 @@ TEXT();
     SYNC_RESET();
 
 TEXT();
-    SETVAL(o_scl, scl);
-    SETVAL(o_sda, sda);
+    SETVAL(o_scl, level);
+    SETVAL(o_sda, BIT(shiftreg, 7));
     SETVAL(o_sda_dir, sda_dir);
 }

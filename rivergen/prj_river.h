@@ -21,6 +21,7 @@
 #include "rtl/rtl_folder.h"
 #include "prj/impl/asic/target_cfg.h"   // top level must be instantiated after rtl
 #include "rtl/internal/pcie_dma/tb/pcie_dma_tb_folder.h"
+#include "rtl/internal/misclib/tb/misclib_tb_folder.h"
 
 using namespace sysvc;
 
@@ -55,6 +56,7 @@ class RiverProject : public ProjectObject {
     prj_folder prj_;
     // Test-benches must be created after all project VIPs created:
     pcie_dma_tb_folder pcie_dma_tb_folder_;     // put into prj/tb
+    misclib_tb_folder misclib_tb_folder_;       // put into prj/tb
 };
 
 

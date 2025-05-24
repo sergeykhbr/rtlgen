@@ -142,6 +142,9 @@ accel_soc::accel_soc(GenObject *parent, const char *name, const char *comment) :
     w_dbg_valid(this, "w_dbg_valid", "1"),
     w_dbg_payload(this, "w_dbg_payload", "64"),
 #endif
+#if GENCFG_HDMI_ENABLE
+    w_irq_i2c0(this, "w_irq_i2c0", "1"),
+#endif
     // submodules:
     bus0(this, "bus0"),
     bus1(this, "bus1"),
@@ -361,6 +364,7 @@ TEXT();
         CONNECT(i2c0, 0, i2c0.o_sda, o_i2c0_sda);
         CONNECT(i2c0, 0, i2c0.o_sda_dir, o_i2c0_sda_dir);
         CONNECT(i2c0, 0, i2c0.i_sda, i_i2c0_sda);
+        CONNECT(i2c0, 0, i2c0.o_irq, w_irq_i2c0);
     ENDNEW();
 #endif
 
@@ -431,7 +435,10 @@ void accel_soc::proc_comb() {
                               CONST("23"),
                               wb_irq_gpio, "FU740: 16 bits, current 12-bits");
     SETBIT(comb.vb_ext_irqs, 39, w_irq_uart1);
-    SETBITS(comb.vb_ext_irqs, 69, 40, ALLZEROS());
+#if GENCFG_HDMI_ENABLE
+    SETBIT(comb.vb_ext_irqs, 40, w_irq_i2c0);
+#endif
+    SETBITS(comb.vb_ext_irqs, 69, 41, ALLZEROS());
     SETBIT(comb.vb_ext_irqs, 70, w_irq_pnp);
     SETBITS(comb.vb_ext_irqs, DEC(SOC_PLIC_IRQ_TOTAL), CONST("71"), ALLZEROS());
     SETVAL(wb_ext_irqs, comb.vb_ext_irqs);
