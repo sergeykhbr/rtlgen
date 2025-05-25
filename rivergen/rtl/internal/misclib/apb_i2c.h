@@ -58,6 +58,7 @@ class apb_i2c : public ModuleObject {
     OutPort o_sda_dir;
     InPort i_sda;
     OutPort o_irq;
+    OutPort o_nreset;
     
     TextLine _state0_;
     ParamLogic STATE_IDLE;
@@ -107,6 +108,7 @@ class apb_i2c : public ModuleObject {
     RegSignal err_ack_data;
     RegSignal irq;
     RegSignal ie;
+    RegSignal nreset;
     RegSignal resp_valid;
     RegSignal resp_rdata;
     RegSignal resp_err;

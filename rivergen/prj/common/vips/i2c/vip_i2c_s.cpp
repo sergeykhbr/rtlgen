@@ -34,8 +34,8 @@ vip_i2c_s::vip_i2c_s(GenObject *parent, const char *name, const char *comment) :
     STATE_TX_DATA(this, "STATE_TX_DATA", "8", "0x20", NO_COMMENT),
     STATE_WAIT_ACK_DATA(this, "STATE_WAIT_ACK_DATA", "8", "0x40", NO_COMMENT),
     _t0_(this),
-    PIN_DIR_INPUT(this, "PIN_DIR_INPUT", "1", "0", NO_COMMENT),
-    PIN_DIR_OUTPUT(this, "PIN_DIR_OUTPUT", "1", "1", NO_COMMENT),
+    PIN_DIR_INPUT(this, "PIN_DIR_INPUT", "1", "1", NO_COMMENT),
+    PIN_DIR_OUTPUT(this, "PIN_DIR_OUTPUT", "1", "0", NO_COMMENT),
     // signals
     // registers
     sda(this, "sda", "1", "1"),
@@ -122,7 +122,7 @@ TEXT();
     CASE(STATE_RX_DATA);
         IF(NZ(comb.v_latch_data));
             IF (EZ(bit_cnt));
-                SETVAL(sda_dir, PIN_DIR_INPUT);
+                SETVAL(sda_dir, PIN_DIR_OUTPUT);
                 SETVAL(state, STATE_ACK_DATA);
             ELSE();
                 SETVAL(bit_cnt, DEC(bit_cnt));

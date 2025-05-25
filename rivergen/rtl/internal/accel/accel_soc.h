@@ -113,6 +113,7 @@ public:
     OutPort o_i2c0_sda;
     OutPort o_i2c0_sda_dir;
     InPort i_i2c0_sda;
+    OutPort o_i2c0_nreset;
 #endif
     TextLine _prci0_;
     OutPort o_dmreset;

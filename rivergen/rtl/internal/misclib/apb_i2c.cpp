@@ -29,6 +29,7 @@ apb_i2c::apb_i2c(GenObject *parent, const char *name, const char *comment) :
     o_sda_dir(this, "o_sda_dir", "1", "Data to control tri-state buffer"),
     i_sda(this, "i_sda", "1", "Tri-state buffer output"),
     o_irq(this, "o_irq", "1", "Interrupt request"),
+    o_nreset(this, "o_nreset", "1", "I2C slave reset. PCA9548 I2C mux must be de-asserted."),
     // params
     _state0_(this, "SPI states"),
     STATE_IDLE(this, "STATE_IDLE", "8", "0x00", NO_COMMENT),
@@ -41,8 +42,8 @@ apb_i2c::apb_i2c(GenObject *parent, const char *name, const char *comment) :
     STATE_WAIT_ACK_DATA(this, "STATE_WAIT_ACK_DATA", "8", "0x40", NO_COMMENT),
     STATE_STOP(this, "STATE_STOP", "8", "0x80", NO_COMMENT),
     _t0_(this),
-    PIN_DIR_INPUT(this, "PIN_DIR_INPUT", "1", "0", NO_COMMENT),
-    PIN_DIR_OUTPUT(this, "PIN_DIR_OUTPUT", "1", "1", NO_COMMENT),
+    PIN_DIR_INPUT(this, "PIN_DIR_INPUT", "1", "1", NO_COMMENT),
+    PIN_DIR_OUTPUT(this, "PIN_DIR_OUTPUT", "1", "0", NO_COMMENT),
     // signals
     w_req_valid(this, "w_req_valid", "1"),
     wb_req_addr(this, "wb_req_addr", "32"),
@@ -77,6 +78,7 @@ apb_i2c::apb_i2c(GenObject *parent, const char *name, const char *comment) :
     err_ack_data(this, "err_ack_data", "1", "0", NO_COMMENT),
     irq(this, "irq", "1", "0", NO_COMMENT),
     ie(this, "ie", "1", "0", NO_COMMENT),
+    nreset(this, "nreset", "1", "0", "Active LOW (by default), could be any"),
     resp_valid(this, "resp_valid", "1"),
     resp_rdata(this, "resp_rdata", "32", "'0", NO_COMMENT),
     resp_err(this, "resp_err", "1"),
@@ -294,20 +296,27 @@ TEXT();
             SETZERO(scaler_cnt);
         ENDIF();
     ENDCASE();
-    CASE (CONST("0x1", 10), "0x04: status");
+    CASE (CONST("0x1", 10), "0x04: control and status");
         SETBITS(comb.vb_rdata, 7, 0, state, "[7:0] state machine");
         SETBIT(comb.vb_rdata, 8, i_sda, "[8] input SDA data bit");
         SETBIT(comb.vb_rdata, 9, err_ack_header);
         SETBIT(comb.vb_rdata, 10, err_ack_data);
-        SETBIT(comb.vb_rdata, 12, ie);
-        SETBIT(comb.vb_rdata, 13, irq);
+        SETBIT(comb.vb_rdata, 12, ie, "[12] Interrupt enable bit: 1=enabled");
+        SETBIT(comb.vb_rdata, 13, irq, "[13] Interrupt pending bit. Clear on read.");
+        SETBIT(comb.vb_rdata, 16, nreset, "[16] 0=unchanged; 1=set HIGH nreset");
+        SETBIT(comb.vb_rdata, 17, nreset, "[17] 0=unchanged; 1=set LOW nreset");
         IF (NZ(w_req_valid));
             SETZERO(irq, "Reset irq on read");
             IF (NZ(w_req_write));
                 SETZERO(err_ack_header);
                 SETZERO(err_ack_data);
-                SETVAL(ie, BIT(comb.vb_rdata, 12));
-                SETVAL(irq, BIT(comb.vb_rdata, 13));
+                SETVAL(ie, BIT(wb_req_wdata, 12));
+                SETVAL(irq, BIT(wb_req_wdata, 13));
+                IF (NZ(BIT(wb_req_wdata, 16)));
+                    SETONE(nreset);
+                ELSIF(NZ(BIT(wb_req_wdata, 17)));
+                    SETZERO(nreset);
+                ENDIF();
             ENDIF();
         ENDIF();
     ENDCASE();
@@ -348,4 +357,5 @@ TEXT();
     SETVAL(o_scl, level);
     SETVAL(o_sda, BIT(shiftreg, 18));
     SETVAL(o_sda_dir, sda_dir);
+    SETVAL(o_nreset, nreset);
 }

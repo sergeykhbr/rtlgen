@@ -69,6 +69,7 @@ public:
     Signal w_o_sda_dir;
     Signal w_i_sda;
     Signal w_o_irq;
+    Signal w_o_nreset;
     Signal w_hdmi_sda_dir;
     Logic wb_clk_cnt;
 

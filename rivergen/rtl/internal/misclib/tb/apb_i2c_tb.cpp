@@ -31,6 +31,7 @@ apb_i2c_tb::apb_i2c_tb(GenObject *parent, const char *name) :
     w_o_sda_dir(this, "w_o_sda_dir", "1", NO_COMMENT),
     w_i_sda(this, "w_i_sda", "1", NO_COMMENT),
     w_o_irq(this, "w_o_irq", "1", NO_COMMENT),
+    w_o_nreset(this, "w_o_nreset", "1", NO_COMMENT),
     w_hdmi_sda_dir(this, "w_hdmi_sda_dir", "1", NO_COMMENT),
     wb_clk_cnt(this, "wb_clk_cnt", "32", "'0", NO_COMMENT),
     // submodules:
@@ -72,6 +73,7 @@ TEXT();
         CONNECT(tt, 0, tt.o_sda_dir, w_o_sda_dir);
         CONNECT(tt, 0, tt.i_sda, w_i_sda);
         CONNECT(tt, 0, tt.o_irq, w_o_irq);
+        CONNECT(tt, 0, tt.o_nreset, w_o_nreset);
     ENDNEW();
 
     Operation::start(&comb);
@@ -114,8 +116,17 @@ void apb_i2c_tb::test_proc() {
         SETVAL(test.vb_pslvi.pwdata, CONST("0x320064", 32));
         SETVAL(test.vb_pslvi.pstrb, CONST("0xF", 4));
     ENDCASE();
+    CASE(CONST("30"), "De-assert nreset signal");
+        SETVAL(test.vb_pslvi.paddr, CONST("0x4", 32));
+        SETVAL(test.vb_pslvi.pprot, CONST("0", 3));
+        SETONE(test.vb_pslvi.pselx);
+        SETONE(test.vb_pslvi.penable);
+        SETONE(test.vb_pslvi.pwrite);
+        SETVAL(test.vb_pslvi.pwdata, CONST("0x00010000", 32), "[16] set HIGH nreset");
+        SETVAL(test.vb_pslvi.pstrb, CONST("0xF", 4));
+    ENDCASE();
     TEXT("Write I2C payload");
-    CASE(CONST("30"));
+    CASE(CONST("40"));
         SETVAL(test.vb_pslvi.paddr, CONST("0xC", 32));
         SETVAL(test.vb_pslvi.pprot, CONST("0", 3));
         SETONE(test.vb_pslvi.pselx);
@@ -124,9 +135,8 @@ void apb_i2c_tb::test_proc() {
         SETVAL(test.vb_pslvi.pwdata, CONST("0xc020", 32), "[7:0]Select channel 5 (HDMI)");
         SETVAL(test.vb_pslvi.pstrb, CONST("0xF", 4));
     ENDCASE();
-
     TEXT("Start write sequence");
-    CASE(CONST("40"));
+    CASE(CONST("50"));
         SETVAL(test.vb_pslvi.paddr, CONST("0x8", 32));
         SETVAL(test.vb_pslvi.pprot, CONST("0", 3));
         SETONE(test.vb_pslvi.pselx);

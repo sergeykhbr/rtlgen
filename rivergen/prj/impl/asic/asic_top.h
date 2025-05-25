@@ -77,6 +77,7 @@ public:
     TextLine _i2c0_;
     OutPort o_i2c0_scl;
     IoPort io_i2c0_sda;
+    OutPort o_i2c0_nreset;
 #endif
 
     // Param
@@ -109,6 +110,7 @@ public:
     Signal ob_i2c0_sda;
     Signal ob_i2c0_sda_direction;
     Signal ib_i2c0_sda;
+    Signal ob_i2c0_nreset;
 #endif
 
     Signal w_sys_rst;
@@ -160,6 +162,7 @@ public:
 #endif
 #if GENCFG_HDMI_ENABLE
     obuf_tech oi2c0scl;
+    obuf_tech oi2c0nreset;
     iobuf_tech ioi2c0sda;
 #endif
     SysPLL_tech pll0;

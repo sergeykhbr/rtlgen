@@ -69,6 +69,7 @@ accel_soc::accel_soc(GenObject *parent, const char *name, const char *comment) :
     o_i2c0_sda(this, "o_i2c0_sda", "1", "I2C output data"),
     o_i2c0_sda_dir(this, "o_i2c0_sda_dir", "1", "output data tri-stte buffer control"),
     i_i2c0_sda(this, "i_i2c0_sda", "1", "I2C input data"),
+    o_i2c0_nreset(this, "o_i2c0_nreset", "1", "I2C slave reset. PCA9548 I2C mux must be de-asserted."),
 #endif
     _prci0_(this, "PLL and Reset interfaces:"),
     o_dmreset(this, "o_dmreset", "1", "Debug reset request. Everything except DMI."),
@@ -365,6 +366,7 @@ TEXT();
         CONNECT(i2c0, 0, i2c0.o_sda_dir, o_i2c0_sda_dir);
         CONNECT(i2c0, 0, i2c0.i_sda, i_i2c0_sda);
         CONNECT(i2c0, 0, i2c0.o_irq, w_irq_i2c0);
+        CONNECT(i2c0, 0, i2c0.o_nreset, o_i2c0_nreset);
     ENDNEW();
 #endif
 

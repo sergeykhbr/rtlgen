@@ -39,6 +39,10 @@ asic_top_tb::asic_top_tb(GenObject *parent, const char *name) :
 #if GENCFG_HDMI_ENABLE
     w_i2c_scl(this, "w_i2c_scl", "1", RSTVAL_ZERO, NO_COMMENT),
     w_i2c_sda(this, "w_i2c_sda", "1", RSTVAL_ZERO, NO_COMMENT),
+    w_i2c_nreset(this, "w_i2c_nreset", "1", RSTVAL_ZERO, NO_COMMENT),
+    w_bufo_i2c0_sda(this, "w_bufo_i2c0_sda", "1", RSTVAL_ZERO, NO_COMMENT),
+    w_vipo_i2c0_sda(this, "w_vipo_i2c0_sda", "1", RSTVAL_ZERO, NO_COMMENT),
+    w_vipo_i2c0_sda_dir(this, "w_vipo_i2c0_sda_dir", "1", RSTVAL_ZERO, NO_COMMENT),
 #endif
     wb_clk_cnt(this, "wb_clk_cnt", "32", "'0", NO_COMMENT),
 #if GENCFG_SD_CTRL_ENABLE
@@ -49,6 +53,10 @@ asic_top_tb::asic_top_tb(GenObject *parent, const char *name) :
     clk0(this, "clk0", NO_COMMENT),
     uart1(this, "uart1", NO_COMMENT),
 #if GENCFG_SD_CTRL_ENABLE
+#endif
+#if GENCFG_HDMI_ENABLE
+    iosda0(this, "iosda0", NO_COMMENT),
+    i2c0(this, "i2c0", NO_COMMENT),
 #endif
     tt(this, "tt", NO_COMMENT),
     // processes:
@@ -61,6 +69,26 @@ asic_top_tb::asic_top_tb(GenObject *parent, const char *name) :
     NEW(clk0, clk0.getName().c_str());
         CONNECT(clk0, 0, clk0.o_clk, w_sclk_p);
     ENDNEW();
+
+#if GENCFG_HDMI_ENABLE
+TEXT();
+    NEW(iosda0, iosda0.getName().c_str());
+        CONNECT(iosda0, 0, iosda0.io, w_i2c_sda);
+        CONNECT(iosda0, 0, iosda0.i, w_vipo_i2c0_sda);
+        CONNECT(iosda0, 0, iosda0.o, w_bufo_i2c0_sda);
+        CONNECT(iosda0, 0, iosda0.t, w_vipo_i2c0_sda_dir);
+    ENDNEW();
+
+TEXT();
+    NEW(i2c0, i2c0.getName().c_str());
+        CONNECT(i2c0, 0, i2c0.i_nrst, w_nrst);
+        CONNECT(i2c0, 0, i2c0.i_clk, w_sclk_p);
+        CONNECT(i2c0, 0, i2c0.i_scl, w_i2c_scl);
+        CONNECT(i2c0, 0, i2c0.i_sda, w_bufo_i2c0_sda);
+        CONNECT(i2c0, 0, i2c0.o_sda, w_vipo_i2c0_sda);
+        CONNECT(i2c0, 0, i2c0.o_sda_dir, w_vipo_i2c0_sda_dir);
+    ENDNEW();
+#endif
 
 TEXT();
     uart1.async_reset.setObjValue(new DecConst(1));
@@ -93,6 +121,7 @@ TEXT();
 #if GENCFG_HDMI_ENABLE
         CONNECT(tt, 0, tt.o_i2c0_scl, w_i2c_scl);
         CONNECT(tt, 0, tt.io_i2c0_sda, w_i2c_sda);
+        CONNECT(tt, 0, tt.o_i2c0_nreset, w_i2c_nreset);
 #endif
 #if GENCFG_SD_CTRL_ENABLE
 #endif

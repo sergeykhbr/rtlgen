@@ -52,6 +52,7 @@ asic_top::asic_top(GenObject *parent, const char *name, const char *comment) :
     _i2c0_(this, "I2C master inerface to HDMI transmitter:"),
     o_i2c0_scl(this, "o_i2c0_scl", "1", "I2C clock upto 400 kHz (default 100 kHz)"),
     io_i2c0_sda(this, "io_i2c0_sda", "1", "I2C bi-directional data"),
+    o_i2c0_nreset(this, "o_i2c0_nreset", "1", "I2C slave reset. PCA9548 I2C mux must be de-asserted."),
 #endif
     // param
     //gpio_signal_vector_def_(this, ""),
@@ -82,6 +83,7 @@ asic_top::asic_top(GenObject *parent, const char *name, const char *comment) :
     ob_i2c0_sda(this, "ob_i2c0_sda", "1"),
     ob_i2c0_sda_direction(this, "ob_i2c0_sda_direction", "1"),
     ib_i2c0_sda(this, "ib_i2c0_sda", "1"),
+    ob_i2c0_nreset(this, "ob_i2c0_nreset", "1"),
 #endif
     w_sys_rst(this, "w_sys_rst", "1"),
     w_sys_nrst(this, "w_sys_nrst", "1"),
@@ -126,6 +128,7 @@ asic_top::asic_top(GenObject *parent, const char *name, const char *comment) :
 #endif
 #if GENCFG_HDMI_ENABLE
     oi2c0scl(this, "oi2c0scl", NO_COMMENT),
+    oi2c0nreset(this, "oi2c0nreset", NO_COMMENT),
     ioi2c0sda(this, "ioi2c0sda", NO_COMMENT),
 #endif
     pll0(this, "pll0", NO_COMMENT),
@@ -188,6 +191,12 @@ TEXT();
     NEW(oi2c0scl, oi2c0scl.getName().c_str());
         CONNECT(oi2c0scl, 0, oi2c0scl.i, ob_i2c0_scl);
         CONNECT(oi2c0scl, 0, oi2c0scl.o, o_i2c0_scl);
+    ENDNEW();
+
+TEXT();
+    NEW(oi2c0nreset, oi2c0nreset.getName().c_str());
+        CONNECT(oi2c0nreset, 0, oi2c0nreset.i, ob_i2c0_nreset);
+        CONNECT(oi2c0nreset, 0, oi2c0nreset.o, o_i2c0_nreset);
     ENDNEW();
 
 TEXT();
@@ -274,6 +283,7 @@ TEXT();
         CONNECT(soc0, 0, soc0.i_i2c0_sda, ib_i2c0_sda);
         CONNECT(soc0, 0, soc0.o_i2c0_sda, ob_i2c0_sda);
         CONNECT(soc0, 0, soc0.o_i2c0_sda_dir, ob_i2c0_sda_direction);
+        CONNECT(soc0, 0, soc0.o_i2c0_nreset, ob_i2c0_nreset);
 #endif
         CONNECT(soc0, 0, soc0.o_dmreset, w_dmreset);
         CONNECT(soc0, 0, soc0.o_prci_pmapinfo, prci_pmapinfo);
