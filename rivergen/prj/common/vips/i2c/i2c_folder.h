@@ -1,5 +1,5 @@
 // 
-//  Copyright 2023 Sergey Khabarov, sergeykhbr@gmail.com
+//  Copyright 2025 Sergey Khabarov, sergeykhbr@gmail.com
 // 
 //  Licensed under the Apache License, Version 2.0 (the "License");
 //  you may not use this file except in compliance with the License.
@@ -17,28 +17,18 @@
 #pragma once
 
 #include <api_rtlgen.h>
-#include "clk/clk_folder.h"
-#include "sdcard/sdcard_folder.h"
-#include "uart/uart_folder.h"
-#include "spi/spi_folder.h"
-#include "i2c/i2c_folder.h"
+#include "vip_i2c_s.h"
 
-class vips_folder : public FolderObject {
-  public:
-    vips_folder(GenObject *parent) :
-        FolderObject(parent, "vips"),
-        clk_folder_(this),
-        sdcard_folder_(this),
-        uart_folder_(this),
-        spi_folder_(this),
-        i2c_folder_(this) {}
+class i2c_folder : public FolderObject {
+ public:
+    i2c_folder(GenObject *parent) :
+        FolderObject(parent, "i2c"),
+        vip_i2c_s_file_(this) {}
+
+    virtual std::string getLibName() override { return getName(); }
 
  protected:
     // subfolders:
-    clk_folder clk_folder_;
-    sdcard_folder sdcard_folder_;
-    uart_folder uart_folder_;
-    spi_folder spi_folder_;
-    i2c_folder i2c_folder_;
     // files
+    vip_i2c_s_file vip_i2c_s_file_;
 };

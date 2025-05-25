@@ -31,9 +31,11 @@ apb_i2c_tb::apb_i2c_tb(GenObject *parent, const char *name) :
     w_o_sda_dir(this, "w_o_sda_dir", "1", NO_COMMENT),
     w_i_sda(this, "w_i_sda", "1", NO_COMMENT),
     w_o_irq(this, "w_o_irq", "1", NO_COMMENT),
+    w_hdmi_sda_dir(this, "w_hdmi_sda_dir", "1", NO_COMMENT),
     wb_clk_cnt(this, "wb_clk_cnt", "32", "'0", NO_COMMENT),
     // submodules:
     clk0(this, "clk0", NO_COMMENT),
+    hdmi(this, "hdmi", NO_COMMENT),
     tt(this, "tt", NO_COMMENT),
     // processes:
     comb(this),
@@ -47,6 +49,15 @@ apb_i2c_tb::apb_i2c_tb(GenObject *parent, const char *name) :
         CONNECT(clk0, 0, clk0.o_clk, i_clk);
     ENDNEW();
 
+TEXT();
+    NEW(hdmi, hdmi.getName().c_str());
+        CONNECT(hdmi, 0, hdmi.i_nrst, i_nrst);
+        CONNECT(hdmi, 0, hdmi.i_clk, i_clk);
+        CONNECT(hdmi, 0, hdmi.i_scl, w_o_scl);
+        CONNECT(hdmi, 0, hdmi.i_sda, w_o_sda);
+        CONNECT(hdmi, 0, hdmi.o_sda, w_i_sda);
+        CONNECT(hdmi, 0, hdmi.o_sda_dir, w_hdmi_sda_dir);
+    ENDNEW();
 
 TEXT();
     NEW(tt, tt.getName().c_str());
@@ -135,6 +146,15 @@ void apb_i2c_tb::test_proc() {
         SETVAL(test.vb_pslvi.pwdata, CONST("0x80020074", 32), "[31]1=read, [19:16]byte_cnt,[6:0]addr");
         SETVAL(test.vb_pslvi.pstrb, CONST("0xF", 4));
     ENDCASE();
+    CASE(CONST("18000"), "Read payload through APB");
+        SETVAL(test.vb_pslvi.paddr, CONST("0xC", 32));
+        SETVAL(test.vb_pslvi.pprot, CONST("0", 3));
+        SETONE(test.vb_pslvi.pselx);
+        SETONE(test.vb_pslvi.penable);
+        SETZERO(test.vb_pslvi.pwrite);
+        SETZERO(test.vb_pslvi.pwdata);
+        SETZERO(test.vb_pslvi.pstrb);
+    ENDCASE();
 
     TEXT();
     CASEDEF();
@@ -142,7 +162,6 @@ void apb_i2c_tb::test_proc() {
     ENDSWITCH();
 
     TEXT();
-    SETZERO(w_i_sda);
     SETVAL(wb_i_apbi, test.vb_pslvi);
 }
 

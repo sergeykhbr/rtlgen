@@ -19,6 +19,7 @@
 #include <api_rtlgen.h>
 #include <genconfig.h>
 #include "../../../../prj/common/vips/clk/vip_clk.h"
+#include "../../../../prj/common/vips/i2c/vip_i2c_s.h"
 #include "../../misclib/apb_i2c.h"
 
 using namespace sysvc;
@@ -68,10 +69,12 @@ public:
     Signal w_o_sda_dir;
     Signal w_i_sda;
     Signal w_o_irq;
+    Signal w_hdmi_sda_dir;
     Logic wb_clk_cnt;
 
     // Sub-module instances:
     vip_clk clk0;
+    vip_i2c_s hdmi;
     apb_i2c tt;
 
     CombProcess comb;
