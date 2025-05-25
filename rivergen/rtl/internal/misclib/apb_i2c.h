@@ -99,6 +99,7 @@ class apb_i2c : public ModuleObject {
     RegSignal start;
     RegSignal sda_dir;
     RegSignal shiftreg;
+    RegSignal rxbyte;
     RegSignal bit_cnt;
     RegSignal byte_cnt;
     RegSignal ack;

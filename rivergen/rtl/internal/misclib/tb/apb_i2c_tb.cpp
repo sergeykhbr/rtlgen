@@ -87,6 +87,12 @@ void apb_i2c_tb::test_proc() {
 
     TEXT();
     SETVAL(test.vb_pslvi, glob_types_amba_->apb_in_none);
+    SETVAL(test.vb_pslvi.penable, wb_i_apbi.penable);
+    IF(NZ(wb_o_apbo.pready));
+        SETZERO(test.vb_pslvi.penable);
+    ENDIF();
+
+    TEXT();
     SWITCH(wb_clk_cnt);
     CASE(CONST("20"));
         SETVAL(test.vb_pslvi.paddr, CONST("0x0", 32));
@@ -94,7 +100,39 @@ void apb_i2c_tb::test_proc() {
         SETONE(test.vb_pslvi.pselx);
         SETONE(test.vb_pslvi.penable);
         SETONE(test.vb_pslvi.pwrite);
-        SETVAL(test.vb_pslvi.pwdata, CONST("100", 32));
+        SETVAL(test.vb_pslvi.pwdata, CONST("0x320064", 32));
+        SETVAL(test.vb_pslvi.pstrb, CONST("0xF", 4));
+    ENDCASE();
+    TEXT("Write I2C payload");
+    CASE(CONST("30"));
+        SETVAL(test.vb_pslvi.paddr, CONST("0xC", 32));
+        SETVAL(test.vb_pslvi.pprot, CONST("0", 3));
+        SETONE(test.vb_pslvi.pselx);
+        SETONE(test.vb_pslvi.penable);
+        SETONE(test.vb_pslvi.pwrite);
+        SETVAL(test.vb_pslvi.pwdata, CONST("0xc020", 32), "[7:0]Select channel 5 (HDMI)");
+        SETVAL(test.vb_pslvi.pstrb, CONST("0xF", 4));
+    ENDCASE();
+
+    TEXT("Start write sequence");
+    CASE(CONST("40"));
+        SETVAL(test.vb_pslvi.paddr, CONST("0x8", 32));
+        SETVAL(test.vb_pslvi.pprot, CONST("0", 3));
+        SETONE(test.vb_pslvi.pselx);
+        SETONE(test.vb_pslvi.penable);
+        SETONE(test.vb_pslvi.pwrite);
+        SETVAL(test.vb_pslvi.pwdata, CONST("0x00020074", 32), "[31]0=write, [19:16]byte_cnt,[6:0]addr");
+        SETVAL(test.vb_pslvi.pstrb, CONST("0xF", 4));
+    ENDCASE();
+
+    TEXT("Start Read sequence");
+    CASE(CONST("10000"));
+        SETVAL(test.vb_pslvi.paddr, CONST("0x8", 32));
+        SETVAL(test.vb_pslvi.pprot, CONST("0", 3));
+        SETONE(test.vb_pslvi.pselx);
+        SETONE(test.vb_pslvi.penable);
+        SETONE(test.vb_pslvi.pwrite);
+        SETVAL(test.vb_pslvi.pwdata, CONST("0x80020074", 32), "[31]1=read, [19:16]byte_cnt,[6:0]addr");
         SETVAL(test.vb_pslvi.pstrb, CONST("0xF", 4));
     ENDCASE();
 

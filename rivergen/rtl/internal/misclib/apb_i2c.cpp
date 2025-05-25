@@ -68,7 +68,8 @@ apb_i2c::apb_i2c(GenObject *parent, const char *name, const char *comment) :
     state(this, "state", "8", "STATE_IDLE"),
     start(this, "start", "1", RSTVAL_ZERO, NO_COMMENT),
     sda_dir(this, "sda_dir", "1", "PIN_DIR_OUTPUT", NO_COMMENT),
-    shiftreg(this, "shiftreg", "8", "'1", NO_COMMENT),
+    shiftreg(this, "shiftreg", "19", "'1", "1start+7adr+1rw+1ack+8data+ack"),
+    rxbyte(this, "rxbyte", "8", "'0", NO_COMMENT),
     bit_cnt(this, "bit_cnt", "3", "'0", NO_COMMENT),
     byte_cnt(this, "byte_cnt", "4", "'0", NO_COMMENT),
     ack(this, "ack", "1", "0", NO_COMMENT),
@@ -120,7 +121,7 @@ void apb_i2c::proc_comb() {
             TEXT("The data on the SDA line must remain stable during the");
             TEXT("HIGH period of the clock pulse.");
             SETVAL(scaler_cnt, INC(scaler_cnt));
-            IF (AND2(EQ(scaler_cnt, setup_time), EZ(level)));
+            IF (EQ(scaler_cnt, setup_time));
                 SETVAL(comb.v_change_data, INV_L(level));
                 SETVAL(comb.v_latch_data, level);
             ENDIF();
@@ -129,7 +130,10 @@ void apb_i2c::proc_comb() {
 
 TEXT();
     IF(NZ(comb.v_change_data));
-        SETVAL(shiftreg, CC2(BITS(shiftreg, 6, 0), i_sda));
+        SETVAL(shiftreg, CC2(BITS(shiftreg, 17, 0), CONST("1", 1)));
+    ENDIF();
+    IF(NZ(comb.v_latch_data));
+        SETVAL(rxbyte, CC2(BITS(rxbyte, 6, 0), i_sda));
     ENDIF();
 
 
@@ -142,7 +146,13 @@ TEXT();
         SETVAL(sda_dir, PIN_DIR_OUTPUT);
         IF (NZ(start));
             TEXT("Start condition SDA goes LOW while SCL is HIGH");
-            SETVAL(shiftreg, CC3(CONST("0", 1), addr, R_nW));
+            SETVAL(shiftreg, CCx(6, &CONST("0", 1),
+                                    &addr,
+                                    &R_nW,
+                                    &CONST("0", 1),
+                                    &BITS(payload, 7, 0),
+                                    &CONST("1", 1)));
+            SETVAL(payload, CC2(CONST("0", 8), BITS(payload, 31, 8)));
             SETVAL(state, STATE_START);
         ENDIF();
     ENDCASE();
@@ -176,13 +186,10 @@ TEXT();
             SETVAL(sda_dir, PIN_DIR_OUTPUT);
             IF (EZ(ack));
                 SETVAL(bit_cnt, CONST("7", 3));
-                SETVAL(byte_cnt, CONST("1", 4));
                 IF (NZ(R_nW));
                     SETVAL(state, STATE_RX_DATA);
                     SETVAL(sda_dir, PIN_DIR_INPUT);
                 ELSE();
-                    SETVAL(shiftreg, BITS(payload, 7, 0));
-                    SETVAL(payload, CC2(CONST("0", 8), BITS(payload, 31, 8)));
                     SETVAL(state, STATE_TX_DATA);
                 ENDIF();
             ELSE();
@@ -194,14 +201,11 @@ TEXT();
 
     TEXT();
     CASE(STATE_RX_DATA);
-        IF(NZ(comb.v_latch_data));
-            SETVAL(shiftreg, CC2(BITS(shiftreg, 6, 0), i_sda));
-        ENDIF();
         IF(NZ(comb.v_change_data));
             IF (EZ(bit_cnt));
                 SETVAL(sda_dir, PIN_DIR_OUTPUT);
                 SETVAL(byte_cnt, DEC(byte_cnt));
-                SETVAL(payload, CC2(BITS(payload, 23, 0), shiftreg));
+                SETVAL(payload, CC2(BITS(payload, 23, 0), rxbyte));
                 TEXT("A master receiver must signal an end of data to the");
                 TEXT("transmitter by not generating ACK on the last byte");
                 IF(NZ(OR_REDUCE(BITS(byte_cnt, 3, 1))));
@@ -222,6 +226,7 @@ TEXT();
             IF (EZ(byte_cnt));
                 SETVAL(state, STATE_STOP);
             ELSE();
+                SETVAL(bit_cnt, CONST("7", 3));
                 SETVAL(sda_dir, PIN_DIR_INPUT);
                 SETVAL(state, STATE_RX_DATA);
             ENDIF();
@@ -231,7 +236,16 @@ TEXT();
     TEXT();
     CASE (STATE_TX_DATA);
         IF(NZ(comb.v_change_data));
-            SETVAL(state, STATE_WAIT_ACK_DATA);
+            IF (EZ(bit_cnt));
+                SETZERO(shiftreg, "set LOW to generate STOP ocndition if last byte");
+                SETVAL(sda_dir, PIN_DIR_INPUT);
+                SETVAL(state, STATE_WAIT_ACK_DATA);
+                IF (NZ(byte_cnt));
+                    SETVAL(byte_cnt, DEC(byte_cnt));
+                ENDIF();
+            ELSE();
+                SETVAL(bit_cnt, DEC(bit_cnt));
+            ENDIF();
         ENDIF();
     ENDCASE();
 
@@ -241,11 +255,13 @@ TEXT();
             SETVAL(ack, i_sda);
         ENDIF();
         IF(NZ(comb.v_change_data));
+            SETVAL(sda_dir, PIN_DIR_OUTPUT);
             IF (OR2(NZ(ack), EZ(byte_cnt)));
                 SETVAL(err_ack_data, ack);
                 SETVAL(state, STATE_STOP);
             ELSE();
-                SETVAL(shiftreg, BITS(payload, 7, 0));
+                SETVAL(bit_cnt, CONST("7", 3));
+                SETVAL(shiftreg, CC2(BITS(payload, 7, 0), CONST("0x7FF", 11)));
                 SETVAL(payload, CC2(CONST("0", 8), BITS(payload, 31, 8)));
                 SETVAL(state, STATE_TX_DATA);
             ENDIF();
@@ -256,8 +272,6 @@ TEXT();
     CASE (STATE_STOP);
         IF(NZ(comb.v_latch_data));
             SETVAL(shiftreg, ALLONES());
-        ENDIF();
-        IF(NZ(comb.v_change_data));
             SETVAL(state, STATE_IDLE);
             SETVAL(irq, ie);
         ENDIF();
@@ -332,6 +346,6 @@ TEXT();
 
 TEXT();
     SETVAL(o_scl, level);
-    SETVAL(o_sda, BIT(shiftreg, 7));
+    SETVAL(o_sda, BIT(shiftreg, 18));
     SETVAL(o_sda_dir, sda_dir);
 }
