@@ -29,6 +29,9 @@
 #if GENCFG_PCIE_ENABLE
     #include "pcie_dma/pcie_dma_folder.h"
 #endif
+#if GENCFG_HDMI_ENABLE
+    #include "hdmilib/hdmilib_folder.h"
+#endif
 #if CONFIG_RISCV_VHDL
     #include "gencpu64/gencpu64_folder.h"        // riscv_soc: generic 64-bits CPU
 #endif
@@ -53,6 +56,9 @@ class internal_folder : public FolderObject {
 #if GENCFG_PCIE_ENABLE
         ,pcie_dma_folder_(this)
 #endif
+#if GENCFG_HDMI_ENABLE
+        ,hdmilib_folder_(this)
+#endif
         //mincpu32_folder_(this),
 #if CONFIG_RISCV_VHDL
         ,gencpu64_folder_(this)
@@ -74,6 +80,9 @@ class internal_folder : public FolderObject {
 #endif
 #if GENCFG_PCIE_ENABLE
     pcie_dma_folder pcie_dma_folder_;
+#endif
+#if GENCFG_HDMI_ENABLE
+    hdmilib_folder hdmilib_folder_;
 #endif
     // files
 #if CONFIG_RISCV_VHDL
