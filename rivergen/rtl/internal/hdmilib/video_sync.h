@@ -40,15 +40,15 @@ class video_sync : public ModuleObject {
     DefParamI32D H_FRONT;
     DefParamI32D H_SYNC;
     DefParamI32D H_BACK;
-    DefParamI32D H_TOTAL;
     DefParamI32D V_ACTIVE;
     DefParamI32D V_FRONT;
     DefParamI32D V_SYNC;
     DefParamI32D V_BACK;
-    DefParamI32D V_TOTAL;
+    ParamI32D H_TOTAL;
+    ParamI32D V_TOTAL;
     // io:
-    InPort i_clk;
     InPort i_nrst;
+    InPort i_clk;
     OutPort o_hsync;
     OutPort o_vsync;
     OutPort o_de;

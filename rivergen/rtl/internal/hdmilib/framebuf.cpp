@@ -18,28 +18,29 @@
 
 framebuf::framebuf(GenObject *parent, const char *name, const char *comment) :
     ModuleObject(parent, "framebuf", name, comment),
-    i_clk(this, "i_clk", "1", "CPU clock"),
     i_nrst(this, "i_nrst", "1", "Reset: active LOW"),
+    i_clk(this, "i_clk", "1", "CPU clock"),
     i_hsync(this, "i_hsync", "1", "Horizontal sync"),
     i_vsync(this, "i_vsync", "1", "Vertical sync"),
     i_de(this, "i_de", "1", "data enable"),
-    i_x(this, "", "11", "x-pixel"),
-    i_y(this, "", "10", "y-pixel"),
+    i_x(this, "i_x", "11", "x-pixel"),
+    i_y(this, "i_y", "10", "y-pixel"),
     o_hsync(this, "o_hsync", "1", "delayed horizontal sync"),
     o_vsync(this, "o_vsync", "1", "delayed vertical sync"),
     o_de(this, "o_de", "1", "delayed data enable"),
-    o_YCbCr0(this, "o_YCbCr0", "16", "YCbCr odd pixel"),
-    o_YCbCr1(this, "o_YCbCr1", "16", "YCbCr even pixel"),
+    o_YCbCr(this, "o_YCbCr", "18", "YCbCr multiplexed odd/even pixels"),
     // params
     // signals
     // registers
-    h_sync(this, "h_sync", "1", RSTVAL_ZERO, NO_COMMENT),
-    v_sync(this, "v_sync", "1", RSTVAL_ZERO, NO_COMMENT),
-    de(this, "de", "1", RSTVAL_ZERO, NO_COMMENT),
+    pix_x0(this, "pix_x0", "1", RSTVAL_ZERO, NO_COMMENT),
+    h_sync(this, "h_sync", "2", RSTVAL_ZERO, NO_COMMENT),
+    v_sync(this, "v_sync", "2", RSTVAL_ZERO, NO_COMMENT),
+    de(this, "de", "2", RSTVAL_ZERO, NO_COMMENT),
     Y0(this, "Y0", "8", RSTVAL_ZERO, NO_COMMENT),
     Y1(this, "Y1", "8", RSTVAL_ZERO, NO_COMMENT),
     Cb(this, "Cb", "8", RSTVAL_ZERO, NO_COMMENT),
     Cr(this, "Cr", "8", RSTVAL_ZERO, NO_COMMENT),
+    YCbCr(this, "YCbCr", "16", "'0", NO_COMMENT),
     //
     comb(this)
 {
@@ -51,9 +52,10 @@ framebuf::framebuf(GenObject *parent, const char *name, const char *comment) :
 
 void framebuf::proc_comb() {
     TEXT("delayed signals:");
-    SETVAL(de, i_de);
-    SETVAL(h_sync, i_hsync);
-    SETVAL(v_sync, i_vsync);
+    SETVAL(de, CC2(BIT(de, 0), i_de));
+    SETVAL(h_sync, CC2(BIT(h_sync, 0), i_hsync));
+    SETVAL(v_sync, CC2(BIT(v_sync, 0), i_vsync));
+    SETVAL(pix_x0, BIT(i_x, 0));
 
     IF (LS(i_x, CONST("170", 11)));
         TEXT("White");
@@ -106,13 +108,20 @@ void framebuf::proc_comb() {
     ENDIF();
 
     TEXT();
-    SYNC_RESET(this);
+    TEXT("See style 1 output:");
+    IF (EZ(pix_x0));
+        SETVAL(YCbCr, CC2(Y1, Cb));
+    ELSE();
+        SETVAL(YCbCr, CC2(Y1, Cr));
+    ENDIF();
+
+    TEXT();
+    SYNC_RESET();
 
     TEXT();
     SETVAL(o_hsync, h_sync);
     SETVAL(o_vsync, v_sync);
     SETVAL(o_de, de);
-    SETVAL(o_YCbCr0, CC2(Y0, Cb));
-    SETVAL(o_YCbCr1, CC2(Y1, Cr));
+    SETVAL(o_YCbCr, CC2(CONST("0", 2), YCbCr));
 }
 

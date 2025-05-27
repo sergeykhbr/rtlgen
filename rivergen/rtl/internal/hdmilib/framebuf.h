@@ -37,8 +37,8 @@ class framebuf : public ModuleObject {
 
  public:
     // io:
-    InPort i_clk;
     InPort i_nrst;
+    InPort i_clk;
     InPort i_hsync;
     InPort i_vsync;
     InPort i_de;
@@ -47,9 +47,9 @@ class framebuf : public ModuleObject {
     OutPort o_hsync;
     OutPort o_vsync;
     OutPort o_de;
-    OutPort o_YCbCr0;
-    OutPort o_YCbCr1;
+    OutPort o_YCbCr;
 
+    RegSignal pix_x0;;
     RegSignal h_sync;
     RegSignal v_sync;
     RegSignal de;
@@ -57,6 +57,7 @@ class framebuf : public ModuleObject {
     RegSignal Y1;
     RegSignal Cb;
     RegSignal Cr;
+    RegSignal YCbCr;
 
     CombProcess comb;
 };

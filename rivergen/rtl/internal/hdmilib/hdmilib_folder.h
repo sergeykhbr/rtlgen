@@ -18,6 +18,7 @@
 
 #include <api_rtlgen.h>
 #include "video_sync.h"
+#include "framebuf.h"
 #include "hdmi_top.h"
 
 class hdmilib_folder : public FolderObject {
@@ -25,9 +26,11 @@ class hdmilib_folder : public FolderObject {
     hdmilib_folder(GenObject *parent) :
         FolderObject(parent, "hdmilib"),
         video_sync_file_(this),
+        framebuf_file_(this),
         hdmi_top_file_(this) {}
 
  protected:
     video_sync_file video_sync_file_;
+    framebuf_file framebuf_file_;
     hdmi_top_file hdmi_top_file_;
 };

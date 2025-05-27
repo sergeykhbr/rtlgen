@@ -70,6 +70,14 @@ accel_soc::accel_soc(GenObject *parent, const char *name, const char *comment) :
     o_i2c0_sda_dir(this, "o_i2c0_sda_dir", "1", "output data tri-stte buffer control"),
     i_i2c0_sda(this, "i_i2c0_sda", "1", "I2C input data"),
     o_i2c0_nreset(this, "o_i2c0_nreset", "1", "I2C slave reset. PCA9548 I2C mux must be de-asserted."),
+    i_hdmi_clk(this, "i_hdmi_clk", "1", "HDMI Clock depends on resolution: for 1366x768@60Hz is ~83 MHz"),
+    o_hdmi_hsync(this, "o_hdmi_hsync", "1", "Horizontal sync. strob"),
+    o_hdmi_vsync(this, "o_hdmi_vsync", "1", "Vertical sync. strob"),
+    o_hdmi_de(this, "o_hdmi_de", "1", "Data enable strob"),
+    o_hdmi_d(this, "o_hdmi_d", "18", "Data in format YCbCr 16-bits"),
+    o_hdmi_spdif(this, "o_hdmi_spdif", "1", "Sound channel output"),
+    i_hdmi_spdif_out(this, "i_hdmi_spdif_out", "1", "Reverse sound channel"),
+    i_hdmi_int(this, "i_hdmi_int", "1", "External interrupt from HDMI transmitter"),
 #endif
     _prci0_(this, "PLL and Reset interfaces:"),
     o_dmreset(this, "o_dmreset", "1", "Debug reset request. Everything except DMI."),
@@ -160,6 +168,7 @@ accel_soc::accel_soc(GenObject *parent, const char *name, const char *comment) :
 #endif
 #if GENCFG_HDMI_ENABLE
     i2c0(this, "i2c0", NO_COMMENT),
+    hdmi0(this, "hdmi0", NO_COMMENT),
 #endif
 #if GENCFG_PCIE_ENABLE
     pcidma0(this, "pcidma0"),
@@ -353,7 +362,7 @@ TEXT();
     ENDNEW();
 #endif
 #if GENCFG_HDMI_ENABLE
-TEXT();
+    TEXT();
     NEW(i2c0, i2c0.getName().c_str());
         CONNECT(i2c0, 0, i2c0.i_clk, i_sys_clk);
         CONNECT(i2c0, 0, i2c0.i_nrst, i_sys_nrst);
@@ -367,6 +376,20 @@ TEXT();
         CONNECT(i2c0, 0, i2c0.i_sda, i_i2c0_sda);
         CONNECT(i2c0, 0, i2c0.o_irq, w_irq_i2c0);
         CONNECT(i2c0, 0, i2c0.o_nreset, o_i2c0_nreset);
+    ENDNEW();
+
+    TEXT();
+    NEW(hdmi0, hdmi0.getName().c_str());
+        CONNECT(hdmi0, 0, hdmi0.i_nrst, i_sys_nrst);
+        CONNECT(hdmi0, 0, hdmi0.i_clk, i_sys_clk);
+        CONNECT(hdmi0, 0, hdmi0.i_hdmi_clk, i_hdmi_clk);
+        CONNECT(hdmi0, 0, hdmi0.o_hsync, o_hdmi_hsync);
+        CONNECT(hdmi0, 0, hdmi0.o_vsync, o_hdmi_vsync);
+        CONNECT(hdmi0, 0, hdmi0.o_de, o_hdmi_de);
+        CONNECT(hdmi0, 0, hdmi0.o_data, o_hdmi_d);
+        CONNECT(hdmi0, 0, hdmi0.o_spdif, o_hdmi_spdif);
+        CONNECT(hdmi0, 0, hdmi0.i_spdif_out, i_hdmi_spdif_out);
+        CONNECT(hdmi0, 0, hdmi0.i_irq, i_hdmi_int);
     ENDNEW();
 #endif
 

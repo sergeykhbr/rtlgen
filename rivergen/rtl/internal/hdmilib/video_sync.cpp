@@ -18,23 +18,24 @@
 
 video_sync::video_sync(GenObject *parent, const char *name, const char *comment) :
     ModuleObject(parent, "video_sync", name, comment),
-    i_clk(this, "i_clk", "1", "CPU clock"),
+    H_ACTIVE(this, "H_ACTIVE", "1366"),
+    H_FRONT(this, "H_FRONT", "70"),
+    H_SYNC(this, "H_SYNC", "143"),
+    H_BACK(this, "H_BACK", "213"),
+    V_ACTIVE(this, "V_ACTIVE", "768"),
+    V_FRONT(this, "V_FRONT", "3"),
+    V_SYNC(this, "V_SYNC", "5"),
+    V_BACK(this, "V_BACK", "24"),
+    // IO
     i_nrst(this, "i_nrst", "1", "Reset: active LOW"),
+    i_clk(this, "i_clk", "1", "CPU clock"),
     o_hsync(this, "o_hsync", "1", "Horisontal sync pulse"),
     o_vsync(this, "o_vsync", "1", "Vertical sync pulse"),
     o_de(this, "o_de", "1", "Data enable, HIGH in active zone 1366x768 screen resolution"),
     o_x(this, "o_x", "11", "Width pixel coordinate"),
     o_y(this, "o_y", "10", "Height pixel coordinate"),
     // params
-    H_ACTIVE(this, "H_ACTIVE", "1366"),
-    H_FRONT(this, "H_FRONT", "70"),
-    H_SYNC(this, "H_SYNC", "143"),
-    H_BACK(this, "H_BACK", "213"),
     H_TOTAL(this, "H_TOTAL", "ADD(ADD(H_ACTIVE,H_SYNC),ADD(H_FRONT,H_BACK))"),
-    V_ACTIVE(this, "V_ACTIVE", "768"),
-    V_FRONT(this, "V_FRONT", "3"),
-    V_SYNC(this, "V_SYNC", "5"),
-    V_BACK(this, "V_BACK", "24"),
     V_TOTAL(this, "V_TOTAL", "ADD(ADD(V_ACTIVE,V_SYNC),ADD(V_FRONT,V_BACK))"),
     // signals
     // registers
@@ -57,16 +58,15 @@ video_sync::video_sync(GenObject *parent, const char *name, const char *comment)
 void video_sync::proc_comb() {
     IF (EQ(h_count, DEC(H_TOTAL)));
         SETZERO(h_count);
+        IF (EQ(v_count, DEC(V_TOTAL)));
+            SETZERO(v_count);
+        ELSE();
+            SETVAL(v_count, INC(v_count));
+        ENDIF();
     ELSE();
         SETVAL(h_count, INC(h_count));
     ENDIF();
 
-    TEXT();
-    IF (EQ(v_count, DEC(V_TOTAL)));
-        SETZERO(v_count);
-    ELSE();
-        SETVAL(v_count, INC(v_count));
-    ENDIF();
 
     TEXT();
     TEXT("Re-arrange sequence: active => front porch => sync => back porch");
@@ -93,7 +93,7 @@ void video_sync::proc_comb() {
     ENDIF();
 
     TEXT();
-    SYNC_RESET(this);
+    SYNC_RESET();
 
     TEXT();
     SETVAL(o_de, de);

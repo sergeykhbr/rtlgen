@@ -17,26 +17,33 @@
 #pragma once
 
 #include <api_rtlgen.h>
-#include "ids_tech.h"
-#include "ibuf_tech.h"
-#include "obuf_tech.h"
-#include "iobuf_tech.h"
-#include "obuf_arr_tech.h"
 
-class io_folder : public FolderObject {
+using namespace sysvc;
+
+class obuf_arr_tech : public ModuleObject {
  public:
-    io_folder(GenObject *parent) :
-        FolderObject(parent, "io"),
-        ids_tech_file_(this),
-        ibuf_tech_file_(this),
-        obuf_tech_file_(this),
-        iobuf_tech_file_(this),
-        obuf_arr_tech_file_(this) {}
+    obuf_arr_tech(GenObject *parent, const char *name, const char *comment=NO_COMMENT);
 
  protected:
-    ids_tech_file ids_tech_file_;
-    ibuf_tech_file ibuf_tech_file_;
-    obuf_tech_file obuf_tech_file_;
-    iobuf_tech_file iobuf_tech_file_;
-    obuf_arr_tech_file obuf_arr_tech_file_;
+    void proc_comb();
+
+ public:
+    TmplParamI32D width;
+    // io:
+    InPort i;
+    OutPort o;
+
+ private:
+    CombinationalProcess comb;
 };
+
+class obuf_arr_tech_file : public FileObject {
+ public:
+    obuf_arr_tech_file(GenObject *parent) :
+        FileObject(parent, "obuf_arr_tech"),
+        obuf_arr_tech_(this, "obuf_arr_tech") {}
+
+ private:
+    obuf_arr_tech obuf_arr_tech_;
+};
+

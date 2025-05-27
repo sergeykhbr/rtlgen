@@ -36,6 +36,7 @@
 #include "../sdctrl/sdctrl.h"
 #include "../pcie_dma/pcie_dma.h"
 #include "../pcie_dma/apb_pcie.h"
+#include "../hdmilib/hdmi_top.h"
 #include "../riverlib/river_cfg.h"
 #include "../riverlib/types_river.h"
 #include "../riverlib/river_amba.h"
@@ -114,6 +115,14 @@ public:
     OutPort o_i2c0_sda_dir;
     InPort i_i2c0_sda;
     OutPort o_i2c0_nreset;
+    InPort i_hdmi_clk;
+    OutPort o_hdmi_hsync;
+    OutPort o_hdmi_vsync;
+    OutPort o_hdmi_de;
+    OutPort o_hdmi_d;
+    OutPort o_hdmi_spdif;
+    InPort i_hdmi_spdif_out;
+    InPort i_hdmi_int;
 #endif
     TextLine _prci0_;
     OutPort o_dmreset;
@@ -206,6 +215,7 @@ public:
 #endif
 #if GENCFG_HDMI_ENABLE
     apb_i2c i2c0;
+    hdmi_top hdmi0;
 #endif
 #if GENCFG_PCIE_ENABLE
     pcie_dma pcidma0;

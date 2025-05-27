@@ -40,6 +40,14 @@ asic_top_tb::asic_top_tb(GenObject *parent, const char *name) :
     w_i2c_scl(this, "w_i2c_scl", "1", RSTVAL_ZERO, NO_COMMENT),
     w_i2c_sda(this, "w_i2c_sda", "1", RSTVAL_ZERO, NO_COMMENT),
     w_i2c_nreset(this, "w_i2c_nreset", "1", RSTVAL_ZERO, NO_COMMENT),
+    w_hdmi_clk(this, "w_hdmi_clk", "1", RSTVAL_ZERO, NO_COMMENT),
+    w_hdmi_hsync(this, "w_hdmi_hsync", "1", RSTVAL_ZERO, NO_COMMENT),
+    w_hdmi_vsync(this, "w_hdmi_vsync", "1", RSTVAL_ZERO, NO_COMMENT),
+    w_hdmi_de(this, "w_hdmi_de", "1", RSTVAL_ZERO, NO_COMMENT),
+    wb_hdmi_d(this, "wb_hdmi_d", "18", RSTVAL_ZERO, NO_COMMENT),
+    w_hdmi_spdif(this, "w_hdmi_spdif", "1", RSTVAL_ZERO, NO_COMMENT),
+    w_hdmi_spdif_out(this, "w_hdmi_spdif_out", "1", RSTVAL_ZERO, NO_COMMENT),
+    w_hdmi_int(this, "w_hdmi_int", "1", RSTVAL_ZERO, NO_COMMENT),
     w_bufo_i2c0_sda(this, "w_bufo_i2c0_sda", "1", RSTVAL_ZERO, NO_COMMENT),
     w_vipo_i2c0_sda(this, "w_vipo_i2c0_sda", "1", RSTVAL_ZERO, NO_COMMENT),
     w_vipo_i2c0_sda_dir(this, "w_vipo_i2c0_sda_dir", "1", RSTVAL_ZERO, NO_COMMENT),
@@ -122,6 +130,14 @@ TEXT();
         CONNECT(tt, 0, tt.o_i2c0_scl, w_i2c_scl);
         CONNECT(tt, 0, tt.io_i2c0_sda, w_i2c_sda);
         CONNECT(tt, 0, tt.o_i2c0_nreset, w_i2c_nreset);
+        CONNECT(tt, 0, tt.o_hdmi_clk, w_hdmi_clk);
+        CONNECT(tt, 0, tt.o_hdmi_hsync, w_hdmi_hsync);
+        CONNECT(tt, 0, tt.o_hdmi_vsync, w_hdmi_vsync);
+        CONNECT(tt, 0, tt.o_hdmi_de, w_hdmi_de);
+        CONNECT(tt, 0, tt.o_hdmi_d, wb_hdmi_d);
+        CONNECT(tt, 0, tt.o_hdmi_spdif, w_hdmi_spdif);
+        CONNECT(tt, 0, tt.i_hdmi_spdif_out, w_hdmi_spdif_out);;
+        CONNECT(tt, 0, tt.i_hdmi_int, w_hdmi_int);
 #endif
 #if GENCFG_SD_CTRL_ENABLE
 #endif
@@ -144,5 +160,9 @@ void asic_top_tb::proc_test() {
 TEXT();
     ASSIGN(w_nrst, INV(w_rst));
     ASSIGN(w_sclk_n, INV(w_sclk_p));
+#if GENCFG_HDMI_ENABLE
+    ASSIGN(w_hdmi_spdif_out, CONST("0", 1));
+    ASSIGN(w_hdmi_int, CONST("0", 1));
+#endif
 }
 

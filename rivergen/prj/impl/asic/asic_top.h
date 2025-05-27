@@ -27,6 +27,7 @@
 #include "../../../rtl/sim/io/iobuf_tech.h"
 #include "../../../rtl/sim/io/ibuf_tech.h"
 #include "../../../rtl/sim/io/obuf_tech.h"
+#include "../../../rtl/sim/io/obuf_arr_tech.h"
 #include "../../../rtl/sim/pll/SysPLL_tech.h"
 #if CONFIG_RISCV_VHDL
     #include "../../../rtl/internal/gencpu64/gencpu64_soc.h"
@@ -41,7 +42,7 @@ class asic_top : public ModuleObject {
  public:
     asic_top(GenObject *parent, const char *name, const char *comment=NO_COMMENT);
 
-public:
+ public:
     DefParamLogic async_reset;
     DefParamI32D sim_uart_speedup_rate;
 
@@ -78,11 +79,18 @@ public:
     OutPort o_i2c0_scl;
     IoPort io_i2c0_sda;
     OutPort o_i2c0_nreset;
+    TextLine _i2c1_;
+    OutPort o_hdmi_clk;
+    OutPort o_hdmi_hsync;
+    OutPort o_hdmi_vsync;
+    OutPort o_hdmi_de;
+    OutPort o_hdmi_d;
+    OutPort o_hdmi_spdif;
+    InPort i_hdmi_spdif_out;
+    InPort i_hdmi_int;
 #endif
 
     // Param
-    //gpio_signal_vector gpio_signal_vector_def_;
-
     // Signals:
     Signal ib_clk_tcxo;
     Signal ib_gpio_ipins;
@@ -111,6 +119,13 @@ public:
     Signal ob_i2c0_sda_direction;
     Signal ib_i2c0_sda;
     Signal ob_i2c0_nreset;
+    Signal ob_hdmi_hsync;
+    Signal ob_hdmi_vsync;
+    Signal ob_hdmi_de;
+    Signal ob_hdmi_d;
+    Signal ob_hdmi_spdif;
+    Signal ib_hdmi_spdif_out;
+    Signal ib_hdmi_int;
 #endif
 
     Signal w_sys_rst;
@@ -164,6 +179,14 @@ public:
     obuf_tech oi2c0scl;
     obuf_tech oi2c0nreset;
     iobuf_tech ioi2c0sda;
+    obuf_tech ohdmiclk;
+    obuf_tech ohdmihsync;
+    obuf_tech ohdmivsync;
+    obuf_tech ohdmide;
+    obuf_arr_tech ohdmid;
+    obuf_tech ohdmispdif;
+    ibuf_tech ihdmispdif;
+    ibuf_tech ihdmiint;
 #endif
     SysPLL_tech pll0;
     apb_prci prci0;

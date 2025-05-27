@@ -53,6 +53,15 @@ asic_top::asic_top(GenObject *parent, const char *name, const char *comment) :
     o_i2c0_scl(this, "o_i2c0_scl", "1", "I2C clock upto 400 kHz (default 100 kHz)"),
     io_i2c0_sda(this, "io_i2c0_sda", "1", "I2C bi-directional data"),
     o_i2c0_nreset(this, "o_i2c0_nreset", "1", "I2C slave reset. PCA9548 I2C mux must be de-asserted."),
+    _i2c1_(this, "Data interface to HDMI transmitter:"),
+    o_hdmi_clk(this, "o_hdmi_clk", "1", "HDMI clock depends on resolution for 1366x768@60Hz is ~83MHz"),
+    o_hdmi_hsync(this, "o_hdmi_hsync", "1", "Horizontal sync. strob"),
+    o_hdmi_vsync(this, "o_hdmi_vsync", "1", "Vertical sync. strob"),
+    o_hdmi_de(this, "o_hdmi_de", "1", "Data enable strob"),
+    o_hdmi_d(this, "o_hdmi_d", "18", "Data in format YCbCr 16-bits"),
+    o_hdmi_spdif(this, "o_hdmi_spdif", "1", "Sound channel output"),
+    i_hdmi_spdif_out(this, "i_hdmi_spdif_out", "1", "Reverse sound channel"),
+    i_hdmi_int(this, "i_hdmi_int", "1", "External interrupt from HDMI transmitter"),
 #endif
     // param
     //gpio_signal_vector_def_(this, ""),
@@ -84,6 +93,13 @@ asic_top::asic_top(GenObject *parent, const char *name, const char *comment) :
     ob_i2c0_sda_direction(this, "ob_i2c0_sda_direction", "1"),
     ib_i2c0_sda(this, "ib_i2c0_sda", "1"),
     ob_i2c0_nreset(this, "ob_i2c0_nreset", "1"),
+    ob_hdmi_hsync(this, "ob_hdmi_hsync", "1"),
+    ob_hdmi_vsync(this, "ob_hdmi_vsync", "1"),
+    ob_hdmi_de(this, "ob_hdmi_de", "1"),
+    ob_hdmi_d(this, "ob_hdmi_d", "18"),
+    ob_hdmi_spdif(this, "ob_hdmi_spdif", "1"),
+    ib_hdmi_spdif_out(this, "ib_hdmi_spdif_out", "1"),
+    ib_hdmi_int(this, "ib_hdmi_int", "1"),
 #endif
     w_sys_rst(this, "w_sys_rst", "1"),
     w_sys_nrst(this, "w_sys_nrst", "1"),
@@ -130,6 +146,14 @@ asic_top::asic_top(GenObject *parent, const char *name, const char *comment) :
     oi2c0scl(this, "oi2c0scl", NO_COMMENT),
     oi2c0nreset(this, "oi2c0nreset", NO_COMMENT),
     ioi2c0sda(this, "ioi2c0sda", NO_COMMENT),
+    ohdmiclk(this, "ohdmiclk", NO_COMMENT),
+    ohdmihsync(this, "ohdmihsync", NO_COMMENT),
+    ohdmivsync(this, "ohdmivsync", NO_COMMENT),
+    ohdmide(this, "ohdmide", NO_COMMENT),
+    ohdmid(this, "ohdmid", NO_COMMENT),
+    ohdmispdif(this, "ohdmispdif", NO_COMMENT),
+    ihdmispdif(this, "ihdmispdif", NO_COMMENT),
+    ihdmiint(this, "ihdmiint", NO_COMMENT),
 #endif
     pll0(this, "pll0", NO_COMMENT),
     prci0(this, "prci0", NO_COMMENT),
@@ -187,24 +211,75 @@ TEXT();
 #endif
 
 #if GENCFG_HDMI_ENABLE
-TEXT();
+    TEXT();
+    TEXT("======== HDMI I2C interface ========");
     NEW(oi2c0scl, oi2c0scl.getName().c_str());
         CONNECT(oi2c0scl, 0, oi2c0scl.i, ob_i2c0_scl);
         CONNECT(oi2c0scl, 0, oi2c0scl.o, o_i2c0_scl);
     ENDNEW();
 
-TEXT();
+    TEXT();
     NEW(oi2c0nreset, oi2c0nreset.getName().c_str());
         CONNECT(oi2c0nreset, 0, oi2c0nreset.i, ob_i2c0_nreset);
         CONNECT(oi2c0nreset, 0, oi2c0nreset.o, o_i2c0_nreset);
     ENDNEW();
 
-TEXT();
+    TEXT();
     NEW(ioi2c0sda, ioi2c0sda.getName().c_str());
         CONNECT(ioi2c0sda, 0, ioi2c0sda.io, io_i2c0_sda);
         CONNECT(ioi2c0sda, 0, ioi2c0sda.o, ib_i2c0_sda);
         CONNECT(ioi2c0sda, 0, ioi2c0sda.i, ob_i2c0_sda);
         CONNECT(ioi2c0sda, 0, ioi2c0sda.t, ob_i2c0_sda_direction);
+    ENDNEW();
+
+    TEXT();
+    TEXT("======== HDMI data buffer ========");
+    NEW(ohdmiclk, ohdmiclk.getName().c_str());
+        CONNECT(ohdmiclk, 0, ohdmiclk.i, w_sys_clk);
+        CONNECT(ohdmiclk, 0, ohdmiclk.o, o_hdmi_clk);
+    ENDNEW();
+
+    TEXT();
+    NEW(ohdmihsync, ohdmihsync.getName().c_str());
+        CONNECT(ohdmihsync, 0, ohdmihsync.i, ob_hdmi_hsync);
+        CONNECT(ohdmihsync, 0, ohdmihsync.o, o_hdmi_hsync);
+    ENDNEW();
+
+    TEXT();
+    NEW(ohdmivsync, ohdmivsync.getName().c_str());
+        CONNECT(ohdmivsync, 0, ohdmivsync.i, ob_hdmi_vsync);
+        CONNECT(ohdmivsync, 0, ohdmivsync.o, o_hdmi_vsync);
+    ENDNEW();
+
+    TEXT();
+    NEW(ohdmide, ohdmide.getName().c_str());
+        CONNECT(ohdmide, 0, ohdmide.i, ob_hdmi_de);
+        CONNECT(ohdmide, 0, ohdmide.o, o_hdmi_de);
+    ENDNEW();
+
+    TEXT();
+    ohdmid.width.setObjValue(new DecConst(18));
+    NEW(ohdmid, ohdmid.getName().c_str());
+        CONNECT(ohdmid, 0, ohdmid.i, ob_hdmi_d);
+        CONNECT(ohdmid, 0, ohdmid.o, o_hdmi_d);
+    ENDNEW();
+
+    TEXT();
+    NEW(ohdmispdif, ohdmispdif.getName().c_str());
+        CONNECT(ohdmispdif, 0, ohdmispdif.i, ob_hdmi_spdif);
+        CONNECT(ohdmispdif, 0, ohdmispdif.o, o_hdmi_spdif);
+    ENDNEW();
+
+    TEXT();
+    NEW(ihdmispdif, ihdmispdif.getName().c_str());
+        CONNECT(ihdmispdif, 0, ihdmispdif.i, i_hdmi_spdif_out);
+        CONNECT(ihdmispdif, 0, ihdmispdif.o, ib_hdmi_spdif_out);
+    ENDNEW();
+
+    TEXT();
+    NEW(ihdmiint, ihdmiint.getName().c_str());
+        CONNECT(ihdmiint, 0, ihdmiint.i, i_hdmi_int);
+        CONNECT(ihdmiint, 0, ihdmiint.o, ib_hdmi_int);
     ENDNEW();
 #endif
 
@@ -284,6 +359,14 @@ TEXT();
         CONNECT(soc0, 0, soc0.o_i2c0_sda, ob_i2c0_sda);
         CONNECT(soc0, 0, soc0.o_i2c0_sda_dir, ob_i2c0_sda_direction);
         CONNECT(soc0, 0, soc0.o_i2c0_nreset, ob_i2c0_nreset);
+        CONNECT(soc0, 0, soc0.i_hdmi_clk, w_sys_clk);
+        CONNECT(soc0, 0, soc0.o_hdmi_hsync, ob_hdmi_hsync);
+        CONNECT(soc0, 0, soc0.o_hdmi_vsync, ob_hdmi_vsync);
+        CONNECT(soc0, 0, soc0.o_hdmi_de, ob_hdmi_de);
+        CONNECT(soc0, 0, soc0.o_hdmi_d, ob_hdmi_d);
+        CONNECT(soc0, 0, soc0.o_hdmi_spdif, ob_hdmi_spdif);
+        CONNECT(soc0, 0, soc0.i_hdmi_spdif_out, ib_hdmi_spdif_out);
+        CONNECT(soc0, 0, soc0.i_hdmi_int, ib_hdmi_int);
 #endif
         CONNECT(soc0, 0, soc0.o_dmreset, w_dmreset);
         CONNECT(soc0, 0, soc0.o_prci_pmapinfo, prci_pmapinfo);

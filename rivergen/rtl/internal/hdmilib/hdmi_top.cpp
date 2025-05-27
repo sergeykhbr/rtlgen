@@ -18,29 +18,62 @@
 
 hdmi_top::hdmi_top(GenObject *parent, const char *name, const char *comment) :
     ModuleObject(parent, "hdmi_top", name, comment),
-    i_clk(this, "i_clk", "1", "CPU clock"),
     i_nrst(this, "i_nrst", "1", "Reset: active LOW"),
-    i_we(this, "i_we", "1"),
-    i_wdata(this, "i_wdata", "dbits"),
-    i_re(this, "i_re", "1"),
-    o_rdata(this, "o_rdata", "dbits"),
-    o_count(this, "o_count", "ADD(log2_depth,1)", "Number of words in FIFO"),
+    i_clk(this, "i_clk", "1", "CPU clock"),
+    i_hdmi_clk(this, "i_hdmi_clk", "1", "HDMI clock depends on resolution for 1366x768@60Hz ~83MHz"),
+    o_hsync(this, "o_hsync", "1", "Horizontal sync strob"),
+    o_vsync(this, "o_vsync", "1", "Vertical sync. strob"),
+    o_de(this, "o_de", "1", "Data enable strob"),
+    o_data(this, "o_data", "18", "Output data in YCbCr format"),
+    o_spdif(this, "o_spdif", "1", "Sound channel"),
+    i_spdif_out(this, "i_spdif_out", "1", "Reverse sound"),
+    i_irq(this, "i_irq", "1", "Interrupt request from HDMI transmitter"),
     // params
     // signals
+    w_sync_hsync(this, "w_sync_hsync", "1", RSTVAL_ZERO, NO_COMMENT),
+    w_sync_vsync(this, "w_sync_vsync", "1", RSTVAL_ZERO, NO_COMMENT),
+    w_sync_de(this, "w_sync_de", "1", RSTVAL_ZERO, NO_COMMENT),
+    wb_sync_x(this, "wb_sync_x", "11", RSTVAL_ZERO, NO_COMMENT),
+    wb_sync_y(this, "wb_sync_y", "10", RSTVAL_ZERO, NO_COMMENT),
     // registers
-    wr_cnt(this, "wr_cnt", "log2_depth", "'0", NO_COMMENT),
-    rd_cnt(this, "rd_cnt", "log2_depth", "'0", NO_COMMENT),
-    total_cnt(this, "total_cnt", "ADD(log2_depth,1)", "'0", NO_COMMENT),
     //
+    sync0(this, "sync0", NO_COMMENT),
+    fb0(this, "fb0", NO_COMMENT),
     comb(this)
 {
     Operation::start(this);
+
+    NEW(sync0, sync0.getName().c_str());
+        CONNECT(sync0, 0, sync0.i_nrst, i_nrst);
+        CONNECT(sync0, 0, sync0.i_clk, i_hdmi_clk);
+        CONNECT(sync0, 0, sync0.o_hsync, w_sync_hsync);
+        CONNECT(sync0, 0, sync0.o_vsync, w_sync_vsync);
+        CONNECT(sync0, 0, sync0.o_de, w_sync_de);
+        CONNECT(sync0, 0, sync0.o_x, wb_sync_x);
+        CONNECT(sync0, 0, sync0.o_y, wb_sync_y);
+    ENDNEW();
+
+    TEXT();
+    NEW(fb0, fb0.getName().c_str());
+        CONNECT(fb0, 0, fb0.i_nrst, i_nrst);
+        CONNECT(fb0, 0, fb0.i_clk, i_hdmi_clk);
+        CONNECT(fb0, 0, fb0.i_hsync, w_sync_hsync);
+        CONNECT(fb0, 0, fb0.i_vsync, w_sync_vsync);
+        CONNECT(fb0, 0, fb0.i_de, w_sync_de);
+        CONNECT(fb0, 0, fb0.i_x, wb_sync_x);
+        CONNECT(fb0, 0, fb0.i_y, wb_sync_y);
+        CONNECT(fb0, 0, fb0.o_hsync, o_hsync);
+        CONNECT(fb0, 0, fb0.o_vsync, o_vsync);
+        CONNECT(fb0, 0, fb0.o_de, o_de);
+        CONNECT(fb0, 0, fb0.o_YCbCr, o_data);
+    ENDNEW();
 
     Operation::start(&comb);
     proc_comb();
 }
 
 void hdmi_top::proc_comb() {
+    ASSIGN(o_spdif, CONST("0", 1));
 }
 
 

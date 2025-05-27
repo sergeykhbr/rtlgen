@@ -69,6 +69,14 @@ public:
     Signal w_i2c_scl;
     Signal w_i2c_sda;
     Signal w_i2c_nreset;
+    Signal w_hdmi_clk;
+    Signal w_hdmi_hsync;
+    Signal w_hdmi_vsync;
+    Signal w_hdmi_de;
+    Signal wb_hdmi_d;
+    Signal w_hdmi_spdif;
+    Signal w_hdmi_spdif_out;
+    Signal w_hdmi_int;
     Signal w_bufo_i2c0_sda;
     Signal w_vipo_i2c0_sda;
     Signal w_vipo_i2c0_sda_dir;

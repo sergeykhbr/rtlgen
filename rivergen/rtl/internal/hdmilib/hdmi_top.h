@@ -17,6 +17,8 @@
 #pragma once
 
 #include <api_rtlgen.h>
+#include "video_sync.h"
+#include "framebuf.h"
 
 using namespace sysvc;
 
@@ -37,19 +39,25 @@ class hdmi_top : public ModuleObject {
 
  public:
     // io:
-    InPort i_clk;
     InPort i_nrst;
-    InPort i_we;
-    InPort i_wdata;
-    InPort i_re;
-    OutPort o_rdata;
-    OutPort o_count;
+    InPort i_clk;
+    InPort i_hdmi_clk;
+    OutPort o_hsync;
+    OutPort o_vsync;
+    OutPort o_de;
+    OutPort o_data;
+    OutPort o_spdif;
+    InPort i_spdif_out;
+    InPort i_irq;
 
+    Signal w_sync_hsync;
+    Signal w_sync_vsync;
+    Signal w_sync_de;
+    Signal wb_sync_x;
+    Signal wb_sync_y;
 
-    RegSignal wr_cnt;
-    RegSignal rd_cnt;
-    RegSignal total_cnt;
-
+    video_sync sync0;
+    framebuf fb0;
     CombProcess comb;
 };
 
