@@ -65,10 +65,10 @@ void framebuf::proc_comb() {
         SETVAL(Cr, CONST("128", 8));
     ELSIF (LS(i_x, CONST("340", 11)));
         TEXT("Black");
-        SETVAL(Y0, CONST("219", 8));
-        SETVAL(Y1, CONST("219", 8));
-        SETVAL(Cb, CONST("16", 8));
-        SETVAL(Cr, CONST("16", 8));
+        SETVAL(Y0, CONST("16", 8));
+        SETVAL(Y1, CONST("16", 8));
+        SETVAL(Cb, CONST("128", 8));
+        SETVAL(Cr, CONST("128", 8));
     ELSIF (LS(i_x, CONST("510", 11)));
         TEXT("Red");
         SETVAL(Y0, CONST("82", 8));
@@ -80,7 +80,7 @@ void framebuf::proc_comb() {
         SETVAL(Y0, CONST("145", 8));
         SETVAL(Y1, CONST("145", 8));
         SETVAL(Cb, CONST("54", 8));
-        SETVAL(Cr, CONST("234", 8));
+        SETVAL(Cr, CONST("34", 8));
     ELSIF (LS(i_x, CONST("850", 11)));
         TEXT("Blue");
         SETVAL(Y0, CONST("41", 8));
@@ -95,24 +95,24 @@ void framebuf::proc_comb() {
         SETVAL(Cr, CONST("146", 8));
     ELSIF (LS(i_x, CONST("1190", 11)));
         TEXT("Cyan");
-        SETVAL(Y0, CONST("105", 8));
-        SETVAL(Y1, CONST("105", 8));
-        SETVAL(Cb, CONST("212", 8));
-        SETVAL(Cr, CONST("234", 8));
-    ELSE();
-        TEXT("Magneta");
         SETVAL(Y0, CONST("170", 8));
         SETVAL(Y1, CONST("170", 8));
         SETVAL(Cb, CONST("166", 8));
         SETVAL(Cr, CONST("16", 8));
+    ELSE();
+        TEXT("Magneta");
+        SETVAL(Y0, CONST("106", 8));
+        SETVAL(Y1, CONST("106", 8));
+        SETVAL(Cb, CONST("102", 8));
+        SETVAL(Cr, CONST("222", 8));
     ENDIF();
 
     TEXT();
     TEXT("See style 1 output:");
     IF (EZ(pix_x0));
-        SETVAL(YCbCr, CC2(Y1, Cb));
+        SETVAL(YCbCr, CC2(Cb, Y1));
     ELSE();
-        SETVAL(YCbCr, CC2(Y1, Cr));
+        SETVAL(YCbCr, CC2(Cr, Y1));
     ENDIF();
 
     TEXT();
