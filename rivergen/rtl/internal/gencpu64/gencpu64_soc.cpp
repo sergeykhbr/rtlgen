@@ -15,7 +15,7 @@
 // 
 
 #include "gencpu64_soc.h"
-#include "../../../prj/impl/asic/target_cfg.h"
+#include "../../../prj/impl/asic_accel/target_accel_cfg.h"
 
 gencpu64_soc::gencpu64_soc(GenObject *parent, const char *name, const char *comment) :
     ModuleObject(parent, "gencpu64_soc", name, comment),
@@ -160,7 +160,7 @@ gencpu64_soc::gencpu64_soc(GenObject *parent, const char *name, const char *comm
     NEW(bus0, bus0.getName().c_str());
         CONNECT(bus0, 0, bus0.i_clk, i_sys_clk);
         CONNECT(bus0, 0, bus0.i_nrst, i_sys_nrst);
-        CONNECT(bus0, 0, bus0.o_cfg, ARRITEM(dev_pnp, glob_pnp_cfg_->SOC_PNP_XCTRL0, dev_pnp));
+        CONNECT(bus0, 0, bus0.o_cfg, ARRITEM(dev_pnp, *SCV_get_cfg_type(this, "SOC_PNP_XCTRL0"), dev_pnp));
         CONNECT(bus0, 0, bus0.i_xmsto, aximo);
         CONNECT(bus0, 0, bus0.o_xmsti, aximi);
         CONNECT(bus0, 0, bus0.i_xslvo, axiso);
@@ -172,10 +172,10 @@ TEXT();
     NEW(bus1, bus1.getName().c_str());
         CONNECT(bus1, 0, bus1.i_clk, i_sys_clk);
         CONNECT(bus1, 0, bus1.i_nrst, i_sys_nrst);
-        CONNECT(bus1, 0, bus1.i_mapinfo, ARRITEM(bus0_mapinfo, glob_bus0_cfg_->CFG_BUS0_XSLV_PBRIDGE, bus0_mapinfo));
-        CONNECT(bus1, 0, bus1.o_cfg, ARRITEM(dev_pnp, glob_pnp_cfg_->SOC_PNP_PBRIDGE0, dev_pnp));
-        CONNECT(bus1, 0, bus1.i_xslvi, ARRITEM(axisi, glob_bus0_cfg_->CFG_BUS0_XSLV_PBRIDGE, axisi));
-        CONNECT(bus1, 0, bus1.o_xslvo, ARRITEM(axiso, glob_bus0_cfg_->CFG_BUS0_XSLV_PBRIDGE, axiso));
+        CONNECT(bus1, 0, bus1.i_mapinfo, ARRITEM(bus0_mapinfo, *SCV_get_cfg_type(this, "CFG_BUS0_XSLV_PBRIDGE"), bus0_mapinfo));
+        CONNECT(bus1, 0, bus1.o_cfg, ARRITEM(dev_pnp, *SCV_get_cfg_type(this, "SOC_PNP_PBRIDGE0"), dev_pnp));
+        CONNECT(bus1, 0, bus1.i_xslvi, ARRITEM(axisi, *SCV_get_cfg_type(this, "CFG_BUS0_XSLV_PBRIDGE"), axisi));
+        CONNECT(bus1, 0, bus1.o_xslvo, ARRITEM(axiso, *SCV_get_cfg_type(this, "CFG_BUS0_XSLV_PBRIDGE"), axiso));
         CONNECT(bus1, 0, bus1.i_apbo, apbo);
         CONNECT(bus1, 0, bus1.o_apbi, apbi);
         CONNECT(bus1, 0, bus1.o_mapinfo, bus1_mapinfo);
@@ -200,13 +200,13 @@ TEXT();
         CONNECT(group0, 0, group0.i_mtimer, wb_clint_mtimer);
         CONNECT(group0, 0, group0.i_acpo, acpo);
         CONNECT(group0, 0, group0.o_acpi, acpi);
-        CONNECT(group0, 0, group0.o_xmst_cfg, ARRITEM(dev_pnp, glob_pnp_cfg_->SOC_PNP_GROUP0, dev_pnp));
-        CONNECT(group0, 0, group0.i_msti, ARRITEM(aximi, glob_bus0_cfg_->CFG_BUS0_XMST_GROUP0, aximi));
-        CONNECT(group0, 0, group0.o_msto, ARRITEM(aximo, glob_bus0_cfg_->CFG_BUS0_XMST_GROUP0, aximo));
-        CONNECT(group0, 0, group0.i_dmi_mapinfo, ARRITEM(bus1_mapinfo, glob_bus1_cfg_->CFG_BUS1_PSLV_DMI, bus1_mapinfo));
-        CONNECT(group0, 0, group0.o_dmi_cfg, ARRITEM(dev_pnp, glob_pnp_cfg_->SOC_PNP_DMI, dev_pnp));
-        CONNECT(group0, 0, group0.i_dmi_apbi, ARRITEM(apbi, glob_bus1_cfg_->CFG_BUS1_PSLV_DMI, apbi));
-        CONNECT(group0, 0, group0.o_dmi_apbo, ARRITEM(apbo, glob_bus1_cfg_->CFG_BUS1_PSLV_DMI, apbo));
+        CONNECT(group0, 0, group0.o_xmst_cfg, ARRITEM(dev_pnp, *SCV_get_cfg_type(this, "SOC_PNP_GROUP0"), dev_pnp));
+        CONNECT(group0, 0, group0.i_msti, ARRITEM(aximi, *SCV_get_cfg_type(this, "CFG_BUS0_XMST_GROUP0"), aximi));
+        CONNECT(group0, 0, group0.o_msto, ARRITEM(aximo, *SCV_get_cfg_type(this, "CFG_BUS0_XMST_GROUP0"), aximo));
+        CONNECT(group0, 0, group0.i_dmi_mapinfo, ARRITEM(bus1_mapinfo, *SCV_get_cfg_type(this, "CFG_BUS1_PSLV_DMI"), bus1_mapinfo));
+        CONNECT(group0, 0, group0.o_dmi_cfg, ARRITEM(dev_pnp, *SCV_get_cfg_type(this, "SOC_PNP_DMI"), dev_pnp));
+        CONNECT(group0, 0, group0.i_dmi_apbi, ARRITEM(apbi, *SCV_get_cfg_type(this, "CFG_BUS1_PSLV_DMI"), apbi));
+        CONNECT(group0, 0, group0.o_dmi_apbo, ARRITEM(apbo, *SCV_get_cfg_type(this, "CFG_BUS1_PSLV_DMI"), apbo));
         CONNECT(group0, 0, group0.o_dmreset, o_dmreset);
     ENDNEW();
 
@@ -216,10 +216,10 @@ TEXT();
     NEW(rom0, rom0.getName().c_str());
         CONNECT(rom0, 0, rom0.i_clk, i_sys_clk);
         CONNECT(rom0, 0, rom0.i_nrst, i_sys_nrst);
-        CONNECT(rom0, 0, rom0.i_mapinfo, ARRITEM(bus0_mapinfo, glob_bus0_cfg_->CFG_BUS0_XSLV_BOOTROM, bus0_mapinfo));
-        CONNECT(rom0, 0, rom0.o_cfg, ARRITEM(dev_pnp, glob_pnp_cfg_->SOC_PNP_BOOTROM, dev_pnp));
-        CONNECT(rom0, 0, rom0.i_xslvi, ARRITEM(axisi, glob_bus0_cfg_->CFG_BUS0_XSLV_BOOTROM, axisi));
-        CONNECT(rom0, 0, rom0.o_xslvo, ARRITEM(axiso, glob_bus0_cfg_->CFG_BUS0_XSLV_BOOTROM, axiso));
+        CONNECT(rom0, 0, rom0.i_mapinfo, ARRITEM(bus0_mapinfo, *SCV_get_cfg_type(this, "CFG_BUS0_XSLV_BOOTROM"), bus0_mapinfo));
+        CONNECT(rom0, 0, rom0.o_cfg, ARRITEM(dev_pnp, *SCV_get_cfg_type(this, "SOC_PNP_BOOTROM"), dev_pnp));
+        CONNECT(rom0, 0, rom0.i_xslvi, ARRITEM(axisi, *SCV_get_cfg_type(this, "CFG_BUS0_XSLV_BOOTROM"), axisi));
+        CONNECT(rom0, 0, rom0.o_xslvo, ARRITEM(axiso, *SCV_get_cfg_type(this, "CFG_BUS0_XSLV_BOOTROM"), axiso));
     ENDNEW();
 
 TEXT();
@@ -227,10 +227,10 @@ TEXT();
     NEW(sram0, sram0.getName().c_str());
         CONNECT(sram0, 0, sram0.i_clk, i_sys_clk);
         CONNECT(sram0, 0, sram0.i_nrst, i_sys_nrst);
-        CONNECT(sram0, 0, sram0.i_mapinfo, ARRITEM(bus0_mapinfo, glob_bus0_cfg_->CFG_BUS0_XSLV_SRAM, bus0_mapinfo));
-        CONNECT(sram0, 0, sram0.o_cfg, ARRITEM(dev_pnp, glob_pnp_cfg_->SOC_PNP_SRAM, dev_pnp));
-        CONNECT(sram0, 0, sram0.i_xslvi, ARRITEM(axisi, glob_bus0_cfg_->CFG_BUS0_XSLV_SRAM, axisi));
-        CONNECT(sram0, 0, sram0.o_xslvo, ARRITEM(axiso, glob_bus0_cfg_->CFG_BUS0_XSLV_SRAM, axiso));
+        CONNECT(sram0, 0, sram0.i_mapinfo, ARRITEM(bus0_mapinfo, *SCV_get_cfg_type(this, "CFG_BUS0_XSLV_SRAM"), bus0_mapinfo));
+        CONNECT(sram0, 0, sram0.o_cfg, ARRITEM(dev_pnp, *SCV_get_cfg_type(this, "SOC_PNP_SRAM"), dev_pnp));
+        CONNECT(sram0, 0, sram0.i_xslvi, ARRITEM(axisi, *SCV_get_cfg_type(this, "CFG_BUS0_XSLV_SRAM"), axisi));
+        CONNECT(sram0, 0, sram0.o_xslvo, ARRITEM(axiso, *SCV_get_cfg_type(this, "CFG_BUS0_XSLV_SRAM"), axiso));
     ENDNEW();
 
 TEXT();
@@ -239,10 +239,10 @@ TEXT();
     NEW(clint0, clint0.getName().c_str());
         CONNECT(clint0, 0, clint0.i_clk, i_sys_clk);
         CONNECT(clint0, 0, clint0.i_nrst, i_sys_nrst);
-        CONNECT(clint0, 0, clint0.i_mapinfo, ARRITEM(bus0_mapinfo, glob_bus0_cfg_->CFG_BUS0_XSLV_CLINT, bus0_mapinfo));
-        CONNECT(clint0, 0, clint0.o_cfg, ARRITEM(dev_pnp, glob_pnp_cfg_->SOC_PNP_CLINT, dev_pnp));
-        CONNECT(clint0, 0, clint0.i_xslvi, ARRITEM(axisi, glob_bus0_cfg_->CFG_BUS0_XSLV_CLINT, axisi));
-        CONNECT(clint0, 0, clint0.o_xslvo, ARRITEM(axiso, glob_bus0_cfg_->CFG_BUS0_XSLV_CLINT, axiso));
+        CONNECT(clint0, 0, clint0.i_mapinfo, ARRITEM(bus0_mapinfo, *SCV_get_cfg_type(this, "CFG_BUS0_XSLV_CLINT"), bus0_mapinfo));
+        CONNECT(clint0, 0, clint0.o_cfg, ARRITEM(dev_pnp, *SCV_get_cfg_type(this, "SOC_PNP_CLINT"), dev_pnp));
+        CONNECT(clint0, 0, clint0.i_xslvi, ARRITEM(axisi, *SCV_get_cfg_type(this, "CFG_BUS0_XSLV_CLINT"), axisi));
+        CONNECT(clint0, 0, clint0.o_xslvo, ARRITEM(axiso, *SCV_get_cfg_type(this, "CFG_BUS0_XSLV_CLINT"), axiso));
         CONNECT(clint0, 0, clint0.o_mtimer, wb_clint_mtimer);
         CONNECT(clint0, 0, clint0.o_msip, wb_clint_msip);
         CONNECT(clint0, 0, clint0.o_mtip, wb_clint_mtip);
@@ -253,10 +253,10 @@ TEXT();
     NEW(plic0, plic0.getName().c_str());
         CONNECT(plic0, 0, plic0.i_clk, i_sys_clk);
         CONNECT(plic0, 0, plic0.i_nrst, i_sys_nrst);
-        CONNECT(plic0, 0, plic0.i_mapinfo, ARRITEM(bus0_mapinfo, glob_bus0_cfg_->CFG_BUS0_XSLV_PLIC, bus0_mapinfo));
-        CONNECT(plic0, 0, plic0.o_cfg, ARRITEM(dev_pnp, glob_pnp_cfg_->SOC_PNP_PLIC, dev_pnp));
-        CONNECT(plic0, 0, plic0.i_xslvi, ARRITEM(axisi, glob_bus0_cfg_->CFG_BUS0_XSLV_PLIC, axisi));
-        CONNECT(plic0, 0, plic0.o_xslvo, ARRITEM(axiso, glob_bus0_cfg_->CFG_BUS0_XSLV_PLIC, axiso));
+        CONNECT(plic0, 0, plic0.i_mapinfo, ARRITEM(bus0_mapinfo, *SCV_get_cfg_type(this, "CFG_BUS0_XSLV_PLIC"), bus0_mapinfo));
+        CONNECT(plic0, 0, plic0.o_cfg, ARRITEM(dev_pnp, *SCV_get_cfg_type(this, "SOC_PNP_PLIC"), dev_pnp));
+        CONNECT(plic0, 0, plic0.i_xslvi, ARRITEM(axisi, *SCV_get_cfg_type(this, "CFG_BUS0_XSLV_PLIC"), axisi));
+        CONNECT(plic0, 0, plic0.o_xslvo, ARRITEM(axiso, *SCV_get_cfg_type(this, "CFG_BUS0_XSLV_PLIC"), axiso));
         CONNECT(plic0, 0, plic0.i_irq_request, wb_ext_irqs);
         CONNECT(plic0, 0, plic0.o_ip, wb_plic_xeip);
     ENDNEW();
@@ -265,8 +265,8 @@ TEXT();
     NEW(u_cdc_ddr0, u_cdc_ddr0.getName().c_str());
         CONNECT(u_cdc_ddr0, 0, u_cdc_ddr0.i_xslv_clk, i_sys_clk);
         CONNECT(u_cdc_ddr0, 0, u_cdc_ddr0.i_xslv_nrst, i_sys_nrst);
-        CONNECT(u_cdc_ddr0, 0, u_cdc_ddr0.i_xslvi, ARRITEM(axisi, glob_bus0_cfg_->CFG_BUS0_XSLV_DDR, axisi));
-        CONNECT(u_cdc_ddr0, 0, u_cdc_ddr0.o_xslvo, ARRITEM(axiso, glob_bus0_cfg_->CFG_BUS0_XSLV_DDR, axiso));
+        CONNECT(u_cdc_ddr0, 0, u_cdc_ddr0.i_xslvi, ARRITEM(axisi, *SCV_get_cfg_type(this, "CFG_BUS0_XSLV_DDR"), axisi));
+        CONNECT(u_cdc_ddr0, 0, u_cdc_ddr0.o_xslvo, ARRITEM(axiso, *SCV_get_cfg_type(this, "CFG_BUS0_XSLV_DDR"), axiso));
         CONNECT(u_cdc_ddr0, 0, u_cdc_ddr0.i_xmst_clk, i_ddr_clk);
         CONNECT(u_cdc_ddr0, 0, u_cdc_ddr0.i_xmst_nrst, i_ddr_nrst);
         CONNECT(u_cdc_ddr0, 0, u_cdc_ddr0.o_xmsto, o_ddr_xslvi);
@@ -279,10 +279,10 @@ TEXT();
     NEW(uart1, uart1.getName().c_str());
         CONNECT(uart1, 0, uart1.i_clk, i_sys_clk);
         CONNECT(uart1, 0, uart1.i_nrst, i_sys_nrst);
-        CONNECT(uart1, 0, uart1.i_mapinfo, ARRITEM(bus1_mapinfo, glob_bus1_cfg_->CFG_BUS1_PSLV_UART1, bus1_mapinfo));
-        CONNECT(uart1, 0, uart1.o_cfg, ARRITEM(dev_pnp, glob_pnp_cfg_->SOC_PNP_UART1, dev_pnp));
-        CONNECT(uart1, 0, uart1.i_apbi, ARRITEM(apbi, glob_bus1_cfg_->CFG_BUS1_PSLV_UART1, apbi));
-        CONNECT(uart1, 0, uart1.o_apbo, ARRITEM(apbo, glob_bus1_cfg_->CFG_BUS1_PSLV_UART1, apbo));
+        CONNECT(uart1, 0, uart1.i_mapinfo, ARRITEM(bus1_mapinfo, *SCV_get_cfg_type(this, "CFG_BUS1_PSLV_UART1"), bus1_mapinfo));
+        CONNECT(uart1, 0, uart1.o_cfg, ARRITEM(dev_pnp, *SCV_get_cfg_type(this, "SOC_PNP_UART1"), dev_pnp));
+        CONNECT(uart1, 0, uart1.i_apbi, ARRITEM(apbi, *SCV_get_cfg_type(this, "CFG_BUS1_PSLV_UART1"), apbi));
+        CONNECT(uart1, 0, uart1.o_apbo, ARRITEM(apbo, *SCV_get_cfg_type(this, "CFG_BUS1_PSLV_UART1"), apbo));
         CONNECT(uart1, 0, uart1.i_rd, i_uart1_rd);
         CONNECT(uart1, 0, uart1.o_td, o_uart1_td);
         CONNECT(uart1, 0, uart1.o_irq, w_irq_uart1);
@@ -293,10 +293,10 @@ TEXT();
     NEW(gpio0, gpio0.getName().c_str());
         CONNECT(gpio0, 0, gpio0.i_clk, i_sys_clk);
         CONNECT(gpio0, 0, gpio0.i_nrst, i_sys_nrst);
-        CONNECT(gpio0, 0, gpio0.i_mapinfo, ARRITEM(bus1_mapinfo, glob_bus1_cfg_->CFG_BUS1_PSLV_GPIO, bus1_mapinfo));
-        CONNECT(gpio0, 0, gpio0.o_cfg, ARRITEM(dev_pnp, glob_pnp_cfg_->SOC_PNP_GPIO, dev_pnp));
-        CONNECT(gpio0, 0, gpio0.i_apbi, ARRITEM(apbi, glob_bus1_cfg_->CFG_BUS1_PSLV_GPIO, apbi));
-        CONNECT(gpio0, 0, gpio0.o_apbo, ARRITEM(apbo, glob_bus1_cfg_->CFG_BUS1_PSLV_GPIO, apbo));
+        CONNECT(gpio0, 0, gpio0.i_mapinfo, ARRITEM(bus1_mapinfo, *SCV_get_cfg_type(this, "CFG_BUS1_PSLV_GPIO"), bus1_mapinfo));
+        CONNECT(gpio0, 0, gpio0.o_cfg, ARRITEM(dev_pnp, *SCV_get_cfg_type(this, "SOC_PNP_GPIO"), dev_pnp));
+        CONNECT(gpio0, 0, gpio0.i_apbi, ARRITEM(apbi, *SCV_get_cfg_type(this, "CFG_BUS1_PSLV_GPIO"), apbi));
+        CONNECT(gpio0, 0, gpio0.o_apbo, ARRITEM(apbo, *SCV_get_cfg_type(this, "CFG_BUS1_PSLV_GPIO"), apbo));
         CONNECT(gpio0, 0, gpio0.i_gpio, i_gpio);
         CONNECT(gpio0, 0, gpio0.o_gpio_dir, o_gpio_dir);
         CONNECT(gpio0, 0, gpio0.o_gpio, o_gpio);
@@ -308,14 +308,14 @@ TEXT();
     NEW(sdctrl0, sdctrl0.getName().c_str());
         CONNECT(sdctrl0, 0, sdctrl0.i_clk, i_sys_clk);
         CONNECT(sdctrl0, 0, sdctrl0.i_nrst, i_sys_nrst);
-        CONNECT(sdctrl0, 0, sdctrl0.i_xmapinfo, ARRITEM(bus0_mapinfo, glob_bus0_cfg_->CFG_BUS0_XSLV_SDCTRL_MEM, bus0_mapinfo));
-        CONNECT(sdctrl0, 0, sdctrl0.o_xcfg, ARRITEM(dev_pnp, glob_pnp_cfg_->SOC_PNP_SDCTRL_MEM, dev_pnp));
-        CONNECT(sdctrl0, 0, sdctrl0.i_xslvi, ARRITEM(axisi, glob_bus0_cfg_->CFG_BUS0_XSLV_SDCTRL_MEM, axisi));
-        CONNECT(sdctrl0, 0, sdctrl0.o_xslvo, ARRITEM(axiso, glob_bus0_cfg_->CFG_BUS0_XSLV_SDCTRL_MEM, axiso));
-        CONNECT(sdctrl0, 0, sdctrl0.i_pmapinfo, ARRITEM(bus1_mapinfo, glob_bus1_cfg_->CFG_BUS1_PSLV_SDCTRL_REG, bus1_mapinfo));
-        CONNECT(sdctrl0, 0, sdctrl0.o_pcfg, ARRITEM(dev_pnp, glob_pnp_cfg_->SOC_PNP_SDCTRL_REG, dev_pnp));
-        CONNECT(sdctrl0, 0, sdctrl0.i_apbi, ARRITEM(apbi, glob_bus1_cfg_->CFG_BUS1_PSLV_SDCTRL_REG, apbi));
-        CONNECT(sdctrl0, 0, sdctrl0.o_apbo, ARRITEM(apbo, glob_bus1_cfg_->CFG_BUS1_PSLV_SDCTRL_REG, apbo));
+        CONNECT(sdctrl0, 0, sdctrl0.i_xmapinfo, ARRITEM(bus0_mapinfo, *SCV_get_cfg_type(this, "CFG_BUS0_XSLV_SDCTRL_MEM"), bus0_mapinfo));
+        CONNECT(sdctrl0, 0, sdctrl0.o_xcfg, ARRITEM(dev_pnp, *SCV_get_cfg_type(this, "SOC_PNP_SDCTRL_MEM"), dev_pnp));
+        CONNECT(sdctrl0, 0, sdctrl0.i_xslvi, ARRITEM(axisi, *SCV_get_cfg_type(this, "CFG_BUS0_XSLV_SDCTRL_MEM"), axisi));
+        CONNECT(sdctrl0, 0, sdctrl0.o_xslvo, ARRITEM(axiso, *SCV_get_cfg_type(this, "CFG_BUS0_XSLV_SDCTRL_MEM"), axiso));
+        CONNECT(sdctrl0, 0, sdctrl0.i_pmapinfo, ARRITEM(bus1_mapinfo, *SCV_get_cfg_type(this, "CFG_BUS1_PSLV_SDCTRL_REG"), bus1_mapinfo));
+        CONNECT(sdctrl0, 0, sdctrl0.o_pcfg, ARRITEM(dev_pnp, *SCV_get_cfg_type(this, "SOC_PNP_SDCTRL_REG"), dev_pnp));
+        CONNECT(sdctrl0, 0, sdctrl0.i_apbi, ARRITEM(apbi, *SCV_get_cfg_type(this, "CFG_BUS1_PSLV_SDCTRL_REG"), apbi));
+        CONNECT(sdctrl0, 0, sdctrl0.o_apbo, ARRITEM(apbo, *SCV_get_cfg_type(this, "CFG_BUS1_PSLV_SDCTRL_REG"), apbo));
         CONNECT(sdctrl0, 0, sdctrl0.o_sclk, o_sd_sclk);
         CONNECT(sdctrl0, 0, sdctrl0.i_cmd, i_sd_cmd);
         CONNECT(sdctrl0, 0, sdctrl0.o_cmd, o_sd_cmd);
@@ -347,9 +347,9 @@ TEXT();
         CONNECT(pcidma0, 0, pcidma0.i_pcie_dmai, i_pcie_dmai);
         CONNECT(pcidma0, 0, pcidma0.o_pcie_dmao, o_pcie_dmao);
         CONNECT(pcidma0, 0, pcidma0.i_pcie_completer_id, i_pcie_completer_id);
-        CONNECT(pcidma0, 0, pcidma0.o_xmst_cfg, ARRITEM(dev_pnp, glob_pnp_cfg_->SOC_PNP_PCIE_DMA, dev_pnp));
-        CONNECT(pcidma0, 0, pcidma0.i_xmsti, ARRITEM(aximi, glob_bus0_cfg_->CFG_BUS0_XMST_PCIE, aximi));
-        CONNECT(pcidma0, 0, pcidma0.o_xmsto, ARRITEM(aximo, glob_bus0_cfg_->CFG_BUS0_XMST_PCIE, aximo));
+        CONNECT(pcidma0, 0, pcidma0.o_xmst_cfg, ARRITEM(dev_pnp, *SCV_get_cfg_type(this, "SOC_PNP_PCIE_DMA"), dev_pnp));
+        CONNECT(pcidma0, 0, pcidma0.i_xmsti, ARRITEM(aximi, *SCV_get_cfg_type(this, "CFG_BUS0_XMST_PCIE"), aximi));
+        CONNECT(pcidma0, 0, pcidma0.o_xmsto, ARRITEM(aximo, *SCV_get_cfg_type(this, "CFG_BUS0_XMST_PCIE"), aximo));
         CONNECT(pcidma0, 0, pcidma0.o_dma_state, wb_pcie_dma_state);
     ENDNEW();
 
@@ -357,10 +357,10 @@ TEXT();
     NEW(ppcie0, ppcie0.getName().c_str());
         CONNECT(ppcie0, 0, ppcie0.i_clk, i_sys_clk);
         CONNECT(ppcie0, 0, ppcie0.i_nrst, i_sys_nrst);
-        CONNECT(ppcie0, 0, ppcie0.i_mapinfo, ARRITEM(bus1_mapinfo, glob_bus1_cfg_->CFG_BUS1_PSLV_PCIE, bus1_mapinfo));
-        CONNECT(ppcie0, 0, ppcie0.o_cfg, ARRITEM(dev_pnp, glob_pnp_cfg_->SOC_PNP_PCIE_APB, dev_pnp));
-        CONNECT(ppcie0, 0, ppcie0.i_apbi, ARRITEM(apbi, glob_bus1_cfg_->CFG_BUS1_PSLV_PCIE, apbi));
-        CONNECT(ppcie0, 0, ppcie0.o_apbo, ARRITEM(apbo, glob_bus1_cfg_->CFG_BUS1_PSLV_PCIE, apbo));
+        CONNECT(ppcie0, 0, ppcie0.i_mapinfo, ARRITEM(bus1_mapinfo, *SCV_get_cfg_type(this, "CFG_BUS1_PSLV_PCIE"), bus1_mapinfo));
+        CONNECT(ppcie0, 0, ppcie0.o_cfg, ARRITEM(dev_pnp, *SCV_get_cfg_type(this, "SOC_PNP_PCIE_APB"), dev_pnp));
+        CONNECT(ppcie0, 0, ppcie0.i_apbi, ARRITEM(apbi, *SCV_get_cfg_type(this, "CFG_BUS1_PSLV_PCIE"), apbi));
+        CONNECT(ppcie0, 0, ppcie0.o_apbo, ARRITEM(apbo, *SCV_get_cfg_type(this, "CFG_BUS1_PSLV_PCIE"), apbo));
         CONNECT(ppcie0, 0, ppcie0.i_pcie_completer_id, i_pcie_completer_id);
         CONNECT(ppcie0, 0, ppcie0.i_dma_state, wb_pcie_dma_state);
     ENDNEW();
@@ -375,11 +375,11 @@ TEXT();
     NEW(pnp0, pnp0.getName().c_str());
         CONNECT(pnp0, 0, pnp0.i_clk, i_sys_clk);
         CONNECT(pnp0, 0, pnp0.i_nrst, i_sys_nrst);
-        CONNECT(pnp0, 0, pnp0.i_mapinfo, ARRITEM(bus1_mapinfo, glob_bus1_cfg_->CFG_BUS1_PSLV_PNP, bus1_mapinfo));
+        CONNECT(pnp0, 0, pnp0.i_mapinfo, ARRITEM(bus1_mapinfo, *SCV_get_cfg_type(this, "CFG_BUS1_PSLV_PNP"), bus1_mapinfo));
         CONNECT(pnp0, 0, pnp0.i_cfg, dev_pnp);
-        CONNECT(pnp0, 0, pnp0.o_cfg, ARRITEM(dev_pnp, glob_pnp_cfg_->SOC_PNP_PNP, dev_pnp));
-        CONNECT(pnp0, 0, pnp0.i_apbi, ARRITEM(apbi, glob_bus1_cfg_->CFG_BUS1_PSLV_PNP, apbi));
-        CONNECT(pnp0, 0, pnp0.o_apbo, ARRITEM(apbo, glob_bus1_cfg_->CFG_BUS1_PSLV_PNP, apbo));
+        CONNECT(pnp0, 0, pnp0.o_cfg, ARRITEM(dev_pnp, *SCV_get_cfg_type(this, "SOC_PNP_PNP"), dev_pnp));
+        CONNECT(pnp0, 0, pnp0.i_apbi, ARRITEM(apbi, *SCV_get_cfg_type(this, "CFG_BUS1_PSLV_PNP"), apbi));
+        CONNECT(pnp0, 0, pnp0.o_apbo, ARRITEM(apbo, *SCV_get_cfg_type(this, "CFG_BUS1_PSLV_PNP"), apbo));
         CONNECT(pnp0, 0, pnp0.o_irq, w_irq_pnp);
     ENDNEW();
 
@@ -388,10 +388,6 @@ TEXT();
 }
 
 void gencpu64_soc::proc_comb() {
-    river_cfg *cfg = glob_river_cfg_;
-    types_amba *amba = glob_types_amba_;
-
-
     TEXT();
     TEXT("assign interrupts:");
     SETBITS(comb.vb_ext_irqs, 22, 0, ALLZEROS());
@@ -424,22 +420,37 @@ void gencpu64_soc::proc_comb() {
     TEXT();
     TEXT("Nullify emty AXI-slots:");
 #if GENCFG_XDMA_ENABLE
-    SETARRITEM(aximo, glob_bus0_cfg_->CFG_BUS0_XMST_DMA, aximo, amba->axi4_master_out_none);
+    SETARRITEM(aximo, *SCV_get_cfg_type(this, "CFG_BUS0_XMST_DMA"), aximo, amba->axi4_master_out_none);
 #endif
-    SETVAL(acpo, amba->axi4_master_out_none);
+    SETVAL(acpo, *SCV_get_cfg_type(this, "axi4_master_out_none"));
 
     TEXT();
     TEXT("PRCI:");
-    SETVAL(o_prci_apbi, ARRITEM(apbi, glob_bus1_cfg_->CFG_BUS1_PSLV_PRCI, apbi));
-    SETARRITEM(apbo, glob_bus1_cfg_->CFG_BUS1_PSLV_PRCI, apbo, i_prci_apbo);
-    SETARRITEM(dev_pnp, glob_pnp_cfg_->SOC_PNP_PRCI, dev_pnp, i_prci_pdevcfg);
+    SETVAL(o_prci_apbi, ARRITEM(apbi, *SCV_get_cfg_type(this, "CFG_BUS1_PSLV_PRCI"), apbi));
+    SETARRITEM(apbo, *SCV_get_cfg_type(this, "CFG_BUS1_PSLV_PRCI"), apbo, i_prci_apbo);
+    SETARRITEM(dev_pnp, *SCV_get_cfg_type(this, "SOC_PNP_PRCI"), dev_pnp, i_prci_pdevcfg);
 
     TEXT();
     TEXT("DDR:");
-    SETVAL(o_ddr_xmapinfo, ARRITEM(bus0_mapinfo, glob_bus0_cfg_->CFG_BUS0_XSLV_DDR, bus0_mapinfo));
-    SETARRITEM(dev_pnp, glob_pnp_cfg_->SOC_PNP_DDR_AXI, dev_pnp, i_ddr_xdevcfg);
-    SETVAL(o_ddr_pmapinfo, ARRITEM(bus1_mapinfo, glob_bus1_cfg_->CFG_BUS1_PSLV_DDR, bus1_mapinfo));
-    SETARRITEM(dev_pnp, glob_pnp_cfg_->SOC_PNP_DDR_APB, dev_pnp, i_ddr_pdevcfg);
-    SETVAL(o_ddr_apbi, ARRITEM(apbi, glob_bus1_cfg_->CFG_BUS1_PSLV_DDR, apbi));
-    SETARRITEM(apbo, glob_bus1_cfg_->CFG_BUS1_PSLV_DDR, apbo, i_ddr_apbo);
+    SETVAL(o_ddr_xmapinfo, ARRITEM(bus0_mapinfo, *SCV_get_cfg_type(this, "CFG_BUS0_XSLV_DDR"), bus0_mapinfo));
+    SETARRITEM(dev_pnp, *SCV_get_cfg_type(this, "SOC_PNP_DDR_AXI"), dev_pnp, i_ddr_xdevcfg);
+    SETVAL(o_ddr_pmapinfo, ARRITEM(bus1_mapinfo, *SCV_get_cfg_type(this, "CFG_BUS1_PSLV_DDR"), bus1_mapinfo));
+    SETARRITEM(dev_pnp, *SCV_get_cfg_type(this, "SOC_PNP_DDR_APB"), dev_pnp, i_ddr_pdevcfg);
+    SETVAL(o_ddr_apbi, ARRITEM(apbi, *SCV_get_cfg_type(this, "CFG_BUS1_PSLV_DDR"), apbi));
+    SETARRITEM(apbo, *SCV_get_cfg_type(this, "CFG_BUS1_PSLV_DDR"), apbo, i_ddr_apbo);
+
+#if !GENCFG_SD_CTRL_ENABLE
+    TEXT("SD-controlled disabled:");
+    SETARRITEM(dev_pnp, *SCV_get_cfg_type(this, "SOC_PNP_SDCTRL_REG"), dev_pnp, *SCV_get_cfg_type(this, "dev_config_none"));
+    SETARRITEM(dev_pnp, *SCV_get_cfg_type(this, "SOC_PNP_SDCTRL_MEM"), dev_pnp, *SCV_get_cfg_type(this, "dev_config_none"));
+#endif
+#if !GENCFG_HDMI_ENABLE
+    TEXT("I2C Controller disabled:");
+    SETARRITEM(dev_pnp, *SCV_get_cfg_type(this, "SOC_PNP_I2C"), dev_pnp, *SCV_get_cfg_type(this, "dev_config_none"));
+#endif
+#if !GENCFG_PCIE_ENABLE
+    TEXT("PCIe disabled:");
+    SETARRITEM(dev_pnp, *SCV_get_cfg_type(this, "SOC_PNP_PCIE_DMA"), dev_pnp, *SCV_get_cfg_type(this, "dev_config_none"));
+    SETARRITEM(dev_pnp, *SCV_get_cfg_type(this, "SOC_PNP_PCIE_APB"), dev_pnp, *SCV_get_cfg_type(this, "dev_config_none"));
+#endif
 }

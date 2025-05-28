@@ -79,6 +79,9 @@ std::string Logic::getType() {
                 ret += "sc_biguint<" + strw + ">";
             } else if (getWidth() < getMinWidthOfArray()) {
                 ret += "bool";
+                if (isSignal() && isAttribute(ATTR_UNCHECKED_WRITERS)) {
+                    ret += ", SC_UNCHECKED_WRITERS";
+                }
             } else {
                 // Logic1 generates sc_uint<1> instead of bool:
                 ret += "sc_uint<" + strw + ">";
@@ -87,6 +90,8 @@ std::string Logic::getType() {
     } else if (SCV_is_sv()) {
         if (isParam() && !isParamGeneric()) {
             ret = std::string("bit");
+        } else if (isAttribute(ATTR_UNCHECKED_WRITERS)) {
+            ret = std::string("wire");
         } else {
             ret = std::string("logic");
         }
@@ -141,7 +146,7 @@ std::string Logic::generate() {
             ret += "sc_bv<" + strw + ">";
         } else if (getWidth() > 64 || isBigSC()) {
             ret += "sc_biguint<" + strw + ">";
-            } else if (getWidth() <= 1) {
+        } else if (getWidth() <= 1) {
                 ret += "bool";
         } else {
             ret += "sc_uint<" + strw + ">";

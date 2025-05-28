@@ -14,12 +14,10 @@
 //  limitations under the License.
 // 
 
-#include "types_bus0.h"
+#include "types_gencpu64_bus0.h"
 
-types_bus0* glob_bus0_cfg_ = 0;
-
-types_bus0::types_bus0(GenObject *parent) :
-    FileObject(parent, "types_bus0"),
+types_gencpu64_bus0::types_gencpu64_bus0(GenObject *parent) :
+    FileObject(parent, "types_gencpu64_bus0"),
     xmst_autoincr_(0),
     xslv_autoincr_(0),
     _xmst0_(this),
@@ -79,6 +77,5 @@ types_bus0::types_bus0(GenObject *parent) :
     CFG_BUS0_MAP(this),
     _n_(this)
 {
-    glob_bus0_cfg_ = this;
 }
 

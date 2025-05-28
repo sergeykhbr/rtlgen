@@ -23,6 +23,7 @@ namespace sysvc {
 GenObject::GenObject(GenObject *parent, const char *comment) {
     parent_ = parent;
     comment_ = std::string(comment);
+    attributes_ = 0;
     if (parent_) {
         parent_->add_entry(this);
     }

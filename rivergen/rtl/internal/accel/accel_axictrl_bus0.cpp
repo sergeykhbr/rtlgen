@@ -14,10 +14,10 @@
 //  limitations under the License.
 // 
 
-#include "axictrl_bus0.h"
+#include "accel_axictrl_bus0.h"
 
-axictrl_bus0::axictrl_bus0(GenObject *parent, const char *name, const char *comment) :
-    ModuleObject(parent, "axictrl_bus0", name, comment),
+accel_axictrl_bus0::accel_axictrl_bus0(GenObject *parent, const char *name, const char *comment) :
+    ModuleObject(parent, "accel_axictrl_bus0", name, comment),
     i_clk(this, "i_clk", "1", "CPU clock"),
     i_nrst(this, "i_nrst", "1", "Reset: active LOW"),
     o_cfg(this, "o_cfg", "Slave config descriptor"),
@@ -55,8 +55,8 @@ axictrl_bus0::axictrl_bus0(GenObject *parent, const char *name, const char *comm
     comb(this)
 {
     Operation::start(this);
-    xdef0.vid.setObjValue(&glob_pnp_cfg_->VENDOR_OPTIMITECH);
-    xdef0.did.setObjValue(&glob_pnp_cfg_->OPTIMITECH_AXI_INTERCONNECT);
+    xdef0.vid.setObjValue(SCV_get_cfg_type(this, "VENDOR_OPTIMITECH"));
+    xdef0.did.setObjValue(SCV_get_cfg_type(this, "OPTIMITECH_AXI_INTERCONNECT"));
     NEW(xdef0, xdef0.getName().c_str());
         CONNECT(xdef0, 0, xdef0.i_clk, i_clk);
         CONNECT(xdef0, 0, xdef0.i_nrst, i_nrst);
@@ -81,39 +81,39 @@ axictrl_bus0::axictrl_bus0(GenObject *parent, const char *name, const char *comm
     proc_comb();
 }
 
-void axictrl_bus0::proc_comb() {
-    types_amba* cfg = glob_types_amba_;
-    types_bus0 *bus0 = glob_bus0_cfg_;
+void accel_axictrl_bus0::proc_comb() {
     GenObject *i;
+    types_accel_bus0::CONST_CFG_BUS0_MAP *map = 
+        dynamic_cast<types_accel_bus0::CONST_CFG_BUS0_MAP *>(SCV_get_cfg_type(this, "CFG_BUS0_MAP"));
     
     SETZERO(comb.vb_def_mapinfo.addr_start);
     SETZERO(comb.vb_def_mapinfo.addr_end);
-    i = &FOR ("i", CONST("0"), bus0->CFG_BUS0_XMST_TOTAL, "++");
+    i = &FOR ("i", CONST("0"), *SCV_get_cfg_type(this, "CFG_BUS0_XMST_TOTAL"), "++");
         SETARRITEM(comb.vmsto, *i, comb.vmsto, ARRITEM(i_xmsto, *i, i_xmsto), "Cannot read vector item from port in systemc");
-        SETARRITEM(comb.vmsti, *i, comb.vmsti, cfg->axi4_master_in_none);
+        SETARRITEM(comb.vmsti, *i, comb.vmsti, *SCV_get_cfg_type(this, "axi4_master_in_none"));
     ENDFOR();
     TEXT("Unmapped default slots:");
-    SETARRITEM(comb.vmsto, bus0->CFG_BUS0_XMST_TOTAL, comb.vmsto, cfg->axi4_master_out_none);
-    SETARRITEM(comb.vmsti, bus0->CFG_BUS0_XMST_TOTAL, comb.vmsti, cfg->axi4_master_in_none);
+    SETARRITEM(comb.vmsto, *SCV_get_cfg_type(this, "CFG_BUS0_XMST_TOTAL"), comb.vmsto, *SCV_get_cfg_type(this, "axi4_master_out_none"));
+    SETARRITEM(comb.vmsti, *SCV_get_cfg_type(this, "CFG_BUS0_XMST_TOTAL"), comb.vmsti, *SCV_get_cfg_type(this, "axi4_master_in_none"));
 
 TEXT();
-    i = &FOR ("i", CONST("0"), bus0->CFG_BUS0_XSLV_TOTAL, "++");
+    i = &FOR ("i", CONST("0"), *SCV_get_cfg_type(this, "CFG_BUS0_XSLV_TOTAL"), "++");
         SETARRITEM(comb.vslvo, *i, comb.vslvo, ARRITEM(i_xslvo, *i, i_xslvo), "Cannot read vector item from port in systemc");
-        SETARRITEM(comb.vslvi, *i, comb.vslvi, cfg->axi4_slave_in_none);
+        SETARRITEM(comb.vslvi, *i, comb.vslvi, *SCV_get_cfg_type(this, "axi4_slave_in_none"));
     ENDFOR();
     TEXT("Unmapped default slots:");
-    SETARRITEM(comb.vslvo, bus0->CFG_BUS0_XSLV_TOTAL, comb.vslvo, wb_def_xslvo);
-    SETARRITEM(comb.vslvi, bus0->CFG_BUS0_XSLV_TOTAL, comb.vslvi, cfg->axi4_slave_in_none);
+    SETARRITEM(comb.vslvo, *SCV_get_cfg_type(this, "CFG_BUS0_XSLV_TOTAL"), comb.vslvo, wb_def_xslvo);
+    SETARRITEM(comb.vslvi, *SCV_get_cfg_type(this, "CFG_BUS0_XSLV_TOTAL"), comb.vslvi, *SCV_get_cfg_type(this, "axi4_slave_in_none"));
 
 TEXT();
     SETONE(w_def_req_ready);
     SETONE(w_def_resp_valid);
     SETVAL(wb_def_resp_rdata, ALLONES());
     SETONE(w_def_resp_err);
-    SETVAL(comb.i_ar_midx, bus0->CFG_BUS0_XMST_TOTAL);
-    SETVAL(comb.i_aw_midx, bus0->CFG_BUS0_XMST_TOTAL);
-    SETVAL(comb.i_ar_sidx, bus0->CFG_BUS0_XSLV_TOTAL);
-    SETVAL(comb.i_aw_sidx, bus0->CFG_BUS0_XSLV_TOTAL);
+    SETVAL(comb.i_ar_midx, *SCV_get_cfg_type(this, "CFG_BUS0_XMST_TOTAL"));
+    SETVAL(comb.i_aw_midx, *SCV_get_cfg_type(this, "CFG_BUS0_XMST_TOTAL"));
+    SETVAL(comb.i_ar_sidx, *SCV_get_cfg_type(this, "CFG_BUS0_XSLV_TOTAL"));
+    SETVAL(comb.i_aw_sidx, *SCV_get_cfg_type(this, "CFG_BUS0_XSLV_TOTAL"));
     SETVAL(comb.i_r_midx, TO_INT(r_midx));
     SETVAL(comb.i_r_sidx, TO_INT(r_sidx));
     SETVAL(comb.i_w_midx, TO_INT(w_midx));
@@ -123,7 +123,7 @@ TEXT();
 
 TEXT();
     TEXT("Select Master bus:");
-    i = &FOR ("i", CONST("0"), bus0->CFG_BUS0_XMST_TOTAL, "++");
+    i = &FOR ("i", CONST("0"), *SCV_get_cfg_type(this, "CFG_BUS0_XMST_TOTAL"), "++");
         IF (NZ(ARRITEM(comb.vmsto, *i, comb.vmsto.ar_valid)));
             SETVAL(comb.i_ar_midx, *i);
         ENDIF();
@@ -134,17 +134,17 @@ TEXT();
 
 TEXT();
     TEXT("Select Slave interface:");
-    i = &FOR ("i", CONST("0"), bus0->CFG_BUS0_XSLV_TOTAL, "++");
-        IF (ANDx(2, &LE(ARRITEM(bus0->CFG_BUS0_MAP, *i, BITS(bus0->CFG_BUS0_MAP.addr_start, DEC(cfg->CFG_SYSBUS_ADDR_BITS), CONST("12"))),
-                        ARRITEM(comb.vmsto, comb.i_ar_midx, BITS(comb.vmsto.ar_bits.addr, DEC(cfg->CFG_SYSBUS_ADDR_BITS), CONST("12")))), 
-                    &LS(ARRITEM(comb.vmsto, comb.i_ar_midx, BITS(comb.vmsto.ar_bits.addr, DEC(cfg->CFG_SYSBUS_ADDR_BITS), CONST("12"))),
-                        ARRITEM(bus0->CFG_BUS0_MAP, *i, BITS(bus0->CFG_BUS0_MAP.addr_end, DEC(cfg->CFG_SYSBUS_ADDR_BITS), CONST("12"))))));
+    i = &FOR ("i", CONST("0"), *SCV_get_cfg_type(this, "CFG_BUS0_XSLV_TOTAL"), "++");
+        IF (ANDx(2, &LE(ARRITEM(*map, *i, BITS(map->addr_start, DEC(*SCV_get_cfg_type(this, "CFG_SYSBUS_ADDR_BITS")), CONST("12"))),
+                        ARRITEM(comb.vmsto, comb.i_ar_midx, BITS(comb.vmsto.ar_bits.addr, DEC(*SCV_get_cfg_type(this, "CFG_SYSBUS_ADDR_BITS")), CONST("12")))), 
+                    &LS(ARRITEM(comb.vmsto, comb.i_ar_midx, BITS(comb.vmsto.ar_bits.addr, DEC(*SCV_get_cfg_type(this, "CFG_SYSBUS_ADDR_BITS")), CONST("12"))),
+                        ARRITEM(*map, *i, BITS(map->addr_end, DEC(*SCV_get_cfg_type(this, "CFG_SYSBUS_ADDR_BITS")), CONST("12"))))));
             SETVAL(comb.i_ar_sidx, *i);
         ENDIF();
-        IF (ANDx(2, &LE(ARRITEM(bus0->CFG_BUS0_MAP, *i, BITS(bus0->CFG_BUS0_MAP.addr_start, DEC(cfg->CFG_SYSBUS_ADDR_BITS), CONST("12"))),
-                        ARRITEM(comb.vmsto, comb.i_aw_midx, BITS(comb.vmsto.aw_bits.addr, DEC(cfg->CFG_SYSBUS_ADDR_BITS), CONST("12")))), 
-                    &LS(ARRITEM(comb.vmsto, comb.i_aw_midx, BITS(comb.vmsto.aw_bits.addr, DEC(cfg->CFG_SYSBUS_ADDR_BITS), CONST("12"))),
-                        ARRITEM(bus0->CFG_BUS0_MAP, *i, BITS(bus0->CFG_BUS0_MAP.addr_end, DEC(cfg->CFG_SYSBUS_ADDR_BITS), CONST("12"))))));
+        IF (ANDx(2, &LE(ARRITEM(*map, *i, BITS(map->addr_start, DEC(*SCV_get_cfg_type(this, "CFG_SYSBUS_ADDR_BITS")), CONST("12"))),
+                        ARRITEM(comb.vmsto, comb.i_aw_midx, BITS(comb.vmsto.aw_bits.addr, DEC(*SCV_get_cfg_type(this, "CFG_SYSBUS_ADDR_BITS")), CONST("12")))), 
+                    &LS(ARRITEM(comb.vmsto, comb.i_aw_midx, BITS(comb.vmsto.aw_bits.addr, DEC(*SCV_get_cfg_type(this, "CFG_SYSBUS_ADDR_BITS")), CONST("12"))),
+                        ARRITEM(*map, *i, BITS(map->addr_end, DEC(*SCV_get_cfg_type(this, "CFG_SYSBUS_ADDR_BITS")), CONST("12"))))));
             SETVAL(comb.i_aw_sidx, *i);
         ENDIF();
     ENDFOR();
@@ -167,18 +167,18 @@ TEXT();
                                  ARRITEM(comb.vslvo, comb.i_b_sidx, comb.vslvo.b_valid)));
 
 TEXT();
-    IF (AND2(NE(r_sidx, bus0->CFG_BUS0_XSLV_TOTAL), EZ(comb.v_r_fire)));
+    IF (AND2(NE(r_sidx, *SCV_get_cfg_type(this, "CFG_BUS0_XSLV_TOTAL")), EZ(comb.v_r_fire)));
         SETONE(comb.v_r_busy);
     ENDIF();
 
 TEXT();
-    IF (ORx(2, &AND2(NE(w_sidx, bus0->CFG_BUS0_XSLV_TOTAL), EZ(comb.v_w_fire)),
-               &AND2(NE(b_sidx, bus0->CFG_BUS0_XSLV_TOTAL), EZ(comb.v_b_fire))));
+    IF (ORx(2, &AND2(NE(w_sidx, *SCV_get_cfg_type(this, "CFG_BUS0_XSLV_TOTAL")), EZ(comb.v_w_fire)),
+               &AND2(NE(b_sidx, *SCV_get_cfg_type(this, "CFG_BUS0_XSLV_TOTAL")), EZ(comb.v_b_fire))));
         SETONE(comb.v_w_busy);
     ENDIF();
 
 TEXT();
-    IF (AND2(NE(b_sidx, bus0->CFG_BUS0_XSLV_TOTAL), EZ(comb.v_b_fire)));
+    IF (AND2(NE(b_sidx, *SCV_get_cfg_type(this, "CFG_BUS0_XSLV_TOTAL")), EZ(comb.v_b_fire)));
         SETONE(comb.v_b_busy);
     ENDIF();
 
@@ -187,8 +187,8 @@ TEXT();
         SETVAL(r_sidx, comb.i_ar_sidx);
         SETVAL(r_midx, comb.i_ar_midx);
     ELSIF (NZ(comb.v_r_fire));
-        SETVAL(r_sidx, bus0->CFG_BUS0_XSLV_TOTAL);
-        SETVAL(r_midx, bus0->CFG_BUS0_XMST_TOTAL);
+        SETVAL(r_sidx, *SCV_get_cfg_type(this, "CFG_BUS0_XSLV_TOTAL"));
+        SETVAL(r_midx, *SCV_get_cfg_type(this, "CFG_BUS0_XMST_TOTAL"));
     ENDIF();
 
 TEXT();
@@ -196,8 +196,8 @@ TEXT();
         SETVAL(w_sidx, comb.i_aw_sidx);
         SETVAL(w_midx, comb.i_aw_midx);
     ELSIF (AND2(NZ(comb.v_w_fire), EZ(comb.v_b_busy)));
-        SETVAL(w_sidx, bus0->CFG_BUS0_XSLV_TOTAL);
-        SETVAL(w_midx, bus0->CFG_BUS0_XMST_TOTAL);
+        SETVAL(w_sidx, *SCV_get_cfg_type(this, "CFG_BUS0_XSLV_TOTAL"));
+        SETVAL(w_midx, *SCV_get_cfg_type(this, "CFG_BUS0_XMST_TOTAL"));
     ENDIF();
 
 TEXT();
@@ -205,8 +205,8 @@ TEXT();
         SETVAL(b_sidx, w_sidx);
         SETVAL(b_midx, w_midx);
     ELSIF (NZ(comb.v_b_fire));
-        SETVAL(b_sidx, bus0->CFG_BUS0_XSLV_TOTAL);
-        SETVAL(b_midx, bus0->CFG_BUS0_XMST_TOTAL);
+        SETVAL(b_sidx, *SCV_get_cfg_type(this, "CFG_BUS0_XSLV_TOTAL"));
+        SETVAL(b_midx, *SCV_get_cfg_type(this, "CFG_BUS0_XMST_TOTAL"));
     ENDIF();
 
 TEXT();
@@ -257,13 +257,13 @@ TEXT();
     SYNC_RESET();
 
 TEXT();
-     i = &FOR ("i", CONST("0"), bus0->CFG_BUS0_XMST_TOTAL, "++");
+     i = &FOR ("i", CONST("0"), *SCV_get_cfg_type(this, "CFG_BUS0_XMST_TOTAL"), "++");
         SETARRITEM(o_xmsti, *i, o_xmsti, ARRITEM(comb.vmsti, *i, comb.vmsti));
     ENDFOR();
-     i = &FOR ("i", CONST("0"), bus0->CFG_BUS0_XSLV_TOTAL, "++");
+     i = &FOR ("i", CONST("0"), *SCV_get_cfg_type(this, "CFG_BUS0_XSLV_TOTAL"), "++");
         SETARRITEM(o_xslvi, *i, o_xslvi, ARRITEM(comb.vslvi, *i, comb.vslvi));
-        SETARRITEM(o_mapinfo, *i, o_mapinfo, ARRITEM(bus0->CFG_BUS0_MAP, *i, bus0->CFG_BUS0_MAP));
+        SETARRITEM(o_mapinfo, *i, o_mapinfo, ARRITEM(*map, *i, *map));
     ENDFOR();
-    SETVAL(wb_def_xslvi, ARRITEM(comb.vslvi, bus0->CFG_BUS0_XSLV_TOTAL, comb.vslvi));
+    SETVAL(wb_def_xslvi, ARRITEM(comb.vslvi, *SCV_get_cfg_type(this, "CFG_BUS0_XSLV_TOTAL"), comb.vslvi));
     SETVAL(wb_def_mapinfo, comb.vb_def_mapinfo);
 }

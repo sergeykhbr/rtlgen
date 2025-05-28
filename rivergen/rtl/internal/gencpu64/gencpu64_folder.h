@@ -17,12 +17,21 @@
 #pragma once
 
 #include <api_rtlgen.h>
+#include "types_gencpu64_bus0.h"
+#include "types_gencpu64_bus1.h"
+#include "gencpu64_axi2apb_bus1.h"
+#include "gencpu64_axictrl_bus0.h"
 #include "gencpu64_soc.h"
 
 class gencpu64_folder : public FolderObject {
  public:
     gencpu64_folder(GenObject *parent) :
         FolderObject(parent, "gencpu64"),
+        types_gencpu64_bus0_(this),
+        types_gencpu64_bus1_(this),
+        types_gencpu64_buspnp_(this),
+        gencpu64_axictrl_bus0_file_(this),
+        gencpu64_axi2apb_bus1_file_(this),
         gencpu64_soc_file_(this) {}
 
     virtual std::string getLibName() override { return getName(); }
@@ -30,5 +39,9 @@ class gencpu64_folder : public FolderObject {
  protected:
     // subfolders:
     // files
+    types_gencpu64_bus0 types_gencpu64_bus0_;
+    types_gencpu64_bus1 types_gencpu64_bus1_;
+    gencpu64_axictrl_bus0_file gencpu64_axictrl_bus0_file_;
+    gencpu64_axi2apb_bus1_file gencpu64_axi2apb_bus1_file_;
     gencpu64_soc_file gencpu64_soc_file_;
 };

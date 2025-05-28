@@ -14,7 +14,6 @@
 //  limitations under the License.
 // 
 
-#include "../../../../prj/impl/asic/target_cfg.h"
 #include "l2cache_lru.h"
 
 L2CacheLru::L2CacheLru(GenObject *parent, const char *name, const char *comment) :
@@ -119,8 +118,8 @@ L2CacheLru::L2CacheLru(GenObject *parent, const char *name, const char *comment)
 
     // Generic paramters to template parameters assignment
     mem0.abus.setObjValue(&abus);
-    mem0.waybits.setObjValue(&glob_target_cfg_->CFG_L2_LOG2_NWAYS);
-    mem0.ibits.setObjValue(&glob_target_cfg_->CFG_L2_LOG2_LINES_PER_WAY);
+    mem0.waybits.setObjValue(SCV_get_cfg_type(this, "CFG_L2_LOG2_NWAYS"));
+    mem0.ibits.setObjValue(SCV_get_cfg_type(this, "CFG_L2_LOG2_LINES_PER_WAY"));
     mem0.lnbits.setObjValue(&lnbits);
     mem0.flbits.setObjValue(&flbits);
     mem0.snoop.setObjValue(&CONST("0"));
@@ -211,7 +210,7 @@ TEXT();
 
 TEXT();
     TEXT("Flush counter when direct access");
-    IF (EQ(BITS(req_addr, DEC(glob_target_cfg_->CFG_L2_LOG2_NWAYS), CONST("0")), DEC(ways)));
+    IF (EQ(BITS(req_addr, DEC(*SCV_get_cfg_type(this, "CFG_L2_LOG2_NWAYS")), CONST("0")), DEC(ways)));
         SETVAL(comb.vb_addr_direct_next, ANDx_L(2, &ADD2(req_addr, cfg->L2CACHE_BYTES_PER_LINE),
                                                    &INV_L(LINE_BYTES_MASK)));
     ELSE();

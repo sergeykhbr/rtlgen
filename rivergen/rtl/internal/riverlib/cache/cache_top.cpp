@@ -247,12 +247,13 @@ TEXT();
 }
 
 void CacheTop::proc_comb() {
-    river_cfg *cfg = glob_river_cfg_;
+    GenObject &CFG_CPU_ADDR_BITS = *SCV_get_cfg_type(this, "CFG_CPU_ADDR_BITS");
+    GenObject &RISCV_ARCH = *SCV_get_cfg_type(this, "RISCV_ARCH");
 
-    SETVAL(wb_i_req_ctrl_addr, BITS(i_req_ctrl_addr, DEC(cfg->CFG_CPU_ADDR_BITS), CONST("0")));
-    SETVAL(wb_i_req_data_addr, BITS(i_req_data_addr, DEC(cfg->CFG_CPU_ADDR_BITS), CONST("0")));
-    SETVAL(wb_i_flushi_addr, BITS(i_flushi_addr, DEC(cfg->CFG_CPU_ADDR_BITS), CONST("0")));
-    SETVAL(wb_i_flushd_addr, BITS(i_flushd_addr, DEC(cfg->CFG_CPU_ADDR_BITS), CONST("0")));
+    SETVAL(wb_i_req_ctrl_addr, BITS(i_req_ctrl_addr, DEC(CFG_CPU_ADDR_BITS), CONST("0")));
+    SETVAL(wb_i_req_data_addr, BITS(i_req_data_addr, DEC(CFG_CPU_ADDR_BITS), CONST("0")));
+    SETVAL(wb_i_flushi_addr, BITS(i_flushi_addr, DEC(CFG_CPU_ADDR_BITS), CONST("0")));
+    SETVAL(wb_i_flushd_addr, BITS(i_flushd_addr, DEC(CFG_CPU_ADDR_BITS), CONST("0")));
     SETVAL(comb.v_queue_re, i_req_mem_ready);
     SETVAL(comb.v_queue_we, OR2(i.req_mem_valid, d.req_mem_valid));
 
@@ -304,14 +305,14 @@ TEXT();
                            &comb.vb_req_mem_addr_o);
 
 TEXT();
-    SETBITS(comb.vb_resp_ctrl_addr, DEC(cfg->CFG_CPU_ADDR_BITS), CONST("0"), i.resp_addr);
-    SETBITS(comb.vb_resp_data_addr, DEC(cfg->CFG_CPU_ADDR_BITS), CONST("0"), d.resp_addr);
-    IF(LS(cfg->CFG_CPU_ADDR_BITS, cfg->RISCV_ARCH));
-        IF (NZ(BIT(i.resp_addr, DEC(cfg->CFG_CPU_ADDR_BITS))));
-            SETBITS(comb.vb_resp_ctrl_addr, DEC(cfg->RISCV_ARCH), cfg->CFG_CPU_ADDR_BITS, ALLONES()); 
+    SETBITS(comb.vb_resp_ctrl_addr, DEC(CFG_CPU_ADDR_BITS), CONST("0"), i.resp_addr);
+    SETBITS(comb.vb_resp_data_addr, DEC(CFG_CPU_ADDR_BITS), CONST("0"), d.resp_addr);
+    IF(LS(CFG_CPU_ADDR_BITS, RISCV_ARCH));
+        IF (NZ(BIT(i.resp_addr, DEC(CFG_CPU_ADDR_BITS))));
+            SETBITS(comb.vb_resp_ctrl_addr, DEC(RISCV_ARCH), CFG_CPU_ADDR_BITS, ALLONES()); 
         ENDIF();
-        IF (NZ(BIT(d.resp_addr, DEC(cfg->CFG_CPU_ADDR_BITS))));
-            SETBITS(comb.vb_resp_data_addr, DEC(cfg->RISCV_ARCH), cfg->CFG_CPU_ADDR_BITS, ALLONES()); 
+        IF (NZ(BIT(d.resp_addr, DEC(CFG_CPU_ADDR_BITS))));
+            SETBITS(comb.vb_resp_data_addr, DEC(RISCV_ARCH), CFG_CPU_ADDR_BITS, ALLONES()); 
         ENDIF();
     ENDIF();
 

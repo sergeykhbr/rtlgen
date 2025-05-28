@@ -17,16 +17,16 @@
 #pragma once
 
 #include <api_rtlgen.h>
-#include "types_amba.h"
-#include "types_pnp.h"
-#include "axi_slv.h"
-#include "types_bus0.h"
+#include "../ambalib/types_amba.h"
+#include "../ambalib/axi_slv.h"
+#include "../ambalib/types_pnp.h"
+#include "types_accel_bus0.h"
 
 using namespace sysvc;
 
-class axictrl_bus0 : public ModuleObject {
+class accel_axictrl_bus0 : public ModuleObject {
  public:
-    axictrl_bus0(GenObject *parent, const char *name, const char *comment=NO_COMMENT);
+    accel_axictrl_bus0(GenObject *parent, const char *name, const char *comment=NO_COMMENT);
 
     class CombProcess : public CombinationalProcess {
      public:
@@ -91,11 +91,11 @@ class axictrl_bus0 : public ModuleObject {
     InPort i_clk;
     InPort i_nrst;
     OutStruct<types_pnp::dev_config_type> o_cfg;
-    InStruct<types_bus0::bus0_xmst_out_vector> i_xmsto;
-    OutStruct<types_bus0::bus0_xmst_in_vector> o_xmsti;
-    InStruct<types_bus0::bus0_xslv_out_vector> i_xslvo;
-    OutStruct<types_bus0::bus0_xslv_in_vector> o_xslvi;
-    OutStruct<types_bus0::bus0_mapinfo_vector> o_mapinfo;
+    InStruct<types_accel_bus0::bus0_xmst_out_vector> i_xmsto;
+    OutStruct<types_accel_bus0::bus0_xmst_in_vector> o_xmsti;
+    InStruct<types_accel_bus0::bus0_xslv_out_vector> i_xslvo;
+    OutStruct<types_accel_bus0::bus0_xslv_in_vector> o_xslvi;
+    OutStruct<types_accel_bus0::bus0_mapinfo_vector> o_mapinfo;
 
     SignalStruct<types_amba::mapinfo_type> wb_def_mapinfo;
     SignalStruct<types_amba::axi4_slave_in_type> wb_def_xslvi;
@@ -124,13 +124,13 @@ class axictrl_bus0 : public ModuleObject {
     axi_slv xdef0;
 };
 
-class axictrl_bus0_file : public FileObject {
+class accel_axictrl_bus0_file : public FileObject {
  public:
-    axictrl_bus0_file(GenObject *parent) :
-        FileObject(parent, "axictrl_bus0"),
-        axictrl_bus0_(this, "axictrl_bus0") {}
+    accel_axictrl_bus0_file(GenObject *parent) :
+        FileObject(parent, "accel_axictrl_bus0"),
+        accel_axictrl_bus0_(this, "accel_axictrl_bus0") {}
 
  private:
-    axictrl_bus0 axictrl_bus0_;
+    accel_axictrl_bus0 accel_axictrl_bus0_;
 };
 

@@ -17,12 +17,20 @@
 #pragma once
 
 #include <api_rtlgen.h>
+#include "types_accel_bus0.h"
+#include "types_accel_bus1.h"
+#include "accel_axi2apb_bus1.h"
+#include "accel_axictrl_bus0.h"
 #include "accel_soc.h"
 
 class accel_folder : public FolderObject {
  public:
     accel_folder(GenObject *parent) :
         FolderObject(parent, "accel"),
+        types_accel_bus0_(this),
+        types_accel_bus1_(this),
+        accel_axictrl_bus0_file_(this),
+        accel_axi2apb_bus1_file_(this),
         accel_soc_file_(this) {}
 
     virtual std::string getLibName() override { return getName(); }
@@ -30,5 +38,9 @@ class accel_folder : public FolderObject {
  protected:
     // subfolders:
     // files
+    types_accel_bus0 types_accel_bus0_;
+    types_accel_bus1 types_accel_bus1_;
+    accel_axictrl_bus0_file accel_axictrl_bus0_file_;
+    accel_axi2apb_bus1_file accel_axi2apb_bus1_file_;
     accel_soc_file accel_soc_file_;
 };

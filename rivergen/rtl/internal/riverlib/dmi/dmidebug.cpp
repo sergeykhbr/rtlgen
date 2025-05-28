@@ -179,14 +179,12 @@ TEXT();
 }
 
 void dmidebug::proc_comb() {
-    river_cfg *cfg = glob_river_cfg_;
-    types_pnp *pnp = glob_pnp_cfg_;
-    SETVAL(comb.vcfg.descrsize, pnp->PNP_CFG_DEV_DESCR_BYTES);
-    SETVAL(comb.vcfg.descrtype, pnp->PNP_CFG_TYPE_SLAVE);
+    SETVAL(comb.vcfg.descrsize, *SCV_get_cfg_type(this, "PNP_CFG_DEV_DESCR_BYTES"));
+    SETVAL(comb.vcfg.descrtype, *SCV_get_cfg_type(this, "PNP_CFG_TYPE_SLAVE"));
     SETVAL(comb.vcfg.addr_start, i_mapinfo.addr_start);
     SETVAL(comb.vcfg.addr_end, i_mapinfo.addr_end);
-    SETVAL(comb.vcfg.vid, pnp->VENDOR_OPTIMITECH);
-    SETVAL(comb.vcfg.did, pnp->OPTIMITECH_RIVER_DMI);
+    SETVAL(comb.vcfg.vid, *SCV_get_cfg_type(this, "VENDOR_OPTIMITECH"));
+    SETVAL(comb.vcfg.did, *SCV_get_cfg_type(this, "OPTIMITECH_RIVER_DMI"));
 
 TEXT();
     SPLx(wb_reqfifo_payload_o, 4, &comb.v_cdc_dmi_hardreset,
@@ -196,7 +194,7 @@ TEXT();
 
 
 TEXT();
-    SETVAL(comb.vb_hartselnext, BITS(wdata, DEC(ADD2(CONST("16"), cfg->CFG_LOG2_CPU_MAX)), CONST("16")));
+    SETVAL(comb.vb_hartselnext, BITS(wdata, DEC(ADD2(CONST("16"), *SCV_get_cfg_type(this, "CFG_LOG2_CPU_MAX"))), CONST("16")));
     SETVAL(comb.hsel, TO_INT(hartsel));
     SETVAL(comb.v_cmd_busy, OR_REDUCE(cmdstate));
     SETVAL(comb.vb_arg1, CC2(data3, data2));
@@ -289,7 +287,7 @@ TEXT();
             SETBIT(comb.vb_resp_data, 29, hartreset, "hartreset");
             SETBITZERO(comb.vb_resp_data, 28, "ackhavereset");
             SETBITZERO(comb.vb_resp_data, 26, "hasel: single selected hart only");
-            SETBITS(comb.vb_resp_data, DEC(ADD2(CONST("16"), cfg->CFG_LOG2_CPU_MAX)), CONST("16"), hartsel, "hartsello");
+            SETBITS(comb.vb_resp_data, DEC(ADD2(CONST("16"), *SCV_get_cfg_type(this, "CFG_LOG2_CPU_MAX"))), CONST("16"), hartsel, "hartsello");
             SETBIT(comb.vb_resp_data, 1, ndmreset);
             SETBIT(comb.vb_resp_data, 0, dmactive);
             IF (NZ(regwr));
@@ -310,7 +308,7 @@ TEXT();
                     ENDIF();
                 ENDIF();
                 SETVAL(hartreset, BIT(wdata, 29));
-                SETVAL(hartsel, BITS(wdata, DEC(ADD2(CONST("16"), cfg->CFG_LOG2_CPU_MAX)), CONST("16")));
+                SETVAL(hartsel, BITS(wdata, DEC(ADD2(CONST("16"), *SCV_get_cfg_type(this, "CFG_LOG2_CPU_MAX"))), CONST("16")));
                 IF (NZ(BIT(wdata, 3)), "setresethaltreq");
                     SETONE(resethaltreq);
                 ELSIF (NZ(BIT(wdata, 2)), "clearresethaltreq");
@@ -340,16 +338,16 @@ TEXT();
         ELSIF (EQ(regidx, CONST("0x12", 7)), "hartinfo");
             TEXT("Not available core should returns 0");
             IF (NZ(BIT(i_available, comb.hsel)));
-                SETBITS(comb.vb_resp_data, 23, 20, cfg->CFG_DSCRATCH_REG_TOTAL, "nscratch");
+                SETBITS(comb.vb_resp_data, 23, 20, *SCV_get_cfg_type(this, "CFG_DSCRATCH_REG_TOTAL"), "nscratch");
                 SETBITZERO(comb.vb_resp_data, 16, "dataaccess: 0=CSR shadowed;1=memory shadowed");
                 SETBITS(comb.vb_resp_data, 15, 12, CONST("0", 4), "datasize");
                 SETBITS(comb.vb_resp_data, 11, 0, CONST("0", 12), "dataaddr");
             ENDIF();
         ELSIF (EQ(regidx, CONST("0x16", 7)), "abstractcs");
-            SETBITS(comb.vb_resp_data, 28, 24, cfg->CFG_PROGBUF_REG_TOTAL);
+            SETBITS(comb.vb_resp_data, 28, 24, *SCV_get_cfg_type(this, "CFG_PROGBUF_REG_TOTAL"));
             SETBIT(comb.vb_resp_data, 12, comb.v_cmd_busy, "busy");
             SETBITS(comb.vb_resp_data, 10, 8, cmderr);
-            SETBITS(comb.vb_resp_data, 3, 0, cfg->CFG_DATA_REG_TOTAL);
+            SETBITS(comb.vb_resp_data, 3, 0, *SCV_get_cfg_type(this, "CFG_DATA_REG_TOTAL"));
             IF (AND2(NZ(regwr), EQ(BITS(wdata, 10, 8), CONST("1", 3))));
                 SETVAL(cmderr, CMDERR_NONE);
             ENDIF();
@@ -366,11 +364,11 @@ TEXT();
                 ENDIF();
             ENDIF();
         ELSIF (EQ(regidx, CONST("0x18", 7)), "abstractauto");
-            SETBITS(comb.vb_resp_data, DEC(cfg->CFG_DATA_REG_TOTAL), CONST("0"), autoexecdata);
-            SETBITS(comb.vb_resp_data, DEC(ADD2(CONST("16"), cfg->CFG_PROGBUF_REG_TOTAL)), CONST("16"), autoexecprogbuf);
+            SETBITS(comb.vb_resp_data, DEC(*SCV_get_cfg_type(this, "CFG_DATA_REG_TOTAL")), CONST("0"), autoexecdata);
+            SETBITS(comb.vb_resp_data, DEC(ADD2(CONST("16"), *SCV_get_cfg_type(this, "CFG_PROGBUF_REG_TOTAL"))), CONST("16"), autoexecprogbuf);
             IF (NZ(regwr));
-                SETVAL(autoexecdata, BITS(wdata, DEC(cfg->CFG_DATA_REG_TOTAL), CONST("0")));
-                SETVAL(autoexecprogbuf, BITS(wdata, DEC(ADD2(CONST("16"), cfg->CFG_PROGBUF_REG_TOTAL)), CONST("16")));
+                SETVAL(autoexecdata, BITS(wdata, DEC(*SCV_get_cfg_type(this, "CFG_DATA_REG_TOTAL")), CONST("0")));
+                SETVAL(autoexecprogbuf, BITS(wdata, DEC(ADD2(CONST("16"), *SCV_get_cfg_type(this, "CFG_PROGBUF_REG_TOTAL"))), CONST("16")));
             ENDIF();
         ELSIF (EQ(BITS(regidx, 6, 4), CONST("0x02", 3)), "progbuf[n]");
             SETVAL(comb.vb_resp_data, BIG_TO_U64(BITSW(progbuf_data, MUL2(CONST("32"), comb.t_idx), CONST("32"))));
@@ -387,7 +385,7 @@ TEXT();
                 ENDIF();
             ENDIF();
         ELSIF (EQ(regidx, CONST("0x40", 7)), "haltsum0");
-            SETBITS(comb.vb_resp_data, DEC(cfg->CFG_CPU_MAX), CONST("0"), i_halted);
+            SETBITS(comb.vb_resp_data, DEC(*SCV_get_cfg_type(this, "CFG_CPU_MAX")), CONST("0"), i_halted);
         ENDIF();
     ENDCASE();
     CASEDEF();
@@ -582,11 +580,11 @@ TEXT();
     SETVAL(comb.vapbo.prdata, prdata);
 
 TEXT();
-    SETBIT(comb.vb_req_type, cfg->DPortReq_Write, cmd_write);
-    SETBIT(comb.vb_req_type, cfg->DPortReq_RegAccess, cmd_regaccess);
-    SETBIT(comb.vb_req_type, cfg->DPortReq_MemAccess, cmd_memaccess);
-    SETBIT(comb.vb_req_type, cfg->DPortReq_MemVirtual, aamvirtual);
-    SETBIT(comb.vb_req_type, cfg->DPortReq_Progexec, cmd_progexec);
+    SETBIT(comb.vb_req_type, *SCV_get_cfg_type(this, "DPortReq_Write"), cmd_write);
+    SETBIT(comb.vb_req_type, *SCV_get_cfg_type(this, "DPortReq_RegAccess"), cmd_regaccess);
+    SETBIT(comb.vb_req_type, *SCV_get_cfg_type(this, "DPortReq_MemAccess"), cmd_memaccess);
+    SETBIT(comb.vb_req_type, *SCV_get_cfg_type(this, "DPortReq_MemVirtual"), aamvirtual);
+    SETBIT(comb.vb_req_type, *SCV_get_cfg_type(this, "DPortReq_Progexec"), cmd_progexec);
 
 
 TEXT();

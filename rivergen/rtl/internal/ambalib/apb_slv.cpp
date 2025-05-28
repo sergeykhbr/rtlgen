@@ -58,9 +58,8 @@ apb_slv::apb_slv(GenObject *parent, const char *name, const char *comment) :
 }
 
 void apb_slv::proc_comb() {
-    types_pnp *pnp = glob_pnp_cfg_;
-    SETVAL(comb.vcfg.descrsize, pnp->PNP_CFG_DEV_DESCR_BYTES);
-    SETVAL(comb.vcfg.descrtype, pnp->PNP_CFG_TYPE_SLAVE);
+    SETVAL(comb.vcfg.descrsize, *SCV_get_cfg_type(this, "PNP_CFG_DEV_DESCR_BYTES"));
+    SETVAL(comb.vcfg.descrtype, *SCV_get_cfg_type(this, "PNP_CFG_TYPE_SLAVE"));
     SETVAL(comb.vcfg.addr_start, i_mapinfo.addr_start);
     SETVAL(comb.vcfg.addr_end, i_mapinfo.addr_end);
     SETVAL(comb.vcfg.vid, vid);

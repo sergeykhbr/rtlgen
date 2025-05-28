@@ -18,7 +18,7 @@
 
 #include <api_rtlgen.h>
 #include <genconfig.h>
-#include "target_cfg.h"
+#include "target_accel_cfg.h"
 #include "../../../rtl/internal/ambalib/types_amba.h"
 #include "../../../rtl/internal/ambalib/types_dma.h"
 #include "../../../rtl/internal/ambalib/types_pnp.h"
@@ -38,9 +38,9 @@
 
 using namespace sysvc;
 
-class asic_top : public ModuleObject {
+class asic_accel_top : public ModuleObject {
  public:
-    asic_top(GenObject *parent, const char *name, const char *comment=NO_COMMENT);
+    asic_accel_top(GenObject *parent, const char *name, const char *comment=NO_COMMENT);
 
  public:
     DefParamLogic async_reset;
@@ -198,13 +198,13 @@ class asic_top : public ModuleObject {
     // process
 };
 
-class asic_top_file : public FileObject {
+class asic_accel_top_file : public FileObject {
  public:
-    asic_top_file(GenObject *parent) :
-        FileObject(parent, "asic_top"),
-        asic_top_(this, "asic_top") { }
+    asic_accel_top_file(GenObject *parent) :
+        FileObject(parent, "asic_accel_top"),
+        asic_accel_top_(this, "asic_accel_top") { }
 
  private:
-    asic_top asic_top_;
+    asic_accel_top asic_accel_top_;
 };
 

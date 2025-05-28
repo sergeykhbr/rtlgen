@@ -17,9 +17,17 @@
 #pragma once
 
 #include <api_rtlgen.h>
+#include <genconfig.h>
+#if CONFIG_RISCV_VHDL
+    #include "prj/impl/asic_gencpu64/target_gencpu64_cfg.h"
+    #define TARGET_IMPL_FOLDER "asic_gencpu64"
+#endif
+#if CONFIG_GPU3D
+    #include "prj/impl/asic_accel/target_accel_cfg.h"
+    #define TARGET_IMPL_FOLDER "asic_accel"
+#endif
 #include "prj/prj_folder.h"
 #include "rtl/rtl_folder.h"
-#include "prj/impl/asic/target_cfg.h"   // top level must be instantiated after rtl
 #include "rtl/internal/pcie_dma/tb/pcie_dma_tb_folder.h"
 #include "rtl/internal/misclib/tb/misclib_tb_folder.h"
 
@@ -29,7 +37,8 @@ class RiverProject : public ProjectObject {
  public:
     RiverProject(const char *rootpath);
 
-    /**
+ protected:
+     /**
         Create folder "prj/impl/asic" before generating target_cfg
     */
     class target_folder : public FolderObject {
@@ -43,17 +52,24 @@ class RiverProject : public ProjectObject {
           protected:
             class asic_folder : public FolderObject {
               public:
-                asic_folder(GenObject *parent) : FolderObject(parent, "asic"), target_cfg_(this) {}
+                asic_folder(GenObject *parent) : FolderObject(parent, TARGET_IMPL_FOLDER), target_cfg_(this) {}
               protected:
-                target_cfg target_cfg_;
+#if CONFIG_RISCV_VHDL
+                target_gencpu64_cfg target_cfg_;
+#endif
+#if CONFIG_GPU3D
+                target_accel_cfg target_cfg_;
+#endif
             } asic_folder_;
         } impl_folder_;
     };
 
- protected:
+    /**
+        Create Target configuration files before RTL
+    */
     target_folder target_folder_;
-    rtl_folder rtl_;
-    prj_folder prj_;
+    rtl_folder rtl_folder_;
+    prj_folder prj_folder_;
     // Test-benches must be created after all project VIPs created:
     pcie_dma_tb_folder pcie_dma_tb_folder_;     // put into prj/tb
     misclib_tb_folder misclib_tb_folder_;       // put into prj/tb

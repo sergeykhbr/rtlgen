@@ -14,12 +14,10 @@
 //  limitations under the License.
 // 
 
-#include "target_cfg.h"
+#include "target_accel_cfg.h"
 
-target_cfg *glob_target_cfg_ = 0;
-
-target_cfg::target_cfg(GenObject *parent) :
-    FileObject(parent, "target_cfg"),
+target_accel_cfg::target_accel_cfg(GenObject *parent) :
+    FileObject(parent, "target_accel_cfg"),
     CFG_ASYNC_RESET(this, "CFG_ASYNC_RESET", "1", "0", NO_COMMENT),
     _prj0_(this),
     _prj1_(this, "@brief   Number of processors in a system"),
@@ -51,5 +49,4 @@ target_cfg::target_cfg(GenObject *parent) :
     CFG_SRAM_LOG2_SIZE(this, "CFG_SRAM_LOG2_SIZE", GENCFG_SRAM_LOG2_SIZE, "19=512 KB (KC705); 21=2 MB (ASIC); .."),
     _n_(this)
 {
-    glob_target_cfg_ = this;
 }

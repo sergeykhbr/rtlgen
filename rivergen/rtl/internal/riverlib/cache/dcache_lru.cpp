@@ -14,7 +14,6 @@
 //  limitations under the License.
 // 
 
-#include "../../../../prj/impl/asic/target_cfg.h"
 #include "dcache_lru.h"
 
 DCacheLru::DCacheLru(GenObject *parent, const char *name, const char *comment) :
@@ -143,8 +142,8 @@ DCacheLru::DCacheLru(GenObject *parent, const char *name, const char *comment) :
 
     // Generic paramters to template parameters assignment
     mem0.abus.setObjValue(&abus);
-    mem0.waybits.setObjValue(&glob_target_cfg_->CFG_DLOG2_NWAYS);
-    mem0.ibits.setObjValue(&glob_target_cfg_->CFG_DLOG2_LINES_PER_WAY);
+    mem0.waybits.setObjValue(SCV_get_cfg_type(this, "CFG_DLOG2_NWAYS"));
+    mem0.ibits.setObjValue(SCV_get_cfg_type(this, "CFG_DLOG2_LINES_PER_WAY"));
     mem0.lnbits.setObjValue(&lnbits);
     mem0.flbits.setObjValue(&flbits);
     mem0.snoop.setObjValue(&CONST("1"));//coherence_ena); need to check before changing on coherence_ena
@@ -174,19 +173,21 @@ DCacheLru::DCacheLru(GenObject *parent, const char *name, const char *comment) :
 
 void DCacheLru::proc_comb() {
     river_cfg *cfg = glob_river_cfg_;
+    GenObject &CFG_CPU_ADDR_BITS = *SCV_get_cfg_type(this, "CFG_CPU_ADDR_BITS");
+    GenObject &CFG_LOG2_L1CACHE_BYTES_PER_LINE = *SCV_get_cfg_type(this, "CFG_LOG2_L1CACHE_BYTES_PER_LINE");
     GenObject *i;
 
     SETVAL(comb.t_req_type, req_type);
     SETVAL(comb.v_resp_snoop_valid, snoop_flags_valid);
-    SETVAL(comb.ridx, BITS(req_addr, DEC(cfg->CFG_LOG2_L1CACHE_BYTES_PER_LINE), CONST("3")));
+    SETVAL(comb.ridx, BITS(req_addr, DEC(CFG_LOG2_L1CACHE_BYTES_PER_LINE), CONST("3")));
 
 TEXT();
     SETVAL(comb.vb_cached_data, BITSW(line_rdata_o, MUL2(CONST("64"), TO_INT(comb.ridx)), CONST("64")));
     SETVAL(comb.vb_uncached_data, BIG_TO_U64(BITS(cache_line_i, 63, 0)));
 
 TEXT();
-    IF (EQ(BITS(req_addr, DEC(cfg->CFG_CPU_ADDR_BITS), cfg->CFG_LOG2_L1CACHE_BYTES_PER_LINE),
-            BITS(i_req_addr, DEC(cfg->CFG_CPU_ADDR_BITS), cfg-> CFG_LOG2_L1CACHE_BYTES_PER_LINE)));
+    IF (EQ(BITS(req_addr, DEC(CFG_CPU_ADDR_BITS), CFG_LOG2_L1CACHE_BYTES_PER_LINE),
+            BITS(i_req_addr, DEC(CFG_CPU_ADDR_BITS),  CFG_LOG2_L1CACHE_BYTES_PER_LINE)));
         SETONE(comb.v_req_same_line);
     ENDIF();
 
@@ -231,7 +232,7 @@ TEXT();
 
 TEXT();
     TEXT("Flush counter when direct access");
-    IF (EQ(BITS(req_addr, DEC(glob_target_cfg_->CFG_DLOG2_NWAYS), CONST("0")), DEC(ways)));
+    IF (EQ(BITS(req_addr, DEC(*SCV_get_cfg_type(this, "CFG_DLOG2_NWAYS")), CONST("0")), DEC(ways)));
         SETVAL(comb.vb_addr_direct_next, ANDx_L(2, &ADD2(req_addr, cfg->L1CACHE_BYTES_PER_LINE),
                                                    &INV_L(LINE_BYTES_MASK)));
     ELSE();
@@ -333,26 +334,26 @@ TEXT();
                 TEXT("Cached:");
                 IF (NZ(write_share));
                     CALLF(&req_mem_type, cfg->WriteLineUnique, 0);
-                    SETVAL(mem_addr, LSH(BITS(line_raddr_o, DEC(cfg->CFG_CPU_ADDR_BITS),
-                                cfg->CFG_LOG2_L1CACHE_BYTES_PER_LINE), cfg->CFG_LOG2_L1CACHE_BYTES_PER_LINE));
+                    SETVAL(mem_addr, LSH(BITS(line_raddr_o, DEC(CFG_CPU_ADDR_BITS),
+                                CFG_LOG2_L1CACHE_BYTES_PER_LINE), CFG_LOG2_L1CACHE_BYTES_PER_LINE));
                 ELSIF (ANDx(2, &NZ(BIT(line_rflags_o, cfg->TAG_FL_VALID)),
                                &NZ(BIT(line_rflags_o, cfg->DTAG_FL_DIRTY))));
                     SETONE(write_first);
                     CALLF(&req_mem_type, cfg->WriteBack, 0);
-                    SETVAL(mem_addr, LSH(BITS(line_raddr_o, DEC(cfg->CFG_CPU_ADDR_BITS),
-                                cfg->CFG_LOG2_L1CACHE_BYTES_PER_LINE), cfg->CFG_LOG2_L1CACHE_BYTES_PER_LINE));
+                    SETVAL(mem_addr, LSH(BITS(line_raddr_o, DEC(CFG_CPU_ADDR_BITS),
+                                CFG_LOG2_L1CACHE_BYTES_PER_LINE), CFG_LOG2_L1CACHE_BYTES_PER_LINE));
                 ELSE();
                     TEXT("1. Read -> Save cache");
                     TEXT("2. Read -> Modify -> Save cache");
-                    SETVAL(mem_addr, LSH(BITS(req_addr, DEC(cfg->CFG_CPU_ADDR_BITS),
-                                cfg->CFG_LOG2_L1CACHE_BYTES_PER_LINE), cfg->CFG_LOG2_L1CACHE_BYTES_PER_LINE));
+                    SETVAL(mem_addr, LSH(BITS(req_addr, DEC(CFG_CPU_ADDR_BITS),
+                                CFG_LOG2_L1CACHE_BYTES_PER_LINE), CFG_LOG2_L1CACHE_BYTES_PER_LINE));
                     IF (NZ(BIT(req_type, cfg->MemopType_Store)));
                         CALLF(&req_mem_type, cfg->ReadMakeUnique, 0);
                     ELSE();
                         CALLF(&req_mem_type, cfg->ReadShared, 0);
                     ENDIF();
                 ENDIF();
-                SETVAL(req_mem_size, cfg->CFG_LOG2_L1CACHE_BYTES_PER_LINE);
+                SETVAL(req_mem_size, CFG_LOG2_L1CACHE_BYTES_PER_LINE);
                 SETVAL(mem_wstrb, ALLONES());
                 SETVAL(cache_line_o, line_rdata_o);
             ELSE();
@@ -450,8 +451,8 @@ TEXT();
                 SETVAL(state, State_FlushAddr);
             ELSIF (NZ(write_first));
                 TEXT("Obsolete line was offloaded, now read new line");
-                SETVAL(mem_addr, LSH(BITS(req_addr, DEC(cfg->CFG_CPU_ADDR_BITS), cfg->CFG_LOG2_L1CACHE_BYTES_PER_LINE),
-                                cfg->CFG_LOG2_L1CACHE_BYTES_PER_LINE));
+                SETVAL(mem_addr, LSH(BITS(req_addr, DEC(CFG_CPU_ADDR_BITS), CFG_LOG2_L1CACHE_BYTES_PER_LINE),
+                                CFG_LOG2_L1CACHE_BYTES_PER_LINE));
                 SETONE(req_mem_valid);
                 SETZERO(write_first);
                 IF (NZ(BIT(req_type, cfg->MemopType_Store)));
@@ -592,7 +593,7 @@ TEXT();
             SETZERO(req_flush);
             SETZERO(cache_line_i);
             SETVAL(req_addr, AND2_L(req_flush_addr, INV_L(LINE_BYTES_MASK)));
-            SETVAL(req_mem_size, cfg->CFG_LOG2_L1CACHE_BYTES_PER_LINE);
+            SETVAL(req_mem_size, CFG_LOG2_L1CACHE_BYTES_PER_LINE);
             SETVAL(flush_cnt, req_flush_cnt);
         ELSE();
             SETONE(comb.v_req_ready);

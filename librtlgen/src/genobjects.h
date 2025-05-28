@@ -46,6 +46,8 @@ enum EPorts {
 
 static const bool NO_SC_READ = true;
 
+static const int ATTR_UNCHECKED_WRITERS = 0x1 << 0;     // bi-directional wire, do not check number of writers
+
 enum ECfgGenType {
     CFG_GEN_SV,
     CFG_GEN_SYSC,
@@ -141,6 +143,9 @@ class GenObject {
     virtual void setSelector(GenObject *sel) {}         // Set index object for array or logic
     virtual GenObject *getSelector() { return 0; }      // Array index or Logic bit index object which is setup and cleared by Operation
 
+    virtual void setAttribute(int attr) { attributes_ |= attr; }
+    virtual bool isAttribute(int attr) { return (attributes_ & attr) ? true: false; }
+
     virtual void disableVcd() {}                        // Exclude object from trace file
     virtual bool isVcd() { return true; }               // Add object to trace file (sc_trace), default is enabled
     virtual bool isSvApiUsed() { return false; }        // readmemh/display or similar methods were used
@@ -155,6 +160,7 @@ class GenObject {
     GenObject *parent_;                     // All object could have/should have parent
     std::string comment_;                   // All object could have comment
     std::list<GenObject *> entries_;        // All object could have childs
+    int attributes_;
 };
 
 }  // namespace sysvc

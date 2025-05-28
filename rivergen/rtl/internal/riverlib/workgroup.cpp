@@ -237,10 +237,10 @@ TEXT();
 void Workgroup::proc_comb() {
     river_cfg *cfg = glob_river_cfg_;
 
-    SETVAL(comb.vb_xmst_cfg.descrsize, glob_pnp_cfg_->PNP_CFG_DEV_DESCR_BYTES);
-    SETVAL(comb.vb_xmst_cfg.descrtype, glob_pnp_cfg_->PNP_CFG_TYPE_MASTER);
-    SETVAL(comb.vb_xmst_cfg.vid, glob_pnp_cfg_->VENDOR_OPTIMITECH);
-    SETVAL(comb.vb_xmst_cfg.did, glob_pnp_cfg_->RISCV_RIVER_WORKGROUP);
+    SETVAL(comb.vb_xmst_cfg.descrsize, *SCV_get_cfg_type(this, "PNP_CFG_DEV_DESCR_BYTES"));
+    SETVAL(comb.vb_xmst_cfg.descrtype, *SCV_get_cfg_type(this, "PNP_CFG_TYPE_MASTER"));
+    SETVAL(comb.vb_xmst_cfg.vid, *SCV_get_cfg_type(this, "VENDOR_OPTIMITECH"));
+    SETVAL(comb.vb_xmst_cfg.did, *SCV_get_cfg_type(this, "RISCV_RIVER_WORKGROUP"));
 
 TEXT();
     TEXT("Vector to signal conversion is neccessary to implement compatibility with SystemC:");

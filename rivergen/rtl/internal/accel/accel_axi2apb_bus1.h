@@ -17,16 +17,16 @@
 #pragma once
 
 #include <api_rtlgen.h>
-#include "types_amba.h"
-#include "types_pnp.h"
-#include "axi_slv.h"
-#include "types_bus1.h"
+#include "../ambalib/types_amba.h"
+#include "../ambalib/types_pnp.h"
+#include "../ambalib/axi_slv.h"
+#include "types_accel_bus1.h"
 
 using namespace sysvc;
 
-class axi2apb_bus1 : public ModuleObject {
+class accel_axi2apb_bus1 : public ModuleObject {
  public:
-    axi2apb_bus1(GenObject *parent, const char *name, const char *comment=NO_COMMENT);
+    accel_axi2apb_bus1(GenObject *parent, const char *name, const char *comment=NO_COMMENT);
 
     class CombProcess : public CombinationalProcess {
      public:
@@ -53,9 +53,9 @@ class axi2apb_bus1 : public ModuleObject {
     OutStruct<types_pnp::dev_config_type> o_cfg;
     InStruct<types_amba::axi4_slave_in_type> i_xslvi;
     OutStruct<types_amba::axi4_slave_out_type> o_xslvo;
-    InStruct<types_bus1::bus1_apb_out_vector> i_apbo;
-    OutStruct<types_bus1::bus1_apb_in_vector> o_apbi;
-    OutStruct<types_bus1::bus1_mapinfo_vector> o_mapinfo;
+    InStruct<types_accel_bus1::bus1_apb_out_vector> i_apbo;
+    OutStruct<types_accel_bus1::bus1_apb_in_vector> o_apbi;
+    OutStruct<types_accel_bus1::bus1_mapinfo_vector> o_mapinfo;
 
     ParamLogic State_Idle;
     ParamLogic State_setup;
@@ -90,13 +90,13 @@ class axi2apb_bus1 : public ModuleObject {
     CombProcess comb;
 };
 
-class axi2apb_bus1_file : public FileObject {
+class accel_axi2apb_bus1_file : public FileObject {
  public:
-    axi2apb_bus1_file(GenObject *parent) :
-        FileObject(parent, "axi2apb_bus1"),
-        axi2apb_bus1_(this, "axi2apb_bus1") {}
+    accel_axi2apb_bus1_file(GenObject *parent) :
+        FileObject(parent, "accel_axi2apb_bus1"),
+        accel_axi2apb_bus1_(this, "accel_axi2apb_bus1") {}
 
  private:
-    axi2apb_bus1 axi2apb_bus1_;
+    accel_axi2apb_bus1 accel_axi2apb_bus1_;
 };
 

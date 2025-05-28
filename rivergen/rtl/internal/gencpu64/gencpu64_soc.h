@@ -19,12 +19,8 @@
 #include <api_rtlgen.h>
 #include <genconfig.h>
 #include "../ambalib/types_amba.h"
-#include "../ambalib/types_bus0.h"
-#include "../ambalib/types_bus1.h"
 #include "../ambalib/types_pnp.h"
 #include "../ambalib/types_dma.h"
-#include "../ambalib/axictrl_bus0.h"
-#include "../ambalib/axi2apb_bus1.h"
 #include "../misclib/apb_uart.h"
 #include "../misclib/apb_gpio.h"
 #include "../misclib/apb_pnp.h"
@@ -40,6 +36,10 @@
 #include "../riverlib/river_amba.h"
 #include "../riverlib/workgroup.h"
 #include "../../sim/cdc_axi_sync/cdc_axi_sync_tech.h"
+#include "types_gencpu64_bus0.h"
+#include "types_gencpu64_bus1.h"
+#include "gencpu64_axictrl_bus0.h"
+#include "gencpu64_axi2apb_bus1.h"
 
 using namespace sysvc;
 
@@ -156,14 +156,14 @@ public:
 
     SignalStruct<types_amba::axi4_master_out_type> acpo;
     SignalStruct<types_amba::axi4_master_in_type> acpi;
-    types_bus0::bus0_mapinfo_vector   bus0_mapinfo;
-    types_bus0::bus0_xmst_in_vector   aximi;
-    types_bus0::bus0_xmst_out_vector  aximo;
-    types_bus0::bus0_xslv_in_vector   axisi;
-    types_bus0::bus0_xslv_out_vector  axiso;
-    types_bus1::bus1_mapinfo_vector   bus1_mapinfo;
-    types_bus1::bus1_apb_in_vector   apbi;
-    types_bus1::bus1_apb_out_vector  apbo;
+    types_gencpu64_bus0::bus0_mapinfo_vector   bus0_mapinfo;
+    types_gencpu64_bus0::bus0_xmst_in_vector   aximi;
+    types_gencpu64_bus0::bus0_xmst_out_vector  aximo;
+    types_gencpu64_bus0::bus0_xslv_in_vector   axisi;
+    types_gencpu64_bus0::bus0_xslv_out_vector  axiso;
+    types_gencpu64_bus1::bus1_mapinfo_vector   bus1_mapinfo;
+    types_gencpu64_bus1::bus1_apb_in_vector   apbi;
+    types_gencpu64_bus1::bus1_apb_out_vector  apbo;
     types_pnp::soc_pnp_vector dev_pnp;
     Signal wb_clint_mtimer;
     Signal wb_clint_msip;
@@ -180,8 +180,8 @@ public:
 #endif
 
     // Sub-module instances:
-    axictrl_bus0 bus0;
-    axi2apb_bus1 bus1;
+    gencpu64_axictrl_bus0 bus0;
+    gencpu64_axi2apb_bus1 bus1;
     axi_rom rom0;
     axi_sram sram0;
     clint clint0;

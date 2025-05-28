@@ -75,10 +75,8 @@ axi_slv::axi_slv(GenObject *parent, const char *name, const char *comment) :
 }
 
 void axi_slv::proc_comb() {
-    types_amba *glb = glob_types_amba_;
-    types_pnp *pnp = glob_pnp_cfg_;
-    SETVAL(comb.vcfg.descrsize, pnp->PNP_CFG_DEV_DESCR_BYTES);
-    SETVAL(comb.vcfg.descrtype, pnp->PNP_CFG_TYPE_SLAVE);
+    SETVAL(comb.vcfg.descrsize, *SCV_get_cfg_type(this, "PNP_CFG_DEV_DESCR_BYTES"));
+    SETVAL(comb.vcfg.descrtype, *SCV_get_cfg_type(this, "PNP_CFG_TYPE_SLAVE"));
     SETVAL(comb.vcfg.addr_start, i_mapinfo.addr_start);
     SETVAL(comb.vcfg.addr_end, i_mapinfo.addr_end);
     SETVAL(comb.vcfg.vid, vid);
@@ -86,9 +84,9 @@ void axi_slv::proc_comb() {
 
 TEXT();
     SETVAL(comb.vb_req_addr_next, ADD2(BITS(req_addr, 11, 0), req_xsize));
-    IF (EQ(req_burst, glb->AXI_BURST_FIXED));
+    IF (EQ(req_burst, *SCV_get_cfg_type(this, "AXI_BURST_FIXED")));
         SETVAL(comb.vb_req_addr_next, BITS(req_addr, 11, 0));
-    ELSIF (EQ(req_burst, glb->AXI_BURST_WRAP));
+    ELSIF (EQ(req_burst, *SCV_get_cfg_type(this, "AXI_BURST_WRAP")));
         TEXT("Wrap suppported only 2, 4, 8 or 16 Bytes. See ARMDeveloper spec.");
         IF (EQ(req_xsize, CONST("2")));
             SETBITS(comb.vb_req_addr_next, 11, 1, BITS(req_addr, 11, 1));
@@ -124,7 +122,7 @@ TEXT();
         SETVAL(comb.vxslvo.ar_ready, INV(i_xslvi.aw_valid));
         IF (NZ(i_xslvi.aw_valid));
             SETVAL(req_addr, SUB2(i_xslvi.aw_bits.addr, i_mapinfo.addr_start));
-            CALLF(&req_xsize, glb->XSizeToBytes, 1, &i_xslvi.aw_bits.size);
+            CALLF(&req_xsize, *SCV_get_cfg_type(this, "XSizeToBytes"), 1, &i_xslvi.aw_bits.size);
             SETVAL(req_len, i_xslvi.aw_bits.len);
             SETVAL(req_burst, i_xslvi.aw_bits.burst);
             SETVAL(req_id, i_xslvi.aw_id);
@@ -174,7 +172,7 @@ TEXT();
         ENDIF();
         IF (AND2(NZ(req_valid), NZ(i_req_ready)));
             SETONE(req_done);
-            SETVAL(req_addr, CC2(BITS(req_addr, DEC(glb->CFG_SYSBUS_ADDR_BITS), CONST("12")),
+            SETVAL(req_addr, CC2(BITS(req_addr, DEC(*SCV_get_cfg_type(this, "CFG_SYSBUS_ADDR_BITS")), CONST("12")),
                                  comb.vb_req_addr_next));
             SETVAL(req_last_a, INV(OR_REDUCE(comb.vb_req_len_next)));
             IF (NZ(req_len));
@@ -197,7 +195,7 @@ TEXT();
         TEXT("Setup address:");
         IF (NZ(i_req_ready));
             SETVAL(state, State_data_r);
-            SETVAL(req_addr, CC2(BITS(req_addr, DEC(glb->CFG_SYSBUS_ADDR_BITS), CONST("12")),
+            SETVAL(req_addr, CC2(BITS(req_addr, DEC(*SCV_get_cfg_type(this, "CFG_SYSBUS_ADDR_BITS")), CONST("12")),
                                     comb.vb_req_addr_next));
             SETVAL(req_len, comb.vb_req_len_next);
             SETVAL(req_last_a, INV(OR_REDUCE(comb.vb_req_len_next)));
@@ -221,7 +219,7 @@ TEXT();
             SETZERO(resp_valid);
         ENDIF();
         IF (AND2(NZ(req_valid), NZ(i_req_ready)));
-            SETVAL(req_addr, CC2(BITS(req_addr, DEC(glb->CFG_SYSBUS_ADDR_BITS), CONST("12")),
+            SETVAL(req_addr, CC2(BITS(req_addr, DEC(*SCV_get_cfg_type(this, "CFG_SYSBUS_ADDR_BITS")), CONST("12")),
                                     comb.vb_req_addr_next));
             SETVAL(req_len, comb.vb_req_len_next);
             SETVAL(req_last_a, INV(OR_REDUCE(comb.vb_req_len_next)));

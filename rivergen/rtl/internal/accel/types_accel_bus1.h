@@ -18,13 +18,13 @@
 
 #include <api_rtlgen.h>
 #include <genconfig.h>
-#include "types_amba.h"
+#include "../ambalib/types_amba.h"
 
 using namespace sysvc;
 
-class types_bus1 : public FileObject {
+class types_accel_bus1 : public FileObject {
  public:
-    types_bus1(GenObject *parent);
+    types_accel_bus1(GenObject *parent);
 
     class bus1_apb_in_vector : public StructVector<types_amba::apb_in_type> {
      public:
@@ -57,17 +57,10 @@ class types_bus1 : public FileObject {
             uart1(this, "uart1", "", "uart1 4KB"),
             prci(this, "prci", "", "PRCI 4KB"),
             dmi(this, "dmi", "", "dmi 4KB. TODO: change base address"),
-#if GENCFG_SD_CTRL_ENABLE
-            spi(this, "spi", "", "SPI SD-card 4KB"),
-#endif
-#if GENCFG_HDMI_ENABLE
             i2c(this, "i2c", "", "I2C master interface to ADV7511 HDMI transmitter"),
-#endif
             gpio(this, "gpio", "", "GPIO 4KB"),
             ddr(this, "ddr", "", "DDR MGMT 4KB"),
-#if GENCFG_PCIE_ENABLE
             pcie(this, "pcie", "", "PCIE Controller 4KB"),
-#endif
             pnp(this, "pnp", "", "Plug'n'Play 4KB")
             {
 
@@ -80,14 +73,8 @@ class types_bus1 : public FileObject {
             dmi.addr_start.setObjValue(new HexConst(0x000000001E000));
             dmi.addr_end.setObjValue(new HexConst(0x000000001F000));
 
-#if GENCFG_SD_CTRL_ENABLE
-            spi.addr_start.setObjValue(new HexConst(0x0000000050000));
-            spi.addr_end.setObjValue(new HexConst(0x0000000051000));
-#endif
-#if GENCFG_HDMI_ENABLE
             i2c.addr_start.setObjValue(new HexConst(0x0000000052000));
             i2c.addr_end.setObjValue(new HexConst(0x0000000053000));
-#endif
 
             gpio.addr_start.setObjValue(new HexConst(0x0000000060000));
             gpio.addr_end.setObjValue(new HexConst(0x0000000061000));
@@ -95,10 +82,8 @@ class types_bus1 : public FileObject {
             ddr.addr_start.setObjValue(new HexConst(0x00000000C0000));
             ddr.addr_end.setObjValue(new HexConst(0x00000000C1000));
 
-#if GENCFG_PCIE_ENABLE
             pcie.addr_start.setObjValue(new HexConst(0x00000000C1000));
             pcie.addr_end.setObjValue(new HexConst(0x00000000C2000));
-#endif
 
             pnp.addr_start.setObjValue(new HexConst(0x00000000ff000));
             pnp.addr_end.setObjValue(new HexConst(0x0000000100000));
@@ -106,17 +91,10 @@ class types_bus1 : public FileObject {
         StructVar<types_amba::mapinfo_type> uart1;
         StructVar<types_amba::mapinfo_type> prci;
         StructVar<types_amba::mapinfo_type> dmi;
-#if GENCFG_SD_CTRL_ENABLE
-        StructVar<types_amba::mapinfo_type> spi;
-#endif
-#if GENCFG_HDMI_ENABLE
         StructVar<types_amba::mapinfo_type> i2c;
-#endif
         StructVar<types_amba::mapinfo_type> gpio;
         StructVar<types_amba::mapinfo_type> ddr;
-#if GENCFG_PCIE_ENABLE
         StructVar<types_amba::mapinfo_type> pcie;
-#endif
         StructVar<types_amba::mapinfo_type> pnp;
     };
 
@@ -134,22 +112,14 @@ class types_bus1 : public FileObject {
     ParamI32D CFG_BUS1_PSLV_PRCI;
     TextLine _pslv7_;
     ParamI32D CFG_BUS1_PSLV_DMI;
-#if GENCFG_SD_CTRL_ENABLE
-    TextLine _pslv8_;
-    ParamI32D CFG_BUS1_PSLV_SDCTRL_REG;
-#endif
-#if GENCFG_HDMI_ENABLE
     TextLine _pslv81_;
     ParamI32D CFG_BUS1_PSLV_I2C0;
-#endif
     TextLine _pslv9_;
     ParamI32D CFG_BUS1_PSLV_GPIO;
     TextLine _pslv10_;
     ParamI32D CFG_BUS1_PSLV_DDR;
-#if GENCFG_PCIE_ENABLE
     TextLine _pslvpcie_;
     ParamI32D CFG_BUS1_PSLV_PCIE;
-#endif
     TextLine _xslv11_;
     ParamI32D CFG_BUS1_PSLV_PNP;
     TextLine _pslv12_;
@@ -165,5 +135,3 @@ class types_bus1 : public FileObject {
     CONST_CFG_BUS1_MAP CFG_BUS1_MAP;
     TextLine _n_;
 };
-
-extern types_bus1* glob_bus1_cfg_;

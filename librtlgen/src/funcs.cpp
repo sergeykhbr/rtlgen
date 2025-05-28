@@ -24,6 +24,8 @@ FunctionObject::FunctionObject(GenObject *parent,
                                  const char *comment)
     : GenObject(parent, comment) {
     name_ = std::string(name);
+    SCV_set_cfg_type(this);
+
     Operation::start(this);
 }
 

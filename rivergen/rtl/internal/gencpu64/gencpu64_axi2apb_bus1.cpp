@@ -14,10 +14,10 @@
 //  limitations under the License.
 // 
 
-#include "axi2apb_bus1.h"
+#include "gencpu64_axi2apb_bus1.h"
 
-axi2apb_bus1::axi2apb_bus1(GenObject *parent, const char *name, const char *comment) :
-    ModuleObject(parent, "axi2apb_bus1", name, comment),
+gencpu64_axi2apb_bus1::gencpu64_axi2apb_bus1(GenObject *parent, const char *name, const char *comment) :
+    ModuleObject(parent, "gencpu64_axi2apb_bus1", name, comment),
     i_clk(this, "i_clk", "1", "CPU clock"),
     i_nrst(this, "i_nrst", "1", "Reset: active LOW"),
     i_mapinfo(this, "i_mapinfo", "Base address information from the interconnect port"),
@@ -61,8 +61,8 @@ axi2apb_bus1::axi2apb_bus1(GenObject *parent, const char *name, const char *comm
     comb(this)
 {
     Operation::start(this);
-    axi0.vid.setObjValue(&glob_pnp_cfg_->VENDOR_OPTIMITECH);
-    axi0.did.setObjValue(&glob_pnp_cfg_->OPTIMITECH_AXI2APB_BRIDGE);
+    axi0.vid.setObjValue(SCV_get_cfg_type(this, "VENDOR_OPTIMITECH"));
+    axi0.did.setObjValue(SCV_get_cfg_type(this, "OPTIMITECH_AXI2APB_BRIDGE"));
     NEW(axi0, axi0.getName().c_str());
         CONNECT(axi0, 0, axi0.i_clk, i_clk);
         CONNECT(axi0, 0, axi0.i_nrst, i_nrst);
@@ -87,18 +87,18 @@ axi2apb_bus1::axi2apb_bus1(GenObject *parent, const char *name, const char *comm
     proc_comb();
 }
 
-void axi2apb_bus1::proc_comb() {
-    types_amba* cfg = glob_types_amba_;
-    types_bus1 *bus1 = glob_bus1_cfg_;
+void gencpu64_axi2apb_bus1::proc_comb() {
     GenObject *i;
+    types_gencpu64_bus1::CONST_CFG_BUS1_MAP *map = 
+        dynamic_cast<types_gencpu64_bus1::CONST_CFG_BUS1_MAP *>(SCV_get_cfg_type(this, "CFG_BUS1_MAP"));
     
-    i = &FOR ("i", CONST("0"), bus1->CFG_BUS1_PSLV_TOTAL, "++");
+    i = &FOR ("i", CONST("0"), *SCV_get_cfg_type(this, "CFG_BUS1_PSLV_TOTAL"), "++");
         SETARRITEM(comb.vapbo, *i, comb.vapbo, ARRITEM(i_apbo, *i, i_apbo), "Cannot read vector item from port in systemc");
     ENDFOR();
     TEXT("Unmapped default slave:");
-    SETARRITEM(comb.vapbo, bus1->CFG_BUS1_PSLV_TOTAL, comb.vapbo.pready, CONST("1", 1));
-    SETARRITEM(comb.vapbo, bus1->CFG_BUS1_PSLV_TOTAL, comb.vapbo.pslverr, CONST("1", 1));
-    SETARRITEM(comb.vapbo, bus1->CFG_BUS1_PSLV_TOTAL, comb.vapbo.prdata, ALLONES());
+    SETARRITEM(comb.vapbo, *SCV_get_cfg_type(this, "CFG_BUS1_PSLV_TOTAL"), comb.vapbo.pready, CONST("1", 1));
+    SETARRITEM(comb.vapbo, *SCV_get_cfg_type(this, "CFG_BUS1_PSLV_TOTAL"), comb.vapbo.pslverr, CONST("1", 1));
+    SETARRITEM(comb.vapbo, *SCV_get_cfg_type(this, "CFG_BUS1_PSLV_TOTAL"), comb.vapbo.prdata, ALLONES());
     SETZERO(w_req_ready);
     SETZERO(pvalid);
     SETVAL(comb.iselidx, TO_INT(selidx));
@@ -110,10 +110,10 @@ TEXT();
         SETZERO(pslverr);
         SETZERO(penable);
         SETZERO(pselx);
-        SETVAL(selidx, bus1->CFG_BUS1_PSLV_TOTAL);
-        i = &FOR ("i", CONST("0"), bus1->CFG_BUS1_PSLV_TOTAL, "++");
-            IF (ANDx(2, &GE(wb_req_addr, ARRITEM(bus1->CFG_BUS1_MAP, *i, bus1->CFG_BUS1_MAP.addr_start)),
-                        &LS(wb_req_addr, ARRITEM(bus1->CFG_BUS1_MAP, *i, bus1->CFG_BUS1_MAP.addr_end))));
+        SETVAL(selidx, *SCV_get_cfg_type(this, "CFG_BUS1_PSLV_TOTAL"));
+        i = &FOR ("i", CONST("0"), *SCV_get_cfg_type(this, "CFG_BUS1_PSLV_TOTAL"), "++");
+            IF (ANDx(2, &GE(wb_req_addr, ARRITEM(*map, *i, map->addr_start)),
+                        &LS(wb_req_addr, ARRITEM(*map, *i, map->addr_end))));
                 SETVAL(selidx, *i);
             ENDIF();
         ENDFOR();
@@ -190,8 +190,8 @@ TEXT();
     SYNC_RESET();
 
 TEXT();
-     i = &FOR ("i", CONST("0"), bus1->CFG_BUS1_PSLV_TOTAL, "++");
+     i = &FOR ("i", CONST("0"), *SCV_get_cfg_type(this, "CFG_BUS1_PSLV_TOTAL"), "++");
         SETARRITEM(o_apbi, *i, o_apbi, ARRITEM(comb.vapbi, *i, comb.vapbi));
-        SETARRITEM(o_mapinfo, *i, o_mapinfo, ARRITEM(bus1->CFG_BUS1_MAP, *i, bus1->CFG_BUS1_MAP));
+        SETARRITEM(o_mapinfo, *i, o_mapinfo, ARRITEM(*map, *i, *map));
     ENDFOR();
 }

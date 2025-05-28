@@ -47,8 +47,8 @@ apb_pcie::apb_pcie(GenObject *parent, const char *name, const char *comment) :
 {
     Operation::start(this);
 
-    pslv0.vid.setObjValue(&glob_pnp_cfg_->VENDOR_OPTIMITECH);
-    pslv0.did.setObjValue(&glob_pnp_cfg_->OPTIMITECH_PCIE_CTRL);
+    pslv0.vid.setObjValue(SCV_get_cfg_type(this, "VENDOR_OPTIMITECH"));
+    pslv0.did.setObjValue(SCV_get_cfg_type(this, "OPTIMITECH_PCIE_CTRL"));
     NEW(pslv0, pslv0.getName().c_str());
         CONNECT(pslv0, 0, pslv0.i_clk, i_clk);
         CONNECT(pslv0, 0, pslv0.i_nrst, i_nrst);

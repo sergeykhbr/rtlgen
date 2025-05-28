@@ -21,9 +21,9 @@
 
 using namespace sysvc;
 
-class target_cfg : public FileObject {
+class target_accel_cfg : public FileObject {
  public:
-    target_cfg(GenObject *parent);
+    target_accel_cfg(GenObject *parent);
 
     ParamLogic CFG_ASYNC_RESET;
     TextLine _prj0_;
@@ -56,5 +56,3 @@ class target_cfg : public FileObject {
     ParamI32D CFG_SRAM_LOG2_SIZE;
     TextLine _n_;
 };
-
-extern target_cfg *glob_target_cfg_;

@@ -59,15 +59,13 @@ class types_pnp : public FileObject {
         Logic did;
     };
 
-
-    class soc_pnp_vector : public StructVector<dev_config_type> {
+    class soc_pnp_vector : public StructVector<types_pnp::dev_config_type> {
      public:
         soc_pnp_vector(GenObject *parent, const char *name, const char *descr)
-            : StructVector<dev_config_type>(parent, "soc_pnp_vector",
+            : StructVector<types_pnp::dev_config_type>(parent, "soc_pnp_vector",
                 name, "SOC_PNP_TOTAL", descr) {
         }
     };
-
 
  private:
     int autoincr_;
@@ -138,6 +136,14 @@ class types_pnp : public FileObject {
     TextLine _pnpcfg5_;
     TextLine _pnpcfg6_;
     ParamLogic PNP_CFG_DEV_DESCR_BYTES;
+    TextLine _pnp2_;
+    TextLine _pnp3_;
+    TextLine _pnp4_;
+    TextLine _pnp5_;
+    dev_config_type dev_config_type_def_;
+    TextLine _pnp6_;
+    TextLine _pnp7_;
+    ParamStruct<dev_config_type> dev_config_none;
     TextLine _pnp0_;
     TextLine _pnp1_;
     ParamI32D SOC_PNP_XCTRL0;
@@ -154,29 +160,14 @@ class types_pnp : public FileObject {
     ParamI32D SOC_PNP_PBRIDGE0;
     ParamI32D SOC_PNP_DMI;
     ParamI32D SOC_PNP_UART1;
-#if GENCFG_SD_CTRL_ENABLE
     ParamI32D SOC_PNP_SDCTRL_REG;
     ParamI32D SOC_PNP_SDCTRL_MEM;
-#endif
-#if GENCFG_HDMI_ENABLE
     ParamI32D SOC_PNP_I2C;
-#endif
-#if GENCFG_PCIE_ENABLE
     ParamI32D SOC_PNP_PCIE_DMA;
     ParamI32D SOC_PNP_PCIE_APB;
-#endif
     ParamI32D SOC_PNP_TOTAL;
-    TextLine _pnp2_;
-    TextLine _pnp3_;
-    TextLine _pnp4_;
-    TextLine _pnp5_;
-    dev_config_type dev_config_type_def_;
-    TextLine _pnp6_;
-    TextLine _pnp7_;
-    ParamStruct<dev_config_type> dev_config_none;
     TextLine _pnp8_;
     soc_pnp_vector soc_pnp_vector_def_;
     TextLine _n_;
 };
 
-extern types_pnp* glob_pnp_cfg_;

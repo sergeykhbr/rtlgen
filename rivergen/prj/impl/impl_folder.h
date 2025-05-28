@@ -17,19 +17,27 @@
 #pragma once
 
 #include <api_rtlgen.h>
-#include "asic/asic_folder.h"
-#include "asic_sim/asic_sim_folder.h"
+#include <genconfig.h>
+#if CONFIG_RISCV_VHDL
+    #include "asic_gencpu64/asic_gencpu64_folder.h"
+    #include "asic_gencpu64/asic_gencpu64_sim_folder.h"
+#endif
+#if CONFIG_GPU3D
+    #include "asic_accel/asic_accel_folder.h"
+    #include "asic_accel_sim/asic_accel_sim_folder.h"
+#endif
+
 
 class impl_folder : public FolderObject {
   public:
     impl_folder(GenObject *parent) :
         FolderObject(parent, "impl"),
-        asic_folder_(this),
-        asic_sim_folder_(this) {}
+        asic_accel_folder_(this),
+        asic_accel_sim_folder_(this) {}
 
  protected:
     // subfolders:
-    asic_folder asic_folder_;
-    asic_sim_folder asic_sim_folder_;
+    asic_accel_folder asic_accel_folder_;
+    asic_accel_sim_folder asic_accel_sim_folder_;
     // files
 };

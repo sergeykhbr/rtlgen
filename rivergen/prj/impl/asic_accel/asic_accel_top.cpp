@@ -14,10 +14,10 @@
 //  limitations under the License.
 // 
 
-#include "asic_top.h"
+#include "asic_accel_top.h"
 
-asic_top::asic_top(GenObject *parent, const char *name, const char *comment) :
-    ModuleObject(parent, "asic_top", name, comment),
+asic_accel_top::asic_accel_top(GenObject *parent, const char *name, const char *comment) :
+    ModuleObject(parent, "asic_accel_top", name, comment),
     async_reset(this, "async_reset", "1", "CFG_ASYNC_RESET", NO_COMMENT),
     sim_uart_speedup_rate(this, "sim_uart_speedup_rate", "0", "simulation UART speed-up: 0=no speed up, 1=2x, 2=4x, etc"),
     // Ports

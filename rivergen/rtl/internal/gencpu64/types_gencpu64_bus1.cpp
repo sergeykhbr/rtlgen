@@ -14,12 +14,10 @@
 //  limitations under the License.
 // 
 
-#include "types_bus1.h"
+#include "types_gencpu64_bus1.h"
 
-types_bus1* glob_bus1_cfg_ = 0;
-
-types_bus1::types_bus1(GenObject *parent) :
-    FileObject(parent, "types_bus1"),
+types_gencpu64_bus1::types_gencpu64_bus1(GenObject *parent) :
+    FileObject(parent, "types_gencpu64_bus1"),
     autoincr_(0),
     _pslv0_(this, "@defgroup slave_id_group AMBA APB slaves generic IDs."),
     _pslv1_(this, "@details Each module in a SoC has to be indexed by unique identificator."),
@@ -63,6 +61,5 @@ types_bus1::types_bus1(GenObject *parent) :
     CFG_BUS1_MAP(this),
     _n_(this)
 {
-    glob_bus1_cfg_ = this;
 }
 

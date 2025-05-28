@@ -14,10 +14,10 @@
 //  limitations under the License.
 // 
 
-#include "asic_top_tb.h"
+#include "asic_accel_top_tb.h"
 
-asic_top_tb::asic_top_tb(GenObject *parent, const char *name) :
-    ModuleObject(parent, "asic_top_tb", name, NO_COMMENT),
+asic_accel_top_tb::asic_accel_top_tb(GenObject *parent, const char *name) :
+    ModuleObject(parent, "asic_accel_top_tb", name, NO_COMMENT),
     // parameters
     sim_uart_speedup_rate(this, "sim_uart_speedup_rate", "3", "0=no speed-up, 1=2x speed, 2=4x speed, 3=8x speed, 4=16x speed, .. etc"),
     sim_uart_baudrate(this, "sim_uart_baudrate", "MUL(115200,POW2(1,sim_uart_speedup_rate))", NO_COMMENT),
@@ -70,6 +70,8 @@ asic_top_tb::asic_top_tb(GenObject *parent, const char *name) :
     // processes:
     proc(this, &w_sclk_p)
 {
+    w_i2c_sda.setAttribute(ATTR_UNCHECKED_WRITERS);     // bi-directional wire
+
     Operation::start(this);
 
     // Create and connet Sub-modules:
@@ -149,7 +151,7 @@ TEXT();
     proc_test();
 }
 
-void asic_top_tb::proc_test() {
+void asic_accel_top_tb::proc_test() {
     SETVAL(wb_clk_cnt, INC(wb_clk_cnt));
     IF (LS(wb_clk_cnt, CONST("10")));
         SETONE(w_rst);

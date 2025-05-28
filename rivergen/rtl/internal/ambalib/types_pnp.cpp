@@ -16,8 +16,6 @@
 
 #include "types_pnp.h"
 
-types_pnp* glob_pnp_cfg_ = 0;
-
 types_pnp::types_pnp(GenObject *parent) :
     FileObject(parent, "types_pnp"),
     autoincr_(0),
@@ -87,6 +85,14 @@ types_pnp::types_pnp(GenObject *parent) :
     _pnpcfg5_(this, "@brief Size in bytes of the standard slave descriptor.."),
     _pnpcfg6_(this, "@details Firmware uses this value instead of sizeof(slave_config_type)."),
     PNP_CFG_DEV_DESCR_BYTES(this, "PNP_CFG_DEV_DESCR_BYTES", "8", "0x10", NO_COMMENT),
+    _pnp2_(this),
+    _pnp3_(this, "@brief   Plug-n-play descriptor structure for connected device."),
+    _pnp4_(this, "@details Each device must generates this datatype output that"),
+    _pnp5_(this, "         is connected directly to the 'pnp' slave module on system bus."),
+    dev_config_type_def_(this, "dev_config_type", NO_COMMENT),
+    _pnp6_(this),
+    _pnp7_(this, "@brief Default config value for empty slot."),
+    dev_config_none(this, "dev_config_none", NO_COMMENT),
     _pnp0_(this),
     _pnp1_(this, "Plug-and-Play device descriptors array connected to pnp module:"),
     SOC_PNP_XCTRL0(this, "SOC_PNP_XCTRL0", autoincr_++),
@@ -103,30 +109,15 @@ types_pnp::types_pnp(GenObject *parent) :
     SOC_PNP_PBRIDGE0(this, "SOC_PNP_PBRIDGE0", autoincr_++),
     SOC_PNP_DMI(this, "SOC_PNP_DMI", autoincr_++),
     SOC_PNP_UART1(this, "SOC_PNP_UART1", autoincr_++),
-#if GENCFG_SD_CTRL_ENABLE
     SOC_PNP_SDCTRL_REG(this, "SOC_PNP_SDCTRL_REG", autoincr_++),
     SOC_PNP_SDCTRL_MEM(this, "SOC_PNP_SDCTRL_MEM", autoincr_++),
-#endif
-#if GENCFG_HDMI_ENABLE
     SOC_PNP_I2C(this, "SOC_PNP_I2C", autoincr_++),
-#endif
-#if GENCFG_PCIE_ENABLE
     SOC_PNP_PCIE_DMA(this, "SOC_PNP_PCIE_DMA", autoincr_++),
     SOC_PNP_PCIE_APB(this, "SOC_PNP_PCIE_APB", autoincr_++),
-#endif
     SOC_PNP_TOTAL(this, "SOC_PNP_TOTAL", autoincr_),
-    _pnp2_(this),
-    _pnp3_(this, "@brief   Plug-n-play descriptor structure for connected device."),
-    _pnp4_(this, "@details Each device must generates this datatype output that"),
-    _pnp5_(this, "         is connected directly to the 'pnp' slave module on system bus."),
-    dev_config_type_def_(this, "dev_config_type", NO_COMMENT),
-    _pnp6_(this),
-    _pnp7_(this, "@brief Default config value for empty slot."),
-    dev_config_none(this, "dev_config_none", NO_COMMENT),
     _pnp8_(this),
     soc_pnp_vector_def_(this, "soc_pnp_vector", NO_COMMENT),
     _n_(this)
 {
-    glob_pnp_cfg_ = this;
 }
 

@@ -19,9 +19,9 @@
 RiverProject::RiverProject(const char *rootpath) :
     ProjectObject(rootpath, "River v3.0 CPU generator"),
     target_folder_(this),
-    rtl_(this),
-    prj_(this),
-    pcie_dma_tb_folder_(&prj_),  // pull all TBs into /prj/tb
-    misclib_tb_folder_(&prj_)    // pull all TBs into /prj/tb
+    rtl_folder_(this),
+    prj_folder_(this),
+    pcie_dma_tb_folder_(&prj_folder_),  // pull all TBs into /prj/tb
+    misclib_tb_folder_(&prj_folder_)    // pull all TBs into /prj/tb
 {
 }

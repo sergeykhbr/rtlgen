@@ -18,7 +18,7 @@
 
 #include <api_rtlgen.h>
 #include <genconfig.h>
-#include "../asic/asic_top.h"
+#include "../asic_accel/asic_accel_top.h"
 #include "../../common/vips/clk/vip_clk.h"
 #include "../../common/vips/uart/vip_uart_top.h"
 #include "../../common/vips/i2c/vip_i2c_s.h"
@@ -26,9 +26,9 @@
 
 using namespace sysvc;
 
-class asic_top_tb : public ModuleObject {
+class asic_accel_top_tb : public ModuleObject {
  public:
-    asic_top_tb(GenObject *parent, const char *name);
+    asic_accel_top_tb(GenObject *parent, const char *name);
 
     virtual bool isTop() override { return true; }
     virtual bool isAsyncResetParam() override { return false; }
@@ -95,18 +95,18 @@ public:
     iobuf_tech iosda0;
     vip_i2c_s i2c0;
 #endif
-    asic_top tt;
+    asic_accel_top tt;
 
     TestProcess proc;
 };
 
-class asic_top_tb_file : public FileObject {
+class asic_accel_top_tb_file : public FileObject {
  public:
-    asic_top_tb_file(GenObject *parent) :
-        FileObject(parent, "asic_top_tb"),
-        asic_top_tb_(this, "asic_top_tb") { }
+    asic_accel_top_tb_file(GenObject *parent) :
+        FileObject(parent, "asic_accel_top_tb"),
+        asic_accel_top_tb_(this, "asic_accel_top_tb") { }
 
  private:
-    asic_top_tb asic_top_tb_;
+    asic_accel_top_tb asic_accel_top_tb_;
 };
 
