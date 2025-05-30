@@ -420,7 +420,8 @@ void gencpu64_soc::proc_comb() {
     TEXT();
     TEXT("Nullify emty AXI-slots:");
 #if GENCFG_XDMA_ENABLE
-    SETARRITEM(aximo, *SCV_get_cfg_type(this, "CFG_BUS0_XMST_DMA"), aximo, amba->axi4_master_out_none);
+    SETARRITEM(aximo, *SCV_get_cfg_type(this, "CFG_BUS0_XMST_DMA"), aximo,
+               *SCV_get_cfg_type(this, "axi4_master_out_none"));
 #endif
     SETVAL(acpo, *SCV_get_cfg_type(this, "axi4_master_out_none"));
 

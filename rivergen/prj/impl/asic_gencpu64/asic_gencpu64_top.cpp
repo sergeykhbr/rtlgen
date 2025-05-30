@@ -14,10 +14,10 @@
 //  limitations under the License.
 // 
 
-#include "asic_accel_top.h"
+#include "asic_gencpu64_top.h"
 
-asic_accel_top::asic_accel_top(GenObject *parent, const char *name, const char *comment) :
-    ModuleObject(parent, "asic_accel_top", name, comment),
+asic_gencpu64_top::asic_gencpu64_top(GenObject *parent, const char *name, const char *comment) :
+    ModuleObject(parent, "asic_gencpu64_top", name, comment),
     async_reset(this, "async_reset", "1", "CFG_ASYNC_RESET", NO_COMMENT),
     sim_uart_speedup_rate(this, "sim_uart_speedup_rate", "0", "simulation UART speed-up: 0=no speed up, 1=2x, 2=4x, etc"),
     // Ports
@@ -352,21 +352,6 @@ TEXT();
         CONNECT(soc0, 0, soc0.o_sd_cd_dat3_dir, ob_sd_cd_dat3_direction);
         CONNECT(soc0, 0, soc0.i_sd_detected, i_sd_detected);
         CONNECT(soc0, 0, soc0.i_sd_protect, i_sd_protect);
-#endif
-#if GENCFG_HDMI_ENABLE
-        CONNECT(soc0, 0, soc0.o_i2c0_scl, ob_i2c0_scl);
-        CONNECT(soc0, 0, soc0.i_i2c0_sda, ib_i2c0_sda);
-        CONNECT(soc0, 0, soc0.o_i2c0_sda, ob_i2c0_sda);
-        CONNECT(soc0, 0, soc0.o_i2c0_sda_dir, ob_i2c0_sda_direction);
-        CONNECT(soc0, 0, soc0.o_i2c0_nreset, ob_i2c0_nreset);
-        CONNECT(soc0, 0, soc0.i_hdmi_clk, w_sys_clk);
-        CONNECT(soc0, 0, soc0.o_hdmi_hsync, ob_hdmi_hsync);
-        CONNECT(soc0, 0, soc0.o_hdmi_vsync, ob_hdmi_vsync);
-        CONNECT(soc0, 0, soc0.o_hdmi_de, ob_hdmi_de);
-        CONNECT(soc0, 0, soc0.o_hdmi_d, ob_hdmi_d);
-        CONNECT(soc0, 0, soc0.o_hdmi_spdif, ob_hdmi_spdif);
-        CONNECT(soc0, 0, soc0.i_hdmi_spdif_out, ib_hdmi_spdif_out);
-        CONNECT(soc0, 0, soc0.i_hdmi_int, ib_hdmi_int);
 #endif
         CONNECT(soc0, 0, soc0.o_dmreset, w_dmreset);
         CONNECT(soc0, 0, soc0.o_prci_pmapinfo, prci_pmapinfo);

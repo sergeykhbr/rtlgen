@@ -71,7 +71,9 @@ class RiverProject : public ProjectObject {
     rtl_folder rtl_folder_;
     prj_folder prj_folder_;
     // Test-benches must be created after all project VIPs created:
+#if GENCFG_PCIE_ENABLE
     pcie_dma_tb_folder pcie_dma_tb_folder_;     // put into prj/tb
+#endif
     misclib_tb_folder misclib_tb_folder_;       // put into prj/tb
 };
 

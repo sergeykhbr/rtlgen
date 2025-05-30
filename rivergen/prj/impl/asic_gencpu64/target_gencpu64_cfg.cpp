@@ -14,9 +14,9 @@
 //  limitations under the License.
 // 
 
-#include "target_accel_cfg.h"
+#include "target_gencpu64_cfg.h"
 
-target_accel_cfg::target_accel_cfg(GenObject *parent) :
+target_gencpu64_cfg::target_gencpu64_cfg(GenObject *parent) :
     FileObject(parent, "target_cfg"),
     CFG_ASYNC_RESET(this, "CFG_ASYNC_RESET", "1", "0", NO_COMMENT),
     _prj0_(this),

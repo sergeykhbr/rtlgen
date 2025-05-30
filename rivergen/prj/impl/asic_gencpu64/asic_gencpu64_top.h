@@ -18,7 +18,7 @@
 
 #include <api_rtlgen.h>
 #include <genconfig.h>
-#include "target_accel_cfg.h"
+#include "target_gencpu64_cfg.h"
 #include "../../../rtl/internal/ambalib/types_amba.h"
 #include "../../../rtl/internal/ambalib/types_dma.h"
 #include "../../../rtl/internal/ambalib/types_pnp.h"
@@ -29,18 +29,14 @@
 #include "../../../rtl/sim/io/obuf_tech.h"
 #include "../../../rtl/sim/io/obuf_arr_tech.h"
 #include "../../../rtl/sim/pll/SysPLL_tech.h"
-#if CONFIG_RISCV_VHDL
-    #include "../../../rtl/internal/gencpu64/gencpu64_soc.h"
-#elif CONFIG_GPU3D
-    #include "../../../rtl/internal/accel/accel_soc.h"
-#endif
+#include "../../../rtl/internal/gencpu64/gencpu64_soc.h"
 
 
 using namespace sysvc;
 
-class asic_accel_top : public ModuleObject {
+class asic_gencpu64_top : public ModuleObject {
  public:
-    asic_accel_top(GenObject *parent, const char *name, const char *comment=NO_COMMENT);
+    asic_gencpu64_top(GenObject *parent, const char *name, const char *comment=NO_COMMENT);
 
  public:
     DefParamLogic async_reset;
@@ -190,21 +186,17 @@ class asic_accel_top : public ModuleObject {
 #endif
     SysPLL_tech pll0;
     apb_prci prci0;
-#if CONFIG_RISCV_VHDL
     gencpu64_soc soc0;
-#elif CONFIG_GPU3D
-    accel_soc soc0;
-#endif
     // process
 };
 
-class asic_accel_top_file : public FileObject {
+class asic_gencpu64_top_file : public FileObject {
  public:
-    asic_accel_top_file(GenObject *parent) :
-        FileObject(parent, "asic_accel_top"),
-        asic_accel_top_(this, "asic_accel_top") { }
+    asic_gencpu64_top_file(GenObject *parent) :
+        FileObject(parent, "asic_gencpu64_top"),
+        asic_gencpu64_top_(this, "asic_gencpu64_top") { }
 
  private:
-    asic_accel_top asic_accel_top_;
+    asic_gencpu64_top asic_gencpu64_top_;
 };
 

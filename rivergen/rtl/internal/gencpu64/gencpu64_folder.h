@@ -29,7 +29,6 @@ class gencpu64_folder : public FolderObject {
         FolderObject(parent, "gencpu64"),
         types_gencpu64_bus0_(this),
         types_gencpu64_bus1_(this),
-        types_gencpu64_buspnp_(this),
         gencpu64_axictrl_bus0_file_(this),
         gencpu64_axi2apb_bus1_file_(this),
         gencpu64_soc_file_(this) {}

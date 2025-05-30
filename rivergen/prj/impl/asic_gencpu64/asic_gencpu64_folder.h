@@ -17,33 +17,16 @@
 #pragma once
 
 #include <api_rtlgen.h>
-#include <genconfig.h>
-#if CONFIG_RISCV_VHDL
-    #include "asic_gencpu64/asic_gencpu64_folder.h"
-    #include "asic_gencpu64_sim/asic_gencpu64_sim_folder.h"
-#endif
-#if CONFIG_GPU3D
-    #include "asic_accel/asic_accel_folder.h"
-    #include "asic_accel_sim/asic_accel_sim_folder.h"
-#endif
+#include "asic_gencpu64_top.h"
 
-
-class impl_folder : public FolderObject {
+class asic_gencpu64_folder : public FolderObject {
   public:
-    impl_folder(GenObject *parent) :
-        FolderObject(parent, "impl"),
-        asic_folder_(this),
-        asic_sim_folder_(this) {}
+    asic_gencpu64_folder(GenObject *parent) :
+        FolderObject(parent, "asic_gencpu64"),
+        asic_gencpu64_top_file_(this) {}
 
  protected:
     // subfolders:
-#if CONFIG_RISCV_VHDL
-    asic_gencpu64_folder asic_folder_;
-    asic_gencpu64_sim_folder asic_sim_folder_;
-#endif
-#if CONFIG_GPU3D
-    asic_accel_folder asic_folder_;
-    asic_accel_sim_folder asic_sim_folder_;
-#endif
     // files
+    asic_gencpu64_top_file asic_gencpu64_top_file_;
 };
