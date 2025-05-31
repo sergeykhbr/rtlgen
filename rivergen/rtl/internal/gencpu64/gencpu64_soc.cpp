@@ -151,7 +151,7 @@ gencpu64_soc::gencpu64_soc(GenObject *parent, const char *name, const char *comm
 #endif
     pnp0(this, "pnp0"),
     group0(this, "group0"),
-    u_cdc_ddr0(this, "u_cdc_ddr0"),
+    afifo_ddr0(this, "afifo_ddr0", NO_COMMENT),
     comb(this)
 {
     Operation::start(this);
@@ -262,15 +262,17 @@ TEXT();
     ENDNEW();
 
 TEXT();
-    NEW(u_cdc_ddr0, u_cdc_ddr0.getName().c_str());
-        CONNECT(u_cdc_ddr0, 0, u_cdc_ddr0.i_xslv_clk, i_sys_clk);
-        CONNECT(u_cdc_ddr0, 0, u_cdc_ddr0.i_xslv_nrst, i_sys_nrst);
-        CONNECT(u_cdc_ddr0, 0, u_cdc_ddr0.i_xslvi, ARRITEM(axisi, *SCV_get_cfg_type(this, "CFG_BUS0_XSLV_DDR"), axisi));
-        CONNECT(u_cdc_ddr0, 0, u_cdc_ddr0.o_xslvo, ARRITEM(axiso, *SCV_get_cfg_type(this, "CFG_BUS0_XSLV_DDR"), axiso));
-        CONNECT(u_cdc_ddr0, 0, u_cdc_ddr0.i_xmst_clk, i_ddr_clk);
-        CONNECT(u_cdc_ddr0, 0, u_cdc_ddr0.i_xmst_nrst, i_ddr_nrst);
-        CONNECT(u_cdc_ddr0, 0, u_cdc_ddr0.o_xmsto, o_ddr_xslvi);
-        CONNECT(u_cdc_ddr0, 0, u_cdc_ddr0.i_xmsti, i_ddr_xslvo);
+    afifo_ddr0.abits_depth.setObjValue(new DecConst(2));
+    afifo_ddr0.dbits_depth.setObjValue(new DecConst(9));
+    NEW(afifo_ddr0, afifo_ddr0.getName().c_str());
+        CONNECT(afifo_ddr0, 0, afifo_ddr0.i_xslv_nrst, i_sys_nrst);
+        CONNECT(afifo_ddr0, 0, afifo_ddr0.i_xslv_clk, i_sys_clk);
+        CONNECT(afifo_ddr0, 0, afifo_ddr0.i_xslvi, ARRITEM(axisi, *SCV_get_cfg_type(this, "CFG_BUS0_XSLV_DDR"), axisi));
+        CONNECT(afifo_ddr0, 0, afifo_ddr0.o_xslvo, ARRITEM(axiso, *SCV_get_cfg_type(this, "CFG_BUS0_XSLV_DDR"), axiso));
+        CONNECT(afifo_ddr0, 0, afifo_ddr0.i_xmst_nrst, i_ddr_nrst);
+        CONNECT(afifo_ddr0, 0, afifo_ddr0.i_xmst_clk, i_ddr_clk);
+        CONNECT(afifo_ddr0, 0, afifo_ddr0.o_xmsto, o_ddr_xslvi);
+        CONNECT(afifo_ddr0, 0, afifo_ddr0.i_xmsti, i_ddr_xslvo);
     ENDNEW();
 
 TEXT();

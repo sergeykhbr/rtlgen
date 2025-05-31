@@ -35,7 +35,7 @@
 #include "../riverlib/types_river.h"
 #include "../riverlib/river_amba.h"
 #include "../riverlib/workgroup.h"
-#include "../../sim/cdc_axi_sync/cdc_axi_sync_tech.h"
+#include "../cdc/afifo_xslv.h"
 #include "types_gencpu64_bus0.h"
 #include "types_gencpu64_bus1.h"
 #include "gencpu64_axictrl_bus0.h"
@@ -197,7 +197,7 @@ public:
 #endif
     apb_pnp pnp0;
     Workgroup group0;
-    cdc_axi_sync_tech u_cdc_ddr0;
+    afifo_xslv afifo_ddr0;
     // process
     CombProcess comb;
 };

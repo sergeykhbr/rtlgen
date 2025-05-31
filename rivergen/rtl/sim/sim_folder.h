@@ -19,20 +19,17 @@
 #include <api_rtlgen.h>
 #include "io/io_folder.h"
 #include "pll/pll_folder.h"
-#include "cdc_axi_sync/cdc_axi_sync_folder.h"
 
 class sim_folder : public FolderObject {
  public:
     sim_folder(GenObject *parent) :
         FolderObject(parent, "sim"),
         io_folder_(this),
-        pll_folder_(this),
-        cdc_axi_sync_folder_(this) {}
+        pll_folder_(this) {}
 
     virtual std::string getLibName() override { return getName(); }
 
  protected:
     io_folder io_folder_;
     pll_folder pll_folder_;
-    cdc_axi_sync_folder cdc_axi_sync_folder_;
 };

@@ -1,5 +1,5 @@
 // 
-//  Copyright 2023 Sergey Khabarov, sergeykhbr@gmail.com
+//  Copyright 2025 Sergey Khabarov, sergeykhbr@gmail.com
 // 
 //  Licensed under the Apache License, Version 2.0 (the "License");
 //  you may not use this file except in compliance with the License.
@@ -17,14 +17,17 @@
 #pragma once
 
 #include <api_rtlgen.h>
-#include "cdc_axi_sync_tech.h"
+#include "afifo_xslv_tb.h"
 
-class cdc_axi_sync_folder : public FolderObject {
+class cdc_tb_folder : public FolderObject {
  public:
-    cdc_axi_sync_folder(GenObject *parent) :
-        FolderObject(parent, "cdc_axi_sync"),
-        cdc_axi_sync_tech_file_(this) {}
+    cdc_tb_folder(GenObject *parent) :
+        FolderObject(parent, "tb"),
+        afifo_xslv_tb_file_(this) {
+    }
 
  protected:
-    cdc_axi_sync_tech_file cdc_axi_sync_tech_file_;
+    // subfolders:
+    // files
+    afifo_xslv_tb_file afifo_xslv_tb_file_;
 };

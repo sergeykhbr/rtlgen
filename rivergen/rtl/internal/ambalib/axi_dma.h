@@ -23,7 +23,7 @@ using namespace sysvc;
 
 class axi_dma : public ModuleObject {
  public:
-    axi_dma(GenObject *parent, const char *name, const char *depth);
+    axi_dma(GenObject *parent, const char *name, const char *comment);
 
     class CombProcess : public CombinationalProcess {
      public:
@@ -110,7 +110,7 @@ class axi_dma_file : public FileObject {
  public:
     axi_dma_file(GenObject *parent) :
         FileObject(parent, "axi_dma"),
-        axi_dma_(this, "axi_dma", "0") { }
+        axi_dma_(this, "axi_dma", NO_COMMENT) { }
 
  private:
     axi_dma axi_dma_;

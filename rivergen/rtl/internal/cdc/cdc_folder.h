@@ -20,6 +20,7 @@
 #include "cdc_dp_mem.h"
 #include "cdc_afifo_gray.h"
 #include "cdc_afifo.h"
+#include "afifo_xslv.h"
 
 class cdc_folder : public FolderObject {
  public:
@@ -27,10 +28,12 @@ class cdc_folder : public FolderObject {
         FolderObject(parent, "cdc"),
         cdc_dp_mem_file_(this),
         cdc_afifo_gray_file_(this),
-        cdc_afifo_file_(this) {}
+        cdc_afifo_file_(this),
+        afifo_xslv_file_(this) {}
 
  protected:
     cdc_dp_mem_file cdc_dp_mem_file_;
     cdc_afifo_gray_file cdc_afifo_gray_file_;
     cdc_afifo_file cdc_afifo_file_;
+    afifo_xslv_file afifo_xslv_file_;
 };

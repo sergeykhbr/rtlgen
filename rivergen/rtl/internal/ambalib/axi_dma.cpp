@@ -16,8 +16,8 @@
 
 #include "axi_dma.h"
 
-axi_dma::axi_dma(GenObject *parent, const char *name, const char *depth) :
-    ModuleObject(parent, "axi_dma", name, depth),
+axi_dma::axi_dma(GenObject *parent, const char *name, const char *comment) :
+    ModuleObject(parent, "axi_dma", name, comment),
     // Generic parameters
     abits(this, "abits", "48", "adress bits used"),
     userbits(this, "userbits", "1"),
