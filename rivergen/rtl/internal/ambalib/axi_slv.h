@@ -30,15 +30,15 @@ class axi_slv : public ModuleObject {
      public:
         CombProcess(GenObject *parent) :
             CombinationalProcess(parent, "comb"),
-            vb_req_addr_next(this, "vb_req_addr_next", "12", "'0", NO_COMMENT),
-            vb_req_len_next(this, "vb_req_len_next", "8", "'0", NO_COMMENT),
+            vb_ar_addr_next(this, "vb_ar_addr_next", "12", "'0", NO_COMMENT),
+            vb_aw_addr_next(this, "vb_aw_addr_next", "12", "'0", NO_COMMENT),
             vcfg(this, "vcfg", "dev_config_none", NO_COMMENT),
             vxslvo(this, "vxslvo", "axi4_slave_out_none", NO_COMMENT) {
         }
 
      public:
-        Logic vb_req_addr_next;
-        Logic vb_req_len_next;
+        Logic vb_ar_addr_next;
+        Logic vb_aw_addr_next;
         StructVar<types_pnp::dev_config_type> vcfg;
         StructVar<types_amba::axi4_slave_out_type> vxslvo;
     };
@@ -67,32 +67,50 @@ class axi_slv : public ModuleObject {
     InPort i_resp_rdata;
     InPort i_resp_err;
 
-    ParamLogic State_Idle;
-    ParamLogic State_w;
-    ParamLogic State_burst_w;
-    ParamLogic State_addr_r;
-    ParamLogic State_data_r;
-    ParamLogic State_out_r;
+    ParamLogic State_r_idle;
+    ParamLogic State_r_addr;
+    ParamLogic State_r_data;
+    ParamLogic State_r_wait_writing;
+    //ParamLogic State_r_wait_bus;
+    ParamLogic State_w_idle;
+    ParamLogic State_w_wait_reading;
+    ParamLogic State_w_wait_reading_light;
+    ParamLogic State_w_addr;
+    ParamLogic State_w_data;
+    //ParamLogic State_w_wait_accept;
     ParamLogic State_b;
 
-    RegSignal state;
+    RegSignal rstate;
+    RegSignal wstate;
+    RegSignal ar_ready;
+    RegSignal ar_addr;
+    RegSignal ar_len;
+    RegSignal ar_bytes;
+    RegSignal ar_burst;
+    RegSignal ar_id;
+    RegSignal ar_user;
+    RegSignal ar_last;
+    RegSignal aw_ready;
+    RegSignal aw_addr;
+    RegSignal aw_bytes;
+    RegSignal aw_burst;
+    RegSignal aw_id;
+    RegSignal aw_user;
+    RegSignal w_last;
+    RegSignal w_ready;
+    RegSignal r_valid;
+    RegSignal r_last;
+    RegSignal r_data;
+    RegSignal r_err;
+    RegSignal b_err;
+    RegSignal b_valid;
     RegSignal req_valid;
     RegSignal req_addr;
+    RegSignal req_last;
     RegSignal req_write;
     RegSignal req_wdata;
     RegSignal req_wstrb;
-    RegSignal req_xsize;
-    RegSignal req_len;
-    RegSignal1 req_user;
-    RegSignal req_id;
-    RegSignal req_burst;
-    RegSignal req_last_a;
-    RegSignal req_last_r;
-    RegSignal req_done;
-    RegSignal resp_valid;
-    RegSignal resp_last;
-    RegSignal resp_rdata;
-    RegSignal resp_err;
+    RegSignal req_bytes;
 
     CombProcess comb;
 };

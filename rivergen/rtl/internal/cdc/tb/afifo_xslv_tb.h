@@ -76,6 +76,7 @@ public:
     Signal w_clk1;
     Signal w_clk2;
     Logic wb_clk1_cnt;
+    Logic wb_clk2_cnt;
     SignalStruct<types_amba::axi4_slave_in_type> wb_clk1_xslvi;
     SignalStruct<types_amba::axi4_slave_out_type> wb_clk1_xslvo;
     SignalStruct<types_amba::axi4_slave_in_type> wb_clk2_xmsto;
@@ -94,6 +95,7 @@ public:
     Signal wb_slv_i_resp_rdata;
     Signal w_slv_i_resp_err;
     Logic rd_valid;
+    Logic req_ready;
     Logic rd_addr;
     LogicArray mem;
 

@@ -24,6 +24,7 @@ afifo_xslv_tb::afifo_xslv_tb(GenObject *parent, const char *name) :
     w_clk1(this, "w_clk1", "1", RSTVAL_ZERO, NO_COMMENT),
     w_clk2(this, "w_clk2", "1", RSTVAL_ZERO, NO_COMMENT),
     wb_clk1_cnt(this, "wb_clk1_cnt", "32", "'0", NO_COMMENT),
+    wb_clk2_cnt(this, "wb_clk2_cnt", "32", "'0", NO_COMMENT),
     wb_clk1_xslvi(this, "wb_clk1_xslvi", "Clock 1 input"),
     wb_clk1_xslvo(this, "wb_clk1_xslvo", "Clock 1 output"),
     wb_clk2_xmsto(this, "wb_clk2_xmsto", "Clock 2 output"),
@@ -41,7 +42,8 @@ afifo_xslv_tb::afifo_xslv_tb(GenObject *parent, const char *name) :
     w_slv_i_resp_valid(this, "w_slv_i_resp_valid", "1"),
     wb_slv_i_resp_rdata(this, "wb_slv_i_resp_rdata", "CFG_SYSBUS_DATA_BITS"),
     w_slv_i_resp_err(this, "w_slv_i_resp_err", "1"),
-    rd_valid(this, "rd_valid", "1", RSTVAL_ZERO, NO_COMMENT),
+    rd_valid(this, "rd_valid", "3", RSTVAL_ZERO, NO_COMMENT),
+    req_ready(this, "req_ready", "1", RSTVAL_ZERO, NO_COMMENT),
     rd_addr(this, "rd_addr", "4", "'0", NO_COMMENT),
     mem(this, "mem", "64", "16", NO_COMMENT),
     // submodules:
@@ -157,6 +159,60 @@ void afifo_xslv_tb::proc_test_clk1() {
         SETVAL(test_clk1.vb_xslvi.ar_bits.addr, CONST("0x08000008", 48));
         SETVAL(test_clk1.vb_xslvi.ar_bits.size, CONST("0x3", 3));
         SETVAL(test_clk1.vb_xslvi.ar_bits.len, CONST("0x3", 3));
+    ELSIF(EQ(wb_clk1_cnt, CONST("2000")));
+        SETONE(test_clk1.vb_xslvi.aw_valid);
+        SETVAL(test_clk1.vb_xslvi.aw_bits.addr, CONST("0x08000028", 48));
+        SETVAL(test_clk1.vb_xslvi.aw_bits.size, CONST("0x3", 3));
+        SETVAL(test_clk1.vb_xslvi.aw_bits.len, CONST("0x3", 3));
+
+        SETONE(test_clk1.vb_xslvi.ar_valid);
+        SETVAL(test_clk1.vb_xslvi.ar_bits.addr, CONST("0x08000028", 48));
+        SETVAL(test_clk1.vb_xslvi.ar_bits.size, CONST("0x3", 3));
+        SETVAL(test_clk1.vb_xslvi.ar_bits.len, CONST("0x3", 3));
+    ELSIF(EQ(wb_clk1_cnt, CONST("2001")));
+        SETONE(test_clk1.vb_xslvi.w_valid);
+        SETVAL(test_clk1.vb_xslvi.w_data, CONST("0xFF22334455667788", 64));
+        SETVAL(test_clk1.vb_xslvi.w_strb, CONST("0xFF", 8));
+
+        SETONE(test_clk1.vb_xslvi.ar_valid);
+        SETVAL(test_clk1.vb_xslvi.ar_bits.addr, CONST("0x08000038", 48));
+        SETVAL(test_clk1.vb_xslvi.ar_bits.size, CONST("0x3", 3));
+        SETVAL(test_clk1.vb_xslvi.ar_bits.len, CONST("0x0", 8));
+    ELSIF(EQ(wb_clk1_cnt, CONST("2002")));
+        SETONE(test_clk1.vb_xslvi.w_valid);
+        SETVAL(test_clk1.vb_xslvi.w_data, CONST("0xFA22334455667788", 64));
+        SETVAL(test_clk1.vb_xslvi.w_strb, CONST("0xFF", 8));
+    ELSIF(EQ(wb_clk1_cnt, CONST("2003")));
+        SETONE(test_clk1.vb_xslvi.w_valid);
+        SETVAL(test_clk1.vb_xslvi.w_data, CONST("0xFB22334455667788", 64));
+        SETVAL(test_clk1.vb_xslvi.w_strb, CONST("0xFF", 8));
+    ELSIF(EQ(wb_clk1_cnt, CONST("2004")));
+        SETONE(test_clk1.vb_xslvi.w_valid);
+        SETVAL(test_clk1.vb_xslvi.w_data, CONST("0xFC22334455667788", 64));
+        SETVAL(test_clk1.vb_xslvi.w_strb, CONST("0xFF", 8));
+        SETONE(test_clk1.vb_xslvi.w_last);
+    ELSIF(EQ(wb_clk1_cnt, CONST("2005")));
+        SETONE(test_clk1.vb_xslvi.aw_valid);
+        SETVAL(test_clk1.vb_xslvi.aw_bits.addr, CONST("0x08000040", 48));
+        SETVAL(test_clk1.vb_xslvi.aw_bits.size, CONST("0x3", 3));
+        SETVAL(test_clk1.vb_xslvi.aw_bits.len, CONST("0x3", 3));
+    ELSIF(EQ(wb_clk1_cnt, CONST("2156")));
+        SETONE(test_clk1.vb_xslvi.w_valid);
+        SETVAL(test_clk1.vb_xslvi.w_data, CONST("0x1111", 64));
+        SETVAL(test_clk1.vb_xslvi.w_strb, CONST("0xFF", 8));
+    ELSIF(EQ(wb_clk1_cnt, CONST("2267")));
+        SETONE(test_clk1.vb_xslvi.w_valid);
+        SETVAL(test_clk1.vb_xslvi.w_data, CONST("0x2222", 64));
+        SETVAL(test_clk1.vb_xslvi.w_strb, CONST("0xFF", 8));
+    ELSIF(EQ(wb_clk1_cnt, CONST("2378")));
+        SETONE(test_clk1.vb_xslvi.w_valid);
+        SETVAL(test_clk1.vb_xslvi.w_data, CONST("0x3333", 64));
+        SETVAL(test_clk1.vb_xslvi.w_strb, CONST("0xFF", 8));
+    ELSIF(EQ(wb_clk1_cnt, CONST("2489")));
+        SETONE(test_clk1.vb_xslvi.w_valid);
+        SETVAL(test_clk1.vb_xslvi.w_data, CONST("0x4444", 64));
+        SETVAL(test_clk1.vb_xslvi.w_strb, CONST("0xFF", 8));
+        SETONE(test_clk1.vb_xslvi.w_last);
     ENDIF();
 
     TEXT();
@@ -166,17 +222,21 @@ void afifo_xslv_tb::proc_test_clk1() {
 void afifo_xslv_tb::proc_test_clk2() {
     IF (EZ(i_nrst));
         SETZERO(rd_valid);
+        SETZERO(req_ready);
         SETZERO(rd_addr);
     ELSE();
+        SETVAL(wb_clk2_cnt, INC(wb_clk2_cnt));
         IF (AND2(NZ(w_slv_o_req_write), NZ(w_slv_o_req_valid)));
             SETARRITEM(mem, TO_INT(BITS(wb_slv_o_req_addr, 5, 2)), mem, wb_slv_o_req_wdata);
         ENDIF();
         SETVAL(rd_addr, BITS(wb_slv_o_req_addr, 5, 2));
-        SETVAL(rd_valid, w_slv_o_req_valid);
+        SETVAL(req_ready, AND_REDUCE(BITS(wb_clk2_cnt, 2, 0)));
+        //SETVAL(rd_valid, CC2(BITS(rd_valid, 1, 0), AND2_L(w_slv_o_req_valid, req_ready)));
+        SETVAL(rd_valid, CC2(BITS(rd_valid, 1, 0),  w_slv_o_req_valid));
     ENDIF();
     SETVAL(wb_slv_i_resp_rdata, ARRITEM(mem, TO_INT(BITS(rd_addr, 3, 0)), mem));
-    SETVAL(w_slv_i_resp_valid, rd_valid);
-    SETONE(w_slv_i_req_ready);
+    SETVAL(w_slv_i_resp_valid, BIT(rd_valid, 0));
+    SETVAL(w_slv_i_req_ready, req_ready);
     SETZERO(w_slv_i_resp_err);
 }
 
