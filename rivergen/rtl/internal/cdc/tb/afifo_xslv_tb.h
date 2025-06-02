@@ -94,9 +94,11 @@ public:
     Signal w_slv_i_resp_valid;
     Signal wb_slv_i_resp_rdata;
     Signal w_slv_i_resp_err;
+    Logic v_busy;
     Logic rd_valid;
     Logic req_ready;
     Logic rd_addr;
+    Logic rd_data;
     LogicArray mem;
 
 

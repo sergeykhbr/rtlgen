@@ -32,6 +32,7 @@ class axi_slv : public ModuleObject {
             CombinationalProcess(parent, "comb"),
             vb_ar_addr_next(this, "vb_ar_addr_next", "12", "'0", NO_COMMENT),
             vb_aw_addr_next(this, "vb_aw_addr_next", "12", "'0", NO_COMMENT),
+            vb_ar_len_next(this, "vb_ar_len_next", "8", "'0", NO_COMMENT),
             vcfg(this, "vcfg", "dev_config_none", NO_COMMENT),
             vxslvo(this, "vxslvo", "axi4_slave_out_none", NO_COMMENT) {
         }
@@ -39,6 +40,7 @@ class axi_slv : public ModuleObject {
      public:
         Logic vb_ar_addr_next;
         Logic vb_aw_addr_next;
+        Logic vb_ar_len_next;
         StructVar<types_pnp::dev_config_type> vcfg;
         StructVar<types_amba::axi4_slave_out_type> vxslvo;
     };
@@ -70,14 +72,13 @@ class axi_slv : public ModuleObject {
     ParamLogic State_r_idle;
     ParamLogic State_r_addr;
     ParamLogic State_r_data;
+    ParamLogic State_r_last;
     ParamLogic State_r_wait_writing;
-    //ParamLogic State_r_wait_bus;
     ParamLogic State_w_idle;
     ParamLogic State_w_wait_reading;
     ParamLogic State_w_wait_reading_light;
     ParamLogic State_w_addr;
     ParamLogic State_w_data;
-    //ParamLogic State_w_wait_accept;
     ParamLogic State_b;
 
     RegSignal rstate;

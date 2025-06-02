@@ -41,14 +41,13 @@ axi_slv::axi_slv(GenObject *parent, const char *name, const char *comment) :
     State_r_idle(this, "State_r_idle", "4", "0", NO_COMMENT),
     State_r_addr(this, "State_r_addr", "4", "0x1", NO_COMMENT),
     State_r_data(this, "State_r_data", "4", "0x2", NO_COMMENT),
-    State_r_wait_writing(this, "State_r_wait_writing", "4", "0x4", NO_COMMENT),
-    //State_r_wait_bus(this, "State_r_wait_bus", "4", "0x8", NO_COMMENT),
+    State_r_last(this, "State_r_last", "4", "0x4", NO_COMMENT),
+    State_r_wait_writing(this, "State_r_wait_writing", "4", "0x8", NO_COMMENT),
     State_w_idle(this, "State_w_idle", "5", "0", NO_COMMENT),
     State_w_wait_reading(this, "State_w_wait_reading", "5", "0x1", NO_COMMENT),
     State_w_wait_reading_light(this, "State_w_wait_reading_light", "5", "0x2", NO_COMMENT),
     State_w_addr(this, "State_w_addr", "5", "0x4", NO_COMMENT), 
     State_w_data(this, "State_w_data", "5", "0x8", NO_COMMENT), 
-    //State_w_wait_accept(this, "State_w_wait_accept", "5", "0x8", NO_COMMENT), 
     State_b(this, "State_b", "5", "0x10", NO_COMMENT),
     // signals
     // registers
@@ -119,6 +118,7 @@ void axi_slv::proc_comb() {
             SETBITS(comb.vb_ar_addr_next, 11, 5, BITS(req_addr, 11, 5));
         ENDIF();
     ENDIF();
+    SETVAL(comb.vb_ar_len_next, DEC(ar_len));
 
     TEXT();
     SETVAL(comb.vb_aw_addr_next, ADD2(BITS(req_addr, 11, 0), CC2(CONST("0", 4), aw_bytes)));
@@ -190,56 +190,58 @@ void axi_slv::proc_comb() {
         ENDIF();
     ENDCASE();
     CASE(State_r_addr);
-        SETVAL(req_valid, AND2_L(i_req_ready, i_xslvi.r_ready));
+        SETVAL(req_valid, i_xslvi.r_ready);
         IF(AND2(NZ(req_valid), NZ(i_req_ready)));
-            SETVAL(rstate, State_r_data);
             IF (GT(ar_len, CONST("0x01", 8)));
                 SETVAL(ar_len, DEC(ar_len));
                 SETVAL(req_addr, CC2(BITS(req_addr,
                         DEC(*SCV_get_cfg_type(this, "CFG_SYSBUS_ADDR_BITS")), CONST("12")), comb.vb_ar_addr_next));
+                SETVAL(req_last, INV_L(OR_REDUCE(BITS(comb.vb_ar_len_next, 7, 1))));
+                SETVAL(rstate, State_r_data);
             ELSE();
                 SETZERO(ar_len);
                 SETONE(ar_last);
+                SETVAL(rstate, State_r_last);
             ENDIF();
         ENDIF();
     ENDCASE();
     CASE(State_r_data);
-        SETVAL(req_valid, AND3_L(i_req_ready, i_xslvi.r_ready, INV_L(ar_last)));
+        SETVAL(req_valid, i_xslvi.r_ready);
         IF(AND2(NZ(req_valid), NZ(i_req_ready)));
             IF (GT(ar_len, CONST("0x01", 8)));
-                SETVAL(ar_len, DEC(ar_len));
+                SETVAL(ar_len, comb.vb_ar_len_next);
                 SETVAL(req_addr, CC2(BITS(req_addr,
                         DEC(*SCV_get_cfg_type(this, "CFG_SYSBUS_ADDR_BITS")), CONST("12")), comb.vb_ar_addr_next));
+                SETVAL(req_last, INV_L(OR_REDUCE(BITS(comb.vb_ar_len_next, 7, 1))));
             ELSE();
                 SETZERO(ar_len);
-                SETONE(ar_last);
+                SETONE(req_last);
             ENDIF();
+        ENDIF();
+        IF (NZ(AND3_L(req_valid, req_last, i_req_ready)));
+            SETVAL(rstate, State_r_last);
+            SETZERO(req_valid);
         ENDIF();
         IF (NZ(i_resp_valid));
             SETONE(r_valid);
-            SETVAL(r_last, ar_last);
+            SETZERO(r_last);
+            SETVAL(r_data, i_resp_rdata);
+            SETVAL(r_err, i_resp_err);
+        ENDIF();
+    ENDCASE();
+    CASE(State_r_last);
+        IF (NZ(i_resp_valid));
+            SETONE(r_valid);
+            SETONE(r_last);
             SETVAL(r_data, i_resp_rdata);
             SETVAL(r_err, i_resp_err);
         ENDIF();
         IF (AND3(NZ(r_valid), NZ(r_last), NZ(i_xslvi.r_ready)));
-            SETZERO(r_valid);
+            SETONE(ar_ready);
             SETZERO(r_last);
             SETVAL(rstate, State_r_idle);
         ENDIF();
     ENDCASE();
-    /*CASE(State_r_wait_bus);
-        IF (NZ(i_xslvi.r_ready));
-            SETVAL(req_valid, INV_L(r_last));
-            IF (EZ(r_last));
-                SETVAL(rstate, State_r_addr);
-            ELSE();
-                SETONE(ar_ready);
-                SETZERO(ar_last);
-                SETZERO(r_last);
-                SETVAL(rstate, State_r_idle);
-            ENDIF();
-        ENDIF();
-    ENDCASE();*/
     CASE(State_r_wait_writing);
         IF (OR2(AND2(EZ(wstate), EZ(i_xslvi.aw_valid)), NZ(AND3_L(req_valid, req_last, i_req_ready))));
             TEXT("End of writing, start reading");
@@ -247,7 +249,7 @@ void axi_slv::proc_comb() {
             SETZERO(req_write);
             SETVAL(req_addr, ar_addr);
             SETVAL(req_bytes, ar_bytes);
-            SETVAL(req_last, r_last);
+            SETVAL(req_last, ar_last);
             SETVAL(rstate, State_r_addr);
         ENDIF();
     ENDCASE();
@@ -301,9 +303,8 @@ void axi_slv::proc_comb() {
     CASE(State_w_addr);
         IF (NZ(i_xslvi.w_valid));
             SETONE(req_valid);
-            SETVAL(req_addr, CC2(BITS(req_addr,
-                    DEC(*SCV_get_cfg_type(this, "CFG_SYSBUS_ADDR_BITS")), CONST("12")), comb.vb_aw_addr_next));
-            SETVAL(w_ready, INV_L(i_xslvi.w_last));
+            SETVAL(req_addr, aw_addr);
+            SETVAL(w_ready, AND2_L(INV_L(i_xslvi.w_last), i_req_ready));
             SETVAL(req_wdata, i_xslvi.w_data);
             SETVAL(req_wstrb, i_xslvi.w_strb);
             SETVAL(req_last, i_xslvi.w_last);
