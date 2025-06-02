@@ -239,6 +239,7 @@ void axi_slv::proc_comb() {
         IF (AND3(NZ(r_valid), NZ(r_last), NZ(i_xslvi.r_ready)));
             SETONE(ar_ready);
             SETZERO(r_last);
+            SETZERO(r_valid, "We need it in a case of i_resp_valid is always HIGH");
             SETVAL(rstate, State_r_idle);
         ENDIF();
     ENDCASE();
