@@ -167,7 +167,7 @@ void axi_slv::proc_comb() {
     TEXT("Reading channel (write first):");
     SWITCH(rstate);
     CASE(State_r_idle);
-        SETVAL(ar_addr, i_xslvi.ar_bits.addr);
+        SETVAL(ar_addr, SUB2(i_xslvi.ar_bits.addr, i_mapinfo.addr_start));
         SETVAL(ar_len, INC(i_xslvi.ar_bits.len));
         SETVAL(ar_burst, i_xslvi.ar_bits.burst);
         CALLF(&ar_bytes, *SCV_get_cfg_type(this, "XSizeToBytes"), 1, &i_xslvi.ar_bits.size);
@@ -181,7 +181,7 @@ void axi_slv::proc_comb() {
                 SETVAL(rstate, State_r_addr);
                 SETONE(req_valid);
                 SETZERO(req_write);
-                SETVAL(req_addr, i_xslvi.ar_bits.addr);
+                SETVAL(req_addr, SUB2(i_xslvi.ar_bits.addr, i_mapinfo.addr_start));
                 SETVAL(req_last, INV_L(OR_REDUCE(i_xslvi.ar_bits.len)));
                 CALLF(&req_bytes, *SCV_get_cfg_type(this, "XSizeToBytes"), 1, &i_xslvi.ar_bits.size);
             ENDIF();
@@ -264,7 +264,7 @@ void axi_slv::proc_comb() {
     SWITCH(wstate);
     CASE(State_w_idle);
         SETONE(w_ready);
-        SETVAL(aw_addr, i_xslvi.aw_bits.addr);
+        SETVAL(aw_addr, SUB2(i_xslvi.aw_bits.addr, i_mapinfo.addr_start));
         SETVAL(aw_burst, i_xslvi.aw_bits.burst);
         CALLF(&aw_bytes, *SCV_get_cfg_type(this, "XSizeToBytes"), 1, &i_xslvi.aw_bits.size);
         SETVAL(w_last, INV_L(OR_REDUCE(i_xslvi.aw_bits.len)));
@@ -283,7 +283,7 @@ void axi_slv::proc_comb() {
                     SETVAL(wstate, State_w_wait_reading_light);
                 ELSE();
                     TEXT("Start writing now");
-                    SETVAL(req_addr, i_xslvi.aw_bits.addr);
+                    SETVAL(req_addr, SUB2(i_xslvi.aw_bits.addr, i_mapinfo.addr_start));
                     SETVAL(req_last, i_xslvi.w_last);
                     SETONE(req_write);
                     SETONE(req_valid);
