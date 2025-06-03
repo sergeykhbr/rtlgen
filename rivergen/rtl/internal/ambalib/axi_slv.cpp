@@ -284,6 +284,7 @@ void axi_slv::proc_comb() {
                 ELSE();
                     TEXT("Start writing now");
                     SETVAL(req_addr, SUB2(i_xslvi.aw_bits.addr, i_mapinfo.addr_start));
+                    CALLF(&req_bytes, *SCV_get_cfg_type(this, "XSizeToBytes"), 1, &i_xslvi.aw_bits.size);
                     SETVAL(req_last, i_xslvi.w_last);
                     SETONE(req_write);
                     SETONE(req_valid);
@@ -305,6 +306,7 @@ void axi_slv::proc_comb() {
         IF (NZ(i_xslvi.w_valid));
             SETONE(req_valid);
             SETVAL(req_addr, aw_addr);
+            SETVAL(req_bytes, aw_bytes);
             SETVAL(w_ready, AND2_L(INV_L(i_xslvi.w_last), i_req_ready));
             SETVAL(req_wdata, i_xslvi.w_data);
             SETVAL(req_wstrb, i_xslvi.w_strb);
@@ -328,16 +330,6 @@ void axi_slv::proc_comb() {
             SETVAL(wstate, State_b);
         ENDIF();
     ENDCASE();
-    /*CASE(State_w_wait_accept);
-        IF (NZ(i_req_ready));
-            IF (NZ(req_last));
-                SETVAL(wstate, State_b);
-            ELSE();
-                SETONE(w_ready);
-                SETVAL(wstate, State_w);
-            ENDIF();
-        ENDIF();
-    ENDCASE();*/
     CASE(State_w_wait_reading);
         TEXT("ready to accept new data (no latched data)");
         IF (OR2(EZ(rstate), NZ(AND3_L(r_valid, r_last, i_xslvi.r_ready))));
@@ -352,6 +344,7 @@ void axi_slv::proc_comb() {
             SETONE(req_valid);
             SETONE(req_write);
             SETVAL(req_addr, aw_addr);
+            SETVAL(req_bytes, aw_bytes);
             SETVAL(req_last, w_last);
             SETVAL(wstate, State_w_data);
         ENDIF();
@@ -367,6 +360,7 @@ void axi_slv::proc_comb() {
         ENDIF();
         IF (AND2(NZ(b_valid), NZ(i_xslvi.b_ready)));
             SETZERO(b_valid);
+            SETZERO(b_err);
             SETVAL(wstate, State_w_idle);
         ENDIF();
     ENDCASE();
