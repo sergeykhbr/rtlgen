@@ -210,7 +210,7 @@ TEXT();
                 SETONE(dbg_valid);
             ENDIF();
             TEXT("debug interface:");
-            SETVAL(dbg_payload, CCx(6, &CONST("0x1", 1),            // [63]
+            SETVAL(dbg_payload, CCx(5, &CONST("0x1", 1),            // [63]
                                     &BITS(i_req_mem_addr, 10, 0),   // [62:52]
                                     &i_req_mem_bytes,               // [51:40]
                                     &i_req_mem_strob,               // [39:32]
