@@ -120,8 +120,10 @@ class types_accel_bus0 : public FileObject {
     TextLine _xmst4_;
     TextLine _xmst5_;
     ParamI32D CFG_BUS0_XMST_GROUP0;
-    TextLine _xmst7_;
+    TextLine _xmst6_;
     ParamI32D CFG_BUS0_XMST_PCIE;
+    TextLine _xmst7_;
+    ParamI32D CFG_BUS0_XMST_HDMI;
     TextLine _xmst8_;
     ParamI32D CFG_BUS0_XMST_TOTAL;
     TextLine _xmst9_;

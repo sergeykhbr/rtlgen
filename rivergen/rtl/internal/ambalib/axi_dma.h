@@ -29,7 +29,7 @@ class axi_dma : public ModuleObject {
      public:
         CombProcess(GenObject* parent)
             : CombinationalProcess(parent, "comb"),
-            vb_req_mem_bytes_m1(this, "vb_req_mem_bytes_m1", "10", "'0", NO_COMMENT),
+            vb_req_mem_bytes_m1(this, "vb_req_mem_bytes_m1", "12", "'0", NO_COMMENT),
             vb_req_addr_inc(this, "vb_req_addr_inc", "CFG_SYSBUS_ADDR_BITS", "'0", NO_COMMENT),
             vb_r_data_swap(this, "vb_r_data_swap", "CFG_SYSBUS_DATA_BITS", "'0", NO_COMMENT),
             vmsto(this, "vmsto", "axi4_master_out_none", NO_COMMENT) {

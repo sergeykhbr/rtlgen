@@ -17,6 +17,7 @@
 #pragma once
 
 #include <api_rtlgen.h>
+#include "../mem/ram_tech.h"
 
 using namespace sysvc;
 
@@ -27,10 +28,12 @@ class framebuf : public ModuleObject {
     class CombProcess : public CombinationalProcess {
      public:
         CombProcess(GenObject *parent) :
-            CombinationalProcess(parent, "comb") {
+            CombinationalProcess(parent, "comb"),
+            fb_addr(this, "fb_addr", "19", "'0", "1 value per 2 pixels") {
         }
 
      public:
+        Logic fb_addr;
     };
 
     void proc_comb();
@@ -48,6 +51,25 @@ class framebuf : public ModuleObject {
     OutPort o_vsync;
     OutPort o_de;
     OutPort o_YCbCr;
+    TextLine _dma0_;
+    InPort i_req_2d_ready;
+    OutPort o_req_2d_valid;
+    OutPort o_req_2d_bytes;
+    OutPort o_req_2d_addr;
+    InPort i_resp_2d_valid;
+    InPort i_resp_2d_last;
+    InPort i_resp_2d_addr;
+    InPort i_resp_2d_data;
+    OutPort o_resp_2d_ready;
+
+    Signal wb_ping_addr;
+    Signal w_ping_wena;
+    Signal wb_ping_wdata;
+    Signal wb_ping_rdata;
+    Signal wb_pong_addr;
+    Signal w_pong_wena;
+    Signal wb_pong_wdata;
+    Signal wb_pong_rdata;
 
     RegSignal pix_x0;;
     RegSignal h_sync;
@@ -59,6 +81,8 @@ class framebuf : public ModuleObject {
     RegSignal Cr;
     RegSignal YCbCr;
 
+    ram_tech ping;
+    ram_tech pong;
     CombProcess comb;
 };
 

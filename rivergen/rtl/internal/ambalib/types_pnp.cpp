@@ -36,6 +36,8 @@ types_pnp::types_pnp(GenObject *parent) :
     OPTIMITECH_JTAG_SBA(this, "OPTIMITECH_JTAG_SBA", "16", "0x050B", NO_COMMENT),
     _didmst9_(this, "PCIE DMA engine"),
     OPTIMITECH_PCIE_DMA(this, "OPTIMITECH_PCIE_DMA", "16", "0x050C", NO_COMMENT),
+    _didmst10_(this, "HDMI DMA engine"),
+    OPTIMITECH_HDMI_DMA(this, "OPTIMITECH_HDMI_DMA", "16", "0x050D", NO_COMMENT),
     _didslv0_(this),
     _didslv1_(this, "@name Slave Device IDs definition:"),
     _didslv2_(this, "Empty slave slot device"),

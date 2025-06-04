@@ -87,6 +87,8 @@ class types_pnp : public FileObject {
     ParamLogic OPTIMITECH_JTAG_SBA;
     TextLine _didmst9_;
     ParamLogic OPTIMITECH_PCIE_DMA;
+    TextLine _didmst10_;
+    ParamLogic OPTIMITECH_HDMI_DMA;
     TextLine _didslv0_;
     TextLine _didslv1_;
     TextLine _didslv2_;

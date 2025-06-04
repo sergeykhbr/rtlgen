@@ -41,7 +41,7 @@ pcie_io_ep::pcie_io_ep(GenObject *parent, const char *name, const char *comment)
     i_req_mem_ready(this, "i_req_mem_ready", "1", "Ready to accept next memory request"),
     o_req_mem_valid(this, "o_req_mem_valid", "1", "Request data is valid to accept"),
     o_req_mem_write(this, "o_req_mem_write", "1", "0=read; 1=write operation"),
-    o_req_mem_bytes(this, "o_req_mem_bytes", "10", "0=1024 B; 4=DWORD; 8=QWORD; ..."),
+    o_req_mem_bytes(this, "o_req_mem_bytes", "12", "PCI TLP is limited to 1024 B (10-bits); 4=DWORD; 8=QWORD; ..."),
     o_req_mem_addr(this, "o_req_mem_addr", "CFG_PCIE_DMAADDR_WIDTH", "Address to read/write"),
     o_req_mem_strob(this, "o_req_mem_strob", "8", "Byte enabling write strob"),
     o_req_mem_data(this, "o_req_mem_data", "64", "Data to write"),
@@ -69,7 +69,7 @@ pcie_io_ep::pcie_io_ep(GenObject *parent, const char *name, const char *comment)
     wb_req_tag(this, "wb_req_tag", "8", NO_COMMENT),
     wb_req_be(this, "wb_req_be", "8", NO_COMMENT),
     wb_req_addr(this, "wb_req_addr", "CFG_PCIE_DMAADDR_WIDTH", NO_COMMENT),
-    wb_req_bytes(this, "wb_req_bytes", "10", NO_COMMENT),
+    wb_req_bytes(this, "wb_req_bytes", "12", NO_COMMENT),
     wb_req_mem_data(this, "wb_req_mem_data", "C_DATA_WIDTH", NO_COMMENT),
     wb_resp_mem_data(this, "wb_resp_mem_data", "C_DATA_WIDTH", NO_COMMENT),
     // registers

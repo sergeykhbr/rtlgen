@@ -316,6 +316,9 @@ TEXT();
         CONNECT(hdmi0, 0, hdmi0.o_spdif, o_hdmi_spdif);
         CONNECT(hdmi0, 0, hdmi0.i_spdif_out, i_hdmi_spdif_out);
         CONNECT(hdmi0, 0, hdmi0.i_irq, i_hdmi_int);
+        CONNECT(hdmi0, 0, hdmi0.o_xmst_cfg, ARRITEM(dev_pnp, *SCV_get_cfg_type(this, "SOC_PNP_HDMI_DMA"), dev_pnp));
+        CONNECT(hdmi0, 0, hdmi0.i_xmsti, ARRITEM(aximi, *SCV_get_cfg_type(this, "CFG_BUS0_XMST_HDMI"), aximi));
+        CONNECT(hdmi0, 0, hdmi0.o_xmsto, ARRITEM(aximo, *SCV_get_cfg_type(this, "CFG_BUS0_XMST_HDMI"), aximo));
     ENDNEW();
 
     TEXT();

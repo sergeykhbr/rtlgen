@@ -48,7 +48,7 @@ pcie_io_rx_engine::pcie_io_rx_engine(GenObject *parent, const char *name, const 
     i_req_mem_ready(this, "i_req_mem_ready", "1", "Ready to accept next memory request"),
     o_req_mem_valid(this, "o_req_mem_valid", "1", "Request data is valid to accept"),
     o_req_mem_write(this, "o_req_mem_write", "1", "0=read; 1=write operation"),
-    o_req_mem_bytes(this, "o_req_mem_bytes", "10", "0=1024 B; 4=DWORD; 8=QWORD; ..."),
+    o_req_mem_bytes(this, "o_req_mem_bytes", "12", "0=4095 B; 4=DWORD; 8=QWORD; ..."),
     o_req_mem_addr(this, "o_req_mem_addr", "CFG_PCIE_DMAADDR_WIDTH", "Address to read/write"),
     o_req_mem_strob(this, "o_req_mem_strob", "8", "Byte enabling write strob"),
     o_req_mem_data(this, "o_req_mem_data", "64", "Data to write"),
@@ -88,7 +88,7 @@ pcie_io_rx_engine::pcie_io_rx_engine(GenObject *parent, const char *name, const 
     req_rid(this, "req_rid", "16", RSTVAL_ZERO, NO_COMMENT),
     req_tag(this, "req_tag", "8", RSTVAL_ZERO, NO_COMMENT),
     req_be(this, "req_be", "8", RSTVAL_ZERO, NO_COMMENT),
-    req_bytes(this, "req_bytes", "10", "'0", NO_COMMENT),
+    req_bytes(this, "req_bytes", "12", "'0", NO_COMMENT),
     req_addr(this, "req_addr", "CFG_PCIE_DMAADDR_WIDTH", RSTVAL_ZERO, NO_COMMENT),
     wr_en(this, "wr_en", "1", RSTVAL_ZERO, NO_COMMENT),
     wr_data(this, "wr_data", "64", "'0", NO_COMMENT),
@@ -140,9 +140,11 @@ TEXT();
     SETVAL(comb.vb_add_be20, ADD2(CC2(CONST("0", 1), BIT(req_be, 3)), CC2(CONST("0", 1), BIT(req_be, 2))));
     SETVAL(comb.vb_add_be21, ADD2(CC2(CONST("0", 1), BIT(req_be, 1)), CC2(CONST("0", 1), BIT(req_be, 0))));
     IF (EQ(req_len, CONST("1", 10)));
-        SETVAL(comb.vb_req_bytes, ADD2(CC2(CONST("0", 8), comb.vb_add_be20), CC2(CONST("0", 8), comb.vb_add_be21)));
+        SETVAL(comb.vb_req_bytes, ADD2(CC2(CONST("0", 10), comb.vb_add_be20), CC2(CONST("0", 10), comb.vb_add_be21)));
     ELSE ();
-        SETVAL(comb.vb_req_bytes, CC2(req_len, CONST("0", 2)));
+        TEXT("PCI request size 0 is equal to 1024 bytes:");
+        SETVAL(comb.vb_req_bytes_msb, CC2(CONST("0", 1), INV_L(OR_REDUCE(req_len))));
+        SETVAL(comb.vb_req_bytes, CC3(comb.vb_req_bytes_msb, req_len, CONST("0", 2)));
     ENDIF();
 
 TEXT();

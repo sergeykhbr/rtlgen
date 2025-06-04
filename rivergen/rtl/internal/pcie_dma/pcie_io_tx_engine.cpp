@@ -44,7 +44,7 @@ pcie_io_tx_engine::pcie_io_tx_engine(GenObject *parent, const char *name, const 
     i_req_tag(this, "i_req_tag", "8", NO_COMMENT),
     i_req_be(this, "i_req_be", "8", NO_COMMENT),
     i_req_addr(this, "i_req_addr", "CFG_PCIE_DMAADDR_WIDTH", NO_COMMENT),
-    i_req_bytes(this, "i_req_bytes", "10", NO_COMMENT),
+    i_req_bytes(this, "i_req_bytes", "12", "PCI TLP accept 1024 Bytes, but AXI is limited with 4096."),
     _t3_(this, ""),
     i_dma_resp_valid(this, "i_dma_resp_valid", "1", NO_COMMENT),
     i_dma_resp_last(this, "i_dma_resp_last", "1", NO_COMMENT),
@@ -134,7 +134,7 @@ TEXT();
             SETBITS(comb.vb_s_axis_tx_tdata, 63, 48, i_completer_id, "DW1[31:16] completer ID");
             SETBITS(comb.vb_s_axis_tx_tdata, 47, 45, CONST("0", 3), "DW1[15:13] compl status");
             SETBIT(comb.vb_s_axis_tx_tdata, 44, CONST("0", 1), "DW1[12] BCM (Byte Count Modified for PCI legacy support)");
-            SETBITS(comb.vb_s_axis_tx_tdata, 43, 32, i_req_bytes, "DW1[11:0] byte count");
+            SETBITS(comb.vb_s_axis_tx_tdata, 43, 32, BITS(i_req_bytes, 9, 0), "DW1[11:0] byte count");
             SETBIT(comb.vb_s_axis_tx_tdata, 31, CONST("0", 1), "DW0[31] R");
             IF (NZ(i_tx_with_data));
                 SETBITS(comb.vb_s_axis_tx_tdata, 30, 24, PIO_CPLD_FMT_TYPE, "DW0[30:29] fmt; DW0[28:24] type");

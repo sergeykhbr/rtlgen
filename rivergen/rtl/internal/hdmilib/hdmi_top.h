@@ -19,6 +19,10 @@
 #include <api_rtlgen.h>
 #include "video_sync.h"
 #include "framebuf.h"
+#include "../ambalib/types_amba.h"
+#include "../ambalib/types_pnp.h"
+#include "../ambalib/types_dma.h"
+#include "../ambalib/axi_dma.h"
 
 using namespace sysvc;
 
@@ -29,10 +33,14 @@ class hdmi_top : public ModuleObject {
     class CombProcess : public CombinationalProcess {
      public:
         CombProcess(GenObject *parent) :
-            CombinationalProcess(parent, "comb") {
+            CombinationalProcess(parent, "comb"),
+            vb_xmst_cfg(this, "vb_xmst_cfg", NO_COMMENT),
+            vb_xmsto(this, "vb_xmsto", NO_COMMENT) {
         }
 
      public:
+        types_pnp::dev_config_type vb_xmst_cfg;
+        types_amba::axi4_master_out_type vb_xmsto;
     };
 
     void proc_comb();
@@ -49,15 +57,37 @@ class hdmi_top : public ModuleObject {
     OutPort o_spdif;
     InPort i_spdif_out;
     InPort i_irq;
+    TextLine _text1_;
+    OutStruct<types_pnp::dev_config_type> o_xmst_cfg;
+    InStruct<types_amba::axi4_master_in_type> i_xmsti;
+    OutStruct<types_amba::axi4_master_out_type> o_xmsto;
 
     Signal w_sync_hsync;
     Signal w_sync_vsync;
     Signal w_sync_de;
     Signal wb_sync_x;
     Signal wb_sync_y;
+    Signal w_req_mem_ready;
+    Signal w_req_mem_valid;
+    Signal w_req_mem_write;
+    Signal wb_req_mem_bytes;
+    Signal wb_req_mem_addr;
+    Signal wb_req_mem_strob;
+    Signal wb_req_mem_data;
+    Signal w_req_mem_last;
+    Signal w_resp_mem_valid;
+    Signal w_resp_mem_last;
+    Signal w_resp_mem_fault_unused;
+    Signal wb_resp_mem_addr;
+    Signal wb_resp_mem_data;
+    Signal w_resp_mem_ready;
+    Signal w_dbg_valid_unused;
+    Signal wb_dbg_payload_unused;
 
     video_sync sync0;
     framebuf fb0;
+    axi_dma xdma0;
+
     CombProcess comb;
 };
 

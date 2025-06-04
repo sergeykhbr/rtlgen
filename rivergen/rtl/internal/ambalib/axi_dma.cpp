@@ -27,7 +27,7 @@ axi_dma::axi_dma(GenObject *parent, const char *name, const char *comment) :
     o_req_mem_ready(this, "o_req_mem_ready", "1", "Ready to accept next data"),
     i_req_mem_valid(this, "i_req_mem_valid", "1", "Request data is ready to accept"),
     i_req_mem_write(this, "i_req_mem_write", "1", "0=read; 1=write operation"),
-    i_req_mem_bytes(this, "i_req_mem_bytes", "10", "0=1024 B; 4=DWORD; 8=QWORD; ..."),
+    i_req_mem_bytes(this, "i_req_mem_bytes", "12", "0=4096 B; 4=DWORD; 8=QWORD; ..."),
     i_req_mem_addr(this, "i_req_mem_addr", "abits", "Address to read/write"),
     i_req_mem_strob(this, "i_req_mem_strob", "8", "Byte enabling write strob"),
     i_req_mem_data(this, "i_req_mem_data", "64", "Data to write"),
@@ -181,18 +181,18 @@ TEXT();
         IF (NZ(i_req_mem_valid));
             SETZERO(req_ready);
             SETVAL(req_addr, CC2(ALLZEROS(), i_req_mem_addr));
-            IF (EQ(i_req_mem_bytes, CONST("1", 10)));
+            IF (EQ(i_req_mem_bytes, CONST("1", 12)));
                 SETVAL(req_size, CONST("0", 3));
                 SETZERO(req_len);
-            ELSIF (EQ(i_req_mem_bytes, CONST("2", 10)));
+            ELSIF (EQ(i_req_mem_bytes, CONST("2", 12)));
                 SETVAL(req_size, CONST("1", 3));
                 SETZERO(req_len);
-            ELSIF (EQ(i_req_mem_bytes, CONST("4", 10)));
+            ELSIF (EQ(i_req_mem_bytes, CONST("4", 12)));
                 SETVAL(req_size, CONST("2", 3));
                 SETZERO(req_len);
             ELSE();
                 SETVAL(req_size, CONST("3", 3));
-                SETVAL(req_len, CC2(CONST("0", 1), BITS(comb.vb_req_mem_bytes_m1, 9, 3)));
+                SETVAL(req_len, BITS(comb.vb_req_mem_bytes_m1, 10, 3));
             ENDIF();
             IF (EZ(i_req_mem_write));
                 SETONE(ar_valid);
@@ -212,8 +212,7 @@ TEXT();
             TEXT("debug interface:");
             SETVAL(dbg_payload, CCx(6, &CONST("0x1", 1),            // [63]
                                     &BITS(i_req_mem_addr, 10, 0),   // [62:52]
-                                    &CONST("0x0", 2),               // [51:50]
-                                    &i_req_mem_bytes,               // [49:40]
+                                    &i_req_mem_bytes,               // [51:40]
                                     &i_req_mem_strob,               // [39:32]
                                     &BITS(i_req_mem_data, 31, 0)));
         ENDIF();

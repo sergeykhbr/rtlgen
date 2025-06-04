@@ -71,7 +71,7 @@ pcie_dma::pcie_dma(GenObject *parent, const char *name, const char *comment) :
     w_req_mem_ready(this, "w_req_mem_ready", "1", RSTVAL_ZERO, NO_COMMENT),
     w_req_mem_valid(this, "w_req_mem_valid", "1", RSTVAL_ZERO, NO_COMMENT),
     w_req_mem_write(this, "w_req_mem_write", "1", RSTVAL_ZERO, "0=read; 1=write operation"),
-    wb_req_mem_bytes(this, "wb_req_mem_bytes", "10", RSTVAL_ZERO, "0=1024 B; 4=DWORD; 8=QWORD; ..."),
+    wb_req_mem_bytes(this, "wb_req_mem_bytes", "12", RSTVAL_ZERO, "PCIe TLP is limited to 1024 B (10-bits); 4=DWORD; 8=QWORD; ..."),
     wb_req_mem_addr(this, "wb_req_mem_addr", "CFG_PCIE_DMAADDR_WIDTH", "'0", NO_COMMENT),
     wb_req_mem_strob(this, "wb_req_mem_strob", "8", "'0", NO_COMMENT),
     wb_req_mem_data(this, "wb_req_mem_data", "64", "'0", NO_COMMENT),
@@ -183,13 +183,11 @@ TEXT();
         CONNECT(xdma0, 0, xdma0.o_dbg_payload, o_dbg_payload);
     ENDNEW();
 
-
     Operation::start(&comb);
     proc_comb();
 }
 
 void pcie_dma::proc_comb() {
-    types_amba* amba = glob_types_amba_;
     SETVAL(comb.vb_xmst_cfg.descrsize, *SCV_get_cfg_type(this, "PNP_CFG_DEV_DESCR_BYTES"));
     SETVAL(comb.vb_xmst_cfg.descrtype, *SCV_get_cfg_type(this, "PNP_CFG_TYPE_MASTER"));
     SETVAL(comb.vb_xmst_cfg.vid, *SCV_get_cfg_type(this, "VENDOR_OPTIMITECH"));
