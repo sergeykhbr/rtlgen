@@ -39,6 +39,7 @@ hdmi_top::hdmi_top(GenObject *parent, const char *name, const char *comment) :
     w_sync_de(this, "w_sync_de", "1", RSTVAL_ZERO, NO_COMMENT),
     wb_sync_x(this, "wb_sync_x", "11", RSTVAL_ZERO, NO_COMMENT),
     wb_sync_y(this, "wb_sync_y", "10", RSTVAL_ZERO, NO_COMMENT),
+    wb_sync_xy_total(this, "wb_sync_xy_total", "24", RSTVAL_ZERO, NO_COMMENT),
     w_req_mem_ready(this, "w_req_mem_ready", "1", RSTVAL_ZERO, NO_COMMENT),
     w_req_mem_valid(this, "w_req_mem_valid", "1", RSTVAL_ZERO, NO_COMMENT),
     w_req_mem_write(this, "w_req_mem_write", "1", RSTVAL_ZERO, "0=read; 1=write operation"),
@@ -72,6 +73,7 @@ hdmi_top::hdmi_top(GenObject *parent, const char *name, const char *comment) :
         CONNECT(sync0, 0, sync0.o_de, w_sync_de);
         CONNECT(sync0, 0, sync0.o_x, wb_sync_x);
         CONNECT(sync0, 0, sync0.o_y, wb_sync_y);
+        CONNECT(sync0, 0, sync0.o_xy_total, wb_sync_xy_total);
     ENDNEW();
 
     TEXT();
@@ -83,6 +85,7 @@ hdmi_top::hdmi_top(GenObject *parent, const char *name, const char *comment) :
         CONNECT(fb0, 0, fb0.i_de, w_sync_de);
         CONNECT(fb0, 0, fb0.i_x, wb_sync_x);
         CONNECT(fb0, 0, fb0.i_y, wb_sync_y);
+        CONNECT(fb0, 0, fb0.i_xy_total, wb_sync_xy_total);
         CONNECT(fb0, 0, fb0.o_hsync, o_hsync);
         CONNECT(fb0, 0, fb0.o_vsync, o_vsync);
         CONNECT(fb0, 0, fb0.o_de, o_de);
@@ -101,6 +104,7 @@ hdmi_top::hdmi_top(GenObject *parent, const char *name, const char *comment) :
     TEXT();
     xdma0.abits.setObjValue(new DecConst(24));
     xdma0.userbits.setObjValue(new DecConst(1));
+    xdma0.base_offset.setObjValue(new HexLogicConst(SCV_get_cfg_type(this, "CFG_SYSBUS_ADDR_BITS"), 0x80000000));
     NEW(xdma0, xdma0.getName().c_str());
         CONNECT(xdma0, 0, xdma0.i_nrst, i_nrst);
         CONNECT(xdma0, 0, xdma0.i_clk, i_clk);

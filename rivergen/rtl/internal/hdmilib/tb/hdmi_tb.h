@@ -47,36 +47,24 @@ class hdmi_tb : public ModuleObject {
     };
 
     // Clock1
-    class TestClk1Process : public ProcObject {
+    class TestClkProcess : public ProcObject {
      public:
-        TestClk1Process(GenObject *parent, GenObject *clk) :
-            ProcObject(parent, "test_clk1", clk, CLK_POSEDGE, 0, ACTIVE_NONE, NO_COMMENT),
+        TestClkProcess(GenObject *parent, GenObject *clk) :
+            ProcObject(parent, "test_clk", clk, CLK_POSEDGE, 0, ACTIVE_NONE, NO_COMMENT),
             vb_xslvi(this, "vb_xslvi", NO_COMMENT) {
         }
      public:
         types_amba::axi4_slave_in_type vb_xslvi;
     };
 
-    // Clock2
-    class TestClk2Process : public ProcObject {
-     public:
-        TestClk2Process(GenObject *parent, GenObject *clk) :
-            ProcObject(parent, "test_clk2", clk, CLK_POSEDGE, 0, ACTIVE_NONE, NO_COMMENT) {
-        }
-     public:
-    };
-
     void proc_comb();
-    void proc_test_clk1();
-    void proc_test_clk2();
+    void proc_test_clk();
 
 public:
     // Ports:
     Signal i_nrst;
-    Signal w_clk1;
-    Signal w_clk2;
-    Logic wb_clk1_cnt;
-    Logic wb_clk2_cnt;
+    Signal w_clk;
+    Logic wb_clk_cnt;
     Signal w_hdmi_hsync;
     Signal w_hdmi_vsync;
     Signal w_hdmi_de;
@@ -111,14 +99,12 @@ public:
 
 
     // Sub-module instances:
-    vip_clk clk1;
-    vip_clk clk2;
+    vip_clk clk;
     axi_slv slv0;
     hdmi_top tt;
 
     CombProcess comb;
-    TestClk1Process test_clk1;
-    TestClk2Process test_clk2;
+    TestClkProcess test_clk;
 };
 
 class hdmi_tb_file : public FileObject {

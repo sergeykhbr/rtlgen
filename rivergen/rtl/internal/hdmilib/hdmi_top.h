@@ -67,6 +67,7 @@ class hdmi_top : public ModuleObject {
     Signal w_sync_de;
     Signal wb_sync_x;
     Signal wb_sync_y;
+    Signal wb_sync_xy_total;
     Signal w_req_mem_ready;
     Signal w_req_mem_valid;
     Signal w_req_mem_write;

@@ -34,6 +34,7 @@ video_sync::video_sync(GenObject *parent, const char *name, const char *comment)
     o_de(this, "o_de", "1", "Data enable, HIGH in active zone 1366x768 screen resolution"),
     o_x(this, "o_x", "11", "Width pixel coordinate"),
     o_y(this, "o_y", "10", "Height pixel coordinate"),
+    o_xy_total(this, "o_xy_total", "24", "Total resolution to address 16MB frame buffer"),
     // params
     H_TOTAL(this, "H_TOTAL", "ADD(ADD(H_ACTIVE,H_SYNC),ADD(H_FRONT,H_BACK))"),
     V_TOTAL(this, "V_TOTAL", "ADD(ADD(V_ACTIVE,V_SYNC),ADD(V_FRONT,V_BACK))"),
@@ -101,5 +102,6 @@ void video_sync::proc_comb() {
     SETVAL(o_vsync, v_sync);
     SETVAL(o_x, x_pix);
     SETVAL(o_y, y_pix);
+    SETVAL(o_xy_total, CONST("1049088", 24), "hardcoded resolution 1366x768");
 }
 

@@ -47,6 +47,7 @@ class framebuf : public ModuleObject {
     InPort i_de;
     InPort i_x;
     InPort i_y;
+    InPort i_xy_total;
     OutPort o_hsync;
     OutPort o_vsync;
     OutPort o_de;
@@ -62,16 +63,26 @@ class framebuf : public ModuleObject {
     InPort i_resp_2d_data;
     OutPort o_resp_2d_ready;
 
+    TextLine _state0_;
+    ParamLogic STATE_Request;
+    ParamLogic STATE_Writing;
+    ParamLogic STATE_Idle;
+
     Signal wb_ping_addr;
     Signal w_ping_wena;
-    Signal wb_ping_wdata;
     Signal wb_ping_rdata;
     Signal wb_pong_addr;
     Signal w_pong_wena;
-    Signal wb_pong_wdata;
     Signal wb_pong_rdata;
 
-    RegSignal pix_x0;;
+    RegSignal state;
+    RegSignal pingpong;
+    RegSignal req_addr;
+    RegSignal req_valid;
+    RegSignal resp_ready;
+    RegSignal raddr;
+    RegSignal raddr_z;
+    RegSignal pix_x0;
     RegSignal h_sync;
     RegSignal v_sync;
     RegSignal de;

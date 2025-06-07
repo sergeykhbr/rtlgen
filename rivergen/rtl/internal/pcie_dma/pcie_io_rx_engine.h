@@ -35,7 +35,7 @@ class pcie_io_rx_engine : public ModuleObject {
             vb_add_be20(this, "vb_add_be20", "2", "'0"),
             vb_add_be21(this, "vb_add_be21", "2", "'0"),
             vb_req_bytes(this, "vb_req_bytes", "12", "'0"),
-            vb_req_bytes_msb(this, "vb_req_bytes", "2", "'0"),
+            vb_req_bytes_msb(this, "vb_req_bytes_msb", "2", "'0"),
             vb_bar_offset(this, "vb_bar_offset", "CFG_PCIE_DMAADDR_WIDTH", "'0"),
             vb_addr_ldw(this, "vb_addr_ldw", "CFG_PCIE_DMAADDR_WIDTH", "'0"),
             vb_addr_mdw(this, "vb_addr_mdw", "CFG_PCIE_DMAADDR_WIDTH", "'0") {

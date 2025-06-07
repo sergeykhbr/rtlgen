@@ -116,6 +116,7 @@ types_pnp::types_pnp(GenObject *parent) :
     SOC_PNP_I2C(this, "SOC_PNP_I2C", autoincr_++),
     SOC_PNP_PCIE_DMA(this, "SOC_PNP_PCIE_DMA", autoincr_++),
     SOC_PNP_PCIE_APB(this, "SOC_PNP_PCIE_APB", autoincr_++),
+    SOC_PNP_HDMI_DMA(this, "SOC_PNP_HDMI_DMA", autoincr_++),
     SOC_PNP_TOTAL(this, "SOC_PNP_TOTAL", autoincr_),
     _pnp8_(this),
     soc_pnp_vector_def_(this, "soc_pnp_vector", NO_COMMENT),

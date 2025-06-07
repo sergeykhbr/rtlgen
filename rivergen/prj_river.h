@@ -31,6 +31,7 @@
 #include "rtl/internal/pcie_dma/tb/pcie_dma_tb_folder.h"
 #include "rtl/internal/misclib/tb/misclib_tb_folder.h"
 #include "rtl/internal/cdc/tb/cdc_tb_folder.h"
+#include "rtl/internal/hdmilib/tb/hdmi_tb_folder.h"
 
 using namespace sysvc;
 
@@ -76,7 +77,8 @@ class RiverProject : public ProjectObject {
     pcie_dma_tb_folder pcie_dma_tb_folder_;     // put into prj/tb
 #endif
     misclib_tb_folder misclib_tb_folder_;       // put into prj/tb
-    cdc_tb_folder cdc_tb_folder_; // put into prj/tb
+    cdc_tb_folder cdc_tb_folder_;               // put into prj/tb
+    hdmi_tb_folder hdmi_tb_folder_;             // put into prj/tb
 };
 
 

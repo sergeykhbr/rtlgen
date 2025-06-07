@@ -25,6 +25,7 @@ RiverProject::RiverProject(const char *rootpath) :
     pcie_dma_tb_folder_(&prj_folder_),  // pull all TBs into /prj/tb
 #endif
     misclib_tb_folder_(&prj_folder_),   // pull all TBs into /prj/tb
-    cdc_tb_folder_(&prj_folder_)        // pull all TBs into /prj/tb
+    cdc_tb_folder_(&prj_folder_),       // pull all TBs into /prj/tb
+    hdmi_tb_folder_(&prj_folder_)       // pull all TBs into /prj/tb
 {
 }

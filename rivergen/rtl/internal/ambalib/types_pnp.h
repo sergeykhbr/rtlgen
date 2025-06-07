@@ -167,6 +167,7 @@ class types_pnp : public FileObject {
     ParamI32D SOC_PNP_I2C;
     ParamI32D SOC_PNP_PCIE_DMA;
     ParamI32D SOC_PNP_PCIE_APB;
+    ParamI32D SOC_PNP_HDMI_DMA;
     ParamI32D SOC_PNP_TOTAL;
     TextLine _pnp8_;
     soc_pnp_vector soc_pnp_vector_def_;

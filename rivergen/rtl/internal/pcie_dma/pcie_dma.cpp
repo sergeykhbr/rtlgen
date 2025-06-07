@@ -160,6 +160,7 @@ TEXT();
     TEXT();
     xdma0.abits.setObjValue(&pcie_cfg_->CFG_PCIE_DMAADDR_WIDTH);
     xdma0.userbits.setObjValue(new DecConst(1));
+    xdma0.base_offset.setObjValue(new HexLogicConst(SCV_get_cfg_type(this, "CFG_SYSBUS_ADDR_BITS"), 0));
     NEW(xdma0, xdma0.getName().c_str());
         CONNECT(xdma0, 0, xdma0.i_nrst, i_nrst);
         CONNECT(xdma0, 0, xdma0.i_clk, i_clk);

@@ -46,6 +46,7 @@ class axi_dma : public ModuleObject {
 public:
     TmplParamI32D abits;
     DefParamI32D userbits;
+    DefParamLogic base_offset;
     // Ports:
     InPort i_nrst;
     InPort i_clk;

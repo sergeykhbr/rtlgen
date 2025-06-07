@@ -21,10 +21,8 @@ hdmi_tb::hdmi_tb(GenObject *parent, const char *name) :
     // parameters
     // Ports
     i_nrst(this, "i_nrst", "1", "1", "Power-on system reset active LOW"),
-    w_clk1(this, "w_clk1", "1", RSTVAL_ZERO, NO_COMMENT),
-    w_clk2(this, "w_clk2", "1", RSTVAL_ZERO, NO_COMMENT),
-    wb_clk1_cnt(this, "wb_clk1_cnt", "32", "'0", NO_COMMENT),
-    wb_clk2_cnt(this, "wb_clk2_cnt", "32", "'0", NO_COMMENT),
+    w_clk(this, "w_clk", "1", RSTVAL_ZERO, NO_COMMENT),
+    wb_clk_cnt(this, "wb_clk_cnt", "32", "'0", NO_COMMENT),
     w_hdmi_hsync(this, "w_hdmi_hsync", "1", RSTVAL_ZERO, NO_COMMENT),
     w_hdmi_vsync(this, "w_hdmi_vsync", "1", RSTVAL_ZERO, NO_COMMENT),
     w_hdmi_de(this, "w_hdmi_de", "1", RSTVAL_ZERO, NO_COMMENT),
@@ -57,34 +55,25 @@ hdmi_tb::hdmi_tb(GenObject *parent, const char *name) :
     rd_data(this, "rd_data", "64", "'0", NO_COMMENT),
     mem(this, "mem", "64", "16", NO_COMMENT),
     // submodules:
-    clk1(this, "clk1", NO_COMMENT),
-    clk2(this, "clk2", NO_COMMENT),
+    clk(this, "clk", NO_COMMENT),
     slv0(this, "slv0", NO_COMMENT),
     tt(this, "tt", NO_COMMENT),
     // processes:
     comb(this),
-    test_clk1(this, &w_clk1),
-    test_clk2(this, &w_clk2)
+    test_clk(this, &w_clk)
 {
     Operation::start(this);
 
-    // Create and connet Sub-modules:
-    clk1.period.setObjValue(new FloatConst(5.0));  // 200 MHz
-    NEW(clk1, clk1.getName().c_str());
-        CONNECT(clk1, 0, clk1.o_clk, w_clk2);
-    ENDNEW();
-
-TEXT();
-    clk2.period.setObjValue(new FloatConst(25.0));  // 40 MHz
-    NEW(clk2, clk2.getName().c_str());
-        CONNECT(clk2, 0, clk2.o_clk, w_clk1);
+    clk.period.setObjValue(new FloatConst(25.0));  // 40 MHz
+    NEW(clk, clk.getName().c_str());
+        CONNECT(clk, 0, clk.o_clk, w_clk);
     ENDNEW();
 
 TEXT();
     NEW(tt, tt.getName().c_str());
         CONNECT(tt, 0, tt.i_nrst, i_nrst);
-        CONNECT(tt, 0, tt.i_clk, w_clk1);
-        CONNECT(tt, 0, tt.i_hdmi_clk, w_clk2);
+        CONNECT(tt, 0, tt.i_clk, w_clk);
+        CONNECT(tt, 0, tt.i_hdmi_clk, w_clk);
         CONNECT(tt, 0, tt.o_hsync, w_hdmi_hsync);
         CONNECT(tt, 0, tt.o_vsync, w_hdmi_vsync);
         CONNECT(tt, 0, tt.o_de, w_hdmi_de);
@@ -99,7 +88,7 @@ TEXT();
 
 TEXT();
     NEW(slv0, slv0.getName().c_str());
-        CONNECT(slv0, 0, slv0.i_clk, w_clk2);
+        CONNECT(slv0, 0, slv0.i_clk, w_clk);
         CONNECT(slv0, 0, slv0.i_nrst, i_nrst);
         CONNECT(slv0, 0, slv0.i_mapinfo, wb_slv_mapinfo);
         CONNECT(slv0, 0, slv0.o_cfg, wb_slv_o_cfg);
@@ -121,136 +110,76 @@ TEXT();
     Operation::start(&comb);
     proc_comb();
 
-    Operation::start(&test_clk1);
-    proc_test_clk1();
-
-    Operation::start(&test_clk2);
-    proc_test_clk2();
+    Operation::start(&test_clk);
+    proc_test_clk();
 }
 
 void hdmi_tb::proc_comb() {
-    SETVAL(comb.vb_mapinfo.addr_start, CONST("0x08000000", 48));
-    SETVAL(comb.vb_mapinfo.addr_end, CONST("0x08001000", 48));
+    SETVAL(comb.vb_mapinfo.addr_start, CONST("0x80000000", 48));
+    SETVAL(comb.vb_mapinfo.addr_end, CONST("0x80001000", 48));
     SETVAL(wb_slv_mapinfo, comb.vb_mapinfo);
+
+    SETVAL(comb.vb_xslvi.ar_valid, wb_xmsto.ar_valid);
+    SETVAL(comb.vb_xslvi.ar_bits.addr, wb_xmsto.ar_bits.addr);
+    SETVAL(comb.vb_xslvi.ar_bits.len, wb_xmsto.ar_bits.len);
+    SETVAL(comb.vb_xslvi.ar_bits.size, wb_xmsto.ar_bits.size);
+    SETVAL(comb.vb_xslvi.ar_bits.burst, wb_xmsto.ar_bits.burst);
+    SETVAL(comb.vb_xslvi.ar_bits.lock, wb_xmsto.ar_bits.lock);
+    SETVAL(comb.vb_xslvi.ar_bits.cache, wb_xmsto.ar_bits.cache);
+    SETVAL(comb.vb_xslvi.ar_bits.prot, wb_xmsto.ar_bits.prot);
+    SETVAL(comb.vb_xslvi.ar_bits.qos, wb_xmsto.ar_bits.qos);
+    SETVAL(comb.vb_xslvi.ar_bits.region, wb_xmsto.ar_bits.region);
+    SETVAL(comb.vb_xslvi.aw_valid, wb_xmsto.aw_valid);
+    SETVAL(comb.vb_xslvi.aw_bits.addr, wb_xmsto.aw_bits.addr);
+    SETVAL(comb.vb_xslvi.aw_bits.len, wb_xmsto.aw_bits.len);
+    SETVAL(comb.vb_xslvi.aw_bits.size, wb_xmsto.aw_bits.size);
+    SETVAL(comb.vb_xslvi.aw_bits.burst, wb_xmsto.aw_bits.burst);
+    SETVAL(comb.vb_xslvi.aw_bits.lock, wb_xmsto.aw_bits.lock);
+    SETVAL(comb.vb_xslvi.aw_bits.cache, wb_xmsto.aw_bits.cache);
+    SETVAL(comb.vb_xslvi.aw_bits.prot, wb_xmsto.aw_bits.prot);
+    SETVAL(comb.vb_xslvi.aw_bits.qos, wb_xmsto.aw_bits.qos);
+    SETVAL(comb.vb_xslvi.aw_bits.region, wb_xmsto.aw_bits.region);
+    SETVAL(comb.vb_xslvi.aw_id, wb_xmsto.aw_id);
+    SETVAL(comb.vb_xslvi.aw_user, wb_xmsto.aw_user);
+    SETVAL(comb.vb_xslvi.w_valid, wb_xmsto.w_valid);
+    SETVAL(comb.vb_xslvi.w_data, wb_xmsto.w_data);
+    SETVAL(comb.vb_xslvi.w_last, wb_xmsto.w_last);
+    SETVAL(comb.vb_xslvi.w_strb, wb_xmsto.w_strb);
+    SETVAL(comb.vb_xslvi.w_user, wb_xmsto.w_user);
+    SETVAL(comb.vb_xslvi.b_ready, wb_xmsto.b_ready);
+    SETVAL(comb.vb_xslvi.ar_id, wb_xmsto.ar_id);
+    SETVAL(comb.vb_xslvi.ar_user, wb_xmsto.ar_user);
+    SETVAL(comb.vb_xslvi.r_ready, wb_xmsto.r_ready);
+
+    TEXT();
+    SETVAL(comb.vb_xmsti.aw_ready, wb_xslvo.aw_ready);
+    SETVAL(comb.vb_xmsti.w_ready, wb_xslvo.w_ready);
+    SETVAL(comb.vb_xmsti.b_valid, wb_xslvo.b_valid);
+    SETVAL(comb.vb_xmsti.b_resp, wb_xslvo.b_resp);
+    SETVAL(comb.vb_xmsti.b_id, wb_xslvo.b_id);
+    SETVAL(comb.vb_xmsti.b_user, wb_xslvo.b_user);
+    SETVAL(comb.vb_xmsti.ar_ready, wb_xslvo.ar_ready);
+    SETVAL(comb.vb_xmsti.r_valid, wb_xslvo.r_valid);
+    SETVAL(comb.vb_xmsti.r_resp, wb_xslvo.r_resp);
+    SETVAL(comb.vb_xmsti.r_data, wb_xslvo.r_data);
+    SETVAL(comb.vb_xmsti.r_last, wb_xslvo.r_last);
+    SETVAL(comb.vb_xmsti.r_id, wb_xslvo.r_id);
+    SETVAL(comb.vb_xmsti.r_user, wb_xslvo.r_user);
+
+    TEXT();
+    SETVAL(wb_xslvi, comb.vb_xslvi);
+    SETVAL(wb_xmsti, comb.vb_xmsti);
 }
 
 
-void hdmi_tb::proc_test_clk1() {
-    SETVAL(wb_clk1_cnt, INC(wb_clk1_cnt));
-    IF (LS(wb_clk1_cnt, CONST("10")));
+void hdmi_tb::proc_test_clk() {
+    SETVAL(wb_clk_cnt, INC(wb_clk_cnt));
+    IF (LS(wb_clk_cnt, CONST("10")));
         SETZERO(i_nrst);
     ELSE();
         SETONE(i_nrst);
     ENDIF();
 
-    TEXT();
-    SETVAL(test_clk1.vb_xslvi, *SCV_get_cfg_type(this, "axi4_slave_in_none"));
-    SETONE(test_clk1.vb_xslvi.r_ready);
-    SETONE(test_clk1.vb_xslvi.b_ready);
-    IF(EQ(wb_clk1_cnt, CONST("20")));
-        SETONE(test_clk1.vb_xslvi.aw_valid);
-        SETVAL(test_clk1.vb_xslvi.aw_bits.addr, CONST("0x08000008", 48));
-        SETVAL(test_clk1.vb_xslvi.aw_bits.size, CONST("0x3", 3));
-        SETVAL(test_clk1.vb_xslvi.aw_bits.len, CONST("0x3", 3));
-    ELSIF(EQ(wb_clk1_cnt, CONST("21")));
-        SETONE(test_clk1.vb_xslvi.w_valid);
-        SETVAL(test_clk1.vb_xslvi.w_data, CONST("0x1122334455667788", 64));
-        SETVAL(test_clk1.vb_xslvi.w_strb, CONST("0xFF", 8));
-    ELSIF(EQ(wb_clk1_cnt, CONST("22")));
-        SETONE(test_clk1.vb_xslvi.w_valid);
-        SETVAL(test_clk1.vb_xslvi.w_data, CONST("0x2222334455667788", 64));
-        SETVAL(test_clk1.vb_xslvi.w_strb, CONST("0xFF", 8));
-    ELSIF(EQ(wb_clk1_cnt, CONST("23")));
-        SETONE(test_clk1.vb_xslvi.w_valid);
-        SETVAL(test_clk1.vb_xslvi.w_data, CONST("0x3322334455667788", 64));
-        SETVAL(test_clk1.vb_xslvi.w_strb, CONST("0xFF", 8));
-    ELSIF(EQ(wb_clk1_cnt, CONST("24")));
-        SETONE(test_clk1.vb_xslvi.w_valid);
-        SETVAL(test_clk1.vb_xslvi.w_data, CONST("0x4422334455667788", 64));
-        SETVAL(test_clk1.vb_xslvi.w_strb, CONST("0xFF", 8));
-        SETONE(test_clk1.vb_xslvi.w_last);
-    ELSIF(EQ(wb_clk1_cnt, CONST("1000")));
-        SETONE(test_clk1.vb_xslvi.ar_valid);
-        SETVAL(test_clk1.vb_xslvi.ar_bits.addr, CONST("0x08000008", 48));
-        SETVAL(test_clk1.vb_xslvi.ar_bits.size, CONST("0x3", 3));
-        SETVAL(test_clk1.vb_xslvi.ar_bits.len, CONST("0x3", 3));
-    ELSIF(EQ(wb_clk1_cnt, CONST("2000")));
-        SETONE(test_clk1.vb_xslvi.aw_valid);
-        SETVAL(test_clk1.vb_xslvi.aw_bits.addr, CONST("0x08000028", 48));
-        SETVAL(test_clk1.vb_xslvi.aw_bits.size, CONST("0x3", 3));
-        SETVAL(test_clk1.vb_xslvi.aw_bits.len, CONST("0x3", 3));
-
-        SETONE(test_clk1.vb_xslvi.ar_valid);
-        SETVAL(test_clk1.vb_xslvi.ar_bits.addr, CONST("0x08000028", 48));
-        SETVAL(test_clk1.vb_xslvi.ar_bits.size, CONST("0x3", 3));
-        SETVAL(test_clk1.vb_xslvi.ar_bits.len, CONST("0x3", 3));
-    ELSIF(EQ(wb_clk1_cnt, CONST("2001")));
-        SETONE(test_clk1.vb_xslvi.w_valid);
-        SETVAL(test_clk1.vb_xslvi.w_data, CONST("0xFF22334455667788", 64));
-        SETVAL(test_clk1.vb_xslvi.w_strb, CONST("0xFF", 8));
-
-        SETONE(test_clk1.vb_xslvi.ar_valid);
-        SETVAL(test_clk1.vb_xslvi.ar_bits.addr, CONST("0x08000038", 48));
-        SETVAL(test_clk1.vb_xslvi.ar_bits.size, CONST("0x3", 3));
-        SETVAL(test_clk1.vb_xslvi.ar_bits.len, CONST("0x3", 8));
-    ELSIF(EQ(wb_clk1_cnt, CONST("2002")));
-        SETONE(test_clk1.vb_xslvi.w_valid);
-        SETVAL(test_clk1.vb_xslvi.w_data, CONST("0xFA22334455667788", 64));
-        SETVAL(test_clk1.vb_xslvi.w_strb, CONST("0xFF", 8));
-
-        SETONE(test_clk1.vb_xslvi.ar_valid);
-        SETVAL(test_clk1.vb_xslvi.ar_bits.addr, CONST("0x08000038", 48));
-        SETVAL(test_clk1.vb_xslvi.ar_bits.size, CONST("0x3", 3));
-        SETVAL(test_clk1.vb_xslvi.ar_bits.len, CONST("0x2", 3));
-    ELSIF(EQ(wb_clk1_cnt, CONST("2003")));
-        SETONE(test_clk1.vb_xslvi.w_valid);
-        SETVAL(test_clk1.vb_xslvi.w_data, CONST("0xFB22334455667788", 64));
-        SETVAL(test_clk1.vb_xslvi.w_strb, CONST("0xFF", 8));
-
-        SETONE(test_clk1.vb_xslvi.ar_valid);
-        SETVAL(test_clk1.vb_xslvi.ar_bits.addr, CONST("0x08000038", 48));
-        SETVAL(test_clk1.vb_xslvi.ar_bits.size, CONST("0x3", 3));
-        SETVAL(test_clk1.vb_xslvi.ar_bits.len, CONST("0x1", 3));
-    ELSIF(EQ(wb_clk1_cnt, CONST("2004")));
-        SETONE(test_clk1.vb_xslvi.w_valid);
-        SETVAL(test_clk1.vb_xslvi.w_data, CONST("0xFC22334455667788", 64));
-        SETVAL(test_clk1.vb_xslvi.w_strb, CONST("0xFF", 8));
-        SETONE(test_clk1.vb_xslvi.w_last);
-
-        SETONE(test_clk1.vb_xslvi.ar_valid);
-        SETVAL(test_clk1.vb_xslvi.ar_bits.addr, CONST("0x08000038", 48));
-        SETVAL(test_clk1.vb_xslvi.ar_bits.size, CONST("0x3", 3));
-        SETVAL(test_clk1.vb_xslvi.ar_bits.len, CONST("0x0", 3));
-    ELSIF(EQ(wb_clk1_cnt, CONST("2005")));
-        SETONE(test_clk1.vb_xslvi.aw_valid);
-        SETVAL(test_clk1.vb_xslvi.aw_bits.addr, CONST("0x08000040", 48));
-        SETVAL(test_clk1.vb_xslvi.aw_bits.size, CONST("0x3", 3));
-        SETVAL(test_clk1.vb_xslvi.aw_bits.len, CONST("0x3", 3));
-    ELSIF(EQ(wb_clk1_cnt, CONST("2156")));
-        SETONE(test_clk1.vb_xslvi.w_valid);
-        SETVAL(test_clk1.vb_xslvi.w_data, CONST("0x1111", 64));
-        SETVAL(test_clk1.vb_xslvi.w_strb, CONST("0xFF", 8));
-    ELSIF(EQ(wb_clk1_cnt, CONST("2267")));
-        SETONE(test_clk1.vb_xslvi.w_valid);
-        SETVAL(test_clk1.vb_xslvi.w_data, CONST("0x2222", 64));
-        SETVAL(test_clk1.vb_xslvi.w_strb, CONST("0xFF", 8));
-    ELSIF(EQ(wb_clk1_cnt, CONST("2378")));
-        SETONE(test_clk1.vb_xslvi.w_valid);
-        SETVAL(test_clk1.vb_xslvi.w_data, CONST("0x3333", 64));
-        SETVAL(test_clk1.vb_xslvi.w_strb, CONST("0xFF", 8));
-    ELSIF(EQ(wb_clk1_cnt, CONST("2489")));
-        SETONE(test_clk1.vb_xslvi.w_valid);
-        SETVAL(test_clk1.vb_xslvi.w_data, CONST("0x4444", 64));
-        SETVAL(test_clk1.vb_xslvi.w_strb, CONST("0xFF", 8));
-        SETONE(test_clk1.vb_xslvi.w_last);
-    ENDIF();
-
-    TEXT();
-    SETVAL(wb_xslvi, test_clk1.vb_xslvi);
-}
-
-#define NO_DELAY
-void hdmi_tb::proc_test_clk2() {
     IF (EZ(i_nrst));
         SETZERO(rd_valid);
         SETZERO(req_ready);
@@ -258,29 +187,19 @@ void hdmi_tb::proc_test_clk2() {
         SETZERO(rd_data);
         SETZERO(v_busy);
     ELSE();
-        SETVAL(wb_clk2_cnt, INC(wb_clk2_cnt));
-#ifdef NO_DELAY
         SETZERO(v_busy);
-#else
-        SETVAL(v_busy, OR_REDUCE(BITS(rd_valid, 1, 0)));
-#endif
         IF (AND2(NZ(w_slv_o_req_write), NZ(w_slv_o_req_valid)));
             SETARRITEM(mem, TO_INT(BITS(wb_slv_o_req_addr, 5, 2)), mem, wb_slv_o_req_wdata);
         ENDIF();
         SETVAL(rd_addr, BITS(wb_slv_o_req_addr, 5, 2));
         IF (NZ(AND2_L(w_slv_o_req_valid, INV_L(v_busy))));
-            SETVAL(rd_data, ARRITEM(mem, TO_INT(BITS(wb_slv_o_req_addr, 5, 2)), mem));
+            SETVAL(rd_data, wb_slv_o_req_addr);//ARRITEM(mem, TO_INT(BITS(wb_slv_o_req_addr, 5, 2)), mem));
         ENDIF();
         SETVAL(rd_valid, CC2(BITS(rd_valid, 1, 0),  AND2_L(w_slv_o_req_valid, INV_L(v_busy))));
     ENDIF();
     SETVAL(wb_slv_i_resp_rdata, rd_data);
-#ifdef NO_DELAY
     SETVAL(w_slv_i_resp_valid, BIT(rd_valid, 0));
     SETVAL(w_slv_i_req_ready, CONST("1", 1));
-#else
-    SETVAL(w_slv_i_resp_valid, BIT(rd_valid, 2));
-    SETVAL(w_slv_i_req_ready, INV(OR_REDUCE(BITS(rd_valid, 1, 0))));
-#endif
     SETZERO(w_slv_i_resp_err);
 }
 

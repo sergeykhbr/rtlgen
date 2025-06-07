@@ -21,6 +21,7 @@ axi_dma::axi_dma(GenObject *parent, const char *name, const char *comment) :
     // Generic parameters
     abits(this, "abits", "48", "adress bits used"),
     userbits(this, "userbits", "1"),
+    base_offset(this, "base_offset", "CFG_SYSBUS_ADDR_BITS", "'0", "Address offset for all DMA transactions"),
     // Ports
     i_nrst(this, "i_nrst", "1", "Reset: active LOW"),
     i_clk(this, "i_clk", "1", "CPU clock"),
@@ -91,7 +92,7 @@ void axi_dma::proc_comb() {
     TEXT();
     TEXT("Byte swapping:");
     IF (EQ(req_size, CONST("0", 3)));
-        SETBITS(comb.vb_req_addr_inc, 9, 0, ADD2(BITS(req_addr, 9, 0), CONST("0x1", 10)));
+        SETBITS(comb.vb_req_addr_inc, 11, 0, ADD2(BITS(req_addr, 11, 0), CONST("0x1", 12)));
         IF (EQ(BITS(req_addr, 2, 0), CONST("0", 3)));
             SETBITS(comb.vb_r_data_swap, 31, 0, CC4(BITS(i_msti.r_data, 7, 0),
                                              BITS(i_msti.r_data, 7, 0),
@@ -135,7 +136,7 @@ void axi_dma::proc_comb() {
         ENDIF();
         SETBITS(comb.vb_r_data_swap, 63, 32, BITS(comb.vb_r_data_swap, 31, 0));
     ELSIF (EQ(req_size, CONST("1", 3)));
-        SETBITS(comb.vb_req_addr_inc, 9, 0, ADD2(BITS(req_addr, 9, 0), CONST("0x2", 10)));
+        SETBITS(comb.vb_req_addr_inc, 11, 0, ADD2(BITS(req_addr, 11, 0), CONST("0x2", 12)));
         IF (EQ(BITS(req_addr, 2, 1), CONST("0", 2)));
             SETVAL(comb.vb_r_data_swap, CC4(BITS(i_msti.r_data, 15, 0),
                                             BITS(i_msti.r_data, 15, 0),
@@ -158,7 +159,7 @@ void axi_dma::proc_comb() {
                                             BITS(i_msti.r_data, 63, 48)));
         ENDIF();
     ELSIF (EQ(req_size, CONST("2", 3)));
-        SETBITS(comb.vb_req_addr_inc, 9, 0, ADD2(BITS(req_addr, 9, 0), CONST("0x4", 10)));
+        SETBITS(comb.vb_req_addr_inc, 11, 0, ADD2(BITS(req_addr, 11, 0), CONST("0x4", 12)));
         IF (EZ(BIT(req_addr, 2)));
             SETVAL(comb.vb_r_data_swap, CC2(BITS(i_msti.r_data, 31, 0),
                                             BITS(i_msti.r_data, 31, 0)));
@@ -167,7 +168,7 @@ void axi_dma::proc_comb() {
                                             BITS(i_msti.r_data, 63, 32)));
         ENDIF();
     ELSE();
-        SETBITS(comb.vb_req_addr_inc, 9, 0, ADD2(BITS(req_addr, 9, 0), CONST("0x8", 10)));
+        SETBITS(comb.vb_req_addr_inc, 11, 0, ADD2(BITS(req_addr, 11, 0), CONST("0x8", 12)));
         SETVAL(comb.vb_r_data_swap, i_msti.r_data);
     ENDIF();
 
@@ -180,7 +181,7 @@ TEXT();
         SETZERO(resp_last);
         IF (NZ(i_req_mem_valid));
             SETZERO(req_ready);
-            SETVAL(req_addr, CC2(ALLZEROS(), i_req_mem_addr));
+            SETVAL(req_addr, CC2(BITS(base_offset, DEC(*SCV_get_cfg_type(this, "CFG_SYSBUS_ADDR_BITS")), abits), i_req_mem_addr));
             IF (EQ(i_req_mem_bytes, CONST("1", 12)));
                 SETVAL(req_size, CONST("0", 3));
                 SETZERO(req_len);
