@@ -501,11 +501,21 @@ std::string ModuleObject::generate_sysc_constructor() {
             if (rstport) {
                 ret += addspaces() + "sensitive << " + rstport->getName() + ";\n";
             }
+            ret += addspaces() + "sensitive << " + clkport->getName();
             if (clkport->isInput()) {
-                ret += addspaces() + "sensitive << " + clkport->getName() + ".pos();\n";
+                if (p->getClockEdge() == CLK_POSEDGE) {
+                    ret += ".pos()";
+                } else if (p->getClockEdge() == CLK_NEGEDGE) {
+                    ret += ".neg()";
+                }
             } else {
-                ret += addspaces() + "sensitive << " + clkport->getName() + ".posedge_event();\n";
+                if (p->getClockEdge() == CLK_POSEDGE) {
+                    ret += ".posedge_event()";
+                } else if (p->getClockEdge() == CLK_NEGEDGE) {
+                    ret += ".negedge_event()";
+                }
             }
+            ret += ";\n";
         } else {
             ln = std::string("i");
             for (auto &s: getEntries()) {

@@ -55,6 +55,7 @@ class apb_prci : public ModuleObject {
     OutPort o_sys_nrst;
     OutPort o_dbg_nrst;
     OutPort o_pcie_nrst;
+    OutPort o_hdmi_nrst;
     InStruct<types_amba::mapinfo_type> i_mapinfo;
     OutStruct<types_pnp::dev_config_type> o_cfg;
     InStruct<types_amba::apb_in_type> i_apbi;
@@ -69,6 +70,7 @@ class apb_prci : public ModuleObject {
     Signal r_sys_nrst;
     Logic r_dbg_nrst;
     Logic rb_pcie_nrst;
+    Logic rb_hdmi_nrst;
     Logic r_sys_locked;
     Logic rb_ddr_locked;
     Logic rb_pcie_lnk_up;

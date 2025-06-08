@@ -30,6 +30,7 @@ apb_prci::apb_prci(GenObject *parent, const char *name, const char *comment) :
     o_sys_nrst(this, "o_sys_nrst", "1", "System reset except DMI. Active LOW"),
     o_dbg_nrst(this, "o_dbg_nrst", "1", "Reset DMI. Active LOW"),
     o_pcie_nrst(this, "o_pcie_nrst", "1", "Reset PCIE DMA. Active LOW. Reset until link is up."),
+    o_hdmi_nrst(this, "o_hdmi_nrst", "1", "Reset HDMI. Reset until DDR link up"),
     i_mapinfo(this, "i_mapinfo", "interconnect slot information"),
     o_cfg(this, "o_cfg", "Device descriptor"),
     i_apbi(this, "i_apbi", "APB  Slave to Bridge interface"),
@@ -45,6 +46,7 @@ apb_prci::apb_prci(GenObject *parent, const char *name, const char *comment) :
     r_sys_nrst(this, "r_sys_nrst", "1", RSTVAL_ZERO, NO_COMMENT),
     r_dbg_nrst(this, "r_dbg_nrst", "1", RSTVAL_ZERO, NO_COMMENT),
     rb_pcie_nrst(this, "rb_pcie_nrst", "2", RSTVAL_ZERO, NO_COMMENT),
+    rb_hdmi_nrst(this, "rb_hdmi_nrst", "2", RSTVAL_ZERO, NO_COMMENT),
     r_sys_locked(this, "r_sys_locked", "1", RSTVAL_ZERO, NO_COMMENT),
     rb_ddr_locked(this, "rb_ddr_locked", "2", RSTVAL_ZERO, NO_COMMENT),
     rb_pcie_lnk_up(this, "rb_pcie_lnk_up", "2", RSTVAL_ZERO, NO_COMMENT),
@@ -118,6 +120,7 @@ TEXT();
     SETVAL(o_sys_nrst, r_sys_nrst);
     SETVAL(o_dbg_nrst, r_dbg_nrst);
     SETVAL(o_pcie_nrst, BIT(rb_pcie_nrst, 1));
+    SETVAL(o_hdmi_nrst, BIT(rb_hdmi_nrst, 1));
 }
 
 void apb_prci::proc_reqff() {
@@ -129,6 +132,7 @@ void apb_prci::proc_reqff() {
         SETVAL_NB(r_sys_nrst, CONST("0", 1));
         SETVAL_NB(r_dbg_nrst, CONST("0", 1));
         SETVAL_NB(rb_pcie_nrst, ALLZEROS());
+        SETVAL_NB(rb_hdmi_nrst, ALLZEROS());
     ELSE();
         SETVAL_NB(r_sys_locked, i_sys_locked);
         SETVAL_NB(rb_ddr_locked, CC2(BIT(rb_ddr_locked, 0), i_ddr_locked));
@@ -138,5 +142,7 @@ void apb_prci::proc_reqff() {
         SETVAL_NB(r_dbg_nrst, i_sys_locked);
         SETVAL_NB(rb_pcie_nrst, CC2(BIT(rb_pcie_nrst, 0),
                                     AND2_L(i_pcie_phy_lnk_up, INV_L(i_pcie_phy_rst))));
+        SETVAL_NB(rb_hdmi_nrst, CC2(BIT(rb_hdmi_nrst, 0),
+                                    AND2_L(BIT(rb_ddr_locked, 1), r_sys_nrst)));
     ENDIF();
 }

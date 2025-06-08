@@ -131,6 +131,7 @@ class asic_accel_top : public ModuleObject {
     Signal w_sys_rst;
     Signal w_sys_nrst;
     Signal w_dbg_nrst;
+    Signal w_hdmi_nrst;
     Signal w_dmreset;
     Signal w_sys_clk;
     Signal w_ddr_clk;

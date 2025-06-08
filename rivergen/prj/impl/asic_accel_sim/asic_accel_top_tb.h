@@ -22,6 +22,7 @@
 #include "../../common/vips/clk/vip_clk.h"
 #include "../../common/vips/uart/vip_uart_top.h"
 #include "../../common/vips/i2c/vip_i2c_s.h"
+#include "../../common/vips/jtag/jtag_app.h"
 #include "../../../rtl/sim/io/iobuf_tech.h"
 
 using namespace sysvc;
@@ -91,6 +92,7 @@ public:
     // Sub-module instances:
     vip_clk clk0;
     vip_uart_top uart1;
+    jtag_app jtag0;
 #if GENCFG_HDMI_ENABLE
     iobuf_tech iosda0;
     vip_i2c_s i2c0;

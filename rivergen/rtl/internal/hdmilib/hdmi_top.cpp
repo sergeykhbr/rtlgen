@@ -20,6 +20,7 @@ hdmi_top::hdmi_top(GenObject *parent, const char *name, const char *comment) :
     ModuleObject(parent, "hdmi_top", name, comment),
     i_nrst(this, "i_nrst", "1", "Reset: active LOW"),
     i_clk(this, "i_clk", "1", "CPU clock"),
+    i_hdmi_nrst(this, "i_hdmi_nrst", "1", "Reset: active LOW. Must be HIGH only after DDR "),
     i_hdmi_clk(this, "i_hdmi_clk", "1", "HDMI clock depends on resolution for 1366x768@60Hz ~83MHz"),
     o_hsync(this, "o_hsync", "1", "Horizontal sync strob"),
     o_vsync(this, "o_vsync", "1", "Vertical sync. strob"),
@@ -66,7 +67,7 @@ hdmi_top::hdmi_top(GenObject *parent, const char *name, const char *comment) :
     Operation::start(this);
 
     NEW(sync0, sync0.getName().c_str());
-        CONNECT(sync0, 0, sync0.i_nrst, i_nrst);
+        CONNECT(sync0, 0, sync0.i_nrst, i_hdmi_nrst);
         CONNECT(sync0, 0, sync0.i_clk, i_hdmi_clk);
         CONNECT(sync0, 0, sync0.o_hsync, w_sync_hsync);
         CONNECT(sync0, 0, sync0.o_vsync, w_sync_vsync);
@@ -78,7 +79,7 @@ hdmi_top::hdmi_top(GenObject *parent, const char *name, const char *comment) :
 
     TEXT();
     NEW(fb0, fb0.getName().c_str());
-        CONNECT(fb0, 0, fb0.i_nrst, i_nrst);
+        CONNECT(fb0, 0, fb0.i_nrst, i_hdmi_nrst);
         CONNECT(fb0, 0, fb0.i_clk, i_hdmi_clk);
         CONNECT(fb0, 0, fb0.i_hsync, w_sync_hsync);
         CONNECT(fb0, 0, fb0.i_vsync, w_sync_vsync);

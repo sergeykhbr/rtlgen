@@ -47,6 +47,7 @@ accel_soc::accel_soc(GenObject *parent, const char *name, const char *comment) :
     o_i2c0_sda_dir(this, "o_i2c0_sda_dir", "1", "output data tri-stte buffer control"),
     i_i2c0_sda(this, "i_i2c0_sda", "1", "I2C input data"),
     o_i2c0_nreset(this, "o_i2c0_nreset", "1", "I2C slave reset. PCA9548 I2C mux must be de-asserted."),
+    i_hdmi_nrst(this, "i_hdmi_nrst", "1", "Reset: active LOW. Must be HIGH only after DDR "),
     i_hdmi_clk(this, "i_hdmi_clk", "1", "HDMI Clock depends on resolution: for 1366x768@60Hz is ~83 MHz"),
     o_hdmi_hsync(this, "o_hdmi_hsync", "1", "Horizontal sync. strob"),
     o_hdmi_vsync(this, "o_hdmi_vsync", "1", "Vertical sync. strob"),
@@ -308,6 +309,7 @@ TEXT();
     NEW(hdmi0, hdmi0.getName().c_str());
         CONNECT(hdmi0, 0, hdmi0.i_nrst, i_sys_nrst);
         CONNECT(hdmi0, 0, hdmi0.i_clk, i_sys_clk);
+        CONNECT(hdmi0, 0, hdmi0.i_hdmi_nrst, i_hdmi_nrst);
         CONNECT(hdmi0, 0, hdmi0.i_hdmi_clk, i_hdmi_clk);
         CONNECT(hdmi0, 0, hdmi0.o_hsync, o_hdmi_hsync);
         CONNECT(hdmi0, 0, hdmi0.o_vsync, o_hdmi_vsync);

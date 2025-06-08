@@ -104,6 +104,7 @@ asic_accel_top::asic_accel_top(GenObject *parent, const char *name, const char *
     w_sys_rst(this, "w_sys_rst", "1"),
     w_sys_nrst(this, "w_sys_nrst", "1"),
     w_dbg_nrst(this, "w_dbg_nrst", "1"),
+    w_hdmi_nrst(this, "w_hdmi_nrst", "1"),
     w_dmreset(this, "w_dmreset", "1"),
     w_sys_clk(this, "w_sys_clk", "1"),
     w_ddr_clk(this, "w_ddr_clk", "1"),
@@ -308,6 +309,7 @@ TEXT();
         CONNECT(prci0, 0, prci0.o_sys_nrst, w_sys_nrst);
         CONNECT(prci0, 0, prci0.o_dbg_nrst, w_dbg_nrst);
         CONNECT(prci0, 0, prci0.o_pcie_nrst, w_pcie_nrst);
+        CONNECT(prci0, 0, prci0.o_hdmi_nrst, w_hdmi_nrst);
         CONNECT(prci0, 0, prci0.i_mapinfo, prci_pmapinfo);
         CONNECT(prci0, 0, prci0.o_cfg, prci_dev_cfg);
         CONNECT(prci0, 0, prci0.i_apbi, prci_apbi);
@@ -359,6 +361,7 @@ TEXT();
         CONNECT(soc0, 0, soc0.o_i2c0_sda, ob_i2c0_sda);
         CONNECT(soc0, 0, soc0.o_i2c0_sda_dir, ob_i2c0_sda_direction);
         CONNECT(soc0, 0, soc0.o_i2c0_nreset, ob_i2c0_nreset);
+        CONNECT(soc0, 0, soc0.i_hdmi_nrst, w_hdmi_nrst);
         CONNECT(soc0, 0, soc0.i_hdmi_clk, w_sys_clk);
         CONNECT(soc0, 0, soc0.o_hdmi_hsync, ob_hdmi_hsync);
         CONNECT(soc0, 0, soc0.o_hdmi_vsync, ob_hdmi_vsync);

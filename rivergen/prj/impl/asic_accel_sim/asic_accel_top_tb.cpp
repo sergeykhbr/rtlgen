@@ -60,6 +60,7 @@ asic_accel_top_tb::asic_accel_top_tb(GenObject *parent, const char *name) :
     // submodules:
     clk0(this, "clk0", NO_COMMENT),
     uart1(this, "uart1", NO_COMMENT),
+    jtag0(this, "jtag0"),
 #if GENCFG_SD_CTRL_ENABLE
 #endif
 #if GENCFG_HDMI_ENABLE
@@ -114,8 +115,16 @@ TEXT();
         CONNECT(uart1, 0, uart1.i_loopback_ena, w_uart1_loopback_ena);
     ENDNEW();
 
+    TEXT();
+    NEW(jtag0, jtag0.getName().c_str());
+        CONNECT(jtag0, 0, jtag0.o_trst, w_jtag_trst);
+        CONNECT(jtag0, 0, jtag0.o_tck, w_jtag_tck);
+        CONNECT(jtag0, 0, jtag0.o_tms, w_jtag_tms);
+        CONNECT(jtag0, 0, jtag0.o_tdo, w_jtag_tdi);
+        CONNECT(jtag0, 0, jtag0.i_tdi, w_jtag_tdo);
+    ENDNEW();
 
-TEXT();
+    TEXT();
     tt.sim_uart_speedup_rate.setObjValue(&sim_uart_speedup_rate);
     NEW(tt, tt.getName().c_str());
         CONNECT(tt, 0, tt.i_rst, w_rst);

@@ -19,6 +19,7 @@
 #include <api_rtlgen.h>
 #include <genconfig.h>
 #include "../clk/vip_clk.h"
+#include "vip_jtag_tap.h"
 
 using namespace sysvc;
 
@@ -52,20 +53,22 @@ class jtag_app : public ModuleObject {
 
 public:
     // Ports:
-    Signal i_nrst;
-    Signal w_clk1;
+    OutPort o_trst;
+    OutPort o_tck;
+    OutPort o_tms;
+    OutPort o_tdo;
+    InPort i_tdi;
+
+    Signal w_nrst;
+    Signal w_tck;
     Logic wb_clk1_cnt;
-    Signal w_slv_o_req_valid;
-    Signal wb_slv_o_req_addr;
-    Signal wb_slv_o_req_size;
-    Signal w_slv_o_req_write;
-    Signal wb_slv_o_req_wdata;
-    Signal wb_slv_o_req_wstrb;
-    Signal w_slv_o_req_last;
-    Signal w_slv_i_req_ready;
-    Signal w_slv_i_resp_valid;
-    Signal wb_slv_i_resp_rdata;
-    Signal w_slv_i_resp_err;
+    Signal w_req_valid;
+    Signal wb_req_irlen;
+    Signal wb_req_ir;
+    Signal wb_req_drlen;
+    Signal wb_req_dr;
+    Signal w_resp_valid;
+    Signal wb_resp_data;
 
 
     // Sub-module instances:
@@ -73,6 +76,7 @@ public:
 
     CombProcess comb;
     TestClk1Process test_clk1;
+    vip_jtag_tap tap;
 };
 
 class jtag_app_file : public FileObject {

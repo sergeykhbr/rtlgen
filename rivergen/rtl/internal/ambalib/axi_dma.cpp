@@ -21,7 +21,7 @@ axi_dma::axi_dma(GenObject *parent, const char *name, const char *comment) :
     // Generic parameters
     abits(this, "abits", "48", "adress bits used"),
     userbits(this, "userbits", "1"),
-    base_offset(this, "base_offset", "CFG_SYSBUS_ADDR_BITS", "'0", "Address offset for all DMA transactions"),
+    base_offset(this, "base_offset", "64", "'0", "Address offset for all DMA transactions"),
     // Ports
     i_nrst(this, "i_nrst", "1", "Reset: active LOW"),
     i_clk(this, "i_clk", "1", "CPU clock"),

@@ -41,7 +41,7 @@ class vip_jtag_tap : public ModuleObject {
 public:
     // Ports:
     InPort i_nrst;
-    InPort i_clk;
+    InPort i_tck;
     InPort i_req_valid;
     InPort i_req_irlen;
     InPort i_req_ir;
@@ -83,12 +83,15 @@ public:
     RegSignal req_ir;
     RegSignal req_dr;
     RegSignal state;
+    RegSignal trst;
     RegSignal tms;
     RegSignal dr_length;
     RegSignal dr;
     RegSignal bypass;
     RegSignal datacnt;
     RegSignal shiftreg;
+    RegSignal resp_valid;
+    RegSignal resp_data;
     TextLine text1;
     RegSignal ir;
 

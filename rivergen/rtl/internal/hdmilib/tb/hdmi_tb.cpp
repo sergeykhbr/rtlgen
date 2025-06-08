@@ -73,6 +73,7 @@ TEXT();
     NEW(tt, tt.getName().c_str());
         CONNECT(tt, 0, tt.i_nrst, i_nrst);
         CONNECT(tt, 0, tt.i_clk, w_clk);
+        CONNECT(tt, 0, tt.i_hdmi_nrst, i_nrst);
         CONNECT(tt, 0, tt.i_hdmi_clk, w_clk);
         CONNECT(tt, 0, tt.o_hsync, w_hdmi_hsync);
         CONNECT(tt, 0, tt.o_vsync, w_hdmi_vsync);

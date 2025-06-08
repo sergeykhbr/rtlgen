@@ -22,6 +22,7 @@
 #include "uart/uart_folder.h"
 #include "spi/spi_folder.h"
 #include "i2c/i2c_folder.h"
+#include "jtag/jtag_folder.h"
 
 class vips_folder : public FolderObject {
   public:
@@ -31,7 +32,8 @@ class vips_folder : public FolderObject {
         sdcard_folder_(this),
         uart_folder_(this),
         spi_folder_(this),
-        i2c_folder_(this) {}
+        i2c_folder_(this),
+        jtag_folder_(this) {}
 
  protected:
     // subfolders:
@@ -40,5 +42,6 @@ class vips_folder : public FolderObject {
     uart_folder uart_folder_;
     spi_folder spi_folder_;
     i2c_folder i2c_folder_;
+    jtag_folder jtag_folder_;
     // files
 };

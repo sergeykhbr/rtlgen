@@ -49,6 +49,7 @@ class hdmi_top : public ModuleObject {
     // io:
     InPort i_nrst;
     InPort i_clk;
+    InPort i_hdmi_nrst;
     InPort i_hdmi_clk;
     OutPort o_hsync;
     OutPort o_vsync;

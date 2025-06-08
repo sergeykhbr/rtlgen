@@ -92,6 +92,7 @@ public:
     OutPort o_i2c0_sda_dir;
     InPort i_i2c0_sda;
     OutPort o_i2c0_nreset;
+    InPort i_hdmi_nrst;
     InPort i_hdmi_clk;
     OutPort o_hdmi_hsync;
     OutPort o_hdmi_vsync;

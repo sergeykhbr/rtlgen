@@ -20,7 +20,7 @@ vip_jtag_tap::vip_jtag_tap(GenObject *parent, const char *name, const char *comm
     ModuleObject(parent, "vip_jtag_tap", name, comment),
     // Ports
     i_nrst(this, "i_nrst", "1", NO_COMMENT),
-    i_clk(this, "i_clk", "1", NO_COMMENT),
+    i_tck(this, "i_tck", "1", NO_COMMENT),
     i_req_valid(this, "i_req_valid", "1", "request"),
     i_req_irlen(this, "i_req_irlen", "4", "irlen in an range 1..15: ARM=4"),
     i_req_ir(this, "i_req_ir", "16", "ir reg"),
@@ -39,32 +39,35 @@ vip_jtag_tap::vip_jtag_tap(GenObject *parent, const char *name, const char *comm
     RESET_TAP(this, "RESET_TAP", "4", "0", NO_COMMENT),
     IDLE(this, "IDLE", "4", "1", NO_COMMENT),
     SELECT_DR_SCAN1(this, "SELECT_DR_SCAN1", "4", "2", NO_COMMENT),
-    SELECT_DR_SCAN(this, "SELECT_DR_SCAN", "4", "2", NO_COMMENT),
-    CAPTURE_DR(this, "CAPTURE_DR", "4", "3", NO_COMMENT),
-    SHIFT_DR(this, "SHIFT_DR", "4", "4", NO_COMMENT),
-    EXIT1_DR(this, "EXIT1_DR", "4", "5", NO_COMMENT),
-    UPDATE_DR(this, "UPDATE_DR", "4", "8", NO_COMMENT),
-    SELECT_IR_SCAN(this, "SELECT_IR_SCAN", "4", "9", NO_COMMENT),
-    CAPTURE_IR(this, "CAPTURE_IR", "4", "10", NO_COMMENT),
-    SHIFT_IR(this, "SHIFT_IR", "4", "11", NO_COMMENT),
-    EXIT1_IR(this, "EXIT1_IR", "4", "12", NO_COMMENT),
-    UPDATE_IR(this, "UPDATE_IR", "4", "15", NO_COMMENT),
+    SELECT_DR_SCAN(this, "SELECT_DR_SCAN", "4", "3", NO_COMMENT),
+    CAPTURE_DR(this, "CAPTURE_DR", "4", "4", NO_COMMENT),
+    SHIFT_DR(this, "SHIFT_DR", "4", "5", NO_COMMENT),
+    EXIT1_DR(this, "EXIT1_DR", "4", "6", NO_COMMENT),
+    UPDATE_DR(this, "UPDATE_DR", "4", "7", NO_COMMENT),
+    SELECT_IR_SCAN(this, "SELECT_IR_SCAN", "4", "8", NO_COMMENT),
+    CAPTURE_IR(this, "CAPTURE_IR", "4", "9", NO_COMMENT),
+    SHIFT_IR(this, "SHIFT_IR", "4", "10", NO_COMMENT),
+    EXIT1_IR(this, "EXIT1_IR", "4", "11", NO_COMMENT),
+    UPDATE_IR(this, "UPDATE_IR", "4", "12", NO_COMMENT),
     w_tck(this, "w_tck", "1", RSTVAL_ZERO, NO_COMMENT),
     text0(this, "posedge registers:"),
-    req_valid(this, "req_valid", "1", RSTVAL_ZERO, NO_COMMENT),
-    req_irlen(this, "req_irlen", "4", "0x1", NO_COMMENT),
-    req_drlen(this, "req_drlen", "6", "0x1", NO_COMMENT),
-    req_ir(this, "req_ir", "16", RSTVAL_ZERO, NO_COMMENT),
-    req_dr(this, "req_dr", "64", RSTVAL_ZERO, NO_COMMENT),
-    state(this, &i_clk, CLK_NEGEDGE, NO_PARENT, ACTIVE_NONE, "state", "4", "RESET_TAP", NO_COMMENT),
-    tms(this, &i_clk, CLK_NEGEDGE, NO_PARENT, ACTIVE_NONE, "state", "1", RSTVAL_ZERO, NO_COMMENT),
-    dr_length(this, "dr_length", "7", "'0", NO_COMMENT),
-    dr(this, "dr", "drlen", "idcode", NO_COMMENT),
-    bypass(this, "bypass", "1", RSTVAL_ZERO, NO_COMMENT),
-    datacnt(this, "datacnt", "32", "'0", NO_COMMENT),
-    shiftreg(this, "shiftreg", "64", "'0", NO_COMMENT),
+    req_valid(this, &i_tck, CLK_POSEDGE, NO_PARENT, ACTIVE_NONE, "req_valid", "1", RSTVAL_ZERO, NO_COMMENT),
+    req_irlen(this, &i_tck, CLK_POSEDGE, NO_PARENT, ACTIVE_NONE, "req_irlen", "4", "0x1", NO_COMMENT),
+    req_drlen(this, &i_tck, CLK_POSEDGE, NO_PARENT, ACTIVE_NONE, "req_drlen", "6", "0x1", NO_COMMENT),
+    req_ir(this, &i_tck, CLK_POSEDGE, NO_PARENT, ACTIVE_NONE, "req_ir", "16", RSTVAL_ZERO, NO_COMMENT),
+    req_dr(this, &i_tck, CLK_POSEDGE, NO_PARENT, ACTIVE_NONE, "req_dr", "64", RSTVAL_ZERO, NO_COMMENT),
+    state(this, &i_tck, CLK_NEGEDGE, NO_PARENT, ACTIVE_NONE, "state", "4", "RESET_TAP", NO_COMMENT),
+    trst(this, &i_tck, CLK_NEGEDGE, NO_PARENT, ACTIVE_NONE, "trst", "1", RSTVAL_ZERO, NO_COMMENT),
+    tms(this, &i_tck, CLK_NEGEDGE, NO_PARENT, ACTIVE_NONE, "tms", "1", RSTVAL_ZERO, NO_COMMENT),
+    dr_length(this, &i_tck, CLK_POSEDGE, NO_PARENT, ACTIVE_NONE, "dr_length", "7", "'0", NO_COMMENT),
+    dr(this, &i_tck, CLK_POSEDGE, NO_PARENT, ACTIVE_NONE, "dr", "64", "'0", NO_COMMENT),
+    bypass(this, &i_tck, CLK_POSEDGE, NO_PARENT, ACTIVE_NONE, "bypass", "1", RSTVAL_ZERO, NO_COMMENT),
+    datacnt(this, &i_tck, CLK_NEGEDGE, NO_PARENT, ACTIVE_NONE, "datacnt", "32", "'0", NO_COMMENT),
+    shiftreg(this, &i_tck, CLK_NEGEDGE, NO_PARENT, ACTIVE_NONE, "shiftreg", "64", "'0", NO_COMMENT),
+    resp_valid(this, &i_tck, CLK_POSEDGE, NO_PARENT, ACTIVE_NONE, "resp_valid", "1", "0", NO_COMMENT),
+    resp_data(this, &i_tck, CLK_POSEDGE, NO_PARENT, ACTIVE_NONE, "resp_data", "64", "'0", NO_COMMENT),
     text1(this, "negedge registers:"),
-    ir(this, &i_clk, CLK_NEGEDGE, NO_PARENT, ACTIVE_NONE, "ir", "irlen", "IR_IDCODE", NO_COMMENT),
+    ir(this, &i_tck, CLK_NEGEDGE, NO_PARENT, ACTIVE_NONE, "ir", "16", "'1", NO_COMMENT),
     comb(this)
 {
     Operation::start(this);
@@ -76,6 +79,7 @@ vip_jtag_tap::vip_jtag_tap(GenObject *parent, const char *name, const char *comm
 
 void vip_jtag_tap::proc_comb() {
     SETZERO(tms);
+    SETZERO(resp_valid);
 
     TEXT();
     IF(NZ(i_req_valid));
@@ -89,10 +93,12 @@ void vip_jtag_tap::proc_comb() {
     TEXT();
     SWITCH (state);
     CASE(RESET_TAP);
+        SETONE(trst);
         SETVAL(ir, ALLONES());
         SETVAL(state, IDLE);
     ENDCASE();
     CASE(IDLE);
+        SETZERO(trst);
         IF (NZ(req_valid));
             SETZERO(req_valid);
             SETONE(tms);
@@ -130,8 +136,7 @@ void vip_jtag_tap::proc_comb() {
         SETVAL(state, SELECT_DR_SCAN);
     ENDCASE();
     CASE(SELECT_DR_SCAN);
-        SETONE(tms);
-        SETVAL(state, SELECT_IR_SCAN);
+        SETVAL(state, CAPTURE_DR);
     ENDCASE();
     CASE(CAPTURE_DR);
         SETVAL(comb.vb_shiftreg, dr);
@@ -152,6 +157,8 @@ void vip_jtag_tap::proc_comb() {
         SETVAL(state, UPDATE_DR);
     ENDCASE();
     CASE(UPDATE_DR);
+        SETONE(resp_valid);
+        SETVAL(resp_data, shiftreg);
         SETVAL(state, IDLE);
     ENDCASE();
     CASEDEF();
@@ -162,5 +169,10 @@ void vip_jtag_tap::proc_comb() {
 TEXT();
     SETBIT(comb.vb_shiftreg, TO_INT(req_drlen), i_tdi);
     SETVAL(shiftreg, comb.vb_shiftreg);
+    SETVAL(o_trst, trst);
+    SETVAL(o_tck, i_tck);
+    SETVAL(o_tms, tms);
     SETVAL(o_tdo, BIT(shiftreg, 0));
+    SETVAL(o_resp_valid, resp_valid);
+    SETVAL(o_resp_data, resp_data);
 }

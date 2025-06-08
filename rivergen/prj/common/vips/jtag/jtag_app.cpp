@@ -20,51 +20,58 @@ jtag_app::jtag_app(GenObject *parent, const char *name) :
     ModuleObject(parent, "jtag_app", name, NO_COMMENT),
     // parameters
     // Ports
-    i_nrst(this, "i_nrst", "1", "1", "Power-on system reset active LOW"),
-    w_clk1(this, "w_clk1", "1", RSTVAL_ZERO, NO_COMMENT),
+    o_trst(this, "o_trst", "1", "Must be open-train, pullup"),
+    o_tck(this, "o_tck", "1"),
+    o_tms(this, "o_tms", "1"),
+    o_tdo(this, "o_tdo", "1"),
+    i_tdi(this, "i_tdi", "1"),
+    w_nrst(this, "w_nrst", "1", RSTVAL_ZERO, NO_COMMENT),
+    w_tck(this, "w_tck", "1", RSTVAL_ZERO, NO_COMMENT),
     wb_clk1_cnt(this, "wb_clk1_cnt", "32", "'0", NO_COMMENT),
-    w_slv_o_req_valid(this, "w_slv_o_req_valid", "1"),
-    wb_slv_o_req_addr(this, "wb_slv_o_req_addr", "CFG_SYSBUS_ADDR_BITS"),
-    wb_slv_o_req_size(this, "wb_slv_o_req_size", "8"),
-    w_slv_o_req_write(this, "w_slv_o_req_write", "1"),
-    wb_slv_o_req_wdata(this, "wb_slv_o_req_wdata", "CFG_SYSBUS_DATA_BITS"),
-    wb_slv_o_req_wstrb(this, "wb_slv_o_req_wstrb", "CFG_SYSBUS_DATA_BYTES"),
-    w_slv_o_req_last(this, "w_slv_o_req_last", "1"),
-    w_slv_i_req_ready(this, "w_slv_i_req_ready", "1"),
-    w_slv_i_resp_valid(this, "w_slv_i_resp_valid", "1"),
-    wb_slv_i_resp_rdata(this, "wb_slv_i_resp_rdata", "CFG_SYSBUS_DATA_BITS"),
-    w_slv_i_resp_err(this, "w_slv_i_resp_err", "1"),
+    w_req_valid(this, "w_req_valid", "1", NO_COMMENT),
+    wb_req_irlen(this, "wb_req_irlen", "4", NO_COMMENT),
+    wb_req_ir(this, "wb_req_ir", "16", NO_COMMENT),
+    wb_req_drlen(this, "wb_req_drlen", "6", NO_COMMENT),
+    wb_req_dr(this, "wb_req_dr", "64", NO_COMMENT),
+    w_resp_valid(this, "w_resp_valid", "1", NO_COMMENT),
+    wb_resp_data(this, "wb_resp_data", "64", NO_COMMENT),
     // submodules:
     clk1(this, "clk1", NO_COMMENT),
     // processes:
     comb(this),
-    test_clk1(this, &w_clk1)
-{
+    test_clk1(this, &w_tck),
+    tap(this, "tap", NO_COMMENT) {
     Operation::start(this);
 
     // Create and connet Sub-modules:
-    clk1.period.setObjValue(new FloatConst(50.0));  // 20 MHz
+    clk1.period.setObjValue(new FloatConst(80.0));  // 12.5 MHz
     NEW(clk1, clk1.getName().c_str());
-        CONNECT(clk1, 0, clk1.o_clk, w_clk1);
+        CONNECT(clk1, 0, clk1.o_clk, w_tck);
     ENDNEW();
 
-    /*TEXT();
-    NEW(tt, tt.getName().c_str());
-        CONNECT(tt, 0, tt.i_nrst, i_nrst);
-        CONNECT(tt, 0, tt.i_clk, w_clk1);
-        CONNECT(tt, 0, tt.i_hdmi_clk, w_clk2);
-        CONNECT(tt, 0, tt.o_hsync, w_hdmi_hsync);
-        CONNECT(tt, 0, tt.o_vsync, w_hdmi_vsync);
-        CONNECT(tt, 0, tt.o_de, w_hdmi_de);
-        CONNECT(tt, 0, tt.o_data, wb_hdmi_data);
-        CONNECT(tt, 0, tt.o_spdif, w_hdmi_spdif);
-        CONNECT(tt, 0, tt.i_spdif_out, w_hdmi_spdif_out);
-        CONNECT(tt, 0, tt.i_irq, w_hdmi_irq);
-        CONNECT(tt, 0, tt.o_xmst_cfg, wb_mst_o_cfg);
-        CONNECT(tt, 0, tt.i_xmsti, wb_xmsti);
-        CONNECT(tt, 0, tt.o_xmsto, wb_xmsto);
-    ENDNEW();*/
+    TEXT();
+    NEW(tap, tap.getName().c_str());
+        CONNECT(tap, 0, tap.i_nrst, w_nrst);
+        CONNECT(tap, 0, tap.i_tck, w_tck);
+        CONNECT(tap, 0, tap.i_req_valid, w_req_valid);
+        CONNECT(tap, 0, tap.i_req_irlen, wb_req_irlen);
+        CONNECT(tap, 0, tap.i_req_ir, wb_req_ir);
+        CONNECT(tap, 0, tap.i_req_drlen, wb_req_drlen);
+        CONNECT(tap, 0, tap.i_req_dr, wb_req_dr);
+        CONNECT(tap, 0, tap.o_resp_valid, w_resp_valid);
+        CONNECT(tap, 0, tap.o_resp_data, wb_resp_data);
+        CONNECT(tap, 0, tap.o_trst, o_trst);
+        CONNECT(tap, 0, tap.o_tck, o_tck);
+        CONNECT(tap, 0, tap.o_tms, o_tms);
+        CONNECT(tap, 0, tap.o_tdo, o_tdo);
+        CONNECT(tap, 0, tap.i_tdi, i_tdi);
+    ENDNEW();
 
+    TEXT();
+    INITIAL();
+        SETZERO(w_nrst);
+        SETZERO(wb_clk1_cnt);
+    ENDINITIAL();
 
     Operation::start(&comb);
     proc_comb();
@@ -81,11 +88,20 @@ void jtag_app::proc_comb() {
 void jtag_app::proc_test_clk1() {
     SETVAL(wb_clk1_cnt, INC(wb_clk1_cnt));
     IF (LS(wb_clk1_cnt, CONST("10")));
-        SETZERO(i_nrst);
+        SETZERO(w_nrst);
     ELSE();
-        SETONE(i_nrst);
+        SETONE(w_nrst);
     ENDIF();
 
     TEXT();
+    IF (EQ(wb_clk1_cnt, CONST("50", 32)));
+        SETONE(w_req_valid);
+        SETVAL(wb_req_irlen, CONST("5", 4));
+        SETVAL(wb_req_ir, CONST("0x1", 4));
+        SETVAL(wb_req_drlen, CONST("32", 6));
+        SETZERO(wb_req_dr);
+    ELSE();
+        SETZERO(w_req_valid);
+    ENDIF();
 }
 
