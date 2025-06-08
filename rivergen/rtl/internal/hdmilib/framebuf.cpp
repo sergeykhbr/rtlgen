@@ -61,9 +61,9 @@ framebuf::framebuf(GenObject *parent, const char *name, const char *comment) :
     raddr(this, "raddr", "11", RSTVAL_ZERO, NO_COMMENT),
     raddr_z(this, "raddr_z", "11", RSTVAL_ZERO, NO_COMMENT),
     pix_x0(this, "pix_x0", "1", RSTVAL_ZERO, NO_COMMENT),
-    h_sync(this, "h_sync", "2", RSTVAL_ZERO, NO_COMMENT),
-    v_sync(this, "v_sync", "2", RSTVAL_ZERO, NO_COMMENT),
-    de(this, "de", "2", RSTVAL_ZERO, NO_COMMENT),
+    h_sync(this, "h_sync", "4", RSTVAL_ZERO, NO_COMMENT),
+    v_sync(this, "v_sync", "4", RSTVAL_ZERO, NO_COMMENT),
+    de(this, "de", "4", RSTVAL_ZERO, NO_COMMENT),
     Y0(this, "Y0", "8", RSTVAL_ZERO, NO_COMMENT),
     Y1(this, "Y1", "8", RSTVAL_ZERO, NO_COMMENT),
     Cb(this, "Cb", "8", RSTVAL_ZERO, NO_COMMENT),
@@ -104,27 +104,18 @@ framebuf::framebuf(GenObject *parent, const char *name, const char *comment) :
 
 void framebuf::proc_comb() {
     TEXT("delayed signals:");
-    SETVAL(de, CC2(BIT(de, 0), i_de));
-    SETVAL(h_sync, CC2(BIT(h_sync, 0), i_hsync));
-    SETVAL(v_sync, CC2(BIT(v_sync, 0), i_vsync));
+    SETVAL(de, CC2(BITS(de, 2, 0), i_de));
+    SETVAL(h_sync, CC2(BITS(h_sync, 2, 0), i_hsync));
+    SETVAL(v_sync, CC2(BITS(v_sync, 2, 0), i_vsync));
     SETVAL(pix_x0, BIT(i_x, 0));
 
     TEXT();
-    SETVAL(comb.fb_addr, CC2(i_y, BITS(i_x, 10, 2)));
-
-    TEXT();
-    IF (EQ(BITS(i_x, 1, 0), CONST("0",2)));
-    ELSIF (EQ(BITS(i_x, 1, 0), CONST("1",2)));
-    ELSIF (EQ(BITS(i_x, 1, 0), CONST("2",2)));
-    ELSE();
-    ENDIF();
-
-    TEXT();
+    SETVAL(comb.vb_raddr_next, INC(raddr));
     IF (AND2(NZ(req_valid), NZ(i_req_2d_ready)));
         SETZERO(req_valid);
     ENDIF();
     IF (NZ(i_de));
-        SETVAL(raddr, INC(raddr));
+        SETVAL(raddr, comb.vb_raddr_next);
         SETVAL(raddr_z, raddr);
     ENDIF();
 
@@ -154,12 +145,7 @@ void framebuf::proc_comb() {
         ENDIF();
     ENDCASE();
     CASE(STATE_Idle);
-        IF(NZ(i_vsync));
-            SETZERO(raddr);
-            SETVAL(req_addr, CONST("32", 18), "32-burst transactions 64B each => 2048 B");
-            SETONE(req_valid);
-            SETVAL(state, STATE_Request);
-        ELSIF(NE(BIT(raddr, 10), BIT(raddr_z, 10)));
+        IF(NE(BIT(raddr, 10), BIT(comb.vb_raddr_next, 10)));
             SETVAL(pingpong, INV_L(pingpong));
             IF (GE(INC(req_addr), BITS(i_xy_total, 22, 5)), "2048 B = 1024 pixel (16 bits each)");
                 TEXT("request first data while processing the last one:");
@@ -174,6 +160,69 @@ void framebuf::proc_comb() {
     CASEDEF();
     ENDCASE();
     ENDSWITCH();
+
+    TEXT();
+    IF(AND2(NZ(i_vsync), EZ(BIT(v_sync, 0))));
+        TEXT("Update the second memory bank, so that ping & pong were updated");
+        SETVAL(pingpong, INV_L(pingpong));
+        SETZERO(raddr);
+        SETVAL(req_addr, CONST("32", 18), "32-burst transactions 64B each => 2048 B");
+        SETONE(req_valid);
+        SETVAL(state, STATE_Request);
+    ENDIF();
+
+    TEXT();
+    IF (NZ(pingpong));
+        SETVAL(wb_ping_addr, BITS(raddr, 9, 2));
+        SETVAL(wb_pong_addr, BITS(i_resp_2d_addr, 10, 3));
+        IF (NZ(de));
+            IF (EQ(BITS(raddr_z, 1, 0), CONST("0", 2)));
+                SETVAL(YCbCr, BITS(wb_ping_rdata, 15, 0));
+            ELSIF (EQ(BITS(raddr_z, 1, 0), CONST("1", 2)));
+                SETVAL(YCbCr, BITS(wb_ping_rdata, 31, 16));
+            ELSIF (EQ(BITS(raddr_z, 1, 0), CONST("2", 2)));
+                SETVAL(YCbCr, BITS(wb_ping_rdata, 47, 32));
+            ELSE();
+                SETVAL(YCbCr, BITS(wb_ping_rdata, 63, 48));
+            ENDIF();
+        ELSE();
+            SETZERO(YCbCr);
+        ENDIF();
+    ELSE();
+        SETVAL(wb_ping_addr, BITS(i_resp_2d_addr, 10, 3));
+        SETVAL(wb_pong_addr, BITS(raddr, 9, 2));
+        IF (NZ(de));
+            IF (EQ(BITS(raddr_z, 1, 0), CONST("0", 2)));
+                SETVAL(YCbCr, BITS(wb_pong_rdata, 15, 0));
+            ELSIF (EQ(BITS(raddr_z, 1, 0), CONST("1", 2)));
+                SETVAL(YCbCr, BITS(wb_pong_rdata, 31, 16));
+            ELSIF (EQ(BITS(raddr_z, 1, 0), CONST("2", 2)));
+                SETVAL(YCbCr, BITS(wb_pong_rdata, 47, 32));
+            ELSE();
+                SETVAL(YCbCr, BITS(wb_pong_rdata, 63, 48));
+            ENDIF();
+        ELSE();
+            SETZERO(YCbCr);
+        ENDIF();
+    ENDIF();
+    SETVAL(w_ping_wena, AND2_L(i_resp_2d_valid, INV_L(pingpong)));
+    SETVAL(w_pong_wena, AND2_L(i_resp_2d_valid, pingpong));
+
+    TEXT();
+    SYNC_RESET();
+
+    TEXT();
+    SETVAL(o_hsync, BIT(h_sync, 1));
+    SETVAL(o_vsync, BIT(v_sync, 1));
+    SETVAL(o_de, BIT(de, 1));
+    SETVAL(o_YCbCr, CC2(CONST("0", 2), YCbCr));
+
+    TEXT();
+    SETVAL(o_req_2d_valid, req_valid);
+    SETVAL(o_req_2d_bytes, CONST("64", 12), "Xilinx MIG is limited to burst beat length 8");
+    SETVAL(o_req_2d_addr, CC2(req_addr, CONST("0", 6)));
+    SETVAL(o_resp_2d_ready, resp_ready);
+
 
     /*
     IF (LS(i_x, CONST("170", 11)));
@@ -224,7 +273,7 @@ void framebuf::proc_comb() {
         SETVAL(Y1, CONST("106", 8));
         SETVAL(Cb, CONST("102", 8));
         SETVAL(Cr, CONST("222", 8));
-    ENDIF();*/
+    ENDIF();
 
     TEXT();
     TEXT("See style 1 output:");
@@ -232,58 +281,6 @@ void framebuf::proc_comb() {
         SETVAL(YCbCr, CC2(Cb, Y1));
     ELSE();
         SETVAL(YCbCr, CC2(Cr, Y1));
-    ENDIF();
-
-    TEXT();
-    SYNC_RESET();
-
-    TEXT();
-    IF (NZ(pingpong));
-        SETVAL(wb_ping_addr, BITS(raddr, 9, 2));
-        SETVAL(wb_pong_addr, BITS(i_resp_2d_addr, 10, 3));
-        IF (NZ(de));
-            IF (EQ(BITS(raddr_z, 1, 0), CONST("0", 2)));
-                SETVAL(YCbCr, BITS(wb_ping_rdata, 15, 0));
-            ELSIF (EQ(BITS(raddr_z, 1, 0), CONST("1", 2)));
-                SETVAL(YCbCr, BITS(wb_ping_rdata, 31, 16));
-            ELSIF (EQ(BITS(raddr_z, 1, 0), CONST("2", 2)));
-                SETVAL(YCbCr, BITS(wb_ping_rdata, 47, 32));
-            ELSE();
-                SETVAL(YCbCr, BITS(wb_ping_rdata, 63, 48));
-            ENDIF();
-        ELSE();
-            SETZERO(YCbCr);
-        ENDIF();
-    ELSE();
-        SETVAL(wb_ping_addr, BITS(i_resp_2d_addr, 10, 3));
-        SETVAL(wb_pong_addr, BITS(raddr, 9, 2));
-        IF (NZ(de));
-            IF (EQ(BITS(raddr_z, 1, 0), CONST("0", 2)));
-                SETVAL(YCbCr, BITS(wb_pong_rdata, 15, 0));
-            ELSIF (EQ(BITS(raddr_z, 1, 0), CONST("1", 2)));
-                SETVAL(YCbCr, BITS(wb_pong_rdata, 31, 16));
-            ELSIF (EQ(BITS(raddr_z, 1, 0), CONST("2", 2)));
-                SETVAL(YCbCr, BITS(wb_pong_rdata, 47, 32));
-            ELSE();
-                SETVAL(YCbCr, BITS(wb_pong_rdata, 63, 48));
-            ENDIF();
-        ELSE();
-            SETZERO(YCbCr);
-        ENDIF();
-    ENDIF();
-    SETVAL(w_ping_wena, AND2_L(i_resp_2d_valid, INV_L(pingpong)));
-    SETVAL(w_pong_wena, AND2_L(i_resp_2d_valid, pingpong));
-
-    TEXT();
-    SETVAL(o_hsync, BIT(h_sync, 1));
-    SETVAL(o_vsync, BIT(v_sync, 1));
-    SETVAL(o_de, BIT(de, 1));
-    SETVAL(o_YCbCr, CC2(CONST("0", 2), YCbCr));
-
-    TEXT();
-    SETVAL(o_req_2d_valid, req_valid);
-    SETVAL(o_req_2d_bytes, CONST("64", 12), "Xilinx MIG is limited to burst beat length 8");
-    SETVAL(o_req_2d_addr, CC2(req_addr, CONST("0", 6)));
-    SETVAL(o_resp_2d_ready, resp_ready);
+    ENDIF();*/
 }
 

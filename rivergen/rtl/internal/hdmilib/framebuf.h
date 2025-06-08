@@ -29,11 +29,11 @@ class framebuf : public ModuleObject {
      public:
         CombProcess(GenObject *parent) :
             CombinationalProcess(parent, "comb"),
-            fb_addr(this, "fb_addr", "19", "'0", "1 value per 2 pixels") {
+            vb_raddr_next(this, "vb_raddr_next", "11", RSTVAL_ZERO, NO_COMMENT) {
         }
 
      public:
-        Logic fb_addr;
+        Logic vb_raddr_next;
     };
 
     void proc_comb();
