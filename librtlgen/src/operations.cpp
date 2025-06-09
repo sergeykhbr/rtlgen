@@ -2075,14 +2075,16 @@ void ENDALWAYS(const char *comment) {
 std::string AssignOperation::generate() {
     std::string ret = addspaces();
     if (SCV_is_sv()) {
-        /*if (getParent() && getParent()->isProcess()) {
-            GenObject *proc = getParent();
-            proc->addPostAssign(this);
-            parent_ = 0;
-            return "";
-        }*/
         ret += "assign ";
     }
+    if (SCV_is_sv() && delay_) {
+        ret += "#(" + delay_->generate() + ") "; // timescale 1ns/10ps
+    }
+    if (SCV_is_sysc() && delay_) {
+        ret += "wait(static_cast<int>" + delay_->generate() + ", SC_NS);\n";
+        ret += addspaces();
+    }
+
     ret += a_->nameInModule(PORT_IN);
     if (SCV_is_vhdl()) {
         ret += " <= ";

@@ -21,7 +21,7 @@ vip_clk::vip_clk(GenObject *parent, const char *name, const char *comment) :
     period(this, "period", "1.0"),
     o_clk(this, "o_clk", "1"),
     //
-    comb(this)
+    comb(this, "comb")
 {
     Operation::start(this);
 

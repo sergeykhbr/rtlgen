@@ -31,7 +31,7 @@ jtag_app::jtag_app(GenObject *parent, const char *name) :
     w_req_valid(this, "w_req_valid", "1", NO_COMMENT),
     wb_req_irlen(this, "wb_req_irlen", "4", NO_COMMENT),
     wb_req_ir(this, "wb_req_ir", "16", NO_COMMENT),
-    wb_req_drlen(this, "wb_req_drlen", "6", NO_COMMENT),
+    wb_req_drlen(this, "wb_req_drlen", "7", NO_COMMENT),
     wb_req_dr(this, "wb_req_dr", "64", NO_COMMENT),
     w_resp_valid(this, "w_resp_valid", "1", NO_COMMENT),
     wb_resp_data(this, "wb_resp_data", "64", NO_COMMENT),
@@ -67,11 +67,11 @@ jtag_app::jtag_app(GenObject *parent, const char *name) :
         CONNECT(tap, 0, tap.i_tdi, i_tdi);
     ENDNEW();
 
-    TEXT();
     INITIAL();
         SETZERO(w_nrst);
-        SETZERO(wb_clk1_cnt);
+        SETVAL_DELAY(w_nrst, CONST("1", 1), *new FloatConst(800.0));
     ENDINITIAL();
+
 
     Operation::start(&comb);
     proc_comb();
@@ -86,20 +86,25 @@ void jtag_app::proc_comb() {
 
 
 void jtag_app::proc_test_clk1() {
-    SETVAL(wb_clk1_cnt, INC(wb_clk1_cnt));
-    IF (LS(wb_clk1_cnt, CONST("10")));
-        SETZERO(w_nrst);
+    IF (EZ(w_nrst));
+        SETZERO(wb_clk1_cnt);
     ELSE();
-        SETONE(w_nrst);
+        SETVAL(wb_clk1_cnt, INC(wb_clk1_cnt));
     ENDIF();
 
     TEXT();
     IF (EQ(wb_clk1_cnt, CONST("50", 32)));
         SETONE(w_req_valid);
         SETVAL(wb_req_irlen, CONST("5", 4));
-        SETVAL(wb_req_ir, CONST("0x1", 4));
-        SETVAL(wb_req_drlen, CONST("32", 6));
+        SETVAL(wb_req_ir, CONST("0x1", 5));
+        SETVAL(wb_req_drlen, CONST("32", 7));
         SETZERO(wb_req_dr);
+    ELSIF (EQ(wb_clk1_cnt, CONST("250", 32)));
+        SETONE(w_req_valid);
+        SETVAL(wb_req_irlen, CONST("5", 4));
+        SETVAL(wb_req_ir, CONST("0x10", 5), "0x10 DTM_CONTROL");
+        SETVAL(wb_req_drlen, CONST("32", 7));
+        SETVAL(wb_req_dr, CONST("0x12345678", 32));
     ELSE();
         SETZERO(w_req_valid);
     ENDIF();

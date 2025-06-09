@@ -682,4 +682,11 @@ Operation &ASSIGNZERO(GenObject &a, const char *comment=NO_COMMENT);
  */
 Operation &ASSIGN(GenObject &a, GenObject &b, const char *comment=NO_COMMENT);
 
+/** Set value b into a with delay:
+    sysc: a.write(b, T * SC_NS);
+    sv:   #T a <= b;         (full equivalent a = #T b; for blocking assignment)
+    vhdl: a <= b after T ns;
+ */
+Operation &ASSIGN_DELAY(GenObject &a, GenObject &b, GenObject &T, const char *comment=NO_COMMENT);
+
 };

@@ -70,6 +70,7 @@ class FloatConst : public ConstObject {
     virtual double getFloatValue() override { return f64_; }
     virtual std::string getStrValue() override;
     virtual uint64_t getWidth() override { return 64; }
+    virtual std::string generate() override { return getStrValue(); }
 
  protected:
     double f64_;

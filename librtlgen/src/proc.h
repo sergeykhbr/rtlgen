@@ -77,6 +77,23 @@ class CombinationalProcess : public ProcObject {
     GenObject *v2rin_;  // rin <= v code block
 };
 
+class CombinationalThread : public CombinationalProcess {
+    public:
+    CombinationalThread(GenObject *parent, const char *name) :
+        CombinationalProcess(parent, name) {
+    }
+    virtual bool isAssign() override { return true; }
+
+    virtual std::string getType() override {
+        std::string ret = "";
+        if (SCV_is_sysc()) {
+            ret = "SC_THREAD";
+        }
+        return ret;
+    }
+};
+
+
 /**
     This process is created automatically if the module contains registers:
  */

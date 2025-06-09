@@ -264,15 +264,18 @@ class AssignValueOperation : public SetValueOperation {
 class AssignOperation : public Operation {
  public:
     AssignOperation(GenObject &a, const char *comment)
-        : Operation(comment), a_(&a), b_(0) {}
+        : Operation(comment), a_(&a), b_(0), delay_(0) {}
     AssignOperation(GenObject &a, GenObject &b, const char *comment)
-        : Operation(comment), a_(&a), b_(&b) {}
+        : Operation(comment), a_(&a), b_(&b), delay_(0) {}
+    AssignOperation(GenObject &a, GenObject &b, GenObject *T, const char *comment)
+        : Operation(comment), a_(&a), b_(&b), delay_(T) {}
 
     virtual bool isAssign() override { return true; }
     virtual std::string generate() override;
  protected:
     GenObject *a_;
     GenObject *b_;
+    GenObject *delay_;
 };
 
 /**

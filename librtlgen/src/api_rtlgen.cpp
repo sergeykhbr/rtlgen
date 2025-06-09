@@ -975,6 +975,11 @@ Operation &ASSIGN(GenObject &a, GenObject &b, const char *comment) {
     return *new AssignOperation(a, b, comment);
 }
 
+Operation &ASSIGN_DELAY(GenObject &a, GenObject &b, GenObject &T, const char *comment) {
+    return *new AssignOperation(a, b, &T, comment);
+}
+
+
 GenObject *SCV_parse_to_obj(GenObject *owner, const char *val) {
     GenObject *ret = 0;
     const char *pstr = val;

@@ -30,10 +30,12 @@ class vip_jtag_tap : public ModuleObject {
      public:
         CombProcess(GenObject* parent)
             : CombinationalProcess(parent, "comb"),
-            vb_shiftreg(this, "vb_shiftreg", "64", "'0", NO_COMMENT) {
+            vb_shiftreg(this, "vb_shiftreg", "64", "shiftreg", NO_COMMENT),
+            vi_dr_idx(this, "vi_dr_idx", "0", NO_COMMENT) {
         }
      public:
         Logic vb_shiftreg;
+        I32D vi_dr_idx;
     };
 
     void proc_comb();
@@ -85,6 +87,7 @@ public:
     RegSignal state;
     RegSignal trst;
     RegSignal tms;
+    RegSignal tdo;
     RegSignal dr_length;
     RegSignal dr;
     RegSignal bypass;

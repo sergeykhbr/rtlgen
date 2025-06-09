@@ -25,23 +25,6 @@ class vip_clk : public ModuleObject {
     vip_clk(GenObject *parent, const char *name, const char *comment);
 
  protected:
-    class CombProcess : public CombinationalProcess {
-     public:
-        CombProcess(GenObject *parent) :
-            CombinationalProcess(parent, "comb") {
-        }
-        virtual bool isAssign() override { return true; }
-        virtual std::string getType() override {
-            std::string ret = "";
-            if (SCV_is_sysc()) {
-                ret = "SC_THREAD";
-            }
-            return ret;
-        }
-
-     public:
-    };
-
     void proc_comb();
 
  public:
@@ -50,7 +33,7 @@ class vip_clk : public ModuleObject {
     // io:
     OutPort o_clk;
 
-    CombProcess comb;
+    CombinationalThread comb;
 };
 
 class vip_clk_file : public FileObject {
