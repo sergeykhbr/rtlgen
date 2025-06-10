@@ -77,20 +77,21 @@ class CombinationalProcess : public ProcObject {
     GenObject *v2rin_;  // rin <= v code block
 };
 
-class CombinationalThread : public CombinationalProcess {
+class CombinationalThread : public ProcObject {
     public:
     CombinationalThread(GenObject *parent, const char *name) :
-        CombinationalProcess(parent, name) {
+        ProcObject(parent, name, 0, CLK_ALWAYS, 0, ACTIVE_NONE, NO_COMMENT) {
     }
-    virtual bool isAssign() override { return true; }
+    virtual bool isThread() override { return true; }
+};
 
-    virtual std::string getType() override {
-        std::string ret = "";
-        if (SCV_is_sysc()) {
-            ret = "SC_THREAD";
-        }
-        return ret;
+class InitialThread : public CombinationalThread {
+    public:
+    InitialThread(GenObject *parent) :
+        CombinationalThread(parent, "init") {
     }
+    virtual bool isInitial() override { return true; }
+    virtual void setSortedRegs(std::list<RegTypedefStruct *> *reglist) override {};
 };
 
 

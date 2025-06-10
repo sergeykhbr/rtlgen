@@ -495,6 +495,12 @@ std::string ModuleObject::generate_sysc_constructor() {
 
         ret += "\n";
         ret += addspaces() + p->getType() + "(" + p->getName() + ");\n";
+
+        if (p->isThread()) {
+            // No sensitivity list for SC_THREAD
+            continue;
+        }
+
         if (p->getClockPort()) {
             GenObject *clkport = p->getClockPort();
             GenObject *rstport = p->getResetPort();

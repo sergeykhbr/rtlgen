@@ -112,6 +112,8 @@ class GenObject {
     virtual bool isFolder() { return false; }
     virtual bool isFunction() { return false; }
     virtual bool isProcess() { return false; }
+    virtual bool isThread() { return false; }           // used for systemc SC_THREAD instead of proc (no sensitivity list)
+    virtual bool isInitial() { return false; }          // initial section in sv is a separate thread in systemc
     virtual bool isInterface() { return false; }        // struct with redefined operators: <<, ofstream (inputs/outputs)
     virtual bool isGenVar() { return false; }           // Variable is used generate cycle: I32D analog for rtl
     virtual bool isTop() { return false; }

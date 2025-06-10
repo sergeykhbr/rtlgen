@@ -243,7 +243,7 @@ std::string SetValueOperation::generate() {
         ret += "#(" + T_->generate() + ") "; // timescale 1ns/10ps
     }
     if (SCV_is_sysc() && T_) {
-        ret += "wait(static_cast<int>" + T_->generate() + ", SC_NS);\n";
+        ret += "wait(static_cast<int>(" + T_->generate() + "), SC_NS);\n";
         ret += addspaces();
     }
 
@@ -1914,9 +1914,14 @@ std::string InitialOperation::generate() {
     return ret;
 }
 
-Operation &INITIAL() {
-    Operation *p = new InitialOperation(NO_COMMENT);
-    return *p;
+void INITIAL() {
+    GenObject *m = Operation::top_obj();
+    InitialThread *p = new InitialThread(NO_PARENT);
+    m->getEntries().push_front(p);
+    p->setParent(m);
+
+    //Operation *p = new InitialOperation(NO_COMMENT);
+    //return *p;
 }
 
 // ENDINITIAL
@@ -1932,7 +1937,8 @@ std::string EndInitialOperation::generate() {
 }
 
 void ENDINITIAL() {
-    Operation *p = new EndInitialOperation(NO_COMMENT);
+    //Operation *p = new EndInitialOperation(NO_COMMENT);
+    Operation::start(Operation::top_obj()->getParent());
 }
 
 
@@ -2081,7 +2087,7 @@ std::string AssignOperation::generate() {
         ret += "#(" + delay_->generate() + ") "; // timescale 1ns/10ps
     }
     if (SCV_is_sysc() && delay_) {
-        ret += "wait(static_cast<int>" + delay_->generate() + ", SC_NS);\n";
+        ret += "wait(static_cast<int>(" + delay_->generate() + "), SC_NS);\n";
         ret += addspaces();
     }
 

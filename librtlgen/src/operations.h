@@ -1387,7 +1387,7 @@ class InitialOperation : public Operation {
     virtual std::string generate() override;
 };
 
-Operation &INITIAL();
+void INITIAL();
 
 class EndInitialOperation : public Operation {
  public:

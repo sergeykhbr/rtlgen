@@ -42,7 +42,11 @@ ProcObject::ProcObject(GenObject *parent,
 std::string ProcObject::getType() {
     std::string ret = "";
     if (SCV_is_sysc()) {
-        ret = "SC_METHOD";
+        if (isThread()) {
+            ret = "SC_THREAD";
+        } else {
+            ret = "SC_METHOD";
+        }
     }
     return ret;
 }

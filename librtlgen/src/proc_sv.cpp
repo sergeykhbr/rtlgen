@@ -61,7 +61,9 @@ std::string ProcObject::generate_sv() {
         GenObject *rstport = getResetPort();
         // proc prolog:
         ret += addspaces();
-        if (clkport) {
+        if (isInitial()) {
+            ret += "\ninitial ";
+        } else if (clkport) {
             ret += "\nalways_ff @(";
             ret += SV_STR_CLKEDGE[getClockEdge()];
             ret += std::string(" ") + clkport->getName();
@@ -75,12 +77,20 @@ std::string ProcObject::generate_sv() {
         } else {
             ret += "\nalways_comb\n" + addspaces();
         }
-        ret += "begin: " + getName() + "_proc\n";
+        ret += "begin";
+        if (!isInitial()) {
+            ret += ": " + getName() + "_proc";
+        }
+        ret += "\n";
 
         ret += bodytext;
 
         // proc epilog
-        ret += addspaces() + "end: " + getName() + "_proc\n";
+        ret += addspaces() + "end";
+        if (!isInitial()) {
+            ret += ": " + getName() + "_proc";
+        }
+        ret += "\n";
     }
     // Post assinment stage:
     ret += getPostAssign();

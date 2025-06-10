@@ -172,7 +172,11 @@ void ModuleObject::configureGenerator(ECfgGenType cfg) {
         getEntries().remove(r->rin_instance());
         getEntries().remove(r->v_instance());
         for (auto &p : getEntries()) {
+            if (p->isInitial()) {
+                continue;
+            }
             if (p->isProcess() && p->getClockEdge() == CLK_ALWAYS) {
+                // WARNING: remove only first comb process (after initial). FIXME later:
                 p->getEntries().remove(r->v_instance());
                 break;
             }
