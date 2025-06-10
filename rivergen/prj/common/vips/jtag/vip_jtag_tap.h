@@ -73,6 +73,7 @@ public:
     ParamLogic SHIFT_IR;
     ParamLogic EXIT1_IR;
     ParamLogic UPDATE_IR;
+    ParamLogic INIT_RESET;
 
     // signals
     Signal w_tck;
@@ -95,7 +96,6 @@ public:
     RegSignal shiftreg;
     RegSignal resp_valid;
     RegSignal resp_data;
-    TextLine text1;
     RegSignal ir;
 
     // process

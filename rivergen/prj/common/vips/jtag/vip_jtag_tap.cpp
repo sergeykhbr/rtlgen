@@ -49,26 +49,26 @@ vip_jtag_tap::vip_jtag_tap(GenObject *parent, const char *name, const char *comm
     SHIFT_IR(this, "SHIFT_IR", "4", "10", NO_COMMENT),
     EXIT1_IR(this, "EXIT1_IR", "4", "11", NO_COMMENT),
     UPDATE_IR(this, "UPDATE_IR", "4", "12", NO_COMMENT),
+    INIT_RESET(this, "INIT_RESET", "4", "15", NO_COMMENT),
     w_tck(this, "w_tck", "1", RSTVAL_ZERO, NO_COMMENT),
     text0(this, "posedge registers:"),
-    req_valid(this, &i_tck, CLK_POSEDGE, NO_PARENT, ACTIVE_NONE, "req_valid", "1", RSTVAL_ZERO, NO_COMMENT),
-    req_irlen(this, &i_tck, CLK_POSEDGE, NO_PARENT, ACTIVE_NONE, "req_irlen", "4", "0x1", NO_COMMENT),
-    req_drlen(this, &i_tck, CLK_POSEDGE, NO_PARENT, ACTIVE_NONE, "req_drlen", "7", "0x1", NO_COMMENT),
-    req_ir(this, &i_tck, CLK_POSEDGE, NO_PARENT, ACTIVE_NONE, "req_ir", "16", RSTVAL_ZERO, NO_COMMENT),
-    req_dr(this, &i_tck, CLK_POSEDGE, NO_PARENT, ACTIVE_NONE, "req_dr", "64", RSTVAL_ZERO, NO_COMMENT),
-    state(this, &i_tck, CLK_POSEDGE, NO_PARENT, ACTIVE_NONE, "state", "4", "RESET_TAP", NO_COMMENT),
-    trst(this, &i_tck, CLK_NEGEDGE, NO_PARENT, ACTIVE_NONE, "trst", "1", RSTVAL_ZERO, NO_COMMENT),
-    tms(this, &i_tck, CLK_NEGEDGE, NO_PARENT, ACTIVE_NONE, "tms", "1", RSTVAL_ZERO, NO_COMMENT),
-    tdo(this, &i_tck, CLK_NEGEDGE, NO_PARENT, ACTIVE_NONE, "tdo", "1", RSTVAL_ZERO, NO_COMMENT),
-    dr_length(this, &i_tck, CLK_POSEDGE, NO_PARENT, ACTIVE_NONE, "dr_length", "7", "'0", NO_COMMENT),
-    dr(this, &i_tck, CLK_POSEDGE, NO_PARENT, ACTIVE_NONE, "dr", "64", "'0", NO_COMMENT),
-    bypass(this, &i_tck, CLK_POSEDGE, NO_PARENT, ACTIVE_NONE, "bypass", "1", RSTVAL_ZERO, NO_COMMENT),
-    datacnt(this, &i_tck, CLK_POSEDGE, NO_PARENT, ACTIVE_NONE, "datacnt", "32", "'0", NO_COMMENT),
-    shiftreg(this, &i_tck, CLK_POSEDGE, NO_PARENT, ACTIVE_NONE, "shiftreg", "64", "'0", NO_COMMENT),
-    resp_valid(this, &i_tck, CLK_POSEDGE, NO_PARENT, ACTIVE_NONE, "resp_valid", "1", "0", NO_COMMENT),
-    resp_data(this, &i_tck, CLK_POSEDGE, NO_PARENT, ACTIVE_NONE, "resp_data", "64", "'0", NO_COMMENT),
-    text1(this, "negedge registers:"),
-    ir(this, &i_tck, CLK_POSEDGE, NO_PARENT, ACTIVE_NONE, "ir", "16", "'1", NO_COMMENT),
+    req_valid(this, &i_tck, CLK_POSEDGE, &i_nrst, ACTIVE_LOW, "req_valid", "1", RSTVAL_ZERO, NO_COMMENT),
+    req_irlen(this, &i_tck, CLK_POSEDGE, &i_nrst, ACTIVE_LOW, "req_irlen", "4", "0x1", NO_COMMENT),
+    req_drlen(this, &i_tck, CLK_POSEDGE, &i_nrst, ACTIVE_LOW, "req_drlen", "7", "0x1", NO_COMMENT),
+    req_ir(this, &i_tck, CLK_POSEDGE, &i_nrst, ACTIVE_LOW, "req_ir", "16", RSTVAL_ZERO, NO_COMMENT),
+    req_dr(this, &i_tck, CLK_POSEDGE, &i_nrst, ACTIVE_LOW, "req_dr", "64", RSTVAL_ZERO, NO_COMMENT),
+    state(this, &i_tck, CLK_POSEDGE, &i_nrst, ACTIVE_LOW, "state", "4", "INIT_RESET", NO_COMMENT),
+    trst(this, &i_tck, CLK_NEGEDGE, &i_nrst, ACTIVE_LOW, "trst", "1", RSTVAL_ZERO, NO_COMMENT),
+    tms(this, &i_tck, CLK_NEGEDGE, &i_nrst, ACTIVE_LOW, "tms", "1", "1", NO_COMMENT),
+    tdo(this, &i_tck, CLK_NEGEDGE, &i_nrst, ACTIVE_LOW, "tdo", "1", RSTVAL_ZERO, NO_COMMENT),
+    dr_length(this, &i_tck, CLK_POSEDGE, &i_nrst, ACTIVE_LOW, "dr_length", "7", "0x7F", NO_COMMENT),
+    dr(this, &i_tck, CLK_POSEDGE, &i_nrst, ACTIVE_LOW, "dr", "64", "'0", NO_COMMENT),
+    bypass(this, &i_tck, CLK_POSEDGE, &i_nrst, ACTIVE_LOW, "bypass", "1", RSTVAL_ZERO, NO_COMMENT),
+    datacnt(this, &i_tck, CLK_POSEDGE, &i_nrst, ACTIVE_LOW, "datacnt", "32", "'0", NO_COMMENT),
+    shiftreg(this, &i_tck, CLK_POSEDGE, &i_nrst, ACTIVE_LOW, "shiftreg", "64", "'0", NO_COMMENT),
+    resp_valid(this, &i_tck, CLK_POSEDGE, &i_nrst, ACTIVE_LOW, "resp_valid", "1", "0", NO_COMMENT),
+    resp_data(this, &i_tck, CLK_POSEDGE, &i_nrst, ACTIVE_LOW, "resp_data", "64", "'0", NO_COMMENT),
+    ir(this, &i_tck, CLK_POSEDGE, &i_nrst, ACTIVE_LOW, "ir", "16", "'1", NO_COMMENT),
     comb(this)
 {
     Operation::start(this);
@@ -98,6 +98,16 @@ void vip_jtag_tap::proc_comb() {
 
     TEXT();
     SWITCH (state);
+    CASE(INIT_RESET);
+        SETONE(trst);
+        SETONE(tms);
+        TEXT("127 clocks to reset JTAG state machine without TRST");
+        IF(NZ(dr_length));
+            SETVAL(dr_length, DEC(dr_length));
+        ELSE();
+            SETVAL(state, RESET_TAP);
+        ENDIF();
+    ENDCASE();
     CASE(RESET_TAP);
         SETONE(trst);
         SETVAL(ir, ALLONES());

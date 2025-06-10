@@ -93,13 +93,13 @@ void jtag_app::proc_test_clk1() {
     ENDIF();
 
     TEXT();
-    IF (EQ(wb_clk1_cnt, CONST("50", 32)));
+    IF (EQ(wb_clk1_cnt, CONST("500", 32)));
         SETONE(w_req_valid);
         SETVAL(wb_req_irlen, CONST("5", 4));
         SETVAL(wb_req_ir, CONST("0x1", 5));
         SETVAL(wb_req_drlen, CONST("32", 7));
         SETZERO(wb_req_dr);
-    ELSIF (EQ(wb_clk1_cnt, CONST("250", 32)));
+    ELSIF (EQ(wb_clk1_cnt, CONST("750", 32)));
         SETONE(w_req_valid);
         SETVAL(wb_req_irlen, CONST("5", 4));
         SETVAL(wb_req_ir, CONST("0x10", 5), "0x10 DTM_CONTROL");
