@@ -17,23 +17,14 @@
 #pragma once
 
 #include <api_rtlgen.h>
-#include "video_sync.h"
-#include "framebuf.h"
-#include "rgb2ycbcr.h"
-#include "hdmi_top.h"
+#include "mul_b8.h"
 
-class hdmilib_folder : public FolderObject {
+class mathlib_folder : public FolderObject {
  public:
-    hdmilib_folder(GenObject *parent) :
-        FolderObject(parent, "hdmilib"),
-        video_sync_file_(this),
-        framebuf_file_(this),
-        rgb2ycbcr_file_(this),
-        hdmi_top_file_(this) {}
+    mathlib_folder(GenObject *parent) :
+        FolderObject(parent, "mathlib"),
+        mul_b8_file_(this) {}
 
  protected:
-    video_sync_file video_sync_file_;
-    framebuf_file framebuf_file_;
-    rgb2ycbcr_file rgb2ycbcr_file_;
-    hdmi_top_file hdmi_top_file_;
+    mul_b8_file mul_b8_file_;
 };

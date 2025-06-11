@@ -21,6 +21,7 @@
 #include "ambalib/ambalib_folder.h"
 #include "cdc/cdc_folder.h"
 #include "mem/mem_folder.h"
+#include "mathlib/mathlib_folder.h"
 #include "riverlib/riverlib_folder.h"
 #include "misclib/misclib_folder.h"
 #if GENCFG_SD_CTRL_ENABLE
@@ -48,6 +49,7 @@ class internal_folder : public FolderObject {
         ambalib_folder_(this),
         cdc_folder_(this),
         mem_folder_(this),
+        mathlib_folder_(this),
         riverlib_folder_(this),
         misclib_folder_(this)
 #if GENCFG_SD_CTRL_ENABLE
@@ -72,6 +74,7 @@ class internal_folder : public FolderObject {
     // subfolders:
     ambalib_folder ambalib_folder_;
     cdc_folder cdc_folder_;
+    mathlib_folder mathlib_folder_;
     mem_folder mem_folder_;
     riverlib_folder riverlib_folder_;
     misclib_folder misclib_folder_;
