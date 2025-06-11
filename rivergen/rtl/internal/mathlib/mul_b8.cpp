@@ -30,7 +30,7 @@ mul_b8::mul_b8(GenObject *parent, const char *name, const char *comment) :
     // registers
     ua(this, "ua", "8", "'0", NO_COMMENT),
     ub(this, "ub", "8", "'0", NO_COMMENT),
-    inv(this, "inv", "3", RSTVAL_ZERO, NO_COMMENT),
+    inv(this, "inv", "4", RSTVAL_ZERO, NO_COMMENT),
     lvl1_0(this, "lvl1_0", "11", RSTVAL_ZERO, NO_COMMENT),
     lvl1_1(this, "lvl1_1", "11", RSTVAL_ZERO, NO_COMMENT),
     lvl1_2(this, "lvl1_2", "11", RSTVAL_ZERO, NO_COMMENT),
@@ -49,7 +49,6 @@ mul_b8::mul_b8(GenObject *parent, const char *name, const char *comment) :
 }
 
 void mul_b8::proc_comb() {
-    
     IF (AND2(NZ(i_signed), NZ(BIT(i_a, 7))));
         SETVAL(ua, INC(INV_L(i_a)));
     ELSE();
@@ -60,7 +59,7 @@ void mul_b8::proc_comb() {
     ELSE();
         SETVAL(ub, i_b);
     ENDIF();
-    SETVAL(inv, CC2(BITS(inv, 1, 0), AND2_L(i_signed, XOR2(BIT(i_a, 7), BIT(i_b, 7)))));
+    SETVAL(inv, CC2(BITS(inv, 2, 0), AND2_L(i_signed, XOR2(BIT(i_a, 7), BIT(i_b, 7)))));
 
     TEXT();
     TEXT("Level 1, bits[1:0]");
@@ -115,8 +114,10 @@ void mul_b8::proc_comb() {
     TEXT();
     TEXT("Level 3, result");
     SETVAL(lvl3, ADD2(CC2(CONST("0", 2), lvl2_0), CC2(BITS(lvl2_1, 11, 0), CONST("0", 4))));
-    IF (NZ(BIT(inv, 2)));
+    IF (NZ(BIT(inv, 3)));
         SETVAL(res, INC(INV_L(lvl3)));
+    ELSE();
+        SETVAL(res, lvl3);
     ENDIF();
 
     TEXT();
