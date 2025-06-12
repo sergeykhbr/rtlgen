@@ -52,9 +52,6 @@ class video_sync : public ModuleObject {
     OutPort o_hsync;
     OutPort o_vsync;
     OutPort o_de;
-    OutPort o_x;
-    OutPort o_y;
-    OutPort o_xy_total;
 
     RegSignal h_count;
     RegSignal v_count;

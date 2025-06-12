@@ -29,11 +29,12 @@ class framebuf : public ModuleObject {
      public:
         CombProcess(GenObject *parent) :
             CombinationalProcess(parent, "comb"),
-            vb_raddr_next(this, "vb_raddr_next", "11", RSTVAL_ZERO, NO_COMMENT) {
+            vb_ring_rdata(this, "vb_ring_rdata", "64", "'0", NO_COMMENT),
+            vb_pix(this, "vb_pix", "16", "'0", NO_COMMENT) {
         }
-
      public:
-        Logic vb_raddr_next;
+        Logic vb_ring_rdata;
+        Logic vb_pix;
     };
 
     void proc_comb();
@@ -45,9 +46,8 @@ class framebuf : public ModuleObject {
     InPort i_hsync;
     InPort i_vsync;
     InPort i_de;
-    InPort i_x;
-    InPort i_y;
-    InPort i_xy_total;
+    InPort i_width_m1;
+    InPort i_height_m1;
     OutPort o_hsync;
     OutPort o_vsync;
     OutPort o_de;
@@ -68,27 +68,44 @@ class framebuf : public ModuleObject {
     ParamLogic STATE_Writing;
     ParamLogic STATE_Idle;
 
-    Signal wb_ping_addr;
-    Signal w_ping_wena;
-    Signal wb_ping_rdata;
-    Signal wb_pong_addr;
-    Signal w_pong_wena;
-    Signal wb_pong_rdata;
+    Signal wb_ring0_addr;
+    Signal w_ring0_wena;
+    Signal wb_ring0_rdata;
+    Signal wb_ring1_addr;
+    Signal w_ring1_wena;
+    Signal wb_ring1_rdata;
+    Signal wb_ring2_addr;
+    Signal w_ring2_wena;
+    Signal wb_ring2_rdata;
+    Signal wb_ring3_addr;
+    Signal w_ring3_wena;
+    Signal wb_ring3_rdata;
+
+    RegSignal wr_row;
+    RegSignal wr_col;
+    RegSignal wr_addr;
+    RegSignal rd_row;
+    RegSignal rd_col;
+    RegSignal rd_addr;
+    RegSignal mux_ena;
+    RegSignal ring_sel;
+    RegSignal pix_sel;
+    RegSignal difcnt;
 
     RegSignal state;
-    RegSignal pingpong;
+    RegSignal rowcnt;
     RegSignal req_addr;
     RegSignal req_valid;
     RegSignal resp_ready;
-    RegSignal raddr;
-    RegSignal raddr_z;
     RegSignal h_sync;
     RegSignal v_sync;
     RegSignal de;
     RegSignal rgb;
 
-    ram_tech ping;
-    ram_tech pong;
+    ram_tech ring0;
+    ram_tech ring1;
+    ram_tech ring2;
+    ram_tech ring3;
     CombProcess comb;
 };
 

@@ -34,13 +34,14 @@ hdmi_top::hdmi_top(GenObject *parent, const char *name, const char *comment) :
     i_xmsti(this, "i_xmsti"),
     o_xmsto(this, "o_xmsto"),
     // params
+    WIDTH(this, "WIDTH", "12", "1366", NO_COMMENT),
+    HEIGHT(this, "HEIGHT", "12", "768", NO_COMMENT),
     // signals
+    wb_width_m1(this, "wb_width_m1", "12", RSTVAL_ZERO, NO_COMMENT),
+    wb_height_m1(this, "wb_height_m1", "12", RSTVAL_ZERO, NO_COMMENT),
     w_sync_hsync(this, "w_sync_hsync", "1", RSTVAL_ZERO, NO_COMMENT),
     w_sync_vsync(this, "w_sync_vsync", "1", RSTVAL_ZERO, NO_COMMENT),
     w_sync_de(this, "w_sync_de", "1", RSTVAL_ZERO, NO_COMMENT),
-    wb_sync_x(this, "wb_sync_x", "11", RSTVAL_ZERO, NO_COMMENT),
-    wb_sync_y(this, "wb_sync_y", "10", RSTVAL_ZERO, NO_COMMENT),
-    wb_sync_xy_total(this, "wb_sync_xy_total", "24", RSTVAL_ZERO, NO_COMMENT),
     w_fb_hsync(this, "w_fb_hsync", "1", RSTVAL_ZERO, NO_COMMENT),
     w_fb_vsync(this, "w_fb_vsync", "1", RSTVAL_ZERO, NO_COMMENT),
     w_fb_de(this, "w_fb_de", "1", RSTVAL_ZERO, NO_COMMENT),
@@ -71,15 +72,14 @@ hdmi_top::hdmi_top(GenObject *parent, const char *name, const char *comment) :
 {
     Operation::start(this);
 
+    sync0.H_ACTIVE.setObjValue(&WIDTH);
+    sync0.V_ACTIVE.setObjValue(&HEIGHT);
     NEW(sync0, sync0.getName().c_str());
         CONNECT(sync0, 0, sync0.i_nrst, i_hdmi_nrst);
         CONNECT(sync0, 0, sync0.i_clk, i_hdmi_clk);
         CONNECT(sync0, 0, sync0.o_hsync, w_sync_hsync);
         CONNECT(sync0, 0, sync0.o_vsync, w_sync_vsync);
         CONNECT(sync0, 0, sync0.o_de, w_sync_de);
-        CONNECT(sync0, 0, sync0.o_x, wb_sync_x);
-        CONNECT(sync0, 0, sync0.o_y, wb_sync_y);
-        CONNECT(sync0, 0, sync0.o_xy_total, wb_sync_xy_total);
     ENDNEW();
 
     TEXT();
@@ -89,9 +89,8 @@ hdmi_top::hdmi_top(GenObject *parent, const char *name, const char *comment) :
         CONNECT(fb0, 0, fb0.i_hsync, w_sync_hsync);
         CONNECT(fb0, 0, fb0.i_vsync, w_sync_vsync);
         CONNECT(fb0, 0, fb0.i_de, w_sync_de);
-        CONNECT(fb0, 0, fb0.i_x, wb_sync_x);
-        CONNECT(fb0, 0, fb0.i_y, wb_sync_y);
-        CONNECT(fb0, 0, fb0.i_xy_total, wb_sync_xy_total);
+        CONNECT(fb0, 0, fb0.i_width_m1, wb_width_m1);
+        CONNECT(fb0, 0, fb0.i_height_m1, wb_height_m1);
         CONNECT(fb0, 0, fb0.o_hsync, w_fb_hsync);
         CONNECT(fb0, 0, fb0.o_vsync, w_fb_vsync);
         CONNECT(fb0, 0, fb0.o_de, w_fb_de);
@@ -165,6 +164,8 @@ void hdmi_top::proc_comb() {
     ASSIGN(wb_req_mem_strob, CONST("'0", 8));
     ASSIGN(wb_req_mem_data, ALLZEROS());
     ASSIGN(w_req_mem_last, CONST("0", 1));
+    ASSIGN(wb_width_m1, DEC(WIDTH));
+    ASSIGN(wb_height_m1, DEC(HEIGHT));
 }
 
 

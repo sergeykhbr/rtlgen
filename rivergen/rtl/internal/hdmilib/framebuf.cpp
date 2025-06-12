@@ -23,9 +23,8 @@ framebuf::framebuf(GenObject *parent, const char *name, const char *comment) :
     i_hsync(this, "i_hsync", "1", "Horizontal sync"),
     i_vsync(this, "i_vsync", "1", "Vertical sync"),
     i_de(this, "i_de", "1", "data enable"),
-    i_x(this, "i_x", "11", "x-pixel"),
-    i_y(this, "i_y", "10", "y-pixel"),
-    i_xy_total(this, "i_xy_total", "24", "x*y resolution, up to 16MB"),
+    i_width_m1(this, "i_width_m1", "12", "x-width: 4K = 3840 - 1"),
+    i_height_m1(this, "i_height_m1", "12", "y-height: 4K = 2160 - 1"),
     o_hsync(this, "o_hsync", "1", "delayed horizontal sync"),
     o_vsync(this, "o_vsync", "1", "delayed vertical sync"),
     o_de(this, "o_de", "1", "delayed data enable"),
@@ -46,51 +45,89 @@ framebuf::framebuf(GenObject *parent, const char *name, const char *comment) :
     STATE_Writing(this, "STATE_Writing", "2", "0x2", NO_COMMENT),
     STATE_Idle(this, "STATE_Idle", "2", "0x0", NO_COMMENT),
     // signals
-    wb_ping_addr(this, "wb_ping_addr", "8", "'0", NO_COMMENT),
-    w_ping_wena(this, "w_ping_wena", "1", RSTVAL_ZERO, NO_COMMENT),
-    wb_ping_rdata(this, "wb_ping_rdata", "64", "'0", NO_COMMENT),
-    wb_pong_addr(this, "wb_pong_addr", "8", "'0", NO_COMMENT),
-    w_pong_wena(this, "w_pong_wena", "1", RSTVAL_ZERO, NO_COMMENT),
-    wb_pong_rdata(this, "wb_pong_rdata", "64", "'0", NO_COMMENT),
+    wb_ring0_addr(this, "wb_ring0_addr", "6", "'0", NO_COMMENT),
+    w_ring0_wena(this, "w_ring0_wena", "1", RSTVAL_ZERO, NO_COMMENT),
+    wb_ring0_rdata(this, "wb_ring0_rdata", "64", "'0", NO_COMMENT),
+    wb_ring1_addr(this, "wb_ring1_addr", "6", "'0", NO_COMMENT),
+    w_ring1_wena(this, "w_ring1_wena", "1", RSTVAL_ZERO, NO_COMMENT),
+    wb_ring1_rdata(this, "wb_ring1_rdata", "64", "'0", NO_COMMENT),
+    wb_ring2_addr(this, "wb_ring2_addr", "6", "'0", NO_COMMENT),
+    w_ring2_wena(this, "w_ring2_wena", "1", RSTVAL_ZERO, NO_COMMENT),
+    wb_ring2_rdata(this, "wb_ring2_rdata", "64", "'0", NO_COMMENT),
+    wb_ring3_addr(this, "wb_ring3_addr", "6", "'0", NO_COMMENT),
+    w_ring3_wena(this, "w_ring3_wena", "1", RSTVAL_ZERO, NO_COMMENT),
+    wb_ring3_rdata(this, "wb_ring3_rdata", "64", "'0", NO_COMMENT),
     // registers
-    state(this, "state", "2", "STATE_Request", NO_COMMENT),
-    pingpong(this, "pingpong", "1", "0", NO_COMMENT),
-    req_addr(this, "req_addr", "18", "32", "16 MB allocated space split on 64 B: 32x64=2048 B"),
+    wr_row(this, "wr_row", "12", "'0", NO_COMMENT),
+    wr_col(this, "wr_col", "12", "'0", NO_COMMENT),
+    wr_addr(this, "wr_addr", "8", "'0", NO_COMMENT),
+    rd_row(this, "rd_row", "12", "'0", NO_COMMENT),
+    rd_col(this, "rd_col", "12", "'0", NO_COMMENT),
+    rd_addr(this, "rd_addr", "8", "'0", NO_COMMENT),
+    mux_ena(this, "mux_ena", "4", "0x1", NO_COMMENT),
+    ring_sel(this, "ring_sel", "4", "'0", NO_COMMENT),
+    pix_sel(this, "pix_sel", "4", "'0", NO_COMMENT),
+    difcnt(this, "difcnt", "9", "'0", NO_COMMENT),
+    state(this, "state", "2", "STATE_Idle", NO_COMMENT),
+    rowcnt(this, "rowcnt", "12", "0", NO_COMMENT),
+    req_addr(this, "req_addr", "24", "'0", "16 MB allocated space split on 64 B: 32x64=2048 B"),
     req_valid(this, "req_valid", "1", RSTVAL_ZERO, NO_COMMENT),
     resp_ready(this, "resp_ready", "1", RSTVAL_ZERO, NO_COMMENT),
-    raddr(this, "raddr", "11", RSTVAL_ZERO, NO_COMMENT),
-    raddr_z(this, "raddr_z", "11", RSTVAL_ZERO, NO_COMMENT),
     h_sync(this, "h_sync", "4", RSTVAL_ZERO, NO_COMMENT),
     v_sync(this, "v_sync", "4", RSTVAL_ZERO, NO_COMMENT),
     de(this, "de", "4", RSTVAL_ZERO, NO_COMMENT),
     rgb(this, "rgb", "16", "'0", NO_COMMENT),
     // modules
-    ping(this, "ping", NO_COMMENT),
-    pong(this, "pong", NO_COMMENT),
+    ring0(this, "ring0", NO_COMMENT),
+    ring1(this, "ring1", NO_COMMENT),
+    ring2(this, "ring2", NO_COMMENT),
+    ring3(this, "ring3", NO_COMMENT),
     // processes
     comb(this)
 {
     Operation::start(this);
 
-    ping.abits.setObjValue(new DecConst(8));
-    ping.dbits.setObjValue(new DecConst(64));
-    NEW(ping, ping.getName().c_str());
-        CONNECT(ping, 0, ping.i_clk, i_clk);
-        CONNECT(ping, 0, ping.i_addr, wb_ping_addr);
-        CONNECT(ping, 0, ping.i_wena, w_ping_wena);
-        CONNECT(ping, 0, ping.i_wdata, i_resp_2d_data);
-        CONNECT(ping, 0, ping.o_rdata, wb_ping_rdata);
+    ring0.abits.setObjValue(new DecConst(6));
+    ring0.dbits.setObjValue(new DecConst(64));
+    NEW(ring0, ring0.getName().c_str());
+        CONNECT(ring0, 0, ring0.i_clk, i_clk);
+        CONNECT(ring0, 0, ring0.i_addr, wb_ring0_addr);
+        CONNECT(ring0, 0, ring0.i_wena, w_ring0_wena);
+        CONNECT(ring0, 0, ring0.i_wdata, i_resp_2d_data);
+        CONNECT(ring0, 0, ring0.o_rdata, wb_ring0_rdata);
     ENDNEW();
 
     TEXT();
-    pong.abits.setObjValue(new DecConst(8));
-    pong.dbits.setObjValue(new DecConst(64));
-    NEW(pong, pong.getName().c_str());
-        CONNECT(pong, 0, pong.i_clk, i_clk);
-        CONNECT(pong, 0, pong.i_addr, wb_pong_addr);
-        CONNECT(pong, 0, pong.i_wena, w_pong_wena);
-        CONNECT(pong, 0, pong.i_wdata, i_resp_2d_data);
-        CONNECT(pong, 0, pong.o_rdata, wb_pong_rdata);
+    ring1.abits.setObjValue(new DecConst(6));
+    ring1.dbits.setObjValue(new DecConst(64));
+    NEW(ring1, ring1.getName().c_str());
+        CONNECT(ring1, 0, ring1.i_clk, i_clk);
+        CONNECT(ring1, 0, ring1.i_addr, wb_ring1_addr);
+        CONNECT(ring1, 0, ring1.i_wena, w_ring1_wena);
+        CONNECT(ring1, 0, ring1.i_wdata, i_resp_2d_data);
+        CONNECT(ring1, 0, ring1.o_rdata, wb_ring1_rdata);
+    ENDNEW();
+
+    TEXT();
+    ring2.abits.setObjValue(new DecConst(6));
+    ring2.dbits.setObjValue(new DecConst(64));
+    NEW(ring2, ring2.getName().c_str());
+        CONNECT(ring2, 0, ring2.i_clk, i_clk);
+        CONNECT(ring2, 0, ring2.i_addr, wb_ring2_addr);
+        CONNECT(ring2, 0, ring2.i_wena, w_ring2_wena);
+        CONNECT(ring2, 0, ring2.i_wdata, i_resp_2d_data);
+        CONNECT(ring2, 0, ring2.o_rdata, wb_ring2_rdata);
+    ENDNEW();
+
+    TEXT();
+    ring3.abits.setObjValue(new DecConst(6));
+    ring3.dbits.setObjValue(new DecConst(64));
+    NEW(ring3, ring3.getName().c_str());
+        CONNECT(ring3, 0, ring3.i_clk, i_clk);
+        CONNECT(ring3, 0, ring3.i_addr, wb_ring3_addr);
+        CONNECT(ring3, 0, ring3.i_wena, w_ring3_wena);
+        CONNECT(ring3, 0, ring3.i_wdata, i_resp_2d_data);
+        CONNECT(ring3, 0, ring3.o_rdata, wb_ring3_rdata);
     ENDNEW();
 
     Operation::start(&comb);
@@ -104,17 +141,14 @@ void framebuf::proc_comb() {
     SETVAL(v_sync, CC2(BITS(v_sync, 2, 0), i_vsync));
 
     TEXT();
-    SETVAL(comb.vb_raddr_next, INC(raddr));
-    IF (AND2(NZ(req_valid), NZ(i_req_2d_ready)));
-        SETZERO(req_valid);
-    ENDIF();
-    IF (NZ(i_de));
-        SETVAL(raddr, comb.vb_raddr_next);
-        SETVAL(raddr_z, raddr);
-    ENDIF();
-
-    TEXT();
     SWITCH(state);
+    CASE(STATE_Idle);
+        IF (OR2(NZ(BIT(difcnt, 8)), LE(difcnt, CONST("96", 9))));
+            SETONE(req_valid);
+            SETVAL(req_addr, CC2(wr_row, wr_col));
+            SETVAL(state, STATE_Request);
+        ENDIF();
+    ENDCASE();
     CASE(STATE_Request);
         SETONE(req_valid);
         SETZERO(resp_ready);
@@ -126,81 +160,125 @@ void framebuf::proc_comb() {
     ENDCASE();
     CASE(STATE_Writing);
         IF (NZ(i_resp_2d_valid));
+            SETVAL(wr_col, ADD2(wr_col, CONST("4", 12)), "64-bits contains 4x16-bits pixels");
+            SETVAL(wr_addr, INC(wr_addr));
             IF (NZ(i_resp_2d_last));
-                SETZERO(resp_ready);
-                IF (NZ(AND_REDUCE(BITS(i_resp_2d_addr, 10, 3))));
-                    SETVAL(state, STATE_Idle);
-                ELSE();
-                    SETONE(req_valid);
-                    SETVAL(req_addr, INC(req_addr));
-                    SETVAL(state, STATE_Request);
+                IF (GE(wr_col, i_width_m1));
+                    SETZERO(wr_col);
+                    SETVAL(wr_row, INC(wr_row));
+                    SETVAL(wr_addr, CC2(INC(BITS(wr_addr, 7, 6)), CONST("0", 6)));
+                    IF (GE(wr_row, i_height_m1));
+                        SETZERO(wr_row);
+                    ENDIF();
                 ENDIF();
+
+                TEXT();
+                SETZERO(resp_ready);
+                SETVAL(state, STATE_Idle);
             ENDIF();
-        ENDIF();
-    ENDCASE();
-    CASE(STATE_Idle);
-        IF(NE(BIT(raddr, 10), BIT(comb.vb_raddr_next, 10)));
-            SETVAL(pingpong, INV_L(pingpong));
-            IF (GE(INC(req_addr), BITS(i_xy_total, 22, 5)), "2048 B = 1024 pixel (16 bits each)");
-                TEXT("request first data while processing the last one:");
-                SETZERO(req_addr);
-            ELSE();
-                SETVAL(req_addr, INC(req_addr));
-            ENDIF();
-            SETONE(req_valid);
-            SETVAL(state, STATE_Request);
         ENDIF();
     ENDCASE();
     CASEDEF();
     ENDCASE();
     ENDSWITCH();
 
-    TEXT();
-    IF(AND2(NZ(i_vsync), EZ(BIT(v_sync, 0))));
-        TEXT("Update the second memory bank, so that ping & pong were updated");
-        SETVAL(pingpong, INV_L(pingpong));
-        SETZERO(raddr);
-        SETVAL(req_addr, CONST("32", 18), "32-burst transactions 64B each => 2048 B");
-        SETONE(req_valid);
-        SETVAL(state, STATE_Request);
-    ENDIF();
 
     TEXT();
-    IF (NZ(pingpong));
-        SETVAL(wb_ping_addr, BITS(raddr, 9, 2));
-        SETVAL(wb_pong_addr, BITS(i_resp_2d_addr, 10, 3));
-        IF (NZ(de));
-            IF (EQ(BITS(raddr_z, 1, 0), CONST("0", 2)));
-                SETVAL(rgb, BITS(wb_ping_rdata, 15, 0));
-            ELSIF (EQ(BITS(raddr_z, 1, 0), CONST("1", 2)));
-                SETVAL(rgb, BITS(wb_ping_rdata, 31, 16));
-            ELSIF (EQ(BITS(raddr_z, 1, 0), CONST("2", 2)));
-                SETVAL(rgb, BITS(wb_ping_rdata, 47, 32));
-            ELSE();
-                SETVAL(rgb, BITS(wb_ping_rdata, 63, 48));
-            ENDIF();
-        ELSE();
-            SETZERO(rgb);
+    IF (NZ(i_de));
+        SETVAL(mux_ena, CC2(BITS(mux_ena, 2, 0), BIT(mux_ena, 3)));
+        IF (NZ(BIT(mux_ena, 0)));
+            SETVAL(rd_addr, INC(rd_addr));
+            SETVAL(rd_col, ADD2(rd_col, CONST("4", 12)), "64-bits contains 4x16-bits pixels");
         ENDIF();
-    ELSE();
-        SETVAL(wb_ping_addr, BITS(i_resp_2d_addr, 10, 3));
-        SETVAL(wb_pong_addr, BITS(raddr, 9, 2));
-        IF (NZ(de));
-            IF (EQ(BITS(raddr_z, 1, 0), CONST("0", 2)));
-                SETVAL(rgb, BITS(wb_pong_rdata, 15, 0));
-            ELSIF (EQ(BITS(raddr_z, 1, 0), CONST("1", 2)));
-                SETVAL(rgb, BITS(wb_pong_rdata, 31, 16));
-            ELSIF (EQ(BITS(raddr_z, 1, 0), CONST("2", 2)));
-                SETVAL(rgb, BITS(wb_pong_rdata, 47, 32));
-            ELSE();
-                SETVAL(rgb, BITS(wb_pong_rdata, 63, 48));
-            ENDIF();
-        ELSE();
-            SETZERO(rgb);
+    ELSIF(AND2(NZ(BIT(de, 0)), EZ(i_de)));
+        TEXT("Back front of the de (end of row)");
+        SETVAL(rd_addr, CC2(INC(BITS(rd_addr, 7, 6)), CONST("0", 6)));
+        SETVAL(mux_ena, CONST("0x1", 4));
+        SETZERO(rd_col);
+        SETVAL(rd_row, INC(rd_row));
+        IF (GE(rd_row, i_height_m1));
+            SETZERO(rd_row);
         ENDIF();
     ENDIF();
-    SETVAL(w_ping_wena, AND2_L(i_resp_2d_valid, INV_L(pingpong)));
-    SETVAL(w_pong_wena, AND2_L(i_resp_2d_valid, pingpong));
+
+    IF (AND2(NZ(i_resp_2d_valid), EZ(BIT(mux_ena, 0))));
+        SETVAL(difcnt, INC(difcnt));
+    ELSIF(AND3(EZ(i_resp_2d_valid), NZ(BIT(mux_ena, 0)), NZ(i_de)));
+        SETVAL(difcnt, DEC(difcnt));
+    ENDIF();
+
+
+    TEXT();
+    IF (EQ(BITS(wr_addr, 7, 6), CONST("0",2)));
+        SETVAL(w_ring0_wena, i_resp_2d_valid);
+        SETVAL(wb_ring0_addr, BITS(wr_addr, 6, 0));
+        SETZERO(w_ring1_wena);
+        SETVAL(wb_ring1_addr, BITS(rd_addr, 6, 0));
+        SETZERO(w_ring2_wena);
+        SETVAL(wb_ring2_addr, BITS(rd_addr, 6, 0));
+        SETZERO(w_ring3_wena);
+        SETVAL(wb_ring3_addr, BITS(rd_addr, 6, 0));
+    ELSIF (EQ(BITS(wr_addr, 7, 6), CONST("1",2)));
+        SETZERO(w_ring0_wena);
+        SETVAL(wb_ring0_addr, BITS(rd_addr, 6, 0));
+        SETVAL(w_ring1_wena, i_resp_2d_valid);
+        SETVAL(wb_ring1_addr, BITS(wr_addr, 6, 0));
+        SETZERO(w_ring2_wena);
+        SETVAL(wb_ring2_addr, BITS(rd_addr, 6, 0));
+        SETZERO(w_ring3_wena);
+        SETVAL(wb_ring3_addr, BITS(rd_addr, 6, 0));
+    ELSIF (EQ(BITS(wr_addr, 7, 6), CONST("2",2)));
+        SETZERO(w_ring0_wena);
+        SETVAL(wb_ring0_addr, BITS(rd_addr, 6, 0));
+        SETZERO(w_ring1_wena);
+        SETVAL(wb_ring1_addr, BITS(rd_addr, 6, 0));
+        SETVAL(w_ring2_wena, i_resp_2d_valid);
+        SETVAL(wb_ring2_addr, BITS(wr_addr, 6, 0));
+        SETZERO(w_ring3_wena);
+        SETVAL(wb_ring3_addr, BITS(rd_addr, 6, 0));
+    ELSE();
+        SETZERO(w_ring0_wena);
+        SETVAL(wb_ring0_addr, BITS(rd_addr, 6, 0));
+        SETZERO(w_ring1_wena);
+        SETVAL(wb_ring1_addr, BITS(rd_addr, 6, 0));
+        SETZERO(w_ring2_wena);
+        SETVAL(wb_ring2_addr, BITS(rd_addr, 6, 0));
+        SETVAL(w_ring3_wena, i_resp_2d_valid);
+        SETVAL(wb_ring3_addr, BITS(wr_addr, 6, 0));
+    ENDIF();
+    IF(EQ(BITS(rd_addr, 7, 6), CONST("0", 2)));
+        SETVAL(ring_sel, CONST("0x1", 4));
+    ELSIF(EQ(BITS(rd_addr, 7, 6), CONST("1", 2)));
+        SETVAL(ring_sel, CONST("0x2", 4));
+    ELSIF(EQ(BITS(rd_addr, 7, 6), CONST("2", 2)));
+        SETVAL(ring_sel, CONST("0x4", 4));
+    ELSE();
+        SETVAL(ring_sel, CONST("0x8", 4));
+    ENDIF();
+    SETVAL(pix_sel, mux_ena);
+
+    TEXT();
+    IF (NZ(BIT(ring_sel, 0)));
+        SETVAL(comb.vb_ring_rdata, wb_ring0_rdata);
+    ELSIF (NZ(BIT(ring_sel, 1)));
+        SETVAL(comb.vb_ring_rdata, wb_ring1_rdata);
+    ELSIF (NZ(BIT(ring_sel, 2)));
+        SETVAL(comb.vb_ring_rdata, wb_ring2_rdata);
+    ELSE();
+        SETVAL(comb.vb_ring_rdata, wb_ring3_rdata);
+    ENDIF();
+    IF (EZ(de));
+        SETZERO(comb.vb_pix);
+    ELSIF (NZ(BIT(pix_sel, 0)));
+        SETVAL(comb.vb_pix, BITS(comb.vb_ring_rdata, 15, 0));
+    ELSIF (NZ(BIT(pix_sel, 1)));
+        SETVAL(comb.vb_pix, BITS(comb.vb_ring_rdata, 31, 16));
+    ELSIF (NZ(BIT(pix_sel, 2)));
+        SETVAL(comb.vb_pix, BITS(comb.vb_ring_rdata, 47, 32));
+    ELSE();
+        SETVAL(comb.vb_pix, BITS(comb.vb_ring_rdata, 63, 48));
+    ENDIF();
+    SETVAL(rgb, comb.vb_pix);
 
     TEXT();
     SYNC_RESET();
@@ -214,7 +292,7 @@ void framebuf::proc_comb() {
     TEXT();
     SETVAL(o_req_2d_valid, req_valid);
     SETVAL(o_req_2d_bytes, CONST("64", 12), "Xilinx MIG is limited to burst beat length 8");
-    SETVAL(o_req_2d_addr, CC2(req_addr, CONST("0", 6)));
+    SETVAL(o_req_2d_addr, req_addr);
     SETVAL(o_resp_2d_ready, resp_ready);
 }
 

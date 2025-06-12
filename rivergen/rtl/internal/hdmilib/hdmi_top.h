@@ -47,6 +47,8 @@ class hdmi_top : public ModuleObject {
     void proc_comb();
 
  public:
+    DefParamLogic WIDTH;
+    DefParamLogic HEIGHT;
     // io:
     InPort i_nrst;
     InPort i_clk;
@@ -64,12 +66,11 @@ class hdmi_top : public ModuleObject {
     InStruct<types_amba::axi4_master_in_type> i_xmsti;
     OutStruct<types_amba::axi4_master_out_type> o_xmsto;
 
+    Signal wb_width_m1;
+    Signal wb_height_m1;
     Signal w_sync_hsync;
     Signal w_sync_vsync;
     Signal w_sync_de;
-    Signal wb_sync_x;
-    Signal wb_sync_y;
-    Signal wb_sync_xy_total;
     Signal w_fb_hsync;
     Signal w_fb_vsync;
     Signal w_fb_de;
