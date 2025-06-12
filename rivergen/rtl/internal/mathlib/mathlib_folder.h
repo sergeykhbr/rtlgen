@@ -17,14 +17,17 @@
 #pragma once
 
 #include <api_rtlgen.h>
-#include "mul_b8.h"
+#include "mul_i8.h"
+#include "mul_4x4_i8.h"
 
 class mathlib_folder : public FolderObject {
  public:
     mathlib_folder(GenObject *parent) :
         FolderObject(parent, "mathlib"),
-        mul_b8_file_(this) {}
+        mul_i8_file_(this),
+        mul_4x4_i8_file_(this) {}
 
  protected:
-    mul_b8_file mul_b8_file_;
+    mul_i8_file mul_i8_file_;
+    mul_4x4_i8_file mul_4x4_i8_file_;
 };

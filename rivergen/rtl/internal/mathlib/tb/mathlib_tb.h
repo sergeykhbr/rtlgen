@@ -18,7 +18,7 @@
 
 #include <api_rtlgen.h>
 #include <genconfig.h>
-#include "../mul_b8.h"
+#include "../mul_i8.h"
 #include "../../../../prj/common/vips/clk/vip_clk.h"
 
 using namespace sysvc;
@@ -63,7 +63,7 @@ public:
 
     // Sub-module instances:
     vip_clk clk;
-    mul_b8 mul0;
+    mul_i8 mul0;
 
     CombProcess comb;
     TestClkProcess test_clk;

@@ -14,10 +14,10 @@
 //  limitations under the License.
 // 
 
-#include "mul_b8.h"
+#include "mul_i8.h"
 
-mul_b8::mul_b8(GenObject *parent, const char *name, const char *comment) :
-    ModuleObject(parent, "mul_b8", name, comment),
+mul_i8::mul_i8(GenObject *parent, const char *name, const char *comment) :
+    ModuleObject(parent, "mul_i8", name, comment),
     // IO
     i_nrst(this, "i_nrst", "1", "Reset: active LOW"),
     i_clk(this, "i_clk", "1", "CPU clock"),
@@ -31,12 +31,12 @@ mul_b8::mul_b8(GenObject *parent, const char *name, const char *comment) :
     ua(this, "ua", "8", "'0", NO_COMMENT),
     ub(this, "ub", "8", "'0", NO_COMMENT),
     inv(this, "inv", "4", RSTVAL_ZERO, NO_COMMENT),
-    lvl1_0(this, "lvl1_0", "11", RSTVAL_ZERO, NO_COMMENT),
-    lvl1_1(this, "lvl1_1", "11", RSTVAL_ZERO, NO_COMMENT),
-    lvl1_2(this, "lvl1_2", "11", RSTVAL_ZERO, NO_COMMENT),
-    lvl1_3(this, "lvl1_3", "11", RSTVAL_ZERO, NO_COMMENT),
-    lvl2_0(this, "lvl2_0", "14", RSTVAL_ZERO, NO_COMMENT),
-    lvl2_1(this, "lvl2_1", "14", RSTVAL_ZERO, NO_COMMENT),
+    lvl1_0(this, "lvl1_0", "10", RSTVAL_ZERO, NO_COMMENT),
+    lvl1_1(this, "lvl1_1", "10", RSTVAL_ZERO, NO_COMMENT),
+    lvl1_2(this, "lvl1_2", "10", RSTVAL_ZERO, NO_COMMENT),
+    lvl1_3(this, "lvl1_3", "10", RSTVAL_ZERO, NO_COMMENT),
+    lvl2_0(this, "lvl2_0", "13", RSTVAL_ZERO, NO_COMMENT),
+    lvl2_1(this, "lvl2_1", "13", RSTVAL_ZERO, NO_COMMENT),
     lvl3(this, "lvl3", "16", "'0", NO_COMMENT),
     res(this, "res", "16", "'0", NO_COMMENT),
     //
@@ -48,7 +48,7 @@ mul_b8::mul_b8(GenObject *parent, const char *name, const char *comment) :
     proc_comb();
 }
 
-void mul_b8::proc_comb() {
+void mul_i8::proc_comb() {
     IF (AND2(NZ(i_signed), NZ(BIT(i_a, 7))));
         SETVAL(ua, INC(INV_L(i_a)));
     ELSE();
@@ -64,40 +64,40 @@ void mul_b8::proc_comb() {
     TEXT();
     TEXT("Level 1, bits[1:0]");
     IF (NZ(BIT(ub, 0)));
-        SETVAL(comb.vb_lvl1_00, CC3(CONST("0", 2), ua, CONST("0", 1)));
+        SETVAL(comb.vb_lvl1_00, CC2(CONST("0", 2), ua));
     ENDIF();
     IF (NZ(BIT(ub, 1)));
-        SETVAL(comb.vb_lvl1_01, CC3(CONST("0", 1), ua, CONST("0", 2)));
+        SETVAL(comb.vb_lvl1_01, CC3(CONST("0", 1), ua, CONST("0", 1)));
     ENDIF();
     SETVAL(lvl1_0, ADD2(comb.vb_lvl1_00, comb.vb_lvl1_01));
 
     TEXT();
     TEXT("Level 1, bits[3:2]");
     IF (NZ(BIT(ub, 2)));
-        SETVAL(comb.vb_lvl1_10, CC3(CONST("0", 2), ua, CONST("0", 1)));
+        SETVAL(comb.vb_lvl1_10, CC2(CONST("0", 2), ua));
     ENDIF();
     IF (NZ(BIT(ub, 3)));
-        SETVAL(comb.vb_lvl1_11, CC3(CONST("0", 1), ua, CONST("0", 2)));
+        SETVAL(comb.vb_lvl1_11, CC3(CONST("0", 2), ua, CONST("0", 1)));
     ENDIF();
     SETVAL(lvl1_1, ADD2(comb.vb_lvl1_10, comb.vb_lvl1_11));
 
     TEXT();
     TEXT("Level 1, bits[5:4]");
     IF (NZ(BIT(ub, 4)));
-        SETVAL(comb.vb_lvl1_20, CC3(CONST("0", 2), ua, CONST("0", 1)));
+        SETVAL(comb.vb_lvl1_20, CC2(CONST("0", 2), ua));
     ENDIF();
     IF (NZ(BIT(ub, 5)));
-        SETVAL(comb.vb_lvl1_21, CC3(CONST("0", 1), ua, CONST("0", 2)));
+        SETVAL(comb.vb_lvl1_21, CC3(CONST("0", 1), ua, CONST("0", 1)));
     ENDIF();
     SETVAL(lvl1_2, ADD2(comb.vb_lvl1_20, comb.vb_lvl1_21));
 
     TEXT();
     TEXT("Level 1, bits[7:6]");
     IF (NZ(BIT(ub, 6)));
-        SETVAL(comb.vb_lvl1_30, CC3(CONST("0", 2), ua, CONST("0", 1)));
+        SETVAL(comb.vb_lvl1_30, CC2(CONST("0", 2), ua));
     ENDIF();
     IF (NZ(BIT(ub, 7)));
-        SETVAL(comb.vb_lvl1_31, CC3(CONST("0", 1), ua, CONST("0", 2)));
+        SETVAL(comb.vb_lvl1_31, CC3(CONST("0", 1), ua, CONST("0", 1)));
     ENDIF();
     SETVAL(lvl1_3, ADD2(comb.vb_lvl1_30, comb.vb_lvl1_31));
 
@@ -113,7 +113,7 @@ void mul_b8::proc_comb() {
     TEXT();
     TEXT();
     TEXT("Level 3, result");
-    SETVAL(lvl3, ADD2(CC2(CONST("0", 2), lvl2_0), CC2(BITS(lvl2_1, 11, 0), CONST("0", 4))));
+    SETVAL(lvl3, ADD2(CC2(CONST("0", 3), lvl2_0), CC2(BITS(lvl2_1, 11, 0), CONST("0", 4))));
     IF (NZ(BIT(inv, 3)));
         SETVAL(res, INC(INV_L(lvl3)));
     ELSE();

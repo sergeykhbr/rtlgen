@@ -20,22 +20,22 @@
 
 using namespace sysvc;
 
-class mul_b8 : public ModuleObject {
+class mul_i8 : public ModuleObject {
  public:
-    mul_b8(GenObject *parent, const char *name, const char *comment);
+    mul_i8(GenObject *parent, const char *name, const char *comment);
 
     class CombProcess : public CombinationalProcess {
      public:
         CombProcess(GenObject *parent) :
             CombinationalProcess(parent, "comb"),
-            vb_lvl1_00(this, "vb_lvl1_00", "11", "'0", NO_COMMENT),
-            vb_lvl1_01(this, "vb_lvl1_01", "11", "'0", NO_COMMENT),
-            vb_lvl1_10(this, "vb_lvl1_10", "11", "'0", NO_COMMENT),
-            vb_lvl1_11(this, "vb_lvl1_11", "11", "'0", NO_COMMENT),
-            vb_lvl1_20(this, "vb_lvl1_20", "11", "'0", NO_COMMENT),
-            vb_lvl1_21(this, "vb_lvl1_21", "11", "'0", NO_COMMENT),
-            vb_lvl1_30(this, "vb_lvl1_30", "11", "'0", NO_COMMENT),
-            vb_lvl1_31(this, "vb_lvl1_31", "11", "'0", NO_COMMENT) {
+            vb_lvl1_00(this, "vb_lvl1_00", "10", "'0", NO_COMMENT),
+            vb_lvl1_01(this, "vb_lvl1_01", "10", "'0", NO_COMMENT),
+            vb_lvl1_10(this, "vb_lvl1_10", "10", "'0", NO_COMMENT),
+            vb_lvl1_11(this, "vb_lvl1_11", "10", "'0", NO_COMMENT),
+            vb_lvl1_20(this, "vb_lvl1_20", "10", "'0", NO_COMMENT),
+            vb_lvl1_21(this, "vb_lvl1_21", "10", "'0", NO_COMMENT),
+            vb_lvl1_30(this, "vb_lvl1_30", "10", "'0", NO_COMMENT),
+            vb_lvl1_31(this, "vb_lvl1_31", "10", "'0", NO_COMMENT) {
         }
      public:
         Logic vb_lvl1_00;
@@ -74,13 +74,13 @@ class mul_b8 : public ModuleObject {
     CombProcess comb;
 };
 
-class mul_b8_file : public FileObject {
+class mul_i8_file : public FileObject {
  public:
-    mul_b8_file(GenObject *parent) :
-        FileObject(parent, "mul_b8"),
-        mul_b8_(this, "mul_b8", NO_COMMENT) {}
+    mul_i8_file(GenObject *parent) :
+        FileObject(parent, "mul_i8"),
+        mul_i8_(this, "mul_i8", NO_COMMENT) {}
 
  private:
-    mul_b8 mul_b8_;
+    mul_i8 mul_i8_;
 };
 
