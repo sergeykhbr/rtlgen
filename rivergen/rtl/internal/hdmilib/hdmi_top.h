@@ -19,6 +19,7 @@
 #include <api_rtlgen.h>
 #include "video_sync.h"
 #include "framebuf.h"
+#include "rgb2ycbcr.h"
 #include "../ambalib/types_amba.h"
 #include "../ambalib/types_pnp.h"
 #include "../ambalib/types_dma.h"
@@ -69,6 +70,10 @@ class hdmi_top : public ModuleObject {
     Signal wb_sync_x;
     Signal wb_sync_y;
     Signal wb_sync_xy_total;
+    Signal w_fb_hsync;
+    Signal w_fb_vsync;
+    Signal w_fb_de;
+    Signal wb_fb_rgb565;
     Signal w_req_mem_ready;
     Signal w_req_mem_valid;
     Signal w_req_mem_write;
@@ -88,6 +93,7 @@ class hdmi_top : public ModuleObject {
 
     video_sync sync0;
     framebuf fb0;
+    rgb2ycbcr rgb2y0;
     axi_dma xdma0;
 
     CombProcess comb;

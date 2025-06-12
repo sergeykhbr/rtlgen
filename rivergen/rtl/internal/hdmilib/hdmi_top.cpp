@@ -41,6 +41,10 @@ hdmi_top::hdmi_top(GenObject *parent, const char *name, const char *comment) :
     wb_sync_x(this, "wb_sync_x", "11", RSTVAL_ZERO, NO_COMMENT),
     wb_sync_y(this, "wb_sync_y", "10", RSTVAL_ZERO, NO_COMMENT),
     wb_sync_xy_total(this, "wb_sync_xy_total", "24", RSTVAL_ZERO, NO_COMMENT),
+    w_fb_hsync(this, "w_fb_hsync", "1", RSTVAL_ZERO, NO_COMMENT),
+    w_fb_vsync(this, "w_fb_vsync", "1", RSTVAL_ZERO, NO_COMMENT),
+    w_fb_de(this, "w_fb_de", "1", RSTVAL_ZERO, NO_COMMENT),
+    wb_fb_rgb565(this, "wb_fb_rgb565", "16", RSTVAL_ZERO, NO_COMMENT),
     w_req_mem_ready(this, "w_req_mem_ready", "1", RSTVAL_ZERO, NO_COMMENT),
     w_req_mem_valid(this, "w_req_mem_valid", "1", RSTVAL_ZERO, NO_COMMENT),
     w_req_mem_write(this, "w_req_mem_write", "1", RSTVAL_ZERO, "0=read; 1=write operation"),
@@ -61,6 +65,7 @@ hdmi_top::hdmi_top(GenObject *parent, const char *name, const char *comment) :
     //
     sync0(this, "sync0", NO_COMMENT),
     fb0(this, "fb0", NO_COMMENT),
+    rgb2y0(this, "rgb2y0", NO_COMMENT),
     xdma0(this, "xdma0", NO_COMMENT),
     comb(this)
 {
@@ -87,10 +92,10 @@ hdmi_top::hdmi_top(GenObject *parent, const char *name, const char *comment) :
         CONNECT(fb0, 0, fb0.i_x, wb_sync_x);
         CONNECT(fb0, 0, fb0.i_y, wb_sync_y);
         CONNECT(fb0, 0, fb0.i_xy_total, wb_sync_xy_total);
-        CONNECT(fb0, 0, fb0.o_hsync, o_hsync);
-        CONNECT(fb0, 0, fb0.o_vsync, o_vsync);
-        CONNECT(fb0, 0, fb0.o_de, o_de);
-        CONNECT(fb0, 0, fb0.o_YCbCr, o_data);
+        CONNECT(fb0, 0, fb0.o_hsync, w_fb_hsync);
+        CONNECT(fb0, 0, fb0.o_vsync, w_fb_vsync);
+        CONNECT(fb0, 0, fb0.o_de, w_fb_de);
+        CONNECT(fb0, 0, fb0.o_rgb565, wb_fb_rgb565);
         CONNECT(fb0, 0, fb0.i_req_2d_ready, w_req_mem_ready);
         CONNECT(fb0, 0, fb0.o_req_2d_valid, w_req_mem_valid);
         CONNECT(fb0, 0, fb0.o_req_2d_bytes, wb_req_mem_bytes);
@@ -100,6 +105,20 @@ hdmi_top::hdmi_top(GenObject *parent, const char *name, const char *comment) :
         CONNECT(fb0, 0, fb0.i_resp_2d_addr, wb_resp_mem_addr);
         CONNECT(fb0, 0, fb0.i_resp_2d_data, wb_resp_mem_data);
         CONNECT(fb0, 0, fb0.o_resp_2d_ready, w_resp_mem_ready);
+    ENDNEW();
+
+    TEXT();
+    NEW(rgb2y0, rgb2y0.getName().c_str());
+        CONNECT(rgb2y0, 0, rgb2y0.i_nrst, i_hdmi_nrst);
+        CONNECT(rgb2y0, 0, rgb2y0.i_clk, i_hdmi_clk);
+        CONNECT(rgb2y0, 0, rgb2y0.i_rgb565, wb_fb_rgb565);
+        CONNECT(rgb2y0, 0, rgb2y0.i_hsync, w_fb_hsync);
+        CONNECT(rgb2y0, 0, rgb2y0.i_vsync, w_fb_vsync);
+        CONNECT(rgb2y0, 0, rgb2y0.i_de, w_fb_de);
+        CONNECT(rgb2y0, 0, rgb2y0.o_ycbcr422, o_data);
+        CONNECT(rgb2y0, 0, rgb2y0.o_hsync, o_hsync);
+        CONNECT(rgb2y0, 0, rgb2y0.o_vsync, o_vsync);
+        CONNECT(rgb2y0, 0, rgb2y0.o_de, o_de);
     ENDNEW();
 
     TEXT();

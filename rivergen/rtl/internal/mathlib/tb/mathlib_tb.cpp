@@ -23,13 +23,19 @@ mathlib_tb::mathlib_tb(GenObject *parent, const char *name) :
     w_nrst(this, "w_nrst", "1", "1", "Power-on system reset active LOW"),
     w_clk(this, "w_clk", "1", RSTVAL_ZERO, NO_COMMENT),
     wb_clk_cnt(this, "wb_clk_cnt", "32", "'0", NO_COMMENT),
-    wb_a(this, "wb_a", "8", RSTVAL_ZERO, NO_COMMENT),
-    wb_b(this, "wb_b", "8", RSTVAL_ZERO, NO_COMMENT),
-    wb_res(this, "wb_res", "16", RSTVAL_ZERO, NO_COMMENT),
     w_signed(this, "w_signed", "1", RSTVAL_ZERO, NO_COMMENT),
+    wb_v0(this, "wb_v0", "8", RSTVAL_ZERO, NO_COMMENT),
+    wb_v1(this, "wb_v1", "8", RSTVAL_ZERO, NO_COMMENT),
+    wb_v2(this, "wb_v2", "8", RSTVAL_ZERO, NO_COMMENT),
+    wb_v3(this, "wb_v3", "8", RSTVAL_ZERO, NO_COMMENT),
+    wb_m(this, "wb_m", "128", RSTVAL_ZERO, NO_COMMENT),
+    wb_res0(this, "wb_res0", "18", RSTVAL_ZERO, NO_COMMENT),
+    wb_res1(this, "wb_res1", "18", RSTVAL_ZERO, NO_COMMENT),
+    wb_res2(this, "wb_res2", "18", RSTVAL_ZERO, NO_COMMENT),
+    wb_res3(this, "wb_res3", "18", RSTVAL_ZERO, NO_COMMENT),
     // submodules:
     clk(this, "clk", NO_COMMENT),
-    mul0(this, "mul0", NO_COMMENT),
+    im8(this, "im8", NO_COMMENT),
     // processes:
     comb(this),
     test_clk(this, &w_clk)
@@ -42,13 +48,19 @@ mathlib_tb::mathlib_tb(GenObject *parent, const char *name) :
     ENDNEW();
 
     TEXT();
-    NEW(mul0, mul0.getName().c_str());
-        CONNECT(mul0, 0, mul0.i_nrst, w_nrst);
-        CONNECT(mul0, 0, mul0.i_clk, w_clk);
-        CONNECT(mul0, 0, mul0.i_a, wb_a);
-        CONNECT(mul0, 0, mul0.i_b, wb_b);
-        CONNECT(mul0, 0, mul0.i_signed, w_signed);
-        CONNECT(mul0, 0, mul0.o_res, wb_res);
+    NEW(im8, im8.getName().c_str());
+        CONNECT(im8, 0, im8.i_nrst, w_nrst);
+        CONNECT(im8, 0, im8.i_clk, w_clk);
+        CONNECT(im8, 0, im8.i_signed, w_signed);
+        CONNECT(im8, 0, im8.i_v0, wb_v0);
+        CONNECT(im8, 0, im8.i_v1, wb_v1);
+        CONNECT(im8, 0, im8.i_v2, wb_v2);
+        CONNECT(im8, 0, im8.i_v3, wb_v3);
+        CONNECT(im8, 0, im8.i_m, wb_m);
+        CONNECT(im8, 0, im8.o_res0, wb_res0);
+        CONNECT(im8, 0, im8.o_res1, wb_res1);
+        CONNECT(im8, 0, im8.o_res2, wb_res2);
+        CONNECT(im8, 0, im8.o_res3, wb_res3);
     ENDNEW();
 
     TEXT();
@@ -65,8 +77,23 @@ mathlib_tb::mathlib_tb(GenObject *parent, const char *name) :
 }
 
 void mathlib_tb::proc_comb() {
+    SETVAL(wb_m, CCx(16, &comb.vb_m33,
+                         &comb.vb_m32,
+                         &comb.vb_m31,
+                         &comb.vb_m30,
+                         &comb.vb_m23,
+                         &comb.vb_m22,
+                         &comb.vb_m21,
+                         &comb.vb_m20,
+                         &comb.vb_m13,
+                         &comb.vb_m12,
+                         &comb.vb_m11,
+                         &comb.vb_m10,
+                         &comb.vb_m03,
+                         &comb.vb_m02,
+                         &comb.vb_m01,
+                         &comb.vb_m00));
 }
-
 
 void mathlib_tb::proc_test_clk() {
     IF (EZ(w_nrst));
@@ -76,16 +103,22 @@ void mathlib_tb::proc_test_clk() {
     ENDIF();
 
     IF (EQ(wb_clk_cnt, CONST("0x20", 32)));
-        SETVAL(wb_a, CONST("127", 8));
-        SETVAL(wb_b, CONST("0x81", 8), "-127");
+        SETVAL(wb_v0, CONST("37", 8));
+        SETVAL(wb_v1, CONST("15", 8));
+        SETVAL(wb_v2, CONST("84", 8));
+        SETVAL(wb_v3, CONST("127", 8));
         SETONE(w_signed);
     ELSIF (EQ(wb_clk_cnt, CONST("0x21", 32)));
-        SETVAL(wb_a, CONST("255", 8));
-        SETVAL(wb_b, CONST("255", 8));
+        SETVAL(wb_v0, CONST("255", 8));
+        SETVAL(wb_v1, CONST("255", 8));
+        SETVAL(wb_v2, CONST("255", 8));
+        SETVAL(wb_v3, CONST("255", 8));
         SETZERO(w_signed);
     ELSE();
-        SETZERO(wb_a);
-        SETZERO(wb_b);
+        SETZERO(wb_v0);
+        SETZERO(wb_v1);
+        SETZERO(wb_v2);
+        SETZERO(wb_v3);
         SETZERO(w_signed);
     ENDIF();
 }

@@ -29,7 +29,7 @@ framebuf::framebuf(GenObject *parent, const char *name, const char *comment) :
     o_hsync(this, "o_hsync", "1", "delayed horizontal sync"),
     o_vsync(this, "o_vsync", "1", "delayed vertical sync"),
     o_de(this, "o_de", "1", "delayed data enable"),
-    o_YCbCr(this, "o_YCbCr", "18", "YCbCr multiplexed odd/even pixels"),
+    o_rgb565(this, "o_rgb565", "16", "RGB 16-bits pixels"),
     _dma0_(this, "DMA engine compatible interface (always read). Get pixels array:"),
     i_req_2d_ready(this, "i_req_2d_ready", "1", "2D pixels ready to accept request"),
     o_req_2d_valid(this, "o_req_2d_valid", "1", "2D pixels request is valid"),
@@ -60,15 +60,10 @@ framebuf::framebuf(GenObject *parent, const char *name, const char *comment) :
     resp_ready(this, "resp_ready", "1", RSTVAL_ZERO, NO_COMMENT),
     raddr(this, "raddr", "11", RSTVAL_ZERO, NO_COMMENT),
     raddr_z(this, "raddr_z", "11", RSTVAL_ZERO, NO_COMMENT),
-    pix_x0(this, "pix_x0", "1", RSTVAL_ZERO, NO_COMMENT),
     h_sync(this, "h_sync", "4", RSTVAL_ZERO, NO_COMMENT),
     v_sync(this, "v_sync", "4", RSTVAL_ZERO, NO_COMMENT),
     de(this, "de", "4", RSTVAL_ZERO, NO_COMMENT),
-    Y0(this, "Y0", "8", RSTVAL_ZERO, NO_COMMENT),
-    Y1(this, "Y1", "8", RSTVAL_ZERO, NO_COMMENT),
-    Cb(this, "Cb", "8", RSTVAL_ZERO, NO_COMMENT),
-    Cr(this, "Cr", "8", RSTVAL_ZERO, NO_COMMENT),
-    YCbCr(this, "YCbCr", "16", "'0", NO_COMMENT),
+    rgb(this, "rgb", "16", "'0", NO_COMMENT),
     // modules
     ping(this, "ping", NO_COMMENT),
     pong(this, "pong", NO_COMMENT),
@@ -107,7 +102,6 @@ void framebuf::proc_comb() {
     SETVAL(de, CC2(BITS(de, 2, 0), i_de));
     SETVAL(h_sync, CC2(BITS(h_sync, 2, 0), i_hsync));
     SETVAL(v_sync, CC2(BITS(v_sync, 2, 0), i_vsync));
-    SETVAL(pix_x0, BIT(i_x, 0));
 
     TEXT();
     SETVAL(comb.vb_raddr_next, INC(raddr));
@@ -177,32 +171,32 @@ void framebuf::proc_comb() {
         SETVAL(wb_pong_addr, BITS(i_resp_2d_addr, 10, 3));
         IF (NZ(de));
             IF (EQ(BITS(raddr_z, 1, 0), CONST("0", 2)));
-                SETVAL(YCbCr, BITS(wb_ping_rdata, 15, 0));
+                SETVAL(rgb, BITS(wb_ping_rdata, 15, 0));
             ELSIF (EQ(BITS(raddr_z, 1, 0), CONST("1", 2)));
-                SETVAL(YCbCr, BITS(wb_ping_rdata, 31, 16));
+                SETVAL(rgb, BITS(wb_ping_rdata, 31, 16));
             ELSIF (EQ(BITS(raddr_z, 1, 0), CONST("2", 2)));
-                SETVAL(YCbCr, BITS(wb_ping_rdata, 47, 32));
+                SETVAL(rgb, BITS(wb_ping_rdata, 47, 32));
             ELSE();
-                SETVAL(YCbCr, BITS(wb_ping_rdata, 63, 48));
+                SETVAL(rgb, BITS(wb_ping_rdata, 63, 48));
             ENDIF();
         ELSE();
-            SETZERO(YCbCr);
+            SETZERO(rgb);
         ENDIF();
     ELSE();
         SETVAL(wb_ping_addr, BITS(i_resp_2d_addr, 10, 3));
         SETVAL(wb_pong_addr, BITS(raddr, 9, 2));
         IF (NZ(de));
             IF (EQ(BITS(raddr_z, 1, 0), CONST("0", 2)));
-                SETVAL(YCbCr, BITS(wb_pong_rdata, 15, 0));
+                SETVAL(rgb, BITS(wb_pong_rdata, 15, 0));
             ELSIF (EQ(BITS(raddr_z, 1, 0), CONST("1", 2)));
-                SETVAL(YCbCr, BITS(wb_pong_rdata, 31, 16));
+                SETVAL(rgb, BITS(wb_pong_rdata, 31, 16));
             ELSIF (EQ(BITS(raddr_z, 1, 0), CONST("2", 2)));
-                SETVAL(YCbCr, BITS(wb_pong_rdata, 47, 32));
+                SETVAL(rgb, BITS(wb_pong_rdata, 47, 32));
             ELSE();
-                SETVAL(YCbCr, BITS(wb_pong_rdata, 63, 48));
+                SETVAL(rgb, BITS(wb_pong_rdata, 63, 48));
             ENDIF();
         ELSE();
-            SETZERO(YCbCr);
+            SETZERO(rgb);
         ENDIF();
     ENDIF();
     SETVAL(w_ping_wena, AND2_L(i_resp_2d_valid, INV_L(pingpong)));
@@ -215,72 +209,12 @@ void framebuf::proc_comb() {
     SETVAL(o_hsync, BIT(h_sync, 1));
     SETVAL(o_vsync, BIT(v_sync, 1));
     SETVAL(o_de, BIT(de, 1));
-    SETVAL(o_YCbCr, CC2(CONST("0", 2), YCbCr));
+    SETVAL(o_rgb565, rgb);
 
     TEXT();
     SETVAL(o_req_2d_valid, req_valid);
     SETVAL(o_req_2d_bytes, CONST("64", 12), "Xilinx MIG is limited to burst beat length 8");
     SETVAL(o_req_2d_addr, CC2(req_addr, CONST("0", 6)));
     SETVAL(o_resp_2d_ready, resp_ready);
-
-
-    /*
-    IF (LS(i_x, CONST("170", 11)));
-        TEXT("White");
-        SETVAL(Y0, CONST("235", 8));
-        SETVAL(Y1, CONST("235", 8));
-        SETVAL(Cb, CONST("128", 8));
-        SETVAL(Cr, CONST("128", 8));
-    ELSIF (LS(i_x, CONST("340", 11)));
-        TEXT("Black");
-        SETVAL(Y0, CONST("16", 8));
-        SETVAL(Y1, CONST("16", 8));
-        SETVAL(Cb, CONST("128", 8));
-        SETVAL(Cr, CONST("128", 8));
-    ELSIF (LS(i_x, CONST("510", 11)));
-        TEXT("Red");
-        SETVAL(Y0, CONST("82", 8));
-        SETVAL(Y1, CONST("82", 8));
-        SETVAL(Cb, CONST("90", 8));
-        SETVAL(Cr, CONST("240", 8));
-    ELSIF (LS(i_x, CONST("680", 11)));
-        TEXT("Green");
-        SETVAL(Y0, CONST("145", 8));
-        SETVAL(Y1, CONST("145", 8));
-        SETVAL(Cb, CONST("54", 8));
-        SETVAL(Cr, CONST("34", 8));
-    ELSIF (LS(i_x, CONST("850", 11)));
-        TEXT("Blue");
-        SETVAL(Y0, CONST("41", 8));
-        SETVAL(Y1, CONST("41", 8));
-        SETVAL(Cb, CONST("240", 8));
-        SETVAL(Cr, CONST("110", 8));
-    ELSIF (LS(i_x, CONST("1020", 11)));
-        TEXT("Yellow");
-        SETVAL(Y0, CONST("200", 8));
-        SETVAL(Y1, CONST("200", 8));
-        SETVAL(Cb, CONST("16", 8));
-        SETVAL(Cr, CONST("146", 8));
-    ELSIF (LS(i_x, CONST("1190", 11)));
-        TEXT("Cyan");
-        SETVAL(Y0, CONST("170", 8));
-        SETVAL(Y1, CONST("170", 8));
-        SETVAL(Cb, CONST("166", 8));
-        SETVAL(Cr, CONST("16", 8));
-    ELSE();
-        TEXT("Magneta");
-        SETVAL(Y0, CONST("106", 8));
-        SETVAL(Y1, CONST("106", 8));
-        SETVAL(Cb, CONST("102", 8));
-        SETVAL(Cr, CONST("222", 8));
-    ENDIF();
-
-    TEXT();
-    TEXT("See style 1 output:");
-    IF (EZ(pix_x0));
-        SETVAL(YCbCr, CC2(Cb, Y1));
-    ELSE();
-        SETVAL(YCbCr, CC2(Cr, Y1));
-    ENDIF();*/
 }
 

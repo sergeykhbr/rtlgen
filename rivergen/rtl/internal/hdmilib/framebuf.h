@@ -51,7 +51,7 @@ class framebuf : public ModuleObject {
     OutPort o_hsync;
     OutPort o_vsync;
     OutPort o_de;
-    OutPort o_YCbCr;
+    OutPort o_rgb565;
     TextLine _dma0_;
     InPort i_req_2d_ready;
     OutPort o_req_2d_valid;
@@ -82,15 +82,10 @@ class framebuf : public ModuleObject {
     RegSignal resp_ready;
     RegSignal raddr;
     RegSignal raddr_z;
-    RegSignal pix_x0;
     RegSignal h_sync;
     RegSignal v_sync;
     RegSignal de;
-    RegSignal Y0;
-    RegSignal Y1;
-    RegSignal Cb;
-    RegSignal Cr;
-    RegSignal YCbCr;
+    RegSignal rgb;
 
     ram_tech ping;
     ram_tech pong;

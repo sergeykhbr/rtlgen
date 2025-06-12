@@ -18,7 +18,7 @@
 
 #include <api_rtlgen.h>
 #include <genconfig.h>
-#include "../mul_i8.h"
+#include "../mul_4x4_i8.h"
 #include "../../../../prj/common/vips/clk/vip_clk.h"
 
 using namespace sysvc;
@@ -33,9 +33,41 @@ class mathlib_tb : public ModuleObject {
     class CombProcess : public CombinationalProcess {
      public:
         CombProcess(GenObject *parent) :
-            CombinationalProcess(parent, "comb") {
+            CombinationalProcess(parent, "comb"),
+            vb_m00(this, "vb_m00", "8", "0x21", "0.257 * 127"),
+            vb_m01(this, "vb_m01", "8", "0x40", "0.504"),
+            vb_m02(this, "vb_m02", "8", "0x0c", "0.0979"),
+            vb_m03(this, "vb_m03", "8", "0x08", "0.0627"),
+            vb_m10(this, "vb_m10", "8", "0xee", "-0.148"),
+            vb_m11(this, "vb_m11", "8", "0xdc", "-0.291"),
+            vb_m12(this, "vb_m12", "8", "0x38", "0.439"),
+            vb_m13(this, "vb_m13", "8", "0x40", "0.502"),
+            vb_m20(this, "vb_m20", "8", "0x38", "0.439"),
+            vb_m21(this, "vb_m21", "8", "0xd2", "-0.368"),
+            vb_m22(this, "vb_m22", "8", "0xf8", "-0.0714"),
+            vb_m23(this, "vb_m23", "8", "0x40", "0.502"),
+            vb_m30(this, "vb_m30", "8", "0", NO_COMMENT),
+            vb_m31(this, "vb_m31", "8", "0", NO_COMMENT),
+            vb_m32(this, "vb_m32", "8", "0", NO_COMMENT),
+            vb_m33(this, "vb_m33", "8", "1", NO_COMMENT) {
         }
      public:
+        Logic vb_m00;
+        Logic vb_m01;
+        Logic vb_m02;
+        Logic vb_m03;
+        Logic vb_m10;
+        Logic vb_m11;
+        Logic vb_m12;
+        Logic vb_m13;
+        Logic vb_m20;
+        Logic vb_m21;
+        Logic vb_m22;
+        Logic vb_m23;
+        Logic vb_m30;
+        Logic vb_m31;
+        Logic vb_m32;
+        Logic vb_m33;
     };
 
     // Clock1
@@ -55,15 +87,20 @@ public:
     Signal w_nrst;
     Signal w_clk;
     Logic wb_clk_cnt;
-    Signal wb_a;
-    Signal wb_b;
-    Signal wb_res;
     Signal w_signed;
-
+    Signal wb_v0;
+    Signal wb_v1;
+    Signal wb_v2;
+    Signal wb_v3;
+    Signal wb_m;
+    Signal wb_res0;
+    Signal wb_res1;
+    Signal wb_res2;
+    Signal wb_res3;
 
     // Sub-module instances:
     vip_clk clk;
-    mul_i8 mul0;
+    mul_4x4_i8 im8;
 
     CombProcess comb;
     TestClkProcess test_clk;
