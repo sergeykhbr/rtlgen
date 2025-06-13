@@ -206,6 +206,10 @@ void ModuleObject::configureGenerator(ECfgGenType cfg) {
             }
             // add v to comb process variable
             for (auto &p : getEntries()) {
+                if (p->isInitial()) {
+                    // Do not insert 'v' local variable into initial section which is the first in a list
+                    continue;
+                }
                 if (p->isProcess() && p->getClockEdge() == CLK_ALWAYS) {
                     p->getEntries().push_front(r->v_instance());
                     r->v_instance()->setParent(p);

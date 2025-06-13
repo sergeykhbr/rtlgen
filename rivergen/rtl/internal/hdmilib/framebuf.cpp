@@ -41,9 +41,10 @@ framebuf::framebuf(GenObject *parent, const char *name, const char *comment) :
     o_resp_2d_ready(this, "o_resp_2d_ready", "1", "Ready to accept 2D pixels response"),
     // params
     _state0_(this, "state machine states:"),
+    STATE_Idle(this, "STATE_Idle", "2", "0x0", NO_COMMENT),
     STATE_Request(this, "STATE_Request", "2", "0x1", NO_COMMENT),
     STATE_Writing(this, "STATE_Writing", "2", "0x2", NO_COMMENT),
-    STATE_Idle(this, "STATE_Idle", "2", "0x0", NO_COMMENT),
+    STATE_EndOfFrame(this, "STATE_EndOfFrame", "2", "0x3", NO_COMMENT),
     // signals
     wb_ring0_addr(this, "wb_ring0_addr", "6", "'0", NO_COMMENT),
     w_ring0_wena(this, "w_ring0_wena", "1", RSTVAL_ZERO, NO_COMMENT),
@@ -69,8 +70,7 @@ framebuf::framebuf(GenObject *parent, const char *name, const char *comment) :
     pix_sel(this, "pix_sel", "4", "'0", NO_COMMENT),
     difcnt(this, "difcnt", "9", "'0", NO_COMMENT),
     state(this, "state", "2", "STATE_Idle", NO_COMMENT),
-    rowcnt(this, "rowcnt", "12", "0", NO_COMMENT),
-    req_addr(this, "req_addr", "24", "'0", "16 MB allocated space split on 64 B: 32x64=2048 B"),
+    req_addr(this, "req_addr", "25", "'0", "32 MB (2 Bytes per pixel) allocated space split on 64 B: 32x64=2048 B"),
     req_valid(this, "req_valid", "1", RSTVAL_ZERO, NO_COMMENT),
     resp_ready(this, "resp_ready", "1", RSTVAL_ZERO, NO_COMMENT),
     h_sync(this, "h_sync", "4", RSTVAL_ZERO, NO_COMMENT),
@@ -141,11 +141,17 @@ void framebuf::proc_comb() {
     SETVAL(v_sync, CC2(BITS(v_sync, 2, 0), i_vsync));
 
     TEXT();
+    IF (AND2(NZ(i_vsync), EZ(BIT(v_sync, 0))));
+        TEXT("Posedge of vsync:");
+        SETVAL(state, STATE_EndOfFrame);
+    ENDIF();
+
+    TEXT();
     SWITCH(state);
     CASE(STATE_Idle);
         IF (OR2(NZ(BIT(difcnt, 8)), LE(difcnt, CONST("96", 9))));
             SETONE(req_valid);
-            SETVAL(req_addr, CC2(wr_row, wr_col));
+            SETVAL(req_addr, CC3(wr_row, wr_col, CONST("0", 1)), "2 Bytes per pixel");
             SETVAL(state, STATE_Request);
         ENDIF();
     ENDCASE();
@@ -163,22 +169,29 @@ void framebuf::proc_comb() {
             SETVAL(wr_col, ADD2(wr_col, CONST("4", 12)), "64-bits contains 4x16-bits pixels");
             SETVAL(wr_addr, INC(wr_addr));
             IF (NZ(i_resp_2d_last));
+                SETZERO(resp_ready);
+                SETVAL(state, STATE_Idle);
                 IF (GE(wr_col, i_width_m1));
                     SETZERO(wr_col);
                     SETVAL(wr_row, INC(wr_row));
                     SETVAL(wr_addr, CC2(INC(BITS(wr_addr, 7, 6)), CONST("0", 6)));
-                    IF (GE(wr_row, i_height_m1));
-                        SETZERO(wr_row);
-                    ENDIF();
                 ENDIF();
-
-                TEXT();
-                SETZERO(resp_ready);
-                SETVAL(state, STATE_Idle);
             ENDIF();
         ENDIF();
     ENDCASE();
-    CASEDEF();
+    CASE(STATE_EndOfFrame);
+        IF (EZ(i_vsync));
+            TEXT("Negedge of vsync:");
+            SETZERO(wr_col);
+            SETZERO(wr_row);
+            SETZERO(wr_addr);
+            SETZERO(difcnt);
+            SETZERO(rd_row);
+            SETZERO(rd_col);
+            SETZERO(rd_addr);
+            SETVAL(mux_ena, CONST("0x1", 4));
+            SETVAL(state, STATE_Idle);
+        ENDIF();
     ENDCASE();
     ENDSWITCH();
 
@@ -187,6 +200,7 @@ void framebuf::proc_comb() {
     IF (NZ(i_de));
         SETVAL(mux_ena, CC2(BITS(mux_ena, 2, 0), BIT(mux_ena, 3)));
         IF (NZ(BIT(mux_ena, 0)));
+            SETONE(comb.v_rd_ena);
             SETVAL(rd_addr, INC(rd_addr));
             SETVAL(rd_col, ADD2(rd_col, CONST("4", 12)), "64-bits contains 4x16-bits pixels");
         ENDIF();
@@ -196,15 +210,15 @@ void framebuf::proc_comb() {
         SETVAL(mux_ena, CONST("0x1", 4));
         SETZERO(rd_col);
         SETVAL(rd_row, INC(rd_row));
-        IF (GE(rd_row, i_height_m1));
-            SETZERO(rd_row);
-        ENDIF();
     ENDIF();
 
-    IF (AND2(NZ(i_resp_2d_valid), EZ(BIT(mux_ena, 0))));
+    IF (AND2(NZ(i_resp_2d_valid), EZ(comb.v_rd_ena)));
         SETVAL(difcnt, INC(difcnt));
-    ELSIF(AND3(EZ(i_resp_2d_valid), NZ(BIT(mux_ena, 0)), NZ(i_de)));
+    ELSIF (AND2(EZ(i_resp_2d_valid), NZ(comb.v_rd_ena)));
         SETVAL(difcnt, DEC(difcnt));
+    ELSIF (AND2(EZ(i_hsync), NZ(BIT(h_sync, 0))));
+        TEXT("correction, we can write more than used");
+        SETVAL(difcnt, BITS(wr_col, 11, 2));
     ENDIF();
 
 
@@ -292,7 +306,7 @@ void framebuf::proc_comb() {
     TEXT();
     SETVAL(o_req_2d_valid, req_valid);
     SETVAL(o_req_2d_bytes, CONST("64", 12), "Xilinx MIG is limited to burst beat length 8");
-    SETVAL(o_req_2d_addr, req_addr);
+    SETVAL(o_req_2d_addr, BITS(req_addr, 23, 0));
     SETVAL(o_resp_2d_ready, resp_ready);
 }
 

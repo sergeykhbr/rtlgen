@@ -29,10 +29,12 @@ class framebuf : public ModuleObject {
      public:
         CombProcess(GenObject *parent) :
             CombinationalProcess(parent, "comb"),
+            v_rd_ena(this, "v_rd_ena", "1", RSTVAL_ZERO, NO_COMMENT),
             vb_ring_rdata(this, "vb_ring_rdata", "64", "'0", NO_COMMENT),
             vb_pix(this, "vb_pix", "16", "'0", NO_COMMENT) {
         }
      public:
+        Logic v_rd_ena;
         Logic vb_ring_rdata;
         Logic vb_pix;
     };
@@ -64,9 +66,10 @@ class framebuf : public ModuleObject {
     OutPort o_resp_2d_ready;
 
     TextLine _state0_;
+    ParamLogic STATE_Idle;
     ParamLogic STATE_Request;
     ParamLogic STATE_Writing;
-    ParamLogic STATE_Idle;
+    ParamLogic STATE_EndOfFrame;
 
     Signal wb_ring0_addr;
     Signal w_ring0_wena;
@@ -93,7 +96,6 @@ class framebuf : public ModuleObject {
     RegSignal difcnt;
 
     RegSignal state;
-    RegSignal rowcnt;
     RegSignal req_addr;
     RegSignal req_valid;
     RegSignal resp_ready;
