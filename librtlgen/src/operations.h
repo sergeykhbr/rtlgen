@@ -488,6 +488,21 @@ class SetStrFmtOperation : public Operation {
 Operation &SETSTRF(GenObject &a, const char *fmt, size_t cnt, ...);
 Operation &ADDSTRF(GenObject &a, const char *fmt, size_t cnt, ...);
 
+class StrCatOperation : public Operation {
+ public:
+    StrCatOperation(GenObject *a,
+                    GenObject *b,
+                    const char *comment)
+        : Operation(NO_PARENT, comment), a_(a), b_(b) {
+    }
+    virtual std::string getName() override { return generate(); }
+    virtual std::string generate() override;
+ protected:
+    GenObject *a_;
+    GenObject *b_;
+};
+Operation &STRCAT(GenObject &a, GenObject &b);
+
 class AddU8toStrOperation : public Operation {
  public:
     AddU8toStrOperation(GenObject *out,
@@ -1378,26 +1393,7 @@ class DeclareTStrOperation : public Operation {
 
 void DECLARE_TSTR();    // declare temporary string buffer
 
-class InitialOperation : public Operation {
- public:
-    InitialOperation(const char *comment) : Operation(comment) {
-        push_obj(this);
-    }
-    virtual std::string getName() override { return ""; }
-    virtual std::string generate() override;
-};
-
 void INITIAL();
-
-class EndInitialOperation : public Operation {
- public:
-    EndInitialOperation(const char *comment) : Operation(comment) {
-        pop_obj();
-    }
-    virtual std::string getName() override { return ""; }
-    virtual std::string generate() override;
-};
-
 void ENDINITIAL();
 
 /**

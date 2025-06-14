@@ -21,6 +21,7 @@
 #include "ram_bytes_tech.h"
 #include "ram_mmu_tech.h"
 #include "ram_cache_bwe_tech.h"
+#include "rom_inferred_32.h"
 #include "rom_inferred_2x32.h"
 #include "rom_tech.h"
 
@@ -32,6 +33,7 @@ class mem_folder : public FolderObject {
         ram_bytes_tech_(this),
         ram_mmu_tech_(this),
         ram_cache_bwe_tech_(this),
+        rom_inferred_32_(this),
         rom_inferred_2x32_(this),
         rom_tech_(this) {}
 
@@ -40,6 +42,7 @@ class mem_folder : public FolderObject {
     ram_bytes_tech_file ram_bytes_tech_;
     ram_mmu_tech_file ram_mmu_tech_;
     ram_cache_bwe_tech_file ram_cache_bwe_tech_;
+    rom_inferred_32_file rom_inferred_32_;
     rom_inferred_2x32_file rom_inferred_2x32_;
     rom_tech_file rom_tech_;
 };

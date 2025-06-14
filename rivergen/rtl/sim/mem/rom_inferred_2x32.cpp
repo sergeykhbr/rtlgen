@@ -24,18 +24,15 @@ rom_inferred_2x32::rom_inferred_2x32(GenObject *parent, const char *name, const 
     i_addr(this, "i_addr", "abits"),
     o_rdata(this, "o_rdata", "64"),
     DEPTH(this, "DEPTH", "POW2(1,abits)"),
-    hexname0(this, "hexname0", "", NO_COMMENT),
-    hexname1(this, "hexname1", "", NO_COMMENT),
     wb_rdata0(this, "wb_rdata0", "32"),
     wb_rdata1(this, "wb_rdata1", "32"),
-    //mem(this, &i_clk, CLK_POSEDGE, 0, ACTIVE_NONE, "mem", "dbits", "DEPTH", RSTVAL_NONE, NO_COMMENT),
-    mem0(this, "mem0", "32", "DEPTH", NO_COMMENT),
-    mem1(this, "mem1", "32", "DEPTH", NO_COMMENT),
+    rom0(this, "rom0", NO_COMMENT),
+    rom1(this, "rom1", NO_COMMENT),
     // process
-    rproc(this, &i_clk)
+    proc_comb(this)
 {
     Operation::start(this);
-    INITIAL();
+    /*INITIAL();
         DECLARE_TSTR();
         SETSTRF(hexname0, "%s_lo.hex", 1, &filename);
         READMEMH(hexname0, mem0);
@@ -43,17 +40,29 @@ rom_inferred_2x32::rom_inferred_2x32(GenObject *parent, const char *name, const 
         TEXT();
         SETSTRF(hexname1, "%s_hi.hex", 1, &filename);
         READMEMH(hexname1, mem1);
-    ENDINITIAL();
+    ENDINITIAL();*/
+    rom0.abits.setObjValue(&abits);
+    rom0.filename.setObjValue(&STRCAT(filename, *new StringConst("_lo.hex")));
+    NEW(rom0, rom0.getName().c_str());
+        CONNECT(rom0, 0, rom0.i_clk, i_clk);
+        CONNECT(rom0, 0, rom0.i_addr, i_addr);
+        CONNECT(rom0, 0, rom0.o_rdata, wb_rdata0);
+    ENDNEW();
 
-    Operation::start(&rproc);
-    rxegisters();
+    TEXT();
+    rom1.abits.setObjValue(&abits);
+    rom1.filename.setObjValue(&STRCAT(filename, *new StringConst("_hi.hex")));
+    NEW(rom1, rom1.getName().c_str());
+        CONNECT(rom1, 0, rom1.i_clk, i_clk);
+        CONNECT(rom1, 0, rom1.i_addr, i_addr);
+        CONNECT(rom1, 0, rom1.o_rdata, wb_rdata1);
+    ENDNEW();
+
+    Operation::start(&proc_comb);
+    comb();
 }
 
-void rom_inferred_2x32::rxegisters() {
-    SETVAL(wb_rdata0, ARRITEM(mem0, TO_INT(i_addr), mem0));
-    SETVAL(wb_rdata1, ARRITEM(mem1, TO_INT(i_addr), mem1));
-
-TEXT();
-    SETVAL(o_rdata, CC2(wb_rdata1, wb_rdata0));
+void rom_inferred_2x32::comb() {
+    ASSIGN(o_rdata, CC2(wb_rdata1, wb_rdata0));
 }
 

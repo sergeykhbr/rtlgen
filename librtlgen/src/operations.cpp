@@ -645,6 +645,24 @@ Operation &ADDSTRF(GenObject &a, const char *fmt, size_t cnt, ...) {
     return *p;
 }
 
+// STRCAT
+std::string StrCatOperation::generate() {
+    std::string ret;
+    if (SCV_is_sysc()) {
+        ret += "std::string(" + a_->getName() + ") + ";
+        ret += "std::string(" + b_->getName() +  ")";
+    } else if (SCV_is_sv()) {
+        ret += "{" + a_->getName() + ", " + b_->getName() + "}";
+    }
+    return ret;
+}
+
+Operation &STRCAT(GenObject &a, GenObject &b) {
+    StrCatOperation *p = new StrCatOperation(&a, &b, NO_COMMENT);
+    return *p;
+}
+
+
 // ADDSTRU8
 std::string AddU8toStrOperation::generate() {
     std::string ret = "";
@@ -1900,44 +1918,15 @@ void DECLARE_TSTR() {
 }
 
 // INITIAL
-std::string InitialOperation::generate() {
-    std::string ret = "";
-    if (SCV_is_sysc()) {
-        ret += addspaces() + "// initial\n";
-    } else {
-        ret += addspaces() + "initial begin\n";
-        pushspaces();
-    }
-    for (auto &p: getEntries()) {
-        ret += p->generate();
-    }
-    return ret;
-}
-
 void INITIAL() {
     GenObject *m = Operation::top_obj();
     InitialThread *p = new InitialThread(NO_PARENT);
     m->getEntries().push_front(p);
     p->setParent(m);
-
-    //Operation *p = new InitialOperation(NO_COMMENT);
-    //return *p;
 }
 
 // ENDINITIAL
-std::string EndInitialOperation::generate() {
-    std::string ret = "";
-    if (SCV_is_sysc()) {
-        ret += addspaces() + "// end initial\n";
-    } else {
-        popspaces();
-        ret += addspaces() + "end\n";
-    }
-    return ret;
-}
-
 void ENDINITIAL() {
-    //Operation *p = new EndInitialOperation(NO_COMMENT);
     Operation::start(Operation::top_obj()->getParent());
 }
 

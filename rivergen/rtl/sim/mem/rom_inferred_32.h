@@ -20,9 +20,9 @@
 
 using namespace sysvc;
 
-class rom_inferred_2x32 : public ModuleObject {
+class rom_inferred_32 : public ModuleObject {
  public:
-    rom_inferred_2x32(GenObject *parent, const char *name, const char *comment=NO_COMMENT);
+    rom_inferred_32(GenObject *parent, const char *name, const char *comment=NO_COMMENT);
 
     virtual bool isVcd() override { return false; }     // disable tracing
 
@@ -44,25 +44,20 @@ class rom_inferred_2x32 : public ModuleObject {
     OutPort o_rdata;
 
     ParamI32D DEPTH;
-    STRING hexname0;
-    STRING hexname1;
 
-    Logic wb_rdata0;
-    Logic wb_rdata1;
-    LogicMemory mem0;
-    LogicMemory mem1;
+    LogicMemory mem;
 
     // process should be intialized last to make all signals available
     RegistersProcess rproc;
 };
 
-class rom_inferred_2x32_file : public FileObject {
+class rom_inferred_32_file : public FileObject {
  public:
-    rom_inferred_2x32_file(GenObject *parent) :
-        FileObject(parent, "rom_inferred_2x32"),
-        rom_inferred_2x32_(this, "rom_inferred_2x32") {}
+    rom_inferred_32_file(GenObject *parent) :
+        FileObject(parent, "rom_inferred_32"),
+        rom_inferred_32_(this, "rom_inferred_32") {}
 
  private:
-    rom_inferred_2x32 rom_inferred_2x32_;
+    rom_inferred_32 rom_inferred_32_;
 };
 

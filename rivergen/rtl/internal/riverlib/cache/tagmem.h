@@ -18,8 +18,8 @@
 
 #include <api_rtlgen.h>
 #include "../river_cfg.h"
-#include "../../mem/ram_cache_bwe_tech.h"
-#include "../../mem/ram_tech.h"
+#include "../../../sim/mem/ram_cache_bwe_tech.h"
+#include "../../../sim/mem/ram_tech.h"
 
 using namespace sysvc;
 

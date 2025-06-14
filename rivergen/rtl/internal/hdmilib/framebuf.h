@@ -17,7 +17,7 @@
 #pragma once
 
 #include <api_rtlgen.h>
-#include "../mem/ram_tech.h"
+#include "../../sim/mem/ram_tech.h"
 
 using namespace sysvc;
 

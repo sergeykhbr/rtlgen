@@ -1106,6 +1106,8 @@ GenObject *SCV_parse_to_obj(GenObject *owner, const char *val) {
         ret = &DIV2(*args[0], *args[1]);
     } else if (strcmp(opcode, "GT") == 0) {
         ret = &GT(*args[0], *args[1]);
+    } else if (strcmp(opcode, "STRCAT") == 0) {
+        ret = &STRCAT(*args[0], *args[1]);
     } else {
         SHOW_ERROR("%s", "wrong parse format");
     }
