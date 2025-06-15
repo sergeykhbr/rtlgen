@@ -66,7 +66,6 @@ public:
     Signal w_uart1_rd;
     Signal w_uart1_td;
     Signal w_uart1_loopback_ena;
-#if GENCFG_HDMI_ENABLE
     Signal w_i2c_scl;
     Signal w_i2c_sda;
     Signal w_i2c_nreset;
@@ -81,22 +80,14 @@ public:
     Signal w_bufo_i2c0_sda;
     Signal w_vipo_i2c0_sda;
     Signal w_vipo_i2c0_sda_dir;
-#endif
     Logic wb_clk_cnt;
-
-#if GENCFG_SD_CTRL_ENABLE
-#endif
-#if GENCFG_SD_CTRL_ENABLE
-#endif
 
     // Sub-module instances:
     vip_clk clk0;
     vip_uart_top uart1;
     jtag_app jtag0;
-#if GENCFG_HDMI_ENABLE
     iobuf_tech iosda0;
     vip_i2c_s i2c0;
-#endif
     asic_accel_top tt;
 
     TestProcess proc;

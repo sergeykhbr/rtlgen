@@ -110,6 +110,10 @@ void ProcObject::setSortedRegs(std::list<RegTypedefStruct *> *reglist) {
     reglist_ = reglist;
     GenObject *vobj;
 
+    if (isThread()) {
+        return;
+    }
+
     // Add local 'v' variable into process for each register strcture
     for (auto &item : *reglist) {
         vobj = item->v_instance();

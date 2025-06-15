@@ -176,9 +176,7 @@ void ModuleObject::configureGenerator(ECfgGenType cfg) {
                 continue;
             }
             if (p->isProcess() && p->getClockEdge() == CLK_ALWAYS) {
-                // WARNING: remove only first comb process (after initial). FIXME later:
                 p->getEntries().remove(r->v_instance());
-                break;
             }
         }
 
@@ -188,6 +186,9 @@ void ModuleObject::configureGenerator(ECfgGenType cfg) {
             // insert v just before r variable
             auto lt = getEntries().begin();
             for (auto &p : getEntries()) {
+                if (p->isThread()) {
+                    continue;
+                }
                 if (p == r->r_instance()) {
                     getEntries().insert(lt, r->v_instance());
                     break;
@@ -206,7 +207,7 @@ void ModuleObject::configureGenerator(ECfgGenType cfg) {
             }
             // add v to comb process variable
             for (auto &p : getEntries()) {
-                if (p->isInitial()) {
+                if (p->isThread()) {
                     // Do not insert 'v' local variable into initial section which is the first in a list
                     continue;
                 }

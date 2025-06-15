@@ -68,12 +68,12 @@ class apb_prci : public ModuleObject {
 
     Logic r_sys_rst;
     Signal r_sys_nrst;
-    Logic r_dbg_nrst;
-    Logic rb_pcie_nrst;
-    Logic rb_hdmi_nrst;
-    Logic r_sys_locked;
-    Logic rb_ddr_locked;
-    Logic rb_pcie_lnk_up;
+    Signal r_dbg_nrst;
+    Signal rb_pcie_nrst;
+    Signal rb_hdmi_nrst;
+    Signal r_sys_locked;
+    Signal rb_ddr_locked;
+    Signal rb_pcie_lnk_up;
     RegSignal resp_valid;
     RegSignal resp_rdata;
     RegSignal resp_err;

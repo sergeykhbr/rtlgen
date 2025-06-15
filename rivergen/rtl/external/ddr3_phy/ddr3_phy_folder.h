@@ -1,5 +1,5 @@
 // 
-//  Copyright 2022 Sergey Khabarov, sergeykhbr@gmail.com
+//  Copyright 2023 Sergey Khabarov, sergeykhbr@gmail.com
 // 
 //  Licensed under the Apache License, Version 2.0 (the "License");
 //  you may not use this file except in compliance with the License.
@@ -17,21 +17,14 @@
 #pragma once
 
 #include <api_rtlgen.h>
-#include "sim/sim_folder.h"
-#include "internal/internal_folder.h"
-#include "external/external_folder.h"
+#include "ddr3_tech.h"
 
-class rtl_folder : public FolderObject {
-  public:
-    rtl_folder(GenObject *parent) :
-        FolderObject(parent, "rtl"),
-        sim_folder_(this),
-        internal_folder_(this),
-        external_folder_(this) {}
+class ddr3_phy_folder : public FolderObject {
+ public:
+    ddr3_phy_folder(GenObject *parent) :
+        FolderObject(parent, "ddr3_phy"),
+        ddr3_tech_file_(this) {}
 
  protected:
-    // subfolders:
-    sim_folder sim_folder_;
-    internal_folder internal_folder_;
-    external_folder external_folder_;
+    ddr3_tech_file ddr3_tech_file_;
 };

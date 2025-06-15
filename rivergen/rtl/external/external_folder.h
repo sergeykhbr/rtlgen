@@ -17,21 +17,16 @@
 #pragma once
 
 #include <api_rtlgen.h>
-#include "sim/sim_folder.h"
-#include "internal/internal_folder.h"
-#include "external/external_folder.h"
+#include "ddr3_phy/ddr3_phy_folder.h"
 
-class rtl_folder : public FolderObject {
-  public:
-    rtl_folder(GenObject *parent) :
-        FolderObject(parent, "rtl"),
-        sim_folder_(this),
-        internal_folder_(this),
-        external_folder_(this) {}
+class external_folder : public FolderObject {
+ public:
+    external_folder(GenObject *parent) :
+        FolderObject(parent, "external"),
+        ddr3_phy_folder_(this) {}
+
+    virtual std::string getLibName() override { return getName(); }
 
  protected:
-    // subfolders:
-    sim_folder sim_folder_;
-    internal_folder internal_folder_;
-    external_folder external_folder_;
+    ddr3_phy_folder ddr3_phy_folder_;
 };

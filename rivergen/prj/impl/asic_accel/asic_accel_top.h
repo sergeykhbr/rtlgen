@@ -23,17 +23,14 @@
 #include "../../../rtl/internal/ambalib/types_dma.h"
 #include "../../../rtl/internal/ambalib/types_pnp.h"
 #include "../../../rtl/internal/misclib/apb_prci.h"
+#include "../../../rtl/external/ddr3_phy/ddr3_tech.h"
 #include "../../../rtl/sim/io/ids_tech.h"
 #include "../../../rtl/sim/io/iobuf_tech.h"
 #include "../../../rtl/sim/io/ibuf_tech.h"
 #include "../../../rtl/sim/io/obuf_tech.h"
 #include "../../../rtl/sim/io/obuf_arr_tech.h"
 #include "../../../rtl/sim/pll/SysPLL_tech.h"
-#if CONFIG_RISCV_VHDL
-    #include "../../../rtl/internal/gencpu64/gencpu64_soc.h"
-#elif CONFIG_GPU3D
-    #include "../../../rtl/internal/accel/accel_soc.h"
-#endif
+#include "../../../rtl/internal/accel/accel_soc.h"
 
 
 using namespace sysvc;
@@ -63,18 +60,6 @@ class asic_accel_top : public ModuleObject {
     TextLine _uart1_;
     InPort i_uart1_rd;
     OutPort o_uart1_td;
-#if GENCFG_SD_CTRL_ENABLE
-    TextLine _sdctrl0_;
-    OutPort o_sd_sclk;
-    IoPort io_sd_cmd;           // CMD IO Command/Resonse; Data output in SPI mode
-    IoPort io_sd_dat0;          // Data0 IO; Data input in SPI mode
-    IoPort io_sd_dat1;
-    IoPort io_sd_dat2;
-    IoPort io_sd_cd_dat3;       // CD/DAT3 IO CardDetect/Data Line 3; CS output in SPI mode
-    InPort i_sd_detected;
-    InPort i_sd_protect;
-#endif
-#if GENCFG_HDMI_ENABLE
     TextLine _i2c0_;
     OutPort o_i2c0_scl;
     IoPort io_i2c0_sda;
@@ -88,7 +73,6 @@ class asic_accel_top : public ModuleObject {
     OutPort o_hdmi_spdif;
     InPort i_hdmi_spdif_out;
     InPort i_hdmi_int;
-#endif
 
     // Param
     // Signals:
@@ -96,24 +80,6 @@ class asic_accel_top : public ModuleObject {
     Signal ib_gpio_ipins;
     Signal ob_gpio_opins;
     Signal ob_gpio_direction;
-#if GENCFG_SD_CTRL_ENABLE
-    Signal ib_sd_cmd;
-    Signal ob_sd_cmd;
-    Signal ob_sd_cmd_direction;
-    Signal ib_sd_dat0;
-    Signal ob_sd_dat0;
-    Signal ob_sd_dat0_direction;
-    Signal ib_sd_dat1;
-    Signal ob_sd_dat1;
-    Signal ob_sd_dat1_direction;
-    Signal ib_sd_dat2;
-    Signal ob_sd_dat2;
-    Signal ob_sd_dat2_direction;
-    Signal ib_sd_cd_dat3;
-    Signal ob_sd_cd_dat3;
-    Signal ob_sd_cd_dat3_direction;
-#endif
-#if GENCFG_HDMI_ENABLE
     Signal ob_i2c0_scl;
     Signal ob_i2c0_sda;
     Signal ob_i2c0_sda_direction;
@@ -126,7 +92,6 @@ class asic_accel_top : public ModuleObject {
     Signal ob_hdmi_spdif;
     Signal ib_hdmi_spdif_out;
     Signal ib_hdmi_int;
-#endif
 
     Signal w_sys_rst;
     Signal w_sys_nrst;
@@ -161,22 +126,12 @@ class asic_accel_top : public ModuleObject {
     Signal w_pcie_user_clk;
     Signal w_pcie_user_rst;
     Signal w_pcie_nrst;
-#if GENCFG_PCIE_ENABLE
     Signal wb_pcie_completer_id;
     SignalStruct<types_dma::pcie_dma64_out_type> pcie_dmao;
     SignalStruct<types_dma::pcie_dma64_in_type> pcie_dmai;
-#endif
 
     // Sub-module instances:
     ids_tech iclk0;
-#if GENCFG_SD_CTRL_ENABLE
-    iobuf_tech iosdcmd0;
-    iobuf_tech iosddat0;
-    iobuf_tech iosddat1;
-    iobuf_tech iosddat2;
-    iobuf_tech iosddat3;
-#endif
-#if GENCFG_HDMI_ENABLE
     obuf_tech oi2c0scl;
     obuf_tech oi2c0nreset;
     iobuf_tech ioi2c0sda;
@@ -188,14 +143,11 @@ class asic_accel_top : public ModuleObject {
     obuf_tech ohdmispdif;
     ibuf_tech ihdmispdif;
     ibuf_tech ihdmiint;
-#endif
+
     SysPLL_tech pll0;
     apb_prci prci0;
-#if CONFIG_RISCV_VHDL
-    gencpu64_soc soc0;
-#elif CONFIG_GPU3D
+    ddr3_tech ddr3;
     accel_soc soc0;
-#endif
     // process
 };
 

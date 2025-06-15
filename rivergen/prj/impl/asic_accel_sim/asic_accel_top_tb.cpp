@@ -158,20 +158,23 @@ TEXT();
 #endif
     ENDNEW();
 
+    INITIAL();
+        SETZERO(w_nrst);
+        SETVAL_DELAY(w_nrst, CONST("1", 1), *new FloatConst(200.0));
+    ENDINITIAL();
+
     Operation::start(&proc);
     proc_test();
 }
 
 void asic_accel_top_tb::proc_test() {
-    SETVAL(wb_clk_cnt, INC(wb_clk_cnt));
-    IF (LS(wb_clk_cnt, CONST("10")));
-        SETONE(w_rst);
+    IF (EZ(w_nrst));
+        SETZERO(wb_clk_cnt);
     ELSE();
-        SETZERO(w_rst);
+        SETVAL(wb_clk_cnt, INC(wb_clk_cnt));
     ENDIF();
 
 TEXT();
-    ASSIGN(w_nrst, INV(w_rst));
     ASSIGN(w_sclk_n, INV(w_sclk_p));
 #if GENCFG_HDMI_ENABLE
     ASSIGN(w_hdmi_spdif_out, CONST("0", 1));
