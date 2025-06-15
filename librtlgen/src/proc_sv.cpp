@@ -40,7 +40,10 @@ std::string ProcObject::generate_sv() {
             addPostAssign(e);
         }
     } else {
-        pushspaces();
+        if (!isThread() || isInitial()) {
+            // thread use it's own always block
+            pushspaces();
+        }
         bodytext += generate_all_localvar();
 
         for (auto &e: getEntries()) {
@@ -52,7 +55,9 @@ std::string ProcObject::generate_sv() {
                 }
             }
         }
-        popspaces();
+        if (!isThread() || isInitial()) {
+            popspaces();
+        }
     }
 
     if (bodytext.size()) {
@@ -62,7 +67,9 @@ std::string ProcObject::generate_sv() {
         // proc prolog:
         ret += addspaces();
         if (isInitial()) {
-            ret += "\ninitial ";
+            ret += "\ninitial begin\n";
+        } else if (isThread()) {
+            // Do nothing, explicitly use block ALWAYS()
         } else if (clkport) {
             ret += "\nalways_ff @(";
             ret += SV_STR_CLKEDGE[getClockEdge()];
@@ -73,24 +80,22 @@ std::string ProcObject::generate_sv() {
                 ret += rstport->getName();
             }
 
-            ret += ") ";
+            ret += ") begin: " + getName() + "_proc\n";
         } else {
             ret += "\nalways_comb\n" + addspaces();
+            ret += "begin: " + getName() + "_proc\n";
         }
-        ret += "begin";
-        if (!isInitial()) {
-            ret += ": " + getName() + "_proc";
-        }
-        ret += "\n";
 
         ret += bodytext;
 
         // proc epilog
-        ret += addspaces() + "end";
-        if (!isInitial()) {
-            ret += ": " + getName() + "_proc";
+        if (isInitial()) {
+            ret += addspaces() + "end\n";
+        } else if (isThread()) {
+            // Do nothing, explicitly use block ALWAYS()
+        } else {
+            ret += addspaces() + "end: " + getName() + "_proc\n";
         }
-        ret += "\n";
     }
     // Post assinment stage:
     ret += getPostAssign();
