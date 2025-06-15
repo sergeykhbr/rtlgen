@@ -28,6 +28,7 @@
 #endif
 #include "prj/prj_folder.h"
 #include "rtl/rtl_folder.h"
+#include "rtl/internal/ambalib/tb/ambalib_tb_folder.h"
 #include "rtl/internal/pcie_dma/tb/pcie_dma_tb_folder.h"
 #include "rtl/internal/misclib/tb/misclib_tb_folder.h"
 #include "rtl/internal/cdc/tb/cdc_tb_folder.h"
@@ -74,6 +75,7 @@ class RiverProject : public ProjectObject {
     rtl_folder rtl_folder_;
     prj_folder prj_folder_;
     // Test-benches must be created after all project VIPs created:
+    ambalib_tb_folder ambalib_tb_folder_;
 #if GENCFG_PCIE_ENABLE
     pcie_dma_tb_folder pcie_dma_tb_folder_;     // put into prj/tb
 #endif

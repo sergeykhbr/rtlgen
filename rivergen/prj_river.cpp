@@ -21,6 +21,7 @@ RiverProject::RiverProject(const char *rootpath) :
     target_folder_(this),
     rtl_folder_(this),
     prj_folder_(this),
+    ambalib_tb_folder_(&prj_folder_),
 #if GENCFG_PCIE_ENABLE
     pcie_dma_tb_folder_(&prj_folder_),  // pull all TBs into /prj/tb
 #endif
