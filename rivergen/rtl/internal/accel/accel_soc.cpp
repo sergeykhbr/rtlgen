@@ -26,6 +26,8 @@ accel_soc::accel_soc(GenObject *parent, const char *name, const char *comment) :
     i_sys_clk(this, "i_sys_clk", "1", "System Bus (AXI) clock"),
     i_cpu_nrst(this, "i_cpu_nrst", "1", "CPUs/Groups reset active LOW"),
     i_cpu_clk(this, "i_cpu_clk", "1", "CPUs/Groups clock"),
+    i_apb_nrst(this, "i_apb_nrst", "1", "APB sub-system reset: active LOW"),
+    i_apb_clk(this, "i_apb_clk", "1", "APB Bus clock"),
     i_dbg_nrst(this, "i_dbg_nrst", "1", "Reset from Debug interface (DMI). Reset everything except DMI"),
     i_ddr_nrst(this, "i_ddr_nrst", "1", "DDR related logic reset (AXI clock transformator)"),
     i_ddr_clk(this, "i_ddr_clk", "1", "DDR memoru clock"),
@@ -110,6 +112,8 @@ accel_soc::accel_soc(GenObject *parent, const char *name, const char *comment) :
     dev_pnp(this, "dev_pnp", NO_COMMENT),
     wb_group0_xmsto(this, "wb_group0_xmsto", NO_COMMENT),
     wb_group0_xmsti(this, "wb_group0_xmsti", NO_COMMENT),
+    wb_pbridge_xslvi(this, "wb_pbridge_xslvi", NO_COMMENT),
+    wb_pbridge_xslvo(this, "wb_pbridge_xslvo", NO_COMMENT),
     wb_clint_mtimer(this, "wb_clint_mtimer", "64"),
     wb_clint_msip(this, "wb_clint_msip", "CFG_CPU_MAX"),
     wb_clint_mtip(this, "wb_clint_mtip", "CFG_CPU_MAX"),
@@ -140,6 +144,7 @@ accel_soc::accel_soc(GenObject *parent, const char *name, const char *comment) :
     pnp0(this, "pnp0"),
     group0(this, "group0"),
     afifo_ddr0(this, "afifo_ddr0", NO_COMMENT),
+    afifo_apb0(this, "afifo_apb0", NO_COMMENT),
     afifo_group0(this, "afifo_group0", NO_COMMENT),
     comb(this)
 {
@@ -159,12 +164,12 @@ accel_soc::accel_soc(GenObject *parent, const char *name, const char *comment) :
 
 TEXT();
     NEW(bus1, bus1.getName().c_str());
-        CONNECT(bus1, 0, bus1.i_clk, i_sys_clk);
-        CONNECT(bus1, 0, bus1.i_nrst, i_sys_nrst);
+        CONNECT(bus1, 0, bus1.i_clk, i_apb_clk);
+        CONNECT(bus1, 0, bus1.i_nrst, i_apb_nrst);
         CONNECT(bus1, 0, bus1.i_mapinfo, ARRITEM(bus0_mapinfo, *SCV_get_cfg_type(this, "CFG_BUS0_XSLV_PBRIDGE"), bus0_mapinfo));
         CONNECT(bus1, 0, bus1.o_cfg, ARRITEM(dev_pnp, *SCV_get_cfg_type(this, "SOC_PNP_PBRIDGE0"), dev_pnp));
-        CONNECT(bus1, 0, bus1.i_xslvi, ARRITEM(axisi, *SCV_get_cfg_type(this, "CFG_BUS0_XSLV_PBRIDGE"), axisi));
-        CONNECT(bus1, 0, bus1.o_xslvo, ARRITEM(axiso, *SCV_get_cfg_type(this, "CFG_BUS0_XSLV_PBRIDGE"), axiso));
+        CONNECT(bus1, 0, bus1.i_xslvi, wb_pbridge_xslvi);
+        CONNECT(bus1, 0, bus1.o_xslvo, wb_pbridge_xslvo);
         CONNECT(bus1, 0, bus1.i_apbo, apbo);
         CONNECT(bus1, 0, bus1.o_apbi, apbi);
         CONNECT(bus1, 0, bus1.o_mapinfo, bus1_mapinfo);
@@ -182,6 +187,20 @@ TEXT();
         CONNECT(afifo_group0, 0, afifo_group0.i_xslv_clk, i_sys_clk);
         CONNECT(afifo_group0, 0, afifo_group0.o_xslvi, ARRITEM(aximo, *SCV_get_cfg_type(this, "CFG_BUS0_XMST_GROUP0"), aximo));
         CONNECT(afifo_group0, 0, afifo_group0.i_xslvo, ARRITEM(aximi, *SCV_get_cfg_type(this, "CFG_BUS0_XMST_GROUP0"), aximi));
+    ENDNEW();
+
+    TEXT();
+    afifo_apb0.abits_depth.setObjValue(new DecConst(2));
+    afifo_apb0.dbits_depth.setObjValue(new DecConst(2));
+    NEW(afifo_apb0, afifo_apb0.getName().c_str());
+        CONNECT(afifo_apb0, 0, afifo_apb0.i_xslv_nrst, i_sys_nrst);
+        CONNECT(afifo_apb0, 0, afifo_apb0.i_xslv_clk, i_sys_clk);
+        CONNECT(afifo_apb0, 0, afifo_apb0.i_xslvi, ARRITEM(axisi, *SCV_get_cfg_type(this, "CFG_BUS0_XSLV_PBRIDGE"), axisi));
+        CONNECT(afifo_apb0, 0, afifo_apb0.o_xslvo, ARRITEM(axiso, *SCV_get_cfg_type(this, "CFG_BUS0_XSLV_PBRIDGE"), axiso));
+        CONNECT(afifo_apb0, 0, afifo_apb0.i_xmst_nrst, i_apb_nrst);
+        CONNECT(afifo_apb0, 0, afifo_apb0.i_xmst_clk, i_apb_clk);
+        CONNECT(afifo_apb0, 0, afifo_apb0.o_xmsto, wb_pbridge_xslvi);
+        CONNECT(afifo_apb0, 0, afifo_apb0.i_xmsti, wb_pbridge_xslvo);
     ENDNEW();
 
     TEXT();
@@ -283,8 +302,8 @@ TEXT();
     uart1.log2_fifosz.setObjValue(&SOC_UART1_LOG2_FIFOSZ);
     uart1.sim_speedup_rate.setObjValue(&sim_uart_speedup_rate);
     NEW(uart1, uart1.getName().c_str());
-        CONNECT(uart1, 0, uart1.i_clk, i_sys_clk);
-        CONNECT(uart1, 0, uart1.i_nrst, i_sys_nrst);
+        CONNECT(uart1, 0, uart1.i_clk, i_apb_clk);
+        CONNECT(uart1, 0, uart1.i_nrst, i_apb_nrst);
         CONNECT(uart1, 0, uart1.i_mapinfo, ARRITEM(bus1_mapinfo, *SCV_get_cfg_type(this, "CFG_BUS1_PSLV_UART1"), bus1_mapinfo));
         CONNECT(uart1, 0, uart1.o_cfg, ARRITEM(dev_pnp, *SCV_get_cfg_type(this, "SOC_PNP_UART1"), dev_pnp));
         CONNECT(uart1, 0, uart1.i_apbi, ARRITEM(apbi, *SCV_get_cfg_type(this, "CFG_BUS1_PSLV_UART1"), apbi));
@@ -297,8 +316,8 @@ TEXT();
 TEXT();
     gpio0.width.setObjValue(&SOC_GPIO0_WIDTH);
     NEW(gpio0, gpio0.getName().c_str());
-        CONNECT(gpio0, 0, gpio0.i_clk, i_sys_clk);
-        CONNECT(gpio0, 0, gpio0.i_nrst, i_sys_nrst);
+        CONNECT(gpio0, 0, gpio0.i_clk, i_apb_clk);
+        CONNECT(gpio0, 0, gpio0.i_nrst, i_apb_nrst);
         CONNECT(gpio0, 0, gpio0.i_mapinfo, ARRITEM(bus1_mapinfo, *SCV_get_cfg_type(this, "CFG_BUS1_PSLV_GPIO"), bus1_mapinfo));
         CONNECT(gpio0, 0, gpio0.o_cfg, ARRITEM(dev_pnp, *SCV_get_cfg_type(this, "SOC_PNP_GPIO"), dev_pnp));
         CONNECT(gpio0, 0, gpio0.i_apbi, ARRITEM(apbi, *SCV_get_cfg_type(this, "CFG_BUS1_PSLV_GPIO"), apbi));
@@ -362,8 +381,8 @@ TEXT();
 
 TEXT();
     NEW(ppcie0, ppcie0.getName().c_str());
-        CONNECT(ppcie0, 0, ppcie0.i_clk, i_sys_clk);
-        CONNECT(ppcie0, 0, ppcie0.i_nrst, i_sys_nrst);
+        CONNECT(ppcie0, 0, ppcie0.i_clk, i_apb_clk);
+        CONNECT(ppcie0, 0, ppcie0.i_nrst, i_apb_nrst);
         CONNECT(ppcie0, 0, ppcie0.i_mapinfo, ARRITEM(bus1_mapinfo, *SCV_get_cfg_type(this, "CFG_BUS1_PSLV_PCIE"), bus1_mapinfo));
         CONNECT(ppcie0, 0, ppcie0.o_cfg, ARRITEM(dev_pnp, *SCV_get_cfg_type(this, "SOC_PNP_PCIE_APB"), dev_pnp));
         CONNECT(ppcie0, 0, ppcie0.i_apbi, ARRITEM(apbi, *SCV_get_cfg_type(this, "CFG_BUS1_PSLV_PCIE"), apbi));
@@ -381,8 +400,8 @@ TEXT();
     pnp0.l2cache_ena.setObjValue(SCV_get_cfg_type(this, "CFG_L2CACHE_ENA"));
     pnp0.plic_irq_max.setObjValue(&SOC_PLIC_IRQ_TOTAL);
     NEW(pnp0, pnp0.getName().c_str());
-        CONNECT(pnp0, 0, pnp0.i_clk, i_sys_clk);
-        CONNECT(pnp0, 0, pnp0.i_nrst, i_sys_nrst);
+        CONNECT(pnp0, 0, pnp0.i_clk, i_apb_clk);
+        CONNECT(pnp0, 0, pnp0.i_nrst, i_apb_nrst);
         CONNECT(pnp0, 0, pnp0.i_mapinfo, ARRITEM(bus1_mapinfo, *SCV_get_cfg_type(this, "CFG_BUS1_PSLV_PNP"), bus1_mapinfo));
         CONNECT(pnp0, 0, pnp0.i_cfg, dev_pnp);
         CONNECT(pnp0, 0, pnp0.o_cfg, ARRITEM(dev_pnp, *SCV_get_cfg_type(this, "SOC_PNP_PNP"), dev_pnp));

@@ -236,6 +236,8 @@ TEXT();
         CONNECT(soc0, 0, soc0.i_sys_clk, w_sys_clk);
         CONNECT(soc0, 0, soc0.i_cpu_nrst, w_sys_nrst);
         CONNECT(soc0, 0, soc0.i_cpu_clk, w_sys_clk);
+        CONNECT(soc0, 0, soc0.i_apb_nrst, w_sys_nrst);
+        CONNECT(soc0, 0, soc0.i_apb_clk, w_sys_clk);
         CONNECT(soc0, 0, soc0.i_dbg_nrst, w_dbg_nrst);
         CONNECT(soc0, 0, soc0.i_ddr_nrst, w_ddr_ui_nrst);
         CONNECT(soc0, 0, soc0.i_ddr_clk, w_ddr_ui_clk);

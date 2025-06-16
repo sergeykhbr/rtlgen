@@ -72,6 +72,8 @@ public:
     InPort i_sys_clk;
     InPort i_cpu_nrst;
     InPort i_cpu_clk;
+    InPort i_apb_nrst;
+    InPort i_apb_clk;
     InPort i_dbg_nrst;
     InPort i_ddr_nrst;
     InPort i_ddr_clk;
@@ -157,6 +159,8 @@ public:
     types_pnp::soc_pnp_vector dev_pnp;
     SignalStruct<types_amba::axi4_master_out_type> wb_group0_xmsto;
     SignalStruct<types_amba::axi4_master_in_type> wb_group0_xmsti;
+    SignalStruct<types_amba::axi4_slave_in_type> wb_pbridge_xslvi;
+    SignalStruct<types_amba::axi4_slave_out_type> wb_pbridge_xslvo;
 
     Signal wb_clint_mtimer;
     Signal wb_clint_msip;
@@ -189,6 +193,7 @@ public:
     apb_pnp pnp0;
     Workgroup group0;
     afifo_xslv afifo_ddr0;
+    afifo_xslv afifo_apb0;
     afifo_xmst afifo_group0;
     // process
     CombProcess comb;
