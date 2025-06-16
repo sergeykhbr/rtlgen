@@ -17,14 +17,17 @@
 #pragma once
 
 #include <api_rtlgen.h>
+#include "pll_generic.h"
 #include "SysPLL_tech.h"
 
 class pll_folder : public FolderObject {
  public:
     pll_folder(GenObject *parent) :
         FolderObject(parent, "pll"),
+        pll_generic_file_(this),
         SysPLL_tech_file_(this) {}
 
  protected:
+    pll_generic_file pll_generic_file_;
     SysPLL_tech_file SysPLL_tech_file_;
 };

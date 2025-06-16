@@ -19,7 +19,7 @@
 #include <api_rtlgen.h>
 #include <genconfig.h>
 #include "../hdmi_top.h"
-#include "../../../../prj/common/vips/clk/vip_clk.h"
+#include "../../../sim/pll/pll_generic.h"
 #include "../../ambalib/axi_slv.h"
 
 using namespace sysvc;
@@ -99,7 +99,7 @@ public:
 
 
     // Sub-module instances:
-    vip_clk clk;
+    pll_generic clk;
     axi_slv slv0;
     hdmi_top tt;
 

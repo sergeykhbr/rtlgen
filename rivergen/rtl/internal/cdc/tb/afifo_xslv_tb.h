@@ -19,7 +19,7 @@
 #include <api_rtlgen.h>
 #include <genconfig.h>
 #include "../afifo_xslv.h"
-#include "../../../../prj/common/vips/clk/vip_clk.h"
+#include "../../../sim/pll/pll_generic.h"
 #include "../../ambalib/axi_slv.h"
 
 using namespace sysvc;
@@ -103,8 +103,8 @@ public:
 
 
     // Sub-module instances:
-    vip_clk clk1;
-    vip_clk clk2;
+    pll_generic clk1;
+    pll_generic clk2;
     axi_slv slv0;
     afifo_xslv tt;
 

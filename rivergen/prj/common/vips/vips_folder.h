@@ -17,7 +17,6 @@
 #pragma once
 
 #include <api_rtlgen.h>
-#include "clk/clk_folder.h"
 #include "sdcard/sdcard_folder.h"
 #include "uart/uart_folder.h"
 #include "spi/spi_folder.h"
@@ -28,7 +27,6 @@ class vips_folder : public FolderObject {
   public:
     vips_folder(GenObject *parent) :
         FolderObject(parent, "vips"),
-        clk_folder_(this),
         sdcard_folder_(this),
         uart_folder_(this),
         spi_folder_(this),
@@ -37,7 +35,6 @@ class vips_folder : public FolderObject {
 
  protected:
     // subfolders:
-    clk_folder clk_folder_;
     sdcard_folder sdcard_folder_;
     uart_folder uart_folder_;
     spi_folder spi_folder_;

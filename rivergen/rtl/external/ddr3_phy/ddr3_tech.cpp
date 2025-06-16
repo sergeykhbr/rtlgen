@@ -48,14 +48,20 @@ ddr3_tech::ddr3_tech(GenObject *parent, const char *name, const char *comment) :
     // registers:
     ddr_calib(this, &i_xslv_clk, CLK_POSEDGE, &i_xslv_nrst, ACTIVE_LOW, "ddr_calib", "8", RSTVAL_ZERO, NO_COMMENT),
     // submodule
+    clk0(this, "clk0", NO_COMMENT),
     pctrl0(this, "pctrl0", NO_COMMENT),
     sram0(this, "sram0", NO_COMMENT),
     // process
-    comb(this),
-    clktread(this, "clktread")
+    comb(this)
 {
     Operation::start(this);
 
+    clk0.period.setObjValue(new FloatConst(5.0));  // 200 MHz
+    NEW(clk0, clk0.getName().c_str());
+        CONNECT(clk0, 0, clk0.o_clk, w_ui_clk);
+    ENDNEW();
+
+    TEXT();
     NEW(pctrl0, pctrl0.getName().c_str());
         CONNECT(pctrl0, 0, pctrl0.i_clk, i_apb_clk);
         CONNECT(pctrl0, 0, pctrl0.i_nrst, i_apb_nrst);
@@ -89,9 +95,6 @@ ddr3_tech::ddr3_tech(GenObject *parent, const char *name, const char *comment) :
 
     Operation::start(&comb);
     proc_comb();
-
-    Operation::start(&clktread);
-    thread_clock();
 }
 
 void ddr3_tech::proc_comb() {
@@ -104,11 +107,4 @@ void ddr3_tech::proc_comb() {
     SETVAL(o_ui_nrst, w_ui_nrst);
     SETVAL(o_ui_clk, w_ui_clk);
     SETVAL(o_init_calib_done, w_init_calib_done);
-}
-
-void ddr3_tech::thread_clock() {
-    ALWAYS(0, NO_COMMENT);
-        SETVAL_DELAY(w_ui_clk, CONST("0", "1"), *new FloatConst(2.5));
-        SETVAL_DELAY(w_ui_clk, CONST("1", "1"), *new FloatConst(2.5));
-    ENDALWAYS();
 }

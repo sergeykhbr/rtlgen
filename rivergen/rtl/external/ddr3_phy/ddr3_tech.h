@@ -21,6 +21,7 @@
 #include "../../internal/ambalib/types_pnp.h"
 #include "../../internal/misclib/apb_ddr.h"
 #include "../../internal/misclib/axi_sram.h"
+#include "../../sim/pll/pll_generic.h"
 
 using namespace sysvc;
 
@@ -41,7 +42,6 @@ class ddr3_tech : public ModuleObject {
     };
 
     void proc_comb();
-    void thread_clock();
 
  public:
     // io:
@@ -77,11 +77,11 @@ class ddr3_tech : public ModuleObject {
     // Registers:
     RegSignal ddr_calib;
 
+    pll_generic clk0;
     apb_ddr pctrl0;
     axi_sram sram0;
  private:
     CombProcess comb;
-    CombinationalThread clktread;
 };
 
 class ddr3_tech_file : public FileObject {

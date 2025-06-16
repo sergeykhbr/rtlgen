@@ -18,7 +18,7 @@
 
 #include <api_rtlgen.h>
 #include <genconfig.h>
-#include "../clk/vip_clk.h"
+#include "../../../../rtl/sim/pll/pll_generic.h"
 #include "vip_jtag_tap.h"
 
 using namespace sysvc;
@@ -72,7 +72,7 @@ public:
 
 
     // Sub-module instances:
-    vip_clk clk1;
+    pll_generic clk1;
 
     CombProcess comb;
     TestClk1Process test_clk1;

@@ -19,7 +19,7 @@
 #include <api_rtlgen.h>
 #include <genconfig.h>
 #include "../mul_4x4_i8.h"
-#include "../../../../prj/common/vips/clk/vip_clk.h"
+#include "../../../sim/pll/pll_generic.h"
 
 using namespace sysvc;
 
@@ -99,7 +99,7 @@ public:
     Signal wb_res3;
 
     // Sub-module instances:
-    vip_clk clk;
+    pll_generic clk;
     mul_4x4_i8 im8;
 
     CombProcess comb;

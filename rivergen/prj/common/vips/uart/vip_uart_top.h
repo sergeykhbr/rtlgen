@@ -17,7 +17,7 @@
 #pragma once
 
 #include <api_rtlgen.h>
-#include "../clk/vip_clk.h"
+#include "../../../../rtl/sim/pll/pll_generic.h"
 #include "vip_uart_receiver.h"
 #include "vip_uart_transmitter.h"
 
@@ -100,7 +100,7 @@ class vip_uart_top : public ModuleObject {
 #endif
     RegSignal initdone;
 
-    vip_clk clk0;
+    pll_generic clk0;
     vip_uart_receiver rx0;
     vip_uart_transmitter tx0;
 

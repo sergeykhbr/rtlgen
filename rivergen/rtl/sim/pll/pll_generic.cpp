@@ -14,35 +14,24 @@
 //  limitations under the License.
 // 
 
-#pragma once
+#include "pll_generic.h"
 
-#include <api_rtlgen.h>
+pll_generic::pll_generic(GenObject *parent, const char *name, const char *comment) :
+    ModuleObject(parent, "pll_generic", name, comment),
+    period(this, "period", "1.0"),
+    o_clk(this, "o_clk", "1"),
+    //
+    comb(this, "comb")
+{
+    Operation::start(this);
 
-using namespace sysvc;
+    Operation::start(&comb);
+    proc_comb();
+}
 
-class vip_clk : public ModuleObject {
- public:
-    vip_clk(GenObject *parent, const char *name, const char *comment);
-
- protected:
-    void proc_comb();
-
- public:
-    DefParamTIMESEC period;
-
-    // io:
-    OutPort o_clk;
-
-    CombinationalThread comb;
-};
-
-class vip_clk_file : public FileObject {
- public:
-    vip_clk_file(GenObject *parent) :
-        FileObject(parent, "vip_clk"),
-        vip_clk_(this, "vip_clk", NO_COMMENT) {}
-
- private:
-    vip_clk vip_clk_;
-};
-
+void pll_generic::proc_comb() {
+    ALWAYS(0, NO_COMMENT);
+        SETVAL_DELAY(o_clk, CONST("0", "1"), MUL2(*new FloatConst(0.5), period));
+        SETVAL_DELAY(o_clk, CONST("1", "1"), MUL2(*new FloatConst(0.5), period));
+    ENDALWAYS();
+}

@@ -17,7 +17,7 @@
 #pragma once
 
 #include <api_rtlgen.h>
-#include "../clk/vip_clk.h"
+#include "../../../../rtl/sim/pll/pll_generic.h"
 #include "vip_spi_transmitter.h"
 
 using namespace sysvc;
@@ -77,7 +77,7 @@ class vip_spi_top : public ModuleObject {
     RegSignal gpio_out;
     RegSignal gpio_dir;
 
-    vip_clk clk0;
+    pll_generic clk0;
     vip_spi_transmitter tx0;
 
     CombProcess comb;

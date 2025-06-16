@@ -19,7 +19,7 @@
 #include <api_rtlgen.h>
 #include <genconfig.h>
 #include "../asic_gencpu64/asic_gencpu64_top.h"
-#include "../../common/vips/clk/vip_clk.h"
+#include "../../../rtl/sim/pll/pll_generic.h"
 #include "../../common/vips/uart/vip_uart_top.h"
 #include "../../common/vips/i2c/vip_i2c_s.h"
 #include "../../../rtl/sim/io/iobuf_tech.h"
@@ -89,7 +89,7 @@ public:
 #endif
 
     // Sub-module instances:
-    vip_clk clk0;
+    pll_generic clk0;
     vip_uart_top uart1;
 #if GENCFG_HDMI_ENABLE
     iobuf_tech iosda0;

@@ -19,7 +19,7 @@
 #include <api_rtlgen.h>
 #include <genconfig.h>
 #include "../pcie_dma.h"
-#include "../../../../prj/common/vips/clk/vip_clk.h"
+#include "../../../sim/pll/pll_generic.h"
 #include "../../ambalib/axi_slv.h"
 
 using namespace sysvc;
@@ -106,8 +106,8 @@ public:
 
 
     // Sub-module instances:
-    vip_clk clk0;
-    vip_clk clk1;
+    pll_generic clk0;
+    pll_generic clk1;
     axi_slv slv0;
     pcie_dma tt;
 

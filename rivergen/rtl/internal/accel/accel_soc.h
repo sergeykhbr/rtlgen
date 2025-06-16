@@ -37,6 +37,7 @@
 #include "../riverlib/river_amba.h"
 #include "../riverlib/workgroup.h"
 #include "../cdc/afifo_xslv.h"
+#include "../cdc/afifo_xmst.h"
 #include "types_accel_bus0.h"
 #include "types_accel_bus1.h"
 #include "accel_axictrl_bus0.h"
@@ -69,6 +70,8 @@ public:
     // Ports:
     InPort i_sys_nrst;
     InPort i_sys_clk;
+    InPort i_cpu_nrst;
+    InPort i_cpu_clk;
     InPort i_dbg_nrst;
     InPort i_ddr_nrst;
     InPort i_ddr_clk;
@@ -152,6 +155,9 @@ public:
     types_accel_bus1::bus1_apb_in_vector   apbi;
     types_accel_bus1::bus1_apb_out_vector  apbo;
     types_pnp::soc_pnp_vector dev_pnp;
+    SignalStruct<types_amba::axi4_master_out_type> wb_group0_xmsto;
+    SignalStruct<types_amba::axi4_master_in_type> wb_group0_xmsti;
+
     Signal wb_clint_mtimer;
     Signal wb_clint_msip;
     Signal wb_clint_mtip;
@@ -183,6 +189,7 @@ public:
     apb_pnp pnp0;
     Workgroup group0;
     afifo_xslv afifo_ddr0;
+    afifo_xmst afifo_group0;
     // process
     CombProcess comb;
 };

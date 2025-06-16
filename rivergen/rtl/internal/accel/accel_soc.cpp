@@ -23,7 +23,9 @@ accel_soc::accel_soc(GenObject *parent, const char *name, const char *comment) :
     // Generic parameters
     // Ports
     i_sys_nrst(this, "i_sys_nrst", "1", "Power-on system reset active LOW"),
-    i_sys_clk(this, "i_sys_clk", "1", "System/Bus clock"),
+    i_sys_clk(this, "i_sys_clk", "1", "System Bus (AXI) clock"),
+    i_cpu_nrst(this, "i_cpu_nrst", "1", "CPUs/Groups reset active LOW"),
+    i_cpu_clk(this, "i_cpu_clk", "1", "CPUs/Groups clock"),
     i_dbg_nrst(this, "i_dbg_nrst", "1", "Reset from Debug interface (DMI). Reset everything except DMI"),
     i_ddr_nrst(this, "i_ddr_nrst", "1", "DDR related logic reset (AXI clock transformator)"),
     i_ddr_clk(this, "i_ddr_clk", "1", "DDR memoru clock"),
@@ -106,6 +108,8 @@ accel_soc::accel_soc(GenObject *parent, const char *name, const char *comment) :
     apbi(this, "apbi"),
     apbo(this, "apbo"),
     dev_pnp(this, "dev_pnp", NO_COMMENT),
+    wb_group0_xmsto(this, "wb_group0_xmsto", NO_COMMENT),
+    wb_group0_xmsti(this, "wb_group0_xmsti", NO_COMMENT),
     wb_clint_mtimer(this, "wb_clint_mtimer", "64"),
     wb_clint_msip(this, "wb_clint_msip", "CFG_CPU_MAX"),
     wb_clint_mtip(this, "wb_clint_mtip", "CFG_CPU_MAX"),
@@ -136,6 +140,7 @@ accel_soc::accel_soc(GenObject *parent, const char *name, const char *comment) :
     pnp0(this, "pnp0"),
     group0(this, "group0"),
     afifo_ddr0(this, "afifo_ddr0", NO_COMMENT),
+    afifo_group0(this, "afifo_group0", NO_COMMENT),
     comb(this)
 {
     Operation::start(this);
@@ -165,12 +170,40 @@ TEXT();
         CONNECT(bus1, 0, bus1.o_mapinfo, bus1_mapinfo);
     ENDNEW();
 
-TEXT();
+    TEXT();
+    afifo_group0.abits_depth.setObjValue(new DecConst(2));
+    afifo_group0.dbits_depth.setObjValue(new DecConst(3));
+    NEW(afifo_group0, afifo_group0.getName().c_str());
+        CONNECT(afifo_group0, 0, afifo_group0.i_xmst_nrst, i_cpu_nrst);
+        CONNECT(afifo_group0, 0, afifo_group0.i_xmst_clk, i_cpu_clk);
+        CONNECT(afifo_group0, 0, afifo_group0.i_xmsto, wb_group0_xmsto);
+        CONNECT(afifo_group0, 0, afifo_group0.o_xmsti, wb_group0_xmsti);
+        CONNECT(afifo_group0, 0, afifo_group0.i_xslv_nrst, i_sys_nrst);
+        CONNECT(afifo_group0, 0, afifo_group0.i_xslv_clk, i_sys_clk);
+        CONNECT(afifo_group0, 0, afifo_group0.o_xslvi, ARRITEM(aximo, *SCV_get_cfg_type(this, "CFG_BUS0_XMST_GROUP0"), aximo));
+        CONNECT(afifo_group0, 0, afifo_group0.i_xslvo, ARRITEM(aximi, *SCV_get_cfg_type(this, "CFG_BUS0_XMST_GROUP0"), aximi));
+    ENDNEW();
+
+    TEXT();
+    afifo_ddr0.abits_depth.setObjValue(new DecConst(2));
+    afifo_ddr0.dbits_depth.setObjValue(new DecConst(9));
+    NEW(afifo_ddr0, afifo_ddr0.getName().c_str());
+        CONNECT(afifo_ddr0, 0, afifo_ddr0.i_xslv_nrst, i_sys_nrst);
+        CONNECT(afifo_ddr0, 0, afifo_ddr0.i_xslv_clk, i_sys_clk);
+        CONNECT(afifo_ddr0, 0, afifo_ddr0.i_xslvi, ARRITEM(axisi, *SCV_get_cfg_type(this, "CFG_BUS0_XSLV_DDR"), axisi));
+        CONNECT(afifo_ddr0, 0, afifo_ddr0.o_xslvo, ARRITEM(axiso, *SCV_get_cfg_type(this, "CFG_BUS0_XSLV_DDR"), axiso));
+        CONNECT(afifo_ddr0, 0, afifo_ddr0.i_xmst_nrst, i_ddr_nrst);
+        CONNECT(afifo_ddr0, 0, afifo_ddr0.i_xmst_clk, i_ddr_clk);
+        CONNECT(afifo_ddr0, 0, afifo_ddr0.o_xmsto, o_ddr_xslvi);
+        CONNECT(afifo_ddr0, 0, afifo_ddr0.i_xmsti, i_ddr_xslvo);
+    ENDNEW();
+
+    TEXT();
     group0.cpu_num.setObjValue(SCV_get_cfg_type(this, "CFG_CPU_NUM"));
     group0.l2cache_ena.setObjValue(SCV_get_cfg_type(this, "CFG_L2CACHE_ENA"));
     NEW(group0, group0.getName().c_str());
-        CONNECT(group0, 0, group0.i_clk, i_sys_clk);
-        CONNECT(group0, 0, group0.i_cores_nrst, i_sys_nrst);
+        CONNECT(group0, 0, group0.i_clk, i_cpu_clk);
+        CONNECT(group0, 0, group0.i_cores_nrst, i_cpu_nrst);
         CONNECT(group0, 0, group0.i_dmi_nrst, i_dbg_nrst);
         CONNECT(group0, 0, group0.i_trst, i_jtag_trst);
         CONNECT(group0, 0, group0.i_tck, i_jtag_tck);
@@ -185,8 +218,8 @@ TEXT();
         CONNECT(group0, 0, group0.i_acpo, acpo);
         CONNECT(group0, 0, group0.o_acpi, acpi);
         CONNECT(group0, 0, group0.o_xmst_cfg, ARRITEM(dev_pnp, *SCV_get_cfg_type(this, "SOC_PNP_GROUP0"), dev_pnp));
-        CONNECT(group0, 0, group0.i_msti, ARRITEM(aximi, *SCV_get_cfg_type(this, "CFG_BUS0_XMST_GROUP0"), aximi));
-        CONNECT(group0, 0, group0.o_msto, ARRITEM(aximo, *SCV_get_cfg_type(this, "CFG_BUS0_XMST_GROUP0"), aximo));
+        CONNECT(group0, 0, group0.i_msti, wb_group0_xmsti);
+        CONNECT(group0, 0, group0.o_msto, wb_group0_xmsto);
         CONNECT(group0, 0, group0.i_dmi_mapinfo, ARRITEM(bus1_mapinfo, *SCV_get_cfg_type(this, "CFG_BUS1_PSLV_DMI"), bus1_mapinfo));
         CONNECT(group0, 0, group0.o_dmi_cfg, ARRITEM(dev_pnp, *SCV_get_cfg_type(this, "SOC_PNP_DMI"), dev_pnp));
         CONNECT(group0, 0, group0.i_dmi_apbi, ARRITEM(apbi, *SCV_get_cfg_type(this, "CFG_BUS1_PSLV_DMI"), apbi));
@@ -194,7 +227,8 @@ TEXT();
         CONNECT(group0, 0, group0.o_dmreset, o_dmreset);
     ENDNEW();
 
-TEXT();
+
+    TEXT();
     rom0.abits.setObjValue(SCV_get_cfg_type(this, "CFG_BOOTROM_LOG2_SIZE"));
     rom0.filename.setObjValue(SCV_get_cfg_type(this, "CFG_BOOTROM_FILE_HEX"));
     NEW(rom0, rom0.getName().c_str());
@@ -243,20 +277,6 @@ TEXT();
         CONNECT(plic0, 0, plic0.o_xslvo, ARRITEM(axiso, *SCV_get_cfg_type(this, "CFG_BUS0_XSLV_PLIC"), axiso));
         CONNECT(plic0, 0, plic0.i_irq_request, wb_ext_irqs);
         CONNECT(plic0, 0, plic0.o_ip, wb_plic_xeip);
-    ENDNEW();
-
-TEXT();
-    afifo_ddr0.abits_depth.setObjValue(new DecConst(2));
-    afifo_ddr0.dbits_depth.setObjValue(new DecConst(9));
-    NEW(afifo_ddr0, afifo_ddr0.getName().c_str());
-        CONNECT(afifo_ddr0, 0, afifo_ddr0.i_xslv_nrst, i_sys_nrst);
-        CONNECT(afifo_ddr0, 0, afifo_ddr0.i_xslv_clk, i_sys_clk);
-        CONNECT(afifo_ddr0, 0, afifo_ddr0.i_xslvi, ARRITEM(axisi, *SCV_get_cfg_type(this, "CFG_BUS0_XSLV_DDR"), axisi));
-        CONNECT(afifo_ddr0, 0, afifo_ddr0.o_xslvo, ARRITEM(axiso, *SCV_get_cfg_type(this, "CFG_BUS0_XSLV_DDR"), axiso));
-        CONNECT(afifo_ddr0, 0, afifo_ddr0.i_xmst_nrst, i_ddr_nrst);
-        CONNECT(afifo_ddr0, 0, afifo_ddr0.i_xmst_clk, i_ddr_clk);
-        CONNECT(afifo_ddr0, 0, afifo_ddr0.o_xmsto, o_ddr_xslvi);
-        CONNECT(afifo_ddr0, 0, afifo_ddr0.i_xmsti, i_ddr_xslvo);
     ENDNEW();
 
 TEXT();

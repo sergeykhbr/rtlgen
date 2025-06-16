@@ -17,16 +17,31 @@
 #pragma once
 
 #include <api_rtlgen.h>
-#include "vip_clk.h"
 
-class clk_folder : public FolderObject {
-  public:
-    clk_folder(GenObject *parent) :
-        FolderObject(parent, "clk"),
-        vip_clk_file_(this) {}
+using namespace sysvc;
+
+class pll_generic : public ModuleObject {
+ public:
+    pll_generic(GenObject *parent, const char *name, const char *comment);
 
  protected:
-    // subfolders:
-    // files
-    vip_clk_file vip_clk_file_;
+    void proc_comb();
+
+ public:
+    DefParamTIMESEC period;
+
+    // io:
+    OutPort o_clk;
+
+    CombinationalThread comb;
+};
+
+class pll_generic_file : public FileObject {
+ public:
+    pll_generic_file(GenObject *parent) :
+        FileObject(parent, "pll_generic"),
+        pll_generic_(this, "pll_generic", NO_COMMENT) {}
+
+ private:
+    pll_generic pll_generic_;
 };
