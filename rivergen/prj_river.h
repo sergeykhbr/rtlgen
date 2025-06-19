@@ -34,6 +34,7 @@
 #include "rtl/internal/cdc/tb/cdc_tb_folder.h"
 #include "rtl/internal/hdmilib/tb/hdmi_tb_folder.h"
 #include "rtl/internal/mathlib/tb/mathlib_tb_folder.h"
+#include "rtl/internal/accel/tb/accel_tb_folder.h"
 
 using namespace sysvc;
 
@@ -78,6 +79,9 @@ class RiverProject : public ProjectObject {
     ambalib_tb_folder ambalib_tb_folder_;
 #if GENCFG_PCIE_ENABLE
     pcie_dma_tb_folder pcie_dma_tb_folder_;     // put into prj/tb
+#endif
+#if CONFIG_GPU3D
+    accel_tb_folder accel_tb_folder_;
 #endif
     misclib_tb_folder misclib_tb_folder_;       // put into prj/tb
     cdc_tb_folder cdc_tb_folder_;               // put into prj/tb

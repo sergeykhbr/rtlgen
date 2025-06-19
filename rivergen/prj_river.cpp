@@ -25,9 +25,12 @@ RiverProject::RiverProject(const char *rootpath) :
 #if GENCFG_PCIE_ENABLE
     pcie_dma_tb_folder_(&prj_folder_),  // pull all TBs into /prj/tb
 #endif
+#if CONFIG_GPU3D
+    accel_tb_folder_(&prj_folder_),
+#endif
     misclib_tb_folder_(&prj_folder_),   // pull all TBs into /prj/tb
     cdc_tb_folder_(&prj_folder_),       // pull all TBs into /prj/tb
     hdmi_tb_folder_(&prj_folder_),      // pull all TBs into /prj/tb
-    mathlib_tb_folder_(&prj_folder_)    // pull all TBs into /prj/tb
+    mathlib_tb_folder_(&prj_folder_)   // pull all TBs into /prj/tb
 {
 }

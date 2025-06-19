@@ -102,6 +102,7 @@ void accel_axi2apb_bus1::proc_comb() {
     SETZERO(w_req_ready);
     SETZERO(pvalid);
     SETVAL(comb.iselidx, TO_INT(selidx));
+    SETVAL(comb.sel_rdata, ARRITEM(comb.vapbo, comb.iselidx, comb.vapbo.prdata));
 
 TEXT();
     SWITCH(state);
@@ -147,23 +148,23 @@ TEXT();
         SETVAL(pslverr, ARRITEM(comb.vapbo, comb.iselidx, comb.vapbo.pslverr));
         IF (NZ(ARRITEM(comb.vapbo, comb.iselidx, comb.vapbo.pready)));
             SETZERO(penable);
-            IF (EZ(BIT(paddr, 2)));
-                SETVAL(prdata, CC2(BITS(prdata, 63, 32), ARRITEM(comb.vapbo, comb.iselidx, comb.vapbo.prdata)));
-            ELSE();
-                SETVAL(prdata, CC2(ARRITEM(comb.vapbo, comb.iselidx, comb.vapbo.prdata),
-                                   BITS(prdata, 31, 0)));
-            ENDIF();
             IF (GT(size, CONST("4", 8)));
                 SETVAL(size, SUB2(size, CONST("4")));
                 SETVAL(paddr, ADD2(paddr, CONST("4")));
                 SETVAL(pwdata, CC2(CONST("0", 32), BITS(wb_req_wdata, 63, 32)));
                 SETVAL(pstrb, CC2(CONST("0", 4), BITS(wb_req_wstrb, 7, 4)));
                 SETVAL(state, State_setup);
+                IF (EZ(BIT(paddr, 2)));
+                    SETVAL(prdata, CC2(BITS(prdata, 63, 32), comb.sel_rdata));
+                ELSE();
+                    SETVAL(prdata, CC2(comb.sel_rdata,BITS(prdata, 31, 0)));
+                ENDIF();
             ELSE();
                 SETONE(pvalid);
                 SETVAL(state, State_out);
                 SETZERO(pselx);
                 SETZERO(pwrite);
+                SETVAL(prdata, CC2(comb.sel_rdata, comb.sel_rdata));
             ENDIF();
         ENDIF();
         ENDCASE();

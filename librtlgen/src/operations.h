@@ -1315,6 +1315,40 @@ class DisplayStrOperation : public Operation {
 Operation &DISPLAYSTR(GenObject &str);
 
 /**
+    Display error counter and PASS/FAIL string (test-benches only)
+ */
+class DisplayErrorOperation : public Operation {
+ public:
+    DisplayErrorOperation(GenObject *errcnt, const char *comment)
+        : Operation(comment), errcnt_(errcnt) {
+    }
+    virtual std::string getName() override { return ""; }
+    virtual std::string generate() override;
+ protected:
+    GenObject *errcnt_;
+};
+
+
+void DISPLAY_ERROR(GenObject &errcnt);
+
+/**
+    Generate error message if values not equal (test-benches only)
+ */
+class ExpectEqOperation : public Operation {
+ public:
+    ExpectEqOperation(GenObject *a, GenObject *b, const char *comment)
+        : Operation(comment), a_(a), b_(b) {
+    }
+    virtual std::string getName() override { return ""; }
+    virtual std::string generate() override;
+ protected:
+    GenObject *a_;
+    GenObject *b_;
+};
+
+void EXPECT_EQ(GenObject &a, GenObject &);
+
+/**
     Create new module instance
 */
 class NewOperation : public Operation {

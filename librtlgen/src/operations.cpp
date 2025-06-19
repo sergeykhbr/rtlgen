@@ -122,9 +122,11 @@ std::string NStandardOperandsOperation::getStrValue() {
         pushspaces();
     }
 
+    size_t sz = getEntries().size();
     for (auto &p: getEntries()) {
         ret += obj2varname(p, "r", true);
-        if (p != getEntries().back()) {
+        // We can CCx the same variable, so do not compare with 'getEntries().back()'
+        if (--sz > 0) {
             if (!oneline_ && isOperandNewLine()) {
                 ret += "\n" + addspaces();
             }
@@ -1701,6 +1703,68 @@ Operation &DISPLAYSTR(GenObject &str) {
     Operation *p = new DisplayStrOperation(&str, NO_COMMENT);
     str.getParentFile()->setSvApiUsed();
     return *p;
+}
+
+// Generate error report:
+std::string DisplayErrorOperation::generate() {
+    std::string ret = addspaces();
+    if (SCV_is_sysc()) {
+        ret += "if (" + errcnt_->nameInModule(PORT_OUT) + " == 0) {\n";
+        pushspaces();
+        ret += addspaces();
+        ret += "std::cout << \"@\" << sc_time_stamp() << \" No errors. TESTS PASSED\" << std::endl;\n";
+        popspaces();
+        ret += addspaces() + "} else {\n";
+        pushspaces();
+        ret += addspaces();
+        ret += "std::cout << \"@\" << sc_time_stamp() << \" TESTS FAILED. Total errors = \"\n";
+        ret += addspaces() + "          << " + errcnt_->nameInModule(PORT_OUT) + " << std::endl;\n";
+        popspaces();
+        ret += addspaces() + "}\n";
+    } else {
+        ret += "if (" + errcnt_->nameInModule(PORT_OUT) + " == 0) begin\n";
+        pushspaces();
+        ret += addspaces();
+        ret += "$display(\"[%0t] No errors. TESTS PASSED\", $time);\n";
+        popspaces();
+        ret += addspaces() + "end else begin\n";
+        pushspaces();
+        ret += addspaces();
+        ret += "$display(\"[%0t] TESTS FAILED. Total error = %0d\"\n";
+        ret += addspaces() + "        $time,\n";
+        ret += addspaces() + "        " + errcnt_->nameInModule(PORT_OUT) + ");\n";
+        popspaces();
+        ret += addspaces() + "end\n";
+    }
+    return ret;
+}
+
+void DISPLAY_ERROR(GenObject &errcnt) {
+    new DisplayErrorOperation(&errcnt, NO_COMMENT);
+}
+
+
+// Generate error message on failed comparision:
+std::string ExpectEqOperation::generate() {
+    std::string ret = addspaces();
+    if (SCV_is_sysc()) {
+        ret += "std::cout << \"@\" << sc_time_stamp() << \" + error: \"\n";
+        ret += addspaces() + "          << std::hex << " + a_->nameInModule(PORT_OUT) + " << \" != \"\n";
+        ret += addspaces() + "          << std::hex << " + b_->nameInModule(PORT_OUT) + " << std::endl;\n";
+    } else {
+        ret += "$display(\"[%0t] error: %0x != %0x\"\n";
+        ret += addspaces() + "        $time,\n";
+        ret += addspaces() + "        " + a_->nameInModule(PORT_OUT) + ",\n";
+        ret += addspaces() + "        " + b_->nameInModule(PORT_OUT) + ");\n";
+    }
+    return ret;
+}
+
+void EXPECT_EQ(GenObject &a, GenObject &b) {
+    a.getParentFile()->setSvApiUsed();  // FIXME parent should be a module. move into class
+    IF (NE(a, b));
+    new ExpectEqOperation(&a, &b, NO_COMMENT);
+    ENDIF();
 }
 
 

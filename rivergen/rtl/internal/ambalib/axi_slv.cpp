@@ -199,6 +199,7 @@ void axi_slv::proc_comb() {
                 SETVAL(req_last, INV_L(OR_REDUCE(BITS(comb.vb_ar_len_next, 8, 1))));
                 SETVAL(rstate, State_r_data);
             ELSE();
+                SETZERO(req_valid);
                 SETZERO(ar_len);
                 SETONE(ar_last);
                 SETVAL(rstate, State_r_last);
