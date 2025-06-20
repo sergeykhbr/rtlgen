@@ -178,6 +178,7 @@ public:
     RegSignal req_snoop_type;
     RegSignal resp_snoop_data;
     RegSignal cache_access;
+    RegSignal watchdog;
 
     // functions
     reqtype2arsnoop_func reqtype2arsnoop;

@@ -627,7 +627,7 @@ class InvOperation : public Operation {
         : Operation(NO_PARENT, comment), a_(a), logical_(logical) {}
 
     virtual std::string getStrValue() override { return generate(); }
-    virtual uint64_t getWidth() override { return a_->getWidth(); }
+    virtual uint64_t getWidth() override { return logical_ ? a_->getWidth() : 1; }
     virtual std::string generate() override;
 
  protected:

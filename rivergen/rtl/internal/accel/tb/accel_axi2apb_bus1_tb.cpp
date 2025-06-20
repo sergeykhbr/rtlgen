@@ -141,6 +141,7 @@ void accel_axi2apb_bus1_tb::comb_proc() {
     SETVAL(wb_pslv_mapinfo, comb.vb_pslv_mapinfo);
 
     TEXT();
+    SETVAL(comb.vb_test_cnt_inv, INV_L(test_cnt));
     SETVAL(comb.vb_bar, CONST("0x08100000"));
     SETVAL(clk_cnt, INC(clk_cnt));
     SETZERO(compare_ena);
@@ -222,7 +223,7 @@ void accel_axi2apb_bus1_tb::comb_proc() {
         IF (AND2(NZ(aw_valid), NZ(wb_o_xslvo.aw_ready)));
             SETZERO(aw_valid);
             SETVAL(test_state, CONST("2", 3));
-            SETVAL(w_data, CC2(test_cnt, test_cnt));
+            SETVAL(w_data, CC2(comb.vb_test_cnt_inv, test_cnt));
             IF (EQ(xsize, CONST("2", 3)));
                 IF (EZ(BIT(test_cnt, 0)));
                     SETVAL(w_strb, CONST("0x0f",8));
@@ -245,7 +246,7 @@ void accel_axi2apb_bus1_tb::comb_proc() {
             SETVAL(w_wait_cnt, DEC(w_wait_cnt));
         ELSE();
             SETONE(w_valid);
-            SETVAL(w_data, CC2(test_cnt, test_cnt));
+            SETVAL(w_data, CC2(comb.vb_test_cnt_inv, test_cnt));
             IF (AND2(NZ(w_valid), NZ(wb_o_xslvo.w_ready)));
                 SETZERO(w_valid);
                 SETVAL(test_state, CONST("3", 3));
@@ -294,7 +295,18 @@ void accel_axi2apb_bus1_tb::comb_proc() {
                 SETZERO(r_ready);
                 SETONE(compare_ena);
                 SETVAL(compare_a, wb_o_xslvo.r_data);
-                SETVAL(compare_b, w_data);
+                IF (EQ(xsize, CONST("2", 3)));
+                    IF (EZ(BIT(test_cnt, 0)));
+                        SETVAL(compare_b, CC2(BITS(w_data, 31, 0), BITS(w_data, 31, 0)));
+                    ELSE();
+                        SETVAL(compare_b, CC2(BITS(w_data, 63, 32), BITS(w_data, 63, 32)));
+                    ENDIF();
+                ELSIF(EZ(BIT(test_cnt, 0)));
+                    SETVAL(compare_b, w_data);
+                ELSE();
+                    TEXT("Error response");
+                    SETVAL(compare_b, ALLONES());
+                ENDIF();
                 IF (NZ(wb_o_xslvo.r_last));
                     TEXT("Goto idle");
                     SETVAL(test_pause_cnt, CONST("10", 32));

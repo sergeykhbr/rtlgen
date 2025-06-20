@@ -39,7 +39,8 @@ class accel_axi2apb_bus1_tb : public ModuleObject {
             vb_xslv_mapinfo(this, "vb_xslv_mapinfo", NO_COMMENT),
             vb_pslv_mapinfo(this, "vb_pslv_mapinfo", NO_COMMENT),
             vb_xslvi(this, "vb_xslvi", NO_COMMENT),
-            vb_bar(this, "vb_bar", "48", "'0", NO_COMMENT) {
+            vb_bar(this, "vb_bar", "48", "'0", NO_COMMENT),
+            vb_test_cnt_inv(this, "vb_test_cnt_inv", "32", "'0") {
         }
 
      public:
@@ -47,6 +48,7 @@ class accel_axi2apb_bus1_tb : public ModuleObject {
         types_amba::mapinfo_type vb_pslv_mapinfo;
         types_amba::axi4_slave_in_type vb_xslvi;
         Logic vb_bar;
+        Logic vb_test_cnt_inv;
     };
 
 

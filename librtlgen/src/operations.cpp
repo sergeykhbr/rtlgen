@@ -500,7 +500,7 @@ std::string ToBigOperation::generate() {
 
 // INV (arithemtic, logical)
 std::string InvOperation::generate() {
-    std::string A = obj2varname(a_, "r", true);
+    std::string A = a_->nameInModule(PORT_OUT);
     if (SCV_is_sysc()) {
         if (logical_ && a_->getWidth() > 1) {
             A = "(~" + A + ")";

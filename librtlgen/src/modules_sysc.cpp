@@ -292,10 +292,18 @@ std::string ModuleObject::generate_sysc_vcd_entries(GenObject *obj) {
     } else if (obj->getEntries().size() == 0) {
         // r-structure entries:
         std::string tname = obj->nameInModule(PORT_OUT, NO_SC_READ);
+        std::string vcdname;
         ret += addspaces() + "sc_trace(o_vcd, " + tname;
-        std::replace( tname.begin(), tname.end(), '[', '(');
-        std::replace( tname.begin(), tname.end(), ']', ')');
-        ret += ", pn + \"." + tname + "\");\n";
+        for (auto &s : tname) {
+            if (s == '[') {
+                vcdname += "(\" + std::to_string(";
+            } else if (s == ']') {
+                vcdname += ") + \")";
+            } else {
+                vcdname += s;
+            }
+        }
+        ret += ", pn + \"." + vcdname + "\");\n";
     } else {
         // Register structure
         for (auto &e: obj->getEntries()) {
