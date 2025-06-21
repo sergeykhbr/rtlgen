@@ -18,16 +18,19 @@
 
 #include <api_rtlgen.h>
 #include "accel_axi2apb_bus1_tb.h"
+#include "accel_axictrl_bus0_tb.h"
 
 class accel_tb_folder : public FolderObject {
  public:
    accel_tb_folder(GenObject *parent) :
         FolderObject(parent, "tb"),
-        accel_axi2apb_bus1_tb_file_(this) {
+        accel_axi2apb_bus1_tb_file_(this),
+        accel_axictrl_bus0_tb_file_(this) {
     }
 
  protected:
     // subfolders:
     // files
     accel_axi2apb_bus1_tb_file accel_axi2apb_bus1_tb_file_;
+    accel_axictrl_bus0_tb_file accel_axictrl_bus0_tb_file_;
 };
