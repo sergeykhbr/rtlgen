@@ -43,16 +43,17 @@ axi_slv::axi_slv(GenObject *parent, const char *name, const char *comment) :
     State_r_data(this, "State_r_data", "4", "0x2", NO_COMMENT),
     State_r_last(this, "State_r_last", "4", "0x4", NO_COMMENT),
     State_r_wait_writing(this, "State_r_wait_writing", "4", "0x8", NO_COMMENT),
-    State_w_idle(this, "State_w_idle", "5", "0", NO_COMMENT),
-    State_w_wait_reading(this, "State_w_wait_reading", "5", "0x1", NO_COMMENT),
-    State_w_wait_reading_light(this, "State_w_wait_reading_light", "5", "0x2", NO_COMMENT),
-    State_w_addr(this, "State_w_addr", "5", "0x4", NO_COMMENT), 
-    State_w_data(this, "State_w_data", "5", "0x8", NO_COMMENT), 
-    State_b(this, "State_b", "5", "0x10", NO_COMMENT),
+    State_w_idle(this, "State_w_idle", "6", "0", NO_COMMENT),
+    State_w_wait_reading(this, "State_w_wait_reading", "6", "0x1", NO_COMMENT),
+    State_w_wait_reading_light(this, "State_w_wait_reading_light", "6", "0x2", NO_COMMENT),
+    State_w_req(this, "State_w_req", "6", "0x4", NO_COMMENT), 
+    State_w_pipe(this, "State_w_pipe", "6", "0x8", NO_COMMENT), 
+    State_w_resp(this, "State_w_resp", "6", "0x10", NO_COMMENT), 
+    State_b(this, "State_b", "6", "0x20", NO_COMMENT),
     // signals
     // registers
     rstate(this, "rstate", "4", "State_r_idle"),
-    wstate(this, "wstate", "5", "State_w_idle"),
+    wstate(this, "wstate", "6", "State_w_idle"),
     ar_ready(this, "ar_ready", "1"),
     ar_addr(this, "ar_addr", "CFG_SYSBUS_ADDR_BITS", "'0", NO_COMMENT),
     ar_len(this, "ar_len", "9", "'0", NO_COMMENT),
@@ -277,7 +278,7 @@ void axi_slv::proc_comb() {
             SETVAL(req_wstrb, i_xslvi.w_strb);
             IF (AND2(NZ(w_ready), NZ(i_xslvi.w_valid)));
                 TEXT("AXI Light support:");
-                SETVAL(wstate, State_w_data);
+                SETVAL(wstate, State_w_pipe);
                 SETVAL(w_last, i_xslvi.w_last);
                 IF (NZ(rstate));
                     TEXT("Postpone writing");
@@ -296,7 +297,9 @@ void axi_slv::proc_comb() {
                 SETVAL(wstate, State_w_wait_reading);
                 SETZERO(w_ready);
             ELSE();
-                SETVAL(wstate, State_w_addr);
+                SETVAL(req_addr, SUB2(i_xslvi.aw_bits.addr, i_mapinfo.addr_start));
+                CALLF(&req_bytes, *SCV_get_cfg_type(this, "XSizeToBytes"), 1, &i_xslvi.aw_bits.size);
+                SETVAL(wstate, State_w_req);
                 SETONE(w_ready);
                 SETONE(req_write);
             ENDIF();
@@ -304,7 +307,7 @@ void axi_slv::proc_comb() {
             SETONE(aw_ready);
         ENDIF();
     ENDCASE();
-    CASE(State_w_addr);
+    /*CASE(State_w_addr);
         IF (NZ(i_xslvi.w_valid));
             SETONE(req_valid);
             SETVAL(req_addr, aw_addr);
@@ -313,31 +316,56 @@ void axi_slv::proc_comb() {
             SETVAL(req_wdata, i_xslvi.w_data);
             SETVAL(req_wstrb, i_xslvi.w_strb);
             SETVAL(req_last, i_xslvi.w_last);
-            SETVAL(wstate, State_w_data);
+            SETVAL(wstate, State_w_pipe);
+        ENDIF();
+    ENDCASE();*/
+    CASE(State_w_req);
+        SETONE(w_ready);
+        IF(NZ(i_xslvi.w_valid));
+            SETVAL(w_ready, AND2_L(i_req_ready, INV_L(i_xslvi.w_last)));
+            SETONE(req_valid);
+            //SETVAL(req_addr, CC2(BITS(req_addr,
+            //        DEC(*SCV_get_cfg_type(this, "CFG_SYSBUS_ADDR_BITS")), CONST("12")), comb.vb_aw_addr_next));
+            SETVAL(req_wdata, i_xslvi.w_data);
+            SETVAL(req_wstrb, i_xslvi.w_strb);
+            SETVAL(req_last, i_xslvi.w_last);
+            SETVAL(wstate, State_w_pipe);
         ENDIF();
     ENDCASE();
-    CASE(State_w_data);
-        SETVAL(w_ready, OR2_L(INV_L(req_valid), i_req_ready));
-        IF(AND2(NZ(i_req_ready), NZ(i_xslvi.w_valid)));
+    CASE(State_w_pipe);
+        SETVAL(w_ready, AND2_L(OR2_L(i_req_ready, i_resp_valid), INV_L(req_last)));
+        IF (AND2(NZ(w_ready), NZ(i_xslvi.w_valid)));
             SETONE(req_valid);
             SETVAL(req_addr, CC2(BITS(req_addr,
                     DEC(*SCV_get_cfg_type(this, "CFG_SYSBUS_ADDR_BITS")), CONST("12")), comb.vb_aw_addr_next));
-            SETVAL(w_ready, INV_L(i_xslvi.w_last));
             SETVAL(req_wdata, i_xslvi.w_data);
             SETVAL(req_wstrb, i_xslvi.w_strb);
             SETVAL(req_last, i_xslvi.w_last);
         ENDIF();
-        IF (AND2(NZ(req_last), NZ(i_req_ready)));
-            SETZERO(w_ready);
+        IF (AND3(NZ(req_valid), NZ(i_req_ready), NZ(req_last)));
+            SETZERO(req_last);
+            SETVAL(wstate, State_w_resp);
+        ELSIF (AND3(NZ(i_resp_valid), EZ(i_xslvi.w_valid), EZ(req_valid)));
+            SETONE(w_ready);
+            SETVAL(wstate, State_w_req);
+        ENDIF();
+    ENDCASE();
+    CASE(State_w_resp);
+        IF (NZ(i_resp_valid));
+            SETONE(b_valid);
+            SETVAL(b_err, i_resp_err);
+            SETZERO(w_last);
             SETVAL(wstate, State_b);
         ENDIF();
     ENDCASE();
     CASE(State_w_wait_reading);
         TEXT("ready to accept new data (no latched data)");
         IF (OR2(EZ(rstate), NZ(AND3_L(r_valid, r_last, i_xslvi.r_ready))));
-            SETONE(req_write);
             SETONE(w_ready);
-            SETVAL(wstate, State_w_addr);
+            SETONE(req_write);
+            SETVAL(req_addr, aw_addr);
+            SETVAL(req_bytes, aw_bytes);
+            SETVAL(wstate, State_w_req);
         ENDIF();
     ENDCASE();
     CASE(State_w_wait_reading_light);
@@ -348,18 +376,10 @@ void axi_slv::proc_comb() {
             SETVAL(req_addr, aw_addr);
             SETVAL(req_bytes, aw_bytes);
             SETVAL(req_last, w_last);
-            SETVAL(wstate, State_w_data);
+            SETVAL(wstate, State_w_pipe);
         ENDIF();
     ENDCASE();
     CASE(State_b);
-        IF(NZ(i_resp_valid));
-            SETONE(b_valid);
-            SETVAL(b_err, i_resp_err);
-            SETZERO(w_last);
-            IF(NZ(i_xslvi.b_ready));
-                SETVAL(wstate, State_w_idle);
-            ENDIF();
-        ENDIF();
         IF (AND2(NZ(b_valid), NZ(i_xslvi.b_ready)));
             SETZERO(b_valid);
             SETZERO(b_err);

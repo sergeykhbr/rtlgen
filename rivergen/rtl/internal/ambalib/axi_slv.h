@@ -77,8 +77,9 @@ class axi_slv : public ModuleObject {
     ParamLogic State_w_idle;
     ParamLogic State_w_wait_reading;
     ParamLogic State_w_wait_reading_light;
-    ParamLogic State_w_addr;
-    ParamLogic State_w_data;
+    ParamLogic State_w_req;
+    ParamLogic State_w_pipe;
+    ParamLogic State_w_resp;
     ParamLogic State_b;
 
     RegSignal rstate;
