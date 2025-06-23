@@ -39,6 +39,7 @@ class accel_axictrl_bus0_tb : public ModuleObject {
             vb_m0_xmsto(this, "vb_m0_xmsto", NO_COMMENT),
             vb_m1_xmsto(this, "vb_m1_xmsto", NO_COMMENT),
             vb_bar(this, "vb_bar", "48", "'0", NO_COMMENT),
+            vb_m0_w_burst_cnt_next(this, "vb_m0_w_burst_cnt_next", "4", "'0", NO_COMMENT),
             vb_test_cnt_inv(this, "vb_test_cnt_inv", "32", "'0") {
         }
 
@@ -46,6 +47,7 @@ class accel_axictrl_bus0_tb : public ModuleObject {
         types_amba::axi4_master_out_type vb_m0_xmsto;
         types_amba::axi4_master_out_type vb_m1_xmsto;
         Logic vb_bar;
+        Logic vb_m0_w_burst_cnt_next;
         Logic vb_test_cnt_inv;
     };
 
@@ -103,6 +105,7 @@ public:
     RegSignal m0_w_data;
     RegSignal m0_w_strb;
     RegSignal m0_w_last;
+    RegSignal m0_w_burst_cnt;
     RegSignal m0_b_wait_states;
     RegSignal m0_b_wait_cnt;
     RegSignal m0_b_ready;
@@ -112,18 +115,21 @@ public:
     RegSignal m0_r_wait_states;
     RegSignal m0_r_wait_cnt;
     RegSignal m0_r_ready;
+    RegSignal m0_r_burst_cnt;
+    RegSignal m0_compare_ena;
+    RegSignal m0_compare_a;
+    RegSignal m0_compare_b;
     RegSignal m1_state;
-    RegSignal compare_ena;
-    RegSignal compare_a;
-    RegSignal compare_b;
     RegSignal end_of_test;
+    RegSignal end_idle;
     RegSignal slvstate;
-    RegSignal slvram;
     RegSignal req_ready;
     RegSignal resp_valid;
     RegSignal resp_rdata;
     RegSignal resp_wait_states;
     RegSignal resp_wait_cnt;
+
+    LogicArray mem;
 
     // Sub-module instances:
     pll_generic clk0;

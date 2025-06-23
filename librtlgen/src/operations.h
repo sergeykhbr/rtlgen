@@ -1346,7 +1346,7 @@ class ExpectEqOperation : public Operation {
     GenObject *b_;
 };
 
-void EXPECT_EQ(GenObject &a, GenObject &);
+void EXPECT_EQ(GenObject &a, GenObject &b, const char *comment);
 
 /**
     Create new module instance

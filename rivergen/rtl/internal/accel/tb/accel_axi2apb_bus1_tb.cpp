@@ -386,7 +386,7 @@ void accel_axi2apb_bus1_tb::comb_proc() {
 
 void accel_axi2apb_bus1_tb::test_proc() {
     IF (NZ(compare_ena));
-        EXPECT_EQ(compare_a, compare_b);
+        EXPECT_EQ(compare_a, compare_b, "APB write/read compare");
     ENDIF();
     IF (NZ(end_of_test));
         DISPLAY_ERROR(err_cnt);

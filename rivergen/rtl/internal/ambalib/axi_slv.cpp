@@ -307,25 +307,10 @@ void axi_slv::proc_comb() {
             SETONE(aw_ready);
         ENDIF();
     ENDCASE();
-    /*CASE(State_w_addr);
-        IF (NZ(i_xslvi.w_valid));
-            SETONE(req_valid);
-            SETVAL(req_addr, aw_addr);
-            SETVAL(req_bytes, aw_bytes);
-            SETVAL(w_ready, AND2_L(INV_L(i_xslvi.w_last), i_req_ready));
-            SETVAL(req_wdata, i_xslvi.w_data);
-            SETVAL(req_wstrb, i_xslvi.w_strb);
-            SETVAL(req_last, i_xslvi.w_last);
-            SETVAL(wstate, State_w_pipe);
-        ENDIF();
-    ENDCASE();*/
     CASE(State_w_req);
-        SETONE(w_ready);
         IF(NZ(i_xslvi.w_valid));
             SETVAL(w_ready, AND2_L(i_req_ready, INV_L(i_xslvi.w_last)));
             SETONE(req_valid);
-            //SETVAL(req_addr, CC2(BITS(req_addr,
-            //        DEC(*SCV_get_cfg_type(this, "CFG_SYSBUS_ADDR_BITS")), CONST("12")), comb.vb_aw_addr_next));
             SETVAL(req_wdata, i_xslvi.w_data);
             SETVAL(req_wstrb, i_xslvi.w_strb);
             SETVAL(req_last, i_xslvi.w_last);
@@ -347,6 +332,8 @@ void axi_slv::proc_comb() {
             SETVAL(wstate, State_w_resp);
         ELSIF (AND3(NZ(i_resp_valid), EZ(i_xslvi.w_valid), EZ(req_valid)));
             SETONE(w_ready);
+            SETVAL(req_addr, CC2(BITS(req_addr,
+                    DEC(*SCV_get_cfg_type(this, "CFG_SYSBUS_ADDR_BITS")), CONST("12")), comb.vb_aw_addr_next));
             SETVAL(wstate, State_w_req);
         ENDIF();
     ENDCASE();

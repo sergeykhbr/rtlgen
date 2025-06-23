@@ -58,6 +58,7 @@ accel_axictrl_bus0_tb::accel_axictrl_bus0_tb(GenObject *parent, const char *name
     m0_w_data(this, &clk, CLK_POSEDGE, &nrst, ACTIVE_LOW, "m0_w_data", "64", "'0", NO_COMMENT),
     m0_w_strb(this, &clk, CLK_POSEDGE, &nrst, ACTIVE_LOW, "m0_w_strb", "8", "'0", NO_COMMENT),
     m0_w_last(this, &clk, CLK_POSEDGE, &nrst, ACTIVE_LOW, "m0_w_last", "8", "'0", NO_COMMENT),
+    m0_w_burst_cnt(this, &clk, CLK_POSEDGE, &nrst, ACTIVE_LOW, "m0_w_burst_cnt", "4", "'0", NO_COMMENT),
     m0_b_wait_states(this, &clk, CLK_POSEDGE, &nrst, ACTIVE_LOW, "m0_b_wait_states", "2", "'0", NO_COMMENT),
     m0_b_wait_cnt(this, &clk, CLK_POSEDGE, &nrst, ACTIVE_LOW, "m0_b_wait_cnt", "2", "'0", NO_COMMENT),
     m0_b_ready(this, &clk, CLK_POSEDGE, &nrst, ACTIVE_LOW, "m0_b_ready", "1", "0", NO_COMMENT),
@@ -67,18 +68,20 @@ accel_axictrl_bus0_tb::accel_axictrl_bus0_tb(GenObject *parent, const char *name
     m0_r_wait_states(this, &clk, CLK_POSEDGE, &nrst, ACTIVE_LOW, "m0_r_wait_states", "3", "'0", NO_COMMENT),
     m0_r_wait_cnt(this, &clk, CLK_POSEDGE, &nrst, ACTIVE_LOW, "m0_r_wait_cnt", "3", "'0", NO_COMMENT),
     m0_r_ready(this, &clk, CLK_POSEDGE, &nrst, ACTIVE_LOW, "m0_r_ready", "1", "0", NO_COMMENT),
+    m0_r_burst_cnt(this, &clk, CLK_POSEDGE, &nrst, ACTIVE_LOW, "m0_r_burst_cnt", "4", "'0", NO_COMMENT),
+    m0_compare_ena(this, &clk, CLK_POSEDGE, &nrst, ACTIVE_LOW, "m0_compare_ena", "1", "0", NO_COMMENT),
+    m0_compare_a(this, &clk, CLK_POSEDGE, &nrst, ACTIVE_LOW, "m0_compare_a", "64", "'0", NO_COMMENT),
+    m0_compare_b(this, &clk, CLK_POSEDGE, &nrst, ACTIVE_LOW, "m0_compare_b", "64", "'0", NO_COMMENT),
     m1_state(this, &clk, CLK_POSEDGE, &nrst, ACTIVE_LOW,  "m1_state", "3", "'0", NO_COMMENT),
-    compare_ena(this, &clk, CLK_POSEDGE, &nrst, ACTIVE_LOW, "compare_ena", "1", "0", NO_COMMENT),
-    compare_a(this, &clk, CLK_POSEDGE, &nrst, ACTIVE_LOW, "compare_a", "64", "'0", NO_COMMENT),
-    compare_b(this, &clk, CLK_POSEDGE, &nrst, ACTIVE_LOW, "compare_b", "64", "'0", NO_COMMENT),
     end_of_test(this, &clk, CLK_POSEDGE, &nrst, ACTIVE_LOW, "end_of_test", "1", RSTVAL_ZERO, NO_COMMENT),
+    end_idle(this, &clk, CLK_POSEDGE, &nrst, ACTIVE_LOW, "end_idle", "1", RSTVAL_ZERO, NO_COMMENT),
     slvstate(this, &clk, CLK_POSEDGE, &nrst, ACTIVE_LOW, "slvstate", "2", "'0", NO_COMMENT),
-    slvram(this, &clk, CLK_POSEDGE, &nrst, ACTIVE_LOW,  "slvram", "64", "0xcccccccccccccccc", NO_COMMENT),
     req_ready(this, &clk, CLK_POSEDGE, &nrst, ACTIVE_LOW,  "req_ready", "1", RSTVAL_ZERO, NO_COMMENT),
     resp_valid(this, &clk, CLK_POSEDGE, &nrst, ACTIVE_LOW,  "resp_valid", "1", RSTVAL_ZERO, NO_COMMENT),
     resp_rdata(this, &clk, CLK_POSEDGE, &nrst, ACTIVE_LOW,  "resp_rdata", "64", "'0", NO_COMMENT),
     resp_wait_states(this, &clk, CLK_POSEDGE, &nrst, ACTIVE_LOW,  "resp_wait_states", "3", "'0", NO_COMMENT),
     resp_wait_cnt(this, &clk, CLK_POSEDGE, &nrst, ACTIVE_LOW,  "resp_wait_cnt", "3", "'0", NO_COMMENT),
+    mem(this, "mem", "64", "16", NO_COMMENT),
     // submodules:
     clk0(this, "clk0", NO_COMMENT),
     bus0(this, "bus0", NO_COMMENT),
@@ -147,10 +150,12 @@ void accel_axictrl_bus0_tb::comb_proc() {
     SETVAL(wb_m0_xmsti, ARRITEM(vec_o_xmsti, *SCV_get_cfg_type(this, "CFG_BUS0_XMST_GROUP0"), vec_o_xmsti));
     SETVAL(wb_m1_xmsti, ARRITEM(vec_o_xmsti, *SCV_get_cfg_type(this, "CFG_BUS0_XMST_HDMI"), vec_o_xmsti));
     SETVAL(comb.vb_test_cnt_inv, INV_L(test_cnt));
+    SETVAL(comb.vb_m0_w_burst_cnt_next, INC(m0_w_burst_cnt));
     SETVAL(comb.vb_bar, CONST("0x81000000"));
     SETVAL(clk_cnt, INC(clk_cnt));
-    SETZERO(compare_ena);
+    SETZERO(m0_compare_ena);
     SETZERO(end_of_test);
+    SETVAL(end_idle, OR2(end_of_test, end_idle));
 
     TEXT();
     TEXT("ddr simulation with controllable wait states");
@@ -160,10 +165,9 @@ void accel_axictrl_bus0_tb::comb_proc() {
         SETZERO(resp_valid);
         IF (AND2(NZ(w_req_valid), NZ(req_ready)));
             IF (NZ(w_req_write));
-                SETVAL(slvram, wb_req_wdata);
                 SETVAL(resp_rdata, ALLONES());
             ELSE();
-                SETVAL(resp_rdata, slvram);
+                SETVAL(resp_rdata, ARRITEM(mem, TO_INT(BITS(wb_req_addr, 5, 2)), mem));
             ENDIF();
             IF (EZ(resp_wait_states));
                 SETONE(resp_valid);
@@ -203,9 +207,10 @@ void accel_axictrl_bus0_tb::comb_proc() {
     CASE(CONST("1", 4), "aw request");
         SETONE(m0_aw_valid);
         SETVAL(m0_aw_addr, ADD2(comb.vb_bar, CC2(BITS(test_cnt, 11, 0), CONST("0", 5))));
+        SETZERO(m0_w_burst_cnt);
         IF (AND2(NZ(m0_aw_valid), NZ(wb_m0_xmsti.aw_ready)));
             SETZERO(m0_aw_valid);
-            SETVAL(m0_w_data, CC2(comb.vb_test_cnt_inv, test_cnt));
+            SETVAL(m0_w_data,  CC3(comb.vb_test_cnt_inv, BITS(test_cnt, 27, 0), m0_w_burst_cnt));
             SETVAL(m0_w_strb, CONST("0xff", 8));
             IF (EZ(m0_w_wait_states));
                 SETZERO(m0_w_wait_cnt);
@@ -218,7 +223,7 @@ void accel_axictrl_bus0_tb::comb_proc() {
             ENDIF();
         ENDIF();
     ENDCASE();
-    CASE(CONST("2", 4), "w request");
+    CASE(CONST("2", 4), "w wait request");
         IF (NZ(m0_w_wait_cnt));
             SETVAL(m0_w_wait_cnt, DEC(m0_w_wait_cnt));
         ELSE();
@@ -229,8 +234,10 @@ void accel_axictrl_bus0_tb::comb_proc() {
     ENDCASE();
     CASE(CONST("3", 4), "w request");
         SETONE(m0_w_valid);
-        SETVAL(m0_w_data, CC2(comb.vb_test_cnt_inv, test_cnt));
+        SETVAL(m0_w_data,  CC3(comb.vb_test_cnt_inv, BITS(test_cnt, 27, 0), m0_w_burst_cnt));
         IF (AND2(NZ(m0_w_valid), NZ(wb_m0_xmsti.w_ready)));
+            SETVAL(m0_w_burst_cnt, comb.vb_m0_w_burst_cnt_next);
+            SETVAL(m0_w_data,  CC3(comb.vb_test_cnt_inv, BITS(test_cnt, 27, 0), comb.vb_m0_w_burst_cnt_next));
             SETZERO(m0_w_valid);
             SETZERO(m0_w_last);
             SETVAL(m0_w_wait_cnt, m0_w_wait_states);
@@ -254,6 +261,7 @@ void accel_axictrl_bus0_tb::comb_proc() {
         ENDIF();
     ENDCASE();
     CASE(CONST("4", 4), "b response");
+        SETZERO(m0_w_burst_cnt);
         IF (NZ(m0_b_wait_cnt));
             SETVAL(m0_b_wait_cnt, DEC(m0_b_wait_cnt));
         ELSE();
@@ -268,9 +276,10 @@ void accel_axictrl_bus0_tb::comb_proc() {
     ENDCASE();
     CASE(CONST("5", 4), "ar request");
         SETONE(m0_ar_valid);
-        SETVAL(m0_ar_addr, ADD2(comb.vb_bar, CC2(BITS(test_cnt, 11, 0), CONST("0", 2))));
+        SETVAL(m0_ar_addr, ADD2(comb.vb_bar, CC2(BITS(test_cnt, 11, 0), CONST("0", 5))));
         IF (AND2(NZ(m0_ar_valid), NZ(wb_m0_xmsti.ar_ready))); 
             SETZERO(m0_ar_valid);
+            SETZERO(m0_r_burst_cnt);
             IF (EZ(m0_r_wait_states));
                 SETZERO(m0_r_wait_cnt);
                 SETONE(m0_r_ready);
@@ -292,10 +301,11 @@ void accel_axictrl_bus0_tb::comb_proc() {
     CASE(CONST("7", 4), "r response");
         SETONE(m0_r_ready);
         IF (AND2(NZ(m0_r_ready), NZ(wb_m0_xmsti.r_valid)));
+            SETVAL(m0_r_burst_cnt, INC(m0_r_burst_cnt));
             SETZERO(m0_r_ready);
-            SETONE(compare_ena);
-            SETVAL(compare_a, wb_m0_xmsti.r_data);
-            SETVAL(compare_b, m0_w_data);
+            SETONE(m0_compare_ena);
+            SETVAL(m0_compare_a, wb_m0_xmsti.r_data);
+            SETVAL(m0_compare_b, CC3(comb.vb_test_cnt_inv, BITS(test_cnt, 27, 0), m0_r_burst_cnt));
             IF (NZ(wb_m0_xmsti.r_last));
                 TEXT("Goto idle");
                 SETVAL(m0_state, CONST("0", 4));
@@ -314,7 +324,9 @@ void accel_axictrl_bus0_tb::comb_proc() {
     ENDSWITCH();
 
     TEXT();
-    IF (ANDx(3, &NZ(test_pause_cnt),
+    IF (NZ(end_idle));
+        TEXT("Do nothing");
+    ELSIF (ANDx(3, &NZ(test_pause_cnt),
                 &EZ(m0_state),
                 &EZ(m1_state)));
         SETVAL(test_pause_cnt, DEC(test_pause_cnt));
@@ -337,8 +349,8 @@ void accel_axictrl_bus0_tb::comb_proc() {
     ENDIF();
 
     TEXT();
-    IF (NZ(compare_ena));
-        IF (NE(compare_a, compare_b));
+    IF (NZ(m0_compare_ena));
+        IF (NE(m0_compare_a, m0_compare_b));
             SETVAL(err_cnt, INC(err_cnt));
         ENDIF();
     ENDIF();
@@ -399,8 +411,13 @@ void accel_axictrl_bus0_tb::comb_proc() {
 
 
 void accel_axictrl_bus0_tb::test_proc() {
-    IF (NZ(compare_ena));
-        EXPECT_EQ(compare_a, compare_b);
+    IF (AND2(NZ(w_req_write), NZ(w_req_valid)));
+        SETARRITEM(mem, TO_INT(BITS(wb_req_addr, 5, 2)), mem, wb_req_wdata);
+    ENDIF();
+
+    TEXT();
+    IF (NZ(m0_compare_ena));
+        EXPECT_EQ(m0_compare_a, m0_compare_b, "master[0] write/read compare");
     ENDIF();
     IF (NZ(end_of_test));
         DISPLAY_ERROR(err_cnt);

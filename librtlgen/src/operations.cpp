@@ -1760,10 +1760,10 @@ std::string ExpectEqOperation::generate() {
     return ret;
 }
 
-void EXPECT_EQ(GenObject &a, GenObject &b) {
+void EXPECT_EQ(GenObject &a, GenObject &b, const char *comment) {
     a.getParentFile()->setSvApiUsed();  // FIXME parent should be a module. move into class
     IF (NE(a, b));
-    new ExpectEqOperation(&a, &b, NO_COMMENT);
+    new ExpectEqOperation(&a, &b, comment);
     ENDIF();
 }
 
