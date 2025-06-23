@@ -40,6 +40,7 @@ class accel_axictrl_bus0_tb : public ModuleObject {
             vb_m1_xmsto(this, "vb_m1_xmsto", NO_COMMENT),
             vb_bar(this, "vb_bar", "48", "'0", NO_COMMENT),
             vb_m0_w_burst_cnt_next(this, "vb_m0_w_burst_cnt_next", "4", "'0", NO_COMMENT),
+            vb_m1_w_burst_cnt_next(this, "vb_m1_w_burst_cnt_next", "4", "'0", NO_COMMENT),
             vb_test_cnt_inv(this, "vb_test_cnt_inv", "32", "'0") {
         }
 
@@ -48,6 +49,7 @@ class accel_axictrl_bus0_tb : public ModuleObject {
         types_amba::axi4_master_out_type vb_m1_xmsto;
         Logic vb_bar;
         Logic vb_m0_w_burst_cnt_next;
+        Logic vb_m1_w_burst_cnt_next;
         Logic vb_test_cnt_inv;
     };
 

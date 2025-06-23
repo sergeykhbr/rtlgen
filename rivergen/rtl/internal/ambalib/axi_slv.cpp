@@ -370,6 +370,8 @@ void axi_slv::proc_comb() {
         IF (AND2(NZ(b_valid), NZ(i_xslvi.b_ready)));
             SETZERO(b_valid);
             SETZERO(b_err);
+            SETONE(aw_ready);
+            SETONE(w_ready, "AXI light");
             SETVAL(wstate, State_w_idle);
         ENDIF();
     ENDCASE();
