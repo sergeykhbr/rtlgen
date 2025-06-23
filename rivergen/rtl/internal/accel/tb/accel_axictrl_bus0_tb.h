@@ -22,6 +22,7 @@
 #include "../types_accel_bus0.h"
 #include "../accel_axictrl_bus0.h"
 #include "../../ambalib/apb_slv.h"
+#include "../../ambalib/tb/axi_mst_generator.h"
 
 using namespace sysvc;
 
@@ -87,6 +88,7 @@ public:
     Signal w_resp_valid;
     Signal wb_resp_rdata;
     Signal w_resp_err;
+    Signal w_m0_busy;
     SignalStruct<types_amba::axi4_master_in_type> wb_m0_xmsti;
     SignalStruct<types_amba::axi4_master_in_type> wb_m1_xmsti;
     STRING msg;
@@ -96,6 +98,8 @@ public:
     RegSignal err_cnt;
     RegSignal test_cnt;
     RegSignal test_pause_cnt;
+    RegSignal m0_start_ena;
+    RegSignal m0_test_selector;
     RegSignal m0_state;
     RegSignal m0_xsize;
     RegSignal m0_aw_valid;
@@ -137,6 +141,7 @@ public:
     pll_generic clk0;
     accel_axictrl_bus0 bus0;
     axi_slv xslv0;
+    axi_mst_generator mst0;
 
     CombProcess comb;
     TestProcess test;

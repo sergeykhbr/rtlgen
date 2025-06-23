@@ -1329,7 +1329,7 @@ class DisplayErrorOperation : public Operation {
 };
 
 
-void DISPLAY_ERROR(GenObject &errcnt);
+void DISPLAY_ERROR(GenObject &errcnt, const char *comment);
 
 /**
     Generate error message if values not equal (test-benches only)

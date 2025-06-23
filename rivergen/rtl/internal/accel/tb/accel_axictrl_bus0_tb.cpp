@@ -40,6 +40,7 @@ accel_axictrl_bus0_tb::accel_axictrl_bus0_tb(GenObject *parent, const char *name
     w_resp_valid(this, "w_resp_valid", "1", RSTVAL_ZERO, NO_COMMENT),
     wb_resp_rdata(this, "wb_resp_rdata", "64", RSTVAL_ZERO, NO_COMMENT),
     w_resp_err(this, "w_resp_err", "1", RSTVAL_ZERO, NO_COMMENT),
+    w_m0_busy(this, "w_m0_busy", "1", RSTVAL_ZERO, NO_COMMENT),
     wb_m0_xmsti(this, "wb_m0_xmsti", NO_COMMENT),
     wb_m1_xmsti(this, "wb_m1_xmsti", NO_COMMENT),
     msg(this, "msg", "error message", NO_COMMENT),
@@ -47,6 +48,8 @@ accel_axictrl_bus0_tb::accel_axictrl_bus0_tb(GenObject *parent, const char *name
     err_cnt(this, &clk, CLK_POSEDGE, &nrst, ACTIVE_LOW,  "err_cnt", "32", "'0", NO_COMMENT),
     test_cnt(this, &clk, CLK_POSEDGE, &nrst, ACTIVE_LOW,  "test_cnt", "32", "'0", NO_COMMENT),
     test_pause_cnt(this, &clk, CLK_POSEDGE, &nrst, ACTIVE_LOW,  "test_pause_cnt", "32", "'0", NO_COMMENT),
+    m0_start_ena(this, &clk, CLK_POSEDGE, &nrst, ACTIVE_LOW, "m0_start_ena", "1", RSTVAL_ZERO, NO_COMMENT),
+    m0_test_selector(this, &clk, CLK_POSEDGE, &nrst, ACTIVE_LOW, "m0_test_selector", "10", RSTVAL_ZERO, NO_COMMENT),
     m0_state(this, &clk, CLK_POSEDGE, &nrst, ACTIVE_LOW,  "m0_state", "4", "'0", NO_COMMENT),
     m0_xsize(this, &clk, CLK_POSEDGE, &nrst, ACTIVE_LOW, "m0_xsize", "3", "3", NO_COMMENT),
     m0_aw_valid(this, &clk, CLK_POSEDGE, &nrst, ACTIVE_LOW, "m0_aw_valid", "1", "0", NO_COMMENT),
@@ -86,6 +89,7 @@ accel_axictrl_bus0_tb::accel_axictrl_bus0_tb(GenObject *parent, const char *name
     clk0(this, "clk0", NO_COMMENT),
     bus0(this, "bus0", NO_COMMENT),
     xslv0(this, "xslv0", NO_COMMENT),
+    mst0(this, "mst0"),
     // processes:
     comb(this),
     test(this, &clk)
@@ -131,6 +135,18 @@ accel_axictrl_bus0_tb::accel_axictrl_bus0_tb(GenObject *parent, const char *name
         CONNECT(xslv0, 0, xslv0.i_resp_err, w_resp_err);
     ENDNEW();
 
+    TEXT();
+    NEW(mst0, mst0.getName().c_str());
+        CONNECT(mst0, 0, mst0.i_nrst, nrst);
+        CONNECT(mst0, 0, mst0.i_clk, clk);
+        CONNECT(mst0, 0, mst0.i_xmst, ARRITEM(vec_o_xmsti, *SCV_get_cfg_type(this, "CFG_BUS0_XMST_GROUP0"), vec_o_xmsti));
+        CONNECT(mst0, 0, mst0.o_xmst, ARRITEM(vec_i_xmsto, *SCV_get_cfg_type(this, "CFG_BUS0_XMST_GROUP0"), vec_i_xmsto));
+        CONNECT(mst0, 0, mst0.i_start_test, m0_start_ena);
+        CONNECT(mst0, 0, mst0.i_test_selector, m0_test_selector);
+        CONNECT(mst0, 0, mst0.i_show_result, end_of_test);
+        CONNECT(mst0, 0, mst0.o_test_busy, w_m0_busy);
+    ENDNEW();
+
     INITIAL();
         SETZERO(nrst);
         SETVAL_DELAY(nrst, CONST("1", 1), *new FloatConst(200.0));
@@ -156,6 +172,7 @@ void accel_axictrl_bus0_tb::comb_proc() {
     SETZERO(m0_compare_ena);
     SETZERO(end_of_test);
     SETVAL(end_idle, OR2(end_of_test, end_idle));
+    SETZERO(m0_start_ena);
 
     TEXT();
     TEXT("ddr simulation with controllable wait states");
@@ -192,7 +209,7 @@ void accel_axictrl_bus0_tb::comb_proc() {
     ENDCASE();
     ENDSWITCH();
 
-    TEXT();
+    /*TEXT();
     TEXT("AXI master[0] request state machines");
     SWITCH(m0_state);
     CASE(CONST("0", 4));
@@ -321,24 +338,26 @@ void accel_axictrl_bus0_tb::comb_proc() {
     ENDCASE();
     CASE(CONST("15", 4), "do nothing");
     ENDCASE();
-    ENDSWITCH();
+    ENDSWITCH();*/
 
     TEXT();
     IF (NZ(end_idle));
         TEXT("Do nothing");
     ELSIF (ANDx(3, &NZ(test_pause_cnt),
-                &EZ(m0_state),
+                &EZ(w_m0_busy),
                 &EZ(m1_state)));
         SETVAL(test_pause_cnt, DEC(test_pause_cnt));
     ELSIF (EZ(test_pause_cnt));
         SETVAL(test_cnt, INC(test_cnt));
         SETVAL(resp_wait_states, BITS(test_cnt, 1, 0));
-        SETVAL(m0_w_wait_states, BITS(test_cnt, 4, 2));
+        /*SETVAL(m0_w_wait_states, BITS(test_cnt, 4, 2));
         SETVAL(m0_b_wait_states, BITS(test_cnt, 6, 5));
         SETVAL(m0_r_wait_states, BITS(test_cnt, 9, 7));
         SETVAL(m0_aw_xlen, CC2(CONST("0", 6), BITS(test_cnt, 11, 10)));
         SETVAL(m0_ar_xlen, CC2(CONST("0", 6), BITS(test_cnt, 11, 10)));
-        SETVAL(m0_xsize, CONST("3", 3), "8-bytes");
+        SETVAL(m0_xsize, CONST("3", 3), "8-bytes");*/
+        SETVAL(m0_test_selector, BITS(test_cnt, 11, 2));
+        SETONE(m0_start_ena);
         IF(NZ(BIT(test_cnt, 13)));
             TEXT("End of test (show err_cnt)");
             SETONE(end_of_test);
@@ -348,14 +367,14 @@ void accel_axictrl_bus0_tb::comb_proc() {
         SETVAL(test_pause_cnt, CONST("10", 32));
     ENDIF();
 
-    TEXT();
+    /*TEXT();
     IF (NZ(m0_compare_ena));
         IF (NE(m0_compare_a, m0_compare_b));
             SETVAL(err_cnt, INC(err_cnt));
         ENDIF();
-    ENDIF();
+    ENDIF();*
 
-    TEXT();
+    /*TEXT();
     SETVAL(comb.vb_m0_xmsto.ar_valid, m0_ar_valid);
     SETVAL(comb.vb_m0_xmsto.ar_bits.addr, m0_ar_addr);
     SETVAL(comb.vb_m0_xmsto.ar_bits.len, m0_ar_xlen);
@@ -386,7 +405,7 @@ void accel_axictrl_bus0_tb::comb_proc() {
     SETVAL(comb.vb_m0_xmsto.w_strb, m0_w_strb);
     SETVAL(comb.vb_m0_xmsto.w_user, ALLONES());
     SETVAL(comb.vb_m0_xmsto.b_ready, m0_b_ready);
-    SETVAL(comb.vb_m0_xmsto.r_ready, m0_r_ready);
+    SETVAL(comb.vb_m0_xmsto.r_ready, m0_r_ready);*/
 
     TEXT();
     SETVAL(w_req_ready, req_ready);
@@ -396,7 +415,7 @@ void accel_axictrl_bus0_tb::comb_proc() {
 
 
     TEXT();
-    SETARRITEM(vec_i_xmsto, *SCV_get_cfg_type(this, "CFG_BUS0_XMST_GROUP0"), vec_i_xmsto, comb.vb_m0_xmsto);
+    //SETARRITEM(vec_i_xmsto, *SCV_get_cfg_type(this, "CFG_BUS0_XMST_GROUP0"), vec_i_xmsto, comb.vb_m0_xmsto);
     SETARRITEM(vec_i_xmsto, *SCV_get_cfg_type(this, "CFG_BUS0_XMST_PCIE"), vec_i_xmsto, *axi4_master_out_none);
     SETARRITEM(vec_i_xmsto, *SCV_get_cfg_type(this, "CFG_BUS0_XMST_HDMI"), vec_i_xmsto, comb.vb_m1_xmsto);
     SETARRITEM(vec_i_xslvo, *SCV_get_cfg_type(this, "CFG_BUS0_XSLV_BOOTROM"), vec_i_xslvo, *axi4_slave_out_none);
@@ -415,12 +434,12 @@ void accel_axictrl_bus0_tb::test_proc() {
         SETARRITEM(mem, TO_INT(BITS(wb_req_addr, 5, 2)), mem, wb_req_wdata);
     ENDIF();
 
-    TEXT();
+    /*TEXT();
     IF (NZ(m0_compare_ena));
         EXPECT_EQ(m0_compare_a, m0_compare_b, "master[0] write/read compare");
     ENDIF();
     IF (NZ(end_of_test));
-        DISPLAY_ERROR(err_cnt);
-    ENDIF();
+        DISPLAY_ERROR(err_cnt, NO_COMMENT);
+    ENDIF();*/
 }
 

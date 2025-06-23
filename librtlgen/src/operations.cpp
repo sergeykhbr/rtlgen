@@ -1739,8 +1739,8 @@ std::string DisplayErrorOperation::generate() {
     return ret;
 }
 
-void DISPLAY_ERROR(GenObject &errcnt) {
-    new DisplayErrorOperation(&errcnt, NO_COMMENT);
+void DISPLAY_ERROR(GenObject &errcnt, const char *comment) {
+    new DisplayErrorOperation(&errcnt, comment);
 }
 
 

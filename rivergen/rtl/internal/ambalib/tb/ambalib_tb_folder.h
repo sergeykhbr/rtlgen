@@ -18,16 +18,19 @@
 
 #include <api_rtlgen.h>
 #include "axi_slv_tb.h"
+#include "axi_mst_generator.h"
 
 class ambalib_tb_folder : public FolderObject {
  public:
     ambalib_tb_folder(GenObject *parent) :
         FolderObject(parent, "tb"),
-        axi_slv_tb_file_(this) {
+        axi_slv_tb_file_(this),
+        axi_mst_generator_file_(this) {
     }
 
  protected:
     // subfolders:
     // files
     axi_slv_tb_file axi_slv_tb_file_;
+    axi_mst_generator_file axi_mst_generator_file_;
 };
