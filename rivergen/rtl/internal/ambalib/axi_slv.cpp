@@ -44,17 +44,18 @@ axi_slv::axi_slv(GenObject *parent, const char *name, const char *comment) :
     State_r_last(this, "State_r_last", "5", "0x4", NO_COMMENT),
     State_r_buf(this, "State_r_buf", "5", "0x8", NO_COMMENT),
     State_r_wait_writing(this, "State_r_wait_writing", "5", "0x10", NO_COMMENT),
-    State_w_idle(this, "State_w_idle", "6", "0", NO_COMMENT),
-    State_w_wait_reading(this, "State_w_wait_reading", "6", "0x1", NO_COMMENT),
-    State_w_wait_reading_light(this, "State_w_wait_reading_light", "6", "0x2", NO_COMMENT),
-    State_w_req(this, "State_w_req", "6", "0x4", NO_COMMENT), 
-    State_w_pipe(this, "State_w_pipe", "6", "0x8", NO_COMMENT), 
-    State_w_resp(this, "State_w_resp", "6", "0x10", NO_COMMENT), 
-    State_b(this, "State_b", "6", "0x20", NO_COMMENT),
+    State_w_idle(this, "State_w_idle", "7", "0", NO_COMMENT),
+    State_w_wait_reading(this, "State_w_wait_reading", "7", "0x1", NO_COMMENT),
+    State_w_wait_reading_light(this, "State_w_wait_reading_light", "7", "0x2", NO_COMMENT),
+    State_w_req(this, "State_w_req", "7", "0x4", NO_COMMENT), 
+    State_w_pipe(this, "State_w_pipe", "7", "0x8", NO_COMMENT), 
+    State_w_buf(this, "State_w_buf", "7", "0x10", NO_COMMENT), 
+    State_w_resp(this, "State_w_resp", "7", "0x20", NO_COMMENT), 
+    State_b(this, "State_b", "7", "0x40", NO_COMMENT),
     // signals
     // registers
     rstate(this, "rstate", "5", "State_r_idle"),
-    wstate(this, "wstate", "6", "State_w_idle"),
+    wstate(this, "wstate", "7", "State_w_idle"),
     ar_ready(this, "ar_ready", "1"),
     ar_addr(this, "ar_addr", "CFG_SYSBUS_ADDR_BITS", "'0", NO_COMMENT),
     ar_len(this, "ar_len", "9", "'0", NO_COMMENT),
@@ -87,6 +88,10 @@ axi_slv::axi_slv(GenObject *parent, const char *name, const char *comment) :
     req_wdata(this, "req_wdata", "CFG_SYSBUS_DATA_BITS", "'0", NO_COMMENT),
     req_wstrb(this, "req_wstrb", "CFG_SYSBUS_DATA_BYTES", "'0", NO_COMMENT),
     req_bytes(this, "req_bytes", "8", "'0", NO_COMMENT),
+    req_addr_buf(this, "req_addr_buf", "CFG_SYSBUS_ADDR_BITS", "'0", NO_COMMENT),
+    req_last_buf(this, "req_last_buf", "1", RSTVAL_ZERO, NO_COMMENT),
+    req_wdata_buf(this, "req_wdata_buf", "CFG_SYSBUS_DATA_BITS", "'0", NO_COMMENT),
+    req_wstrb_buf(this, "req_wstrb_buf", "CFG_SYSBUS_DATA_BYTES", "'0", NO_COMMENT),
     // process
     comb(this)
 {
@@ -353,21 +358,41 @@ void axi_slv::proc_comb() {
     CASE(State_w_pipe);
         SETVAL(w_ready, AND2_L(OR2_L(i_req_ready, i_resp_valid), INV_L(req_last)));
         IF (AND2(NZ(w_ready), NZ(i_xslvi.w_valid)));
-            SETONE(req_valid);
-            SETVAL(req_addr, CC2(BITS(req_addr,
-                    DEC(*SCV_get_cfg_type(this, "CFG_SYSBUS_ADDR_BITS")), CONST("12")), comb.vb_aw_addr_next));
-            SETVAL(req_wdata, i_xslvi.w_data);
-            SETVAL(req_wstrb, i_xslvi.w_strb);
-            SETVAL(req_last, i_xslvi.w_last);
+            IF (EZ(i_req_ready));
+                SETVAL(wstate, State_w_buf);
+                SETVAL(req_addr_buf, CC2(BITS(req_addr,
+                        DEC(*SCV_get_cfg_type(this, "CFG_SYSBUS_ADDR_BITS")), CONST("12")), comb.vb_aw_addr_next));
+                SETVAL(req_wdata_buf, i_xslvi.w_data);
+                SETVAL(req_wstrb_buf, i_xslvi.w_strb);
+                SETVAL(req_last_buf, i_xslvi.w_last);
+            ELSE();
+                SETONE(req_valid);
+                SETVAL(req_addr, CC2(BITS(req_addr,
+                        DEC(*SCV_get_cfg_type(this, "CFG_SYSBUS_ADDR_BITS")), CONST("12")), comb.vb_aw_addr_next));
+                SETVAL(req_wdata, i_xslvi.w_data);
+                SETVAL(req_wstrb, i_xslvi.w_strb);
+                SETVAL(req_last, i_xslvi.w_last);
+            ENDIF();
         ENDIF();
-        IF (AND3(NZ(req_valid), NZ(i_req_ready), NZ(req_last)));
+        IF (AND3(NZ(req_valid), NZ(req_last), NZ(i_req_ready)));
             SETZERO(req_last);
             SETVAL(wstate, State_w_resp);
-        ELSIF (AND3(NZ(i_resp_valid), EZ(i_xslvi.w_valid), EZ(req_valid)));
+        ENDIF();
+        IF (AND3(NZ(i_resp_valid), EZ(i_xslvi.w_valid), EZ(req_valid)));
             SETONE(w_ready);
             SETVAL(req_addr, CC2(BITS(req_addr,
                     DEC(*SCV_get_cfg_type(this, "CFG_SYSBUS_ADDR_BITS")), CONST("12")), comb.vb_aw_addr_next));
             SETVAL(wstate, State_w_req);
+        ENDIF();
+    ENDCASE();
+    CASE(State_w_buf);
+        IF (NZ(i_req_ready));
+            SETONE(req_valid);
+            SETVAL(req_last, req_last_buf);
+            SETVAL(req_addr, req_addr_buf);
+            SETVAL(req_wdata, req_wdata_buf);
+            SETVAL(req_wstrb, req_wstrb_buf);
+            SETVAL(wstate, State_w_pipe);
         ENDIF();
     ENDCASE();
     CASE(State_w_resp);

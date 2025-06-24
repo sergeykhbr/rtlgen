@@ -184,15 +184,15 @@ accel_axictrl_bus0_tb::accel_axictrl_bus0_tb(GenObject *parent, const char *name
     mst2.req_bar.setObjValue(new HexLogicConst(new DecConst(48), 0x08000000));
     mst2.unique_id.setObjValue(new HexLogicConst(new DecConst(4), 0x2));
     mst2.read_only.setObjValue(new DecConst(1));
-    NEW(mst1, mst1.getName().c_str());
-        CONNECT(mst1, 0, mst1.i_nrst, nrst);
-        CONNECT(mst1, 0, mst1.i_clk, clk);
-        CONNECT(mst1, 0, mst1.i_xmst, ARRITEM(vec_o_xmsti, *SCV_get_cfg_type(this, "CFG_BUS0_XMST_HDMI"), vec_o_xmsti));
-        CONNECT(mst1, 0, mst1.o_xmst, ARRITEM(vec_i_xmsto, *SCV_get_cfg_type(this, "CFG_BUS0_XMST_HDMI"), vec_i_xmsto));
-        CONNECT(mst1, 0, mst1.i_start_test, m2_start_ena);
-        CONNECT(mst1, 0, mst1.i_test_selector, m2_test_selector);
-        CONNECT(mst1, 0, mst1.i_show_result, end_of_test);
-        CONNECT(mst1, 0, mst1.o_test_busy, w_m2_busy);
+    NEW(mst2, mst2.getName().c_str());
+        CONNECT(mst2, 0, mst2.i_nrst, nrst);
+        CONNECT(mst2, 0, mst2.i_clk, clk);
+        CONNECT(mst2, 0, mst2.i_xmst, ARRITEM(vec_o_xmsti, *SCV_get_cfg_type(this, "CFG_BUS0_XMST_HDMI"), vec_o_xmsti));
+        CONNECT(mst2, 0, mst2.o_xmst, ARRITEM(vec_i_xmsto, *SCV_get_cfg_type(this, "CFG_BUS0_XMST_HDMI"), vec_i_xmsto));
+        CONNECT(mst2, 0, mst2.i_start_test, m2_start_ena);
+        CONNECT(mst2, 0, mst2.i_test_selector, m2_test_selector);
+        CONNECT(mst2, 0, mst2.i_show_result, end_of_test);
+        CONNECT(mst2, 0, mst2.o_test_busy, w_m2_busy);
     ENDNEW();
 
     INITIAL();
