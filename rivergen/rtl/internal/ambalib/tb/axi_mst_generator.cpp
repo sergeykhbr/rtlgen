@@ -19,6 +19,7 @@
 axi_mst_generator::axi_mst_generator(GenObject *parent, const char *name) :
     ModuleObject(parent, "axi_mst_generator", name, NO_COMMENT),
     // parameters
+    req_bar(this, "req_bar", "48", "0x81000000", NO_COMMENT),
     // Ports
     i_nrst(this, "i_nrst", "1", NO_COMMENT),
     i_clk(this, "i_clk", "1", NO_COMMENT),
@@ -73,7 +74,7 @@ axi_mst_generator::axi_mst_generator(GenObject *parent, const char *name) :
 void axi_mst_generator::comb_proc() {
     SETVAL(comb.vb_run_cnt_inv, INV_L(run_cnt));
     SETVAL(comb.vb_w_burst_cnt_next, INC(w_burst_cnt));
-    SETVAL(comb.vb_bar, CONST("0x81000000"));
+    SETVAL(comb.vb_bar, req_bar);
     SETZERO(compare_ena);
 
     TEXT();

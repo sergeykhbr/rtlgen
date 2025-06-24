@@ -59,6 +59,7 @@ class axi_mst_generator : public ModuleObject {
     void test_proc();
 
 public:
+    DefParamLogic req_bar;
     // Ports:
     InPort i_nrst;
     InPort i_clk;

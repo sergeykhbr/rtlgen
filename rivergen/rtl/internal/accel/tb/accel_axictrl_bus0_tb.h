@@ -37,20 +37,10 @@ class accel_axictrl_bus0_tb : public ModuleObject {
      public:
         CombProcess(GenObject *parent) :
             CombinationalProcess(parent, "comb"),
-            vb_m0_xmsto(this, "vb_m0_xmsto", NO_COMMENT),
-            vb_m1_xmsto(this, "vb_m1_xmsto", NO_COMMENT),
-            vb_bar(this, "vb_bar", "48", "'0", NO_COMMENT),
-            vb_m0_w_burst_cnt_next(this, "vb_m0_w_burst_cnt_next", "4", "'0", NO_COMMENT),
-            vb_m1_w_burst_cnt_next(this, "vb_m1_w_burst_cnt_next", "4", "'0", NO_COMMENT),
             vb_test_cnt_inv(this, "vb_test_cnt_inv", "32", "'0") {
         }
 
      public:
-        types_amba::axi4_master_out_type vb_m0_xmsto;
-        types_amba::axi4_master_out_type vb_m1_xmsto;
-        Logic vb_bar;
-        Logic vb_m0_w_burst_cnt_next;
-        Logic vb_m1_w_burst_cnt_next;
         Logic vb_test_cnt_inv;
     };
 
@@ -89,8 +79,7 @@ public:
     Signal wb_resp_rdata;
     Signal w_resp_err;
     Signal w_m0_busy;
-    SignalStruct<types_amba::axi4_master_in_type> wb_m0_xmsti;
-    SignalStruct<types_amba::axi4_master_in_type> wb_m1_xmsti;
+    Signal w_m1_busy;
     STRING msg;
 
     // registers
@@ -100,32 +89,8 @@ public:
     RegSignal test_pause_cnt;
     RegSignal m0_start_ena;
     RegSignal m0_test_selector;
-    RegSignal m0_state;
-    RegSignal m0_xsize;
-    RegSignal m0_aw_valid;
-    RegSignal m0_aw_addr;
-    RegSignal m0_aw_xlen;
-    RegSignal m0_w_wait_states;
-    RegSignal m0_w_wait_cnt;
-    RegSignal m0_w_valid;
-    RegSignal m0_w_data;
-    RegSignal m0_w_strb;
-    RegSignal m0_w_last;
-    RegSignal m0_w_burst_cnt;
-    RegSignal m0_b_wait_states;
-    RegSignal m0_b_wait_cnt;
-    RegSignal m0_b_ready;
-    RegSignal m0_ar_valid;
-    RegSignal m0_ar_addr;
-    RegSignal m0_ar_xlen;
-    RegSignal m0_r_wait_states;
-    RegSignal m0_r_wait_cnt;
-    RegSignal m0_r_ready;
-    RegSignal m0_r_burst_cnt;
-    RegSignal m0_compare_ena;
-    RegSignal m0_compare_a;
-    RegSignal m0_compare_b;
-    RegSignal m1_state;
+    RegSignal m1_start_ena;
+    RegSignal m1_test_selector;
     RegSignal end_of_test;
     RegSignal end_idle;
     RegSignal slvstate;
@@ -135,13 +100,15 @@ public:
     RegSignal resp_wait_states;
     RegSignal resp_wait_cnt;
 
-    LogicArray mem;
+    LogicArray mem0;
+    LogicArray mem1;
 
     // Sub-module instances:
     pll_generic clk0;
     accel_axictrl_bus0 bus0;
     axi_slv xslv0;
     axi_mst_generator mst0;
+    axi_mst_generator mst1;
 
     CombProcess comb;
     TestProcess test;

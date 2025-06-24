@@ -38,11 +38,12 @@ axi_slv::axi_slv(GenObject *parent, const char *name, const char *comment) :
     i_resp_rdata(this, "i_resp_rdata", "CFG_SYSBUS_DATA_BITS"),
     i_resp_err(this, "i_resp_err", "1"),
     // params
-    State_r_idle(this, "State_r_idle", "4", "0", NO_COMMENT),
-    State_r_addr(this, "State_r_addr", "4", "0x1", NO_COMMENT),
-    State_r_data(this, "State_r_data", "4", "0x2", NO_COMMENT),
-    State_r_last(this, "State_r_last", "4", "0x4", NO_COMMENT),
-    State_r_wait_writing(this, "State_r_wait_writing", "4", "0x8", NO_COMMENT),
+    State_r_idle(this, "State_r_idle", "5", "0", NO_COMMENT),
+    State_r_addr(this, "State_r_addr", "5", "0x1", NO_COMMENT),
+    State_r_data(this, "State_r_data", "5", "0x2", NO_COMMENT),
+    State_r_last(this, "State_r_last", "5", "0x4", NO_COMMENT),
+    State_r_buf(this, "State_r_buf", "5", "0x8", NO_COMMENT),
+    State_r_wait_writing(this, "State_r_wait_writing", "5", "0x10", NO_COMMENT),
     State_w_idle(this, "State_w_idle", "6", "0", NO_COMMENT),
     State_w_wait_reading(this, "State_w_wait_reading", "6", "0x1", NO_COMMENT),
     State_w_wait_reading_light(this, "State_w_wait_reading_light", "6", "0x2", NO_COMMENT),
@@ -52,7 +53,7 @@ axi_slv::axi_slv(GenObject *parent, const char *name, const char *comment) :
     State_b(this, "State_b", "6", "0x20", NO_COMMENT),
     // signals
     // registers
-    rstate(this, "rstate", "4", "State_r_idle"),
+    rstate(this, "rstate", "5", "State_r_idle"),
     wstate(this, "wstate", "6", "State_w_idle"),
     ar_ready(this, "ar_ready", "1"),
     ar_addr(this, "ar_addr", "CFG_SYSBUS_ADDR_BITS", "'0", NO_COMMENT),
@@ -74,6 +75,9 @@ axi_slv::axi_slv(GenObject *parent, const char *name, const char *comment) :
     r_last(this, "r_last", "1", RSTVAL_ZERO, NO_COMMENT),
     r_data(this, "r_data", "CFG_SYSBUS_DATA_BITS", "'0", NO_COMMENT),
     r_err(this, "r_err", "1", RSTVAL_ZERO, NO_COMMENT),
+    r_data_buf(this, "r_data_buf", "CFG_SYSBUS_DATA_BITS", "'0", NO_COMMENT),
+    r_err_buf(this, "r_err_buf", "1", RSTVAL_ZERO, NO_COMMENT),
+    r_last_buf(this, "r_last_buf", "1", RSTVAL_ZERO, NO_COMMENT),
     b_err(this, "b_err", "1", RSTVAL_ZERO, NO_COMMENT),
     b_valid(this, "b_valid", "1", RSTVAL_ZERO, NO_COMMENT),
     req_valid(this, "req_valid", "1", RSTVAL_ZERO, NO_COMMENT),
@@ -225,24 +229,53 @@ void axi_slv::proc_comb() {
             SETZERO(req_valid);
         ENDIF();
         IF (NZ(i_resp_valid));
-            SETONE(r_valid);
-            SETZERO(r_last);
-            SETVAL(r_data, i_resp_rdata);
-            SETVAL(r_err, i_resp_err);
+            IF (AND2(NZ(r_valid), EZ(i_xslvi.r_ready)));
+                TEXT("We already requested the last value but previous was not accepted yet");
+                SETVAL(r_data_buf, i_resp_rdata);
+                SETVAL(r_err_buf, i_resp_err);
+                SETVAL(r_last_buf, AND3_L(req_valid, req_last, i_req_ready));
+                SETVAL(rstate, State_r_buf);
+            ELSE();
+                SETONE(r_valid);
+                SETZERO(r_last);
+                SETVAL(r_data, i_resp_rdata);
+                SETVAL(r_err, i_resp_err);
+            ENDIF();
         ENDIF();
     ENDCASE();
     CASE(State_r_last);
         IF (NZ(i_resp_valid));
-            SETONE(r_valid);
-            SETONE(r_last);
-            SETVAL(r_data, i_resp_rdata);
-            SETVAL(r_err, i_resp_err);
+            IF (AND2(NZ(r_valid), EZ(i_xslvi.r_ready)));
+                TEXT("We already requested the last value but previous was not accepted yet");
+                SETVAL(r_data_buf, i_resp_rdata);
+                SETVAL(r_err_buf, i_resp_err);
+                SETONE(r_last_buf);
+                SETVAL(rstate, State_r_buf);
+            ELSE();
+                SETONE(r_valid);
+                SETONE(r_last);
+                SETVAL(r_data, i_resp_rdata);
+                SETVAL(r_err, i_resp_err);
+            ENDIF();
         ENDIF();
         IF (AND3(NZ(r_valid), NZ(r_last), NZ(i_xslvi.r_ready)));
             SETONE(ar_ready);
             SETZERO(r_last);
             SETZERO(r_valid, "We need it in a case of i_resp_valid is always HIGH");
             SETVAL(rstate, State_r_idle);
+        ENDIF();
+    ENDCASE();
+    CASE(State_r_buf);
+        IF (NZ(i_xslvi.r_ready));
+            SETONE(r_valid);
+            SETVAL(r_last, r_last_buf);
+            SETVAL(r_data, r_data_buf);
+            SETVAL(r_err, r_err_buf);
+            IF (NZ(r_last_buf));
+                SETVAL(rstate, State_r_last);
+            ELSE();
+                SETVAL(rstate, State_r_data);
+            ENDIF();
         ENDIF();
     ENDCASE();
     CASE(State_r_wait_writing);
