@@ -109,6 +109,13 @@ GenObject &CONST(const char *val, const char *width);
  */
 GenObject &CONST(const char *val, int width);
 
+/** explicit conversion to logic
+    sysc: static_cast<sc_uint<w>>(a)
+    sv:   a
+    vhdl: conv_int_to_std_logic(a, w)
+*/
+Operation &TO_LOGIC(GenObject &a, GenObject &w);
+
 /** explicit conversion to int
     sysc: a.to_int()
     sv:   int'(a)

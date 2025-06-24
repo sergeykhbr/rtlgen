@@ -88,6 +88,7 @@ public:
     // registers
     RegSignal clk_cnt;
     RegSignal err_cnt;
+    RegSignal compare_cnt;
     RegSignal test_cnt;
     RegSignal test_state;
     RegSignal apb_wait_states;

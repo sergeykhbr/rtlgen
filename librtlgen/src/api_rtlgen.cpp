@@ -105,6 +105,12 @@ GenObject &CONST(const char *val, int width) {
     return *p;
 }
 
+// TO_LOGIC
+Operation &TO_LOGIC(GenObject &a, GenObject &w) {
+    Operation *p = new ToLogicOperation(&a, &w, NO_COMMENT);
+    return *p;
+}
+
 // TO_INT
 Operation &TO_INT(GenObject &a) {
     Operation *p = new ToIntOperation(&a, NO_COMMENT);

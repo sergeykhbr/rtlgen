@@ -47,6 +47,7 @@ class accel_axictrl_bus0 : public ModuleObject {
             i_w_sidx(this, "i_w_sidx", "0", NO_COMMENT),
             i_b_midx(this, "i_b_midx", "0", NO_COMMENT),
             i_b_sidx(this, "i_b_sidx", "0", NO_COMMENT),
+            vb_axi_light(this, "vb_axi_light", "ADD(CFG_BUS0_XMST_TOTAL,1)", "'0", NO_COMMENT),
             v_aw_fire(this, "v_aw_fire", "1"),
             v_ar_fire(this, "v_ar_fire", "1"),
             v_w_fire(this, "v_w_fire", "1"),
@@ -73,6 +74,7 @@ class accel_axictrl_bus0 : public ModuleObject {
         I32D i_w_sidx;
         I32D i_b_midx;
         I32D i_b_sidx;
+        Logic vb_axi_light;
         Logic v_aw_fire;
         Logic v_ar_fire;
         Logic v_w_fire;

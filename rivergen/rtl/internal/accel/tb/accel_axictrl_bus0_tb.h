@@ -61,25 +61,38 @@ public:
     Signal nrst;
     Signal clk;
     SignalStruct<types_pnp::dev_config_type> wb_bus0_cfg;
-    SignalStruct<types_pnp::dev_config_type> wb_xslv0_cfg;
     types_accel_bus0::bus0_xmst_out_vector vec_i_xmsto;
     types_accel_bus0::bus0_xmst_in_vector vec_o_xmsti;
     types_accel_bus0::bus0_xslv_out_vector vec_i_xslvo;
     types_accel_bus0::bus0_xslv_in_vector vec_o_xslvi;
     types_accel_bus0::bus0_mapinfo_vector vec_o_mapinfo;
-    Signal w_req_valid;
-    Signal wb_req_addr;
-    Signal wb_req_size;
-    Signal w_req_write;
-    Signal wb_req_wdata;
-    Signal wb_req_wstrb;
-    Signal w_req_last;
-    Signal w_req_ready;
-    Signal w_resp_valid;
-    Signal wb_resp_rdata;
-    Signal w_resp_err;
+    SignalStruct<types_pnp::dev_config_type> wb_s0_cfg;
+    Signal w_s0_req_valid;
+    Signal wb_s0_req_addr;
+    Signal wb_s0_req_size;
+    Signal w_s0_req_write;
+    Signal wb_s0_req_wdata;
+    Signal wb_s0_req_wstrb;
+    Signal w_s0_req_last;
+    Signal w_s0_req_ready;
+    Signal w_s0_resp_valid;
+    Signal wb_s0_resp_rdata;
+    Signal w_s0_resp_err;
+    SignalStruct<types_pnp::dev_config_type> wb_s1_cfg;
+    Signal w_s1_req_valid;
+    Signal wb_s1_req_addr;
+    Signal wb_s1_req_size;
+    Signal w_s1_req_write;
+    Signal wb_s1_req_wdata;
+    Signal wb_s1_req_wstrb;
+    Signal w_s1_req_last;
+    Signal w_s1_req_ready;
+    Signal w_s1_resp_valid;
+    Signal wb_s1_resp_rdata;
+    Signal w_s1_resp_err;
     Signal w_m0_busy;
     Signal w_m1_busy;
+    Signal w_m2_busy;
     STRING msg;
 
     // registers
@@ -91,24 +104,28 @@ public:
     RegSignal m0_test_selector;
     RegSignal m1_start_ena;
     RegSignal m1_test_selector;
+    RegSignal m2_start_ena;
+    RegSignal m2_test_selector;
+    RegSignal s0_state;
+    RegSignal req_s0_ready;
+    RegSignal resp_s0_valid;
+    RegSignal resp_s0_rdata;
+    RegSignal resp_s0_wait_states;
+    RegSignal resp_s0_wait_cnt;
     RegSignal end_of_test;
     RegSignal end_idle;
-    RegSignal slvstate;
-    RegSignal req_ready;
-    RegSignal resp_valid;
-    RegSignal resp_rdata;
-    RegSignal resp_wait_states;
-    RegSignal resp_wait_cnt;
 
-    LogicArray mem0;
-    LogicArray mem1;
+    LogicArray s0_mem0;
+    LogicArray s0_mem1;
 
     // Sub-module instances:
     pll_generic clk0;
     accel_axictrl_bus0 bus0;
     axi_slv xslv0;
+    axi_slv xslv1;
     axi_mst_generator mst0;
     axi_mst_generator mst1;
+    axi_mst_generator mst2;
 
     CombProcess comb;
     TestProcess test;

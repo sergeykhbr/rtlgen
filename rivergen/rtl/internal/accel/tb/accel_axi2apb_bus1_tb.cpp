@@ -41,6 +41,7 @@ accel_axi2apb_bus1_tb::accel_axi2apb_bus1_tb(GenObject *parent, const char *name
     msg(this, "msg", "error message", NO_COMMENT),
     clk_cnt(this, &clk, CLK_POSEDGE, &nrst, ACTIVE_LOW,  "clk_cnt", "32", "'0", NO_COMMENT),
     err_cnt(this, &clk, CLK_POSEDGE, &nrst, ACTIVE_LOW,  "err_cnt", "32", "'0", NO_COMMENT),
+    compare_cnt(this, &clk, CLK_POSEDGE, &nrst, ACTIVE_LOW,  "compare_cnt", "32", "'0", NO_COMMENT),
     test_cnt(this, &clk, CLK_POSEDGE, &nrst, ACTIVE_LOW,  "test_cnt", "32", "'0", NO_COMMENT),
     test_state(this, &clk, CLK_POSEDGE, &nrst, ACTIVE_LOW,  "test_state", "3", "'0", NO_COMMENT),
     apb_wait_states(this, &clk, CLK_POSEDGE, &nrst, ACTIVE_LOW,  "apb_wait_states", "2", "'0", NO_COMMENT),
@@ -327,6 +328,7 @@ void accel_axi2apb_bus1_tb::comb_proc() {
 
     TEXT();
     IF (NZ(compare_ena));
+        SETVAL(compare_cnt, INC(compare_cnt));
         IF (NE(compare_a, compare_b));
             SETVAL(err_cnt, INC(err_cnt));
         ENDIF();
@@ -389,7 +391,7 @@ void accel_axi2apb_bus1_tb::test_proc() {
         EXPECT_EQ(compare_a, compare_b, "APB write/read compare");
     ENDIF();
     IF (NZ(end_of_test));
-        DISPLAY_ERROR(err_cnt, NO_COMMENT);
+        DISPLAY_ERROR(compare_cnt, err_cnt, NO_COMMENT);
     ENDIF();
 }
 

@@ -378,6 +378,18 @@ class BitswOperation : public Operation {
 };
 
 /**
+    Convert int to logic:
+ */
+class ToLogicOperation : public ConvertOperation {
+ public:
+    ToLogicOperation(GenObject *a, GenObject *outWidth, const char *comment)
+        : ConvertOperation(a, 32, comment), outWidth_(outWidth) {}
+    virtual std::string generate() override;
+ protected:
+    GenObject *outWidth_;
+};
+
+/**
     Convert to signed int:
  */
 class ToIntOperation : public ConvertOperation {
@@ -1319,17 +1331,18 @@ Operation &DISPLAYSTR(GenObject &str);
  */
 class DisplayErrorOperation : public Operation {
  public:
-    DisplayErrorOperation(GenObject *errcnt, const char *comment)
-        : Operation(comment), errcnt_(errcnt) {
+    DisplayErrorOperation(GenObject *totcnt, GenObject *errcnt, const char *comment)
+        : Operation(comment), totcnt_(totcnt), errcnt_(errcnt) {
     }
     virtual std::string getName() override { return ""; }
     virtual std::string generate() override;
  protected:
+    GenObject *totcnt_;
     GenObject *errcnt_;
 };
 
 
-void DISPLAY_ERROR(GenObject &errcnt, const char *comment);
+void DISPLAY_ERROR(GenObject &totcnt, GenObject &errcnt, const char *comment);
 
 /**
     Generate error message if values not equal (test-benches only)

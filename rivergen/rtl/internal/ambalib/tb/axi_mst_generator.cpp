@@ -20,23 +20,27 @@ axi_mst_generator::axi_mst_generator(GenObject *parent, const char *name) :
     ModuleObject(parent, "axi_mst_generator", name, NO_COMMENT),
     // parameters
     req_bar(this, "req_bar", "48", "0x81000000", NO_COMMENT),
+    unique_id(this, "unique_id", "4", "'1", NO_COMMENT),
+    read_only(this, "read_only", "0", NO_COMMENT),
     // Ports
     i_nrst(this, "i_nrst", "1", NO_COMMENT),
     i_clk(this, "i_clk", "1", NO_COMMENT),
     i_xmst(this, "i_xmst", NO_COMMENT),
     o_xmst(this, "o_xmst", NO_COMMENT),
     i_start_test(this, "i_start_test", "1", NO_COMMENT),
-    i_test_selector(this, "i_test_selector", "10", NO_COMMENT),
+    i_test_selector(this, "i_test_selector", "11", NO_COMMENT),
     i_show_result(this, "i_show_result", "1", NO_COMMENT),
     o_test_busy(this, "o_test_busy", "1", NO_COMMENT),
     msg(this, "msg", "error message", NO_COMMENT),
     err_cnt(this, "err_cnt", "32", "'0", NO_COMMENT),
+    compare_cnt(this, "compare_cnt", "32", "'0", NO_COMMENT),
     run_cnt(this, "run_cnt", "32", "'0", NO_COMMENT),
     state(this, "state", "4", "'0", NO_COMMENT),
     xsize(this, "xsize", "3", "3", NO_COMMENT),
     aw_valid(this, "aw_valid", "1", "0", NO_COMMENT),
     aw_addr(this, "aw_addr", "48", "'0", NO_COMMENT),
     aw_xlen(this, "aw_xlen", "8", "'0", NO_COMMENT),
+    w_use_axi_light(this, "w_use_axi_light", "1", RSTVAL_ZERO, NO_COMMENT),
     w_wait_states(this, "w_wait_states", "3", "'0", NO_COMMENT),
     w_wait_cnt(this, "w_wait_cnt", "3", "'0", NO_COMMENT),
     w_valid(this, "w_valid", "1", "0", NO_COMMENT),
@@ -82,25 +86,54 @@ void axi_mst_generator::comb_proc() {
     SWITCH(state);
     CASE(CONST("0", 4));
         IF (NZ(i_start_test));
-            SETVAL(state, CONST("1", 4));
+            IF (NZ(read_only));
+                SETVAL(state, CONST("5", 4));
+            ELSE();
+                SETVAL(state, CONST("1", 4));
+            ENDIF();
             SETVAL(run_cnt, INC(run_cnt));
             SETVAL(w_wait_states, BITS(i_test_selector, 2, 0));//4, 2));
             SETVAL(b_wait_states, BITS(i_test_selector, 4, 3));//6, 5));
             SETVAL(r_wait_states, BITS(i_test_selector, 7, 5));//9, 7));
             SETVAL(aw_xlen, CC2(CONST("0", 6), BITS(i_test_selector, 9, 8)));//11, 10)));
             SETVAL(ar_xlen, CC2(CONST("0", 6), BITS(i_test_selector, 9, 8)));//, 11, 10)));
+            IF (AND2(EZ(BITS(i_test_selector, 9, 8)), EQ(BITS(i_test_selector, 2, 0), CONST("7", 3))));
+                SETONE(w_use_axi_light);
+            ELSE();
+                SETZERO(w_use_axi_light);
+            ENDIF();
             SETVAL(xsize, CONST("3", 3), "8-bytes");
+            IF (NZ(BIT(i_test_selector, 10)));
+                SETVAL(xsize, CONST("2", 3), "4-bytes");
+            ENDIF();
         ENDIF();
     ENDCASE();
     CASE(CONST("1", 4), "aw request");
         SETONE(aw_valid);
         SETVAL(aw_addr, ADD2(comb.vb_bar, CC2(BITS(run_cnt, 11, 0), CONST("0", 5))));
         SETZERO(w_burst_cnt);
+        IF (NZ(w_use_axi_light));
+            SETONE(w_valid);
+            SETONE(w_last);
+            SETVAL(w_data,  CC4(unique_id, BITS(comb.vb_run_cnt_inv, 27, 0), BITS(run_cnt, 27, 0), w_burst_cnt));
+            SETVAL(w_strb, CONST("0xff", 8));
+        ENDIF();
         IF (AND2(NZ(aw_valid), NZ(i_xmst.aw_ready)));
             SETZERO(aw_valid);
-            SETVAL(w_data,  CC3(comb.vb_run_cnt_inv, BITS(run_cnt, 27, 0), w_burst_cnt));
+            SETVAL(w_data,  CC4(unique_id, BITS(comb.vb_run_cnt_inv, 27, 0), BITS(run_cnt, 27, 0), w_burst_cnt));
             SETVAL(w_strb, CONST("0xff", 8));
-            IF (EZ(w_wait_states));
+            IF (AND2(NZ(w_valid), NZ(i_xmst.w_ready)));
+                SETZERO(w_valid);
+                IF (EZ(b_wait_states));
+                    SETZERO(b_wait_cnt);
+                    SETONE(b_ready);
+                ELSE();
+                    SETVAL(b_wait_cnt, b_wait_states);
+                ENDIF();
+                SETVAL(state, CONST("4", 4));
+            ELSIF (OR3(EZ(w_wait_states), NZ(aw_xlen), NZ(w_valid)));
+                TEXT("1. Generate first w_valid just after aw in burst transaction to check buffering");
+                TEXT("2. Cannot inject waits for AXI Light requests");
                 SETZERO(w_wait_cnt);
                 SETONE(w_valid);
                 SETVAL(w_last, INV_L(OR_REDUCE(aw_xlen)));
@@ -122,10 +155,10 @@ void axi_mst_generator::comb_proc() {
     ENDCASE();
     CASE(CONST("3", 4), "w request");
         SETONE(w_valid);
-        SETVAL(w_data,  CC3(comb.vb_run_cnt_inv, BITS(run_cnt, 27, 0), w_burst_cnt));
+        SETVAL(w_data,  CC4(unique_id, BITS(comb.vb_run_cnt_inv, 27, 0), BITS(run_cnt, 27, 0), w_burst_cnt));
         IF (AND2(NZ(w_valid), NZ(i_xmst.w_ready)));
             SETVAL(w_burst_cnt, comb.vb_w_burst_cnt_next);
-            SETVAL(w_data,  CC3(comb.vb_run_cnt_inv, BITS(run_cnt, 27, 0), comb.vb_w_burst_cnt_next));
+            SETVAL(w_data,  CC4(unique_id, BITS(comb.vb_run_cnt_inv, 27, 0), BITS(run_cnt, 27, 0), comb.vb_w_burst_cnt_next));
             SETZERO(w_valid);
             SETZERO(w_last);
             SETVAL(w_wait_cnt, w_wait_states);
@@ -168,7 +201,7 @@ void axi_mst_generator::comb_proc() {
         IF (AND2(NZ(ar_valid), NZ(i_xmst.ar_ready))); 
             SETZERO(ar_valid);
             SETZERO(r_burst_cnt);
-            IF (EZ(r_wait_states));
+            IF (OR2(EZ(r_wait_states), NZ(ar_xlen)));
                 SETZERO(r_wait_cnt);
                 SETONE(r_ready);
                 SETVAL(state, CONST("7", 4));
@@ -191,9 +224,9 @@ void axi_mst_generator::comb_proc() {
         IF (AND2(NZ(r_ready), NZ(i_xmst.r_valid)));
             SETVAL(r_burst_cnt, INC(r_burst_cnt));
             SETZERO(r_ready);
-            SETONE(compare_ena);
+            SETVAL(compare_ena, INV_L(read_only));
             SETVAL(compare_a, i_xmst.r_data);
-            SETVAL(compare_b, CC3(comb.vb_run_cnt_inv, BITS(run_cnt, 27, 0), r_burst_cnt));
+            SETVAL(compare_b, CC4(unique_id, BITS(comb.vb_run_cnt_inv, 27, 0), BITS(run_cnt, 27, 0), r_burst_cnt));
             IF (NZ(i_xmst.r_last));
                 TEXT("Goto idle");
                 SETVAL(state, CONST("0", 4));
@@ -213,6 +246,7 @@ void axi_mst_generator::comb_proc() {
 
     TEXT();
     IF (NZ(compare_ena));
+        SETVAL(compare_cnt, INC(compare_cnt));
         IF (NE(compare_a, compare_b));
             SETVAL(err_cnt, INC(err_cnt));
         ENDIF();
@@ -259,7 +293,7 @@ void axi_mst_generator::test_proc() {
         EXPECT_EQ(compare_a, compare_b, "master[0] write/read compare");
     ENDIF();
     IF (NZ(i_show_result));
-        DISPLAY_ERROR(err_cnt, "master generator");
+        DISPLAY_ERROR(compare_cnt, err_cnt, "master generator");
     ENDIF();
 }
 

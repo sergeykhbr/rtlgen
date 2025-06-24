@@ -430,6 +430,22 @@ std::string BitswOperation::generate() {
     return ret;
 }
 
+// TO_LOGIC
+std::string ToLogicOperation::generate() {
+    std::string A = a_->nameInModule(PORT_OUT);
+    std::string w = outWidth_->nameInModule(PORT_OUT);
+    if (SCV_is_sysc()) {
+        A = "static_cast<sc_uint<" + w + ">>(" + A + ")";
+    } else if (SCV_is_sv()) {
+        // do nothing, we can use bits operation
+    } else if (SCV_is_vhdl()) {
+        if (a_->isLogic()) {
+            A = "conv_int_to_std_logic(" + A + ", " + w + ")";
+        }
+    }
+    return A;
+}
+
 // TO_INT
 std::string ToIntOperation::generate() {
     std::string A = obj2varname(a_, "r", true);
@@ -1712,7 +1728,9 @@ std::string DisplayErrorOperation::generate() {
         ret += "if (" + errcnt_->nameInModule(PORT_OUT) + " == 0) {\n";
         pushspaces();
         ret += addspaces();
-        ret += "std::cout << \"@\" << sc_time_stamp() << \" No errors. TESTS PASSED\" << std::endl;\n";
+        ret += "std::cout << \"@\" << sc_time_stamp() << \" No errors. \"\n";
+        ret += addspaces() + "          << " + totcnt_->nameInModule(PORT_OUT);
+        ret += " << \" TESTS PASSED\" << std::endl;\n";
         popspaces();
         ret += addspaces() + "} else {\n";
         pushspaces();
@@ -1725,12 +1743,13 @@ std::string DisplayErrorOperation::generate() {
         ret += "if (" + errcnt_->nameInModule(PORT_OUT) + " == 0) begin\n";
         pushspaces();
         ret += addspaces();
-        ret += "$display(\"[%0t] No errors. TESTS PASSED\", $time);\n";
+        ret += "$display(\"[%0t] No errors. %d TESTS PASSED\", $time, ";
+        ret += totcnt_->nameInModule(PORT_OUT) + ")\n;";
         popspaces();
         ret += addspaces() + "end else begin\n";
         pushspaces();
         ret += addspaces();
-        ret += "$display(\"[%0t] TESTS FAILED. Total error = %0d\"\n";
+        ret += "$display(\"[%0t] TESTS FAILED. Total error = %d\"\n";
         ret += addspaces() + "        $time,\n";
         ret += addspaces() + "        " + errcnt_->nameInModule(PORT_OUT) + ");\n";
         popspaces();
@@ -1739,8 +1758,8 @@ std::string DisplayErrorOperation::generate() {
     return ret;
 }
 
-void DISPLAY_ERROR(GenObject &errcnt, const char *comment) {
-    new DisplayErrorOperation(&errcnt, comment);
+void DISPLAY_ERROR(GenObject &totcnt, GenObject &errcnt, const char *comment) {
+    new DisplayErrorOperation(&totcnt, &errcnt, comment);
 }
 
 
