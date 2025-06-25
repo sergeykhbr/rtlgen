@@ -360,6 +360,7 @@ void axi_slv::proc_comb() {
         IF (AND2(NZ(w_ready), NZ(i_xslvi.w_valid)));
             IF (EZ(i_req_ready));
                 SETVAL(wstate, State_w_buf);
+                SETZERO(w_ready);
                 SETVAL(req_addr_buf, CC2(BITS(req_addr,
                         DEC(*SCV_get_cfg_type(this, "CFG_SYSBUS_ADDR_BITS")), CONST("12")), comb.vb_aw_addr_next));
                 SETVAL(req_wdata_buf, i_xslvi.w_data);

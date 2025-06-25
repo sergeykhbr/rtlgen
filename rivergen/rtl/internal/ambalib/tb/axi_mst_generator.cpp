@@ -112,7 +112,7 @@ void axi_mst_generator::comb_proc() {
     CASE(CONST("1", 4), "aw request");
         SETONE(comb.v_writing);
         SETONE(aw_valid);
-        SETVAL(aw_addr, ADD2(comb.vb_bar, CC2(BITS(run_cnt, 11, 0), CONST("0", 5))));
+        SETVAL(aw_addr, ADD2(comb.vb_bar, CC2(BITS(run_cnt, 6, 0), CONST("0", 5))));
         SETZERO(w_burst_cnt);
         IF (NZ(w_use_axi_light));
             SETONE(w_valid);
@@ -196,14 +196,14 @@ void axi_mst_generator::comb_proc() {
                 SETZERO(b_ready);
                 SETVAL(state, CONST("5", 4));
                 SETONE(ar_valid);
-                SETVAL(ar_addr, ADD2(comb.vb_bar, CC2(BITS(run_cnt, 11, 0), CONST("0", 5))));
+                SETVAL(ar_addr, ADD2(comb.vb_bar, CC2(BITS(run_cnt, 6, 0), CONST("0", 5))));
             ENDIF();
         ENDIF();
     ENDCASE();
     CASE(CONST("5", 4), "ar request");
         SETONE(comb.v_reading);
         SETONE(ar_valid);
-        SETVAL(ar_addr, ADD2(comb.vb_bar, CC2(BITS(run_cnt, 11, 0), CONST("0", 5))));
+        SETVAL(ar_addr, ADD2(comb.vb_bar, CC2(BITS(run_cnt, 6, 0), CONST("0", 5))));
         IF (AND2(NZ(ar_valid), NZ(i_xmst.ar_ready))); 
             SETZERO(ar_valid);
             SETZERO(r_burst_cnt);
