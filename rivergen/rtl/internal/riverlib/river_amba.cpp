@@ -37,18 +37,6 @@ RiverAmba::RiverAmba(GenObject *parent, const char *name, const char *depth) :
     o_available("1", "o_available", "1", this, "CPU was instantitated of stubbed"),
     i_progbuf(this, "i_progbuf", "MUL(32,CFG_PROGBUF_REG_TOTAL)", "progam buffer"),
     // params
-    state_idle(this, "state_idle", "3", "0", NO_COMMENT),
-    state_ar(this, "state_ar", "3", "1", NO_COMMENT),
-    state_r(this, "state_r", "3", "2", NO_COMMENT),
-    state_aw(this, "state_aw", "3", "3", NO_COMMENT),
-    state_w(this, "state_w", "3", "4", NO_COMMENT),
-    state_b(this, "state_b", "3", "5", NO_COMMENT),
-    snoop_idle(this, "snoop_idle", "3", "0", NO_COMMENT),
-    snoop_ac_wait_accept(this, "snoop_ac_wait_accept", "3", "1", NO_COMMENT),
-    snoop_cr(this, "snoop_cr", "3", "2", NO_COMMENT),
-    snoop_cr_wait_accept(this, "snoop_cr_wait_accept", "3", "3", NO_COMMENT),
-    snoop_cd(this, "snoop_cd", "3", "4", NO_COMMENT),
-    snoop_cd_wait_accept(this, "snoop_cd_wait_accept", "3", "5", NO_COMMENT),
     // Singals:
     req_mem_ready_i(this, "req_mem_ready_i", "1"),
     req_mem_path_o(this, "req_mem_path_o", "1"),
@@ -59,6 +47,7 @@ RiverAmba::RiverAmba(GenObject *parent, const char *name, const char *depth) :
     req_mem_strob_o(this, "req_mem_strob_o", "L1CACHE_BYTES_PER_LINE"),
     req_mem_data_o(this, "req_mem_data_o", "L1CACHE_LINE_BITS"),
     resp_mem_data_i(this, "resp_mem_data_i", "L1CACHE_LINE_BITS"),
+    resp_mem_path_i(this, "resp_mem_path_i", "1"),
     resp_mem_valid_i(this, "resp_mem_valid_i", "1"),
     resp_mem_load_fault_i(this, "resp_mem_load_fault_i", "1"),
     resp_mem_store_fault_i(this, "resp_mem_store_fault_i", "1"),
@@ -86,29 +75,10 @@ RiverAmba::RiverAmba(GenObject *parent, const char *name, const char *depth) :
     w_dporto_resp_error(this, "w_dporto_resp_error", "1"),
     wb_dporto_rdata(this, "wb_dporto_rdata", "RISCV_ARCH"),
     // registers
-    state(this, "state", "3", "state_idle", NO_COMMENT),
-    req_addr(this, "req_addr", "CFG_CPU_ADDR_BITS", "'0", NO_COMMENT),
-    req_path(this, "req_path", "1"),
-    req_cached(this, "req_cached", "4", "'0", NO_COMMENT),
-    req_wdata(this, "req_wdata", "L1CACHE_LINE_BITS", "'0", NO_COMMENT),
-    req_wstrb(this, "req_wstrb", "L1CACHE_BYTES_PER_LINE", "'0", NO_COMMENT),
-    req_size(this, "req_size", "3", "'0", NO_COMMENT),
-    req_prot(this, "req_prot", "3", "'0", NO_COMMENT),
-    req_ar_snoop(this, "req_ar_snoop", "4", "'0", NO_COMMENT),
-    req_aw_snoop(this, "req_aw_snoop", "3", "'0", NO_COMMENT),
-    snoop_state(this, "snoop_state", "3", "snoop_idle", NO_COMMENT),
-    ac_addr(this, "ac_addr", "CFG_CPU_ADDR_BITS", "'0", NO_COMMENT),
-    ac_snoop(this, "ac_snoop", "4", "0", "Table C3-19"),
-    cr_resp(this, "cr_resp", "5", "'0", NO_COMMENT),
-    req_snoop_type(this, "req_snoop_type", "SNOOP_REQ_TYPE_BITS", "'0", NO_COMMENT),
-    resp_snoop_data(this, "resp_snoop_data", "L1CACHE_LINE_BITS", "'0", NO_COMMENT),
-    cache_access(this, "cache_access", "1"),
-    watchdog(this, "watchdog", "13", "'0", NO_COMMENT),
     // functions
-    reqtype2arsnoop(this),
-    reqtype2awsnoop(this),
     // submodules:
     river0(this, "river0"),
+    l1dma0(this, "l1dma0", NO_COMMENT),
     comb(this)
 {
     Operation::start(this);
@@ -131,7 +101,7 @@ RiverAmba::RiverAmba(GenObject *parent, const char *name, const char *depth) :
         CONNECT(river0, 0, river0.o_req_mem_strob, req_mem_strob_o);
         CONNECT(river0, 0, river0.o_req_mem_data, req_mem_data_o);
         CONNECT(river0, 0, river0.i_resp_mem_valid, resp_mem_valid_i);
-        CONNECT(river0, 0, river0.i_resp_mem_path, req_path);
+        CONNECT(river0, 0, river0.i_resp_mem_path, resp_mem_path_i);
         CONNECT(river0, 0, river0.i_resp_mem_data, resp_mem_data_i);
         CONNECT(river0, 0, river0.i_resp_mem_load_fault, resp_mem_load_fault_i);
         CONNECT(river0, 0, river0.i_resp_mem_store_fault, resp_mem_store_fault_i);
@@ -161,45 +131,44 @@ RiverAmba::RiverAmba(GenObject *parent, const char *name, const char *depth) :
         CONNECT(river0, 0, river0.o_halted, o_halted);
     ENDNEW();
 
+    l1dma0.abits.setObjValue(SCV_get_cfg_type(this, "CFG_CPU_ADDR_BITS"));
+    l1dma0.userbits.setObjValue(new DecConst(1));
+    l1dma0.base_offset.setObjValue(new HexLogicConst(SCV_get_cfg_type(this, "CFG_CPU_ADDR_BITS"), 0x0));
+    l1dma0.coherence_ena.setObjValue(&coherence_ena);
+    NEW(l1dma0, l1dma0.getName().c_str());
+        CONNECT(l1dma0, 0, l1dma0.i_nrst, i_nrst);
+        CONNECT(l1dma0, 0, l1dma0.i_clk, i_clk);
+        CONNECT(l1dma0, 0, l1dma0.o_req_mem_ready, req_mem_ready_i);
+        CONNECT(l1dma0, 0, l1dma0.i_req_mem_path, req_mem_path_o);
+        CONNECT(l1dma0, 0, l1dma0.i_req_mem_valid, req_mem_valid_o);
+        CONNECT(l1dma0, 0, l1dma0.i_req_mem_type, req_mem_type_o);
+        CONNECT(l1dma0, 0, l1dma0.i_req_mem_size, req_mem_size_o);
+        CONNECT(l1dma0, 0, l1dma0.i_req_mem_addr, req_mem_addr_o);
+        CONNECT(l1dma0, 0, l1dma0.i_req_mem_strob, req_mem_strob_o);
+        CONNECT(l1dma0, 0, l1dma0.i_req_mem_data, req_mem_data_o);
+        CONNECT(l1dma0, 0, l1dma0.o_resp_mem_path, resp_mem_path_i);
+        CONNECT(l1dma0, 0, l1dma0.o_resp_mem_valid, resp_mem_valid_i);
+        CONNECT(l1dma0, 0, l1dma0.o_resp_mem_load_fault, resp_mem_load_fault_i);
+        CONNECT(l1dma0, 0, l1dma0.o_resp_mem_store_fault, resp_mem_store_fault_i);
+        CONNECT(l1dma0, 0, l1dma0.o_resp_mem_data, resp_mem_data_i);
+        CONNECT(l1dma0, 0, l1dma0.o_req_snoop_valid, req_snoop_valid_i);
+        CONNECT(l1dma0, 0, l1dma0.o_req_snoop_type, req_snoop_type_i);
+        CONNECT(l1dma0, 0, l1dma0.i_req_snoop_ready, req_snoop_ready_o);
+        CONNECT(l1dma0, 0, l1dma0.o_req_snoop_addr, req_snoop_addr_i);
+        CONNECT(l1dma0, 0, l1dma0.o_resp_snoop_ready, resp_snoop_ready_i);
+        CONNECT(l1dma0, 0, l1dma0.i_resp_snoop_valid, resp_snoop_valid_o);
+        CONNECT(l1dma0, 0, l1dma0.i_resp_snoop_data, resp_snoop_data_o);
+        CONNECT(l1dma0, 0, l1dma0.i_resp_snoop_flags, resp_snoop_flags_o);
+        CONNECT(l1dma0, 0, l1dma0.i_msti, i_msti);
+        CONNECT(l1dma0, 0, l1dma0.o_msto, o_msto);
+    ENDNEW();
+
     Operation::start(&comb);
     proc_comb();
 }
 
-RiverAmba::reqtype2arsnoop_func::reqtype2arsnoop_func(GenObject *parent)
-    : FunctionObject(parent, "reqtype2arsnoop"),
-    ret(this, "ret", "4"),
-    reqtype(this, "reqtype", "REQ_MEM_TYPE_BITS") {
-    SETZERO(ret);
-    IF (EZ(BIT(reqtype, glob_river_cfg_->REQ_MEM_TYPE_CACHED)));
-        SETVAL(ret, glob_types_amba_->ARSNOOP_READ_NO_SNOOP);
-    ELSE();
-        IF (EZ(BIT(reqtype, glob_river_cfg_->REQ_MEM_TYPE_UNIQUE)));
-            SETVAL(ret, glob_types_amba_->ARSNOOP_READ_SHARED);
-        ELSE();
-            SETVAL(ret, glob_types_amba_->ARSNOOP_READ_MAKE_UNIQUE);
-        ENDIF();
-    ENDIF();
-}
-
-RiverAmba::reqtype2awsnoop_func::reqtype2awsnoop_func(GenObject *parent)
-    : FunctionObject(parent, "reqtype2awsnoop"),
-    ret(this, "ret", "4"),
-    reqtype(this, "reqtype", "REQ_MEM_TYPE_BITS") {
-    SETZERO(ret);
-    IF (EZ(BIT(reqtype, glob_river_cfg_->REQ_MEM_TYPE_CACHED)));
-        SETVAL(ret, glob_types_amba_->AWSNOOP_WRITE_NO_SNOOP);
-    ELSE();
-        IF (EZ(BIT(reqtype, glob_river_cfg_->REQ_MEM_TYPE_UNIQUE)));
-            SETVAL(ret, glob_types_amba_->AWSNOOP_WRITE_BACK);
-        ELSE();
-            SETVAL(ret, glob_types_amba_->AWSNOOP_WRITE_LINE_UNIQUE);
-        ENDIF();
-    ENDIF();
-}
 
 void RiverAmba::proc_comb() {
-    river_cfg *cfg = glob_river_cfg_;
-
 TEXT();
     SETVAL(w_dporti_haltreq, i_dport.haltreq, "systemc compatibility");
     SETVAL(w_dporti_resumereq, i_dport.resumereq, "systemc compatibility");
@@ -218,252 +187,8 @@ TEXT();
     SETVAL(comb.vdporto.resp_error, w_dporto_resp_error, "systemc compatibility");
     SETVAL(comb.vdporto.rdata, wb_dporto_rdata, "systemc compatibility");
 
-TEXT();
-    SETVAL(comb.vmsto, glob_types_river_->axi4_l1_out_none);
-    SETVAL(comb.vmsto.ar_bits.burst, glob_types_amba_->AXI_BURST_INCR, "INCR (possible any value actually)");
-    SETVAL(comb.vmsto.aw_bits.burst, glob_types_amba_->AXI_BURST_INCR, "INCR (possible any value actually)");
-
-    SWITCH (state);
-    CASE(state_idle);
-        SETONE(comb.v_next_ready);
-        IF (NZ(req_mem_valid_o));
-            SETVAL(req_path, req_mem_path_o);
-            SETVAL(req_addr, req_mem_addr_o);
-            SETVAL(req_size, req_mem_size_o);
-            TEXT("[0] 0=Unpriv/1=Priv;");
-            TEXT("[1] 0=Secure/1=Non-secure;");
-            TEXT("[2] 0=Data/1=Instruction");
-            SETVAL(req_prot, LSH(req_mem_path_o, CONST("2")));
-            IF (EZ(BIT(req_mem_type_o, cfg->REQ_MEM_TYPE_WRITE)));
-                SETVAL(state, state_ar);
-                SETZERO(req_wdata);
-                SETZERO(req_wstrb);
-                IF (NZ(BIT(req_mem_type_o, cfg->REQ_MEM_TYPE_CACHED)));
-                    SETVAL(req_cached, glob_types_amba_->ARCACHE_WRBACK_READ_ALLOCATE);
-                ELSE();
-                    SETVAL(req_cached, glob_types_amba_->ARCACHE_DEVICE_NON_BUFFERABLE);
-                ENDIF();
-                IF (NZ(coherence_ena));
-                    CALLF(&req_ar_snoop, reqtype2arsnoop, 1, &req_mem_type_o);
-                ENDIF();
-            ELSE();
-                SETVAL(state, state_aw);
-                SETVAL(req_wdata, req_mem_data_o);
-                SETVAL(req_wstrb, req_mem_strob_o);
-                IF (NZ(BIT(req_mem_type_o, cfg->REQ_MEM_TYPE_CACHED)));
-                    SETVAL(req_cached, glob_types_amba_->AWCACHE_WRBACK_WRITE_ALLOCATE);
-                ELSE();
-                    SETVAL(req_cached, glob_types_amba_->AWCACHE_DEVICE_NON_BUFFERABLE);
-                ENDIF();
-                IF (NZ(coherence_ena));
-                    CALLF(&req_aw_snoop, reqtype2awsnoop, 1, &req_mem_type_o);
-                ENDIF();
-            ENDIF();
-        ENDIF();
-        ENDCASE();
-    CASE(state_ar);
-        SETONE(comb.vmsto.ar_valid);
-        SETVAL(comb.vmsto.ar_bits.addr, req_addr);
-        SETVAL(comb.vmsto.ar_bits.cache, req_cached);
-        SETVAL(comb.vmsto.ar_bits.size, req_size);
-        SETVAL(comb.vmsto.ar_bits.prot, req_prot);
-        SETVAL(comb.vmsto.ar_snoop, req_ar_snoop);
-        IF (OR2(NZ(i_msti.ar_ready), BIT(watchdog, 12)));
-            SETVAL(state, state_r);
-        ENDIF();
-        ENDCASE();
-    CASE(state_r);
-        SETONE(comb.vmsto.r_ready);
-        SETVAL(comb.v_mem_er_load_fault, OR2_L(BIT(i_msti.r_resp, 1), BIT(watchdog, 12)));
-        SETVAL(comb.v_resp_mem_valid, i_msti.r_valid);
-        TEXT("r_valid and r_last always should be in the same time");
-        IF (OR2(AND2(NZ(i_msti.r_valid), NZ(i_msti.r_last)), BIT(watchdog, 12)));
-            SETVAL(state, state_idle);
-        ENDIF();
-        ENDCASE();
-    CASE(state_aw);
-        SETONE(comb.vmsto.aw_valid);
-        SETVAL(comb.vmsto.aw_bits.addr, req_addr);
-        SETVAL(comb.vmsto.aw_bits.cache, req_cached);
-        SETVAL(comb.vmsto.aw_bits.size, req_size);
-        SETVAL(comb.vmsto.aw_bits.prot, req_prot);
-        SETVAL(comb.vmsto.aw_snoop, req_aw_snoop);
-        TEXT("axi lite to simplify L2-cache");
-        SETONE(comb.vmsto.w_valid);
-        SETONE(comb.vmsto.w_last);
-        SETVAL(comb.vmsto.w_data, req_wdata);
-        SETVAL(comb.vmsto.w_strb, req_wstrb);
-        IF (OR2(NZ(i_msti.aw_ready), BIT(watchdog, 12)));
-            IF (NZ(i_msti.w_ready));
-                SETVAL(state, state_b);
-            ELSE();
-                SETVAL(state, state_w);
-            ENDIF();
-        ENDIF();
-        ENDCASE();
-    CASE(state_w);
-        TEXT("Shoudln't get here because of Lite interface:");
-        SETONE(comb.vmsto.w_valid);
-        SETONE(comb.vmsto.w_last);
-        SETVAL(comb.vmsto.w_data, req_wdata);
-        SETVAL(comb.vmsto.w_strb, req_wstrb);
-        IF (OR2(NZ(i_msti.w_ready), NZ(BIT(watchdog, 12))));
-            SETVAL(state, state_b);
-        ENDIF();
-        ENDCASE();
-    CASE(state_b);
-        SETONE(comb.vmsto.b_ready);
-        SETVAL(comb.v_resp_mem_valid, i_msti.b_valid);
-        SETVAL(comb.v_mem_er_store_fault, OR2_L(BIT(i_msti.b_resp, 1), BIT(watchdog, 12)));
-        IF (OR2(NZ(i_msti.b_valid), BIT(watchdog, 12)));
-            SETVAL(state, state_idle);
-        ENDIF();
-        ENDCASE();
-    CASEDEF();
-        ENDCASE();
-    ENDSWITCH();
-
-    TEXT();
-    IF (EQ(state, state_idle));
-        SETZERO(watchdog);
-    ELSE();
-        SETVAL(watchdog, INC(watchdog));
-    ENDIF();
 
 TEXT();
-    TEXT("Snoop processing:");
-    SWITCH (snoop_state);
-    CASE(snoop_idle);
-        SETONE(comb.v_snoop_next_ready);
-        ENDCASE();
-    CASE(snoop_ac_wait_accept);
-        SETONE(comb.req_snoop_valid);
-        SETVAL(comb.vb_req_snoop_addr, ac_addr);
-        SETVAL(comb.vb_req_snoop_type, req_snoop_type);
-        IF (NZ(req_snoop_ready_o));
-            IF (EZ(cache_access));
-                SETVAL(snoop_state, snoop_cr);
-            ELSE();
-                SETVAL(snoop_state, snoop_cd);
-            ENDIF();
-        ENDIF();
-        ENDCASE();
-    CASE(snoop_cr);
-        IF (NZ(resp_snoop_valid_o));
-            SETONE(comb.v_cr_valid);
-            IF (ANDx(2, &NZ(BIT(resp_snoop_flags_o, cfg->TAG_FL_VALID)),
-                        &ORx(2, &EZ(BIT(resp_snoop_flags_o, cfg->DTAG_FL_SHARED)),
-                                &EQ(ac_snoop, glob_types_amba_->AC_SNOOP_READ_UNIQUE))));
-                TEXT("Need second request with cache access");
-                SETONE(cache_access);
-                TEXT("see table C3-21 \"Snoop response bit allocation\"");
-                SETBITONE(comb.vb_cr_resp, 0, "will be Data transfer");
-                SETBITONE(comb.vb_cr_resp, 4, "WasUnique");
-                IF (EQ(ac_snoop, glob_types_amba_->AC_SNOOP_READ_UNIQUE));
-                    SETBITONE(comb.vb_req_snoop_type, cfg->SNOOP_REQ_TYPE_READCLEAN);
-                ELSE();
-                    SETBITONE(comb.vb_req_snoop_type, cfg->SNOOP_REQ_TYPE_READDATA);
-                ENDIF();
-                SETVAL(req_snoop_type, comb.vb_req_snoop_type);
-                SETVAL(snoop_state, snoop_ac_wait_accept);
-                IF (NZ(i_msti.cr_ready));
-                    SETVAL(snoop_state, snoop_ac_wait_accept);
-                ELSE();
-                    SETVAL(snoop_state, snoop_cr_wait_accept);
-                ENDIF();
-            ELSE();
-                SETZERO(comb.vb_cr_resp);
-                IF (NZ(i_msti.cr_ready));
-                    SETVAL(snoop_state, snoop_idle);
-                ELSE();
-                    SETVAL(snoop_state, snoop_cr_wait_accept);
-                ENDIF();
-            ENDIF();
-            SETVAL(cr_resp, comb.vb_cr_resp);
-        ENDIF();
-        ENDCASE();
-    CASE(snoop_cr_wait_accept);
-        SETONE(comb.v_cr_valid);
-        SETVAL(comb.vb_cr_resp, cr_resp);
-        IF (NZ(i_msti.cr_ready));
-            IF (NZ(cache_access));
-                SETVAL(snoop_state, snoop_ac_wait_accept);
-            ELSE();
-                SETVAL(snoop_state, snoop_idle);
-            ENDIF();
-        ENDIF();
-        ENDCASE();
-    CASE(snoop_cd);
-        IF (NZ(resp_snoop_valid_o));
-            SETONE(comb.v_cd_valid);
-            SETVAL(comb.vb_cd_data, resp_snoop_data_o);
-            SETVAL(resp_snoop_data, resp_snoop_data_o);
-            IF (NZ(i_msti.cd_ready));
-                SETVAL(snoop_state, snoop_idle);
-            ELSE();
-                SETVAL(snoop_state, snoop_cd_wait_accept);
-            ENDIF();
-        ENDIF();
-        ENDCASE();
-    CASE(snoop_cd_wait_accept);
-        SETONE(comb.v_cd_valid);
-        SETVAL(comb.vb_cd_data, resp_snoop_data);
-        IF (NZ(i_msti.cd_ready));
-            SETVAL(snoop_state, snoop_idle);
-        ENDIF();
-        ENDCASE();
-    CASEDEF();
-        ENDCASE();
-    ENDSWITCH();
-
-TEXT();
-    IF (ANDx(3, &NZ(coherence_ena),
-                &NZ(comb.v_snoop_next_ready),
-                &NZ(i_msti.ac_valid)));
-        SETONE(comb.req_snoop_valid);
-        SETZERO(cache_access);
-        SETZERO(comb.vb_req_snoop_type, "First snoop operation always just to read flags");
-        SETZERO(req_snoop_type);
-        SETVAL(comb.vb_req_snoop_addr, i_msti.ac_addr);
-        SETVAL(ac_addr, i_msti.ac_addr);
-        SETVAL(ac_snoop, i_msti.ac_snoop);
-        IF (NZ(req_snoop_ready_o));
-            SETVAL(snoop_state, snoop_cr);
-        ELSE();
-            SETVAL(snoop_state, snoop_ac_wait_accept);
-        ENDIF();
-    ELSE();
-        SETONE(comb.v_snoop_next_ready);
-        SETONE(comb.v_cr_valid);
-    ENDIF();
-
-TEXT();
-    SYNC_RESET();
-
-TEXT();
-    SETVAL(comb.vmsto.ac_ready, comb.v_snoop_next_ready);
-    SETVAL(comb.vmsto.cr_valid, comb.v_cr_valid);
-    SETVAL(comb.vmsto.cr_resp, comb.vb_cr_resp);
-    SETVAL(comb.vmsto.cd_valid, comb.v_cd_valid);
-    SETVAL(comb.vmsto.cd_data, comb.vb_cd_data);
-    SETVAL(comb.vmsto.cd_last, comb.v_cd_valid);
-    SETZERO(comb.vmsto.rack);
-    SETZERO(comb.vmsto.wack);
-
-TEXT();
-    SETVAL(req_mem_ready_i, comb.v_next_ready);
-    SETVAL(resp_mem_valid_i, comb.v_resp_mem_valid);
-    SETVAL(resp_mem_data_i, i_msti.r_data);
-    SETVAL(resp_mem_load_fault_i, comb.v_mem_er_load_fault);
-    SETVAL(resp_mem_store_fault_i, comb.v_mem_er_store_fault);
-    TEXT("AXI Snoop IOs:");
-    SETVAL(req_snoop_valid_i, comb.req_snoop_valid);
-    SETVAL(req_snoop_type_i, comb.vb_req_snoop_type);
-    SETVAL(req_snoop_addr_i, comb.vb_req_snoop_addr);
-    SETONE(resp_snoop_ready_i);
-
-TEXT();
-    SETVAL(o_msto, comb.vmsto);
     SETVAL(o_dport, comb.vdporto, "systemc compatibility");
     SETVAL(o_available, CONST("1", 1));
 }

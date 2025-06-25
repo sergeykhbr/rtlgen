@@ -24,6 +24,7 @@
 #include "river_cfg.h"
 #include "types_river.h"
 #include "river_top.h"
+#include "l1_dma_snoop.h"
 #include "river_amba.h"
 #include "dummycpu.h"
 #include "ic_axi4_to_l1.h"
@@ -40,6 +41,7 @@ class riverlib_folder : public FolderObject {
         l2cache_(this),
         dmi_(this),
         river_top_(this),
+        l1_dma_snoop_file_(this),
         river_amba_(this),
         dummycpu_(this),
         ic_axi4_to_l1_(this),
@@ -55,6 +57,7 @@ class riverlib_folder : public FolderObject {
     l2cache_folder l2cache_;
     dmi_folder dmi_;
     river_top river_top_;
+    l1_dma_snoop_file l1_dma_snoop_file_;
     river_amba_file river_amba_;
     dummycpu_file dummycpu_;
     ic_axi4_to_l1_file ic_axi4_to_l1_;

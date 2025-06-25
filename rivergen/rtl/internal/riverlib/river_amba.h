@@ -20,6 +20,7 @@
 #include "river_cfg.h"
 #include "types_river.h"
 #include "river_top.h"
+#include "l1_dma_snoop.h"
 
 using namespace sysvc;
 
@@ -65,32 +66,6 @@ class RiverAmba : public ModuleObject {
 
     void proc_comb();
 
-    class reqtype2arsnoop_func : public FunctionObject {
-     public:
-        reqtype2arsnoop_func(GenObject *parent);
-        virtual std::string getType() override { return ret.getType(); }
-        virtual void getArgsList(std::list<GenObject *> &args) {
-            args.push_back(&reqtype);
-        }
-        virtual GenObject *getpReturn() { return &ret; }
-     protected:
-        Logic ret;
-        Logic reqtype;
-    };
-
-    class reqtype2awsnoop_func : public FunctionObject {
-     public:
-        reqtype2awsnoop_func(GenObject *parent);
-        virtual std::string getType() override { return ret.getType(); }
-        virtual void getArgsList(std::list<GenObject *> &args) {
-            args.push_back(&reqtype);
-        }
-        virtual GenObject *getpReturn() { return &ret; }
-     protected:
-        Logic ret;
-        Logic reqtype;
-    };
-
 public:
     DefParamUI32D hartid;
     DefParamBOOL fpu_ena;
@@ -110,20 +85,6 @@ public:
     OutPort o_available;
     InPort i_progbuf;
 
-    ParamLogic state_idle;
-    ParamLogic state_ar;
-    ParamLogic state_r;
-    ParamLogic state_aw;
-    ParamLogic state_w;
-    ParamLogic state_b;
-
-    ParamLogic snoop_idle;
-    ParamLogic snoop_ac_wait_accept;
-    ParamLogic snoop_cr;
-    ParamLogic snoop_cr_wait_accept;
-    ParamLogic snoop_cd;
-    ParamLogic snoop_cd_wait_accept;
-
     // Signals:
     Signal req_mem_ready_i;
     Signal req_mem_path_o;
@@ -134,6 +95,7 @@ public:
     Signal req_mem_strob_o;
     Signal req_mem_data_o;
     Signal resp_mem_data_i;
+    Signal resp_mem_path_i;
     Signal resp_mem_valid_i;
     Signal resp_mem_load_fault_i;
     Signal resp_mem_store_fault_i;
@@ -161,30 +123,11 @@ public:
     Signal w_dporto_resp_error;
     Signal wb_dporto_rdata;
 
-    RegSignal state;
-    RegSignal req_addr;
-    RegSignal req_path;
-    RegSignal req_cached;
-    RegSignal req_wdata;
-    RegSignal req_wstrb;
-    RegSignal req_size;
-    RegSignal req_prot;
-    RegSignal req_ar_snoop;
-    RegSignal req_aw_snoop;
-    RegSignal snoop_state;
-    RegSignal ac_addr;
-    RegSignal ac_snoop;
-    RegSignal cr_resp;
-    RegSignal req_snoop_type;
-    RegSignal resp_snoop_data;
-    RegSignal cache_access;
-    RegSignal watchdog;
 
     // functions
-    reqtype2arsnoop_func reqtype2arsnoop;
-    reqtype2awsnoop_func reqtype2awsnoop;
     // Sub-module instances:
     RiverTop river0;
+    l1_dma_snoop l1dma0;
     // process
     CombProcess comb;
 };
