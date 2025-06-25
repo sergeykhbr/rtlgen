@@ -30,7 +30,8 @@ axi_mst_generator::axi_mst_generator(GenObject *parent, const char *name) :
     i_start_test(this, "i_start_test", "1", NO_COMMENT),
     i_test_selector(this, "i_test_selector", "11", NO_COMMENT),
     i_show_result(this, "i_show_result", "1", NO_COMMENT),
-    o_test_busy(this, "o_test_busy", "1", NO_COMMENT),
+    o_writing(this, "o_writing", "1", NO_COMMENT),
+    o_reading(this, "o_reading", "1", NO_COMMENT),
     msg(this, "msg", "error message", NO_COMMENT),
     err_cnt(this, "err_cnt", "32", "'0", NO_COMMENT),
     compare_cnt(this, "compare_cnt", "32", "'0", NO_COMMENT),
@@ -109,6 +110,7 @@ void axi_mst_generator::comb_proc() {
         ENDIF();
     ENDCASE();
     CASE(CONST("1", 4), "aw request");
+        SETONE(comb.v_writing);
         SETONE(aw_valid);
         SETVAL(aw_addr, ADD2(comb.vb_bar, CC2(BITS(run_cnt, 11, 0), CONST("0", 5))));
         SETZERO(w_burst_cnt);
@@ -145,6 +147,7 @@ void axi_mst_generator::comb_proc() {
         ENDIF();
     ENDCASE();
     CASE(CONST("2", 4), "w wait request");
+        SETONE(comb.v_writing);
         IF (NZ(w_wait_cnt));
             SETVAL(w_wait_cnt, DEC(w_wait_cnt));
         ELSE();
@@ -154,6 +157,7 @@ void axi_mst_generator::comb_proc() {
         ENDIF();
     ENDCASE();
     CASE(CONST("3", 4), "w request");
+        SETONE(comb.v_writing);
         SETONE(w_valid);
         SETVAL(w_data,  CC4(unique_id, BITS(comb.vb_run_cnt_inv, 27, 0), BITS(run_cnt, 27, 0), w_burst_cnt));
         IF (AND2(NZ(w_valid), NZ(i_xmst.w_ready)));
@@ -182,6 +186,7 @@ void axi_mst_generator::comb_proc() {
         ENDIF();
     ENDCASE();
     CASE(CONST("4", 4), "b response");
+        SETONE(comb.v_writing);
         SETZERO(w_burst_cnt);
         IF (NZ(b_wait_cnt));
             SETVAL(b_wait_cnt, DEC(b_wait_cnt));
@@ -196,6 +201,7 @@ void axi_mst_generator::comb_proc() {
         ENDIF();
     ENDCASE();
     CASE(CONST("5", 4), "ar request");
+        SETONE(comb.v_reading);
         SETONE(ar_valid);
         SETVAL(ar_addr, ADD2(comb.vb_bar, CC2(BITS(run_cnt, 11, 0), CONST("0", 5))));
         IF (AND2(NZ(ar_valid), NZ(i_xmst.ar_ready))); 
@@ -212,6 +218,7 @@ void axi_mst_generator::comb_proc() {
         ENDIF();
     ENDCASE();
     CASE(CONST("6", 4));
+        SETONE(comb.v_reading);
         IF (NZ(r_wait_cnt));
             SETVAL(r_wait_cnt, DEC(r_wait_cnt));
         ELSE();
@@ -220,6 +227,7 @@ void axi_mst_generator::comb_proc() {
         ENDIF();
     ENDCASE();
     CASE(CONST("7", 4), "r response");
+        SETONE(comb.v_reading);
         SETONE(r_ready);
         IF (AND2(NZ(r_ready), NZ(i_xmst.r_valid)));
             SETVAL(r_burst_cnt, INC(r_burst_cnt));
@@ -285,7 +293,8 @@ void axi_mst_generator::comb_proc() {
     SETVAL(comb.vb_xmsto.b_ready, b_ready);
     SETVAL(comb.vb_xmsto.r_ready, r_ready);
     SETVAL(o_xmst, comb.vb_xmsto);
-    SETVAL(o_test_busy, OR_REDUCE(state));
+    SETVAL(o_writing, comb.v_writing);
+    SETVAL(o_reading, comb.v_reading);
 }
 
 void axi_mst_generator::test_proc() {

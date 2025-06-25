@@ -90,10 +90,12 @@ public:
     Signal w_s1_resp_valid;
     Signal wb_s1_resp_rdata;
     Signal w_s1_resp_err;
-    Signal w_m0_busy;
-    Signal w_m1_busy;
-    Signal w_m2_busy;
-    STRING msg;
+    Signal w_m0_writing;
+    Signal w_m0_reading;
+    Signal w_m1_writing;
+    Signal w_m1_reading;
+    Signal w_m2_writing;
+    Signal w_m2_reading;
 
     // registers
     RegSignal clk_cnt;

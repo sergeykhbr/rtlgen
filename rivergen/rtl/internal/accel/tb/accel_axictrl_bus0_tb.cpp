@@ -52,10 +52,12 @@ accel_axictrl_bus0_tb::accel_axictrl_bus0_tb(GenObject *parent, const char *name
     w_s1_resp_valid(this, "w_s1_resp_valid", "1", RSTVAL_ZERO, NO_COMMENT),
     wb_s1_resp_rdata(this, "wb_s1_resp_rdata", "64", RSTVAL_ZERO, NO_COMMENT),
     w_s1_resp_err(this, "w_s1_resp_err", "1", RSTVAL_ZERO, NO_COMMENT),
-    w_m0_busy(this, "w_m0_busy", "1", RSTVAL_ZERO, NO_COMMENT),
-    w_m1_busy(this, "w_m1_busy", "1", RSTVAL_ZERO, NO_COMMENT),
-    w_m2_busy(this, "w_m2_busy", "1", RSTVAL_ZERO, NO_COMMENT),
-    msg(this, "msg", "error message", NO_COMMENT),
+    w_m0_writing(this, "w_m0_writing", "1", RSTVAL_ZERO, NO_COMMENT),
+    w_m0_reading(this, "w_m0_reading", "1", RSTVAL_ZERO, NO_COMMENT),
+    w_m1_writing(this, "w_m1_writing", "1", RSTVAL_ZERO, NO_COMMENT),
+    w_m1_reading(this, "w_m1_reading", "1", RSTVAL_ZERO, NO_COMMENT),
+    w_m2_writing(this, "w_m2_writing", "1", RSTVAL_ZERO, NO_COMMENT),
+    w_m2_reading(this, "w_m2_reading", "1", RSTVAL_ZERO, NO_COMMENT),
     clk_cnt(this, &clk, CLK_POSEDGE, &nrst, ACTIVE_LOW,  "clk_cnt", "32", "'0", NO_COMMENT),
     err_cnt(this, &clk, CLK_POSEDGE, &nrst, ACTIVE_LOW,  "err_cnt", "32", "'0", NO_COMMENT),
     test_cnt(this, &clk, CLK_POSEDGE, &nrst, ACTIVE_LOW,  "test_cnt", "32", "'0", NO_COMMENT),
@@ -162,7 +164,8 @@ accel_axictrl_bus0_tb::accel_axictrl_bus0_tb(GenObject *parent, const char *name
         CONNECT(mst0, 0, mst0.i_start_test, m0_start_ena);
         CONNECT(mst0, 0, mst0.i_test_selector, m0_test_selector);
         CONNECT(mst0, 0, mst0.i_show_result, end_of_test);
-        CONNECT(mst0, 0, mst0.o_test_busy, w_m0_busy);
+        CONNECT(mst0, 0, mst0.o_writing, w_m0_writing);
+        CONNECT(mst0, 0, mst0.o_reading, w_m0_reading);
     ENDNEW();
 
     TEXT();
@@ -177,7 +180,8 @@ accel_axictrl_bus0_tb::accel_axictrl_bus0_tb(GenObject *parent, const char *name
         CONNECT(mst1, 0, mst1.i_start_test, m1_start_ena);
         CONNECT(mst1, 0, mst1.i_test_selector, m1_test_selector);
         CONNECT(mst1, 0, mst1.i_show_result, end_of_test);
-        CONNECT(mst1, 0, mst1.o_test_busy, w_m1_busy);
+        CONNECT(mst1, 0, mst1.o_writing, w_m1_writing);
+        CONNECT(mst1, 0, mst1.o_reading, w_m1_reading);
     ENDNEW();
 
     TEXT();
@@ -192,7 +196,8 @@ accel_axictrl_bus0_tb::accel_axictrl_bus0_tb(GenObject *parent, const char *name
         CONNECT(mst2, 0, mst2.i_start_test, m2_start_ena);
         CONNECT(mst2, 0, mst2.i_test_selector, m2_test_selector);
         CONNECT(mst2, 0, mst2.i_show_result, end_of_test);
-        CONNECT(mst2, 0, mst2.o_test_busy, w_m2_busy);
+        CONNECT(mst2, 0, mst2.o_writing, w_m2_writing);
+        CONNECT(mst2, 0, mst2.o_reading, w_m2_reading);
     ENDNEW();
 
     INITIAL();
@@ -217,6 +222,7 @@ void accel_axictrl_bus0_tb::comb_proc() {
     SETVAL(end_idle, OR2(end_of_test, end_idle));
     SETZERO(m0_start_ena);
     SETZERO(m1_start_ena);
+    SETZERO(m2_start_ena);
 
     TEXT();
     TEXT("ddr simulation with controllable wait states");
@@ -260,17 +266,23 @@ void accel_axictrl_bus0_tb::comb_proc() {
     TEXT();
     IF (NZ(end_idle));
         TEXT("Do nothing");
-    ELSIF (ANDx(3, &NZ(test_pause_cnt),
-                &EZ(w_m0_busy),
-                &EZ(w_m1_busy)));
+    ELSIF (ANDx(6, &NZ(test_pause_cnt),
+                &EZ(w_m0_writing),
+                &EZ(w_m0_reading),
+                &EZ(w_m1_writing),
+                &EZ(w_m1_reading),
+                &EZ(w_m2_writing),
+                &EZ(w_m2_reading)));
         SETVAL(test_pause_cnt, DEC(test_pause_cnt));
     ELSIF (EZ(test_pause_cnt));
         SETVAL(test_cnt, INC(test_cnt));
         SETVAL(resp_s0_wait_states, BITS(test_cnt, 1, 0));
         SETVAL(m0_test_selector, BITS(test_cnt, 12, 2));
         SETONE(m0_start_ena);
-        SETVAL(m1_test_selector, BITS(test_cnt, 11, 1));
-        SETONE(m1_start_ena);
+        IF (EZ(BIT(test_cnt, 0)));
+            SETVAL(m1_test_selector, BITS(test_cnt, 11, 1));
+            SETONE(m1_start_ena);
+        ENDIF();
         SETVAL(m2_test_selector, CONST("0x300", 11), "Burst 4, with zero wait states");
         SETONE(m2_start_ena);
         IF(NZ(BIT(test_cnt, 13)));
@@ -280,6 +292,13 @@ void accel_axictrl_bus0_tb::comb_proc() {
         SETVAL(test_pause_cnt, CONST("10", 32));
     ELSE();
         SETVAL(test_pause_cnt, CONST("10", 32));
+    ENDIF();
+    IF (ANDx(3, &NZ(BIT(test_cnt, 0)),
+                &NZ(w_m0_reading),
+                &EZ(OR2_L(w_m1_writing, w_m1_reading))));
+        TEXT("Check delayed writing after reading");
+        SETVAL(m1_test_selector, BITS(test_cnt, 11, 1));
+        SETONE(m1_start_ena);
     ENDIF();
 
     TEXT();

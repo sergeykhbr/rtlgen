@@ -36,7 +36,9 @@ class axi_mst_generator : public ModuleObject {
             vb_xmsto(this, "vb_xmsto", NO_COMMENT),
             vb_bar(this, "vb_bar", "48", "'0", NO_COMMENT),
             vb_w_burst_cnt_next(this, "vb_w_burst_cnt_next", "4", "'0", NO_COMMENT),
-            vb_run_cnt_inv(this, "vb_run_cnt_inv", "32", "'0") {
+            vb_run_cnt_inv(this, "vb_run_cnt_inv", "32", "'0"),
+            v_writing(this, "v_writing", "1", RSTVAL_ZERO, NO_COMMENT),
+            v_reading(this, "v_reading", "1", RSTVAL_ZERO, NO_COMMENT) {
         }
 
      public:
@@ -44,6 +46,8 @@ class axi_mst_generator : public ModuleObject {
         Logic vb_bar;
         Logic vb_w_burst_cnt_next;
         Logic vb_run_cnt_inv;
+        Logic v_writing;
+        Logic v_reading;
     };
 
 
@@ -70,7 +74,8 @@ public:
     InPort i_start_test;
     InPort i_test_selector;
     InPort i_show_result;
-    OutPort o_test_busy;
+    OutPort o_writing;
+    OutPort o_reading;
     STRING msg;
 
     // registers
