@@ -69,8 +69,8 @@ l1_dma_snoop::l1_dma_snoop(GenObject *parent, const char *name, const char *comm
     req_addr(this, "req_addr", "abits", "'0", NO_COMMENT),
     req_path(this, "req_path", "1"),
     req_cached(this, "req_cached", "4", "'0", NO_COMMENT),
-    req_wdata(this, "req_wdata", "CFG_SYSBUS_DATA_BITS", "'0", NO_COMMENT),
-    req_wstrb(this, "req_wstrb", "CFG_SYSBUS_DATA_BYTES", "'0", NO_COMMENT),
+    req_wdata(this, "req_wdata", "L1CACHE_LINE_BITS", "'0", NO_COMMENT),
+    req_wstrb(this, "req_wstrb", "L1CACHE_BYTES_PER_LINE", "'0", NO_COMMENT),
     req_size(this, "req_size", "3", "'0", NO_COMMENT),
     req_prot(this, "req_prot", "3", "'0", NO_COMMENT),
     req_ar_snoop(this, "req_ar_snoop", "4", "'0", NO_COMMENT),
@@ -128,8 +128,6 @@ l1_dma_snoop::reqtype2awsnoop_func::reqtype2awsnoop_func(GenObject *parent)
 }
 
 void l1_dma_snoop::proc_comb() {
-TEXT();
-    SETVAL(comb.vmsto, *SCV_get_cfg_type(this, "axi4_l1_out_none"));
     SETVAL(comb.vmsto.ar_bits.burst, *SCV_get_cfg_type(this, "AXI_BURST_INCR"), "INCR (possible any value actually)");
     SETVAL(comb.vmsto.aw_bits.burst, *SCV_get_cfg_type(this, "AXI_BURST_INCR"), "INCR (possible any value actually)");
 

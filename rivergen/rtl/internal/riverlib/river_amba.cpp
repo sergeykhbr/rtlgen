@@ -131,6 +131,7 @@ RiverAmba::RiverAmba(GenObject *parent, const char *name, const char *depth) :
         CONNECT(river0, 0, river0.o_halted, o_halted);
     ENDNEW();
 
+    TEXT();
     l1dma0.abits.setObjValue(SCV_get_cfg_type(this, "CFG_CPU_ADDR_BITS"));
     l1dma0.userbits.setObjValue(new DecConst(1));
     l1dma0.base_offset.setObjValue(new HexLogicConst(SCV_get_cfg_type(this, "CFG_CPU_ADDR_BITS"), 0x0));

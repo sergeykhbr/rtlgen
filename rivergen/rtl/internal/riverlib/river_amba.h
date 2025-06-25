@@ -32,36 +32,10 @@ class RiverAmba : public ModuleObject {
      public:
         CombProcess(GenObject* parent)
             : CombinationalProcess(parent, "comb"),
-            v_resp_mem_valid(this, "v_resp_mem_valid", "1"),
-            v_mem_er_load_fault(this, "v_mem_er_load_fault", "1"),
-            v_mem_er_store_fault(this, "v_mem_er_store_fault", "1"),
-            v_next_ready(this, "v_next_ready", "1"),
-            vmsto(this, "vmsto", "axi4_l1_out_none", NO_COMMENT),
-            vdporto(this, "vdporto", "dport_out_none", NO_COMMENT),
-            v_snoop_next_ready(this, "v_snoop_next_ready", "1"),
-            req_snoop_valid(this, "req_snoop_valid", "1"),
-            vb_req_snoop_addr(this, "vb_req_snoop_addr", "CFG_CPU_ADDR_BITS", "'0", NO_COMMENT),
-            vb_req_snoop_type(this, "vb_req_snoop_type", "SNOOP_REQ_TYPE_BITS", "'0", NO_COMMENT),
-            v_cr_valid(this, "v_cr_valid", "1"),
-            vb_cr_resp(this, "vb_cr_resp", "5", "'0", NO_COMMENT),
-            v_cd_valid(this, "v_cd_valid", "1"),
-            vb_cd_data(this, "vb_cd_data", "L1CACHE_LINE_BITS", "'0", NO_COMMENT) {
+            vdporto(this, "vdporto", "dport_out_none", NO_COMMENT) {
         }
      public:
-        Logic v_resp_mem_valid;
-        Logic v_mem_er_load_fault;
-        Logic v_mem_er_store_fault;
-        Logic v_next_ready;
-        StructVar<types_river::axi4_l1_out_type> vmsto;
         StructVar<types_river::dport_out_type> vdporto;
-        Logic v_snoop_next_ready;
-        Logic req_snoop_valid;
-        Logic vb_req_snoop_addr;
-        Logic vb_req_snoop_type;
-        Logic v_cr_valid;
-        Logic vb_cr_resp;
-        Logic v_cd_valid;
-        Logic vb_cd_data;
     };
 
     void proc_comb();

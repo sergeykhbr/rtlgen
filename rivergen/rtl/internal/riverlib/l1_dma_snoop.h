@@ -34,7 +34,7 @@ class l1_dma_snoop : public ModuleObject {
             v_mem_er_load_fault(this, "v_mem_er_load_fault", "1"),
             v_mem_er_store_fault(this, "v_mem_er_store_fault", "1"),
             v_next_ready(this, "v_next_ready", "1"),
-            vmsto(this, "vmsto", "axi4_master_out_none", NO_COMMENT),
+            vmsto(this, "vmsto", "axi4_l1_out_none", NO_COMMENT),
             v_snoop_next_ready(this, "v_snoop_next_ready", "1"),
             req_snoop_valid(this, "req_snoop_valid", "1"),
             vb_req_snoop_addr(this, "vb_req_snoop_addr", "CFG_CPU_ADDR_BITS", "'0", NO_COMMENT),
