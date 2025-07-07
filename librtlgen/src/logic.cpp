@@ -88,12 +88,15 @@ std::string Logic::getType() {
             }
         }
     } else if (SCV_is_sv()) {
+        if (isAttribute(ATTR_MARK_DEBUG)) {
+            ret = "(* mark_debug = \"true\" *) ";
+        }
         if (isParam() && !isParamGeneric()) {
-            ret = std::string("bit");
+            ret += std::string("bit");
         } else if (isAttribute(ATTR_UNCHECKED_WRITERS)) {
-            ret = std::string("wire");
+            ret += std::string("wire");
         } else {
-            ret = std::string("logic");
+            ret += std::string("logic");
         }
         if (getWidth() > 1 || getObjWidth()->isParam()) {
             ret += " [";

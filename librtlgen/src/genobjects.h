@@ -47,6 +47,7 @@ enum EPorts {
 static const bool NO_SC_READ = true;
 
 static const int ATTR_UNCHECKED_WRITERS = 0x1 << 0;     // bi-directional wire, do not check number of writers
+static const int ATTR_MARK_DEBUG        = 0x1 << 1;     // (* mark_debug = "true" *) in system verilog
 
 enum ECfgGenType {
     CFG_GEN_SV,
