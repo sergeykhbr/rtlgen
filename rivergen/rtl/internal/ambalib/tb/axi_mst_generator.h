@@ -84,6 +84,7 @@ public:
     RegSignal run_cnt;
     RegSignal state;
     RegSignal xsize;
+    RegSignal aw_wait_cnt;
     RegSignal aw_valid;
     RegSignal aw_addr;
     RegSignal aw_xlen;
@@ -98,6 +99,7 @@ public:
     RegSignal b_wait_states;
     RegSignal b_wait_cnt;
     RegSignal b_ready;
+    RegSignal ar_wait_cnt;
     RegSignal ar_valid;
     RegSignal ar_addr;
     RegSignal ar_xlen;

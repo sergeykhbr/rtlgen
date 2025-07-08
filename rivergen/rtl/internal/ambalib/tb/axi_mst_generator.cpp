@@ -28,7 +28,7 @@ axi_mst_generator::axi_mst_generator(GenObject *parent, const char *name) :
     i_xmst(this, "i_xmst", NO_COMMENT),
     o_xmst(this, "o_xmst", NO_COMMENT),
     i_start_test(this, "i_start_test", "1", NO_COMMENT),
-    i_test_selector(this, "i_test_selector", "11", NO_COMMENT),
+    i_test_selector(this, "i_test_selector", "32", NO_COMMENT),
     i_show_result(this, "i_show_result", "1", NO_COMMENT),
     o_writing(this, "o_writing", "1", NO_COMMENT),
     o_reading(this, "o_reading", "1", NO_COMMENT),
@@ -38,6 +38,7 @@ axi_mst_generator::axi_mst_generator(GenObject *parent, const char *name) :
     run_cnt(this, "run_cnt", "32", "'0", NO_COMMENT),
     state(this, "state", "4", "'0", NO_COMMENT),
     xsize(this, "xsize", "3", "3", NO_COMMENT),
+    aw_wait_cnt(this, "aw_wait_cnt", "2", "'0", NO_COMMENT),
     aw_valid(this, "aw_valid", "1", "0", NO_COMMENT),
     aw_addr(this, "aw_addr", "48", "'0", NO_COMMENT),
     aw_xlen(this, "aw_xlen", "8", "'0", NO_COMMENT),
@@ -52,6 +53,7 @@ axi_mst_generator::axi_mst_generator(GenObject *parent, const char *name) :
     b_wait_states(this, "b_wait_states", "2", "'0", NO_COMMENT),
     b_wait_cnt(this, "b_wait_cnt", "2", "'0", NO_COMMENT),
     b_ready(this, "b_ready", "1", "0", NO_COMMENT),
+    ar_wait_cnt(this, "ar_wait_cnt", "2", "'0", NO_COMMENT),
     ar_valid(this, "ar_valid", "1", "0", NO_COMMENT),
     ar_addr(this, "ar_addr", "48", "'0", NO_COMMENT),
     ar_xlen(this, "ar_xlen", "8", "'0", NO_COMMENT),
@@ -88,25 +90,49 @@ void axi_mst_generator::comb_proc() {
     CASE(CONST("0", 4));
         IF (NZ(i_start_test));
             IF (NZ(read_only));
-                SETVAL(state, CONST("5", 4));
+                IF (EZ(BITS(i_test_selector, 1, 0)));
+                    SETVAL(state, CONST("5", 4), "ar_request");
+                ELSE();
+                    SETVAL(state, CONST("14", 4), "wait to ar_request");
+                ENDIF();
             ELSE();
-                SETVAL(state, CONST("1", 4));
+                IF (EZ(BITS(i_test_selector, 1, 0)));
+                    SETVAL(state, CONST("1", 4), "aw_request");
+                ELSE();
+                    SETVAL(state, CONST("13", 4), "wait to aw_request");
+                ENDIF();
             ENDIF();
             SETVAL(run_cnt, INC(run_cnt));
-            SETVAL(w_wait_states, BITS(i_test_selector, 2, 0));//4, 2));
-            SETVAL(b_wait_states, BITS(i_test_selector, 4, 3));//6, 5));
-            SETVAL(r_wait_states, BITS(i_test_selector, 7, 5));//9, 7));
-            SETVAL(aw_xlen, CC2(CONST("0", 6), BITS(i_test_selector, 9, 8)));//11, 10)));
-            SETVAL(ar_xlen, CC2(CONST("0", 6), BITS(i_test_selector, 9, 8)));//, 11, 10)));
-            IF (AND2(EZ(BITS(i_test_selector, 9, 8)), EQ(BITS(i_test_selector, 2, 0), CONST("7", 3))));
+            SETVAL(aw_wait_cnt, BITS(i_test_selector, 1, 0));
+            SETVAL(ar_wait_cnt, BITS(i_test_selector, 1, 0));
+            SETVAL(w_wait_states, BITS(i_test_selector, 4, 2));
+            SETVAL(b_wait_states, BITS(i_test_selector, 6, 5));
+            SETVAL(r_wait_states, BITS(i_test_selector, 9, 7));
+            SETVAL(aw_xlen, CC2(CONST("0", 6), BITS(i_test_selector, 11, 10)));
+            SETVAL(ar_xlen, CC2(CONST("0", 6), BITS(i_test_selector, 11, 10)));
+            IF (AND2(EZ(BITS(i_test_selector, 11, 10)), EQ(BITS(i_test_selector, 4, 2), CONST("7", 3))));
                 SETONE(w_use_axi_light);
             ELSE();
                 SETZERO(w_use_axi_light);
             ENDIF();
             SETVAL(xsize, CONST("3", 3), "8-bytes");
-            IF (NZ(BIT(i_test_selector, 10)));
+            IF (NZ(BIT(i_test_selector, 12)));
                 SETVAL(xsize, CONST("2", 3), "4-bytes");
             ENDIF();
+        ENDIF();
+    ENDCASE();
+    CASE(CONST("13", 4), "wait to aw request");
+        IF (NZ(aw_wait_cnt));
+            SETVAL(aw_wait_cnt, DEC(aw_wait_cnt));
+        ELSE();
+            SETVAL(state, CONST("1", 4), "aw_request");
+        ENDIF();
+    ENDCASE();
+    CASE(CONST("14", 4), "wait to ar request");
+        IF (NZ(ar_wait_cnt));
+            SETVAL(ar_wait_cnt, DEC(ar_wait_cnt));
+        ELSE();
+            SETVAL(state, CONST("5", 4), "ar_request");
         ENDIF();
     ENDCASE();
     CASE(CONST("1", 4), "aw request");
@@ -232,9 +258,13 @@ void axi_mst_generator::comb_proc() {
         IF (AND2(NZ(r_ready), NZ(i_xmst.r_valid)));
             SETVAL(r_burst_cnt, INC(r_burst_cnt));
             SETZERO(r_ready);
-            SETVAL(compare_ena, INV_L(read_only));
+            SETONE(compare_ena);
             SETVAL(compare_a, i_xmst.r_data);
-            SETVAL(compare_b, CC4(unique_id, BITS(comb.vb_run_cnt_inv, 27, 0), BITS(run_cnt, 27, 0), r_burst_cnt));
+            IF (EZ(read_only));
+                SETVAL(compare_b, CC4(unique_id, BITS(comb.vb_run_cnt_inv, 27, 0), BITS(run_cnt, 27, 0), r_burst_cnt));
+            ELSE();
+                SETVAL(compare_b, CONST("0xcafef00d33221100", 64));
+            ENDIF();
             IF (NZ(i_xmst.r_last));
                 TEXT("Goto idle");
                 SETVAL(state, CONST("0", 4));

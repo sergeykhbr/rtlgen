@@ -63,11 +63,11 @@ accel_axictrl_bus0_tb::accel_axictrl_bus0_tb(GenObject *parent, const char *name
     test_cnt(this, &clk, CLK_POSEDGE, &nrst, ACTIVE_LOW,  "test_cnt", "32", "'0", NO_COMMENT),
     test_pause_cnt(this, &clk, CLK_POSEDGE, &nrst, ACTIVE_LOW,  "test_pause_cnt", "32", "'0", NO_COMMENT),
     m0_start_ena(this, &clk, CLK_POSEDGE, &nrst, ACTIVE_LOW, "m0_start_ena", "1", RSTVAL_ZERO, NO_COMMENT),
-    m0_test_selector(this, &clk, CLK_POSEDGE, &nrst, ACTIVE_LOW, "m0_test_selector", "11", RSTVAL_ZERO, NO_COMMENT),
+    m0_test_selector(this, &clk, CLK_POSEDGE, &nrst, ACTIVE_LOW, "m0_test_selector", "32", RSTVAL_ZERO, NO_COMMENT),
     m1_start_ena(this, &clk, CLK_POSEDGE, &nrst, ACTIVE_LOW, "m1_start_ena", "1", RSTVAL_ZERO, NO_COMMENT),
-    m1_test_selector(this, &clk, CLK_POSEDGE, &nrst, ACTIVE_LOW, "m1_test_selector", "11", RSTVAL_ZERO, NO_COMMENT),
+    m1_test_selector(this, &clk, CLK_POSEDGE, &nrst, ACTIVE_LOW, "m1_test_selector", "32", RSTVAL_ZERO, NO_COMMENT),
     m2_start_ena(this, &clk, CLK_POSEDGE, &nrst, ACTIVE_LOW, "m2_start_ena", "1", RSTVAL_ZERO, NO_COMMENT),
-    m2_test_selector(this, &clk, CLK_POSEDGE, &nrst, ACTIVE_LOW, "m2_test_selector", "11", RSTVAL_ZERO, NO_COMMENT),
+    m2_test_selector(this, &clk, CLK_POSEDGE, &nrst, ACTIVE_LOW, "m2_test_selector", "32", RSTVAL_ZERO, NO_COMMENT),
     s0_state(this, &clk, CLK_POSEDGE, &nrst, ACTIVE_LOW, "s0_state", "2", "'0", NO_COMMENT),
     req_s0_ready(this, &clk, CLK_POSEDGE, &nrst, ACTIVE_LOW,  "req_s0_ready", "1", RSTVAL_ZERO, NO_COMMENT),
     resp_s0_valid(this, &clk, CLK_POSEDGE, &nrst, ACTIVE_LOW,  "resp_s0_valid", "1", RSTVAL_ZERO, NO_COMMENT),
@@ -277,15 +277,15 @@ void accel_axictrl_bus0_tb::comb_proc() {
     ELSIF (EZ(test_pause_cnt));
         SETVAL(test_cnt, INC(test_cnt));
         SETVAL(resp_s0_wait_states, BITS(test_cnt, 1, 0));
-        SETVAL(m0_test_selector, BITS(test_cnt, 12, 2));
+        SETVAL(m0_test_selector, CC2(CONST("0", 2), BITS(test_cnt, 31, 2)));
         SETONE(m0_start_ena);
         IF (EZ(BIT(test_cnt, 0)));
-            SETVAL(m1_test_selector, BITS(test_cnt, 11, 1));
+            SETVAL(m1_test_selector, CC2(CONST("0", 1), BITS(test_cnt, 31, 1)));
             SETONE(m1_start_ena);
         ENDIF();
-        SETVAL(m2_test_selector, CONST("0x300", 11), "Burst 4, with zero wait states");
+        SETVAL(m2_test_selector, CONST("0xC00", 32), "Burst 4, with zero wait states");
         SETONE(m2_start_ena);
-        IF(NZ(BIT(test_cnt, 13)));
+        IF(NZ(BIT(test_cnt, 15)));
             TEXT("End of test (show err_cnt)");
             SETONE(end_of_test);
         ENDIF();
