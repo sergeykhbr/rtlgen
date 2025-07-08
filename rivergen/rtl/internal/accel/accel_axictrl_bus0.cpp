@@ -172,6 +172,8 @@ TEXT();
 TEXT();
     IF (AND2(NE(r_sidx, *SCV_get_cfg_type(this, "CFG_BUS0_XSLV_TOTAL")), EZ(comb.v_r_fire)));
         SETONE(comb.v_r_busy);
+    ELSE();
+        SETVAL(comb.v_r_busy, wb_def_xslvo.r_valid);
     ENDIF();
 
 TEXT();
