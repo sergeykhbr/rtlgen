@@ -187,6 +187,7 @@ accel_axictrl_bus0_tb::accel_axictrl_bus0_tb(GenObject *parent, const char *name
     TEXT();
     mst2.req_bar.setObjValue(new HexLogicConst(new DecConst(48), 0x08000000));
     mst2.unique_id.setObjValue(new HexLogicConst(new DecConst(4), 0x2));
+    mst2.read_compare.setObjValue(new HexLogicConst(new DecConst(64), 0xcafef00d33221100));
     mst2.read_only.setObjValue(new DecConst(1));
     NEW(mst2, mst2.getName().c_str());
         CONNECT(mst2, 0, mst2.i_nrst, nrst);

@@ -65,6 +65,7 @@ class axi_mst_generator : public ModuleObject {
 public:
     DefParamLogic req_bar;
     DefParamLogic unique_id;
+    DefParamLogic read_compare;
     DefParamBOOL read_only;
     // Ports:
     InPort i_nrst;
@@ -87,6 +88,7 @@ public:
     RegSignal aw_wait_cnt;
     RegSignal aw_valid;
     RegSignal aw_addr;
+    RegSignal aw_unmap;
     RegSignal aw_xlen;
     RegSignal w_use_axi_light;
     RegSignal w_wait_states;
@@ -102,6 +104,7 @@ public:
     RegSignal ar_wait_cnt;
     RegSignal ar_valid;
     RegSignal ar_addr;
+    RegSignal ar_unmap;
     RegSignal ar_xlen;
     RegSignal r_wait_states;
     RegSignal r_wait_cnt;

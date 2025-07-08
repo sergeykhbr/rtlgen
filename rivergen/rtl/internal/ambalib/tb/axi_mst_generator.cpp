@@ -21,6 +21,7 @@ axi_mst_generator::axi_mst_generator(GenObject *parent, const char *name) :
     // parameters
     req_bar(this, "req_bar", "48", "0x81000000", NO_COMMENT),
     unique_id(this, "unique_id", "4", "'1", NO_COMMENT),
+    read_compare(this, "read_compare", "64", "0xFFFFFFFFFFFFFFFF", NO_COMMENT),
     read_only(this, "read_only", "0", NO_COMMENT),
     // Ports
     i_nrst(this, "i_nrst", "1", NO_COMMENT),
@@ -41,6 +42,7 @@ axi_mst_generator::axi_mst_generator(GenObject *parent, const char *name) :
     aw_wait_cnt(this, "aw_wait_cnt", "2", "'0", NO_COMMENT),
     aw_valid(this, "aw_valid", "1", "0", NO_COMMENT),
     aw_addr(this, "aw_addr", "48", "'0", NO_COMMENT),
+    aw_unmap(this, "aw_unmap", "1", "0", NO_COMMENT),
     aw_xlen(this, "aw_xlen", "8", "'0", NO_COMMENT),
     w_use_axi_light(this, "w_use_axi_light", "1", RSTVAL_ZERO, NO_COMMENT),
     w_wait_states(this, "w_wait_states", "3", "'0", NO_COMMENT),
@@ -56,6 +58,7 @@ axi_mst_generator::axi_mst_generator(GenObject *parent, const char *name) :
     ar_wait_cnt(this, "ar_wait_cnt", "2", "'0", NO_COMMENT),
     ar_valid(this, "ar_valid", "1", "0", NO_COMMENT),
     ar_addr(this, "ar_addr", "48", "'0", NO_COMMENT),
+    ar_unmap(this, "ar_unmap", "1", "0", NO_COMMENT),
     ar_xlen(this, "ar_xlen", "8", "'0", NO_COMMENT),
     r_wait_states(this, "r_wait_states", "3", "'0", NO_COMMENT),
     r_wait_cnt(this, "r_wait_cnt", "3", "'0", NO_COMMENT),
@@ -103,6 +106,8 @@ void axi_mst_generator::comb_proc() {
                 ENDIF();
             ENDIF();
             SETVAL(run_cnt, INC(run_cnt));
+            SETZERO(aw_unmap);
+            SETVAL(ar_unmap, BIT(i_test_selector, 0));
             SETVAL(aw_wait_cnt, BITS(i_test_selector, 1, 0));
             SETVAL(ar_wait_cnt, BITS(i_test_selector, 1, 0));
             SETVAL(w_wait_states, BITS(i_test_selector, 4, 2));
@@ -138,7 +143,11 @@ void axi_mst_generator::comb_proc() {
     CASE(CONST("1", 4), "aw request");
         SETONE(comb.v_writing);
         SETONE(aw_valid);
-        SETVAL(aw_addr, ADD2(comb.vb_bar, CC2(BITS(run_cnt, 6, 0), CONST("0", 5))));
+        IF (EZ(aw_unmap));
+            SETVAL(aw_addr, ADD2(comb.vb_bar, CC2(BITS(run_cnt, 6, 0), CONST("0", 5))));
+        ELSE();
+            SETVAL(aw_addr, CONST("0xFFFFFFFFFC00", 48));
+        ENDIF();
         SETZERO(w_burst_cnt);
         IF (NZ(w_use_axi_light));
             SETONE(w_valid);
@@ -222,14 +231,22 @@ void axi_mst_generator::comb_proc() {
                 SETZERO(b_ready);
                 SETVAL(state, CONST("5", 4));
                 SETONE(ar_valid);
-                SETVAL(ar_addr, ADD2(comb.vb_bar, CC2(BITS(run_cnt, 6, 0), CONST("0", 5))));
+                IF (EZ(ar_unmap));
+                    SETVAL(ar_addr, ADD2(comb.vb_bar, CC2(BITS(run_cnt, 6, 0), CONST("0", 5))));
+                ELSE();
+                    SETVAL(ar_addr, CONST("0xFFFFFFFFFC00", 48));
+                ENDIF();
             ENDIF();
         ENDIF();
     ENDCASE();
     CASE(CONST("5", 4), "ar request");
         SETONE(comb.v_reading);
         SETONE(ar_valid);
-        SETVAL(ar_addr, ADD2(comb.vb_bar, CC2(BITS(run_cnt, 6, 0), CONST("0", 5))));
+        IF (EZ(ar_unmap));
+            SETVAL(ar_addr, ADD2(comb.vb_bar, CC2(BITS(run_cnt, 6, 0), CONST("0", 5))));
+        ELSE();
+            SETVAL(ar_addr, CONST("0xFFFFFFFFFC00", 48));
+        ENDIF();
         IF (AND2(NZ(ar_valid), NZ(i_xmst.ar_ready))); 
             SETZERO(ar_valid);
             SETZERO(r_burst_cnt);
@@ -260,10 +277,14 @@ void axi_mst_generator::comb_proc() {
             SETZERO(r_ready);
             SETONE(compare_ena);
             SETVAL(compare_a, i_xmst.r_data);
-            IF (EZ(read_only));
-                SETVAL(compare_b, CC4(unique_id, BITS(comb.vb_run_cnt_inv, 27, 0), BITS(run_cnt, 27, 0), r_burst_cnt));
+            IF (EZ(ar_unmap));
+                IF (EZ(read_only));
+                    SETVAL(compare_b, CC4(unique_id, BITS(comb.vb_run_cnt_inv, 27, 0), BITS(run_cnt, 27, 0), r_burst_cnt));
+                ELSE();
+                    SETVAL(compare_b, read_compare);
+                ENDIF();
             ELSE();
-                SETVAL(compare_b, CONST("0xcafef00d33221100", 64));
+                SETVAL(compare_b, CONST("0xFFFFFFFFFFFFFFFF", 64));
             ENDIF();
             IF (NZ(i_xmst.r_last));
                 TEXT("Goto idle");
