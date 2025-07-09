@@ -250,8 +250,10 @@ void axi_slv::proc_comb() {
     ENDCASE();
     CASE(State_r_last);
         IF (NZ(i_resp_valid));
-            IF (AND2(NZ(r_valid), EZ(i_xslvi.r_ready)));
-                TEXT("We already requested the last value but previous was not accepted yet");
+            IF (AND2(NZ(r_valid), NZ(r_last)));
+                TEXT("Ingore this response, because it means i_resp_valid is always=1");
+            ELSIF (AND2(NZ(r_valid), EZ(i_xslvi.r_ready)));
+                TEXT("We already requested the last value but previous (not last) was not accepted yet");
                 SETVAL(r_data_buf, i_resp_rdata);
                 SETVAL(r_err_buf, i_resp_err);
                 SETONE(r_last_buf);
