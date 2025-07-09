@@ -67,6 +67,7 @@ public:
     DefParamLogic unique_id;
     DefParamLogic read_compare;
     DefParamBOOL read_only;
+    DefParamBOOL burst_disable;
     // Ports:
     InPort i_nrst;
     InPort i_clk;

@@ -23,6 +23,7 @@ axi_mst_generator::axi_mst_generator(GenObject *parent, const char *name) :
     unique_id(this, "unique_id", "4", "'1", NO_COMMENT),
     read_compare(this, "read_compare", "64", "0xFFFFFFFFFFFFFFFF", NO_COMMENT),
     read_only(this, "read_only", "0", NO_COMMENT),
+    burst_disable(this, "burst_disable", "0", NO_COMMENT),
     // Ports
     i_nrst(this, "i_nrst", "1", NO_COMMENT),
     i_clk(this, "i_clk", "1", NO_COMMENT),
@@ -113,8 +114,13 @@ void axi_mst_generator::comb_proc() {
             SETVAL(w_wait_states, BITS(i_test_selector, 4, 2));
             SETVAL(b_wait_states, BITS(i_test_selector, 6, 5));
             SETVAL(r_wait_states, BITS(i_test_selector, 9, 7));
-            SETVAL(aw_xlen, CC2(CONST("0", 6), BITS(i_test_selector, 11, 10)));
-            SETVAL(ar_xlen, CC2(CONST("0", 6), BITS(i_test_selector, 11, 10)));
+            IF (EZ(burst_disable));
+                SETVAL(aw_xlen, CC2(CONST("0", 6), BITS(i_test_selector, 11, 10)));
+                SETVAL(ar_xlen, CC2(CONST("0", 6), BITS(i_test_selector, 11, 10)));
+            ELSE();
+                SETZERO(aw_xlen);
+                SETZERO(ar_xlen);
+            ENDIF();
             IF (AND2(EZ(BITS(i_test_selector, 11, 10)), EQ(BITS(i_test_selector, 4, 2), CONST("7", 3))));
                 SETONE(w_use_axi_light);
             ELSE();

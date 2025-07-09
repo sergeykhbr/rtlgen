@@ -52,6 +52,20 @@ accel_axictrl_bus0_tb::accel_axictrl_bus0_tb(GenObject *parent, const char *name
     w_s1_resp_valid(this, "w_s1_resp_valid", "1", RSTVAL_ZERO, NO_COMMENT),
     wb_s1_resp_rdata(this, "wb_s1_resp_rdata", "64", RSTVAL_ZERO, NO_COMMENT),
     w_s1_resp_err(this, "w_s1_resp_err", "1", RSTVAL_ZERO, NO_COMMENT),
+#ifdef USE_APB_BRDIGE
+    wb_bus1_cfg(this, "wb_bus1_cfg", NO_COMMENT),
+    vec_i_apbo(this, "vec_i_apbo", NO_COMMENT),
+    vec_o_apbi(this, "vec_o_apbi", NO_COMMENT),
+    vec_o_pmapinfo(this, "vec_o_pmapinfo", NO_COMMENT),
+    w_p1_req_valid(this, "w_p1_req_valid", "1", RSTVAL_ZERO, NO_COMMENT),
+    wb_p1_req_addr(this, "wb_p1_req_addr", "32", RSTVAL_ZERO, NO_COMMENT),
+    w_p1_req_write(this, "w_p1_req_write", "1", RSTVAL_ZERO, NO_COMMENT),
+    wb_p1_req_wdata(this, "wb_p1_req_wdata", "32", RSTVAL_ZERO, NO_COMMENT),
+    w_p1_resp_valid(this, "w_p1_resp_valid", "1", RSTVAL_ZERO, NO_COMMENT),
+    wb_p1_resp_rdata(this, "wb_p1_resp_rdata", "32", RSTVAL_ZERO, NO_COMMENT),
+    w_p1_resp_err(this, "w_p1_resp_err", "1", RSTVAL_ZERO, NO_COMMENT),
+    wb_p1_cfg(this, "wb_p1_cfg", NO_COMMENT),
+#endif
     w_m0_writing(this, "w_m0_writing", "1", RSTVAL_ZERO, NO_COMMENT),
     w_m0_reading(this, "w_m0_reading", "1", RSTVAL_ZERO, NO_COMMENT),
     w_m1_writing(this, "w_m1_writing", "1", RSTVAL_ZERO, NO_COMMENT),
@@ -78,9 +92,16 @@ accel_axictrl_bus0_tb::accel_axictrl_bus0_tb(GenObject *parent, const char *name
     end_idle(this, &clk, CLK_POSEDGE, &nrst, ACTIVE_LOW, "end_idle", "1", RSTVAL_ZERO, NO_COMMENT),
     s0_mem0(this, "s0_mem0", "64", "16", NO_COMMENT),
     s0_mem1(this, "s0_mem1", "64", "16", NO_COMMENT),
+#ifdef USE_APB_BRDIGE
+    p1_mem(this, "p1_mem", "32", "16", NO_COMMENT),
+#endif
     // submodules:
     clk0(this, "clk0", NO_COMMENT),
     bus0(this, "bus0", NO_COMMENT),
+#ifdef USE_APB_BRDIGE
+    bus1(this, "bus1", NO_COMMENT),
+    pslv1(this, "pslv1", NO_COMMENT),
+#endif
     xslv0(this, "xslv0", NO_COMMENT),
     xslv1(this, "xslv1", NO_COMMENT),
     mst0(this, "mst0"),
@@ -109,6 +130,38 @@ accel_axictrl_bus0_tb::accel_axictrl_bus0_tb(GenObject *parent, const char *name
         CONNECT(bus0, 0, bus0.o_xslvi, vec_o_xslvi);
         CONNECT(bus0, 0, bus0.o_mapinfo, vec_o_mapinfo);
     ENDNEW();
+
+#ifdef USE_APB_BRDIGE
+    TEXT();
+    NEW(bus1, bus1.getName().c_str());
+        CONNECT(bus1, 0, bus1.i_clk, clk);
+        CONNECT(bus1, 0, bus1.i_nrst, nrst);
+        CONNECT(bus1, 0, bus1.i_mapinfo, ARRITEM(vec_o_mapinfo, *SCV_get_cfg_type(this, "CFG_BUS0_XSLV_PBRIDGE"), vec_o_mapinfo));
+        CONNECT(bus1, 0, bus1.o_cfg, wb_bus1_cfg);
+        CONNECT(bus1, 0, bus1.i_xslvi, ARRITEM(vec_o_xslvi, *SCV_get_cfg_type(this, "CFG_BUS0_XSLV_PBRIDGE"), vec_o_xslvi));
+        CONNECT(bus1, 0, bus1.o_xslvo, ARRITEM(vec_i_xslvo, *SCV_get_cfg_type(this, "CFG_BUS0_XSLV_PBRIDGE"), vec_i_xslvo));
+        CONNECT(bus1, 0, bus1.i_apbo, vec_i_apbo);
+        CONNECT(bus1, 0, bus1.o_apbi, vec_o_apbi);
+        CONNECT(bus1, 0, bus1.o_mapinfo, vec_o_pmapinfo);
+    ENDNEW();
+
+    TEXT();
+    NEW(pslv1, pslv1.getName().c_str());
+        CONNECT(pslv1, 0, pslv1.i_nrst, nrst);
+        CONNECT(pslv1, 0, pslv1.i_clk, clk);
+        CONNECT(pslv1, 0, pslv1.i_mapinfo, ARRITEM(vec_o_pmapinfo, *SCV_get_cfg_type(this, "CFG_BUS1_PSLV_PRCI"), vec_o_pmapinfo));
+        CONNECT(pslv1, 0, pslv1.o_cfg, wb_p1_cfg);
+        CONNECT(pslv1, 0, pslv1.i_apbi, ARRITEM(vec_o_apbi, *SCV_get_cfg_type(this, "CFG_BUS1_PSLV_PRCI"), vec_o_apbi));
+        CONNECT(pslv1, 0, pslv1.o_apbo, ARRITEM(vec_i_apbo, *SCV_get_cfg_type(this, "CFG_BUS1_PSLV_PRCI"), vec_i_apbo));
+        CONNECT(pslv1, 0, pslv1.o_req_valid, w_p1_req_valid);
+        CONNECT(pslv1, 0, pslv1.o_req_addr, wb_p1_req_addr);
+        CONNECT(pslv1, 0, pslv1.o_req_write, w_p1_req_write);
+        CONNECT(pslv1, 0, pslv1.o_req_wdata, wb_p1_req_wdata);
+        CONNECT(pslv1, 0, pslv1.i_resp_valid, w_p1_resp_valid);
+        CONNECT(pslv1, 0, pslv1.i_resp_rdata, wb_p1_resp_rdata);
+        CONNECT(pslv1, 0, pslv1.i_resp_err, w_p1_resp_err);
+    ENDNEW();
+#endif
 
     TEXT();
     NEW(xslv0, xslv0.getName().c_str());
@@ -153,7 +206,12 @@ accel_axictrl_bus0_tb::accel_axictrl_bus0_tb(GenObject *parent, const char *name
     ENDNEW();
 
     TEXT();
+#ifdef USE_APB_BRDIGE
+    mst0.req_bar.setObjValue(new HexLogicConst(new DecConst(48), 0x10012000));
+    mst0.burst_disable.setObjValue(new DecConst(1));
+#else
     mst0.req_bar.setObjValue(new HexLogicConst(new DecConst(48), 0x81000000));
+#endif
     mst0.unique_id.setObjValue(new HexLogicConst(new DecConst(4), 0x0));
     mst0.read_only.setObjValue(new DecConst(0));
     NEW(mst0, mst0.getName().c_str());
@@ -216,6 +274,9 @@ accel_axictrl_bus0_tb::accel_axictrl_bus0_tb(GenObject *parent, const char *name
 void accel_axictrl_bus0_tb::comb_proc() {
     GenObject *axi4_master_out_none = SCV_get_cfg_type(this, "axi4_master_out_none");
     GenObject *axi4_slave_out_none = SCV_get_cfg_type(this, "axi4_slave_out_none");
+#ifdef USE_APB_BRDIGE
+    GenObject *apb_out_none = SCV_get_cfg_type(this, "apb_out_none");
+#endif
     TEXT();
     SETVAL(comb.vb_test_cnt_inv, INV_L(test_cnt));
     SETVAL(clk_cnt, INC(clk_cnt));
@@ -318,7 +379,20 @@ void accel_axictrl_bus0_tb::comb_proc() {
     SETARRITEM(vec_i_xslvo, *SCV_get_cfg_type(this, "CFG_BUS0_XSLV_BOOTROM"), vec_i_xslvo, *axi4_slave_out_none);
     SETARRITEM(vec_i_xslvo, *SCV_get_cfg_type(this, "CFG_BUS0_XSLV_CLINT"), vec_i_xslvo, *axi4_slave_out_none);
     SETARRITEM(vec_i_xslvo, *SCV_get_cfg_type(this, "CFG_BUS0_XSLV_PLIC"), vec_i_xslvo, *axi4_slave_out_none);
+#ifdef USE_APB_BRDIGE
+    SETARRITEM(vec_i_apbo, *SCV_get_cfg_type(this, "CFG_BUS1_PSLV_UART1"), vec_i_apbo, *apb_out_none);
+    //SETARRITEM(vec_i_apbo, *SCV_get_cfg_type(this, "CFG_BUS1_PSLV_PRCI"), vec_i_apbo, *apb_out_none);
+    SETARRITEM(vec_i_apbo, *SCV_get_cfg_type(this, "CFG_BUS1_PSLV_DMI"), vec_i_apbo, *apb_out_none);
+    SETARRITEM(vec_i_apbo, *SCV_get_cfg_type(this, "CFG_BUS1_PSLV_I2C0"), vec_i_apbo, *apb_out_none);
+    SETARRITEM(vec_i_apbo, *SCV_get_cfg_type(this, "CFG_BUS1_PSLV_GPIO"), vec_i_apbo, *apb_out_none);
+    SETARRITEM(vec_i_apbo, *SCV_get_cfg_type(this, "CFG_BUS1_PSLV_DDR"), vec_i_apbo, *apb_out_none);
+    SETARRITEM(vec_i_apbo, *SCV_get_cfg_type(this, "CFG_BUS1_PSLV_PCIE"), vec_i_apbo, *apb_out_none);
+    SETARRITEM(vec_i_apbo, *SCV_get_cfg_type(this, "CFG_BUS1_PSLV_PNP"), vec_i_apbo, *apb_out_none);
+    SETONE(w_p1_resp_valid);
+    SETZERO(w_p1_resp_err);
+#else
     SETARRITEM(vec_i_xslvo, *SCV_get_cfg_type(this, "CFG_BUS0_XSLV_PBRIDGE"), vec_i_xslvo, *axi4_slave_out_none);
+#endif
 }
 
 void accel_axictrl_bus0_tb::test_proc() {
@@ -329,5 +403,15 @@ void accel_axictrl_bus0_tb::test_proc() {
             SETARRITEM(s0_mem1, TO_INT(BITS(wb_s0_req_addr, 5, 2)), s0_mem1, wb_s0_req_wdata);
         ENDIF();
     ENDIF();
+
+#ifdef USE_APB_BRDIGE
+    TEXT();
+    IF (AND2(NZ(w_p1_req_write), NZ(w_p1_req_valid)));
+        SETARRITEM(p1_mem, TO_INT(BITS(wb_p1_req_addr, 5, 2)), p1_mem, wb_p1_req_wdata);
+        SETVAL(wb_p1_resp_rdata, ALLONES());
+    ELSE();
+        SETVAL(wb_p1_resp_rdata, ARRITEM(p1_mem, TO_INT(BITS(wb_p1_req_addr, 5, 2)), p1_mem));
+    ENDIF();
+#endif
 }
 

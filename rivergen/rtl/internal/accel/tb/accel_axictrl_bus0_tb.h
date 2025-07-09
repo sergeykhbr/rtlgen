@@ -24,6 +24,11 @@
 #include "../../ambalib/apb_slv.h"
 #include "../../ambalib/tb/axi_mst_generator.h"
 
+#define USE_APB_BRDIGE
+#ifdef USE_APB_BRDIGE
+#include "../accel_axi2apb_bus1.h"
+#endif
+
 using namespace sysvc;
 
 class accel_axictrl_bus0_tb : public ModuleObject {
@@ -90,6 +95,20 @@ public:
     Signal w_s1_resp_valid;
     Signal wb_s1_resp_rdata;
     Signal w_s1_resp_err;
+#ifdef USE_APB_BRDIGE
+    SignalStruct<types_pnp::dev_config_type> wb_bus1_cfg;
+    types_accel_bus1::bus1_apb_out_vector vec_i_apbo;
+    types_accel_bus1::bus1_apb_in_vector vec_o_apbi;
+    types_accel_bus1::bus1_mapinfo_vector vec_o_pmapinfo;
+    Signal w_p1_req_valid;
+    Signal wb_p1_req_addr;
+    Signal w_p1_req_write;
+    Signal wb_p1_req_wdata;
+    Signal w_p1_resp_valid;
+    Signal wb_p1_resp_rdata;
+    Signal w_p1_resp_err;
+    SignalStruct<types_pnp::dev_config_type> wb_p1_cfg;
+#endif
     Signal w_m0_writing;
     Signal w_m0_reading;
     Signal w_m1_writing;
@@ -119,10 +138,17 @@ public:
 
     LogicArray s0_mem0;
     LogicArray s0_mem1;
+#ifdef USE_APB_BRDIGE
+    LogicArray p1_mem;
+#endif
 
     // Sub-module instances:
     pll_generic clk0;
     accel_axictrl_bus0 bus0;
+#ifdef USE_APB_BRDIGE
+    accel_axi2apb_bus1 bus1;
+    apb_slv pslv1;
+#endif
     axi_slv xslv0;
     axi_slv xslv1;
     axi_mst_generator mst0;
