@@ -43,6 +43,7 @@ accel_axictrl_bus0::accel_axictrl_bus0(GenObject *parent, const char *name, cons
     wb_def_resp_rdata(this, "wb_def_resp_rdata", "CFG_SYSBUS_DATA_BITS"),
     w_def_resp_err(this, "w_def_resp_err", "1"),
     // registers
+    r_def_valid(this, "r_def_valid", "1", RSTVAL_ZERO, NO_COMMENT),
     r_midx(this, "r_midx", "CFG_BUS0_XMST_LOG2_TOTAL", "CFG_BUS0_XMST_TOTAL"),
     r_sidx(this, "r_sidx", "CFG_BUS0_XSLV_LOG2_TOTAL", "CFG_BUS0_XSLV_TOTAL"),
     w_midx(this, "w_midx", "CFG_BUS0_XMST_LOG2_TOTAL", "CFG_BUS0_XMST_TOTAL"),
@@ -107,7 +108,8 @@ TEXT();
 
 TEXT();
     SETONE(w_def_req_ready);
-    SETONE(w_def_resp_valid);
+    SETVAL(r_def_valid, w_def_req_valid);
+    SETVAL(w_def_resp_valid, r_def_valid);
     SETVAL(wb_def_resp_rdata, ALLONES());
     SETONE(w_def_resp_err);
     SETVAL(comb.i_ar_midx, *SCV_get_cfg_type(this, "CFG_BUS0_XMST_TOTAL"));

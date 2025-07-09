@@ -147,6 +147,7 @@ class plic : public ModuleObject {
     RegSignal ip;
     PlicContextTableType ctx;
     RegSignal rdata;
+    RegSignal resp_valid;
 
     CombProcess comb;
 

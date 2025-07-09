@@ -49,6 +49,7 @@ plic::plic(GenObject *parent, const char *name, const char *comment) :
     ip(this, "ip", "ctxmax", "'0", NO_COMMENT),
     ctx(this, &i_clk, &i_nrst, "ctx", NO_COMMENT),
     rdata(this, "rdata", "64", "'0", NO_COMMENT),
+    resp_valid(this, "resp_valid", "1", "0", NO_COMMENT),
     //
     comb(this),
     xslv0(this, "xslv0")
@@ -85,6 +86,7 @@ void plic::proc_comb() {
     GenObject *i;
     GenObject *n;
 
+    SETVAL(resp_valid, w_req_valid);
     TEXT("Warning SystemC limitation workaround:");
     TEXT("  Cannot directly write into bitfields of the signals v.* registers");
     TEXT("  So, use the following vb_* logic variables for that and then copy them.");
@@ -253,7 +255,7 @@ TEXT();
 
 TEXT();
     SETONE(w_req_ready);
-    SETONE(w_resp_valid);
+    SETVAL(w_resp_valid, resp_valid);
     SETVAL(wb_resp_rdata, rdata);
     SETZERO(wb_resp_err);
     SETVAL(o_ip, ip);

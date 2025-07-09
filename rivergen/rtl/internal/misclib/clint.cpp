@@ -47,6 +47,7 @@ clint::clint(GenObject *parent, const char *name, const char *comment) :
     mtime(this, "mtime", "64", "'0", NO_COMMENT),
     hart(this, &i_clk, &i_nrst, "hart", NO_COMMENT),
     rdata(this, "rdata", "64", "'0", NO_COMMENT),
+    resp_valid(this, "resp_valid", "1", "0", NO_COMMENT),
     //
     comb(this),
     xslv0(this, "xslv0")
@@ -83,6 +84,7 @@ void clint::proc_comb() {
     GenObject *i;
     SETVAL(mtime, INC(mtime));
     SETVAL(comb.regidx, TO_INT(BITS(wb_req_addr, 13, 3)));
+    SETVAL(resp_valid, w_req_valid);
 
 TEXT();
     i = &FOR ("i", CONST("0"), cpu_total, "++");
@@ -133,7 +135,7 @@ TEXT();
 
 TEXT();
     SETONE(w_req_ready);
-    SETONE(w_resp_valid);
+    SETVAL(w_resp_valid, resp_valid);
     SETVAL(wb_resp_rdata, rdata);
     SETZERO(wb_resp_err);
     SETVAL(o_msip, comb.vb_msip);

@@ -116,6 +116,7 @@ class clint : public ModuleObject {
     RegSignal mtime;
     ClintCpuTableType hart;
     RegSignal rdata;
+    RegSignal resp_valid;
 
     CombProcess comb;
 

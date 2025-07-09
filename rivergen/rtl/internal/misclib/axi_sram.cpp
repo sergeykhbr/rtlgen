@@ -41,6 +41,7 @@ axi_sram::axi_sram(GenObject *parent, const char *name, const char *comment) :
     wb_req_addr_abits(this, "wb_req_addr_abits", "abits"),
     //
     comb(this),
+    ff(this, "ff", &i_clk, CLK_POSEDGE, NO_PARENT, ACTIVE_NONE, NO_COMMENT),
     xslv0(this, "xslv0"),
     tech0(this, "tech0")
 {
@@ -82,12 +83,18 @@ TEXT();
 
     Operation::start(&comb);
     proc_comb();
+
+    Operation::start(&ff);
+    proc_ff();
 }
 
 void axi_sram::proc_comb() {
 TEXT();
     SETVAL(wb_req_addr_abits, BITS(wb_req_addr, DEC(abits), CONST("0")));
     SETONE(w_req_ready);
-    SETONE(w_resp_valid);
     SETZERO(wb_resp_err);
+}
+
+void axi_sram::proc_ff() {
+    SETVAL_NB(w_resp_valid, w_req_valid);
 }

@@ -114,6 +114,7 @@ class accel_axictrl_bus0 : public ModuleObject {
     Signal wb_def_resp_rdata;
     Signal w_def_resp_err;
 
+    RegSignal r_def_valid;
     RegSignal r_midx;
     RegSignal r_sidx;
     RegSignal w_midx;

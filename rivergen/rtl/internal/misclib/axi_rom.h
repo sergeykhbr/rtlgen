@@ -38,6 +38,7 @@ class axi_rom : public ModuleObject {
     };
 
     void proc_comb();
+    void proc_ff();
 
  public:
     TmplParamI32D abits;
@@ -64,6 +65,7 @@ class axi_rom : public ModuleObject {
     Signal wb_req_addr_abits;
 
     CombProcess comb;
+    ProcObject ff;
 
     axi_slv xslv0;
     rom_tech tech0;
