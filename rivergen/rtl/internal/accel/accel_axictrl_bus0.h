@@ -55,7 +55,11 @@ class accel_axictrl_bus0 : public ModuleObject {
             v_r_fire(this, "v_r_fire", "1"),
             v_r_busy(this, "v_r_busy", "1"),
             v_b_fire(this, "v_b_fire", "1"),
-            v_b_busy(this, "v_b_busy", "1") {
+            v_b_busy(this, "v_b_busy", "1"),
+            vb_ar_select(this, "vb_ar_select", "MUL(CFG_BUS0_XMST_TOTAL, ADD(CFG_BUS0_XSLV_TOTAL,1))", "'0", NO_COMMENT),
+            vb_ar_available(this, "vb_ar_available", "ADD(CFG_BUS0_XSLV_TOTAL,1)", "'1", NO_COMMENT),
+            vb_aw_select(this, "vb_aw_select", "MUL(CFG_BUS0_XMST_TOTAL, ADD(CFG_BUS0_XSLV_TOTAL,1))", "'0", NO_COMMENT),
+            vb_aw_available(this, "vb_aw_available", "ADD(CFG_BUS0_XSLV_TOTAL,1)", "'1", NO_COMMENT) {
         }
 
      public:
@@ -83,6 +87,10 @@ class accel_axictrl_bus0 : public ModuleObject {
         Logic v_r_busy;
         Logic v_b_fire;
         Logic v_b_busy;
+        Logic vb_ar_select;
+        Logic vb_ar_available;
+        Logic vb_aw_select;
+        Logic vb_aw_available;
     };
 
     void proc_comb();

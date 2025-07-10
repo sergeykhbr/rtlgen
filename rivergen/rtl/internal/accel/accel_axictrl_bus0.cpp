@@ -84,9 +84,13 @@ accel_axictrl_bus0::accel_axictrl_bus0(GenObject *parent, const char *name, cons
 
 void accel_axictrl_bus0::proc_comb() {
     GenObject *i;
+    GenObject *ii;
+    GenObject *mst_total = SCV_get_cfg_type(this, "CFG_BUS0_XMST_TOTAL");
+    GenObject *slv_total = &INC(*SCV_get_cfg_type(this, "CFG_BUS0_XSLV_TOTAL"));
     types_accel_bus0::CONST_CFG_BUS0_MAP *map = 
         dynamic_cast<types_accel_bus0::CONST_CFG_BUS0_MAP *>(SCV_get_cfg_type(this, "CFG_BUS0_MAP"));
-    
+
+    TEXT();
     SETZERO(comb.vb_def_mapinfo.addr_start);
     SETZERO(comb.vb_def_mapinfo.addr_end);
     i = &FOR ("i", CONST("0"), *SCV_get_cfg_type(this, "CFG_BUS0_XMST_TOTAL"), "++");
@@ -97,7 +101,7 @@ void accel_axictrl_bus0::proc_comb() {
     SETARRITEM(comb.vmsto, *SCV_get_cfg_type(this, "CFG_BUS0_XMST_TOTAL"), comb.vmsto, *SCV_get_cfg_type(this, "axi4_master_out_none"));
     SETARRITEM(comb.vmsti, *SCV_get_cfg_type(this, "CFG_BUS0_XMST_TOTAL"), comb.vmsti, *SCV_get_cfg_type(this, "axi4_master_in_none"));
 
-TEXT();
+    TEXT();
     i = &FOR ("i", CONST("0"), *SCV_get_cfg_type(this, "CFG_BUS0_XSLV_TOTAL"), "++");
         SETARRITEM(comb.vslvo, *i, comb.vslvo, ARRITEM(i_xslvo, *i, i_xslvo), "Cannot read vector item from port in systemc");
         SETARRITEM(comb.vslvi, *i, comb.vslvi, *SCV_get_cfg_type(this, "axi4_slave_in_none"));
@@ -106,6 +110,57 @@ TEXT();
     SETARRITEM(comb.vslvo, *SCV_get_cfg_type(this, "CFG_BUS0_XSLV_TOTAL"), comb.vslvo, wb_def_xslvo);
     SETARRITEM(comb.vslvi, *SCV_get_cfg_type(this, "CFG_BUS0_XSLV_TOTAL"), comb.vslvi, *SCV_get_cfg_type(this, "axi4_slave_in_none"));
 
+    TEXT();
+    i = &FOR ("i", CONST("0"), *mst_total, "++");
+        ii = &FOR ("ii", CONST("0"), *slv_total, "++");
+            TEXT("Connect AR channel");
+            IF (ANDx(2, &LE(ARRITEM(*map, *i, BITS(map->addr_start, DEC(*SCV_get_cfg_type(this, "CFG_SYSBUS_ADDR_BITS")), CONST("12"))),
+                            ARRITEM(comb.vmsto, *i, BITS(comb.vmsto.ar_bits.addr, DEC(*SCV_get_cfg_type(this, "CFG_SYSBUS_ADDR_BITS")), CONST("12")))), 
+                        &LS(ARRITEM(comb.vmsto, *i, BITS(comb.vmsto.ar_bits.addr, DEC(*SCV_get_cfg_type(this, "CFG_SYSBUS_ADDR_BITS")), CONST("12"))),
+                            ARRITEM(*map, *i, BITS(map->addr_end, DEC(*SCV_get_cfg_type(this, "CFG_SYSBUS_ADDR_BITS")), CONST("12"))))));
+                SETBIT(comb.vb_ar_select, ADD2(MUL2(*i, *slv_total), *ii),
+                        AND2(ARRITEM(comb.vmsto, *i, comb.vmsto.ar_valid), BIT(comb.vb_ar_available, *ii)));
+                SETBIT(comb.vb_ar_available, *ii, AND2(INV_L(ARRITEM(comb.vmsto, *i, comb.vmsto.ar_valid)), BIT(comb.vb_ar_available, *ii)));
+            ENDIF();
+
+            TEXT();
+            TEXT("Connect AW channel");
+            IF (ANDx(2, &LE(ARRITEM(*map, *i, BITS(map->addr_start, DEC(*SCV_get_cfg_type(this, "CFG_SYSBUS_ADDR_BITS")), CONST("12"))),
+                            ARRITEM(comb.vmsto, *i, BITS(comb.vmsto.aw_bits.addr, DEC(*SCV_get_cfg_type(this, "CFG_SYSBUS_ADDR_BITS")), CONST("12")))), 
+                        &LS(ARRITEM(comb.vmsto, *i, BITS(comb.vmsto.aw_bits.addr, DEC(*SCV_get_cfg_type(this, "CFG_SYSBUS_ADDR_BITS")), CONST("12"))),
+                            ARRITEM(*map, *i, BITS(map->addr_end, DEC(*SCV_get_cfg_type(this, "CFG_SYSBUS_ADDR_BITS")), CONST("12"))))));
+                SETBIT(comb.vb_aw_select, ADD2(MUL2(*i, *slv_total), *ii),
+                        AND2(ARRITEM(comb.vmsto, *i, comb.vmsto.aw_valid), BIT(comb.vb_aw_available, *ii)));
+                SETBIT(comb.vb_aw_available, *ii, AND2(INV_L(ARRITEM(comb.vmsto, *i, comb.vmsto.aw_valid)), BIT(comb.vb_aw_available, *ii)));
+            ENDIF();
+        ENDFOR();
+    ENDFOR();
+
+    TEXT();
+    i = &FOR ("i", CONST("0"), *mst_total, "++");
+        ii = &FOR ("ii", CONST("0"), *slv_total, "++");
+            IF (NZ(BIT(comb.vb_ar_select, ADD2(MUL2(*i, *slv_total), *ii))));
+                SETARRITEM(comb.vmsti, *i, comb.vmsti.ar_ready, ARRITEM(comb.vslvo, *ii, comb.vslvo.ar_ready));
+                SETARRITEM(comb.vslvi, *ii, comb.vslvi.ar_valid, ARRITEM(comb.vmsto, *i, comb.vmsto.ar_valid));
+                SETARRITEM(comb.vslvi, *ii, comb.vslvi.ar_bits, ARRITEM(comb.vmsto, *i, comb.vmsto.ar_bits));
+                SETARRITEM(comb.vslvi, *ii, comb.vslvi.ar_user, ARRITEM(comb.vmsto, *i, comb.vmsto.ar_user));
+                SETARRITEM(comb.vslvi, *ii, comb.vslvi.ar_id, 
+                    CC2(ARRITEM(comb.vmsto, *i, comb.vmsto.ar_id), TO_LOGIC(*i, *SCV_get_cfg_type(this, "CFG_BUS0_XMST_LOG2_TOTAL"))));
+            ENDIF();
+            IF (NZ(BIT(comb.vb_aw_select, ADD2(MUL2(*i, *slv_total), *ii))));
+                SETARRITEM(comb.vmsti, *i, comb.vmsti.aw_ready, ARRITEM(comb.vslvo, *ii, comb.vslvo.aw_ready));
+                SETARRITEM(comb.vslvi, *ii, comb.vslvi.aw_valid, ARRITEM(comb.vmsto, *i, comb.vmsto.aw_valid));
+                SETARRITEM(comb.vslvi, *ii, comb.vslvi.aw_bits, ARRITEM(comb.vmsto, *i, comb.vmsto.aw_bits));
+                SETARRITEM(comb.vslvi, *ii, comb.vslvi.aw_user, ARRITEM(comb.vmsto, *i, comb.vmsto.aw_user));
+                SETARRITEM(comb.vslvi, *ii, comb.vslvi.aw_id, 
+                    CC2(ARRITEM(comb.vmsto, *i, comb.vmsto.aw_id), TO_LOGIC(*i, *SCV_get_cfg_type(this, "CFG_BUS0_XMST_LOG2_TOTAL"))));
+                IF (NZ(ARRITEM(comb.vslvo, *ii, comb.vslvo.aw_ready)));
+                    TEXT("Save W-channel index");
+                ENDIF();
+            ENDIF();
+        ENDFOR();
+    ENDFOR();
+    
 TEXT();
     SETONE(w_def_req_ready);
     SETVAL(r_def_valid, w_def_req_valid);
