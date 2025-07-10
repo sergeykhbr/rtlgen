@@ -76,7 +76,8 @@ class types_accel_bus0 : public FileObject {
             sram(this, "sram", "", "2, sram, 2MB"),
             plic(this, "plic", "", "3, plic"),
             bus1(this, "bus1", "", "4, APB bridge: uart1"),
-            ddr(this, "ddr", "", "5, ddr, 1 GB")
+            ddr(this, "ddr", "", "5, ddr, 1 GB"),
+            unmap(this, "unmap", "", "Unampped access, lowest priority")
         {
 
             // It is possible now to do Logic definition:
@@ -97,6 +98,9 @@ class types_accel_bus0 : public FileObject {
 
             ddr.addr_start.setObjValue(new HexConst(0x0000080000000));
             ddr.addr_end.setObjValue(new HexConst(0x00000C0000000));
+
+            unmap.addr_start.setObjValue(new HexConst(0x0000000000000));
+            unmap.addr_end.setObjValue(new HexConst(0x0000000000000));
         }
 
      protected:
@@ -106,6 +110,7 @@ class types_accel_bus0 : public FileObject {
         StructVar<types_amba::mapinfo_type> plic;
         StructVar<types_amba::mapinfo_type> bus1;
         StructVar<types_amba::mapinfo_type> ddr;
+        StructVar<types_amba::mapinfo_type> unmap;
     };
 
 
@@ -147,6 +152,8 @@ class types_accel_bus0 : public FileObject {
     ParamI32D CFG_BUS0_XSLV_PBRIDGE;
     TextLine _xslv12_;
     ParamI32D CFG_BUS0_XSLV_DDR;
+    TextLine _xslv13_;
+    ParamI32D CFG_BUS0_XSLV_UNMAP;
     TextLine _xslv14_;
     ParamI32D CFG_BUS0_XSLV_TOTAL;
     TextLine _xslv15_;

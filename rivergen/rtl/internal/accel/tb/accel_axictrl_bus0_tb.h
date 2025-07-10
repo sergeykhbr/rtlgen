@@ -24,7 +24,7 @@
 #include "../../ambalib/apb_slv.h"
 #include "../../ambalib/tb/axi_mst_generator.h"
 
-#define USE_APB_BRDIGE
+//#define USE_APB_BRDIGE
 #ifdef USE_APB_BRDIGE
 #include "../accel_axi2apb_bus1.h"
 #endif

@@ -32,34 +32,17 @@ class accel_axictrl_bus0 : public ModuleObject {
      public:
         CombProcess(GenObject *parent) :
             CombinationalProcess(parent, "comb"),
-            vmsti(this, "vmsti", "ADD(CFG_BUS0_XMST_TOTAL,1)", "axi4_master_in_none", NO_COMMENT),
-            vmsto(this, "vmsto", "ADD(CFG_BUS0_XMST_TOTAL,1)", "axi4_master_out_none", NO_COMMENT),
-            vslvi(this, "vslvi", "ADD(CFG_BUS0_XSLV_TOTAL,1)", "axi4_slave_in_none", NO_COMMENT),
-            vslvo(this, "vslvo", "ADD(CFG_BUS0_XSLV_TOTAL,1)", "axi4_slave_out_none", NO_COMMENT),
-            vb_def_mapinfo(this, "vb_def_mapinfo", "mapinfo_none", NO_COMMENT),
-            i_ar_midx(this, "i_ar_midx", "0", NO_COMMENT),
-            i_aw_midx(this, "i_aw_midx", "0", NO_COMMENT),
-            i_ar_sidx(this, "i_ar_sidx", "0", NO_COMMENT),
-            i_aw_sidx(this, "i_aw_sidx", "0", NO_COMMENT),
-            i_r_midx(this, "i_r_midx", "0", NO_COMMENT),
-            i_r_sidx(this, "i_r_sidx", "0", NO_COMMENT),
-            i_w_midx(this, "i_w_midx", "0", NO_COMMENT),
-            i_w_sidx(this, "i_w_sidx", "0", NO_COMMENT),
-            i_b_midx(this, "i_b_midx", "0", NO_COMMENT),
-            i_b_sidx(this, "i_b_sidx", "0", NO_COMMENT),
-            vb_axi_light(this, "vb_axi_light", "ADD(CFG_BUS0_XMST_TOTAL,1)", "'0", NO_COMMENT),
-            v_aw_fire(this, "v_aw_fire", "1"),
-            v_ar_fire(this, "v_ar_fire", "1"),
-            v_w_fire(this, "v_w_fire", "1"),
-            v_w_busy(this, "v_w_busy", "1"),
-            v_r_fire(this, "v_r_fire", "1"),
-            v_r_busy(this, "v_r_busy", "1"),
-            v_b_fire(this, "v_b_fire", "1"),
-            v_b_busy(this, "v_b_busy", "1"),
-            vb_ar_select(this, "vb_ar_select", "MUL(CFG_BUS0_XMST_TOTAL, ADD(CFG_BUS0_XSLV_TOTAL,1))", "'0", NO_COMMENT),
-            vb_ar_available(this, "vb_ar_available", "ADD(CFG_BUS0_XSLV_TOTAL,1)", "'1", NO_COMMENT),
-            vb_aw_select(this, "vb_aw_select", "MUL(CFG_BUS0_XMST_TOTAL, ADD(CFG_BUS0_XSLV_TOTAL,1))", "'0", NO_COMMENT),
-            vb_aw_available(this, "vb_aw_available", "ADD(CFG_BUS0_XSLV_TOTAL,1)", "'1", NO_COMMENT) {
+            vmsti(this, "vmsti", "CFG_BUS0_XMST_TOTAL", "axi4_master_in_none", NO_COMMENT),
+            vmsto(this, "vmsto", "CFG_BUS0_XMST_TOTAL", "axi4_master_out_none", NO_COMMENT),
+            vslvi(this, "vslvi", "CFG_BUS0_XSLV_TOTAL", "axi4_slave_in_none", NO_COMMENT),
+            vslvo(this, "vslvo", "CFG_BUS0_XSLV_TOTAL", "axi4_slave_out_none", NO_COMMENT),
+            vb_ar_select(this, "vb_ar_select", "MUL(CFG_BUS0_XMST_TOTAL, CFG_BUS0_XSLV_TOTAL)", "'0", NO_COMMENT),
+            vb_ar_available(this, "vb_ar_available", "MUL(ADD(CFG_BUS0_XMST_TOTAL,1), CFG_BUS0_XSLV_TOTAL)", "'1", NO_COMMENT),
+            vb_ar_hit(this, "vb_ar_hit", "CFG_BUS0_XMST_TOTAL", "'0", NO_COMMENT),
+            vb_aw_select(this, "vb_aw_select", "MUL(CFG_BUS0_XMST_TOTAL, CFG_BUS0_XSLV_TOTAL)", "'0", NO_COMMENT),
+            vb_aw_available(this, "vb_aw_available", "MUL(ADD(CFG_BUS0_XMST_TOTAL,1), CFG_BUS0_XSLV_TOTAL)", "'1", NO_COMMENT),
+            vb_aw_hit(this, "vb_aw_hit", "CFG_BUS0_XMST_TOTAL", "'0", NO_COMMENT),
+            vb_w_select(this, "vb_w_select", "MUL(CFG_BUS0_XMST_TOTAL, CFG_BUS0_XSLV_LOG2_TOTAL)", "'0", NO_COMMENT) {
         }
 
      public:
@@ -67,30 +50,13 @@ class accel_axictrl_bus0 : public ModuleObject {
         ValueArray<StructVar<types_amba::axi4_master_out_type>> vmsto;
         ValueArray<StructVar<types_amba::axi4_slave_in_type>> vslvi;
         ValueArray<StructVar<types_amba::axi4_slave_out_type>> vslvo;
-        StructVar<types_amba::mapinfo_type> vb_def_mapinfo;
-        I32D i_ar_midx;
-        I32D i_aw_midx;
-        I32D i_ar_sidx;
-        I32D i_aw_sidx;
-        I32D i_r_midx;
-        I32D i_r_sidx;
-        I32D i_w_midx;
-        I32D i_w_sidx;
-        I32D i_b_midx;
-        I32D i_b_sidx;
-        Logic vb_axi_light;
-        Logic v_aw_fire;
-        Logic v_ar_fire;
-        Logic v_w_fire;
-        Logic v_w_busy;
-        Logic v_r_fire;
-        Logic v_r_busy;
-        Logic v_b_fire;
-        Logic v_b_busy;
         Logic vb_ar_select;
         Logic vb_ar_available;
+        Logic vb_ar_hit;
         Logic vb_aw_select;
         Logic vb_aw_available;
+        Logic vb_aw_hit;
+        Logic vb_w_select;
     };
 
     void proc_comb();
@@ -107,9 +73,9 @@ class accel_axictrl_bus0 : public ModuleObject {
     OutStruct<types_accel_bus0::bus0_xslv_in_vector> o_xslvi;
     OutStruct<types_accel_bus0::bus0_mapinfo_vector> o_mapinfo;
 
-    SignalStruct<types_amba::mapinfo_type> wb_def_mapinfo;
     SignalStruct<types_amba::axi4_slave_in_type> wb_def_xslvi;
     SignalStruct<types_amba::axi4_slave_out_type> wb_def_xslvo;
+    SignalStruct<types_amba::mapinfo_type> wb_def_mapinfo;
     Signal w_def_req_valid;
     Signal wb_def_req_addr;
     Signal wb_def_req_size;
@@ -122,6 +88,7 @@ class accel_axictrl_bus0 : public ModuleObject {
     Signal wb_def_resp_rdata;
     Signal w_def_resp_err;
 
+    RegSignal w_select;
     RegSignal r_def_valid;
     RegSignal r_midx;
     RegSignal r_sidx;

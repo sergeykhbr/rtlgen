@@ -54,6 +54,8 @@ types_accel_bus0::types_accel_bus0(GenObject *parent) :
     CFG_BUS0_XSLV_PBRIDGE(this, "CFG_BUS0_XSLV_PBRIDGE", xslv_autoincr_++),
     _xslv12_(this, "External DDR"),
     CFG_BUS0_XSLV_DDR(this, "CFG_BUS0_XSLV_DDR", xslv_autoincr_++),
+    _xslv13_(this, "Unmapped error access"),
+    CFG_BUS0_XSLV_UNMAP(this, "CFG_BUS0_XSLV_UNMAP", xslv_autoincr_++),
     _xslv14_(this, "Total number of the slaves devices."),
     CFG_BUS0_XSLV_TOTAL(this, "CFG_BUS0_XSLV_TOTAL", xslv_autoincr_),
     _xslv15_(this, "Necessary bus width to store index + 1."),
