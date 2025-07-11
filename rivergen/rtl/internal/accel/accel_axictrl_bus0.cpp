@@ -42,6 +42,14 @@ accel_axictrl_bus0::accel_axictrl_bus0(GenObject *parent, const char *name, cons
     w_def_resp_valid(this, "w_def_resp_valid", "1"),
     wb_def_resp_rdata(this, "wb_def_resp_rdata", "CFG_SYSBUS_DATA_BITS"),
     w_def_resp_err(this, "w_def_resp_err", "1"),
+    // debug signals:
+    wb_ar_select(this, "wb_ar_select", "MUL(CFG_BUS0_XMST_TOTAL, CFG_BUS0_XSLV_TOTAL)", "'0", NO_COMMENT),
+    wb_ar_available(this, "wb_ar_available", "MUL(ADD(CFG_BUS0_XMST_TOTAL,1), CFG_BUS0_XSLV_TOTAL)", "'1", NO_COMMENT),
+    wb_ar_hit(this, "wb_ar_hit", "CFG_BUS0_XMST_TOTAL", "'0", NO_COMMENT),
+    wb_aw_select(this, "wb_aw_select", "MUL(CFG_BUS0_XMST_TOTAL, CFG_BUS0_XSLV_TOTAL)", "'0", NO_COMMENT),
+    wb_aw_available(this, "wb_aw_available", "MUL(ADD(CFG_BUS0_XMST_TOTAL,1), CFG_BUS0_XSLV_TOTAL)", "'1", NO_COMMENT),
+    wb_aw_hit(this, "wb_aw_hit", "CFG_BUS0_XMST_TOTAL", "'0", NO_COMMENT),
+    wb_w_select(this, "wb_w_select", "MUL(CFG_BUS0_XMST_TOTAL, CFG_BUS0_XSLV_LOG2_TOTAL)", "'0", NO_COMMENT),
     // registers
     w_select(this, "w_select", "MUL(CFG_BUS0_XMST_TOTAL, CFG_BUS0_XSLV_LOG2_TOTAL)", "'0", NO_COMMENT),
     r_def_valid(this, "r_def_valid", "1", RSTVAL_ZERO, NO_COMMENT),
@@ -115,7 +123,7 @@ void accel_axictrl_bus0::proc_comb() {
                             ARRITEM(comb.vmsto, *i, BITS(comb.vmsto.ar_bits.addr, DEC(*SCV_get_cfg_type(this, "CFG_SYSBUS_ADDR_BITS")), CONST("12")))), 
                         &LS(ARRITEM(comb.vmsto, *i, BITS(comb.vmsto.ar_bits.addr, DEC(*SCV_get_cfg_type(this, "CFG_SYSBUS_ADDR_BITS")), CONST("12"))),
                             ARRITEM(*map, *ii, BITS(map->addr_end, DEC(*SCV_get_cfg_type(this, "CFG_SYSBUS_ADDR_BITS")), CONST("12"))))));
-                SETBIT(comb.vb_ar_hit, *i, CONST("1", 1));
+                SETBIT(comb.vb_ar_hit, *i, ARRITEM(comb.vmsto, *i, comb.vmsto.ar_valid));
                 SETBIT(comb.vb_ar_select, ADD2(MUL2(*i, *slv_total), *ii),
                         AND2(ARRITEM(comb.vmsto, *i, comb.vmsto.ar_valid),
                              BIT(comb.vb_ar_available, ADD2(MUL2(*i, *slv_total), *ii))));
@@ -131,7 +139,7 @@ void accel_axictrl_bus0::proc_comb() {
                             ARRITEM(comb.vmsto, *i, BITS(comb.vmsto.aw_bits.addr, DEC(*SCV_get_cfg_type(this, "CFG_SYSBUS_ADDR_BITS")), CONST("12")))), 
                         &LS(ARRITEM(comb.vmsto, *i, BITS(comb.vmsto.aw_bits.addr, DEC(*SCV_get_cfg_type(this, "CFG_SYSBUS_ADDR_BITS")), CONST("12"))),
                             ARRITEM(*map, *ii, BITS(map->addr_end, DEC(*SCV_get_cfg_type(this, "CFG_SYSBUS_ADDR_BITS")), CONST("12"))))));
-                SETBIT(comb.vb_aw_hit, *i, CONST("1", 1));
+                SETBIT(comb.vb_aw_hit, *i, ARRITEM(comb.vmsto, *i, comb.vmsto.aw_valid));
                 SETBIT(comb.vb_aw_select, ADD2(MUL2(*i, *slv_total), *ii),
                         AND2(ARRITEM(comb.vmsto, *i, comb.vmsto.aw_valid),
                              BIT(comb.vb_aw_available, ADD2(MUL2(*i, *slv_total), *ii))));
@@ -152,8 +160,8 @@ void accel_axictrl_bus0::proc_comb() {
                             BIT(comb.vb_ar_available, ADD2(MUL2(*i, *slv_total), DEC(*slv_total)))));
         ENDIF();
         SETBIT(comb.vb_ar_available, ADD2(MUL2(INC(*i), *slv_total), DEC(*slv_total)),
-                AND2(INV_L(ARRITEM(comb.vmsto, *i, comb.vmsto.ar_valid)),
-                                   BIT(comb.vb_ar_available, ADD2(MUL2(*i, *slv_total), DEC(*slv_total)))));
+                ANDx(2, &INV_L(BIT(comb.vb_ar_select, ADD2(MUL2(*i, *slv_total), DEC(*slv_total)))),
+                        &BIT(comb.vb_ar_available, ADD2(MUL2(*i, *slv_total), DEC(*slv_total)))));
 
         TEXT();
         IF (AND2(NZ(ARRITEM(comb.vmsto, *i, comb.vmsto.aw_valid)), EZ(BIT(comb.vb_aw_hit, *i))));
@@ -162,8 +170,8 @@ void accel_axictrl_bus0::proc_comb() {
                             BIT(comb.vb_aw_available, ADD2(MUL2(*i, *slv_total), DEC(*slv_total)))));
         ENDIF();
         SETBIT(comb.vb_aw_available, ADD2(MUL2(INC(*i), *slv_total), DEC(*slv_total)),
-                AND2(INV_L(ARRITEM(comb.vmsto, *i, comb.vmsto.aw_valid)),
-                                   BIT(comb.vb_aw_available, ADD2(MUL2(*i, *slv_total), DEC(*slv_total)))));
+                ANDx(2, &INV_L(BIT(comb.vb_aw_select, ADD2(MUL2(*i, *slv_total), DEC(*slv_total)))),
+                        &BIT(comb.vb_aw_available, ADD2(MUL2(*i, *slv_total), DEC(*slv_total)))));
     ENDFOR();
 
     TEXT();
@@ -197,18 +205,20 @@ void accel_axictrl_bus0::proc_comb() {
     TEXT();
     TEXT("W-channel");
     i = &FOR ("i", CONST("0"), *mst_total, "++");
-        SETARRITEM(comb.vmsti, *i, comb.vmsti.w_ready,
-            ARRITEM(comb.vslvo, TO_INT(BITS(w_select, DEC(MUL2(INC(*i), *slv_log2)), MUL2(*i, *slv_log2))), comb.vslvo.w_ready));
-        SETARRITEM(comb.vslvi, TO_INT(BITS(w_select, DEC(MUL2(INC(*i), *slv_log2)), MUL2(*i, *slv_log2))), comb.vslvi.w_valid,
-            ARRITEM(comb.vmsto, *i, comb.vmsto.w_valid));
-        SETARRITEM(comb.vslvi, TO_INT(BITS(w_select, DEC(MUL2(INC(*i), *slv_log2)), MUL2(*i, *slv_log2))), comb.vslvi.w_data,
-            ARRITEM(comb.vmsto, *i, comb.vmsto.w_data));
-        SETARRITEM(comb.vslvi, TO_INT(BITS(w_select, DEC(MUL2(INC(*i), *slv_log2)), MUL2(*i, *slv_log2))), comb.vslvi.w_strb,
-            ARRITEM(comb.vmsto, *i, comb.vmsto.w_strb));
-        SETARRITEM(comb.vslvi, TO_INT(BITS(w_select, DEC(MUL2(INC(*i), *slv_log2)), MUL2(*i, *slv_log2))), comb.vslvi.w_last,
-            ARRITEM(comb.vmsto, *i, comb.vmsto.w_last));
-        SETARRITEM(comb.vslvi, TO_INT(BITS(w_select, DEC(MUL2(INC(*i), *slv_log2)), MUL2(*i, *slv_log2))), comb.vslvi.w_user,
-            ARRITEM(comb.vmsto, *i, comb.vmsto.w_user));
+        IF (NZ(ARRITEM(comb.vmsto, *i, comb.vmsto.w_valid)));
+            SETARRITEM(comb.vmsti, *i, comb.vmsti.w_ready,
+                ARRITEM(comb.vslvo, TO_INT(BITS(w_select, DEC(MUL2(INC(*i), *slv_log2)), MUL2(*i, *slv_log2))), comb.vslvo.w_ready));
+            SETARRITEM(comb.vslvi, TO_INT(BITS(w_select, DEC(MUL2(INC(*i), *slv_log2)), MUL2(*i, *slv_log2))), comb.vslvi.w_valid,
+                ARRITEM(comb.vmsto, *i, comb.vmsto.w_valid));
+            SETARRITEM(comb.vslvi, TO_INT(BITS(w_select, DEC(MUL2(INC(*i), *slv_log2)), MUL2(*i, *slv_log2))), comb.vslvi.w_data,
+                ARRITEM(comb.vmsto, *i, comb.vmsto.w_data));
+            SETARRITEM(comb.vslvi, TO_INT(BITS(w_select, DEC(MUL2(INC(*i), *slv_log2)), MUL2(*i, *slv_log2))), comb.vslvi.w_strb,
+                ARRITEM(comb.vmsto, *i, comb.vmsto.w_strb));
+            SETARRITEM(comb.vslvi, TO_INT(BITS(w_select, DEC(MUL2(INC(*i), *slv_log2)), MUL2(*i, *slv_log2))), comb.vslvi.w_last,
+                ARRITEM(comb.vmsto, *i, comb.vmsto.w_last));
+            SETARRITEM(comb.vslvi, TO_INT(BITS(w_select, DEC(MUL2(INC(*i), *slv_log2)), MUL2(*i, *slv_log2))), comb.vslvi.w_user,
+                ARRITEM(comb.vmsto, *i, comb.vmsto.w_user));
+        ENDIF();
     ENDFOR();
 
     TEXT();
@@ -269,4 +279,12 @@ void accel_axictrl_bus0::proc_comb() {
     ENDFOR();
     SETVAL(wb_def_xslvi, ARRITEM(comb.vslvi, DEC(*slv_total), comb.vslvi));
     SETVAL(wb_def_mapinfo, ARRITEM(*map, DEC(*slv_total), *map));
+
+    SETVAL(wb_ar_select, comb.vb_ar_select);
+    SETVAL(wb_ar_available, comb.vb_ar_available);
+    SETVAL(wb_ar_hit, comb.vb_ar_hit);
+    SETVAL(wb_aw_select, comb.vb_aw_select);
+    SETVAL(wb_aw_available, comb.vb_aw_available);
+    SETVAL(wb_aw_hit, comb.vb_aw_hit);
+    SETVAL(wb_w_select, comb.vb_w_select);
 }

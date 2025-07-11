@@ -88,6 +88,15 @@ class accel_axictrl_bus0 : public ModuleObject {
     Signal wb_def_resp_rdata;
     Signal w_def_resp_err;
 
+    // dbg: remove me
+    Signal wb_ar_select;
+    Signal wb_ar_available;
+    Signal wb_ar_hit;
+    Signal wb_aw_select;
+    Signal wb_aw_available;
+    Signal wb_aw_hit;
+    Signal wb_w_select;
+
     RegSignal w_select;
     RegSignal r_def_valid;
     RegSignal r_midx;

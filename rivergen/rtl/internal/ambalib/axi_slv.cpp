@@ -185,7 +185,7 @@ void axi_slv::proc_comb() {
         SETVAL(ar_id, i_xslvi.ar_id);
         SETVAL(ar_user, i_xslvi.ar_user);
         IF (AND2(NZ(ar_ready), NZ(i_xslvi.ar_valid)));
-            IF (OR2(NZ(i_xslvi.aw_valid), NZ(wstate)));
+            IF (OR2(NZ(AND2_L(i_xslvi.aw_valid, aw_ready)), NZ(wstate)));
                 SETVAL(rstate, State_r_wait_writing);
             ELSE();
                 SETVAL(rstate, State_r_addr);
