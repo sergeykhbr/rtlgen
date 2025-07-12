@@ -38,12 +38,13 @@ axi_slv::axi_slv(GenObject *parent, const char *name, const char *comment) :
     i_resp_rdata(this, "i_resp_rdata", "CFG_SYSBUS_DATA_BITS"),
     i_resp_err(this, "i_resp_err", "1"),
     // params
-    State_r_idle(this, "State_r_idle", "5", "0", NO_COMMENT),
-    State_r_addr(this, "State_r_addr", "5", "0x1", NO_COMMENT),
-    State_r_data(this, "State_r_data", "5", "0x2", NO_COMMENT),
-    State_r_last(this, "State_r_last", "5", "0x4", NO_COMMENT),
-    State_r_buf(this, "State_r_buf", "5", "0x8", NO_COMMENT),
-    State_r_wait_writing(this, "State_r_wait_writing", "5", "0x10", NO_COMMENT),
+    State_r_idle(this, "State_r_idle", "6", "0", NO_COMMENT),
+    State_r_addr(this, "State_r_addr", "6", "0x1", NO_COMMENT),
+    State_r_pipe(this, "State_r_pipe", "6", "0x2", NO_COMMENT),
+    State_r_resp_last(this, "State_r_resp_last", "6", "0x4", NO_COMMENT),
+    State_r_wait_accept(this, "State_r_wait_accept", "6", "0x8", NO_COMMENT),
+    State_r_buf(this, "State_r_buf", "6", "0x10", NO_COMMENT),
+    State_r_wait_writing(this, "State_r_wait_writing", "6", "0x20", NO_COMMENT),
     State_w_idle(this, "State_w_idle", "7", "0", NO_COMMENT),
     State_w_wait_reading(this, "State_w_wait_reading", "7", "0x1", NO_COMMENT),
     State_w_wait_reading_light(this, "State_w_wait_reading_light", "7", "0x2", NO_COMMENT),
@@ -54,11 +55,11 @@ axi_slv::axi_slv(GenObject *parent, const char *name, const char *comment) :
     State_b(this, "State_b", "7", "0x40", NO_COMMENT),
     // signals
     // registers
-    rstate(this, "rstate", "5", "State_r_idle"),
+    rstate(this, "rstate", "6", "State_r_idle"),
     wstate(this, "wstate", "7", "State_w_idle"),
     ar_ready(this, "ar_ready", "1"),
     ar_addr(this, "ar_addr", "CFG_SYSBUS_ADDR_BITS", "'0", NO_COMMENT),
-    ar_len(this, "ar_len", "9", "'0", NO_COMMENT),
+    ar_len(this, "ar_len", "8", "'0", NO_COMMENT),
     ar_bytes(this, "ar_bytes", "XSIZE_TOTAL", "'0", NO_COMMENT),
     ar_burst(this, "ar_burst", "2", "'0", NO_COMMENT),
     ar_id(this, "ar_id", "CFG_SYSBUS_ID_BITS", "'0", NO_COMMENT),
@@ -92,6 +93,7 @@ axi_slv::axi_slv(GenObject *parent, const char *name, const char *comment) :
     req_last_buf(this, "req_last_buf", "1", RSTVAL_ZERO, NO_COMMENT),
     req_wdata_buf(this, "req_wdata_buf", "CFG_SYSBUS_DATA_BITS", "'0", NO_COMMENT),
     req_wstrb_buf(this, "req_wstrb_buf", "CFG_SYSBUS_DATA_BYTES", "'0", NO_COMMENT),
+    resp_last(this, "resp_last", "1", RSTVAL_ZERO, NO_COMMENT),
     // process
     comb(this)
 {
@@ -178,7 +180,7 @@ void axi_slv::proc_comb() {
     SWITCH(rstate);
     CASE(State_r_idle);
         SETVAL(ar_addr, SUB2(i_xslvi.ar_bits.addr, i_mapinfo.addr_start));
-        SETVAL(ar_len, ADD2(CC2(CONST("0", 1), i_xslvi.ar_bits.len), CONST("1", 9)));
+        SETVAL(ar_len, i_xslvi.ar_bits.len);
         SETVAL(ar_burst, i_xslvi.ar_bits.burst);
         CALLF(&ar_bytes, *SCV_get_cfg_type(this, "XSizeToBytes"), 1, &i_xslvi.ar_bits.size);
         SETVAL(ar_last, INV_L(OR_REDUCE(i_xslvi.ar_bits.len)));
@@ -200,76 +202,113 @@ void axi_slv::proc_comb() {
         ENDIF();
     ENDCASE();
     CASE(State_r_addr);
-        SETVAL(req_valid, i_xslvi.r_ready);
-        IF(AND2(NZ(req_valid), NZ(i_req_ready)));
-            IF (GT(ar_len, CONST("0x01", 9)));
+        IF (NZ(i_req_ready));
+            SETVAL(resp_last, req_last);
+            IF (NZ(req_last));
+                SETVAL(rstate, State_r_resp_last);
+            ELSE();
+                SETVAL(rstate, State_r_pipe);
                 SETVAL(ar_len, DEC(ar_len));
                 SETVAL(req_addr, CC2(BITS(req_addr,
                         DEC(*SCV_get_cfg_type(this, "CFG_SYSBUS_ADDR_BITS")), CONST("12")), comb.vb_ar_addr_next));
-                SETVAL(req_last, INV_L(OR_REDUCE(BITS(comb.vb_ar_len_next, 8, 1))));
-                SETVAL(rstate, State_r_data);
-            ELSE();
-                SETZERO(req_valid);
-                SETZERO(ar_len);
-                SETONE(ar_last);
-                SETVAL(rstate, State_r_last);
+                SETVAL(req_last, INV_L(OR_REDUCE(comb.vb_ar_len_next)));
+                SETONE(req_valid);
             ENDIF();
         ENDIF();
     ENDCASE();
-    CASE(State_r_data);
-        SETVAL(req_valid, i_xslvi.r_ready);
-        IF(AND2(NZ(req_valid), NZ(i_req_ready)));
-            IF (GT(ar_len, CONST("0x01", 9)));
-                SETVAL(ar_len, comb.vb_ar_len_next);
+    CASE(State_r_pipe);
+        TEXT("  r_ready  | resp_valid | req_ready |");
+        TEXT("     0     |     0      |     0     | do nothing");
+        TEXT("     0     |     0      |     1     | --- cannot be second ack without resp --");
+        TEXT("     0     |     1      |     0     | r_wait_accept");
+        TEXT("     0     |     1      |     1     | r_wait_accept (-> bufferred)");
+        TEXT("     1     |     0      |     0     | do nothing");
+        TEXT("     1     |     0      |     1     | --- cannot be second ack without resp --");
+        TEXT("     1     |     1      |     0     | r_addr");
+        TEXT("     1     |     1      |     1     | stay here, latch new data");
+        IF (NZ(i_resp_valid));
+            SETONE(r_valid);
+            SETZERO(r_last);
+            SETVAL(r_data, i_resp_rdata);
+            SETVAL(r_err, i_resp_err);
+            IF (AND2(NZ(i_xslvi.r_ready), EZ(i_req_ready)));
+                SETVAL(rstate, State_r_addr);
+            ELSIF(EZ(i_xslvi.r_ready));
+                SETVAL(rstate, State_r_wait_accept);
+            ENDIF();
+        ENDIF();
+        IF (NZ(i_req_ready));
+            SETVAL(resp_last, req_last);
+            IF (NZ(req_last));
+                SETVAL(rstate, State_r_resp_last);
+            ELSIF (EZ(i_xslvi.r_ready));
+                TEXT("Goto r_wait_accept without new request");
+            ELSE();
+                SETVAL(ar_len, DEC(ar_len));
                 SETVAL(req_addr, CC2(BITS(req_addr,
                         DEC(*SCV_get_cfg_type(this, "CFG_SYSBUS_ADDR_BITS")), CONST("12")), comb.vb_ar_addr_next));
-                SETVAL(req_last, INV_L(OR_REDUCE(BITS(comb.vb_ar_len_next, 8, 1))));
-            ELSE();
-                SETZERO(ar_len);
-                SETONE(req_last);
-            ENDIF();
-        ENDIF();
-        IF (NZ(AND3_L(req_valid, req_last, i_req_ready)));
-            SETVAL(rstate, State_r_last);
-            SETZERO(req_valid);
-        ENDIF();
-        IF (NZ(i_resp_valid));
-            IF (AND2(NZ(r_valid), EZ(i_xslvi.r_ready)));
-                TEXT("We already requested the last value but previous was not accepted yet");
-                SETVAL(r_data_buf, i_resp_rdata);
-                SETVAL(r_err_buf, i_resp_err);
-                SETVAL(r_last_buf, AND3_L(req_valid, req_last, i_req_ready));
-                SETVAL(rstate, State_r_buf);
-            ELSE();
-                SETONE(r_valid);
-                SETZERO(r_last);
-                SETVAL(r_data, i_resp_rdata);
-                SETVAL(r_err, i_resp_err);
+                SETVAL(req_last, INV_L(OR_REDUCE(comb.vb_ar_len_next)));
+                SETONE(req_valid);
             ENDIF();
         ENDIF();
     ENDCASE();
-    CASE(State_r_last);
+    CASE(State_r_resp_last);
         IF (NZ(i_resp_valid));
-            IF (AND2(NZ(r_valid), NZ(r_last)));
-                TEXT("Ingore this response, because it means i_resp_valid is always=1");
-            ELSIF (AND2(NZ(r_valid), EZ(i_xslvi.r_ready)));
-                TEXT("We already requested the last value but previous (not last) was not accepted yet");
+            IF (AND2(NZ(r_valid), EZ(i_xslvi.r_ready)));
                 SETVAL(r_data_buf, i_resp_rdata);
                 SETVAL(r_err_buf, i_resp_err);
                 SETONE(r_last_buf);
                 SETVAL(rstate, State_r_buf);
             ELSE();
                 SETONE(r_valid);
-                SETONE(r_last);
                 SETVAL(r_data, i_resp_rdata);
                 SETVAL(r_err, i_resp_err);
+                SETONE(r_last);
+                SETVAL(rstate, State_r_wait_accept);
             ENDIF();
         ENDIF();
-        IF (AND3(NZ(r_valid), NZ(r_last), NZ(i_xslvi.r_ready)));
-            SETONE(ar_ready);
-            SETZERO(r_last);
-            SETZERO(r_valid, "We need it in a case of i_resp_valid is always HIGH");
-            SETVAL(rstate, State_r_idle);
+    ENDCASE();
+    CASE(State_r_wait_accept);
+        IF(NZ(i_xslvi.r_ready));
+            IF (NZ(r_last));
+                SETVAL(rstate, State_r_idle);
+                SETZERO(r_last);
+            ELSIF(NZ(i_resp_valid));
+                SETONE(r_valid);
+                SETVAL(r_data, i_resp_rdata);
+                SETVAL(r_err, i_resp_err);
+                SETVAL(r_last, resp_last);
+            ELSIF(AND2(NZ(req_valid), EZ(i_req_ready)));
+                TEXT("the last request still wasn't accepted since pipe stage");
+                SETVAL(rstate, State_r_addr);
+            ELSIF(AND3(NZ(req_valid), NZ(i_req_ready), NZ(req_last)));
+                SETVAL(rstate, State_r_resp_last);
+            ELSIF(NZ(resp_last));
+                TEXT("The latest one was already requested and request was accepeted");
+                TEXT("Just wait i_resp_valid here");
+            ELSE();
+                SETVAL(rstate, State_r_addr);
+                SETVAL(ar_len, DEC(ar_len));
+                SETVAL(req_addr, CC2(BITS(req_addr,
+                        DEC(*SCV_get_cfg_type(this, "CFG_SYSBUS_ADDR_BITS")), CONST("12")), comb.vb_ar_addr_next));
+                SETVAL(req_last, INV_L(OR_REDUCE(comb.vb_ar_len_next)));
+                SETONE(req_valid);
+            ENDIF();
+        ELSIF(AND3(NZ(r_valid), EZ(r_last), NZ(i_resp_valid)));
+            TEXT("We already requested the last value but previous was not accepted yet");
+            SETVAL(r_data_buf, i_resp_rdata);
+            SETVAL(r_err_buf, i_resp_err);
+            SETVAL(r_last_buf, resp_last);
+            SETVAL(rstate, State_r_buf);
+        ELSIF(AND2(EZ(r_last), NZ(i_resp_valid)));
+            TEXT("We recieve new data after some pause");
+            SETVAL(r_data, i_resp_rdata);
+            SETVAL(r_err, i_resp_err);
+            SETVAL(r_last, resp_last);
+            SETONE(r_valid);
+        ENDIF();
+        IF (NZ(i_req_ready));
+            SETVAL(resp_last, req_last);
         ENDIF();
     ENDCASE();
     CASE(State_r_buf);
@@ -278,11 +317,7 @@ void axi_slv::proc_comb() {
             SETVAL(r_last, r_last_buf);
             SETVAL(r_data, r_data_buf);
             SETVAL(r_err, r_err_buf);
-            IF (NZ(r_last_buf));
-                SETVAL(rstate, State_r_last);
-            ELSE();
-                SETVAL(rstate, State_r_data);
-            ENDIF();
+            SETVAL(rstate, State_r_wait_accept);
         ENDIF();
     ENDCASE();
     CASE(State_r_wait_writing);
@@ -378,7 +413,7 @@ void axi_slv::proc_comb() {
             ENDIF();
         ENDIF();
         IF (AND3(NZ(req_valid), NZ(req_last), NZ(i_req_ready)));
-            SETZERO(req_last);
+            //SETZERO(req_last);
             SETVAL(wstate, State_w_resp);
         ENDIF();
         IF (AND3(NZ(i_resp_valid), EZ(i_xslvi.w_valid), EZ(req_valid)));
