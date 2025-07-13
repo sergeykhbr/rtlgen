@@ -118,6 +118,9 @@ void accel_axictrl_bus0::proc_comb() {
                 SETBIT(comb.vb_ar_available, ADD2(MUL2(INC(*i), *slv_total), *ii),
                         AND2(INV_L(ARRITEM(comb.vmsto, *i, comb.vmsto.ar_valid)),
                                    BIT(comb.vb_ar_available, ADD2(MUL2(*i, *slv_total), *ii))));
+            ELSE();
+                SETBIT(comb.vb_ar_available, ADD2(MUL2(INC(*i), *slv_total), *ii),
+                                   BIT(comb.vb_ar_available, ADD2(MUL2(*i, *slv_total), *ii)));
             ENDIF();
 
             TEXT();
@@ -134,6 +137,9 @@ void accel_axictrl_bus0::proc_comb() {
                 SETBIT(comb.vb_aw_available, ADD2(MUL2(INC(*i), *slv_total), *ii),
                         AND2(INV_L(ARRITEM(comb.vmsto, *i, comb.vmsto.aw_valid)),
                                    BIT(comb.vb_aw_available, ADD2(MUL2(*i, *slv_total), *ii))));
+            ELSE();
+                SETBIT(comb.vb_aw_available, ADD2(MUL2(INC(*i), *slv_total), *ii),
+                                   BIT(comb.vb_aw_available, ADD2(MUL2(*i, *slv_total), *ii)));
             ENDIF();
         ENDFOR();
     ENDFOR();
