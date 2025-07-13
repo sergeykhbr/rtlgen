@@ -183,7 +183,7 @@ void accel_axictrl_bus0::proc_comb() {
                     CC2(ARRITEM(comb.vmsto, *i, comb.vmsto.aw_id), TO_LOGIC(*i, *mst_log2)));
                 IF (NZ(ARRITEM(comb.vslvo, *ii, comb.vslvo.aw_ready)));
                     TEXT("Switch W-channel index to future w-transaction without id");
-                    SETBITS(comb.vb_w_select, DEC(MUL2(INC(*i), *slv_log2)), MUL2(*i, *slv_log2), TO_LOGIC(*ii, *slv_log2));
+                    SETBITSW(comb.vb_w_select, MUL2(*i, *slv_log2), *slv_log2, TO_LOGIC(*ii, *slv_log2));
                     SETBIT(comb.vb_w_active, *i, CONST("1", 1));
                 ENDIF();
             ENDIF();
@@ -196,19 +196,19 @@ void accel_axictrl_bus0::proc_comb() {
     i = &FOR ("i", CONST("0"), *mst_total, "++");
         IF (AND2(NZ(ARRITEM(comb.vmsto, *i, comb.vmsto.w_valid)), NZ(BIT(w_active, *i))));
             SETARRITEM(comb.vmsti, *i, comb.vmsti.w_ready,
-                ARRITEM(comb.vslvo, TO_INT(BITS(w_select, DEC(MUL2(INC(*i), *slv_log2)), MUL2(*i, *slv_log2))), comb.vslvo.w_ready));
-            SETARRITEM(comb.vslvi, TO_INT(BITS(w_select, DEC(MUL2(INC(*i), *slv_log2)), MUL2(*i, *slv_log2))), comb.vslvi.w_valid,
+                ARRITEM(comb.vslvo, TO_INT(BITSW(w_select, MUL2(*i, *slv_log2), *slv_log2)), comb.vslvo.w_ready));
+            SETARRITEM(comb.vslvi, TO_INT(BITSW(w_select, MUL2(*i, *slv_log2), *slv_log2)), comb.vslvi.w_valid,
                 ARRITEM(comb.vmsto, *i, comb.vmsto.w_valid));
-            SETARRITEM(comb.vslvi, TO_INT(BITS(w_select, DEC(MUL2(INC(*i), *slv_log2)), MUL2(*i, *slv_log2))), comb.vslvi.w_data,
+            SETARRITEM(comb.vslvi, TO_INT(BITSW(w_select, MUL2(*i, *slv_log2), *slv_log2)), comb.vslvi.w_data,
                 ARRITEM(comb.vmsto, *i, comb.vmsto.w_data));
-            SETARRITEM(comb.vslvi, TO_INT(BITS(w_select, DEC(MUL2(INC(*i), *slv_log2)), MUL2(*i, *slv_log2))), comb.vslvi.w_strb,
+            SETARRITEM(comb.vslvi, TO_INT(BITSW(w_select, MUL2(*i, *slv_log2), *slv_log2)), comb.vslvi.w_strb,
                 ARRITEM(comb.vmsto, *i, comb.vmsto.w_strb));
-            SETARRITEM(comb.vslvi, TO_INT(BITS(w_select, DEC(MUL2(INC(*i), *slv_log2)), MUL2(*i, *slv_log2))), comb.vslvi.w_last,
+            SETARRITEM(comb.vslvi, TO_INT(BITSW(w_select, MUL2(*i, *slv_log2), *slv_log2)), comb.vslvi.w_last,
                 ARRITEM(comb.vmsto, *i, comb.vmsto.w_last));
-            SETARRITEM(comb.vslvi, TO_INT(BITS(w_select, DEC(MUL2(INC(*i), *slv_log2)), MUL2(*i, *slv_log2))), comb.vslvi.w_user,
+            SETARRITEM(comb.vslvi, TO_INT(BITSW(w_select, MUL2(*i, *slv_log2), *slv_log2)), comb.vslvi.w_user,
                 ARRITEM(comb.vmsto, *i, comb.vmsto.w_user));
             IF (ANDx(2, &NZ(ARRITEM(comb.vmsto, *i, comb.vmsto.w_last)),
-                        &NZ(ARRITEM(comb.vslvo, TO_INT(BITS(w_select, DEC(MUL2(INC(*i), *slv_log2)), MUL2(*i, *slv_log2))), comb.vslvo.w_ready))));
+                        &NZ(ARRITEM(comb.vslvo, TO_INT(BITSW(w_select, MUL2(*i, *slv_log2), *slv_log2)), comb.vslvo.w_ready))));
                 SETBIT(comb.vb_w_active, *i, CONST("0", 1));
             ENDIF();
         ENDIF();
