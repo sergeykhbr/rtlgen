@@ -42,23 +42,10 @@ accel_axictrl_bus0::accel_axictrl_bus0(GenObject *parent, const char *name, cons
     w_def_resp_valid(this, "w_def_resp_valid", "1"),
     wb_def_resp_rdata(this, "wb_def_resp_rdata", "CFG_SYSBUS_DATA_BITS"),
     w_def_resp_err(this, "w_def_resp_err", "1"),
-    // debug signals:
-    wb_ar_select(this, "wb_ar_select", "MUL(CFG_BUS0_XMST_TOTAL, CFG_BUS0_XSLV_TOTAL)", "'0", NO_COMMENT),
-    wb_ar_available(this, "wb_ar_available", "MUL(ADD(CFG_BUS0_XMST_TOTAL,1), CFG_BUS0_XSLV_TOTAL)", "'1", NO_COMMENT),
-    wb_ar_hit(this, "wb_ar_hit", "CFG_BUS0_XMST_TOTAL", "'0", NO_COMMENT),
-    wb_aw_select(this, "wb_aw_select", "MUL(CFG_BUS0_XMST_TOTAL, CFG_BUS0_XSLV_TOTAL)", "'0", NO_COMMENT),
-    wb_aw_available(this, "wb_aw_available", "MUL(ADD(CFG_BUS0_XMST_TOTAL,1), CFG_BUS0_XSLV_TOTAL)", "'1", NO_COMMENT),
-    wb_aw_hit(this, "wb_aw_hit", "CFG_BUS0_XMST_TOTAL", "'0", NO_COMMENT),
-    wb_w_select(this, "wb_w_select", "MUL(CFG_BUS0_XMST_TOTAL, CFG_BUS0_XSLV_LOG2_TOTAL)", "'0", NO_COMMENT),
     // registers
     w_select(this, "w_select", "MUL(CFG_BUS0_XMST_TOTAL, CFG_BUS0_XSLV_LOG2_TOTAL)", "'0", NO_COMMENT),
+    w_active(this, "w_active", "CFG_BUS0_XMST_TOTAL", "'0", NO_COMMENT),
     r_def_valid(this, "r_def_valid", "1", RSTVAL_ZERO, NO_COMMENT),
-    r_midx(this, "r_midx", "CFG_BUS0_XMST_LOG2_TOTAL", "CFG_BUS0_XMST_TOTAL"),
-    r_sidx(this, "r_sidx", "CFG_BUS0_XSLV_LOG2_TOTAL", "CFG_BUS0_XSLV_TOTAL"),
-    w_midx(this, "w_midx", "CFG_BUS0_XMST_LOG2_TOTAL", "CFG_BUS0_XMST_TOTAL"),
-    w_sidx(this, "w_sidx", "CFG_BUS0_XSLV_LOG2_TOTAL", "CFG_BUS0_XSLV_TOTAL"),
-    b_midx(this, "b_midx", "CFG_BUS0_XMST_LOG2_TOTAL", "CFG_BUS0_XMST_TOTAL"),
-    b_sidx(this, "b_sidx", "CFG_BUS0_XSLV_LOG2_TOTAL", "CFG_BUS0_XSLV_TOTAL"),
     // modules
     xdef0(this, "xdef0", NO_COMMENT),
     // process
@@ -176,6 +163,7 @@ void accel_axictrl_bus0::proc_comb() {
 
     TEXT();
     SETVAL(comb.vb_w_select, w_select);
+    SETVAL(comb.vb_w_active, w_active);
     i = &FOR ("i", CONST("0"), *mst_total, "++");
         ii = &FOR ("ii", CONST("0"), *slv_total, "++");
             IF (NZ(BIT(comb.vb_ar_select, ADD2(MUL2(*i, *slv_total), *ii))));
@@ -196,6 +184,7 @@ void accel_axictrl_bus0::proc_comb() {
                 IF (NZ(ARRITEM(comb.vslvo, *ii, comb.vslvo.aw_ready)));
                     TEXT("Switch W-channel index to future w-transaction without id");
                     SETBITS(comb.vb_w_select, DEC(MUL2(INC(*i), *slv_log2)), MUL2(*i, *slv_log2), TO_LOGIC(*ii, *slv_log2));
+                    SETBIT(comb.vb_w_active, *i, CONST("1", 1));
                 ENDIF();
             ENDIF();
         ENDFOR();
@@ -205,7 +194,7 @@ void accel_axictrl_bus0::proc_comb() {
     TEXT();
     TEXT("W-channel");
     i = &FOR ("i", CONST("0"), *mst_total, "++");
-        IF (NZ(ARRITEM(comb.vmsto, *i, comb.vmsto.w_valid)));
+        IF (AND2(NZ(ARRITEM(comb.vmsto, *i, comb.vmsto.w_valid)), NZ(BIT(w_active, *i))));
             SETARRITEM(comb.vmsti, *i, comb.vmsti.w_ready,
                 ARRITEM(comb.vslvo, TO_INT(BITS(w_select, DEC(MUL2(INC(*i), *slv_log2)), MUL2(*i, *slv_log2))), comb.vslvo.w_ready));
             SETARRITEM(comb.vslvi, TO_INT(BITS(w_select, DEC(MUL2(INC(*i), *slv_log2)), MUL2(*i, *slv_log2))), comb.vslvi.w_valid,
@@ -218,8 +207,13 @@ void accel_axictrl_bus0::proc_comb() {
                 ARRITEM(comb.vmsto, *i, comb.vmsto.w_last));
             SETARRITEM(comb.vslvi, TO_INT(BITS(w_select, DEC(MUL2(INC(*i), *slv_log2)), MUL2(*i, *slv_log2))), comb.vslvi.w_user,
                 ARRITEM(comb.vmsto, *i, comb.vmsto.w_user));
+            IF (ANDx(2, &NZ(ARRITEM(comb.vmsto, *i, comb.vmsto.w_last)),
+                        &NZ(ARRITEM(comb.vslvo, TO_INT(BITS(w_select, DEC(MUL2(INC(*i), *slv_log2)), MUL2(*i, *slv_log2))), comb.vslvo.w_ready))));
+                SETBIT(comb.vb_w_active, *i, CONST("0", 1));
+            ENDIF();
         ENDIF();
     ENDFOR();
+    SETVAL(w_active, comb.vb_w_active);
 
     TEXT();
     TEXT("B-channel");
@@ -279,12 +273,4 @@ void accel_axictrl_bus0::proc_comb() {
     ENDFOR();
     SETVAL(wb_def_xslvi, ARRITEM(comb.vslvi, DEC(*slv_total), comb.vslvi));
     SETVAL(wb_def_mapinfo, ARRITEM(*map, DEC(*slv_total), *map));
-
-    SETVAL(wb_ar_select, comb.vb_ar_select);
-    SETVAL(wb_ar_available, comb.vb_ar_available);
-    SETVAL(wb_ar_hit, comb.vb_ar_hit);
-    SETVAL(wb_aw_select, comb.vb_aw_select);
-    SETVAL(wb_aw_available, comb.vb_aw_available);
-    SETVAL(wb_aw_hit, comb.vb_aw_hit);
-    SETVAL(wb_w_select, comb.vb_w_select);
 }

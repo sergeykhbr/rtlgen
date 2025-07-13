@@ -42,7 +42,8 @@ class accel_axictrl_bus0 : public ModuleObject {
             vb_aw_select(this, "vb_aw_select", "MUL(CFG_BUS0_XMST_TOTAL, CFG_BUS0_XSLV_TOTAL)", "'0", NO_COMMENT),
             vb_aw_available(this, "vb_aw_available", "MUL(ADD(CFG_BUS0_XMST_TOTAL,1), CFG_BUS0_XSLV_TOTAL)", "'1", NO_COMMENT),
             vb_aw_hit(this, "vb_aw_hit", "CFG_BUS0_XMST_TOTAL", "'0", NO_COMMENT),
-            vb_w_select(this, "vb_w_select", "MUL(CFG_BUS0_XMST_TOTAL, CFG_BUS0_XSLV_LOG2_TOTAL)", "'0", NO_COMMENT) {
+            vb_w_select(this, "vb_w_select", "MUL(CFG_BUS0_XMST_TOTAL, CFG_BUS0_XSLV_LOG2_TOTAL)", "'0", NO_COMMENT),
+            vb_w_active(this, "vb_w_active", "CFG_BUS0_XMST_TOTAL", "'0", NO_COMMENT) {
         }
 
      public:
@@ -57,6 +58,7 @@ class accel_axictrl_bus0 : public ModuleObject {
         Logic vb_aw_available;
         Logic vb_aw_hit;
         Logic vb_w_select;
+        Logic vb_w_active;
     };
 
     void proc_comb();
@@ -88,23 +90,9 @@ class accel_axictrl_bus0 : public ModuleObject {
     Signal wb_def_resp_rdata;
     Signal w_def_resp_err;
 
-    // dbg: remove me
-    Signal wb_ar_select;
-    Signal wb_ar_available;
-    Signal wb_ar_hit;
-    Signal wb_aw_select;
-    Signal wb_aw_available;
-    Signal wb_aw_hit;
-    Signal wb_w_select;
-
     RegSignal w_select;
+    RegSignal w_active;
     RegSignal r_def_valid;
-    RegSignal r_midx;
-    RegSignal r_sidx;
-    RegSignal w_midx;
-    RegSignal w_sidx;
-    RegSignal b_midx;
-    RegSignal b_sidx;
 
     CombProcess comb;
 

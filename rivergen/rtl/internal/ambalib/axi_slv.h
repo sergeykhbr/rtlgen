@@ -78,7 +78,7 @@ class axi_slv : public ModuleObject {
     ParamLogic State_r_wait_writing;
     ParamLogic State_w_idle;
     ParamLogic State_w_wait_reading;
-    ParamLogic State_w_wait_reading_light;
+    //ParamLogic State_w_wait_reading_light;
     ParamLogic State_w_req;
     ParamLogic State_w_pipe;
     ParamLogic State_w_buf;
@@ -123,6 +123,7 @@ class axi_slv : public ModuleObject {
     RegSignal req_last_buf;
     RegSignal req_wdata_buf;
     RegSignal req_wstrb_buf;
+    RegSignal requested;
     RegSignal resp_last;
     
     CombProcess comb;

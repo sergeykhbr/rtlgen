@@ -45,18 +45,17 @@ axi_slv::axi_slv(GenObject *parent, const char *name, const char *comment) :
     State_r_wait_accept(this, "State_r_wait_accept", "6", "0x8", NO_COMMENT),
     State_r_buf(this, "State_r_buf", "6", "0x10", NO_COMMENT),
     State_r_wait_writing(this, "State_r_wait_writing", "6", "0x20", NO_COMMENT),
-    State_w_idle(this, "State_w_idle", "7", "0", NO_COMMENT),
-    State_w_wait_reading(this, "State_w_wait_reading", "7", "0x1", NO_COMMENT),
-    State_w_wait_reading_light(this, "State_w_wait_reading_light", "7", "0x2", NO_COMMENT),
-    State_w_req(this, "State_w_req", "7", "0x4", NO_COMMENT), 
-    State_w_pipe(this, "State_w_pipe", "7", "0x8", NO_COMMENT), 
-    State_w_buf(this, "State_w_buf", "7", "0x10", NO_COMMENT), 
-    State_w_resp(this, "State_w_resp", "7", "0x20", NO_COMMENT), 
-    State_b(this, "State_b", "7", "0x40", NO_COMMENT),
+    State_w_idle(this, "State_w_idle", "6", "0", NO_COMMENT),
+    State_w_wait_reading(this, "State_w_wait_reading", "6", "0x1", NO_COMMENT),
+    State_w_req(this, "State_w_req", "6", "0x2", NO_COMMENT), 
+    State_w_pipe(this, "State_w_pipe", "6", "0x4", NO_COMMENT), 
+    State_w_buf(this, "State_w_buf", "6", "0x8", NO_COMMENT), 
+    State_w_resp(this, "State_w_resp", "6", "0x10", NO_COMMENT), 
+    State_b(this, "State_b", "6", "0x20", NO_COMMENT),
     // signals
     // registers
     rstate(this, "rstate", "6", "State_r_idle"),
-    wstate(this, "wstate", "7", "State_w_idle"),
+    wstate(this, "wstate", "6", "State_w_idle"),
     ar_ready(this, "ar_ready", "1"),
     ar_addr(this, "ar_addr", "CFG_SYSBUS_ADDR_BITS", "'0", NO_COMMENT),
     ar_len(this, "ar_len", "8", "'0", NO_COMMENT),
@@ -93,6 +92,7 @@ axi_slv::axi_slv(GenObject *parent, const char *name, const char *comment) :
     req_last_buf(this, "req_last_buf", "1", RSTVAL_ZERO, NO_COMMENT),
     req_wdata_buf(this, "req_wdata_buf", "CFG_SYSBUS_DATA_BITS", "'0", NO_COMMENT),
     req_wstrb_buf(this, "req_wstrb_buf", "CFG_SYSBUS_DATA_BYTES", "'0", NO_COMMENT),
+    requested(this, "requested", "1", RSTVAL_ZERO, NO_COMMENT),
     resp_last(this, "resp_last", "1", RSTVAL_ZERO, NO_COMMENT),
     // process
     comb(this)
@@ -173,6 +173,9 @@ void axi_slv::proc_comb() {
     ENDIF();
     IF (NZ(AND2_L(req_valid, i_req_ready)));
         SETZERO(req_valid);
+        SETONE(requested);
+    ELSIF(NZ(i_resp_valid));
+        SETZERO(requested);
     ENDIF();
 
     TEXT();
@@ -281,9 +284,13 @@ void axi_slv::proc_comb() {
             ELSIF(AND2(NZ(req_valid), EZ(i_req_ready)));
                 TEXT("the last request still wasn't accepted since pipe stage");
                 SETVAL(rstate, State_r_addr);
-            ELSIF(AND3(NZ(req_valid), NZ(i_req_ready), NZ(req_last)));
-                SETVAL(rstate, State_r_resp_last);
-            ELSIF(NZ(resp_last));
+            ELSIF(AND2(NZ(req_valid), NZ(i_req_ready)));
+                IF (NZ(req_last));
+                    SETVAL(rstate, State_r_resp_last);
+                ELSE();
+                    SETVAL(rstate, State_r_pipe);
+                ENDIF();
+            ELSIF(NZ(requested));
                 TEXT("The latest one was already requested and request was accepeted");
                 TEXT("Just wait i_resp_valid here");
             ELSE();
@@ -341,7 +348,6 @@ void axi_slv::proc_comb() {
     TEXT("Writing channel:");
     SWITCH(wstate);
     CASE(State_w_idle);
-        SETONE(w_ready);
         SETVAL(aw_addr, SUB2(i_xslvi.aw_bits.addr, i_mapinfo.addr_start));
         SETVAL(aw_burst, i_xslvi.aw_bits.burst);
         CALLF(&aw_bytes, *SCV_get_cfg_type(this, "XSizeToBytes"), 1, &i_xslvi.aw_bits.size);
@@ -349,28 +355,11 @@ void axi_slv::proc_comb() {
         SETVAL(aw_id, i_xslvi.aw_id);
         SETVAL(aw_user, i_xslvi.aw_user);
         IF (AND2(NZ(aw_ready), NZ(i_xslvi.aw_valid)));
-            SETVAL(req_wdata, i_xslvi.w_data);
-            SETVAL(req_wstrb, i_xslvi.w_strb);
-            IF (AND2(NZ(w_ready), NZ(i_xslvi.w_valid)));
-                TEXT("AXI Light support:");
-                SETVAL(wstate, State_w_pipe);
-                SETVAL(w_last, i_xslvi.w_last);
-                IF (NZ(rstate));
-                    TEXT("Postpone writing");
-                    SETZERO(w_ready);
-                    SETVAL(wstate, State_w_wait_reading_light);
-                ELSE();
-                    TEXT("Start writing now");
-                    SETVAL(req_addr, SUB2(i_xslvi.aw_bits.addr, i_mapinfo.addr_start));
-                    CALLF(&req_bytes, *SCV_get_cfg_type(this, "XSizeToBytes"), 1, &i_xslvi.aw_bits.size);
-                    SETVAL(req_last, i_xslvi.w_last);
-                    SETONE(req_write);
-                    SETONE(req_valid);
-                    SETVAL(w_ready, i_req_ready);
-                ENDIF();
-            ELSIF(NZ(rstate));
+            TEXT("Warning: Do not try to support AXI Light here!!");
+            TEXT("    It is Devil that overcomplicates your inteconnect and stuck your system");
+            TEXT("    when 2 masters (AXI and AXI Light) will try to write into the same slave.");
+            IF(NZ(rstate));
                 SETVAL(wstate, State_w_wait_reading);
-                SETZERO(w_ready);
             ELSE();
                 SETVAL(req_addr, SUB2(i_xslvi.aw_bits.addr, i_mapinfo.addr_start));
                 CALLF(&req_bytes, *SCV_get_cfg_type(this, "XSizeToBytes"), 1, &i_xslvi.aw_bits.size);
@@ -413,7 +402,6 @@ void axi_slv::proc_comb() {
             ENDIF();
         ENDIF();
         IF (AND3(NZ(req_valid), NZ(req_last), NZ(i_req_ready)));
-            //SETZERO(req_last);
             SETVAL(wstate, State_w_resp);
         ENDIF();
         IF (AND3(NZ(i_resp_valid), EZ(i_xslvi.w_valid), EZ(req_valid)));
@@ -451,23 +439,11 @@ void axi_slv::proc_comb() {
             SETVAL(wstate, State_w_req);
         ENDIF();
     ENDCASE();
-    CASE(State_w_wait_reading_light);
-        TEXT("Not ready to accept new data before writing the last one");
-        IF (OR2(EZ(rstate), NZ(AND3_L(r_valid, r_last, i_xslvi.r_ready))));
-            SETONE(req_valid);
-            SETONE(req_write);
-            SETVAL(req_addr, aw_addr);
-            SETVAL(req_bytes, aw_bytes);
-            SETVAL(req_last, w_last);
-            SETVAL(wstate, State_w_pipe);
-        ENDIF();
-    ENDCASE();
     CASE(State_b);
         IF (AND2(NZ(b_valid), NZ(i_xslvi.b_ready)));
             SETZERO(b_valid);
             SETZERO(b_err);
             SETONE(aw_ready);
-            SETONE(w_ready, "AXI light");
             SETVAL(wstate, State_w_idle);
         ENDIF();
     ENDCASE();

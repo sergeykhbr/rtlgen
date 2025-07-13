@@ -121,11 +121,11 @@ void axi_mst_generator::comb_proc() {
                 SETZERO(aw_xlen);
                 SETZERO(ar_xlen);
             ENDIF();
-            //IF (AND2(EZ(BITS(i_test_selector, 11, 10)), EQ(BITS(i_test_selector, 4, 2), CONST("7", 3))));
-            //    SETONE(w_use_axi_light);
-            //ELSE();
+            IF (AND2(EZ(BITS(i_test_selector, 11, 10)), EQ(BITS(i_test_selector, 4, 2), CONST("7", 3))));
+                SETONE(w_use_axi_light);
+            ELSE();
                 SETZERO(w_use_axi_light);
-            //ENDIF();
+            ENDIF();
             SETVAL(xsize, CONST("3", 3), "8-bytes");
             IF (NZ(BIT(i_test_selector, 12)));
                 SETVAL(xsize, CONST("2", 3), "4-bytes");
