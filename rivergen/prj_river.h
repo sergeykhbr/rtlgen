@@ -32,15 +32,19 @@
 #include "rtl/internal/pcie_dma/tb/pcie_dma_tb_folder.h"
 #include "rtl/internal/misclib/tb/misclib_tb_folder.h"
 #include "rtl/internal/cdc/tb/cdc_tb_folder.h"
+#if GENCFG_HDMI_ENABLE
 #include "rtl/internal/hdmilib/tb/hdmi_tb_folder.h"
 #include "rtl/internal/mathlib/tb/mathlib_tb_folder.h"
+#endif
+#if CONFIG_GPU3D
 #include "rtl/internal/accel/tb/accel_tb_folder.h"
+#endif
 
 using namespace sysvc;
 
 class RiverProject : public ProjectObject {
  public:
-    RiverProject(const char *rootpath);
+    explicit RiverProject(const char *rootpath);
 
  protected:
      /**
@@ -85,8 +89,10 @@ class RiverProject : public ProjectObject {
 #endif
     misclib_tb_folder misclib_tb_folder_;       // put into prj/tb
     cdc_tb_folder cdc_tb_folder_;               // put into prj/tb
+#if GENCFG_HDMI_ENABLE
     hdmi_tb_folder hdmi_tb_folder_;             // put into prj/tb
     mathlib_tb_folder mathlib_tb_folder_;
+#endif
 };
 
 

@@ -36,7 +36,6 @@ asic_accel_top_tb::asic_accel_top_tb(GenObject *parent, const char *name) :
     w_uart1_rd(this, "w_uart1_rd", "1", RSTVAL_ZERO, NO_COMMENT),
     w_uart1_td(this, "w_uart1_td", "1", RSTVAL_ZERO, NO_COMMENT),
     w_uart1_loopback_ena(this, "w_uart1_loopback_ena", "1", RSTVAL_ZERO, NO_COMMENT),
-#if GENCFG_HDMI_ENABLE
     w_i2c_scl(this, "w_i2c_scl", "1", RSTVAL_ZERO, NO_COMMENT),
     w_i2c_sda(this, "w_i2c_sda", "1", RSTVAL_ZERO, NO_COMMENT),
     w_i2c_nreset(this, "w_i2c_nreset", "1", RSTVAL_ZERO, NO_COMMENT),
@@ -51,29 +50,18 @@ asic_accel_top_tb::asic_accel_top_tb(GenObject *parent, const char *name) :
     w_bufo_i2c0_sda(this, "w_bufo_i2c0_sda", "1", RSTVAL_ZERO, NO_COMMENT),
     w_vipo_i2c0_sda(this, "w_vipo_i2c0_sda", "1", RSTVAL_ZERO, NO_COMMENT),
     w_vipo_i2c0_sda_dir(this, "w_vipo_i2c0_sda_dir", "1", RSTVAL_ZERO, NO_COMMENT),
-#endif
     wb_clk_cnt(this, "wb_clk_cnt", "32", "'0", NO_COMMENT),
-#if GENCFG_SD_CTRL_ENABLE
-#endif
-#if GENCFG_PCIE_ENABLE
-#endif
     // submodules:
     clk0(this, "clk0", NO_COMMENT),
     uart1(this, "uart1", NO_COMMENT),
     jtag0(this, "jtag0"),
-#if GENCFG_SD_CTRL_ENABLE
-#endif
-#if GENCFG_HDMI_ENABLE
     iosda0(this, "iosda0", NO_COMMENT),
     i2c0(this, "i2c0", NO_COMMENT),
-#endif
     tt(this, "tt", NO_COMMENT),
     // processes:
     proc(this, &w_sclk_p)
 {
-#if GENCFG_HDMI_ENABLE
     w_i2c_sda.setAttribute(ATTR_UNCHECKED_WRITERS);     // bi-directional wire
-#endif
 
     Operation::start(this);
 
@@ -83,7 +71,6 @@ asic_accel_top_tb::asic_accel_top_tb(GenObject *parent, const char *name) :
         CONNECT(clk0, 0, clk0.o_clk, w_sclk_p);
     ENDNEW();
 
-#if GENCFG_HDMI_ENABLE
 TEXT();
     NEW(iosda0, iosda0.getName().c_str());
         CONNECT(iosda0, 0, iosda0.io, w_i2c_sda);
@@ -101,7 +88,6 @@ TEXT();
         CONNECT(i2c0, 0, i2c0.o_sda, w_vipo_i2c0_sda);
         CONNECT(i2c0, 0, i2c0.o_sda_dir, w_vipo_i2c0_sda_dir);
     ENDNEW();
-#endif
 
 TEXT();
     uart1.async_reset.setObjValue(new DecConst(1));
@@ -139,7 +125,6 @@ TEXT();
         CONNECT(tt, 0, tt.o_jtag_vref, w_jtag_vref);
         CONNECT(tt, 0, tt.i_uart1_rd, w_uart1_rd);
         CONNECT(tt, 0, tt.o_uart1_td, w_uart1_td);
-#if GENCFG_HDMI_ENABLE
         CONNECT(tt, 0, tt.o_i2c0_scl, w_i2c_scl);
         CONNECT(tt, 0, tt.io_i2c0_sda, w_i2c_sda);
         CONNECT(tt, 0, tt.o_i2c0_nreset, w_i2c_nreset);
@@ -151,11 +136,6 @@ TEXT();
         CONNECT(tt, 0, tt.o_hdmi_spdif, w_hdmi_spdif);
         CONNECT(tt, 0, tt.i_hdmi_spdif_out, w_hdmi_spdif_out);;
         CONNECT(tt, 0, tt.i_hdmi_int, w_hdmi_int);
-#endif
-#if GENCFG_SD_CTRL_ENABLE
-#endif
-#if GENCFG_PCIE_ENABLE
-#endif
     ENDNEW();
 
     INITIAL();
@@ -176,9 +156,7 @@ void asic_accel_top_tb::proc_test() {
 
 TEXT();
     ASSIGN(w_sclk_n, INV(w_sclk_p));
-#if GENCFG_HDMI_ENABLE
     ASSIGN(w_hdmi_spdif_out, CONST("0", 1));
     ASSIGN(w_hdmi_int, CONST("0", 1));
-#endif
 }
 

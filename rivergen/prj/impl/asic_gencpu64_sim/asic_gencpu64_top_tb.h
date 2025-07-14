@@ -65,6 +65,16 @@ public:
     Signal w_uart1_rd;
     Signal w_uart1_td;
     Signal w_uart1_loopback_ena;
+#if GENCFG_SD_CTRL_ENABLE
+    Signal w_sd_sclk;
+    Signal w_sd_cmd;
+    Signal w_sd_dat0;
+    Signal w_sd_dat1;
+    Signal w_sd_dat2;
+    Signal w_sd_cd_dat3;
+    Signal w_sd_detected;
+    Signal w_sd_protect;
+#endif
 #if GENCFG_HDMI_ENABLE
     Signal w_i2c_scl;
     Signal w_i2c_sda;

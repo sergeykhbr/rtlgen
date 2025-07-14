@@ -156,6 +156,7 @@ class asic_gencpu64_top : public ModuleObject {
     Signal w_pcie_user_clk;
     Signal w_pcie_user_rst;
     Signal w_pcie_nrst;
+    Signal w_hdmi_nrst;
 #if GENCFG_PCIE_ENABLE
     Signal wb_pcie_completer_id;
     SignalStruct<types_dma::pcie_dma64_out_type> pcie_dmao;

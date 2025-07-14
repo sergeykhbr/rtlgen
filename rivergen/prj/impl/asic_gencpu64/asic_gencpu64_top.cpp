@@ -128,6 +128,7 @@ asic_gencpu64_top::asic_gencpu64_top(GenObject *parent, const char *name, const 
     w_pcie_user_clk(this, "w_pcie_user_clk", "1"),
     w_pcie_user_rst(this, "w_pcie_user_rst", "1"),
     w_pcie_nrst(this, "w_pcie_nrst", "1"),
+    w_hdmi_nrst(this, "w_hdmi_nrst", "1"),
 #if GENCFG_PCIE_ENABLE
     wb_pcie_completer_id(this, "wb_pcie_completer_id", "16", "Bus, Device, Function"),
     pcie_dmao(this, "pcie_dmao", NO_COMMENT),
@@ -308,6 +309,7 @@ TEXT();
         CONNECT(prci0, 0, prci0.o_sys_nrst, w_sys_nrst);
         CONNECT(prci0, 0, prci0.o_dbg_nrst, w_dbg_nrst);
         CONNECT(prci0, 0, prci0.o_pcie_nrst, w_pcie_nrst);
+        CONNECT(prci0, 0, prci0.o_hdmi_nrst, w_hdmi_nrst);
         CONNECT(prci0, 0, prci0.i_mapinfo, prci_pmapinfo);
         CONNECT(prci0, 0, prci0.o_cfg, prci_dev_cfg);
         CONNECT(prci0, 0, prci0.i_apbi, prci_apbi);
