@@ -1,5 +1,5 @@
 // 
-//  Copyright 2022 Sergey Khabarov, sergeykhbr@gmail.com
+//  Copyright 2025 Sergey Khabarov, sergeykhbr@gmail.com
 // 
 //  Licensed under the Apache License, Version 2.0 (the "License");
 //  you may not use this file except in compliance with the License.
@@ -17,84 +17,35 @@
 #pragma once
 
 #include <api_rtlgen.h>
-#include "../ambalib/types_amba.h"
-#include "../ambalib/types_pnp.h"
-#include "../ambalib/axi_slv.h"
 #include "types_gencpu64_bus1.h"
+#include "../ambalib/pbridge.h"
 
 using namespace sysvc;
 
-class gencpu64_axi2apb_bus1 : public ModuleObject {
+class gencpu64_axi2apb_bus1 : public pbridge<types_gencpu64_bus1::bus1_apb_in_vector,
+                                             types_gencpu64_bus1::bus1_apb_out_vector,
+                                             types_gencpu64_bus1::bus1_mapinfo_vector> {
  public:
-    gencpu64_axi2apb_bus1(GenObject *parent, const char *name, const char *comment=NO_COMMENT);
-
-    class CombProcess : public CombinationalProcess {
-     public:
-        CombProcess(GenObject *parent) :
-            CombinationalProcess(parent, "comb"),
-            iselidx(this, "iselidx", "0", NO_COMMENT),
-            vapbi(this, "vapbi", "ADD(CFG_BUS1_PSLV_TOTAL,1)", "apb_in_none", NO_COMMENT),
-            vapbo(this, "vapbo", "ADD(CFG_BUS1_PSLV_TOTAL,1)", "apb_out_none", NO_COMMENT) {
-        }
-
-     public:
-        I32D iselidx;
-        ValueArray<StructVar<types_amba::apb_in_type>> vapbi;
-        ValueArray<StructVar<types_amba::apb_out_type>> vapbo;
-    };
-
-    void proc_comb();
-
- public:
-    // io:
-    InPort i_clk;
-    InPort i_nrst;
-    InStruct<types_amba::mapinfo_type> i_mapinfo;
-    OutStruct<types_pnp::dev_config_type> o_cfg;
-    InStruct<types_amba::axi4_slave_in_type> i_xslvi;
-    OutStruct<types_amba::axi4_slave_out_type> o_xslvo;
-    InStruct<types_gencpu64_bus1::bus1_apb_out_vector> i_apbo;
-    OutStruct<types_gencpu64_bus1::bus1_apb_in_vector> o_apbi;
-    OutStruct<types_gencpu64_bus1::bus1_mapinfo_vector> o_mapinfo;
-
-    ParamLogic State_Idle;
-    ParamLogic State_setup;
-    ParamLogic State_access;
-    ParamLogic State_out;
-
-    Signal w_req_valid;
-    Signal wb_req_addr;
-    Signal wb_req_size;
-    Signal w_req_write;
-    Signal wb_req_wdata;
-    Signal wb_req_wstrb;
-    Signal w_req_last;
-    Signal w_req_ready;
-
-    RegSignal state;
-    RegSignal selidx;
-    RegSignal pvalid;
-    RegSignal paddr;
-    RegSignal pwdata;
-    RegSignal prdata;
-    RegSignal pwrite;
-    RegSignal pstrb;
-    RegSignal pprot;
-    RegSignal pselx;
-    RegSignal penable;
-    RegSignal pslverr;
-    RegSignal size;
-
-    axi_slv axi0;
-
-    CombProcess comb;
+    gencpu64_axi2apb_bus1(GenObject *parent, const char *name, const char *comment)
+        : pbridge<
+            types_gencpu64_bus1::bus1_apb_in_vector,
+            types_gencpu64_bus1::bus1_apb_out_vector,
+            types_gencpu64_bus1::bus1_mapinfo_vector>(
+            parent,
+            "gencpu64_axi2apb_bus1",
+            name,
+            comment,
+            "CFG_BUS1_PSLV_LOG2_TOTAL",
+            "CFG_BUS1_PSLV_TOTAL",
+            "CFG_BUS1_MAP") {}
 };
+
 
 class gencpu64_axi2apb_bus1_file : public FileObject {
  public:
     gencpu64_axi2apb_bus1_file(GenObject *parent) :
         FileObject(parent, "gencpu64_axi2apb_bus1"),
-        gencpu64_axi2apb_bus1_(this, "gencpu64_axi2apb_bus1") {}
+        gencpu64_axi2apb_bus1_(this, "gencpu64_axi2apb_bus1", NO_COMMENT) {}
 
  private:
     gencpu64_axi2apb_bus1 gencpu64_axi2apb_bus1_;

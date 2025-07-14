@@ -31,13 +31,14 @@ template<class xmsti_vec,
 class xinteconnect : public ModuleObject {
  public:
     xinteconnect(GenObject *parent,
-                const char *name,
-                const char *comment,
-                std::string cfg_xmst_log2,
-                std::string cfg_xmst_total,
-                std::string cfg_xslv_log2,
-                std::string cfg_xslv_total,
-                std::string cfg_map);
+                 const char *type,
+                 const char *name,
+                 const char *comment,
+                 std::string cfg_xmst_log2,
+                 std::string cfg_xmst_total,
+                 std::string cfg_xslv_log2,
+                 std::string cfg_xslv_total,
+                 std::string cfg_map);
 
     class CombProcess : public CombinationalProcess {
      public:
@@ -130,6 +131,7 @@ template<class xmsti_vec,
          class map_vec>
 xinteconnect<xmsti_vec, xmsto_vec, xslvi_vec, xslvo_vec, map_vec>
 ::xinteconnect(GenObject *parent,
+               const char *type,
                const char *name,
                const char *comment,
                std::string cfg_xmst_log2,
@@ -137,7 +139,7 @@ xinteconnect<xmsti_vec, xmsto_vec, xslvi_vec, xslvo_vec, map_vec>
                std::string cfg_xslv_log2,
                std::string cfg_xslv_total,
                std::string cfg_map) :
-    ModuleObject(parent, "accel_axictrl_bus0", name, comment),
+    ModuleObject(parent, type, name, comment),
     i_clk(this, "i_clk", "1", "Bus clock"),
     i_nrst(this, "i_nrst", "1", "Reset: active LOW"),
     o_cfg(this, "o_cfg", "Slave config descriptor"),

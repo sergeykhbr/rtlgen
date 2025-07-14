@@ -135,7 +135,7 @@ gencpu64_soc::gencpu64_soc(GenObject *parent, const char *name, const char *comm
 #endif
     // submodules:
     bus0(this, "bus0", NO_COMMENT),
-    bus1(this, "bus1"),
+    bus1(this, "bus1", NO_COMMENT),
     rom0(this, "rom0"),
     sram0(this, "sram0"),
     clint0(this, "clint0"),

@@ -36,6 +36,7 @@ class accel_axictrl_bus0 : public xinteconnect<types_accel_bus0::bus0_xmst_in_ve
             types_accel_bus0::bus0_xslv_out_vector,
             types_accel_bus0::bus0_mapinfo_vector>(
             parent,
+            "accel_axictrl_bus0",
             name,
             comment,
             "CFG_BUS0_XMST_LOG2_TOTAL",

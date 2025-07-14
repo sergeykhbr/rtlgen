@@ -130,7 +130,7 @@ accel_soc::accel_soc(GenObject *parent, const char *name, const char *comment) :
     w_irq_i2c0(this, "w_irq_i2c0", "1"),
     // submodules:
     bus0(this, "bus0", NO_COMMENT),
-    bus1(this, "bus1"),
+    bus1(this, "bus1", NO_COMMENT),
     rom0(this, "rom0"),
     sram0(this, "sram0"),
     clint0(this, "clint0"),
