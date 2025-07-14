@@ -134,7 +134,7 @@ gencpu64_soc::gencpu64_soc(GenObject *parent, const char *name, const char *comm
     wb_pcie_dma_state(this, "wb_pcie_dma_state", "4"),
 #endif
     // submodules:
-    bus0(this, "bus0"),
+    bus0(this, "bus0", NO_COMMENT),
     bus1(this, "bus1"),
     rom0(this, "rom0"),
     sram0(this, "sram0"),
