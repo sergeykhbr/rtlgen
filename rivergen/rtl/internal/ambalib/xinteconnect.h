@@ -1,5 +1,5 @@
 // 
-//  Copyright 2023 Sergey Khabarov, sergeykhbr@gmail.com
+//  Copyright 2025 Sergey Khabarov, sergeykhbr@gmail.com
 // 
 //  Licensed under the Apache License, Version 2.0 (the "License");
 //  you may not use this file except in compliance with the License.
@@ -14,11 +14,131 @@
 //  limitations under the License.
 // 
 
-#include "accel_axictrl_bus0.h"
+#pragma once
 
-accel_axictrl_bus0::accel_axictrl_bus0(GenObject *parent, const char *name, const char *comment) :
+#include <api_rtlgen.h>
+#include "types_amba.h"
+#include "types_pnp.h"
+#include "axi_slv.h"
+
+using namespace sysvc;
+
+template<class xmsti_vec,
+         class xmsto_vec,
+         class xslvi_vec,
+         class xslvo_vec,
+         class map_vec>
+class xinteconnect : public ModuleObject {
+ public:
+    xinteconnect(GenObject *parent,
+                const char *name,
+                const char *comment,
+                std::string cfg_xmst_log2,
+                std::string cfg_xmst_total,
+                std::string cfg_xslv_log2,
+                std::string cfg_xslv_total,
+                std::string cfg_map);
+
+    class CombProcess : public CombinationalProcess {
+     public:
+        CombProcess(GenObject *parent,
+                    std::string xmst_log2,
+                    std::string xmst_total,
+                    std::string xslv_log2,
+                    std::string xslv_total) :
+            CombinationalProcess(parent, "comb"),
+            vmsti(this, "vmsti", xmst_total.c_str(), "axi4_master_in_none", NO_COMMENT),
+            vmsto(this, "vmsto", xmst_total.c_str(), "axi4_master_out_none", NO_COMMENT),
+            vslvi(this, "vslvi", xslv_total.c_str(), "axi4_slave_in_none", NO_COMMENT),
+            vslvo(this, "vslvo", xslv_total.c_str(), "axi4_slave_out_none", NO_COMMENT),
+            vb_ar_select(this, "vb_ar_select", std::string("MUL(" + xmst_total + ", " + xslv_total + ")").c_str(), "'0", NO_COMMENT),
+            vb_ar_available(this, "vb_ar_available", std::string("MUL(ADD(" + xmst_total + ",1), " + xslv_total + ")").c_str(), "'1", NO_COMMENT),
+            vb_ar_hit(this, "vb_ar_hit", xmst_total.c_str(), "'0", NO_COMMENT),
+            vb_aw_select(this, "vb_aw_select", std::string("MUL(" + xmst_total + ", " + xslv_total + ")").c_str(), "'0", NO_COMMENT),
+            vb_aw_available(this, "vb_aw_available", std::string("MUL(ADD(" + xmst_total + ",1), " + xslv_total + ")").c_str(), "'1", NO_COMMENT),
+            vb_aw_hit(this, "vb_aw_hit", xmst_total.c_str(), "'0", NO_COMMENT),
+            vb_w_select(this, "vb_w_select", std::string("MUL(" + xmst_total + ", " + xslv_log2 + ")").c_str(), "'0", NO_COMMENT),
+            vb_w_active(this, "vb_w_active", xmst_total.c_str(), "'0", NO_COMMENT) {
+        }
+
+     public:
+        ValueArray<StructVar<types_amba::axi4_master_in_type>> vmsti;
+        ValueArray<StructVar<types_amba::axi4_master_out_type>> vmsto;
+        ValueArray<StructVar<types_amba::axi4_slave_in_type>> vslvi;
+        ValueArray<StructVar<types_amba::axi4_slave_out_type>> vslvo;
+        Logic vb_ar_select;
+        Logic vb_ar_available;
+        Logic vb_ar_hit;
+        Logic vb_aw_select;
+        Logic vb_aw_available;
+        Logic vb_aw_hit;
+        Logic vb_w_select;
+        Logic vb_w_active;
+    };
+
+    void proc_comb();
+
+
+ public:
+    // io:
+    InPort i_clk;
+    InPort i_nrst;
+    OutStruct<types_pnp::dev_config_type> o_cfg;
+    InStruct<xmsto_vec> i_xmsto;
+    OutStruct<xmsti_vec> o_xmsti;
+    InStruct<xslvo_vec> i_xslvo;
+    OutStruct<xslvi_vec> o_xslvi;
+    OutStruct<map_vec> o_mapinfo;
+
+    SignalStruct<types_amba::axi4_slave_in_type> wb_def_xslvi;
+    SignalStruct<types_amba::axi4_slave_out_type> wb_def_xslvo;
+    SignalStruct<types_amba::mapinfo_type> wb_def_mapinfo;
+    Signal w_def_req_valid;
+    Signal wb_def_req_addr;
+    Signal wb_def_req_size;
+    Signal w_def_req_write;
+    Signal wb_def_req_wdata;
+    Signal wb_def_req_wstrb;
+    Signal w_def_req_last;
+    Signal w_def_req_ready;
+    Signal w_def_resp_valid;
+    Signal wb_def_resp_rdata;
+    Signal w_def_resp_err;
+
+    RegSignal w_select;
+    RegSignal w_active;
+    RegSignal r_def_valid;
+
+    CombProcess comb;
+
+    axi_slv xdef0;
+
+ private:
+    // CFG parameters
+    std::string cfg_xmst_log2_;
+    std::string cfg_xmst_total_;
+    std::string cfg_xslv_log2_;
+    std::string cfg_xslv_total_;
+    std::string cfg_map_;
+};
+
+
+template<class xmsti_vec,
+         class xmsto_vec,
+         class xslvi_vec,
+         class xslvo_vec,
+         class map_vec>
+xinteconnect<xmsti_vec, xmsto_vec, xslvi_vec, xslvo_vec, map_vec>
+::xinteconnect(GenObject *parent,
+               const char *name,
+               const char *comment,
+               std::string cfg_xmst_log2,
+               std::string cfg_xmst_total,
+               std::string cfg_xslv_log2,
+               std::string cfg_xslv_total,
+               std::string cfg_map) :
     ModuleObject(parent, "accel_axictrl_bus0", name, comment),
-    i_clk(this, "i_clk", "1", "CPU clock"),
+    i_clk(this, "i_clk", "1", "Bus clock"),
     i_nrst(this, "i_nrst", "1", "Reset: active LOW"),
     o_cfg(this, "o_cfg", "Slave config descriptor"),
     i_xmsto(this, "i_xmsto", "AXI4 masters output vector"),
@@ -43,14 +163,20 @@ accel_axictrl_bus0::accel_axictrl_bus0(GenObject *parent, const char *name, cons
     wb_def_resp_rdata(this, "wb_def_resp_rdata", "CFG_SYSBUS_DATA_BITS"),
     w_def_resp_err(this, "w_def_resp_err", "1"),
     // registers
-    w_select(this, "w_select", "MUL(CFG_BUS0_XMST_TOTAL, CFG_BUS0_XSLV_LOG2_TOTAL)", "'0", NO_COMMENT),
-    w_active(this, "w_active", "CFG_BUS0_XMST_TOTAL", "'0", NO_COMMENT),
+    w_select(this, "w_select", std::string("MUL(" + cfg_xmst_total + ", " + cfg_xslv_log2 + ")").c_str(), "'0", NO_COMMENT),
+    w_active(this, "w_active", cfg_xmst_total.c_str(), "'0", NO_COMMENT),
     r_def_valid(this, "r_def_valid", "1", RSTVAL_ZERO, NO_COMMENT),
     // modules
     xdef0(this, "xdef0", NO_COMMENT),
     // process
-    comb(this)
+    comb(this, cfg_xmst_log2, cfg_xmst_total, cfg_xslv_log2, cfg_xslv_total)
 {
+    cfg_xmst_log2_ = cfg_xmst_log2;
+    cfg_xmst_total_ = cfg_xmst_total;
+    cfg_xslv_log2_ = cfg_xslv_log2;
+    cfg_xslv_total_ = cfg_xslv_total;
+    cfg_map_ = cfg_map;
+
     Operation::start(this);
     xdef0.vid.setObjValue(SCV_get_cfg_type(this, "VENDOR_OPTIMITECH"));
     xdef0.did.setObjValue(SCV_get_cfg_type(this, "OPTIMITECH_AXI_INTERCONNECT"));
@@ -78,15 +204,20 @@ accel_axictrl_bus0::accel_axictrl_bus0(GenObject *parent, const char *name, cons
     proc_comb();
 }
 
-void accel_axictrl_bus0::proc_comb() {
+template<class xmsti_vec,
+         class xmsto_vec,
+         class xslvi_vec,
+         class xslvo_vec,
+         class map_vec>
+void xinteconnect<xmsti_vec, xmsto_vec, xslvi_vec, xslvo_vec, map_vec>::proc_comb() {
     GenObject *i;
     GenObject *ii;
-    GenObject *mst_total = SCV_get_cfg_type(this, "CFG_BUS0_XMST_TOTAL");
-    GenObject *mst_log2 = SCV_get_cfg_type(this, "CFG_BUS0_XMST_LOG2_TOTAL");
-    GenObject *slv_total = SCV_get_cfg_type(this, "CFG_BUS0_XSLV_TOTAL");
-    GenObject *slv_log2 = SCV_get_cfg_type(this, "CFG_BUS0_XSLV_LOG2_TOTAL");
-    types_accel_bus0::CONST_CFG_BUS0_MAP *map = 
-        dynamic_cast<types_accel_bus0::CONST_CFG_BUS0_MAP *>(SCV_get_cfg_type(this, "CFG_BUS0_MAP"));
+    GenObject *mst_total = SCV_get_cfg_type(this, cfg_xmst_total_.c_str());
+    GenObject *mst_log2 = SCV_get_cfg_type(this, cfg_xmst_log2_.c_str());
+    GenObject *slv_total = SCV_get_cfg_type(this, cfg_xslv_total_.c_str());
+    GenObject *slv_log2 = SCV_get_cfg_type(this, cfg_xslv_log2_.c_str());
+    StructVector<types_amba::mapinfo_type> *map = 
+        dynamic_cast<StructVector<types_amba::mapinfo_type> *>(SCV_get_cfg_type(this, cfg_map_.c_str()));
 
     TEXT();
     i = &FOR ("i", CONST("0"), *mst_total, "++");
