@@ -30,22 +30,12 @@ types_gencpu64_bus1::types_gencpu64_bus1(GenObject *parent) :
     CFG_BUS1_PSLV_PRCI(this, "CFG_BUS1_PSLV_PRCI", autoincr_++),
     _pslv7_(this, "@brief Worjgroup DMI interface."),
     CFG_BUS1_PSLV_DMI(this, "CFG_BUS1_PSLV_DMI", autoincr_++),
-#if GENCFG_SD_CTRL_ENABLE
     _pslv8_(this, "Configuration index of the SD-card control registers."),
     CFG_BUS1_PSLV_SDCTRL_REG(this, "CFG_BUS1_PSLV_SDCTRL_REG", autoincr_++),
-#endif
-#if GENCFG_HDMI_ENABLE
-    _pslv81_(this, "I2C master interface (for ADV7511 HDMI transmitter)"),
-    CFG_BUS1_PSLV_I2C0(this, "CFG_BUS1_PSLV_I2C0", autoincr_++),
-#endif
     _pslv9_(this, "Configuration index of the GPIO (General Purpose In/Out) module."),
     CFG_BUS1_PSLV_GPIO(this, "CFG_BUS1_PSLV_GPIO", autoincr_++),
     _pslv10_(this, "@brief DDR control register."),
     CFG_BUS1_PSLV_DDR(this, "CFG_BUS1_PSLV_DDR", autoincr_++),
-#if GENCFG_PCIE_ENABLE
-    _pslvpcie_(this, "@brief PCIE endpoint controller"),
-    CFG_BUS1_PSLV_PCIE(this, "CFG_BUS1_PSLV_PCIE", autoincr_++),
-#endif
     _xslv11_(this, "Configuration index of the Plug-n-Play module."),
     CFG_BUS1_PSLV_PNP(this, "CFG_BUS1_PSLV_PNP", autoincr_++),
     _pslv12_(this, "Total number of the APB slaves devices on Bus[1]."),
@@ -62,4 +52,3 @@ types_gencpu64_bus1::types_gencpu64_bus1(GenObject *parent) :
     _n_(this)
 {
 }
-

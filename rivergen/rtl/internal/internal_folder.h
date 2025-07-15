@@ -20,7 +20,9 @@
 #include <genconfig.h>
 #include "ambalib/ambalib_folder.h"
 #include "cdc/cdc_folder.h"
+#if CONFIG_GPU3D
 #include "mathlib/mathlib_folder.h"
+#endif
 #include "riverlib/riverlib_folder.h"
 #include "misclib/misclib_folder.h"
 #if GENCFG_SD_CTRL_ENABLE
@@ -47,7 +49,9 @@ class internal_folder : public FolderObject {
         FolderObject(parent, "internal"),
         ambalib_folder_(this),
         cdc_folder_(this),
+#if CONFIG_GPU3D
         mathlib_folder_(this),
+#endif
         riverlib_folder_(this),
         misclib_folder_(this)
 #if GENCFG_SD_CTRL_ENABLE
@@ -72,7 +76,9 @@ class internal_folder : public FolderObject {
     // subfolders:
     ambalib_folder ambalib_folder_;
     cdc_folder cdc_folder_;
+#if CONFIG_GPU3D
     mathlib_folder mathlib_folder_;
+#endif
     riverlib_folder riverlib_folder_;
     misclib_folder misclib_folder_;
 #if GENCFG_SD_CTRL_ENABLE

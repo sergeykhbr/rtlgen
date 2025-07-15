@@ -14,12 +14,10 @@
 //  limitations under the License.
 // 
 
-#include "types_dma.h"
+#include "types_pcie_dma.h"
 
-types_dma* glob_types_dma_ = 0;
-
-types_dma::types_dma(GenObject *parent) :
-    FileObject(parent, "types_dma"),
+types_pcie_dma::types_pcie_dma(GenObject *parent) :
+    FileObject(parent, "types_pcie_dma"),
     _dma0_(this),
     _dma1_(this),
     pcie_dma64_out_def(this, "pcie_dma64_out_type", NO_COMMENT),
@@ -33,6 +31,5 @@ types_dma::types_dma(GenObject *parent) :
     pcie_dma64_in_none(this, "pcie_dma64_in_none", NO_COMMENT),
     _n_(this)
 {
-    glob_types_dma_ = this;
 }
 

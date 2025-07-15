@@ -20,9 +20,9 @@
 
 using namespace sysvc;
 
-class types_dma : public FileObject {
+class types_pcie_dma : public FileObject {
  public:
-    types_dma(GenObject *parent);
+    types_pcie_dma(GenObject *parent);
 
     class pcie_dma64_out_type : public StructObject {
      public:
@@ -83,5 +83,3 @@ class types_dma : public FileObject {
     ParamStruct<pcie_dma64_in_type> pcie_dma64_in_none;
     TextLine _n_;
 };
-
-extern types_dma* glob_types_dma_;

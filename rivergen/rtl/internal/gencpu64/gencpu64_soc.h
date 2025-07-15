@@ -20,7 +20,6 @@
 #include <genconfig.h>
 #include "../ambalib/types_amba.h"
 #include "../ambalib/types_pnp.h"
-#include "../ambalib/types_dma.h"
 #include "../misclib/apb_uart.h"
 #include "../misclib/apb_gpio.h"
 #include "../misclib/apb_pnp.h"

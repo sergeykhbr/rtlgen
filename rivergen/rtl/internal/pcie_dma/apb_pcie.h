@@ -18,7 +18,6 @@
 
 #include <api_rtlgen.h>
 #include "../ambalib/types_amba.h"
-#include "../ambalib/types_dma.h"
 #include "../ambalib/types_pnp.h"
 #include "../ambalib/apb_slv.h"
 

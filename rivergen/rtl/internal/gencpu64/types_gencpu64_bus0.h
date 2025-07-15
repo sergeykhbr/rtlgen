@@ -76,10 +76,9 @@ class types_gencpu64_bus0 : public FileObject {
             sram(this, "sram", "", "2, sram, 2MB"),
             plic(this, "plic", "", "3, plic"),
             bus1(this, "bus1", "", "4, APB bridge: uart1"),
-            ddr(this, "ddr", "", "5, ddr, 1 GB")
-#if GENCFG_SD_CTRL_ENABLE
-            ,sdctrl(this, "sdctrl", "", "6, sdctrl, 32 GB")
-#endif
+            ddr(this, "ddr", "", "5, ddr, 1 GB"),
+            sdctrl(this, "sdctrl", "", "6, sdctrl, 32 GB"),
+            unmap(this, "unmap", "", "Unampped access, lowest priority")
         {
 
             // It is possible now to do Logic definition:
@@ -101,10 +100,11 @@ class types_gencpu64_bus0 : public FileObject {
             ddr.addr_start.setObjValue(new HexConst(0x0000080000000));
             ddr.addr_end.setObjValue(new HexConst(0x00000C0000000));
 
-#if GENCFG_SD_CTRL_ENABLE
             sdctrl.addr_start.setObjValue(new HexConst(0x0000800000000));
             sdctrl.addr_end.setObjValue(new HexConst(0x0001000000000));
-#endif
+
+            unmap.addr_start.setObjValue(new HexConst(0x0000000000000));
+            unmap.addr_end.setObjValue(new HexConst(0x0000000000000));
         }
 
      protected:
@@ -114,9 +114,8 @@ class types_gencpu64_bus0 : public FileObject {
         StructVar<types_amba::mapinfo_type> plic;
         StructVar<types_amba::mapinfo_type> bus1;
         StructVar<types_amba::mapinfo_type> ddr;
-#if GENCFG_SD_CTRL_ENABLE
         StructVar<types_amba::mapinfo_type> sdctrl;
-#endif
+        StructVar<types_amba::mapinfo_type> unmap;
     };
 
 
@@ -131,14 +130,8 @@ class types_gencpu64_bus0 : public FileObject {
     TextLine _xmst4_;
     TextLine _xmst5_;
     ParamI32D CFG_BUS0_XMST_GROUP0;
-#if GENCFG_XDMA_ENABLE
     TextLine _xmst6_;
     ParamI32D CFG_BUS0_XMST_DMA;
-#endif
-#if GENCFG_PCIE_ENABLE
-    TextLine _xmst7_;
-    ParamI32D CFG_BUS0_XMST_PCIE;
-#endif
     TextLine _xmst8_;
     ParamI32D CFG_BUS0_XMST_TOTAL;
     TextLine _xmst9_;
@@ -162,13 +155,13 @@ class types_gencpu64_bus0 : public FileObject {
     ParamI32D CFG_BUS0_XSLV_PBRIDGE;
     TextLine _xslv12_;
     ParamI32D CFG_BUS0_XSLV_DDR;
-#if GENCFG_SD_CTRL_ENABLE
     TextLine _xslv13_;
     ParamI32D CFG_BUS0_XSLV_SDCTRL_MEM;
-#endif
     TextLine _xslv14_;
-    ParamI32D CFG_BUS0_XSLV_TOTAL;
+    ParamI32D CFG_BUS0_XSLV_UNMAP;
     TextLine _xslv15_;
+    ParamI32D CFG_BUS0_XSLV_TOTAL;
+    TextLine _xslv16_;
     ParamI32D CFG_BUS0_XSLV_LOG2_TOTAL;
     TextLine _vec0_;
     bus0_xmst_in_vector bus0_xmst_in_vector_def_;

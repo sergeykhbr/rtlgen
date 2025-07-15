@@ -20,7 +20,6 @@
 #include <genconfig.h>
 #include "target_gencpu64_cfg.h"
 #include "../../../rtl/internal/ambalib/types_amba.h"
-#include "../../../rtl/internal/ambalib/types_dma.h"
 #include "../../../rtl/internal/ambalib/types_pnp.h"
 #include "../../../rtl/internal/misclib/apb_prci.h"
 #include "../../../rtl/sim/io/ids_tech.h"

@@ -27,14 +27,8 @@ types_gencpu64_bus0::types_gencpu64_bus0(GenObject *parent) :
     _xmst4_(this, ""),
     _xmst5_(this, "Total number of CPU limited by config CFG_TOTAL_CPU_MAX"),
     CFG_BUS0_XMST_GROUP0(this, "CFG_BUS0_XMST_GROUP0", xmst_autoincr_++),
-#if GENCFG_XDMA_ENABLE
     _xmst6_(this, "DMA master interface generic index."),
     CFG_BUS0_XMST_DMA(this, "CFG_BUS0_XMST_DMA", xmst_autoincr_++),
-#endif
-#if GENCFG_PCIE_ENABLE
-    _xmst7_(this, "PCIE DMA master interface."),
-    CFG_BUS0_XMST_PCIE(this, "CFG_BUS0_XMST_PCIE", xmst_autoincr_++),
-#endif
     _xmst8_(this, "Total Number of master devices on system bus."),
     CFG_BUS0_XMST_TOTAL(this, "CFG_BUS0_XMST_TOTAL", xmst_autoincr_),
     _xmst9_(this, "Necessary bus width to store index + 1."),
@@ -58,14 +52,14 @@ types_gencpu64_bus0::types_gencpu64_bus0(GenObject *parent) :
     CFG_BUS0_XSLV_PBRIDGE(this, "CFG_BUS0_XSLV_PBRIDGE", xslv_autoincr_++),
     _xslv12_(this, "External DDR"),
     CFG_BUS0_XSLV_DDR(this, "CFG_BUS0_XSLV_DDR", xslv_autoincr_++),
-#if GENCFG_SD_CTRL_ENABLE
     _xslv13_(this, "SD-card direct memory access."),
     CFG_BUS0_XSLV_SDCTRL_MEM(this, "CFG_BUS0_XSLV_SDCTRL_MEM", xslv_autoincr_++),
-#endif
-    _xslv14_(this, "Total number of the slaves devices."),
+    _xslv14_(this, "Unmapped error access"),
+    CFG_BUS0_XSLV_UNMAP(this, "CFG_BUS0_XSLV_UNMAP", xslv_autoincr_++),
+    _xslv15_(this, "Total number of the slaves devices."),
     CFG_BUS0_XSLV_TOTAL(this, "CFG_BUS0_XSLV_TOTAL", xslv_autoincr_),
-    _xslv15_(this, "Necessary bus width to store index + 1."),
-    CFG_BUS0_XSLV_LOG2_TOTAL(this, "CFG_BUS0_XSLV_LOG2_TOTAL", "3", "$clog2(CFG_BUS0_XSLV_TOTAL + 1)"),
+    _xslv16_(this, "Necessary bus width to store index."),
+    CFG_BUS0_XSLV_LOG2_TOTAL(this, "CFG_BUS0_XSLV_LOG2_TOTAL", "3", "$clog2(CFG_BUS0_XSLV_TOTAL)"),
     _vec0_(this),
     bus0_xmst_in_vector_def_(this, "bus0_xmst_in_vector"),
     bus0_xmst_out_vector_def_(this, "bus0_xmst_out_vector"),

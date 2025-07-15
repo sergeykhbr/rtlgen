@@ -19,10 +19,10 @@
 #include <api_rtlgen.h>
 #include "../ambalib/types_amba.h"
 #include "../ambalib/types_pnp.h"
-#include "../ambalib/types_dma.h"
 #include "../ambalib/axi_dma.h"
 #include "../cdc/cdc_afifo.h"
 #include "pcie_cfg.h"
+#include "types_pcie_dma.h"
 #include "pcie_io_ep.h"
 
 using namespace sysvc;
@@ -46,7 +46,7 @@ class pcie_dma : public ModuleObject {
      public:
         types_pnp::dev_config_type vb_xmst_cfg;
         types_amba::axi4_master_out_type vb_xmsto;
-        types_dma::pcie_dma64_out_type vb_pcie_dmao;
+        types_pcie_dma::pcie_dma64_out_type vb_pcie_dmao;
         // SystemC fix use variable to split FIFO bus:
         Logic vb_m_axis_rx_tuser;
         Logic v_m_axis_rx_tlast;
@@ -64,8 +64,8 @@ class pcie_dma : public ModuleObject {
     TextLine _text0_;
     InPort i_pcie_completer_id;
     OutPort o_dma_state;
-    InStruct<types_dma::pcie_dma64_in_type> i_pcie_dmai;
-    OutStruct<types_dma::pcie_dma64_out_type> o_pcie_dmao;
+    InStruct<types_pcie_dma::pcie_dma64_in_type> i_pcie_dmai;
+    OutStruct<types_pcie_dma::pcie_dma64_out_type> o_pcie_dmao;
     TextLine _text1_;
     OutStruct<types_pnp::dev_config_type> o_xmst_cfg;
     InStruct<types_amba::axi4_master_in_type> i_xmsti;

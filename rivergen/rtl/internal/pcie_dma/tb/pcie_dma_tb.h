@@ -54,7 +54,7 @@ class pcie_dma_tb : public ModuleObject {
             vb_dmai(this, "vb_dmai", NO_COMMENT) {
         }
      public:
-        types_dma::pcie_dma64_in_type vb_dmai;
+        types_pcie_dma::pcie_dma64_in_type vb_dmai;
     };
 
     // Bus Clock
@@ -78,8 +78,8 @@ public:
     Logic wb_clk_cnt;
     Signal wb_i_pcie_completer_id;
     Signal wb_o_dma_state;
-    SignalStruct<types_dma::pcie_dma64_in_type> wb_i_pcie_dmai;
-    SignalStruct<types_dma::pcie_dma64_out_type> wb_o_pcie_dmao;
+    SignalStruct<types_pcie_dma::pcie_dma64_in_type> wb_i_pcie_dmai;
+    SignalStruct<types_pcie_dma::pcie_dma64_out_type> wb_o_pcie_dmao;
     SignalStruct<types_pnp::dev_config_type> wb_o_xmst_cfg;
     SignalStruct<types_amba::axi4_master_in_type> wb_i_xmsti;
     SignalStruct<types_amba::axi4_master_out_type> wb_o_xmsto;
