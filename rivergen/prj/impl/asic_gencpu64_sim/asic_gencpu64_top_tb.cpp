@@ -84,6 +84,7 @@ asic_gencpu64_top_tb::asic_gencpu64_top_tb(GenObject *parent, const char *name) 
     w_i2c_sda.setAttribute(ATTR_UNCHECKED_WRITERS);     // bi-directional wire
 #endif
 #if GENCFG_SD_CTRL_ENABLE
+    w_sd_cmd.setAttribute(ATTR_UNCHECKED_WRITERS);     // bi-directional wire
     w_sd_dat0.setAttribute(ATTR_UNCHECKED_WRITERS);     // bi-directional wire
     w_sd_dat1.setAttribute(ATTR_UNCHECKED_WRITERS);     // bi-directional wire
     w_sd_dat2.setAttribute(ATTR_UNCHECKED_WRITERS);     // bi-directional wire

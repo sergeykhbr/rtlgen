@@ -22,7 +22,6 @@
 #include "rgb2ycbcr.h"
 #include "../ambalib/types_amba.h"
 #include "../ambalib/types_pnp.h"
-#include "../ambalib/types_dma.h"
 #include "../ambalib/axi_dma.h"
 
 using namespace sysvc;

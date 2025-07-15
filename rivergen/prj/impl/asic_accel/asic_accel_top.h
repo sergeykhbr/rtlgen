@@ -20,9 +20,9 @@
 #include <genconfig.h>
 #include "target_accel_cfg.h"
 #include "../../../rtl/internal/ambalib/types_amba.h"
-#include "../../../rtl/internal/ambalib/types_dma.h"
 #include "../../../rtl/internal/ambalib/types_pnp.h"
 #include "../../../rtl/internal/misclib/apb_prci.h"
+#include "../../../rtl/internal/pcie_dma/types_pcie_dma.h"
 #include "../../../rtl/external/ddr3_phy/ddr3_tech.h"
 #include "../../../rtl/sim/io/ids_tech.h"
 #include "../../../rtl/sim/io/iobuf_tech.h"
@@ -127,8 +127,8 @@ class asic_accel_top : public ModuleObject {
     Signal w_pcie_user_rst;
     Signal w_pcie_nrst;
     Signal wb_pcie_completer_id;
-    SignalStruct<types_dma::pcie_dma64_out_type> pcie_dmao;
-    SignalStruct<types_dma::pcie_dma64_in_type> pcie_dmai;
+    SignalStruct<types_pcie_dma::pcie_dma64_out_type> pcie_dmao;
+    SignalStruct<types_pcie_dma::pcie_dma64_in_type> pcie_dmai;
 
     // Sub-module instances:
     ids_tech iclk0;
