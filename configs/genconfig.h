@@ -16,8 +16,8 @@
 
 #pragma once
 
-#define CONFIG_RISCV_VHDL               1
-#define CONFIG_GPU3D                    0
+#define CONFIG_RISCV_VHDL               0
+#define CONFIG_GPU3D                    1
 
 #if CONFIG_RISCV_VHDL
 

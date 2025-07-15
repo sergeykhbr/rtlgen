@@ -126,8 +126,8 @@ public:
     InPort i_pcie_clk;
     InPort i_pcie_nrst;
     InPort i_pcie_completer_id;
-    OutStruct<types_dma::pcie_dma64_out_type> o_pcie_dmao;
-    InStruct<types_dma::pcie_dma64_in_type> i_pcie_dmai;
+    OutStruct<types_pcie_dma::pcie_dma64_out_type> o_pcie_dmao;
+    InStruct<types_pcie_dma::pcie_dma64_in_type> i_pcie_dmai;
 #endif
 
     // Param
