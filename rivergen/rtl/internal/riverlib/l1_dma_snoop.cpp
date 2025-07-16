@@ -82,7 +82,6 @@ l1_dma_snoop::l1_dma_snoop(GenObject *parent, const char *name, const char *comm
     req_snoop_type(this, "req_snoop_type", "SNOOP_REQ_TYPE_BITS", "'0", NO_COMMENT),
     resp_snoop_data(this, "resp_snoop_data", "L1CACHE_LINE_BITS", "'0", NO_COMMENT),
     cache_access(this, "cache_access", "1"),
-    watchdog(this, "watchdog", "13", "'0", NO_COMMENT),
     // functions
     reqtype2arsnoop(this),
     reqtype2awsnoop(this),
@@ -176,16 +175,16 @@ void l1_dma_snoop::proc_comb() {
         SETVAL(comb.vmsto.ar_bits.size, req_size);
         SETVAL(comb.vmsto.ar_bits.prot, req_prot);
         SETVAL(comb.vmsto.ar_snoop, req_ar_snoop);
-        IF (OR2(NZ(i_msti.ar_ready), BIT(watchdog, 12)));
+        IF (NZ(i_msti.ar_ready));
             SETVAL(state, state_r);
         ENDIF();
         ENDCASE();
     CASE(state_r);
         SETONE(comb.vmsto.r_ready);
-        SETVAL(comb.v_mem_er_load_fault, OR2_L(BIT(i_msti.r_resp, 1), BIT(watchdog, 12)));
+        SETVAL(comb.v_mem_er_load_fault, BIT(i_msti.r_resp, 1));
         SETVAL(comb.v_resp_mem_valid, i_msti.r_valid);
         TEXT("r_valid and r_last always should be in the same time");
-        IF (OR2(AND2(NZ(i_msti.r_valid), NZ(i_msti.r_last)), BIT(watchdog, 12)));
+        IF (AND2(NZ(i_msti.r_valid), NZ(i_msti.r_last)));
             SETVAL(state, state_idle);
         ENDIF();
         ENDCASE();
@@ -201,7 +200,7 @@ void l1_dma_snoop::proc_comb() {
         SETONE(comb.vmsto.w_last);
         SETVAL(comb.vmsto.w_data, req_wdata);
         SETVAL(comb.vmsto.w_strb, req_wstrb);
-        IF (OR2(NZ(i_msti.aw_ready), BIT(watchdog, 12)));
+        IF (NZ(i_msti.aw_ready));
             IF (NZ(i_msti.w_ready));
                 SETVAL(state, state_b);
             ELSE();
@@ -215,28 +214,21 @@ void l1_dma_snoop::proc_comb() {
         SETONE(comb.vmsto.w_last);
         SETVAL(comb.vmsto.w_data, req_wdata);
         SETVAL(comb.vmsto.w_strb, req_wstrb);
-        IF (OR2(NZ(i_msti.w_ready), NZ(BIT(watchdog, 12))));
+        IF (NZ(i_msti.w_ready));
             SETVAL(state, state_b);
         ENDIF();
         ENDCASE();
     CASE(state_b);
         SETONE(comb.vmsto.b_ready);
         SETVAL(comb.v_resp_mem_valid, i_msti.b_valid);
-        SETVAL(comb.v_mem_er_store_fault, OR2_L(BIT(i_msti.b_resp, 1), BIT(watchdog, 12)));
-        IF (OR2(NZ(i_msti.b_valid), BIT(watchdog, 12)));
+        SETVAL(comb.v_mem_er_store_fault, BIT(i_msti.b_resp, 1));
+        IF (NZ(i_msti.b_valid));
             SETVAL(state, state_idle);
         ENDIF();
         ENDCASE();
     CASEDEF();
         ENDCASE();
     ENDSWITCH();
-
-    TEXT();
-    IF (EQ(state, state_idle));
-        SETZERO(watchdog);
-    ELSE();
-        SETVAL(watchdog, INC(watchdog));
-    ENDIF();
 
 TEXT();
     TEXT("Snoop processing:");
