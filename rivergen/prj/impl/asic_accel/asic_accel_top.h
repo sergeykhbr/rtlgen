@@ -23,7 +23,7 @@
 #include "../../../rtl/internal/ambalib/types_pnp.h"
 #include "../../../rtl/internal/misclib/apb_prci.h"
 #include "../../../rtl/internal/pcie_dma/types_pcie_dma.h"
-#include "../../../rtl/external/ddr3_phy/ddr3_tech.h"
+#include "../../../rtl/sim/ddr3_phy/ddr3_tech.h"
 #include "../../../rtl/sim/io/ids_tech.h"
 #include "../../../rtl/sim/io/iobuf_tech.h"
 #include "../../../rtl/sim/io/ibuf_tech.h"
@@ -73,6 +73,22 @@ class asic_accel_top : public ModuleObject {
     OutPort o_hdmi_spdif;
     InPort i_hdmi_spdif_out;
     InPort i_hdmi_int;
+    TextLine _ddr0_;
+    OutPort o_ddr3_reset_n;
+    OutPort o_ddr3_ck_n;
+    OutPort o_ddr3_ck_p;
+    OutPort o_ddr3_cke;
+    OutPort o_ddr3_cs_n;
+    OutPort o_ddr3_ras_n;
+    OutPort o_ddr3_cas_n;
+    OutPort o_ddr3_we_n;
+    OutPort o_ddr3_dm;
+    OutPort o_ddr3_ba;
+    OutPort o_ddr3_addr;
+    IoPort io_ddr3_dq;
+    IoPort io_ddr3_dqs_n;
+    IoPort io_ddr3_dqs_p;
+    OutPort o_ddr3_odt;
 
     // Param
     // Signals:
@@ -102,6 +118,50 @@ class asic_accel_top : public ModuleObject {
     Signal w_ddr_clk;
     Signal w_pcie_clk;
     Signal w_pll_lock;
+    TextLine _t5_;
+    Signal wb_ddr_aw_id;
+    Signal wb_ddr_aw_addr;
+    Signal wb_ddr_aw_len;
+    Signal wb_ddr_aw_size;
+    Signal wb_ddr_aw_burst;
+    Signal w_ddr_aw_lock;
+    Signal wb_ddr_aw_cache;
+    Signal wb_ddr_aw_prot;
+    Signal wb_ddr_aw_qos;
+    Signal w_ddr_aw_valid;
+    Signal w_ddr_aw_ready;
+    Signal wb_ddr_w_data;
+    Signal wb_ddr_w_strb;
+    Signal w_ddr_w_last;
+    Signal w_ddr_w_valid;
+    Signal w_ddr_w_ready;
+    Signal w_ddr_b_ready;
+    Signal wb_ddr_b_id;
+    Signal wb_ddr_b_resp;
+    Signal w_ddr_b_valid;
+    Signal wb_ddr_ar_id;
+    Signal wb_ddr_ar_addr;
+    Signal wb_ddr_ar_len;
+    Signal wb_ddr_ar_size;
+    Signal wb_ddr_ar_burst;
+    Signal w_ddr_ar_lock;
+    Signal wb_ddr_ar_cache;
+    Signal wb_ddr_ar_prot;
+    Signal wb_ddr_ar_qos;
+    Signal w_ddr_ar_valid;
+    Signal w_ddr_ar_ready;
+    Signal w_ddr_r_ready;
+    Signal wb_ddr_r_id;
+    Signal wb_ddr_r_data;
+    Signal wb_ddr_r_resp;
+    Signal w_ddr_r_last;
+    Signal w_ddr_r_valid;
+    Signal w_ddr_app_sr_req;
+    Signal w_ddr_app_ref_req;
+    Signal w_ddr_app_zq_req;
+    Signal w_ddr_app_sr_active;
+    Signal w_ddr_app_ref_ack;
+    Signal w_ddr_app_zq_ack;
 
     SignalStruct<types_amba::mapinfo_type> ddr_xmapinfo;
     SignalStruct<types_pnp::dev_config_type> ddr_xdev_cfg;
@@ -112,7 +172,7 @@ class asic_accel_top : public ModuleObject {
     SignalStruct<types_pnp::dev_config_type> ddr_pdev_cfg;
     SignalStruct<types_amba::apb_in_type> ddr_apbi;
     SignalStruct<types_amba::apb_out_type> ddr_apbo;
-
+    
     Signal w_ddr_ui_nrst;
     Signal w_ddr_ui_clk;
     Signal w_ddr3_init_calib_complete;

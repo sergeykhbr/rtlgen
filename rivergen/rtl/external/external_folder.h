@@ -17,16 +17,11 @@
 #pragma once
 
 #include <api_rtlgen.h>
-#include "ddr3_phy/ddr3_phy_folder.h"
 
 class external_folder : public FolderObject {
  public:
     external_folder(GenObject *parent) :
-        FolderObject(parent, "external"),
-        ddr3_phy_folder_(this) {}
-
-    virtual std::string getLibName() override { return getName(); }
+        FolderObject(parent, "external") {}
 
  protected:
-    ddr3_phy_folder ddr3_phy_folder_;
 };

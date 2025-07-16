@@ -47,6 +47,22 @@ asic_accel_top_tb::asic_accel_top_tb(GenObject *parent, const char *name) :
     w_hdmi_spdif(this, "w_hdmi_spdif", "1", RSTVAL_ZERO, NO_COMMENT),
     w_hdmi_spdif_out(this, "w_hdmi_spdif_out", "1", RSTVAL_ZERO, NO_COMMENT),
     w_hdmi_int(this, "w_hdmi_int", "1", RSTVAL_ZERO, NO_COMMENT),
+    _ddrphy0_(this, "DDR PHY pins:"),
+    w_ddr3_reset_n(this, "w_ddr3_reset_n", "1", NO_COMMENT),
+    w_ddr3_ck_n(this, "w_ddr3_ck_n", "1", NO_COMMENT),
+    w_ddr3_ck_p(this, "w_ddr3_ck_p", "1", NO_COMMENT),
+    w_ddr3_cke(this, "w_ddr3_cke", "1", NO_COMMENT),
+    w_ddr3_cs_n(this, "w_ddr3_cs_n", "1", "Chip select active LOW"),
+    w_ddr3_ras_n(this, "w_ddr3_ras_n", "1", NO_COMMENT),
+    w_ddr3_cas_n(this, "w_ddr3_cas_n", "1", NO_COMMENT),
+    w_ddr3_we_n(this, "w_ddr3_we_n", "1", "Write enable active LOW"),
+    wb_ddr3_dm(this, "wb_ddr3_dm", "8", "Data mask"),
+    wb_ddr3_ba(this, "wb_ddr3_ba", "3", "Bank address"),
+    wb_ddr3_addr(this, "wb_ddr3_addr", "14", NO_COMMENT),
+    wb_ddr3_dq(this, "wb_ddr3_dq", "64", NO_COMMENT),
+    wb_ddr3_dqs_n(this, "wb_ddr3_dqs_n", "8", "Data strob positive"),
+    wb_ddr3_dqs_p(this, "wb_ddr3_dqs_p", "8", "Data strob negative"),
+    w_ddr3_odt(this, "w_ddr3_odt", "1", "on-die termination"),
     w_bufo_i2c0_sda(this, "w_bufo_i2c0_sda", "1", RSTVAL_ZERO, NO_COMMENT),
     w_vipo_i2c0_sda(this, "w_vipo_i2c0_sda", "1", RSTVAL_ZERO, NO_COMMENT),
     w_vipo_i2c0_sda_dir(this, "w_vipo_i2c0_sda_dir", "1", RSTVAL_ZERO, NO_COMMENT),
@@ -62,6 +78,9 @@ asic_accel_top_tb::asic_accel_top_tb(GenObject *parent, const char *name) :
     proc(this, &w_sclk_p)
 {
     w_i2c_sda.setAttribute(ATTR_UNCHECKED_WRITERS);     // bi-directional wire
+    wb_ddr3_dq.setAttribute(ATTR_UNCHECKED_WRITERS);
+    wb_ddr3_dqs_n.setAttribute(ATTR_UNCHECKED_WRITERS);
+    wb_ddr3_dqs_p.setAttribute(ATTR_UNCHECKED_WRITERS);
 
     Operation::start(this);
 
@@ -136,6 +155,21 @@ TEXT();
         CONNECT(tt, 0, tt.o_hdmi_spdif, w_hdmi_spdif);
         CONNECT(tt, 0, tt.i_hdmi_spdif_out, w_hdmi_spdif_out);;
         CONNECT(tt, 0, tt.i_hdmi_int, w_hdmi_int);
+        CONNECT(tt, 0, tt.o_ddr3_reset_n, w_ddr3_reset_n);
+        CONNECT(tt, 0, tt.o_ddr3_ck_n, w_ddr3_ck_n);
+        CONNECT(tt, 0, tt.o_ddr3_ck_p, w_ddr3_ck_p);
+        CONNECT(tt, 0, tt.o_ddr3_cke, w_ddr3_cke);
+        CONNECT(tt, 0, tt.o_ddr3_cs_n, w_ddr3_cs_n);
+        CONNECT(tt, 0, tt.o_ddr3_ras_n, w_ddr3_ras_n);
+        CONNECT(tt, 0, tt.o_ddr3_cas_n, w_ddr3_cas_n);
+        CONNECT(tt, 0, tt.o_ddr3_we_n, w_ddr3_we_n);
+        CONNECT(tt, 0, tt.o_ddr3_dm, wb_ddr3_dm);
+        CONNECT(tt, 0, tt.o_ddr3_ba, wb_ddr3_ba);
+        CONNECT(tt, 0, tt.o_ddr3_addr, wb_ddr3_addr);
+        CONNECT(tt, 0, tt.io_ddr3_dq, wb_ddr3_dq);
+        CONNECT(tt, 0, tt.io_ddr3_dqs_n, wb_ddr3_dqs_n);
+        CONNECT(tt, 0, tt.io_ddr3_dqs_p, wb_ddr3_dqs_p);
+        CONNECT(tt, 0, tt.o_ddr3_odt, w_ddr3_odt);
     ENDNEW();
 
     INITIAL();

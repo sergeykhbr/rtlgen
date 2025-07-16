@@ -50,6 +50,22 @@ asic_accel_top::asic_accel_top(GenObject *parent, const char *name, const char *
     o_hdmi_spdif(this, "o_hdmi_spdif", "1", "Sound channel output"),
     i_hdmi_spdif_out(this, "i_hdmi_spdif_out", "1", "Reverse sound channel"),
     i_hdmi_int(this, "i_hdmi_int", "1", "External interrupt from HDMI transmitter"),
+    _ddr0_(this, "DDR signals:"),
+    o_ddr3_reset_n(this, "o_ddr3_reset_n", "1", NO_COMMENT),
+    o_ddr3_ck_n(this, "o_ddr3_ck_n", "1", NO_COMMENT),
+    o_ddr3_ck_p(this, "o_ddr3_ck_p", "1", NO_COMMENT),
+    o_ddr3_cke(this, "o_ddr3_cke", "1", NO_COMMENT),
+    o_ddr3_cs_n(this, "o_ddr3_cs_n", "1", "Chip select active LOW"),
+    o_ddr3_ras_n(this, "o_ddr3_ras_n", "1", NO_COMMENT),
+    o_ddr3_cas_n(this, "o_ddr3_cas_n", "1", NO_COMMENT),
+    o_ddr3_we_n(this, "o_ddr3_we_n", "1", "Write enable active LOW"),
+    o_ddr3_dm(this, "o_ddr3_dm", "8", "Data mask"),
+    o_ddr3_ba(this, "o_ddr3_ba", "3", "Bank address"),
+    o_ddr3_addr(this, "o_ddr3_addr", "14", NO_COMMENT),
+    io_ddr3_dq(this, "io_ddr3_dq", "64", NO_COMMENT),
+    io_ddr3_dqs_n(this, "io_ddr3_dqs_n", "8", "Data strob positive"),
+    io_ddr3_dqs_p(this, "io_ddr3_dqs_p", "8", "Data strob negative"),
+    o_ddr3_odt(this, "o_ddr3_odt", "1", "on-die termination"),
     // param
     //gpio_signal_vector_def_(this, ""),
     // Singals:
@@ -78,6 +94,50 @@ asic_accel_top::asic_accel_top(GenObject *parent, const char *name, const char *
     w_ddr_clk(this, "w_ddr_clk", "1"),
     w_pcie_clk(this, "w_pcie_clk", "1"),
     w_pll_lock(this, "w_pll_lock", "1"),
+    _t5_(this, "DDR AXI slave interface:"),
+    wb_ddr_aw_id(this, "wb_ddr_aw_id", "CFG_SYSBUS_ID_BITS", NO_COMMENT),
+    wb_ddr_aw_addr(this, "wb_ddr_aw_addr", "30", "1 GB by default"),
+    wb_ddr_aw_len(this, "wb_ddr_aw_len", "8", NO_COMMENT),
+    wb_ddr_aw_size(this, "wb_ddr_aw_size", "3", NO_COMMENT),
+    wb_ddr_aw_burst(this, "wb_ddr_aw_burst", "2", NO_COMMENT),
+    w_ddr_aw_lock(this, "w_ddr_aw_lock", "1", NO_COMMENT),
+    wb_ddr_aw_cache(this, "wb_ddr_aw_cache", "4", NO_COMMENT),
+    wb_ddr_aw_prot(this, "wb_ddr_aw_prot", "3", NO_COMMENT),
+    wb_ddr_aw_qos(this, "wb_ddr_aw_qos", "4", NO_COMMENT),
+    w_ddr_aw_valid(this, "w_ddr_aw_valid", "1", NO_COMMENT),
+    w_ddr_aw_ready(this, "w_ddr_aw_ready", "1", NO_COMMENT),
+    wb_ddr_w_data(this, "wb_ddr_w_data", "64", NO_COMMENT),
+    wb_ddr_w_strb(this, "wb_ddr_w_strb", "8", NO_COMMENT),
+    w_ddr_w_last(this, "w_ddr_w_last", "1", NO_COMMENT),
+    w_ddr_w_valid(this, "w_ddr_w_valid", "1", NO_COMMENT),
+    w_ddr_w_ready(this, "w_ddr_w_ready", "1", NO_COMMENT),
+    w_ddr_b_ready(this, "w_ddr_b_ready", "1", NO_COMMENT),
+    wb_ddr_b_id(this, "wb_ddr_b_id", "CFG_SYSBUS_ID_BITS", NO_COMMENT),
+    wb_ddr_b_resp(this, "wb_ddr_b_resp", "2", NO_COMMENT),
+    w_ddr_b_valid(this, "w_ddr_b_valid", "1", NO_COMMENT),
+    wb_ddr_ar_id(this, "wb_ddr_ar_id", "CFG_SYSBUS_ID_BITS", NO_COMMENT),
+    wb_ddr_ar_addr(this, "wb_ddr_ar_addr", "30", "1 GB by default"),
+    wb_ddr_ar_len(this, "wb_ddr_ar_len", "8", NO_COMMENT),
+    wb_ddr_ar_size(this, "wb_ddr_ar_size", "3", NO_COMMENT),
+    wb_ddr_ar_burst(this, "wb_ddr_ar_burst", "2", NO_COMMENT),
+    w_ddr_ar_lock(this, "w_ddr_ar_lock", "1", NO_COMMENT),
+    wb_ddr_ar_cache(this, "wb_ddr_ar_cache", "4", NO_COMMENT),
+    wb_ddr_ar_prot(this, "wb_ddr_ar_prot", "3", NO_COMMENT),
+    wb_ddr_ar_qos(this, "wb_ddr_ar_qos", "4", NO_COMMENT),
+    w_ddr_ar_valid(this, "w_ddr_ar_valid", "1", NO_COMMENT),
+    w_ddr_ar_ready(this, "w_ddr_ar_ready", "1", NO_COMMENT),
+    w_ddr_r_ready(this, "w_ddr_r_ready", "1", NO_COMMENT),
+    wb_ddr_r_id(this, "wb_ddr_r_id", "CFG_SYSBUS_ID_BITS", NO_COMMENT),
+    wb_ddr_r_data(this, "wb_ddr_r_data", "64", NO_COMMENT),
+    wb_ddr_r_resp(this, "wb_ddr_r_resp", "2", NO_COMMENT),
+    w_ddr_r_last(this, "w_ddr_r_last", "1", NO_COMMENT),
+    w_ddr_r_valid(this, "w_ddr_r_valid", "1", NO_COMMENT),
+    w_ddr_app_sr_req(this, "w_ddr_app_sr_req", "1", "Self-refresh request (low-power mode)"),
+    w_ddr_app_ref_req(this, "w_ddr_app_ref_req", "1", "Periodic refresh request ~7.8 us"),
+    w_ddr_app_zq_req(this, "w_ddr_app_zq_req", "1", "ZQ calibration request. Startup and runtime maintenance"),
+    w_ddr_app_sr_active(this, "w_ddr_app_sr_active", "1", "Self-resfresh is active (low-power mode or sleep)"),
+    w_ddr_app_ref_ack(this, "w_ddr_app_ref_ack", "1", "Refresh request acknoledged"),
+    w_ddr_app_zq_ack(this, "w_ddr_app_zq_ack", "1", "ZQ calibration request acknowledged"),
     ddr_xmapinfo(this, "ddr_xmapinfo", NO_COMMENT),
     ddr_xdev_cfg(this, "ddr_xdev_cfg", NO_COMMENT),
     ddr_xslvo(this, "ddr_xslvo", NO_COMMENT),
@@ -290,8 +350,8 @@ TEXT();
     TEXT("----------------------------------------");
     TEXT("External IPs");
     NEW(ddr3, ddr3.getName().c_str());
-        CONNECT(ddr3, 0, ddr3.i_apb_nrst, w_sys_nrst);
-        CONNECT(ddr3, 0, ddr3.i_apb_clk, w_sys_clk);
+        CONNECT(ddr3, 0, ddr3.i_nrst, w_sys_nrst);
+        /*CONNECT(ddr3, 0, ddr3.i_apb_clk, w_sys_clk);
         CONNECT(ddr3, 0, ddr3.i_xslv_nrst, w_sys_nrst);
         CONNECT(ddr3, 0, ddr3.i_xslv_clk, w_sys_clk);
         CONNECT(ddr3, 0, ddr3.i_xmapinfo, ddr_xmapinfo);
@@ -301,10 +361,68 @@ TEXT();
         CONNECT(ddr3, 0, ddr3.i_pmapinfo, ddr_pmapinfo);
         CONNECT(ddr3, 0, ddr3.o_pcfg, ddr_pdev_cfg);
         CONNECT(ddr3, 0, ddr3.i_apbi, ddr_apbi);
-        CONNECT(ddr3, 0, ddr3.o_apbo, ddr_apbo);
+        CONNECT(ddr3, 0, ddr3.o_apbo, ddr_apbo);*/
         CONNECT(ddr3, 0, ddr3.o_ui_nrst, w_ddr_ui_nrst);
         CONNECT(ddr3, 0, ddr3.o_ui_clk, w_ddr_ui_clk);
+        CONNECT(ddr3, 0, ddr3.o_ddr3_reset_n, o_ddr3_reset_n);
+        CONNECT(ddr3, 0, ddr3.o_ddr3_ck_n, o_ddr3_ck_n);
+        CONNECT(ddr3, 0, ddr3.o_ddr3_ck_p, o_ddr3_ck_p);
+        CONNECT(ddr3, 0, ddr3.o_ddr3_cke, o_ddr3_cke);
+        CONNECT(ddr3, 0, ddr3.o_ddr3_cs_n, o_ddr3_cs_n);
+        CONNECT(ddr3, 0, ddr3.o_ddr3_ras_n, o_ddr3_ras_n);
+        CONNECT(ddr3, 0, ddr3.o_ddr3_cas_n, o_ddr3_cas_n);
+        CONNECT(ddr3, 0, ddr3.o_ddr3_we_n, o_ddr3_we_n);
+        CONNECT(ddr3, 0, ddr3.o_ddr3_dm, o_ddr3_dm);
+        CONNECT(ddr3, 0, ddr3.o_ddr3_ba, o_ddr3_ba);
+        CONNECT(ddr3, 0, ddr3.o_ddr3_addr, o_ddr3_addr);
+        CONNECT(ddr3, 0, ddr3.io_ddr3_dq, io_ddr3_dq);
+        CONNECT(ddr3, 0, ddr3.io_ddr3_dqs_n, io_ddr3_dqs_n);
+        CONNECT(ddr3, 0, ddr3.io_ddr3_dqs_p, io_ddr3_dqs_p);
+        CONNECT(ddr3, 0, ddr3.o_ddr3_odt, o_ddr3_odt);
         CONNECT(ddr3, 0, ddr3.o_init_calib_done, w_ddr3_init_calib_complete);
+        CONNECT(ddr3, 0, ddr3.i_aw_id, wb_ddr_aw_id);
+        CONNECT(ddr3, 0, ddr3.i_aw_addr, wb_ddr_aw_addr);
+        CONNECT(ddr3, 0, ddr3.i_aw_len, wb_ddr_aw_len);
+        CONNECT(ddr3, 0, ddr3.i_aw_size, wb_ddr_aw_size);
+        CONNECT(ddr3, 0, ddr3.i_aw_burst, wb_ddr_aw_burst);
+        CONNECT(ddr3, 0, ddr3.i_aw_lock, w_ddr_aw_lock);
+        CONNECT(ddr3, 0, ddr3.i_aw_cache, wb_ddr_aw_cache);
+        CONNECT(ddr3, 0, ddr3.i_aw_prot, wb_ddr_aw_prot);
+        CONNECT(ddr3, 0, ddr3.i_aw_qos, wb_ddr_aw_qos);
+        CONNECT(ddr3, 0, ddr3.i_aw_valid, w_ddr_aw_valid);
+        CONNECT(ddr3, 0, ddr3.o_aw_ready, w_ddr_aw_ready);
+        CONNECT(ddr3, 0, ddr3.i_w_data, wb_ddr_w_data);
+        CONNECT(ddr3, 0, ddr3.i_w_strb, wb_ddr_w_strb);
+        CONNECT(ddr3, 0, ddr3.i_w_last, w_ddr_w_last);
+        CONNECT(ddr3, 0, ddr3.i_w_valid, w_ddr_w_valid);
+        CONNECT(ddr3, 0, ddr3.o_w_ready, w_ddr_w_ready);
+        CONNECT(ddr3, 0, ddr3.i_b_ready, w_ddr_b_ready);
+        CONNECT(ddr3, 0, ddr3.o_b_id, wb_ddr_b_id);
+        CONNECT(ddr3, 0, ddr3.o_b_resp, wb_ddr_b_resp);
+        CONNECT(ddr3, 0, ddr3.o_b_valid, w_ddr_b_valid);
+        CONNECT(ddr3, 0, ddr3.i_ar_id, wb_ddr_ar_id);
+        CONNECT(ddr3, 0, ddr3.i_ar_addr, wb_ddr_ar_addr);
+        CONNECT(ddr3, 0, ddr3.i_ar_len, wb_ddr_ar_len);
+        CONNECT(ddr3, 0, ddr3.i_ar_size, wb_ddr_ar_size);
+        CONNECT(ddr3, 0, ddr3.i_ar_burst, wb_ddr_ar_burst);
+        CONNECT(ddr3, 0, ddr3.i_ar_lock, w_ddr_ar_lock);
+        CONNECT(ddr3, 0, ddr3.i_ar_cache, wb_ddr_ar_cache);
+        CONNECT(ddr3, 0, ddr3.i_ar_prot, wb_ddr_ar_prot);
+        CONNECT(ddr3, 0, ddr3.i_ar_qos, wb_ddr_ar_qos);
+        CONNECT(ddr3, 0, ddr3.i_ar_valid, w_ddr_ar_valid);
+        CONNECT(ddr3, 0, ddr3.o_ar_ready, w_ddr_ar_ready);
+        CONNECT(ddr3, 0, ddr3.i_r_ready, w_ddr_r_ready);
+        CONNECT(ddr3, 0, ddr3.o_r_id, wb_ddr_r_id);
+        CONNECT(ddr3, 0, ddr3.o_r_data, wb_ddr_r_data);
+        CONNECT(ddr3, 0, ddr3.o_r_resp, wb_ddr_r_resp);
+        CONNECT(ddr3, 0, ddr3.o_r_last, w_ddr_r_last);
+        CONNECT(ddr3, 0, ddr3.o_r_valid, w_ddr_r_valid);
+        CONNECT(ddr3, 0, ddr3.i_sr_req, w_ddr_app_sr_req);
+        CONNECT(ddr3, 0, ddr3.i_ref_req, w_ddr_app_ref_req);
+        CONNECT(ddr3, 0, ddr3.i_zq_req, w_ddr_app_zq_req);
+        CONNECT(ddr3, 0, ddr3.o_sr_active, w_ddr_app_sr_active);
+        CONNECT(ddr3, 0, ddr3.o_ref_ack, w_ddr_app_ref_ack);
+        CONNECT(ddr3, 0, ddr3.o_zq_ack, w_ddr_app_zq_ack);
     ENDNEW();
 }
 
