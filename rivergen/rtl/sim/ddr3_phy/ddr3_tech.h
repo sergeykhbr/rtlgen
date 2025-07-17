@@ -17,10 +17,6 @@
 #pragma once
 
 #include <api_rtlgen.h>
-#include "../../internal/ambalib/types_amba.h"
-#include "../../internal/ambalib/types_pnp.h"
-#include "../../internal/misclib/apb_ddr.h"
-#include "../../internal/misclib/axi_sram.h"
 #include "../../sim/pll/pll_generic.h"
 
 using namespace sysvc;
@@ -51,23 +47,11 @@ class ddr3_tech : public ModuleObject {
     TmplParamI32D DUAL_RANK;
     TmplParamI32D AXI_SIZE_LOG2;
     TmplParamI32D AXI_ID_BITS;
-    TmplParamI32D AXI_USER_BITS;
     // io:
-    //InPort i_apb_nrst;
-    //InPort i_apb_clk;
-    //InPort i_xslv_nrst;
-    //InPort i_xslv_clk;
-    /*TextLine _t0_;
-    InStruct<types_amba::mapinfo_type> i_xmapinfo;
-    OutStruct<types_pnp::dev_config_type> o_xcfg;
-    InStruct<types_amba::axi4_slave_in_type> i_xslvi;
-    OutStruct<types_amba::axi4_slave_out_type> o_xslvo;
-    TextLine _t1_;
-    InStruct<types_amba::mapinfo_type> i_pmapinfo;
-    OutStruct<types_pnp::dev_config_type> o_pcfg;
-    InStruct<types_amba::apb_in_type> i_apbi;
-    OutStruct<types_amba::apb_out_type> o_apbo;*/
     InPort i_nrst;
+    InPort i_ctrl_clk;
+    InPort i_phy_clk;
+    InPort i_ref_clk200;
     TextLine _t3_;
     OutPort o_ui_nrst;
     OutPort o_ui_clk;
@@ -88,6 +72,7 @@ class ddr3_tech : public ModuleObject {
     IoPort io_ddr3_dqs_p;
     OutPort o_ddr3_odt;
     OutPort o_init_calib_done;
+    OutPort o_temperature;
     InPort i_sr_req;
     InPort i_ref_req;
     InPort i_zq_req;
@@ -141,15 +126,12 @@ class ddr3_tech : public ModuleObject {
     Signal w_sr_active;
     Signal w_ref_ack;
     Signal w_zq_ack;
-    //SignalStruct<types_pnp::dev_config_type> wb_xcfg_unused;
 
     // Registers:
     RegSignal ddr_calib;
 
     LogicArray mem0;
     pll_generic clk0;
-    //apb_ddr pctrl0;
-    //axi_sram sram0;
  private:
     CombProcess comb;
     ProcObject ff;

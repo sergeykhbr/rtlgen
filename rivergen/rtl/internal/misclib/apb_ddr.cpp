@@ -18,18 +18,22 @@
 
 apb_ddr::apb_ddr(GenObject *parent, const char *name, const char *comment) :
     ModuleObject(parent, "apb_ddr", name, comment),
-    i_clk(this, "i_clk", "1", "APB clock"),
-    i_nrst(this, "i_nrst", "1", "Reset: active LOW"),
+    i_apb_nrst(this, "i_apb_nrst", "1", "APB Reset: active LOW"),
+    i_apb_clk(this, "i_apb_clk", "1", "APB clock domain"),
+    i_ddr_nrst(this, "i_ddr_nrst", "1", "DDR clock domain: PLL locked"),
+    i_ddr_clk(this, "i_ddr_clk", "1", "DDR clock domain"),
     i_mapinfo(this, "i_mapinfo", "interconnect slot information"),
     o_cfg(this, "o_cfg", "Device descriptor"),
     i_apbi(this, "i_apbi", "APB input interface"),
     o_apbo(this, "o_apbo", "APB output interface"),
-    i_pll_locked(this, "i_pll_locked", "1", "PLL locked"),
     i_init_calib_done(this, "i_init_calib_done", "1", "DDR initialization done"),
     i_device_temp(this, "i_device_temp", "12", "Temperature monitor value"),
-    i_sr_active(this, "i_sr_active", "1"),
-    i_ref_ack(this, "i_ref_ack", "1"),
-    i_zq_ack(this, "i_zq_ack", "1"),
+    o_sr_req(this, "o_sr_req", "1", "Self-refresh request (low-power mode)"),
+    o_ref_req(this, "o_ref_req", "1", "Periodic refresh request ~7.8 us"),
+    o_zq_req(this, "o_zq_req", "1", "ZQ calibration request. Startup and runtime maintenance"),
+    i_sr_active(this, "i_sr_active", "1", "Self-resfresh is active (low-power mode or sleep)"),
+    i_ref_ack(this, "i_ref_ack", "1", "Refresh request acknowledged"),
+    i_zq_ack(this, "i_zq_ack", "1", "ZQ calibration request acknowledged"),
     // params
     // signals
     w_req_valid(this, "w_req_valid", "1"),
@@ -37,15 +41,15 @@ apb_ddr::apb_ddr(GenObject *parent, const char *name, const char *comment) :
     w_req_write(this, "w_req_write", "1"),
     wb_req_wdata(this, "wb_req_wdata", "32"),
     // registers
-    pll_locked(this, "pll_locked", "1", "0"),
-    init_calib_done(this, "init_calib_done", "1", "0"),
-    device_temp(this, "device_temp", "12", "'0", NO_COMMENT),
-    sr_active(this, "sr_active", "1", "0"),
-    ref_ack(this, "ref_ack", "1", "0"),
-    zq_ack(this, "zq_ack", "1", "0"),
-    resp_valid(this, "resp_valid", "1", "0"),
-    resp_rdata(this, "resp_rdata", "32", "'0", NO_COMMENT),
-    resp_err(this, "resp_err", "1", "0"),
+    pll_locked(this, &i_apb_clk, CLK_POSEDGE, &i_apb_nrst, ACTIVE_LOW, "pll_locked", "1", "0", NO_COMMENT),
+    init_calib_done(this, &i_apb_clk, CLK_POSEDGE, &i_apb_nrst, ACTIVE_LOW, "init_calib_done", "1", "0", NO_COMMENT),
+    device_temp(this, &i_apb_clk, CLK_POSEDGE, &i_apb_nrst, ACTIVE_LOW, "device_temp", "12", "'0", NO_COMMENT),
+    sr_active(this, &i_apb_clk, CLK_POSEDGE, &i_apb_nrst, ACTIVE_LOW, "sr_active", "1", "0", NO_COMMENT),
+    ref_ack(this, &i_apb_clk, CLK_POSEDGE, &i_apb_nrst, ACTIVE_LOW, "ref_ack", "1", "0", NO_COMMENT),
+    zq_ack(this, &i_apb_clk, CLK_POSEDGE, &i_apb_nrst, ACTIVE_LOW, "zq_ack", "1", "0", NO_COMMENT),
+    resp_valid(this, &i_apb_clk, CLK_POSEDGE, &i_apb_nrst, ACTIVE_LOW, "resp_valid", "1", "0", NO_COMMENT),
+    resp_rdata(this, &i_apb_clk, CLK_POSEDGE, &i_apb_nrst, ACTIVE_LOW, "resp_rdata", "32", "'0", NO_COMMENT),
+    resp_err(this, &i_apb_clk, CLK_POSEDGE, &i_apb_nrst, ACTIVE_LOW, "resp_err", "1", "0", NO_COMMENT),
     //
     comb(this),
     pslv0(this, "pslv0", NO_COMMENT)
@@ -55,8 +59,8 @@ apb_ddr::apb_ddr(GenObject *parent, const char *name, const char *comment) :
     pslv0.vid.setObjValue(SCV_get_cfg_type(this, "VENDOR_OPTIMITECH"));
     pslv0.did.setObjValue(SCV_get_cfg_type(this, "OPTIMITECH_DDRCTRL"));
     NEW(pslv0, pslv0.getName().c_str());
-        CONNECT(pslv0, 0, pslv0.i_clk, i_clk);
-        CONNECT(pslv0, 0, pslv0.i_nrst, i_nrst);
+        CONNECT(pslv0, 0, pslv0.i_clk, i_apb_clk);
+        CONNECT(pslv0, 0, pslv0.i_nrst, i_apb_nrst);
         CONNECT(pslv0, 0, pslv0.i_mapinfo, i_mapinfo);
         CONNECT(pslv0, 0, pslv0.o_cfg, o_cfg);
         CONNECT(pslv0, 0, pslv0.i_apbi, i_apbi);
@@ -75,14 +79,14 @@ apb_ddr::apb_ddr(GenObject *parent, const char *name, const char *comment) :
 }
 
 void apb_ddr::proc_comb() {
-    SETVAL(pll_locked, i_pll_locked);
+    SETVAL(pll_locked, i_ddr_nrst);
     SETVAL(init_calib_done, i_init_calib_done);
     SETVAL(device_temp, i_device_temp);
     SETVAL(sr_active, i_sr_active);
     SETVAL(ref_ack, i_ref_ack);
     SETVAL(zq_ack, i_zq_ack);
 
-TEXT();
+    TEXT();
     SETZERO(resp_err);
     TEXT("Registers access:");
     SWITCH (BITS(wb_req_addr, 11, 2));
@@ -102,10 +106,15 @@ TEXT();
         ENDCASE();
     ENDSWITCH();
 
-TEXT();
+    TEXT();
     SETVAL(resp_valid, w_req_valid);
     SETVAL(resp_rdata, comb.vb_rdata);
 
-TEXT();
+    TEXT();
     SYNC_RESET();
+
+    TEXT();
+    SETZERO(o_sr_req);
+    SETZERO(o_ref_req);
+    SETZERO(o_zq_req);
 }

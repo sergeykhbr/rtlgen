@@ -27,6 +27,7 @@
 #include "../misclib/axi_rom.h"
 #include "../misclib/plic.h"
 #include "../misclib/clint.h"
+#include "../misclib/apb_ddr.h"
 #include "../sdctrl/sdctrl.h"
 #include "../pcie_dma/pcie_dma.h"
 #include "../pcie_dma/apb_pcie.h"
@@ -55,11 +56,17 @@ class accel_soc : public ModuleObject {
         CombProcess(GenObject* parent)
             : CombinationalProcess(parent, "comb"),
             v_gnd1(this, "v_gnd1", "1", "0", NO_COMMENT),
-            vb_ext_irqs(this, "vb_ext_irqs", "SOC_PLIC_IRQ_TOTAL") {
+            vb_ext_irqs(this, "vb_ext_irqs", "SOC_PLIC_IRQ_TOTAL"),
+            vb_ddr_xcfg(this, "vb_ddr_xcfg", NO_COMMENT),
+            vb_ddr_mapinfo(this, "vb_ddr_mapinfo", NO_COMMENT),
+            vb_ddr_xslvo(this, "vb_ddr_xslvo", "systemc compatibility") {
         }
      public:
         Logic1 v_gnd1;
         Logic vb_ext_irqs;
+        types_pnp::dev_config_type vb_ddr_xcfg;
+        types_amba::mapinfo_type vb_ddr_mapinfo;
+        types_amba::axi4_slave_out_type vb_ddr_xslvo;
     };
 
     void proc_comb();
@@ -112,14 +119,51 @@ public:
     OutStruct<types_amba::apb_in_type> o_prci_apbi;
     InStruct<types_amba::apb_out_type> i_prci_apbo;
     TextLine _ddr0_;
-    OutStruct<types_amba::mapinfo_type> o_ddr_pmapinfo;
-    InStruct<types_pnp::dev_config_type> i_ddr_pdevcfg;
-    OutStruct<types_amba::apb_in_type> o_ddr_apbi;
-    InStruct<types_amba::apb_out_type> i_ddr_apbo;
-    OutStruct<types_amba::mapinfo_type> o_ddr_xmapinfo;
-    InStruct<types_pnp::dev_config_type> i_ddr_xdevcfg;
-    OutStruct<types_amba::axi4_slave_in_type> o_ddr_xslvi;
-    InStruct<types_amba::axi4_slave_out_type> i_ddr_xslvo;
+    OutPort o_ddr_aw_id;
+    OutPort o_ddr_aw_addr;
+    OutPort o_ddr_aw_len;
+    OutPort o_ddr_aw_size;
+    OutPort o_ddr_aw_burst;
+    OutPort o_ddr_aw_lock;
+    OutPort o_ddr_aw_cache;
+    OutPort o_ddr_aw_prot;
+    OutPort o_ddr_aw_qos;
+    OutPort o_ddr_aw_valid;
+    InPort i_ddr_aw_ready;
+    OutPort o_ddr_w_data;
+    OutPort o_ddr_w_strb;
+    OutPort o_ddr_w_last;
+    OutPort o_ddr_w_valid;
+    InPort i_ddr_w_ready;
+    OutPort o_ddr_b_ready;
+    InPort i_ddr_b_id;
+    InPort i_ddr_b_resp;
+    InPort i_ddr_b_valid;
+    OutPort o_ddr_ar_id;
+    OutPort o_ddr_ar_addr;
+    OutPort o_ddr_ar_len;
+    OutPort o_ddr_ar_size;
+    OutPort o_ddr_ar_burst;
+    OutPort o_ddr_ar_lock;
+    OutPort o_ddr_ar_cache;
+    OutPort o_ddr_ar_prot;
+    OutPort o_ddr_ar_qos;
+    OutPort o_ddr_ar_valid;
+    InPort i_ddr_ar_ready;
+    OutPort o_ddr_r_ready;
+    InPort i_ddr_r_id;
+    InPort i_ddr_r_data;
+    InPort i_ddr_r_resp;
+    InPort i_ddr_r_last;
+    InPort i_ddr_r_valid;
+    InPort i_ddr_app_init_calib_done;
+    InPort i_ddr_app_temp;
+    OutPort o_ddr_app_sr_req;
+    OutPort o_ddr_app_ref_req;
+    OutPort o_ddr_app_zq_req;
+    InPort i_ddr_app_sr_active;
+    InPort i_ddr_app_ref_ack;
+    InPort i_ddr_app_zq_ack;
     TextLine _pcie0_;
     InPort i_pcie_clk;
     InPort i_pcie_nrst;
@@ -158,6 +202,8 @@ public:
     types_pnp::soc_pnp_vector dev_pnp;
     SignalStruct<types_amba::axi4_master_out_type> wb_group0_xmsto;
     SignalStruct<types_amba::axi4_master_in_type> wb_group0_xmsti;
+    SignalStruct<types_amba::axi4_slave_in_type> wb_ddr_xslvi;
+    SignalStruct<types_amba::axi4_slave_out_type> wb_ddr_xslvo;
     SignalStruct<types_amba::axi4_slave_in_type> wb_pbridge_xslvi;
     SignalStruct<types_amba::axi4_slave_out_type> wb_pbridge_xslvo;
 
@@ -185,6 +231,7 @@ public:
     plic plic0;
     apb_uart uart1;
     apb_gpio gpio0;
+    apb_ddr pddr0;
     apb_i2c i2c0;
     hdmi_top hdmi0;
     pcie_dma pcidma0;

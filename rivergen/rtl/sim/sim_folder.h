@@ -20,7 +20,9 @@
 #include "io/io_folder.h"
 #include "pll/pll_folder.h"
 #include "mem/mem_folder.h"
+#ifdef GENCFG_DDR_ENABLE
 #include "ddr3_phy/ddr3_phy_folder.h"
+#endif
 
 class sim_folder : public FolderObject {
  public:
@@ -28,12 +30,17 @@ class sim_folder : public FolderObject {
         FolderObject(parent, "sim"),
         io_folder_(this),
         pll_folder_(this),
-        mem_folder_(this),
-        ddr3_phy_folder_(this) {}
+        mem_folder_(this)
+#ifdef GENCFG_DDR_ENABLE
+        ,ddr3_phy_folder_(this)
+#endif
+        {}
 
  protected:
     io_folder io_folder_;
     pll_folder pll_folder_;
     mem_folder mem_folder_;
+#ifdef GENCFG_DDR_ENABLE
     ddr3_phy_folder ddr3_phy_folder_;
+#endif
 };

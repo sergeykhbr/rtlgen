@@ -44,6 +44,7 @@ class SysPLL_tech : public ModuleObject {
     InPort i_clk_tcxo;
     OutPort o_clk_sys;
     OutPort o_clk_ddr;
+    OutPort o_clk_ddr_phy;
     OutPort o_clk_pcie;
     OutPort o_locked;
 

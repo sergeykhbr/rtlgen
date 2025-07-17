@@ -116,6 +116,7 @@ class asic_accel_top : public ModuleObject {
     Signal w_dmreset;
     Signal w_sys_clk;
     Signal w_ddr_clk;
+    Signal w_ddr_phy_clk;
     Signal w_pcie_clk;
     Signal w_pll_lock;
     TextLine _t5_;
@@ -175,7 +176,8 @@ class asic_accel_top : public ModuleObject {
     
     Signal w_ddr_ui_nrst;
     Signal w_ddr_ui_clk;
-    Signal w_ddr3_init_calib_complete;
+    Signal w_ddr3_init_calib_done;
+    Signal wb_ddr3_temperature;
     Signal w_pcie_phy_lnk_up;
 
     SignalStruct<types_amba::mapinfo_type> prci_pmapinfo;

@@ -24,22 +24,10 @@ ddr3_tech::ddr3_tech(GenObject *parent, const char *name, const char *comment) :
     DUAL_RANK(this, "DUAL_RANK", "0", "1=Enable dual DDR; 0=disable."),
     AXI_SIZE_LOG2(this, "AXI_SIZE_LOG2", "30", "30 = 1GB (default). Bus address width"),
     AXI_ID_BITS(this, "AXI_ID_BITS", "5", "Custom ID field width"),
-    AXI_USER_BITS(this, "AXI_USER_BITS", "1", "Custom user field width (unused/nullified)"),
-    /*i_apb_nrst(this, "i_apb_nrst", "1", NO_COMMENT),
-    i_apb_clk(this, "i_apb_clk", "1", NO_COMMENT),
-    i_xslv_nrst(this, "i_xslv_nrst", "1", NO_COMMENT),
-    i_xslv_clk(this, "i_xslv_clk", "1", NO_COMMENT),
-    _t0_(this, "AXI memory access (ddr clock)"),
-    i_xmapinfo(this, "i_xmapinfo"),
-    o_xcfg(this, "o_xcfg"),
-    i_xslvi(this, "i_xslvi"),
-    o_xslvo(this, "o_xslvo"),
-    _t1_(this, "APB control interface (sys clock):"),
-    i_pmapinfo(this, "i_pmapinfo"),
-    o_pcfg(this, "o_pcfg"),
-    i_apbi(this, "i_apbi"),
-    o_apbo(this, "o_apbo"),*/
     i_nrst(this, "i_nrst", "1", "DDR reset active LOW. Connected to IODELAY"),
+    i_ctrl_clk(this, "i_ctrl_clk", "1", "DDR Controller clock: MIG 200 MHz, UberDDR 1:4 PHY clock"),
+    i_phy_clk(this, "i_phy_clk", "1", "PHY clock default for DDR3 800 MHz"),
+    i_ref_clk200(this, "i_ref_clk200", "1", "Reference clock for internal mmcm"),
     _t3_(this, "to debug PIN:"),
     o_ui_nrst(this, "o_ui_nrst", "1", "xilinx generte ddr clock inside ddr controller"),
     o_ui_clk(this, "o_ui_clk", "1", "xilinx generte ddr clock inside ddr controller"),
@@ -60,6 +48,7 @@ ddr3_tech::ddr3_tech(GenObject *parent, const char *name, const char *comment) :
     io_ddr3_dqs_p(this, "io_ddr3_dqs_p", "LANE_TOTAL", "Data strob negative"),
     o_ddr3_odt(this, "o_ddr3_odt", "DUAL_RANK", "on-die termination"),
     o_init_calib_done(this, "o_init_calib_done", "1", "DDR calibration done, active HIGH"),
+    o_temperature(this, "o_temperature", "12", "Device temperature"),
     i_sr_req(this, "i_sr_req", "1", "Self-refresh request (low-power mode)"),
     i_ref_req(this, "i_ref_req", "1", "Periodic refresh request ~7.8 us"),
     i_zq_req(this, "i_zq_req", "1", "ZQ calibration request. Startup and runtime maintenance"),
@@ -68,7 +57,7 @@ ddr3_tech::ddr3_tech(GenObject *parent, const char *name, const char *comment) :
     o_zq_ack(this, "o_zq_ack", "1", "ZQ calibration request acknowledged"),
     _t5_(this, "AXI slave interface:"),
     i_aw_id(this, "i_aw_id", "AXI_ID_BITS", NO_COMMENT),
-    i_aw_addr(this, "i_aw_addr", "POW2(1,AXI_SIZE_LOG2)", NO_COMMENT),
+    i_aw_addr(this, "i_aw_addr", "AXI_SIZE_LOG2", NO_COMMENT),
     i_aw_len(this, "i_aw_len", "8", NO_COMMENT),
     i_aw_size(this, "i_aw_size", "3", NO_COMMENT),
     i_aw_burst(this, "i_aw_burst", "2", NO_COMMENT),
@@ -88,7 +77,7 @@ ddr3_tech::ddr3_tech(GenObject *parent, const char *name, const char *comment) :
     o_b_resp(this, "o_b_resp", "2", NO_COMMENT),
     o_b_valid(this, "o_b_valid", "1", NO_COMMENT),
     i_ar_id(this, "i_ar_id", "AXI_ID_BITS", NO_COMMENT),
-    i_ar_addr(this, "i_ar_addr", "POW2(1,AXI_SIZE_LOG2)", NO_COMMENT),
+    i_ar_addr(this, "i_ar_addr", "AXI_SIZE_LOG2", NO_COMMENT),
     i_ar_len(this, "i_ar_len", "8", NO_COMMENT),
     i_ar_size(this, "i_ar_size", "3", NO_COMMENT),
     i_ar_burst(this, "i_ar_burst", "2", NO_COMMENT),
@@ -112,17 +101,14 @@ ddr3_tech::ddr3_tech(GenObject *parent, const char *name, const char *comment) :
     w_sr_active(this, "w_sr_active", "1", RSTVAL_ZERO, NO_COMMENT),
     w_ref_ack(this, "w_ref_ack", "1", RSTVAL_ZERO, NO_COMMENT),
     w_zq_ack(this, "w_zq_ack", "1", RSTVAL_ZERO, NO_COMMENT),
-    //wb_xcfg_unused(this, "wb_xcfg_unused", NO_COMMENT),
     // registers:
     ddr_calib(this, &w_ui_clk, CLK_POSEDGE, &w_ui_nrst, ACTIVE_LOW, "ddr_calib", "8", RSTVAL_ZERO, NO_COMMENT),
     mem0(this, "mem0", "64", "16", NO_COMMENT),
     // submodule
     clk0(this, "clk0", NO_COMMENT),
-    //pctrl0(this, "pctrl0", NO_COMMENT),
-    //sram0(this, "sram0", NO_COMMENT),
     // process
     comb(this),
-    ff(parent, "ff", &w_ui_clk, CLK_POSEDGE, 0, ACTIVE_NONE, NO_COMMENT)
+    ff(this, "ff", &w_ui_clk, CLK_POSEDGE, 0, ACTIVE_NONE, NO_COMMENT)
 {
     io_ddr3_dq.setAttribute(ATTR_UNCHECKED_WRITERS);
     io_ddr3_dqs_n.setAttribute(ATTR_UNCHECKED_WRITERS);
@@ -134,33 +120,6 @@ ddr3_tech::ddr3_tech(GenObject *parent, const char *name, const char *comment) :
     NEW(clk0, clk0.getName().c_str());
         CONNECT(clk0, 0, clk0.o_clk, w_ui_clk);
     ENDNEW();
-
-    /*TEXT();
-    NEW(pctrl0, pctrl0.getName().c_str());
-        CONNECT(pctrl0, 0, pctrl0.i_clk, i_apb_clk);
-        CONNECT(pctrl0, 0, pctrl0.i_nrst, i_apb_nrst);
-        CONNECT(pctrl0, 0, pctrl0.i_mapinfo, i_pmapinfo);
-        CONNECT(pctrl0, 0, pctrl0.o_cfg, o_pcfg);
-        CONNECT(pctrl0, 0, pctrl0.i_apbi, i_apbi);
-        CONNECT(pctrl0, 0, pctrl0.o_apbo, o_apbo);
-        CONNECT(pctrl0, 0, pctrl0.i_pll_locked, w_ui_nrst);
-        CONNECT(pctrl0, 0, pctrl0.i_init_calib_done, w_init_calib_done);
-        CONNECT(pctrl0, 0, pctrl0.i_device_temp, wb_device_temp);
-        CONNECT(pctrl0, 0, pctrl0.i_sr_active, w_sr_active);
-        CONNECT(pctrl0, 0, pctrl0.i_ref_ack, w_ref_ack);
-        CONNECT(pctrl0, 0, pctrl0.i_zq_ack, w_zq_ack);
-    ENDNEW();*/
-
-    /*TEXT();
-    sram0.abits.setObjValue(new DecConst(12));
-    NEW(sram0, sram0.getName().c_str());
-        CONNECT(sram0, 0, sram0.i_clk, w_ui_clk);
-        CONNECT(sram0, 0, sram0.i_nrst, w_ui_nrst);
-        CONNECT(sram0, 0, sram0.i_mapinfo, i_xmapinfo);
-        CONNECT(sram0, 0, sram0.o_cfg, wb_xcfg_unused);
-        CONNECT(sram0, 0, sram0.i_xslvi, i_xslvi);
-        CONNECT(sram0, 0, sram0.o_xslvo, o_xslvo);
-    ENDNEW();*/
 
     INITIAL();
         SETZERO(w_ui_nrst);

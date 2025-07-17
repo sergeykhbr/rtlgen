@@ -91,8 +91,9 @@ asic_accel_top::asic_accel_top(GenObject *parent, const char *name, const char *
     w_hdmi_nrst(this, "w_hdmi_nrst", "1"),
     w_dmreset(this, "w_dmreset", "1"),
     w_sys_clk(this, "w_sys_clk", "1"),
-    w_ddr_clk(this, "w_ddr_clk", "1"),
-    w_pcie_clk(this, "w_pcie_clk", "1"),
+    w_ddr_clk(this, "w_ddr_clk", "1", "Controller clock: MIG 200 MHz, UberDDR 1:4 PHY clock"),
+    w_ddr_phy_clk(this, "w_ddr_phy_clk", "1", "DDR PHY clock: UberDDR3 800 MHz; MIG unused"),
+    w_pcie_clk(this, "w_pcie_clk", "1", "Xilinx 100 MHz"),
     w_pll_lock(this, "w_pll_lock", "1"),
     _t5_(this, "DDR AXI slave interface:"),
     wb_ddr_aw_id(this, "wb_ddr_aw_id", "CFG_SYSBUS_ID_BITS", NO_COMMENT),
@@ -148,7 +149,8 @@ asic_accel_top::asic_accel_top(GenObject *parent, const char *name, const char *
     ddr_apbo(this, "ddr_apbo", NO_COMMENT),
     w_ddr_ui_nrst(this, "w_ddr_ui_nrst", "1"),
     w_ddr_ui_clk(this, "w_ddr_ui_clk", "1"),
-    w_ddr3_init_calib_complete(this, "w_ddr3_init_calib_complete", "1"),
+    w_ddr3_init_calib_done(this, "w_ddr3_init_calib_done", "1"),
+    wb_ddr3_temperature(this, "wb_ddr3_temperature", "12"),
     w_pcie_phy_lnk_up(this, "w_pcie_phy_lnk_up", "1"),
     prci_pmapinfo(this, "prci_pmapinfo", NO_COMMENT),
     prci_dev_cfg(this, "prci_dev_cfg", NO_COMMENT),
@@ -264,6 +266,7 @@ TEXT();
         CONNECT(pll0, 0, pll0.i_clk_tcxo, ib_clk_tcxo);
         CONNECT(pll0, 0, pll0.o_clk_sys, w_sys_clk);
         CONNECT(pll0, 0, pll0.o_clk_ddr, w_ddr_clk);
+        CONNECT(pll0, 0, pll0.o_clk_ddr_phy, w_ddr_phy_clk);
         CONNECT(pll0, 0, pll0.o_clk_pcie, w_pcie_clk);
         CONNECT(pll0, 0, pll0.o_locked, w_pll_lock);
     ENDNEW();
@@ -274,7 +277,7 @@ TEXT();
         CONNECT(prci0, 0, prci0.i_pwrreset, i_rst);
         CONNECT(prci0, 0, prci0.i_dmireset, w_dmreset);
         CONNECT(prci0, 0, prci0.i_sys_locked, w_pll_lock);
-        CONNECT(prci0, 0, prci0.i_ddr_locked, w_ddr3_init_calib_complete);
+        CONNECT(prci0, 0, prci0.i_ddr_locked, w_ddr3_init_calib_done);
         CONNECT(prci0, 0, prci0.i_pcie_phy_clk, w_pcie_user_clk);
         CONNECT(prci0, 0, prci0.i_pcie_phy_rst, w_pcie_user_rst);
         CONNECT(prci0, 0, prci0.i_pcie_phy_lnk_up, w_pcie_phy_lnk_up);
@@ -331,14 +334,51 @@ TEXT();
         CONNECT(soc0, 0, soc0.i_prci_pdevcfg, prci_dev_cfg);
         CONNECT(soc0, 0, soc0.o_prci_apbi, prci_apbi);
         CONNECT(soc0, 0, soc0.i_prci_apbo, prci_apbo);
-        CONNECT(soc0, 0, soc0.o_ddr_pmapinfo, ddr_pmapinfo);
-        CONNECT(soc0, 0, soc0.i_ddr_pdevcfg, ddr_pdev_cfg);
-        CONNECT(soc0, 0, soc0.o_ddr_apbi, ddr_apbi);
-        CONNECT(soc0, 0, soc0.i_ddr_apbo, ddr_apbo);
-        CONNECT(soc0, 0, soc0.o_ddr_xmapinfo, ddr_xmapinfo);
-        CONNECT(soc0, 0, soc0.i_ddr_xdevcfg, ddr_xdev_cfg);
-        CONNECT(soc0, 0, soc0.o_ddr_xslvi, ddr_xslvi);
-        CONNECT(soc0, 0, soc0.i_ddr_xslvo, ddr_xslvo);
+        CONNECT(soc0, 0, soc0.o_ddr_aw_id, wb_ddr_aw_id);
+        CONNECT(soc0, 0, soc0.o_ddr_aw_addr, wb_ddr_aw_addr);
+        CONNECT(soc0, 0, soc0.o_ddr_aw_len, wb_ddr_aw_len);
+        CONNECT(soc0, 0, soc0.o_ddr_aw_size, wb_ddr_aw_size);
+        CONNECT(soc0, 0, soc0.o_ddr_aw_burst, wb_ddr_aw_burst);
+        CONNECT(soc0, 0, soc0.o_ddr_aw_lock, w_ddr_aw_lock);
+        CONNECT(soc0, 0, soc0.o_ddr_aw_cache, wb_ddr_aw_cache);
+        CONNECT(soc0, 0, soc0.o_ddr_aw_prot, wb_ddr_aw_prot);
+        CONNECT(soc0, 0, soc0.o_ddr_aw_qos, wb_ddr_aw_qos);
+        CONNECT(soc0, 0, soc0.o_ddr_aw_valid, w_ddr_aw_valid);
+        CONNECT(soc0, 0, soc0.i_ddr_aw_ready, w_ddr_aw_ready);
+        CONNECT(soc0, 0, soc0.o_ddr_w_data, wb_ddr_w_data);
+        CONNECT(soc0, 0, soc0.o_ddr_w_strb, wb_ddr_w_strb);
+        CONNECT(soc0, 0, soc0.o_ddr_w_last, w_ddr_w_last);
+        CONNECT(soc0, 0, soc0.o_ddr_w_valid, w_ddr_w_valid);
+        CONNECT(soc0, 0, soc0.i_ddr_w_ready, w_ddr_w_ready);
+        CONNECT(soc0, 0, soc0.o_ddr_b_ready, w_ddr_b_ready);
+        CONNECT(soc0, 0, soc0.i_ddr_b_id, wb_ddr_b_id);
+        CONNECT(soc0, 0, soc0.i_ddr_b_resp, wb_ddr_b_resp);
+        CONNECT(soc0, 0, soc0.i_ddr_b_valid, w_ddr_b_valid);
+        CONNECT(soc0, 0, soc0.o_ddr_ar_id, wb_ddr_ar_id);
+        CONNECT(soc0, 0, soc0.o_ddr_ar_addr, wb_ddr_ar_addr);
+        CONNECT(soc0, 0, soc0.o_ddr_ar_len, wb_ddr_ar_len);
+        CONNECT(soc0, 0, soc0.o_ddr_ar_size, wb_ddr_ar_size);
+        CONNECT(soc0, 0, soc0.o_ddr_ar_burst, wb_ddr_ar_burst);
+        CONNECT(soc0, 0, soc0.o_ddr_ar_lock, w_ddr_ar_lock);
+        CONNECT(soc0, 0, soc0.o_ddr_ar_cache, wb_ddr_ar_cache);
+        CONNECT(soc0, 0, soc0.o_ddr_ar_prot, wb_ddr_ar_prot);
+        CONNECT(soc0, 0, soc0.o_ddr_ar_qos, wb_ddr_ar_qos);
+        CONNECT(soc0, 0, soc0.o_ddr_ar_valid, w_ddr_ar_valid);
+        CONNECT(soc0, 0, soc0.i_ddr_ar_ready, w_ddr_ar_ready);
+        CONNECT(soc0, 0, soc0.o_ddr_r_ready, w_ddr_r_ready);
+        CONNECT(soc0, 0, soc0.i_ddr_r_id, wb_ddr_r_id);
+        CONNECT(soc0, 0, soc0.i_ddr_r_data, wb_ddr_r_data);
+        CONNECT(soc0, 0, soc0.i_ddr_r_resp, wb_ddr_r_resp);
+        CONNECT(soc0, 0, soc0.i_ddr_r_last, w_ddr_r_last);
+        CONNECT(soc0, 0, soc0.i_ddr_r_valid, w_ddr_r_valid);
+        CONNECT(soc0, 0, soc0.i_ddr_app_init_calib_done, w_ddr3_init_calib_done);
+        CONNECT(soc0, 0, soc0.i_ddr_app_temp, wb_ddr3_temperature);
+        CONNECT(soc0, 0, soc0.o_ddr_app_sr_req, w_ddr_app_sr_req);
+        CONNECT(soc0, 0, soc0.o_ddr_app_ref_req, w_ddr_app_ref_req);
+        CONNECT(soc0, 0, soc0.o_ddr_app_zq_req, w_ddr_app_zq_req);
+        CONNECT(soc0, 0, soc0.i_ddr_app_sr_active, w_ddr_app_sr_active);
+        CONNECT(soc0, 0, soc0.i_ddr_app_ref_ack, w_ddr_app_ref_ack);
+        CONNECT(soc0, 0, soc0.i_ddr_app_zq_ack, w_ddr_app_zq_ack);
         CONNECT(soc0, 0, soc0.i_pcie_nrst, w_pcie_nrst);
         CONNECT(soc0, 0, soc0.i_pcie_clk, w_pcie_user_clk);
         CONNECT(soc0, 0, soc0.i_pcie_completer_id, wb_pcie_completer_id);
@@ -350,18 +390,10 @@ TEXT();
     TEXT("----------------------------------------");
     TEXT("External IPs");
     NEW(ddr3, ddr3.getName().c_str());
+        CONNECT(ddr3, 0, ddr3.i_ctrl_clk, w_ddr_clk);
+        CONNECT(ddr3, 0, ddr3.i_phy_clk, w_ddr_phy_clk);
+        CONNECT(ddr3, 0, ddr3.i_ref_clk200, ib_clk_tcxo);
         CONNECT(ddr3, 0, ddr3.i_nrst, w_sys_nrst);
-        /*CONNECT(ddr3, 0, ddr3.i_apb_clk, w_sys_clk);
-        CONNECT(ddr3, 0, ddr3.i_xslv_nrst, w_sys_nrst);
-        CONNECT(ddr3, 0, ddr3.i_xslv_clk, w_sys_clk);
-        CONNECT(ddr3, 0, ddr3.i_xmapinfo, ddr_xmapinfo);
-        CONNECT(ddr3, 0, ddr3.o_xcfg, ddr_xdev_cfg);
-        CONNECT(ddr3, 0, ddr3.i_xslvi, ddr_xslvi);
-        CONNECT(ddr3, 0, ddr3.o_xslvo, ddr_xslvo);
-        CONNECT(ddr3, 0, ddr3.i_pmapinfo, ddr_pmapinfo);
-        CONNECT(ddr3, 0, ddr3.o_pcfg, ddr_pdev_cfg);
-        CONNECT(ddr3, 0, ddr3.i_apbi, ddr_apbi);
-        CONNECT(ddr3, 0, ddr3.o_apbo, ddr_apbo);*/
         CONNECT(ddr3, 0, ddr3.o_ui_nrst, w_ddr_ui_nrst);
         CONNECT(ddr3, 0, ddr3.o_ui_clk, w_ddr_ui_clk);
         CONNECT(ddr3, 0, ddr3.o_ddr3_reset_n, o_ddr3_reset_n);
@@ -379,7 +411,8 @@ TEXT();
         CONNECT(ddr3, 0, ddr3.io_ddr3_dqs_n, io_ddr3_dqs_n);
         CONNECT(ddr3, 0, ddr3.io_ddr3_dqs_p, io_ddr3_dqs_p);
         CONNECT(ddr3, 0, ddr3.o_ddr3_odt, o_ddr3_odt);
-        CONNECT(ddr3, 0, ddr3.o_init_calib_done, w_ddr3_init_calib_complete);
+        CONNECT(ddr3, 0, ddr3.o_init_calib_done, w_ddr3_init_calib_done);
+        CONNECT(ddr3, 0, ddr3.o_temperature, wb_ddr3_temperature);
         CONNECT(ddr3, 0, ddr3.i_aw_id, wb_ddr_aw_id);
         CONNECT(ddr3, 0, ddr3.i_aw_addr, wb_ddr_aw_addr);
         CONNECT(ddr3, 0, ddr3.i_aw_len, wb_ddr_aw_len);

@@ -21,7 +21,8 @@ SysPLL_tech::SysPLL_tech(GenObject *parent, const char *name, const char *commen
     i_reset(this, "i_reset", "1", "Active HIGH"),
     i_clk_tcxo(this, "i_clk_tcxo", "1"),
     o_clk_sys(this, "o_clk_sys", "1", "Bus clock 40 MHz"),
-    o_clk_ddr(this, "o_clk_ddr", "1", "DDR clock 200 MHz"),
+    o_clk_ddr(this, "o_clk_ddr", "1", "DDR controller clock 200 MHz"),
+    o_clk_ddr_phy(this, "o_clk_ddr_phy", "1", "DDR PHY clock 800 MHz"),
     o_clk_pcie(this, "o_clk_pcie", "1", "PCIE PHY 100 MHz"),
     o_locked(this, "o_locked", "1"),
     // process

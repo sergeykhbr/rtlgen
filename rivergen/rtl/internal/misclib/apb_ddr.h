@@ -42,15 +42,19 @@ class apb_ddr : public ModuleObject {
 
  public:
     // io:
-    InPort i_clk;
-    InPort i_nrst;
+    InPort i_apb_nrst;
+    InPort i_apb_clk;
+    InPort i_ddr_nrst;
+    InPort i_ddr_clk;
     InStruct<types_amba::mapinfo_type> i_mapinfo;
     OutStruct<types_pnp::dev_config_type> o_cfg;
     InStruct<types_amba::apb_in_type> i_apbi;
     OutStruct<types_amba::apb_out_type> o_apbo;
-    InPort i_pll_locked;
     InPort i_init_calib_done;
     InPort i_device_temp;
+    OutPort o_sr_req;
+    OutPort o_ref_req;
+    OutPort o_zq_req;
     InPort i_sr_active;
     InPort i_ref_ack;
     InPort i_zq_ack;
