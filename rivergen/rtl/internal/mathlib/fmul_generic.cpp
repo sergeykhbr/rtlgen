@@ -23,13 +23,11 @@ fmul_generic::fmul_generic(GenObject *parent, const char *name, const char *comm
     i_clk(this, "i_clk", "1", "CPU clock"),
     i_nrst(this, "i_nrst", "1", "Reset: active LOW"),
     i_ena(this, "i_ena", "1"),
-    i_a(this, "i_a", "64", "Operand 1"),
-    i_b(this, "i_b", "64", "Operand 2"),
-    o_res(this, "o_res", "64", "Result"),
-    o_illegal_op(this, "o_illegal_op", "1"),
+    i_a(this, "i_a", "fbits", "Operand 1"),
+    i_b(this, "i_b", "fbits", "Operand 2"),
+    o_res(this, "o_res", "fbits", "Result"),
     o_overflow(this, "o_overflow", "1"),
     o_valid(this, "o_valid", "1", "Result is valid"),
-    o_busy(this, "o_busy", "1", "Multiclock instruction under processing"),
     // parameters
     mantbits(this, "mantbits", "23", "Mantissa bitwidth: FP64 = 52, FP32 = 23, FP16 = 10, BF16 = 7"),
     explevel(this, "explevel", "SUB(POW2(1,SUB(expbits,1)),1)", "Level 1 for exponent: 1023 (double); 127 (fp32)"),
@@ -40,16 +38,20 @@ fmul_generic::fmul_generic(GenObject *parent, const char *name, const char *comm
     wb_imul_shift(this, "wb_imul_shift", "7"),
     w_imul_rdy(this, "w_imul_rdy", "1"),
     w_imul_overflow(this, "w_imul_overflow", "1"),
+    wb_hex_i(this, "wb_hex_i", "4", "hex_chunks", NO_COMMENT),
+    wb_hex_o(this, "wb_hex_o", "4", "hex_chunks", NO_COMMENT),
+    wb_carry_i(this, "wb_carry_i", "ADD(mantbits,1)", "hex_chunks", NO_COMMENT),
+    wb_carry_o(this, "wb_carry_o", "ADD(mantbits,1)", "hex_chunks", NO_COMMENT),
+    wb_hex_shift(this, "wb_hex_shift", "3", "hex_chunks", NO_COMMENT),
     // registers
-    busy(this, "busy", "1"),
     ena(this, "ena", "5", "'0", NO_COMMENT),
     a(this, "a", "fbits", "'0", NO_COMMENT),
     b(this, "b", "fbits", "'0", NO_COMMENT),
     result(this, "result", "fbits", "'0", NO_COMMENT),
     zeroA(this, "zeroA", "1"),
     zeroB(this, "zeroB", "1"),
-    mantA(this, "mantA", "ADD(mantbits,1)", "'0", NO_COMMENT),
-    mantB(this, "mantB", "ADD(mantbits,1)", "'0", NO_COMMENT),
+    mantA(this, &i_clk, CLK_POSEDGE, &i_nrst, ACTIVE_LOW, "mantA", "ADD(mantbits,1)", "hex_chunks", "'0", NO_COMMENT),
+    mantB(this, &i_clk, CLK_POSEDGE, &i_nrst, ACTIVE_LOW, "mantB", "ADD(mantbits,1)", "hex_chunks", "'0", NO_COMMENT),
     expAB(this, "expAB", "ADD(expbits,2)", "'0", NO_COMMENT),
     expAlign(this, "expAlign", "ADD(expbits,1)", "'0", NO_COMMENT),
     mantAlign(this, "mantAlign", "SUB(MUL(2,mantbits),1)", "'0", NO_COMMENT),
@@ -58,10 +60,9 @@ fmul_generic::fmul_generic(GenObject *parent, const char *name, const char *comm
     nanA(this, "nanA", "1"),
     nanB(this, "nanB", "1"),
     overflow(this, "overflow", "1"),
-    illegal_op(this, "illegal_op", "1"),
     // process
     comb(this),
-    stagex(this, "stagex", "", NO_COMMENT)
+    stagex(this, "stagex", "hex_chunks", NO_COMMENT)
 {
     Operation::start(this);
 
@@ -73,12 +74,12 @@ TEXT();
         NEW(stagex, stagex.getName().c_str(), i);
             CONNECT(stagex, i, stagex.i_clk, i_clk);
             CONNECT(stagex, i, stagex.i_nrst, i_nrst);
-            CONNECT(stagex, i, stagex.i_a, mantA);
-            //CONNECT(stagex, i, stagex.i_m, ARRITEM_B(corei, *i, corei));
-            //CONNECT(stagex, i, stagex.i_carry, ARRITEM_B(coreo, *i, coreo));
-            //CONNECT(stagex, i, stagex.o_result, ARRITEM_B(wb_dport_i, *i, wb_dport_i));
-            //CONNECT(stagex, i, stagex.o_carry, ARRITEM_B(wb_dport_o, *i, wb_dport_o));
-            //CONNECT(stagex, i, stagex.o_shift, ARRITEM_B(vec_irq, *i, vec_irq));
+            CONNECT(stagex, i, stagex.i_a, ARRITEM_B(mantA, *i, mantA));
+            CONNECT(stagex, i, stagex.i_m, ARRITEM_B(wb_hex_i, *i, wb_hex_i));
+            CONNECT(stagex, i, stagex.i_carry, ARRITEM_B(wb_carry_i, *i, wb_carry_i));
+            CONNECT(stagex, i, stagex.o_result, ARRITEM_B(wb_hex_o, *i, wb_hex_o));
+            CONNECT(stagex, i, stagex.o_carry, ARRITEM_B(wb_carry_o, *i, wb_carry_o));
+            CONNECT(stagex, i, stagex.o_shift, ARRITEM_B(wb_hex_shift, *i, wb_hex_shift));
         ENDNEW();
     ENDFORGEN(new StringConst("istage_x"));
     ENDGENERATE("istagegen");
@@ -90,14 +91,13 @@ TEXT();
 void fmul_generic::proc_comb() {
     GenObject *i;
 
-    SETBIT(comb.vb_ena, 0, AND2(i_ena, INV(busy)));
+    SETBIT(comb.vb_ena, 0, i_ena);
     SETBIT(comb.vb_ena, 1, BIT(ena, 0));
     SETBITS(comb.vb_ena, 4, 2, CC2(BITS(ena, 3, 2), w_imul_rdy));
     SETVAL(ena, comb.vb_ena);
 
-TEXT();
+    TEXT();
     IF (NZ(i_ena));
-        SETONE(busy);
         SETZERO(overflow);
         SETVAL(a, i_a);
         SETVAL(b, i_b);
@@ -117,24 +117,34 @@ TEXT();
     SETVAL(comb.mantB, CCx(2, &OR_REDUCE(BITS(b, DEC(fbits), mantbits)),
                               &BITS(b, DEC(mantbits), CONST("0"))));
 
+    TEXT();
+    TEXT("");
+    SETARRITEM(mantA, CONST("0"), mantA, comb.mantA);
+    SETARRITEM(mantB, CONST("0"), mantB, comb.mantB);
+    SETARRITEM(wb_carry_i, CONST("0"), wb_carry_i, ALLZEROS());
+    i = &FOR_INC(DEC(hex_chunks));
+        SETARRITEM(wb_hex_i, *i, wb_hex_i, BITS(ARRITEM(mantB, *i, mantB), 3, 0));
+        SETARRITEM(wb_carry_i, INC(*i), wb_carry_i, ARRITEM(wb_carry_o, *i, wb_carry_o));
+        SETARRITEM(mantA, INC(*i), mantA, ARRITEM(mantA, *i, mantA));
+        SETARRITEM(mantB, INC(*i), mantB, CC2(CONST("0", 4), BITS(ARRITEM(mantB, *i, mantB), mantbits, CONST("4"))));
+    ENDFOR();
+    SETARRITEM(wb_hex_i, DEC(hex_chunks), wb_hex_i, BITS(ARRITEM(mantB, DEC(hex_chunks), mantB), 3, 0));
 
     TEXT();
     TEXT("expA - expB + EXPOENT_LEVEL 1.0");
     SETVAL(comb.expAB_t, ADD2(CC2(CONST("0", 1), BITS(a, DEC(fbits), mantbits)), CC2(CONST("0", 1), BITS(b, DEC(fbits), mantbits))));
     SETVAL(comb.expAB, SUB2(CC2(CONST("0", 1), comb.expAB_t), TO_LOGIC(explevel, ADD2(expbits,CONST("2")))));
 
-TEXT();
+    TEXT();
     IF (NZ(BIT(ena, 0)));
         SETVAL(expAB, comb.expAB);
         SETVAL(zeroA, comb.zeroA);
         SETVAL(zeroB, comb.zeroB);
-        SETVAL(mantA, comb.mantA);
-        SETVAL(mantB, comb.mantB);
     ENDIF();
 
 TEXT();
     SETVAL(w_imul_ena, BIT(ena, 1));
-
+/*
 TEXT();
     TEXT("imul53 module:");
     IF (NZ(BIT(wb_imul_result, 105)));
@@ -281,18 +291,15 @@ TEXT();
 TEXT();
     IF (NZ(BIT(ena, 3)));
         SETVAL(result, CC3(comb.v_res_sign, comb.vb_res_exp, comb.vb_res_mant));
-        SETVAL(illegal_op, OR2(comb.nanA, comb.nanB));
-        SETZERO(busy);
+        //SETVAL(illegal_op, OR2(comb.nanA, comb.nanB));
     ENDIF();
-
+*/
 TEXT();
     SYNC_RESET();
 
 TEXT();
     SETVAL(o_res, result);
-    SETVAL(o_illegal_op, illegal_op);
     SETVAL(o_overflow, overflow);
     SETVAL(o_valid, BIT(ena, 4));
-    SETVAL(o_busy, busy);
 }
 

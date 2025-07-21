@@ -25,12 +25,10 @@ fmul_istage::fmul_istage(GenObject *parent, const char *name, const char *commen
     i_m(this, "i_m", "4", "4-bits value to multiply 0..15 using adders"),
     i_carry(this, "i_carry", "ibits", "Carry value: A * M + Carry"),
     o_result(this, "o_result", "4", "resulting bits"),
-    o_carry(this, "o_carry", "ADD(ibits,1)", "resulting bits"),
+    o_carry(this, "o_carry", "ibits", "resulting bits"),
     o_shift(this, "o_shift", "3", "first non-zero bit of result: 4 when o_result=0"),
     // signals:
     // registers
-    sel(this, "sel", "ADD(ibits,4)", "'0", NO_COMMENT),
-    m_carry(this, "m_carry", "ibits", "'0", NO_COMMENT),
     res(this, "res", "ADD(ibits,4)", "'0", NO_COMMENT),
     shift(this, "shift", "3", "'0", NO_COMMENT),
     // process
@@ -62,60 +60,56 @@ void fmul_istage::proc_comb() {
     SETARRITEM(comb.vb_mux, 15, SUB2(ARRITEM(comb.vb_mux, 16), ARRITEM(comb.vb_mux, 1)));        // 16*a - 1*a
 
     TEXT();
-    SETVAL(m_carry, i_carry);
     SWITCH (i_m);
     CASE(CONST("1", 4));
-        SETVAL(sel, ARRITEM(comb.vb_mux, 1));
+        SETVAL(comb.vb_res, ADD2(ARRITEM(comb.vb_mux, 1), CC2(CONST("0", 4), i_carry)));
         ENDCASE();
     CASE(CONST("2", 4));
-        SETVAL(sel, ARRITEM(comb.vb_mux, 2));
+        SETVAL(comb.vb_res, ADD2(ARRITEM(comb.vb_mux, 2), CC2(CONST("0", 4), i_carry)));
         ENDCASE();
     CASE(CONST("3", 4));
-        SETVAL(sel, ARRITEM(comb.vb_mux, 3));
+        SETVAL(comb.vb_res, ADD2(ARRITEM(comb.vb_mux, 3), CC2(CONST("0", 4), i_carry)));
         ENDCASE();
     CASE(CONST("4", 4));
-        SETVAL(sel, ARRITEM(comb.vb_mux, 4));
+        SETVAL(comb.vb_res, ADD2(ARRITEM(comb.vb_mux, 4), CC2(CONST("0", 4), i_carry)));
         ENDCASE();
     CASE(CONST("5", 4));
-        SETVAL(sel, ARRITEM(comb.vb_mux, 5));
+        SETVAL(comb.vb_res, ADD2(ARRITEM(comb.vb_mux, 5), CC2(CONST("0", 4), i_carry)));
         ENDCASE();
     CASE(CONST("6", 4));
-        SETVAL(sel, ARRITEM(comb.vb_mux, 6));
+        SETVAL(comb.vb_res, ADD2(ARRITEM(comb.vb_mux, 6), CC2(CONST("0", 4), i_carry)));
         ENDCASE();
     CASE(CONST("7", 4));
-        SETVAL(sel, ARRITEM(comb.vb_mux, 7));
+        SETVAL(comb.vb_res, ADD2(ARRITEM(comb.vb_mux, 7), CC2(CONST("0", 4), i_carry)));
         ENDCASE();
     CASE(CONST("8", 4));
-        SETVAL(sel, ARRITEM(comb.vb_mux, 8));
+        SETVAL(comb.vb_res, ADD2(ARRITEM(comb.vb_mux, 8), CC2(CONST("0", 4), i_carry)));
         ENDCASE();
     CASE(CONST("9", 4));
-        SETVAL(sel, ARRITEM(comb.vb_mux, 9));
+        SETVAL(comb.vb_res, ADD2(ARRITEM(comb.vb_mux, 9), CC2(CONST("0", 4), i_carry)));
         ENDCASE();
     CASE(CONST("10", 4));
-        SETVAL(sel, ARRITEM(comb.vb_mux, 10));
+        SETVAL(comb.vb_res, ADD2(ARRITEM(comb.vb_mux, 10), CC2(CONST("0", 4), i_carry)));
         ENDCASE();
     CASE(CONST("11", 4));
-        SETVAL(sel, ARRITEM(comb.vb_mux, 11));
+        SETVAL(comb.vb_res, ADD2(ARRITEM(comb.vb_mux, 11), CC2(CONST("0", 4), i_carry)));
         ENDCASE();
     CASE(CONST("12", 4));
-        SETVAL(sel, ARRITEM(comb.vb_mux, 12));
+        SETVAL(comb.vb_res, ADD2(ARRITEM(comb.vb_mux, 12), CC2(CONST("0", 4), i_carry)));
         ENDCASE();
     CASE(CONST("13", 4));
-        SETVAL(sel, ARRITEM(comb.vb_mux, 13));
+        SETVAL(comb.vb_res, ADD2(ARRITEM(comb.vb_mux, 13), CC2(CONST("0", 4), i_carry)));
         ENDCASE();
     CASE(CONST("14", 4));
-        SETVAL(sel, ARRITEM(comb.vb_mux, 14));
+        SETVAL(comb.vb_res, ADD2(ARRITEM(comb.vb_mux, 14), CC2(CONST("0", 4), i_carry)));
     ENDCASE();
     CASE(CONST("15", 4));
-        SETVAL(sel, ARRITEM(comb.vb_mux, 15));
+        SETVAL(comb.vb_res, ADD2(ARRITEM(comb.vb_mux, 15), CC2(CONST("0", 4), i_carry)));
     ENDCASE();
     CASEDEF();
-        SETZERO(sel);
+        SETVAL(comb.vb_res, CC2(CONST("0", 4), i_carry));
     ENDCASE();
     ENDSWITCH();
-
-    TEXT();
-    SETVAL(comb.vb_res, ADD2(sel, CC2(CONST("0", 4), m_carry)));
 
     TEXT();
     SETVAL(res, comb.vb_res);
@@ -136,7 +130,7 @@ void fmul_istage::proc_comb() {
 
     TEXT();
     SETVAL(o_result, BITS(res, 3, 0));
-    SETVAL(o_carry, BITS(res, DEC(ibits), CONST("4")));
+    SETVAL(o_carry, BITS(res, ADD2(ibits, CONST("3")), CONST("4")));
     SETVAL(o_shift, shift);
 }
 

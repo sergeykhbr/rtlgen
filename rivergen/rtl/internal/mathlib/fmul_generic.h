@@ -100,10 +100,8 @@ class fmul_generic : public ModuleObject {
     InPort i_a;
     InPort i_b;
     OutPort o_res;
-    OutPort o_illegal_op;
     OutPort o_overflow;
     OutPort o_valid;
-    OutPort o_busy;
 
     ParamI32D mantbits;
     ParamI32D explevel;
@@ -115,16 +113,20 @@ class fmul_generic : public ModuleObject {
     Signal wb_imul_shift;
     Signal w_imul_rdy;
     Signal w_imul_overflow;
+    WireArray<Signal> wb_hex_i;
+    WireArray<Signal> wb_hex_o;
+    WireArray<Signal> wb_carry_i;
+    WireArray<Signal> wb_carry_o;
+    WireArray<Signal> wb_hex_shift;
 
-    RegSignal busy;
     RegSignal ena;
     RegSignal a;
     RegSignal b;
     RegSignal result;
     RegSignal zeroA;
     RegSignal zeroB;
-    RegSignal mantA;
-    RegSignal mantB;
+    RegArray  mantA;
+    RegArray  mantB;
     RegSignal expAB;
     RegSignal expAlign;
     RegSignal mantAlign;
@@ -133,7 +135,6 @@ class fmul_generic : public ModuleObject {
     RegSignal nanA;
     RegSignal nanB;
     RegSignal overflow;
-    RegSignal illegal_op;
 
     // process should be intialized last to make all signals available
     CombProcess comb;

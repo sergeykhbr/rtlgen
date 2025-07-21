@@ -53,8 +53,6 @@ class fmul_istage : public ModuleObject {
     OutPort o_shift;
 
  protected:
-    RegSignal m_carry;
-    RegSignal sel;
     RegSignal res;
     RegSignal shift;
 

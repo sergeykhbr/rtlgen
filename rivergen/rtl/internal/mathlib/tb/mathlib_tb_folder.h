@@ -18,16 +18,20 @@
 
 #include <api_rtlgen.h>
 #include "mathlib_tb.h"
+#include "fmul_tb.h"
 
 class mathlib_tb_folder : public FolderObject {
  public:
     mathlib_tb_folder(GenObject *parent) :
         FolderObject(parent, "tb"),
+        fmul_tb_file_(this),
         mathlib_tb_file_(this) {
     }
+    virtual bool isTestBench() override { return true; }
 
  protected:
     // subfolders:
     // files
+    fmul_tb_file fmul_tb_file_;
     mathlib_tb_file mathlib_tb_file_;
 };

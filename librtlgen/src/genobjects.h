@@ -119,6 +119,7 @@ class GenObject {
     virtual bool isGenVar() { return false; }           // Variable is used generate cycle: I32D analog for rtl
     virtual bool isTop() { return false; }
     virtual bool isMemory() { return false; }
+    virtual bool isTestBench() { return false; }        // Test-benches should be generated after all modules are available
     virtual int  getMemoryAddrWidth() { return 0; }
     virtual int  getMemoryDataWidth() { return 0; }
     virtual bool isRom() { return false; }
