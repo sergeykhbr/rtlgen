@@ -37,7 +37,6 @@ class fmul_generic : public ModuleObject {
             zeroA(this, "zeroA", "1"),
             zeroB(this, "zeroB", "1"),
             expAB_t(this, "expAB_t", "ADD(expbits,1)", "'0", NO_COMMENT),
-            expAB(this, "expAB", "ADD(expbits,2)", "'0", NO_COMMENT),
             mantAlign(this, "mantAlign", "105", "'0", NO_COMMENT),
             expAlign_t(this, "expAlign_t", "ADD(expbits,2)", "'0", NO_COMMENT),
             expAlign(this, "expAlign", "ADD(expbits,2)", "'0", NO_COMMENT),
@@ -67,7 +66,6 @@ class fmul_generic : public ModuleObject {
         Logic zeroA;
         Logic zeroB;
         Logic expAB_t;
-        Logic expAB;
         Logic mantAlign;
         Logic expAlign_t;
         Logic expAlign;
@@ -108,7 +106,6 @@ class fmul_generic : public ModuleObject {
     ParamI32D hex_chunks;
 
  protected:
-    Signal w_imul_ena;
     Signal wb_imul_result;
     Signal wb_imul_shift;
     Signal w_imul_rdy;
@@ -127,7 +124,7 @@ class fmul_generic : public ModuleObject {
     RegSignal zeroB;
     RegArray  mantA;
     RegArray  mantB;
-    RegSignal expAB;
+    WireArray<RegSignal> expAB;
     RegSignal expAlign;
     RegSignal mantAlign;
     RegSignal postShift;

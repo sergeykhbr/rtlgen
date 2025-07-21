@@ -109,6 +109,10 @@ GenObject &CONST(const char *val, const char *width);
  */
 GenObject &CONST(const char *val, int width);
 
+/** Test-bench only. Generate float32 constant as uint32
+ */
+GenObject &CONST_FP32(float v);
+
 /** explicit conversion to logic
     sysc: static_cast<sc_uint<w>>(a)
     sv:   a

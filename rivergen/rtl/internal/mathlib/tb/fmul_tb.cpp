@@ -30,6 +30,7 @@ fmul_tb::fmul_tb(GenObject *parent, const char *name) :
     w_overflow(this, "w_overflow", "1", RSTVAL_ZERO, NO_COMMENT),
     // regs
     clk_cnt(this, &clk, CLK_POSEDGE, &nrst, ACTIVE_LOW,  "clk_cnt", "32", "'0", NO_COMMENT),
+    compare_a(this, &clk, CLK_POSEDGE, &nrst, ACTIVE_LOW,  "compare_a", "32", "'0", NO_COMMENT),
     // submodules:
     pll0(this, "pll0", NO_COMMENT),
     mul_fp32(this, "mul_fp32", NO_COMMENT),
@@ -77,8 +78,9 @@ void fmul_tb::proc_comb() {
 
     IF (EQ(clk_cnt, CONST("10")));
         SETONE(w_ena);
-        SETVAL(wb_a, CONST("0x01000001", 32));
-        SETVAL(wb_b, CONST("0x7F000321", 32));
+        SETVAL(wb_a, CONST_FP32(3.1f));
+        SETVAL(wb_b, CONST_FP32(0.006f));
+        SETVAL(compare_a, CONST_FP32(3.1f * 0.006f));
     ENDIF();
 }
 

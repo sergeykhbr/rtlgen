@@ -33,7 +33,6 @@ fmul_generic::fmul_generic(GenObject *parent, const char *name, const char *comm
     explevel(this, "explevel", "SUB(POW2(1,SUB(expbits,1)),1)", "Level 1 for exponent: 1023 (double); 127 (fp32)"),
     hex_chunks(this, "hex_chunks", "DIV(ADD(mantbits,3),4)", "Number of hex multipliers"),
     // signals
-    w_imul_ena(this, "w_imul_ena", "1"),
     wb_imul_result(this, "wb_imul_result", "106"),
     wb_imul_shift(this, "wb_imul_shift", "7"),
     w_imul_rdy(this, "w_imul_rdy", "1"),
@@ -52,7 +51,7 @@ fmul_generic::fmul_generic(GenObject *parent, const char *name, const char *comm
     zeroB(this, "zeroB", "1"),
     mantA(this, &i_clk, CLK_POSEDGE, &i_nrst, ACTIVE_LOW, "mantA", "ADD(mantbits,1)", "hex_chunks", "'0", NO_COMMENT),
     mantB(this, &i_clk, CLK_POSEDGE, &i_nrst, ACTIVE_LOW, "mantB", "ADD(mantbits,1)", "hex_chunks", "'0", NO_COMMENT),
-    expAB(this, "expAB", "ADD(expbits,2)", "'0", NO_COMMENT),
+    expAB(this, &i_clk, CLK_POSEDGE, &i_nrst, ACTIVE_LOW, "expAB", "ADD(expbits,2)", "hex_chunks", "'0", NO_COMMENT),
     expAlign(this, "expAlign", "ADD(expbits,1)", "'0", NO_COMMENT),
     mantAlign(this, "mantAlign", "SUB(MUL(2,mantbits),1)", "'0", NO_COMMENT),
     postShift(this, "postShift", "ADD(expbits,1)", "'0", NO_COMMENT),
@@ -131,19 +130,19 @@ void fmul_generic::proc_comb() {
     SETARRITEM(wb_hex_i, DEC(hex_chunks), wb_hex_i, BITS(ARRITEM(mantB, DEC(hex_chunks), mantB), 3, 0));
 
     TEXT();
-    TEXT("expA - expB + EXPOENT_LEVEL 1.0");
+    TEXT("expA - expB + EXPONENT_ZERO_LEVEL");
     SETVAL(comb.expAB_t, ADD2(CC2(CONST("0", 1), BITS(a, DEC(fbits), mantbits)), CC2(CONST("0", 1), BITS(b, DEC(fbits), mantbits))));
-    SETVAL(comb.expAB, SUB2(CC2(CONST("0", 1), comb.expAB_t), TO_LOGIC(explevel, ADD2(expbits,CONST("2")))));
+    SETARRITEM(expAB, CONST("0"), expAB, SUB2(CC2(CONST("0", 1), comb.expAB_t), TO_LOGIC(explevel, ADD2(expbits,CONST("2")))));
+    i = &FOR_INC(DEC(hex_chunks));
+        SETARRITEM(expAB, INC(*i), expAB, ARRITEM(expAB, *i, expAB));
+    ENDFOR();
 
     TEXT();
     IF (NZ(BIT(ena, 0)));
-        SETVAL(expAB, comb.expAB);
         SETVAL(zeroA, comb.zeroA);
         SETVAL(zeroB, comb.zeroB);
     ENDIF();
 
-TEXT();
-    SETVAL(w_imul_ena, BIT(ena, 1));
 /*
 TEXT();
     TEXT("imul53 module:");

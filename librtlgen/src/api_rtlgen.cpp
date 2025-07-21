@@ -105,6 +105,12 @@ GenObject &CONST(const char *val, int width) {
     return *p;
 }
 
+// test bench floating point value:
+GenObject &CONST_FP32(float v) {
+    uint32_t *t = reinterpret_cast<uint32_t *>(&v);
+    return *new HexConst(static_cast<uint64_t>(*t));
+}
+
 // TO_LOGIC
 Operation &TO_LOGIC(GenObject &a, GenObject &w) {
     Operation *p = new ToLogicOperation(&a, &w, NO_COMMENT);

@@ -43,16 +43,19 @@ class fmul_istage : public ModuleObject {
 
  public:
     TmplParamI32D ibits;
+    TmplParamI32D zbits;
     InPort i_clk;
     InPort i_nrst;
     InPort i_a;
     InPort i_m;
     InPort i_carry;
+    InPort i_zres;
     OutPort o_result;
     OutPort o_carry;
     OutPort o_shift;
 
  protected:
+    RegSignal zres;
     RegSignal res;
     RegSignal shift;
 

@@ -18,17 +18,20 @@
 
 fmul_istage::fmul_istage(GenObject *parent, const char *name, const char *comment) :
     ModuleObject(parent, "fmul_istage", name, comment),
-    ibits(this, "ibits", "4", "Input signal"),
+    ibits(this, "ibits", "4", "Input signal bitwise"),
+    zbits(this, "zbits", "1", "Bitwise value on a previous step, delay and concatate"),
     i_clk(this, "i_clk", "1", "CPU clock"),
     i_nrst(this, "i_nrst", "1", "Reset: active LOW"),
     i_a(this, "i_a", "ibits", "integer value"),
     i_m(this, "i_m", "4", "4-bits value to multiply 0..15 using adders"),
     i_carry(this, "i_carry", "ibits", "Carry value: A * M + Carry"),
-    o_result(this, "o_result", "4", "resulting bits"),
-    o_carry(this, "o_carry", "ibits", "resulting bits"),
+    i_zres(this, "i_zres", "zbits", "value to delay"),
+    o_result(this, "o_result", "ibits", "resulting bits concatated with z-value"),
+    o_carry(this, "o_carry", "ibits", "resulting carry bits"),
     o_shift(this, "o_shift", "3", "first non-zero bit of result: 4 when o_result=0"),
     // signals:
     // registers
+    zres(this, "zres", "zbits", "'0", NO_COMMENT),
     res(this, "res", "ADD(ibits,4)", "'0", NO_COMMENT),
     shift(this, "shift", "3", "'0", NO_COMMENT),
     // process
@@ -112,15 +115,16 @@ void fmul_istage::proc_comb() {
     ENDSWITCH();
 
     TEXT();
+    SETVAL(res, i_zres);
     SETVAL(res, comb.vb_res);
     IF (NZ(BIT(comb.vb_res, 0)));
-        SETVAL(shift, CONST("0", 3));
-    ELSIF(NZ(BIT(comb.vb_res, 1)));
-        SETVAL(shift, CONST("1", 3));
-    ELSIF(NZ(BIT(comb.vb_res, 2)));
-        SETVAL(shift, CONST("2", 3));
-    ELSIF(NZ(BIT(comb.vb_res, 3)));
         SETVAL(shift, CONST("3", 3));
+    ELSIF(NZ(BIT(comb.vb_res, 1)));
+        SETVAL(shift, CONST("2", 3));
+    ELSIF(NZ(BIT(comb.vb_res, 2)));
+        SETVAL(shift, CONST("1", 3));
+    ELSIF(NZ(BIT(comb.vb_res, 3)));
+        SETVAL(shift, CONST("0", 3));
     ELSE();
         SETVAL(shift, CONST("4", 3));
     ENDIF();
