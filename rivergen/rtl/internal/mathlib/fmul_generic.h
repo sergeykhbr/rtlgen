@@ -30,9 +30,13 @@ class fmul_generic : public ModuleObject {
         CombProcess(GenObject *parent) :
             CombinationalProcess(parent, "comb"),
             vb_ena(this, "vb_ena", "5", "'0", NO_COMMENT),
+            vb_mant_last_inv(this, "vb_mant_last_inv", "mantmaxbits", "'0", NO_COMMENT),
+            vb_mant_last(this, "vb_mant_last", "mantmaxbits", "'0", NO_COMMENT),
             vb_lzd(this, "vb_lzd", "MUL(8,lzd_chunks)", "'0", NO_COMMENT),
-            vb_lzd_mask(this, "vb_lzd_mask", "MUL(8,lzd_chunks)", "'0", "chunk aligned 'mant_mask' value"),
+            vb_lzd_mask(this, "vb_lzd_mask", "MUL(8,lzd_chunks)", "'1", "chunk aligned 'mant_mask' value"),
             vb_lzd_masked(this, "vb_lzd_masked", "MUL(8,lzd_chunks)", "'0", NO_COMMENT),
+            vb_lzd_last(this, "vb_lzd_last", "MUL(8,lzd_chunks)", "'0", NO_COMMENT),
+            vb_exp_clear(this, "exp_clear", "lzd_chunks", "'0", NO_COMMENT),
             signA(this, "signA", "1", "0", NO_COMMENT),
             signB(this, "signB", "1", "0", NO_COMMENT),
             mantA(this, "mantA", "53", "'0", NO_COMMENT),
@@ -62,9 +66,13 @@ class fmul_generic : public ModuleObject {
 
      public:
         Logic vb_ena;
+        Logic vb_mant_last_inv;
+        Logic vb_mant_last;
         Logic vb_lzd;
         Logic vb_lzd_mask;
         Logic vb_lzd_masked;
+        Logic vb_lzd_last;
+        Logic vb_exp_clear;
         Logic1 signA;
         Logic1 signB;
         Logic mantA;
@@ -123,10 +131,8 @@ class fmul_generic : public ModuleObject {
     WireArray<Signal> wb_hex_i;
     WireArray<Signal> wb_carry_i;
     WireArray<Signal> wb_zres_i;
-    WireArray<Signal> wb_zshift_i;
     WireArray<Signal> wb_mant_lsb;
     WireArray<Signal> wb_mant_msb;
-    WireArray<Signal> wb_hex_shift;
 
     RegSignal ena;
     RegSignal a;
@@ -140,15 +146,14 @@ class fmul_generic : public ModuleObject {
     WireArray<RegSignal> lzb_mant_shift;
     WireArray<RegSignal> lzb_mant;
     RegSignal mant_mask;
+    RegSignal mant_last;
     RegSignal mant_aligned_idx;
     RegSignal mant_aligned;
     RegSignal exp_clear;
-    RegSignal expAlign;
-    RegSignal mantAlign;
-    RegSignal postShift;
-    RegSignal mantPostScale;
-    RegSignal nanA;
-    RegSignal nanB;
+    RegSignal exp_res;
+    RegSignal mant_res;
+    RegSignal exp_res_rnd;
+    RegSignal mant_res_rnd;
     RegSignal overflow;
     RegSignal dbg_lzd;
 

@@ -30,15 +30,13 @@ class fmul_istage : public ModuleObject {
             CombinationalProcess(parent, "comb"),
             vb_mux(this, "vb_mux", "ADD(ibits,4)", "17", NO_COMMENT),
             vb_res(this, "vb_res", "ADD(ibits,4)", "'0", NO_COMMENT),
-            vb_res_idx(this, "vb_res_idx", "ibits", "'0", NO_COMMENT),
-            vb_tzd(this, "vb_tzd", "shiftbits", "'0", "Trailing Zero Detector") {
+            vb_res_idx(this, "vb_res_idx", "ibits", "'0", NO_COMMENT) {
         }
 
      public:
         WireArray<Logic> vb_mux;
         Logic vb_res;
         Logic vb_res_idx;
-        Logic vb_tzd;
     };
 
     void proc_comb();
@@ -47,22 +45,18 @@ class fmul_istage : public ModuleObject {
     DefParamI32D idx;
     TmplParamI32D ibits;
     TmplParamI32D mbits;
-    TmplParamI32D shiftbits;
     InPort i_clk;
     InPort i_nrst;
     InPort i_a;
     InPort i_m;
     InPort i_carry;
     InPort i_zres;
-    InPort i_zshift;
     OutPort o_result;
     OutPort o_carry;
-    OutPort o_shift;
 
  protected:
     RegSignal zres;
     RegSignal res;
-    RegSignal shift;
 
     CombProcess comb;
 };

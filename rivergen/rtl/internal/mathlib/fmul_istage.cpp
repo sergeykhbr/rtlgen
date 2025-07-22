@@ -21,22 +21,18 @@ fmul_istage::fmul_istage(GenObject *parent, const char *name, const char *commen
     idx(this, "idx", "0", "stage index"),
     ibits(this, "ibits", "22", "Input signal bitwise"),
     mbits(this, "mbits", "4", "Operator m bitwise: possible values 4 (and potentially 3)"),
-    shiftbits(this, "shiftbits", "6", "must be $clog2(2*ibits)"),
     i_clk(this, "i_clk", "1", "CPU clock"),
     i_nrst(this, "i_nrst", "1", "Reset: active LOW"),
     i_a(this, "i_a", "ibits", "integer value"),
     i_m(this, "i_m", "mbits", "4-bits value to multiply 0..15 using adders"),
     i_carry(this, "i_carry", "ibits", "Carry value: A * M + Carry"),
     i_zres(this, "i_zres", "ibits", "value to delay. Only (4*idx) of ibits will be delayed"),
-    i_zshift(this, "i_zshift", "shiftbits", "shift of previous stage"),
     o_result(this, "o_result", "ibits", "resulting bits concatated with z-value"),
     o_carry(this, "o_carry", "ibits", "resulting carry bits"),
-    o_shift(this, "o_shift", "shiftbits", "first non-zero bit of result: 4 when o_result=0"),
     // signals:
     // registers
     zres(this, "zres", "ADD(MUL(4,idx),1)", "'0", "increment to avoid 0-bitwise exception for idx=0"),
     res(this, "res", "ADD(ibits,4)", "'0", NO_COMMENT),
-    shift(this, "shift", "shiftbits", "'0", NO_COMMENT),
     // process
     comb(this)
 {
@@ -119,19 +115,6 @@ void fmul_istage::proc_comb() {
 
     TEXT();
     SETVAL(res, comb.vb_res);
-    SETBITS(comb.vb_tzd, DEC(shiftbits), CONST("2"), TO_LOGIC(idx, SUB2(shiftbits,CONST("2"))));
-    IF (NZ(BIT(comb.vb_res, 3)));
-        SETBITS(comb.vb_tzd, 1, 0, CONST("3", 3));
-    ELSIF(NZ(BIT(comb.vb_res, 2)));
-        SETBITS(comb.vb_tzd, 1, 0, CONST("2", 3));
-    ELSIF(NZ(BIT(comb.vb_res, 1)));
-        SETBITS(comb.vb_tzd, 1, 0, CONST("1", 3));
-    ELSIF(NZ(BIT(comb.vb_res, 0)));
-        SETBITS(comb.vb_tzd, 1, 0, CONST("0", 3));
-    ELSE();
-        SETVAL(comb.vb_tzd, i_zshift);
-    ENDIF();
-    SETVAL(shift, comb.vb_tzd);
 
     TEXT();
     IFGEN (NZ(idx), new StringConst("n0"));
@@ -147,6 +130,5 @@ void fmul_istage::proc_comb() {
     TEXT();
     SETVAL(o_result, comb.vb_res_idx);
     SETVAL(o_carry, BITS(res, ADD2(ibits, CONST("3")), CONST("4")));
-    SETVAL(o_shift, shift);
 }
 

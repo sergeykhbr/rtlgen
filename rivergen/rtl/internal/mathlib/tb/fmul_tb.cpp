@@ -75,12 +75,33 @@ fmul_tb::fmul_tb(GenObject *parent, const char *name) :
 void fmul_tb::proc_comb() {
     SETVAL(clk_cnt, INC(clk_cnt));
     SETZERO(w_ena);
+    SETZERO(wb_a);
+    SETZERO(wb_b);
 
     IF (EQ(clk_cnt, CONST("10")));
         SETONE(w_ena);
         SETVAL(wb_a, CONST_FP32(3.1f));
         SETVAL(wb_b, CONST_FP32(0.006f));
         SETVAL(compare_a, CONST_FP32(3.1f * 0.006f));
+    ELSIF (EQ(clk_cnt, CONST("11")));
+        unsigned ia = 0x000000ff;
+        unsigned ib = 0x00000020;
+        float fa = *reinterpret_cast<float *>(&ia);
+        float fb = *reinterpret_cast<float *>(&ib);
+        SETONE(w_ena);
+        SETVAL(wb_a, CONST_FP32(1.0f));
+        SETVAL(wb_b, CONST_FP32(fb));
+        SETVAL(compare_a, CONST_FP32(fa * fb));
+    ELSIF (EQ(clk_cnt, CONST("12")));
+        ia = 0x3fffffff;
+        ib = 0x7ffffffe;
+        fa = *reinterpret_cast<float *>(&ia);
+        fb = *reinterpret_cast<float *>(&ib);
+        SETONE(w_ena);
+        SETVAL(wb_a, CONST_FP32(fa));
+        SETVAL(wb_b, CONST_FP32(fb));
+        SETVAL(compare_a, CONST_FP32(fa * fb));
+    ELSE();
     ENDIF();
 }
 

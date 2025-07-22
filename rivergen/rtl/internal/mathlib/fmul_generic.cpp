@@ -30,7 +30,7 @@ fmul_generic::fmul_generic(GenObject *parent, const char *name, const char *comm
     o_valid(this, "o_valid", "1", "Result is valid"),
     // parameters
     mantbits(this, "mantbits", "23", "Mantissa bitwidth: FP64 = 52, FP32 = 23, FP16 = 10, BF16 = 7"),
-    mantmaxbits(this, "mantbits", "MUL(2,ADD(mantbits,1))", "Mantissa maximum bitwidth before shifting"),
+    mantmaxbits(this, "mantmaxbits", "MUL(2,ADD(mantbits,1))", "Mantissa maximum bitwidth before shifting"),
     shiftbits(this, "shiftbits", "6", "Mantissa shift value: must be $clog2(mantmaxbits)"),
     explevel(this, "explevel", "SUB(POW2(1,SUB(expbits,1)),1)", "Level 1 for exponent: 1023 (double); 127 (fp32)"),
     hex_chunks(this, "hex_chunks", "DIV(ADD(mantbits,3),4)", "Number of hex multipliers"),
@@ -44,12 +44,10 @@ fmul_generic::fmul_generic(GenObject *parent, const char *name, const char *comm
     wb_hex_i(this, "wb_hex_i", "4", "hex_chunks", NO_COMMENT),
     wb_carry_i(this, "wb_carry_i", "ADD(mantbits,1)", "hex_chunks", NO_COMMENT),
     wb_zres_i(this, "wb_zres_i", "ADD(mantbits,1)", "hex_chunks", NO_COMMENT),
-    wb_zshift_i(this, "wb_zshift_i", "shiftbits", "hex_chunks", NO_COMMENT),
     wb_mant_lsb(this, "wb_mant_lsb", "ADD(mantbits,1)", "hex_chunks", NO_COMMENT),
     wb_mant_msb(this, "wb_mant_msb", "ADD(mantbits,1)", "hex_chunks", NO_COMMENT),
-    wb_hex_shift(this, "wb_hex_shift", "shiftbits", "hex_chunks", NO_COMMENT),
     // registers
-    ena(this, "ena", "5", "'0", NO_COMMENT),
+    ena(this, "ena", "ADD(hex_chunks,7)", "'0", NO_COMMENT),
     a(this, "a", "fbits", "'0", NO_COMMENT),
     b(this, "b", "fbits", "'0", NO_COMMENT),
     result(this, "result", "fbits", "'0", NO_COMMENT),
@@ -57,19 +55,18 @@ fmul_generic::fmul_generic(GenObject *parent, const char *name, const char *comm
     zeroB(this, "zeroB", "1"),
     mantA(this, &i_clk, CLK_POSEDGE, &i_nrst, ACTIVE_LOW, "mantA", "ADD(mantbits,1)", "hex_chunks", "'0", NO_COMMENT),
     mantB(this, &i_clk, CLK_POSEDGE, &i_nrst, ACTIVE_LOW, "mantB", "ADD(mantbits,1)", "hex_chunks", "'0", NO_COMMENT),
-    expAB(this, &i_clk, CLK_POSEDGE, &i_nrst, ACTIVE_LOW, "expAB", "ADD(expbits,2)", "hex_chunks", "'0", NO_COMMENT),
+    expAB(this, &i_clk, CLK_POSEDGE, &i_nrst, ACTIVE_LOW, "expAB", "ADD(expbits,2)", "ADD(hex_chunks,3)", "'0", NO_COMMENT),
     lzb_mant_shift(this, &i_clk, CLK_POSEDGE, &i_nrst, ACTIVE_LOW, "lzb_mant_shift", "shiftbits", "lzd_chunks", "'0", NO_COMMENT),
     lzb_mant(this, &i_clk, CLK_POSEDGE, &i_nrst, ACTIVE_LOW, "lzb_mant", "lzd_bits", "lzd_chunks", "'0", NO_COMMENT),
     mant_mask(this, "mant_mask", "mantmaxbits", "'0", "Only masked bits could be scaled, we limited by exponent value that cannot be negative"),
+    mant_last(this, "mant_last", "mantmaxbits", "'0", "The last masked bit as marker to force scale and clear exponent"),
     mant_aligned_idx(this, "mant_aligned_idx", "shiftbits", "'0", NO_COMMENT),
     mant_aligned(this, "mant_aligned", "mantmaxbits", "'0", NO_COMMENT),
     exp_clear(this, "exp_clear", "lzd_chunks", "'0", NO_COMMENT),
-    expAlign(this, "expAlign", "ADD(expbits,1)", "'0", NO_COMMENT),
-    mantAlign(this, "mantAlign", "SUB(MUL(2,mantbits),1)", "'0", NO_COMMENT),
-    postShift(this, "postShift", "ADD(expbits,1)", "'0", NO_COMMENT),
-    mantPostScale(this, "mantPostScale", "SUB(MUL(2,mantbits),1)", "'0", NO_COMMENT),
-    nanA(this, "nanA", "1"),
-    nanB(this, "nanB", "1"),
+    exp_res(this, "exp_res", "ADD(expbits,2)", "'0", NO_COMMENT),
+    mant_res(this, "mant_res", "mantbits", "'0", NO_COMMENT),
+    exp_res_rnd(this, "exp_res_rnd", "expbits", "'0", NO_COMMENT),
+    mant_res_rnd(this, "mant_res_rnd", "mantbits", "'0", NO_COMMENT),
     overflow(this, "overflow", "1"),
     dbg_lzd(this, "dbg_lzd", "lzd_bits"),
     // process
@@ -85,18 +82,15 @@ TEXT();
         stagex.idx.setObjValue(i);
         stagex.ibits.setObjValue(&INC(mantbits));
         stagex.mbits.setObjValue(&CONST("4"));
-        stagex.shiftbits.setObjValue(&shiftbits);
         NEW(stagex, stagex.getName().c_str(), i);
             CONNECT(stagex, i, stagex.i_clk, i_clk);
             CONNECT(stagex, i, stagex.i_nrst, i_nrst);
             CONNECT(stagex, i, stagex.i_a, ARRITEM_B(mantA, *i, mantA));
             CONNECT(stagex, i, stagex.i_m, ARRITEM_B(wb_hex_i, *i, wb_hex_i));
             CONNECT(stagex, i, stagex.i_zres, ARRITEM_B(wb_zres_i, *i, wb_zres_i));
-            CONNECT(stagex, i, stagex.i_zshift, ARRITEM_B(wb_zshift_i, *i, wb_zshift_i));
             CONNECT(stagex, i, stagex.i_carry, ARRITEM_B(wb_carry_i, *i, wb_carry_i));
             CONNECT(stagex, i, stagex.o_result, ARRITEM_B(wb_mant_lsb, *i, wb_mant_lsb));
             CONNECT(stagex, i, stagex.o_carry, ARRITEM_B(wb_mant_msb, *i, wb_mant_msb));
-            CONNECT(stagex, i, stagex.o_shift, ARRITEM_B(wb_hex_shift, *i, wb_hex_shift));
         ENDNEW();
     ENDFORGEN(new StringConst("istage_x"));
     ENDGENERATE("istagegen");
@@ -109,16 +103,11 @@ void fmul_generic::proc_comb() {
     GenObject *i;
 
     SETBIT(comb.vb_ena, 0, i_ena);
-    SETBIT(comb.vb_ena, 1, BIT(ena, 0));
-    SETBITS(comb.vb_ena, 4, 2, CC2(BITS(ena, 3, 2), w_imul_rdy));
-    SETVAL(ena, comb.vb_ena);
+    SETVAL(ena, CC2(BITS(ena, ADD2(hex_chunks, CONST("5")), CONST("0")), i_ena));
 
     TEXT();
-    IF (NZ(i_ena));
-        SETZERO(overflow);
-        SETVAL(a, i_a);
-        SETVAL(b, i_b);
-    ENDIF();
+    SETVAL(a, i_a);
+    SETVAL(b, i_b);
 
     TEXT();
     SETVAL(comb.signA, BIT(a, DEC(fbits)));
@@ -140,12 +129,10 @@ void fmul_generic::proc_comb() {
     SETARRITEM(mantB, CONST("0"), mantB, comb.mantB);
     SETARRITEM(wb_carry_i, CONST("0"), wb_carry_i, ALLZEROS());
     SETARRITEM(wb_zres_i, CONST("0"), wb_zres_i, ALLZEROS());
-    SETARRITEM(wb_zshift_i, CONST("0"), wb_zshift_i, ALLZEROS());
     i = &FOR_INC(DEC(hex_chunks));
         SETARRITEM(wb_hex_i, *i, wb_hex_i, BITS(ARRITEM(mantB, *i, mantB), 3, 0));
         SETARRITEM(wb_carry_i, INC(*i), wb_carry_i, ARRITEM(wb_mant_msb, *i, wb_mant_msb));
         SETARRITEM(wb_zres_i, INC(*i), wb_zres_i, ARRITEM(wb_mant_lsb, *i, wb_mant_lsb));
-        SETARRITEM(wb_zshift_i, INC(*i), wb_zshift_i, ARRITEM(wb_zshift_i, *i, wb_zshift_i));
         SETARRITEM(mantA, INC(*i), mantA, ARRITEM(mantA, *i, mantA));
         SETARRITEM(mantB, INC(*i), mantB, CC2(CONST("0", 4), BITS(ARRITEM(mantB, *i, mantB), mantbits, CONST("4"))));
     ENDFOR();
@@ -155,7 +142,7 @@ void fmul_generic::proc_comb() {
     TEXT("expA - expB + EXPONENT_ZERO_LEVEL");
     SETVAL(comb.expAB_t, ADD2(CC2(CONST("0", 1), BITS(a, DEC(fbits), mantbits)), CC2(CONST("0", 1), BITS(b, DEC(fbits), mantbits))));
     SETARRITEM(expAB, CONST("0"), expAB, SUB2(CC2(CONST("0", 1), comb.expAB_t), TO_LOGIC(explevel, ADD2(expbits,CONST("2")))));
-    i = &FOR_INC(DEC(hex_chunks));
+    i = &FOR_INC(ADD2(hex_chunks, CONST("2")));
         SETARRITEM(expAB, INC(*i), expAB, ARRITEM(expAB, *i, expAB));
     ENDFOR();
 
@@ -163,9 +150,15 @@ void fmul_generic::proc_comb() {
     TEXT("Cannot scale mantissa's value more than exponent value");
     IF (GE(ARRITEM(expAB, DEC(hex_chunks), expAB), DEC(mantmaxbits)));
         SETVAL(mant_mask, ALLONES());
+        SETZERO(comb.vb_mant_last);
     ELSE();
         SETVAL(mant_mask, INV_L(RSH(ALLONES(), ARRITEM(expAB, DEC(hex_chunks), expAB))));
+        SETBIT(comb.vb_mant_last_inv, TO_INT(ARRITEM(expAB, DEC(hex_chunks), expAB)), CONST("1", 1));
     ENDIF();
+    i = &FOR_INC(mantmaxbits);
+        SETBIT(comb.vb_mant_last, DEC(SUB2(mantmaxbits, *i)), BIT(comb.vb_mant_last_inv, *i));
+    ENDFOR();
+    SETVAL(mant_last, comb.vb_mant_last);
 
     TEXT();
     TEXT("Detect Leading bit of Mantissa MSB.");
@@ -177,50 +170,59 @@ void fmul_generic::proc_comb() {
             CC2(ARRITEM(wb_mant_msb, DEC(hex_chunks), wb_mant_msb), ARRITEM(wb_mant_lsb, DEC(hex_chunks), wb_mant_lsb)));
     SETBITS(comb.vb_lzd_mask, DEC(lzd_bits), SUB2(lzd_bits, mantmaxbits), mant_mask);
     SETVAL(comb.vb_lzd_masked, AND2_L(comb.vb_lzd, comb.vb_lzd_mask));
-    SETZERO(exp_clear);
-    SETVAL(dbg_lzd, comb.vb_lzd, "REMOVE ME");
+    SETBITS(comb.vb_lzd_last, DEC(lzd_bits), SUB2(lzd_bits, mantmaxbits), mant_last);
+    SETVAL(dbg_lzd, comb.vb_lzd_masked, "REMOVE ME");
     i = &FOR_INC(lzd_chunks);
-        IF (NZ(BIT(comb.vb_lzd, ADD2(MUL2(CONST("8"),*i), CONST("7")))));
+        IF (ORx(2, &NZ(BIT(comb.vb_lzd_masked, ADD2(MUL2(CONST("8"),*i), CONST("7")))),
+                   &NZ(BIT(comb.vb_lzd_last, ADD2(MUL2(CONST("8"),*i), CONST("7"))))));
             TEXT("No shift:");
-            SETARRITEM(lzb_mant_shift, *i, lzb_mant_shift, TO_LOGIC(ADD2(MUL2(CONST("8"),*i), CONST("7")), shiftbits));
+            SETARRITEM(lzb_mant_shift, *i, lzb_mant_shift, TO_LOGIC(SUB2(mantmaxbits, ADD2(MUL2(CONST("8"),*i), CONST("8"))), shiftbits));
             IF (NE(*i, DEC(lzd_chunks)));
                 SETARRITEM(lzb_mant, *i, lzb_mant, LSH(comb.vb_lzd, MUL2(CONST("8"), SUB2(DEC(lzd_chunks), *i))));
             ELSE();
                 SETARRITEM(lzb_mant, *i, lzb_mant, comb.vb_lzd);
             ENDIF();
-        ELSIF (NZ(BIT(comb.vb_lzd, ADD2(MUL2(CONST("8"),*i), CONST("6")))));
-            SETARRITEM(lzb_mant_shift, *i, lzb_mant_shift, TO_LOGIC(ADD2(MUL2(CONST("8"),*i), CONST("6")), shiftbits));
+        ELSIF (ORx(2, &NZ(BIT(comb.vb_lzd_masked, ADD2(MUL2(CONST("8"),*i), CONST("6")))),
+                      &NZ(BIT(comb.vb_lzd_last, ADD2(MUL2(CONST("8"),*i), CONST("6"))))));
+            SETARRITEM(lzb_mant_shift, *i, lzb_mant_shift, TO_LOGIC(SUB2(mantmaxbits, ADD2(MUL2(CONST("8"),*i), CONST("7"))), shiftbits));
             SETARRITEM(lzb_mant, *i, lzb_mant, LSH(comb.vb_lzd, ADD2(MUL2(CONST("8"), SUB2(DEC(lzd_chunks), *i)), CONST("1"))));
-            SETBIT(exp_clear, *i, INV(BIT(comb.vb_lzd, ADD2(MUL2(CONST("8"),*i), CONST("6")))));
-        ELSIF (NZ(BIT(comb.vb_lzd, ADD2(MUL2(CONST("8"),*i), CONST("5")))));
-            SETARRITEM(lzb_mant_shift, *i, lzb_mant_shift, TO_LOGIC(ADD2(MUL2(CONST("8"),*i), CONST("5")), shiftbits));
+            SETBIT(comb.vb_exp_clear, *i, INV(BIT(comb.vb_lzd, ADD2(MUL2(CONST("8"),*i), CONST("6")))));
+        ELSIF (ORx(2, &NZ(BIT(comb.vb_lzd_masked, ADD2(MUL2(CONST("8"),*i), CONST("5")))),
+                      &NZ(BIT(comb.vb_lzd_last, ADD2(MUL2(CONST("8"),*i), CONST("5"))))));
+            SETARRITEM(lzb_mant_shift, *i, lzb_mant_shift, TO_LOGIC(SUB2(mantmaxbits, ADD2(MUL2(CONST("8"),*i), CONST("6"))), shiftbits));
             SETARRITEM(lzb_mant, *i, lzb_mant, LSH(comb.vb_lzd, ADD2(MUL2(CONST("8"), SUB2(DEC(lzd_chunks), *i)), CONST("2"))));
-            SETBIT(exp_clear, *i, INV(BIT(comb.vb_lzd, ADD2(MUL2(CONST("8"),*i), CONST("5")))));
-        ELSIF (NZ(BIT(comb.vb_lzd, ADD2(MUL2(CONST("8"),*i), CONST("4")))));
-            SETARRITEM(lzb_mant_shift, *i, lzb_mant_shift, TO_LOGIC(ADD2(MUL2(CONST("8"),*i), CONST("4")), shiftbits));
+            SETBIT(comb.vb_exp_clear, *i, INV(BIT(comb.vb_lzd, ADD2(MUL2(CONST("8"),*i), CONST("5")))));
+        ELSIF (ORx(2, &NZ(BIT(comb.vb_lzd_masked, ADD2(MUL2(CONST("8"),*i), CONST("4")))),
+                      &NZ(BIT(comb.vb_lzd_last, ADD2(MUL2(CONST("8"),*i), CONST("4"))))));
+            SETARRITEM(lzb_mant_shift, *i, lzb_mant_shift, TO_LOGIC(SUB2(mantmaxbits, ADD2(MUL2(CONST("8"),*i), CONST("5"))), shiftbits));
             SETARRITEM(lzb_mant, *i, lzb_mant, LSH(comb.vb_lzd, ADD2(MUL2(CONST("8"), SUB2(DEC(lzd_chunks), *i)), CONST("3"))));
-            SETBIT(exp_clear, *i, INV(BIT(comb.vb_lzd, ADD2(MUL2(CONST("8"),*i), CONST("4")))));
-        ELSIF (NZ(BIT(comb.vb_lzd, ADD2(MUL2(CONST("8"),*i), CONST("3")))));
-            SETARRITEM(lzb_mant_shift, *i, lzb_mant_shift, TO_LOGIC(ADD2(MUL2(CONST("8"),*i), CONST("3")), shiftbits));
+            SETBIT(comb.vb_exp_clear, *i, INV(BIT(comb.vb_lzd, ADD2(MUL2(CONST("8"),*i), CONST("4")))));
+        ELSIF (ORx(2, &NZ(BIT(comb.vb_lzd_masked, ADD2(MUL2(CONST("8"),*i), CONST("3")))),
+                      &NZ(BIT(comb.vb_lzd_last, ADD2(MUL2(CONST("8"),*i), CONST("3"))))));
+            SETARRITEM(lzb_mant_shift, *i, lzb_mant_shift, TO_LOGIC(SUB2(mantmaxbits, ADD2(MUL2(CONST("8"),*i), CONST("4"))), shiftbits));
             SETARRITEM(lzb_mant, *i, lzb_mant, LSH(comb.vb_lzd, ADD2(MUL2(CONST("8"), SUB2(DEC(lzd_chunks), *i)), CONST("4"))));
-            SETBIT(exp_clear, *i, INV(BIT(comb.vb_lzd, ADD2(MUL2(CONST("8"),*i), CONST("3")))));
-        ELSIF (NZ(BIT(comb.vb_lzd, ADD2(MUL2(CONST("8"),*i), CONST("2")))));
-            SETARRITEM(lzb_mant_shift, *i, lzb_mant_shift, TO_LOGIC(ADD2(MUL2(CONST("8"),*i), CONST("2")), shiftbits));
+            SETBIT(comb.vb_exp_clear, *i, INV(BIT(comb.vb_lzd, ADD2(MUL2(CONST("8"),*i), CONST("3")))));
+        ELSIF (ORx(2, &NZ(BIT(comb.vb_lzd_masked, ADD2(MUL2(CONST("8"),*i), CONST("2")))),
+                      &NZ(BIT(comb.vb_lzd_last, ADD2(MUL2(CONST("8"),*i), CONST("2"))))));
+            SETARRITEM(lzb_mant_shift, *i, lzb_mant_shift, TO_LOGIC(SUB2(mantmaxbits, ADD2(MUL2(CONST("8"),*i), CONST("3"))), shiftbits));
             SETARRITEM(lzb_mant, *i, lzb_mant, LSH(comb.vb_lzd, ADD2(MUL2(CONST("8"), SUB2(DEC(lzd_chunks), *i)), CONST("5"))));
-            SETBIT(exp_clear, *i, INV(BIT(comb.vb_lzd, ADD2(MUL2(CONST("8"),*i), CONST("2")))));
-        ELSIF (NZ(BIT(comb.vb_lzd, ADD2(MUL2(CONST("8"),*i), CONST("1")))));
-            SETARRITEM(lzb_mant_shift, *i, lzb_mant_shift, TO_LOGIC(ADD2(MUL2(CONST("8"),*i), CONST("1")), shiftbits));
+            SETBIT(comb.vb_exp_clear, *i, INV(BIT(comb.vb_lzd, ADD2(MUL2(CONST("8"),*i), CONST("2")))));
+        ELSIF (ORx(2, &NZ(BIT(comb.vb_lzd_masked, ADD2(MUL2(CONST("8"),*i), CONST("1")))),
+                      &NZ(BIT(comb.vb_lzd_last, ADD2(MUL2(CONST("8"),*i), CONST("1"))))));
+            SETARRITEM(lzb_mant_shift, *i, lzb_mant_shift, TO_LOGIC(SUB2(mantmaxbits, ADD2(MUL2(CONST("8"),*i), CONST("2"))), shiftbits));
             SETARRITEM(lzb_mant, *i, lzb_mant, LSH(comb.vb_lzd, ADD2(MUL2(CONST("8"), SUB2(DEC(lzd_chunks), *i)), CONST("6"))));
-            SETBIT(exp_clear, *i, INV(BIT(comb.vb_lzd, ADD2(MUL2(CONST("8"),*i), CONST("1")))));
-        ELSIF (NZ(BIT(comb.vb_lzd, ADD2(MUL2(CONST("8"),*i), CONST("0")))));
-            SETARRITEM(lzb_mant_shift, *i, lzb_mant_shift, TO_LOGIC(ADD2(MUL2(CONST("8"),*i), CONST("0")), shiftbits));
+            SETBIT(comb.vb_exp_clear, *i, INV(BIT(comb.vb_lzd, ADD2(MUL2(CONST("8"),*i), CONST("1")))));
+        ELSIF (ORx(2, &NZ(BIT(comb.vb_lzd_masked, ADD2(MUL2(CONST("8"),*i), CONST("0")))),
+                      &NZ(BIT(comb.vb_lzd_last, ADD2(MUL2(CONST("8"),*i), CONST("0"))))));
+            SETARRITEM(lzb_mant_shift, *i, lzb_mant_shift, TO_LOGIC(SUB2(mantmaxbits, ADD2(MUL2(CONST("8"),*i), CONST("1"))), shiftbits));
             SETARRITEM(lzb_mant, *i, lzb_mant, LSH(comb.vb_lzd, ADD2(MUL2(CONST("8"), SUB2(DEC(lzd_chunks), *i)), CONST("7"))));
-            SETBIT(exp_clear, *i, INV(BIT(comb.vb_lzd, ADD2(MUL2(CONST("8"),*i), CONST("0")))));
+            SETBIT(comb.vb_exp_clear, *i, INV(BIT(comb.vb_lzd, ADD2(MUL2(CONST("8"),*i), CONST("0")))));
         ELSE();
             SETARRITEM(lzb_mant_shift, *i, lzb_mant_shift, ALLZEROS());
             SETARRITEM(lzb_mant, *i, lzb_mant, ALLZEROS());
         ENDIF();
     ENDFOR();
+    SETVAL(exp_clear, comb.vb_exp_clear);
 
     TEXT();
     SETZERO(mant_aligned_idx);
@@ -229,90 +231,35 @@ void fmul_generic::proc_comb() {
         IF (ORx(2, &NZ(BIT(ARRITEM(lzb_mant, *i, lzb_mant), DEC(lzd_bits))),
                    &NZ(BIT(exp_clear, *i))));
             SETVAL(mant_aligned_idx, ARRITEM(lzb_mant_shift, *i, lzb_mant_shift));
-            SETVAL(mant_aligned, ARRITEM(lzb_mant, *i, lzb_mant));
+            SETVAL(mant_aligned, BITS(ARRITEM(lzb_mant, *i, lzb_mant), DEC(lzd_bits), SUB2(lzd_bits, mantmaxbits)));
         ENDIF();
     ENDFOR();
-    
 
     TEXT();
-    IF (NZ(BIT(ena, 0)));
-        SETVAL(zeroA, comb.zeroA);
-        SETVAL(zeroB, comb.zeroB);
-    ENDIF();
+    SETVAL(exp_res, SUB2(ARRITEM(expAB, ADD2(hex_chunks, CONST("2")), expAB), mant_aligned_idx));
+    SETVAL(mant_res, BITS(mant_aligned, SUB2(mantmaxbits, CONST("2")), SUB2(DEC(mantmaxbits), mantbits)));
+    
+    TEXT();
+    SETVAL(exp_res_rnd, BITS(exp_res, DEC(expbits), CONST("0")));
+    SETVAL(mant_res_rnd, mant_res);
+    SETVAL(result, CC3(CONST("0", 1), exp_res_rnd, mant_res_rnd));
 
 /*
-TEXT();
-    TEXT("imul53 module:");
-    IF (NZ(BIT(wb_imul_result, 105)));
-        SETVAL(comb.mantAlign, BITS(wb_imul_result, 105, 1));
-    ELSIF (NZ(BIT(wb_imul_result, 104)));
-        SETVAL(comb.mantAlign, BITS(wb_imul_result, 104, 0));
-    ELSE();
-        i = &FOR ("i", CONST("1"), CONST("105"), "++");
-            IF (EQ(*i, TO_INT(wb_imul_shift)));
-                SETVAL(comb.mantAlign, LSH(wb_imul_result, *i));
-            ENDIF();
-        ENDFOR();
-    ENDIF();
+
 
 TEXT();
-    SETVAL(comb.expAlign_t, INC(expAB));
-    IF (NZ(BIT(wb_imul_result, 105)));
-        SETVAL(comb.expAlign, comb.expAlign_t);
-    ELSIF (OR2(EZ(BITS(a, 62, 52)), EZ(BITS(b, 62, 52))));
-        SETVAL(comb.expAlign , SUB2(comb.expAlign_t, CC2(CONST("0", 6), wb_imul_shift)));
-    ELSE();
-        SETVAL(comb.expAlign, SUB2(expAB, CC2(CONST("0", 6), wb_imul_shift)));
+    TEXT("Exceptions:");
+    SETZERO(nanA);
+    IF (EQ(BITS(a, 62, 52), CONST("0x7FF", 11)));
+        SETONE(nanA);
     ENDIF();
-
-TEXT();
-    TEXT("IMPORTANT exception! new ZERO value");
-    IF (OR2(NZ(BIT(comb.expAlign, 12)), EZ(comb.expAlign)));
-        IF (ORx(4, &EZ(wb_imul_shift), 
-                   &NZ(BIT(wb_imul_result, 105)),
-                   &EZ(BITS(a, 62, 52)),
-                   &EZ(BITS(b, 62, 52))));
-            SETVAL(comb.postShift, ADD2(INV_L(BITS(comb.expAlign, 11, 0)), CONST("2", 12)));
-        ELSE();
-            SETVAL(comb.postShift, INC(INV_L(BITS(comb.expAlign, 11, 0))));
-        ENDIF();
+    SETZERO(nanB);
+    IF (EQ(BITS(b, 62, 52), CONST("0x7FF", 11)));
+        SETONE(nanB);
     ENDIF();
-
-TEXT();
-    IF (NZ(w_imul_rdy));
-        SETVAL(expAlign, BITS(comb.expAlign, 11, 0));
-        SETVAL(mantAlign, comb.mantAlign);
-        SETVAL(postShift, comb.postShift);
-
-TEXT();
-        TEXT("Exceptions:");
-        SETZERO(nanA);
-        IF (EQ(BITS(a, 62, 52), CONST("0x7FF", 11)));
-            SETONE(nanA);
-        ENDIF();
-        SETZERO(nanB);
-        IF (EQ(BITS(b, 62, 52), CONST("0x7FF", 11)));
-            SETONE(nanB);
-        ENDIF();
-        SETZERO(overflow);
-        IF (AND2(EZ(BIT(comb.expAlign,12)), GE(comb.expAlign, CONST("0x7FF", 13))));
-            SETONE(overflow);
-        ENDIF();
-    ENDIF();
-
-TEXT();
-    TEXT("Prepare to mantissa post-scale");
-    IF (EZ(postShift));
-        SETVAL(comb.mantPostScale, mantAlign);
-    ELSIF (LS(postShift, CONST("105", 12)));
-        i = &FOR ("i", CONST("1"), CONST("105"), "++");
-            IF (EQ(*i, TO_INT(postShift)));
-                SETVAL(comb.mantPostScale, RSH(mantAlign, *i));
-            ENDIF();
-        ENDFOR();
-    ENDIF();
-    IF (NZ(BIT(ena, 2)));
-        SETVAL(mantPostScale, comb.mantPostScale);
+    SETZERO(overflow);
+    IF (AND2(EZ(BIT(comb.expAlign,12)), GE(comb.expAlign, CONST("0x7FF", 13))));
+        SETONE(overflow);
     ENDIF();
 
 TEXT();
@@ -396,6 +343,6 @@ TEXT();
 TEXT();
     SETVAL(o_res, result);
     SETVAL(o_overflow, overflow);
-    SETVAL(o_valid, BIT(ena, 4));
+    SETVAL(o_valid, BIT(ena, ADD2(hex_chunks, CONST("6"))));
 }
 
