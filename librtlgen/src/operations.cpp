@@ -880,7 +880,9 @@ std::string EzOperation::getStrValue() {
     std::string A = obj2varname(a_, "r", true);
     if (a_->getWidth() > 1) {
         if (SCV_is_sysc()) {
-            A += ".or_reduce()";
+            if (a_->isLogic()) {
+                A += ".or_reduce()";
+            }
         } else if (SCV_is_sv()) {
             A = "(|" + A + ")";
         }
@@ -898,13 +900,19 @@ std::string NzOperation::getStrValue() {
     std::string A = obj2varname(a_, "r", true);
     if (a_->getWidth() > 1) {
         if (SCV_is_sysc()) {
-            A += ".or_reduce()";
+            if (a_->isLogic()) {
+                A += ".or_reduce()";
+            }
         } else if (SCV_is_sv()) {
             A = "(|" + A + ")";
         }
     }
     if (SCV_is_sysc()) {
-        A = "(" + A + " == 1)";
+        if (a_->isLogic()) {
+            A = "(" + A + " == 1)";
+        } else {
+            A = "(" + A + " != 0)";
+        }
     } else {
         A = "(" + A + " == 1'b1)";
     }

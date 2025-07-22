@@ -30,6 +30,9 @@ class fmul_generic : public ModuleObject {
         CombProcess(GenObject *parent) :
             CombinationalProcess(parent, "comb"),
             vb_ena(this, "vb_ena", "5", "'0", NO_COMMENT),
+            vb_lzd(this, "vb_lzd", "MUL(8,lzd_chunks)", "'0", NO_COMMENT),
+            vb_lzd_mask(this, "vb_lzd_mask", "MUL(8,lzd_chunks)", "'0", "chunk aligned 'mant_mask' value"),
+            vb_lzd_masked(this, "vb_lzd_masked", "MUL(8,lzd_chunks)", "'0", NO_COMMENT),
             signA(this, "signA", "1", "0", NO_COMMENT),
             signB(this, "signB", "1", "0", NO_COMMENT),
             mantA(this, "mantA", "53", "'0", NO_COMMENT),
@@ -59,6 +62,9 @@ class fmul_generic : public ModuleObject {
 
      public:
         Logic vb_ena;
+        Logic vb_lzd;
+        Logic vb_lzd_mask;
+        Logic vb_lzd_masked;
         Logic1 signA;
         Logic1 signB;
         Logic mantA;
@@ -102,8 +108,12 @@ class fmul_generic : public ModuleObject {
     OutPort o_valid;
 
     ParamI32D mantbits;
+    ParamI32D mantmaxbits;
+    ParamI32D shiftbits;
     ParamI32D explevel;
     ParamI32D hex_chunks;
+    ParamI32D lzd_chunks;
+    ParamI32D lzd_bits;
 
  protected:
     Signal wb_imul_result;
@@ -111,9 +121,11 @@ class fmul_generic : public ModuleObject {
     Signal w_imul_rdy;
     Signal w_imul_overflow;
     WireArray<Signal> wb_hex_i;
-    WireArray<Signal> wb_hex_o;
     WireArray<Signal> wb_carry_i;
-    WireArray<Signal> wb_carry_o;
+    WireArray<Signal> wb_zres_i;
+    WireArray<Signal> wb_zshift_i;
+    WireArray<Signal> wb_mant_lsb;
+    WireArray<Signal> wb_mant_msb;
     WireArray<Signal> wb_hex_shift;
 
     RegSignal ena;
@@ -125,6 +137,12 @@ class fmul_generic : public ModuleObject {
     RegArray  mantA;
     RegArray  mantB;
     WireArray<RegSignal> expAB;
+    WireArray<RegSignal> lzb_mant_shift;
+    WireArray<RegSignal> lzb_mant;
+    RegSignal mant_mask;
+    RegSignal mant_aligned_idx;
+    RegSignal mant_aligned;
+    RegSignal exp_clear;
     RegSignal expAlign;
     RegSignal mantAlign;
     RegSignal postShift;
@@ -132,6 +150,7 @@ class fmul_generic : public ModuleObject {
     RegSignal nanA;
     RegSignal nanB;
     RegSignal overflow;
+    RegSignal dbg_lzd;
 
     // process should be intialized last to make all signals available
     CombProcess comb;
