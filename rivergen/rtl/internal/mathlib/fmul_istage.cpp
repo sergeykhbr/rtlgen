@@ -31,7 +31,7 @@ fmul_istage::fmul_istage(GenObject *parent, const char *name, const char *commen
     o_carry(this, "o_carry", "ibits", "resulting carry bits"),
     // signals:
     // registers
-    zres(this, "zres", "ADD(MUL(4,idx),1)", "'0", "increment to avoid 0-bitwise exception for idx=0"),
+    zres(this, "zres", "ibits", "'0", "cannot create array of template with different width bits"),
     res(this, "res", "ADD(ibits,4)", "'0", NO_COMMENT),
     // process
     comb(this)
@@ -118,10 +118,10 @@ void fmul_istage::proc_comb() {
 
     TEXT();
     IFGEN (NZ(idx), new StringConst("n0"));
-        TEXT("One additional unused bit to avoid bitwise=0 for idx = 0");
-        SETVAL(zres, CC2(CONST("0", 1), BITS(i_zres, DEC(MUL2(idx,mbits)), CONST("0"))));
+        SETBITS(comb.vb_zres, DEC(MUL2(idx,mbits)), CONST("0"), BITS(i_zres, DEC(MUL2(idx,mbits)), CONST("0")));
         SETBITS(comb.vb_res_idx, DEC(MUL2(idx,mbits)), CONST("0"), zres);
     ENDIFGEN(new StringConst("n0"));
+    SETVAL(zres, comb.vb_zres);
     SETBITSW(comb.vb_res_idx, MUL2(idx,mbits), CONST("4"), BITS(res, 3, 0));
 
     TEXT();

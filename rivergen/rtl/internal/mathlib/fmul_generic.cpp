@@ -51,8 +51,7 @@ fmul_generic::fmul_generic(GenObject *parent, const char *name, const char *comm
     a(this, "a", "fbits", "'0", NO_COMMENT),
     b(this, "b", "fbits", "'0", NO_COMMENT),
     result(this, "result", "fbits", "'0", NO_COMMENT),
-    zeroA(this, "zeroA", "1"),
-    zeroB(this, "zeroB", "1"),
+    sign(this, "sign", "11", "'0", NO_COMMENT),
     mantA(this, &i_clk, CLK_POSEDGE, &i_nrst, ACTIVE_LOW, "mantA", "ADD(mantbits,1)", "hex_chunks", "'0", NO_COMMENT),
     mantB(this, &i_clk, CLK_POSEDGE, &i_nrst, ACTIVE_LOW, "mantB", "ADD(mantbits,1)", "hex_chunks", "'0", NO_COMMENT),
     expAB(this, &i_clk, CLK_POSEDGE, &i_nrst, ACTIVE_LOW, "expAB", "ADD(expbits,2)", "ADD(hex_chunks,3)", "'0", NO_COMMENT),
@@ -64,11 +63,19 @@ fmul_generic::fmul_generic(GenObject *parent, const char *name, const char *comm
     mant_aligned(this, "mant_aligned", "mantmaxbits", "'0", NO_COMMENT),
     exp_clear(this, "exp_clear", "lzd_chunks", "'0", NO_COMMENT),
     exp_res(this, "exp_res", "ADD(expbits,2)", "'0", NO_COMMENT),
-    mant_res(this, "mant_res", "mantbits", "'0", NO_COMMENT),
+    mant_res(this, "mant_res", "ADD(mantbits,1)", "'0", NO_COMMENT),
+    rnd_res(this, "rnd_res", "1", "0", NO_COMMENT),
     exp_res_rnd(this, "exp_res_rnd", "expbits", "'0", NO_COMMENT),
     mant_res_rnd(this, "mant_res_rnd", "mantbits", "'0", NO_COMMENT),
-    overflow(this, "overflow", "1"),
+    overflow(this, "overflow", "2"),
+    dbg_expA_t(this, "dbg_expA_t", "ADD(expbits,2)", "'0", NO_COMMENT),
+    dbg_expB_t(this, "dbg_expB_t", "ADD(expbits,2)", "'0", NO_COMMENT),
+    dbg_expAB_t(this, "dbg_expAB_t", "ADD(expbits,2)", "'0", NO_COMMENT),
+    dbg_explevel(this, "dbg_explevel", "ADD(expbits,2)", "'0", NO_COMMENT),
     dbg_lzd(this, "dbg_lzd", "lzd_bits"),
+    dbg_lzd_masked(this, "dbg_lzd_masked", "lzd_bits"),
+    dbg_vb_mant_res_rnd(this, "dbg_vb_mant_res_rnd", "ADD(mantbits,2)", "'0", NO_COMMENT),
+    dbg_vb_exp_res_rnd(this, "dbg_vb_exp_res_rnd", "ADD(expbits,2)", "'0", NO_COMMENT),
     // process
     comb(this),
     stagex(this, "stagex", "hex_chunks", NO_COMMENT)
@@ -110,23 +117,18 @@ void fmul_generic::proc_comb() {
     SETVAL(b, i_b);
 
     TEXT();
-    SETVAL(comb.signA, BIT(a, DEC(fbits)));
-    SETVAL(comb.signB, BIT(b, DEC(fbits)));
+    SETVAL(sign, CC2(BITS(sign, 10, 0), XOR2(BIT(a, DEC(fbits)), BIT(b, DEC(fbits)))));
 
     TEXT();
-    SETVAL(comb.zeroA, INV_L(OR_REDUCE(BITS(a, DEC(fbits), CONST("0")))));
-    SETVAL(comb.zeroB, INV_L(OR_REDUCE(BITS(b, DEC(fbits), CONST("0")))));
-
-    TEXT();
-    SETVAL(comb.mantA, CCx(2, &OR_REDUCE(BITS(a, DEC(fbits), mantbits)),
+    SETVAL(comb.vb_mantA, CCx(2, &OR_REDUCE(BITS(a, DEC(fbits), mantbits)),
                               &BITS(a, DEC(mantbits), CONST("0"))));
-    SETVAL(comb.mantB, CCx(2, &OR_REDUCE(BITS(b, DEC(fbits), mantbits)),
+    SETVAL(comb.vb_mantB, CCx(2, &OR_REDUCE(BITS(b, DEC(fbits), mantbits)),
                               &BITS(b, DEC(mantbits), CONST("0"))));
 
     TEXT();
     TEXT("");
-    SETARRITEM(mantA, CONST("0"), mantA, comb.mantA);
-    SETARRITEM(mantB, CONST("0"), mantB, comb.mantB);
+    SETARRITEM(mantA, CONST("0"), mantA, comb.vb_mantA);
+    SETARRITEM(mantB, CONST("0"), mantB, comb.vb_mantB);
     SETARRITEM(wb_carry_i, CONST("0"), wb_carry_i, ALLZEROS());
     SETARRITEM(wb_zres_i, CONST("0"), wb_zres_i, ALLZEROS());
     i = &FOR_INC(DEC(hex_chunks));
@@ -140,8 +142,14 @@ void fmul_generic::proc_comb() {
 
     TEXT();
     TEXT("expA - expB + EXPONENT_ZERO_LEVEL");
-    SETVAL(comb.expAB_t, ADD2(CC2(CONST("0", 1), BITS(a, DEC(fbits), mantbits)), CC2(CONST("0", 1), BITS(b, DEC(fbits), mantbits))));
-    SETARRITEM(expAB, CONST("0"), expAB, SUB2(CC2(CONST("0", 1), comb.expAB_t), TO_LOGIC(explevel, ADD2(expbits,CONST("2")))));
+    SETVAL(comb.vb_expA_t, CC2(CONST("0", 2), BITS(a, SUB2(fbits, CONST("2")), mantbits)));
+    SETVAL(comb.vb_expB_t, CC2(CONST("0", 2), BITS(b, SUB2(fbits, CONST("2")), mantbits)));
+    SETVAL(comb.vb_expAB_t, ADD2(comb.vb_expA_t, comb.vb_expB_t));
+    SETVAL(dbg_expA_t, comb.vb_expA_t, "DELME:");
+    SETVAL(dbg_expB_t, comb.vb_expB_t, "DELME:");
+    SETVAL(dbg_expAB_t, comb.vb_expAB_t, "DELME:");
+    SETVAL(dbg_explevel, TO_LOGIC(explevel, ADD2(expbits,CONST("2"))), "DELME:");
+    SETARRITEM(expAB, CONST("0"), expAB, SUB2(comb.vb_expAB_t, TO_LOGIC(explevel, ADD2(expbits,CONST("2")))));
     i = &FOR_INC(ADD2(hex_chunks, CONST("2")));
         SETARRITEM(expAB, INC(*i), expAB, ARRITEM(expAB, *i, expAB));
     ENDFOR();
@@ -171,7 +179,8 @@ void fmul_generic::proc_comb() {
     SETBITS(comb.vb_lzd_mask, DEC(lzd_bits), SUB2(lzd_bits, mantmaxbits), mant_mask);
     SETVAL(comb.vb_lzd_masked, AND2_L(comb.vb_lzd, comb.vb_lzd_mask));
     SETBITS(comb.vb_lzd_last, DEC(lzd_bits), SUB2(lzd_bits, mantmaxbits), mant_last);
-    SETVAL(dbg_lzd, comb.vb_lzd_masked, "REMOVE ME");
+    SETVAL(dbg_lzd, comb.vb_lzd, "REMOVE ME");
+    SETVAL(dbg_lzd_masked, comb.vb_lzd_masked, "REMOVE ME");
     i = &FOR_INC(lzd_chunks);
         IF (ORx(2, &NZ(BIT(comb.vb_lzd_masked, ADD2(MUL2(CONST("8"),*i), CONST("7")))),
                    &NZ(BIT(comb.vb_lzd_last, ADD2(MUL2(CONST("8"),*i), CONST("7"))))));
@@ -182,6 +191,7 @@ void fmul_generic::proc_comb() {
             ELSE();
                 SETARRITEM(lzb_mant, *i, lzb_mant, comb.vb_lzd);
             ENDIF();
+            SETBIT(comb.vb_exp_clear, *i, INV(BIT(comb.vb_lzd, ADD2(MUL2(CONST("8"),*i), CONST("7")))));
         ELSIF (ORx(2, &NZ(BIT(comb.vb_lzd_masked, ADD2(MUL2(CONST("8"),*i), CONST("6")))),
                       &NZ(BIT(comb.vb_lzd_last, ADD2(MUL2(CONST("8"),*i), CONST("6"))))));
             SETARRITEM(lzb_mant_shift, *i, lzb_mant_shift, TO_LOGIC(SUB2(mantmaxbits, ADD2(MUL2(CONST("8"),*i), CONST("7"))), shiftbits));
@@ -237,112 +247,37 @@ void fmul_generic::proc_comb() {
 
     TEXT();
     SETVAL(exp_res, SUB2(ARRITEM(expAB, ADD2(hex_chunks, CONST("2")), expAB), mant_aligned_idx));
-    SETVAL(mant_res, BITS(mant_aligned, SUB2(mantmaxbits, CONST("2")), SUB2(DEC(mantmaxbits), mantbits)));
+    SETVAL(mant_res, BITS(mant_aligned, DEC(mantmaxbits), SUB2(mantmaxbits, INC(mantbits))));
+    SETVAL(comb.mant_even, INV(BIT(mant_aligned, SUB2(mantmaxbits, INC(mantbits)))));
+    SETVAL(comb.mant_rnd, BIT(mant_aligned, SUB2(mantmaxbits, ADD2(mantbits, CONST("2")))));
+    SETVAL(comb.mant05, AND2_L(comb.mant_rnd, INV_L(OR_REDUCE(BITS(mant_aligned, SUB2(mantmaxbits, ADD2(mantbits, CONST("3"))), CONST("0"))))));
+    SETVAL(rnd_res, AND2(comb.mant_rnd, INV(AND2(comb.mant05, comb.mant_even))));
     
     TEXT();
-    SETVAL(exp_res_rnd, BITS(exp_res, DEC(expbits), CONST("0")));
-    SETVAL(mant_res_rnd, mant_res);
-    SETVAL(result, CC3(CONST("0", 1), exp_res_rnd, mant_res_rnd));
+    SETVAL(comb.vb_mant_res_rnd, ADD2(CC2(CONST("0", 1), mant_res), CC2(ALLZEROS(), rnd_res)));
+    SETVAL(comb.vb_exp_res_rnd, ADD2(exp_res, CC2(ALLZEROS(), BITS(comb.vb_mant_res_rnd, INC(mantbits), mantbits))));
+    SETVAL(comb.v_overflow, AND2(INV(BIT(comb.vb_exp_res_rnd, INC(expbits))), BIT(comb.vb_exp_res_rnd, expbits)), "FP32 (exp-8): 01.****.****");
+    SETVAL(overflow, CC2(BIT(overflow, 0), comb.v_overflow));
+    SETVAL(dbg_vb_mant_res_rnd, comb.vb_mant_res_rnd);
+    SETVAL(dbg_vb_exp_res_rnd, comb.vb_exp_res_rnd);
 
-/*
-
-
-TEXT();
-    TEXT("Exceptions:");
-    SETZERO(nanA);
-    IF (EQ(BITS(a, 62, 52), CONST("0x7FF", 11)));
-        SETONE(nanA);
-    ENDIF();
-    SETZERO(nanB);
-    IF (EQ(BITS(b, 62, 52), CONST("0x7FF", 11)));
-        SETONE(nanB);
-    ENDIF();
-    SETZERO(overflow);
-    IF (AND2(EZ(BIT(comb.expAlign,12)), GE(comb.expAlign, CONST("0x7FF", 13))));
-        SETONE(overflow);
-    ENDIF();
-
-TEXT();
-    TEXT("Rounding bit");
-    SETVAL(comb.mantShort, BIG_TO_U64(BITS(mantPostScale, 104, 52)));
-    SETVAL(comb.tmpMant05, BIG_TO_U64(BITS(mantPostScale, 51, 0)));
-    IF (EQ(comb.mantShort, CONST("0x001fffffffffffff", 53)));
-        SETONE(comb.mantOnes);
-    ENDIF();
-    SETVAL(comb.mantEven, BIT(mantPostScale, 52));
-    IF (EQ(comb.tmpMant05, CONST("0x0008000000000000", 52)));
-        SETONE(comb.mant05);
-    ENDIF();
-    SETVAL(comb.rndBit, AND2(BIT(mantPostScale, 51), INV(AND2(comb.mant05, INV(comb.mantEven)))));
-
-TEXT();
-    TEXT("Check Borders");
-    IF (EQ(BITS(a, 62, 52), CONST("0x7ff", 11)));
-        SETONE(comb.nanA);
-    ENDIF();
-    IF (EQ(BITS(b, 62, 52), CONST("0x7ff", 11)));
-        SETONE(comb.nanB);
-    ENDIF();
-    IF (EZ(BITS(a, 51, 0)));
-        SETONE(comb.mantZeroA);
-    ENDIF();
-    IF (EZ(BITS(b, 51, 0)));
-        SETONE(comb.mantZeroB);
-    ENDIF();
-
-TEXT();
-    TEXT("Result multiplexers:");
-    IF (OR2(AND3(comb.nanA, comb.mantZeroA, zeroB), AND3(comb.nanB, comb.mantZeroB, zeroA)));
-        SETVAL(comb.v_res_sign, CONST("1", 1));
-    ELSIF (NZ(AND2(comb.nanA, INV(comb.mantZeroA))));
-        TEXT("when both values are NaN, value B has higher priority if sign=1");
-        SETVAL(comb.v_res_sign, OR2(comb.signA, AND2(comb.nanA, comb.signB)));
-    ELSIF (NZ(AND2(comb.nanB, INV(comb.mantZeroB))));
-        SETVAL(comb.v_res_sign, comb.signB);
+    TEXT();
+    IF (NZ(comb.v_overflow));
+        TEXT("No make sense to detect NaN and other things for GPU computation. No error handling");
+        SETVAL(exp_res_rnd, ALLONES());
+        SETVAL(mant_res_rnd, ALLONES());
     ELSE();
-        SETVAL(comb.v_res_sign, XOR2(BIT(a, 63), BIT(b, 63)));
+        SETVAL(exp_res_rnd, BITS(comb.vb_exp_res_rnd, DEC(expbits), CONST("0")));
+        SETVAL(mant_res_rnd, BITS(comb.vb_mant_res_rnd, DEC(mantbits), CONST("0")));
     ENDIF();
+    SETVAL(result, CC3(BIT(sign, 10), exp_res_rnd, mant_res_rnd));
 
-TEXT();
-    IF (NZ(comb.nanA));
-        SETVAL(comb.vb_res_exp, BITS(a, 62, 52));
-    ELSIF (NZ(comb.nanB));
-        SETVAL(comb.vb_res_exp, BITS(b, 62, 52));
-    ELSIF (NZ(OR3(BIT(expAlign, 11), zeroA, zeroB)));
-        SETVAL(comb.vb_res_exp, ALLZEROS());
-    ELSIF (NZ(overflow));
-        SETVAL(comb.vb_res_exp, ALLONES());
-    ELSE();
-        SETVAL(comb.vb_res_exp, ADDx(2, &BITS(expAlign, 10, 0),
-                                        &AND3(comb.mantOnes, comb.rndBit, INV(overflow))));
-    ENDIF();
-
-TEXT();
-    IF (ORx(3, &AND3(comb.nanA, comb.mantZeroA, INV(comb.mantZeroB)),
-               &AND3(comb.nanB, comb.mantZeroB, INV(comb.mantZeroA)),
-               &AND3(INV(comb.nanA), INV(comb.nanB), overflow)));
-        SETVAL(comb.vb_res_mant, ALLZEROS());
-    ELSIF (NZ(AND2(comb.nanA, INV(AND2(comb.nanB, comb.signB)))));
-        TEXT("when both values are NaN, value B has higher priority if sign=1");
-        SETVAL(comb.vb_res_mant, CC2(CONST("1", 1), BITS(a, 50, 0)));
-    ELSIF (NZ(comb.nanB));
-        SETVAL(comb.vb_res_mant, CC2(CONST("1", 1), BITS(b, 50, 0)));
-    ELSE();
-        SETVAL(comb.vb_res_mant, ADD2(BITS(comb.mantShort, 51, 0), comb.rndBit));
-    ENDIF();
-
-TEXT();
-    IF (NZ(BIT(ena, 3)));
-        SETVAL(result, CC3(comb.v_res_sign, comb.vb_res_exp, comb.vb_res_mant));
-        //SETVAL(illegal_op, OR2(comb.nanA, comb.nanB));
-    ENDIF();
-*/
-TEXT();
+    TEXT();
     SYNC_RESET();
 
-TEXT();
+    TEXT();
     SETVAL(o_res, result);
-    SETVAL(o_overflow, overflow);
+    SETVAL(o_overflow, BIT(overflow, 1));
     SETVAL(o_valid, BIT(ena, ADD2(hex_chunks, CONST("6"))));
 }
 

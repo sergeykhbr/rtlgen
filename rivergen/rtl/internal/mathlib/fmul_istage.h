@@ -29,12 +29,14 @@ class fmul_istage : public ModuleObject {
         CombProcess(GenObject *parent) :
             CombinationalProcess(parent, "comb"),
             vb_mux(this, "vb_mux", "ADD(ibits,4)", "17", NO_COMMENT),
+            vb_zres(this, "vb_zres", "ibits", "'0", NO_COMMENT),
             vb_res(this, "vb_res", "ADD(ibits,4)", "'0", NO_COMMENT),
             vb_res_idx(this, "vb_res_idx", "ibits", "'0", NO_COMMENT) {
         }
 
      public:
         WireArray<Logic> vb_mux;
+        Logic vb_zres;
         Logic vb_res;
         Logic vb_res_idx;
     };

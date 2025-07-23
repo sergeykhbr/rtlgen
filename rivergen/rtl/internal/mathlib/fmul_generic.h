@@ -37,31 +37,17 @@ class fmul_generic : public ModuleObject {
             vb_lzd_masked(this, "vb_lzd_masked", "MUL(8,lzd_chunks)", "'0", NO_COMMENT),
             vb_lzd_last(this, "vb_lzd_last", "MUL(8,lzd_chunks)", "'0", NO_COMMENT),
             vb_exp_clear(this, "exp_clear", "lzd_chunks", "'0", NO_COMMENT),
-            signA(this, "signA", "1", "0", NO_COMMENT),
-            signB(this, "signB", "1", "0", NO_COMMENT),
-            mantA(this, "mantA", "53", "'0", NO_COMMENT),
-            mantB(this, "mantB", "53", "'0", NO_COMMENT),
-            zeroA(this, "zeroA", "1"),
-            zeroB(this, "zeroB", "1"),
-            expAB_t(this, "expAB_t", "ADD(expbits,1)", "'0", NO_COMMENT),
-            mantAlign(this, "mantAlign", "105", "'0", NO_COMMENT),
-            expAlign_t(this, "expAlign_t", "ADD(expbits,2)", "'0", NO_COMMENT),
-            expAlign(this, "expAlign", "ADD(expbits,2)", "'0", NO_COMMENT),
-            postShift(this, "postShift", "ADD(expbits,1)", "'0", NO_COMMENT),
-            mantPostScale(this, "mantPostScale", "105", "'0", NO_COMMENT),
-            mantShort(this, "mantShort", "53", "'0", NO_COMMENT),
-            tmpMant05(this, "tmpMant05", "52", "'0", NO_COMMENT),
-            mantOnes(this, "mantOnes", "1"),
-            mantEven(this, "mantEven", "1"),
+            vb_mant_res_rnd(this, "vb_mant_res_rnd", "ADD(mantbits,2)", "'0", NO_COMMENT),
+            vb_exp_res_rnd(this, "vb_exp_res_rnd", "ADD(expbits,2)", "'0", NO_COMMENT),
+            v_overflow(this, "v_overflow", "1", "0", NO_COMMENT),
+            vb_mantA(this, "vb_mantA", "ADD(mantbits,1)", "'0", NO_COMMENT),
+            vb_mantB(this, "vb_mantB", "ADD(mantbits,1)", "'0", NO_COMMENT),
+            vb_expA_t(this, "vb_expA_t", "ADD(expbits,2)", "'0", NO_COMMENT),
+            vb_expB_t(this, "vb_expB_t", "ADD(expbits,2)", "'0", NO_COMMENT),
+            vb_expAB_t(this, "vb_expAB_t", "ADD(expbits,2)", "'0", NO_COMMENT),
+            mant_even(this, "mant_even", "1"),
             mant05(this, "mant05", "1"),
-            rndBit(this, "rndBit", "1", "0", NO_COMMENT),
-            nanA(this, "nanA", "1"),
-            nanB(this, "nanB", "1"),
-            mantZeroA(this, "mantZeroA", "1"),
-            mantZeroB(this, "mantZeroB", "1"),
-            v_res_sign(this, "v_res_sign", "1"),
-            vb_res_exp(this, "vb_res_exp", "11", "'0", NO_COMMENT),
-            vb_res_mant(this, "vb_res_mant", "52", "'0", NO_COMMENT) {
+            mant_rnd(this, "rndBit", "1", "0", NO_COMMENT) {
         }
 
      public:
@@ -73,31 +59,17 @@ class fmul_generic : public ModuleObject {
         Logic vb_lzd_masked;
         Logic vb_lzd_last;
         Logic vb_exp_clear;
-        Logic1 signA;
-        Logic1 signB;
-        Logic mantA;
-        Logic mantB;
-        Logic zeroA;
-        Logic zeroB;
-        Logic expAB_t;
-        Logic mantAlign;
-        Logic expAlign_t;
-        Logic expAlign;
-        Logic postShift;
-        Logic mantPostScale;
-        Logic mantShort;
-        Logic tmpMant05;
-        Logic mantOnes;
-        Logic mantEven;
+        Logic vb_mant_res_rnd;
+        Logic vb_exp_res_rnd;
+        Logic v_overflow;
+        Logic vb_mantA;
+        Logic vb_mantB;
+        Logic vb_expA_t;
+        Logic vb_expB_t;
+        Logic vb_expAB_t;
+        Logic mant_even;
         Logic mant05;
-        Logic1 rndBit;
-        Logic nanA;
-        Logic nanB;
-        Logic mantZeroA;
-        Logic mantZeroB;
-        Logic v_res_sign;
-        Logic vb_res_exp;
-        Logic vb_res_mant;
+        Logic1 mant_rnd;
     };
 
     void proc_comb();
@@ -138,8 +110,7 @@ class fmul_generic : public ModuleObject {
     RegSignal a;
     RegSignal b;
     RegSignal result;
-    RegSignal zeroA;
-    RegSignal zeroB;
+    RegSignal sign;
     RegArray  mantA;
     RegArray  mantB;
     WireArray<RegSignal> expAB;
@@ -152,10 +123,18 @@ class fmul_generic : public ModuleObject {
     RegSignal exp_clear;
     RegSignal exp_res;
     RegSignal mant_res;
+    RegSignal rnd_res;
     RegSignal exp_res_rnd;
     RegSignal mant_res_rnd;
     RegSignal overflow;
+    RegSignal dbg_expA_t;
+    RegSignal dbg_expB_t;
+    RegSignal dbg_expAB_t;
+    RegSignal dbg_explevel;
     RegSignal dbg_lzd;
+    RegSignal dbg_lzd_masked;
+    RegSignal dbg_vb_mant_res_rnd;
+    RegSignal dbg_vb_exp_res_rnd;
 
     // process should be intialized last to make all signals available
     CombProcess comb;
