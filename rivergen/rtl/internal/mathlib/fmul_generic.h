@@ -30,15 +30,11 @@ class fmul_generic : public ModuleObject {
         CombProcess(GenObject *parent) :
             CombinationalProcess(parent, "comb"),
             vb_ena(this, "vb_ena", "5", "'0", NO_COMMENT),
-            vb_mant_last_inv(this, "vb_mant_last_inv", "mantmaxbits", "'0", NO_COMMENT),
-            vb_mant_last(this, "vb_mant_last", "mantmaxbits", "'0", NO_COMMENT),
             vb_lzd(this, "vb_lzd", "MUL(8,lzd_chunks)", "'0", NO_COMMENT),
             vb_lzd_mask(this, "vb_lzd_mask", "MUL(8,lzd_chunks)", "'1", "chunk aligned 'mant_mask' value"),
-            vb_lzd_masked(this, "vb_lzd_masked", "MUL(8,lzd_chunks)", "'0", NO_COMMENT),
-            vb_lzd_last(this, "vb_lzd_last", "MUL(8,lzd_chunks)", "'0", NO_COMMENT),
-            vb_exp_clear(this, "exp_clear", "lzd_chunks", "'0", NO_COMMENT),
             vb_mant_res_rnd(this, "vb_mant_res_rnd", "ADD(mantbits,2)", "'0", NO_COMMENT),
             vb_exp_res_rnd(this, "vb_exp_res_rnd", "ADD(expbits,2)", "'0", NO_COMMENT),
+            v_underflow(this, "v_underflow", "1", "0", NO_COMMENT),
             v_overflow(this, "v_overflow", "1", "0", NO_COMMENT),
             vb_mantA(this, "vb_mantA", "ADD(mantbits,1)", "'0", NO_COMMENT),
             vb_mantB(this, "vb_mantB", "ADD(mantbits,1)", "'0", NO_COMMENT),
@@ -52,15 +48,11 @@ class fmul_generic : public ModuleObject {
 
      public:
         Logic vb_ena;
-        Logic vb_mant_last_inv;
-        Logic vb_mant_last;
         Logic vb_lzd;
         Logic vb_lzd_mask;
-        Logic vb_lzd_masked;
-        Logic vb_lzd_last;
-        Logic vb_exp_clear;
         Logic vb_mant_res_rnd;
         Logic vb_exp_res_rnd;
+        Logic v_underflow;
         Logic v_overflow;
         Logic vb_mantA;
         Logic vb_mantB;
@@ -116,23 +108,18 @@ class fmul_generic : public ModuleObject {
     WireArray<RegSignal> expAB;
     WireArray<RegSignal> lzb_mant_shift;
     WireArray<RegSignal> lzb_mant;
-    RegSignal mant_mask;
-    RegSignal mant_last;
     RegSignal mant_aligned_idx;
     RegSignal mant_aligned;
-    RegSignal exp_clear;
     RegSignal exp_res;
     RegSignal mant_res;
     RegSignal rnd_res;
     RegSignal exp_res_rnd;
     RegSignal mant_res_rnd;
+    RegSignal underflow;
     RegSignal overflow;
-    RegSignal dbg_expA_t;
-    RegSignal dbg_expB_t;
     RegSignal dbg_expAB_t;
     RegSignal dbg_explevel;
     RegSignal dbg_lzd;
-    RegSignal dbg_lzd_masked;
     RegSignal dbg_vb_mant_res_rnd;
     RegSignal dbg_vb_exp_res_rnd;
 
