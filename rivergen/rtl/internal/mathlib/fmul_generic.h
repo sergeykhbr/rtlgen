@@ -18,6 +18,7 @@
 
 #include <api_rtlgen.h>
 #include "fmul_istage.h"
+#include "lzd_scaler.h"
 
 using namespace sysvc;
 
@@ -30,8 +31,6 @@ class fmul_generic : public ModuleObject {
         CombProcess(GenObject *parent) :
             CombinationalProcess(parent, "comb"),
             vb_ena(this, "vb_ena", "5", "'0", NO_COMMENT),
-            vb_lzd(this, "vb_lzd", "MUL(8,lzd_chunks)", "'0", NO_COMMENT),
-            vb_lzd_mask(this, "vb_lzd_mask", "MUL(8,lzd_chunks)", "'1", "chunk aligned 'mant_mask' value"),
             vb_mant_res_rnd(this, "vb_mant_res_rnd", "ADD(mantbits,2)", "'0", NO_COMMENT),
             vb_exp_res_rnd(this, "vb_exp_res_rnd", "ADD(expbits,2)", "'0", NO_COMMENT),
             v_underflow(this, "v_underflow", "1", "0", NO_COMMENT),
@@ -48,8 +47,6 @@ class fmul_generic : public ModuleObject {
 
      public:
         Logic vb_ena;
-        Logic vb_lzd;
-        Logic vb_lzd_mask;
         Logic vb_mant_res_rnd;
         Logic vb_exp_res_rnd;
         Logic v_underflow;
@@ -84,19 +81,17 @@ class fmul_generic : public ModuleObject {
     ParamI32D shiftbits;
     ParamI32D explevel;
     ParamI32D hex_chunks;
-    ParamI32D lzd_chunks;
-    ParamI32D lzd_bits;
+    ParamI32D latency;
 
  protected:
-    Signal wb_imul_result;
-    Signal wb_imul_shift;
-    Signal w_imul_rdy;
-    Signal w_imul_overflow;
     WireArray<Signal> wb_hex_i;
     WireArray<Signal> wb_carry_i;
     WireArray<Signal> wb_zres_i;
     WireArray<Signal> wb_mant_lsb;
     WireArray<Signal> wb_mant_msb;
+    Signal wb_mant_full;
+    Signal wb_mant_aligned_idx;
+    Signal wb_mant_aligned;
 
     RegSignal ena;
     RegSignal a;
@@ -106,10 +101,7 @@ class fmul_generic : public ModuleObject {
     RegArray  mantA;
     RegArray  mantB;
     WireArray<RegSignal> expAB;
-    WireArray<RegSignal> lzb_mant_shift;
-    WireArray<RegSignal> lzb_mant;
-    RegSignal mant_aligned_idx;
-    RegSignal mant_aligned;
+    RegSignal lzd_noscaling;
     RegSignal exp_res;
     RegSignal mant_res;
     RegSignal rnd_res;
@@ -117,16 +109,13 @@ class fmul_generic : public ModuleObject {
     RegSignal mant_res_rnd;
     RegSignal underflow;
     RegSignal overflow;
-    RegSignal dbg_expAB_t;
-    RegSignal dbg_explevel;
-    RegSignal dbg_lzd;
-    RegSignal dbg_vb_mant_res_rnd;
-    RegSignal dbg_vb_exp_res_rnd;
+    RegSignal ex;
 
     // process should be intialized last to make all signals available
     CombProcess comb;
     // submodules
     ModuleArray<fmul_istage> stagex;
+    lzd_scaler scaler0;
 };
 
 class fmul_generic_file : public FileObject {

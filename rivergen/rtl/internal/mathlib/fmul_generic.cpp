@@ -34,50 +34,42 @@ fmul_generic::fmul_generic(GenObject *parent, const char *name, const char *comm
     shiftbits(this, "shiftbits", "6", "Mantissa shift value: must be $clog2(mantmaxbits)"),
     explevel(this, "explevel", "SUB(POW2(1,SUB(expbits,1)),1)", "Level 1 for exponent: 1023 (double); 127 (fp32)"),
     hex_chunks(this, "hex_chunks", "DIV(ADD(mantbits,3),4)", "Number of hex multipliers"),
-    lzd_chunks(this, "lzd_chunks", "DIV(ADD(mantmaxbits,7),8)", "Leading Zero Detector chunks, each 8 bits"),
-    lzd_bits(this, "lzd_bits", "MUL(8,lzd_chunks)", "8 bits aligned 2*(mantissa+1) bitwise"),
+    latency(this, "latency", "ADD(hex_chunks,7)", "Cycles: 1 in latch + hex_chunks + 2 scaler + 2 rnd + 1 out latch + 1?"),
     // signals
-    wb_imul_result(this, "wb_imul_result", "106"),
-    wb_imul_shift(this, "wb_imul_shift", "7"),
-    w_imul_rdy(this, "w_imul_rdy", "1"),
-    w_imul_overflow(this, "w_imul_overflow", "1"),
     wb_hex_i(this, "wb_hex_i", "4", "hex_chunks", NO_COMMENT),
     wb_carry_i(this, "wb_carry_i", "ADD(mantbits,1)", "hex_chunks", NO_COMMENT),
     wb_zres_i(this, "wb_zres_i", "ADD(mantbits,1)", "hex_chunks", NO_COMMENT),
     wb_mant_lsb(this, "wb_mant_lsb", "ADD(mantbits,1)", "hex_chunks", NO_COMMENT),
     wb_mant_msb(this, "wb_mant_msb", "ADD(mantbits,1)", "hex_chunks", NO_COMMENT),
+    wb_mant_full(this, "wb_mant_full", "mantmaxbits", NO_COMMENT),
+    wb_mant_aligned_idx(this, "wb_mant_aligned_idx", "shiftbits", "'0", NO_COMMENT),
+    wb_mant_aligned(this, "wb_mant_aligned", "mantmaxbits", "'0", NO_COMMENT),
     // registers
-    ena(this, "ena", "ADD(hex_chunks,7)", "'0", NO_COMMENT),
+    ena(this, "ena", "latency", "'0", NO_COMMENT),
     a(this, "a", "fbits", "'0", NO_COMMENT),
     b(this, "b", "fbits", "'0", NO_COMMENT),
     result(this, "result", "fbits", "'0", NO_COMMENT),
-    sign(this, "sign", "11", "'0", NO_COMMENT),
+    sign(this, "sign", "SUB(latency,2)", "'0", NO_COMMENT),
     mantA(this, &i_clk, CLK_POSEDGE, &i_nrst, ACTIVE_LOW, "mantA", "ADD(mantbits,1)", "hex_chunks", "'0", NO_COMMENT),
     mantB(this, &i_clk, CLK_POSEDGE, &i_nrst, ACTIVE_LOW, "mantB", "ADD(mantbits,1)", "hex_chunks", "'0", NO_COMMENT),
     expAB(this, &i_clk, CLK_POSEDGE, &i_nrst, ACTIVE_LOW, "expAB", "ADD(expbits,2)", "ADD(hex_chunks,3)", "'0", NO_COMMENT),
-    lzb_mant_shift(this, &i_clk, CLK_POSEDGE, &i_nrst, ACTIVE_LOW, "lzb_mant_shift", "shiftbits", "lzd_chunks", "'0", NO_COMMENT),
-    lzb_mant(this, &i_clk, CLK_POSEDGE, &i_nrst, ACTIVE_LOW, "lzb_mant", "lzd_bits", "lzd_chunks", "'0", NO_COMMENT),
-    mant_aligned_idx(this, "mant_aligned_idx", "shiftbits", "'0", NO_COMMENT),
-    mant_aligned(this, "mant_aligned", "mantmaxbits", "'0", NO_COMMENT),
+    lzd_noscaling(this, "lzd_noscaling", "1", "0", NO_COMMENT),
     exp_res(this, "exp_res", "ADD(expbits,2)", "'0", NO_COMMENT),
     mant_res(this, "mant_res", "ADD(mantbits,1)", "'0", NO_COMMENT),
     rnd_res(this, "rnd_res", "1", "0", NO_COMMENT),
     exp_res_rnd(this, "exp_res_rnd", "expbits", "'0", NO_COMMENT),
     mant_res_rnd(this, "mant_res_rnd", "mantbits", "'0", NO_COMMENT),
-    underflow(this, "underflow", "2"),
-    overflow(this, "overflow", "2"),
-    dbg_expAB_t(this, "dbg_expAB_t", "ADD(expbits,2)", "'0", NO_COMMENT),
-    dbg_explevel(this, "dbg_explevel", "ADD(expbits,2)", "'0", NO_COMMENT),
-    dbg_lzd(this, "dbg_lzd", "lzd_bits"),
-    dbg_vb_mant_res_rnd(this, "dbg_vb_mant_res_rnd", "ADD(mantbits,2)", "'0", NO_COMMENT),
-    dbg_vb_exp_res_rnd(this, "dbg_vb_exp_res_rnd", "ADD(expbits,2)", "'0", NO_COMMENT),
+    underflow(this, "underflow", "1", RSTVAL_ZERO),
+    overflow(this, "overflow", "1", RSTVAL_ZERO),
+    ex(this, "ex", "1", RSTVAL_ZERO, "Exception: overflow or underflow"),
     // process
     comb(this),
-    stagex(this, "stagex", "hex_chunks", NO_COMMENT)
+    stagex(this, "stagex", "hex_chunks", NO_COMMENT),
+    scaler0(this, "scaler0", NO_COMMENT)
 {
     Operation::start(this);
 
-TEXT();
+    TEXT();
     GENERATE("istagegen");
     GenObject *i;
     i = &FORGEN("i", CONST("0"), hex_chunks, "++", new StringConst("istage_x"));
@@ -97,6 +89,18 @@ TEXT();
     ENDFORGEN(new StringConst("istage_x"));
     ENDGENERATE("istagegen");
 
+    TEXT();
+    scaler0.ibits.setObjValue(&mantmaxbits);
+    scaler0.shiftbits.setObjValue(&shiftbits);
+    NEW(scaler0, scaler0.getName().c_str());
+        CONNECT(scaler0, 0, scaler0.i_clk, i_clk);
+        CONNECT(scaler0, 0, scaler0.i_nrst, i_nrst);
+        CONNECT(scaler0, 0, scaler0.i_m, wb_mant_full);
+        CONNECT(scaler0, 0, scaler0.i_noscale, lzd_noscaling);
+        CONNECT(scaler0, 0, scaler0.o_scaled, wb_mant_aligned);
+        CONNECT(scaler0, 0, scaler0.o_scaled_factor, wb_mant_aligned_idx);
+    ENDNEW();
+
     Operation::start(&comb);
     proc_comb();
 }
@@ -105,20 +109,26 @@ void fmul_generic::proc_comb() {
     GenObject *i;
 
     SETBIT(comb.vb_ena, 0, i_ena);
-    SETVAL(ena, CC2(BITS(ena, ADD2(hex_chunks, CONST("5")), CONST("0")), i_ena));
+    SETVAL(ena, CC2(BITS(ena, SUB2(latency, CONST("2")), CONST("0")), i_ena));
 
     TEXT();
     SETVAL(a, i_a);
     SETVAL(b, i_b);
 
     TEXT();
-    SETVAL(sign, CC2(BITS(sign, 10, 0), XOR2(BIT(a, DEC(fbits)), BIT(b, DEC(fbits)))));
+    SETVAL(sign, CC2(BITS(sign, SUB2(latency, CONST("4")), CONST("0")), XOR2(BIT(a, DEC(fbits)), BIT(b, DEC(fbits)))));
 
     TEXT();
-    SETVAL(comb.vb_mantA, CCx(2, &OR_REDUCE(BITS(a, DEC(fbits), mantbits)),
-                              &BITS(a, DEC(mantbits), CONST("0"))));
-    SETVAL(comb.vb_mantB, CCx(2, &OR_REDUCE(BITS(b, DEC(fbits), mantbits)),
-                              &BITS(b, DEC(mantbits), CONST("0"))));
+    IF (EZ(BITS(a, SUB2(fbits, CONST("2")), mantbits)));
+        SETVAL(comb.vb_mantA, CC2(BITS(a, DEC(mantbits), CONST("0")), CONST("0", 1)));
+    ELSE();
+        SETVAL(comb.vb_mantA, CC2(CONST("1", 1), BITS(a, DEC(mantbits), CONST("0"))));
+    ENDIF();
+    IF (EZ(BITS(b, SUB2(fbits, CONST("2")), mantbits)));
+        SETVAL(comb.vb_mantB, CC2(BITS(b, DEC(mantbits), CONST("0")), CONST("0", 1)));
+    ELSE();
+        SETVAL(comb.vb_mantB, CC2(CONST("1", 1), BITS(b, DEC(mantbits), CONST("0"))));
+    ENDIF();
 
     TEXT();
     TEXT("");
@@ -140,85 +150,51 @@ void fmul_generic::proc_comb() {
     SETVAL(comb.vb_expA_t, CC2(CONST("0", 2), BITS(a, SUB2(fbits, CONST("2")), mantbits)));
     SETVAL(comb.vb_expB_t, CC2(CONST("0", 2), BITS(b, SUB2(fbits, CONST("2")), mantbits)));
     SETVAL(comb.vb_expAB_t, ADD2(comb.vb_expA_t, comb.vb_expB_t));
-    SETVAL(dbg_expAB_t, comb.vb_expAB_t, "DELME:");
-    SETVAL(dbg_explevel, TO_LOGIC(explevel, ADD2(expbits,CONST("2"))), "DELME:");
+    TEXT("pipeline exponent pre-scaled value:");
     SETARRITEM(expAB, CONST("0"), expAB, SUB2(comb.vb_expAB_t, TO_LOGIC(explevel, ADD2(expbits,CONST("2")))));
     i = &FOR_INC(ADD2(hex_chunks, CONST("2")));
         SETARRITEM(expAB, INC(*i), expAB, ARRITEM(expAB, *i, expAB));
     ENDFOR();
 
     TEXT();
-    TEXT("Detect Leading bit of Mantissa MSB.");
-    TEXT("Two stages:");
-    TEXT("      - Use chunks 8-bits each and save shifted mantissa for each chunk");
-    TEXT("      - Select the first non-zero shift");
-    TEXT("      - Ignore bits that out-of-range of exponent");
-    SETBITS(comb.vb_lzd, DEC(lzd_bits), SUB2(lzd_bits, mantmaxbits),
-            CC2(ARRITEM(wb_mant_msb, DEC(hex_chunks), wb_mant_msb), ARRITEM(wb_mant_lsb, DEC(hex_chunks), wb_mant_lsb)));
-    SETVAL(dbg_lzd, comb.vb_lzd, "REMOVE ME");
-    i = &FOR_INC(lzd_chunks);
-        IF (NZ(BIT(comb.vb_lzd, ADD2(MUL2(CONST("8"),*i), CONST("7")))));
-            TEXT("No shift:");
-            SETARRITEM(lzb_mant_shift, *i, lzb_mant_shift, TO_LOGIC(SUB2(mantmaxbits, ADD2(MUL2(CONST("8"),*i), CONST("8"))), shiftbits));
-            IF (NE(*i, DEC(lzd_chunks)));
-                SETARRITEM(lzb_mant, *i, lzb_mant, LSH(comb.vb_lzd, MUL2(CONST("8"), SUB2(DEC(lzd_chunks), *i))));
-            ELSE();
-                SETARRITEM(lzb_mant, *i, lzb_mant, comb.vb_lzd);
-            ENDIF();
-        ELSIF (NZ(BIT(comb.vb_lzd, ADD2(MUL2(CONST("8"),*i), CONST("6")))));
-            SETARRITEM(lzb_mant_shift, *i, lzb_mant_shift, TO_LOGIC(SUB2(mantmaxbits, ADD2(MUL2(CONST("8"),*i), CONST("7"))), shiftbits));
-            SETARRITEM(lzb_mant, *i, lzb_mant, LSH(comb.vb_lzd, ADD2(MUL2(CONST("8"), SUB2(DEC(lzd_chunks), *i)), CONST("1"))));
-        ELSIF (NZ(BIT(comb.vb_lzd, ADD2(MUL2(CONST("8"),*i), CONST("5")))));
-            SETARRITEM(lzb_mant_shift, *i, lzb_mant_shift, TO_LOGIC(SUB2(mantmaxbits, ADD2(MUL2(CONST("8"),*i), CONST("6"))), shiftbits));
-            SETARRITEM(lzb_mant, *i, lzb_mant, LSH(comb.vb_lzd, ADD2(MUL2(CONST("8"), SUB2(DEC(lzd_chunks), *i)), CONST("2"))));
-        ELSIF (NZ(BIT(comb.vb_lzd, ADD2(MUL2(CONST("8"),*i), CONST("4")))));
-            SETARRITEM(lzb_mant_shift, *i, lzb_mant_shift, TO_LOGIC(SUB2(mantmaxbits, ADD2(MUL2(CONST("8"),*i), CONST("5"))), shiftbits));
-            SETARRITEM(lzb_mant, *i, lzb_mant, LSH(comb.vb_lzd, ADD2(MUL2(CONST("8"), SUB2(DEC(lzd_chunks), *i)), CONST("3"))));
-        ELSIF (NZ(BIT(comb.vb_lzd, ADD2(MUL2(CONST("8"),*i), CONST("3")))));
-            SETARRITEM(lzb_mant_shift, *i, lzb_mant_shift, TO_LOGIC(SUB2(mantmaxbits, ADD2(MUL2(CONST("8"),*i), CONST("4"))), shiftbits));
-            SETARRITEM(lzb_mant, *i, lzb_mant, LSH(comb.vb_lzd, ADD2(MUL2(CONST("8"), SUB2(DEC(lzd_chunks), *i)), CONST("4"))));
-        ELSIF (NZ(BIT(comb.vb_lzd, ADD2(MUL2(CONST("8"),*i), CONST("2")))));
-            SETARRITEM(lzb_mant_shift, *i, lzb_mant_shift, TO_LOGIC(SUB2(mantmaxbits, ADD2(MUL2(CONST("8"),*i), CONST("3"))), shiftbits));
-            SETARRITEM(lzb_mant, *i, lzb_mant, LSH(comb.vb_lzd, ADD2(MUL2(CONST("8"), SUB2(DEC(lzd_chunks), *i)), CONST("5"))));
-        ELSIF (NZ(BIT(comb.vb_lzd, ADD2(MUL2(CONST("8"),*i), CONST("1")))));
-            SETARRITEM(lzb_mant_shift, *i, lzb_mant_shift, TO_LOGIC(SUB2(mantmaxbits, ADD2(MUL2(CONST("8"),*i), CONST("2"))), shiftbits));
-            SETARRITEM(lzb_mant, *i, lzb_mant, LSH(comb.vb_lzd, ADD2(MUL2(CONST("8"), SUB2(DEC(lzd_chunks), *i)), CONST("6"))));
-        ELSIF (NZ(BIT(comb.vb_lzd, ADD2(MUL2(CONST("8"),*i), CONST("0")))));
-            SETARRITEM(lzb_mant_shift, *i, lzb_mant_shift, TO_LOGIC(SUB2(mantmaxbits, ADD2(MUL2(CONST("8"),*i), CONST("1"))), shiftbits));
-            SETARRITEM(lzb_mant, *i, lzb_mant, LSH(comb.vb_lzd, ADD2(MUL2(CONST("8"), SUB2(DEC(lzd_chunks), *i)), CONST("7"))));
-        ELSE();
-            SETARRITEM(lzb_mant_shift, *i, lzb_mant_shift, ALLZEROS());
-            SETARRITEM(lzb_mant, *i, lzb_mant, ALLZEROS());
-        ENDIF();
-    ENDFOR();
+    TEXT("Full istage output is valid when (goes to Leading Zero Detector Scaler):");
+    TEXT("      FP32: hex_chunks=6, ena[7]");
+    TEXT("      ena[hex_chunks + 1] == 1");
+    TEXT("      expAB[hex_chunks]");
+    TEXT("      {wb_mant_msb[hex_chunks - 1], wb_mant_lsb[hex_chunks - 1]}");
+    TEXT("");
+    TEXT("Do not scale mantissa if the pre-scaled exponent <= 0:");
+    SETZERO(lzd_noscaling);
+    IF (ORx(2, &NZ(BIT(ARRITEM(expAB, DEC(hex_chunks), expAB), INC(expbits))),
+                &EZ(ARRITEM(expAB, DEC(hex_chunks), expAB))));
+        SETVAL(lzd_noscaling, BIT(ena, hex_chunks));
+    ENDIF();
+    SETVAL(wb_mant_full, CC2(ARRITEM(wb_mant_msb, DEC(hex_chunks), wb_mant_msb), ARRITEM(wb_mant_lsb, DEC(hex_chunks), wb_mant_lsb)));
 
     TEXT();
-    SETZERO(mant_aligned_idx);
-    SETZERO(mant_aligned);
-    i = &FOR_INC(lzd_chunks);
-        IF (NZ(BIT(ARRITEM(lzb_mant, *i, lzb_mant), DEC(lzd_bits))));
-            SETVAL(mant_aligned_idx, ARRITEM(lzb_mant_shift, *i, lzb_mant_shift));
-            SETVAL(mant_aligned, BITS(ARRITEM(lzb_mant, *i, lzb_mant), DEC(lzd_bits), SUB2(lzd_bits, mantmaxbits)));
-        ENDIF();
-    ENDFOR();
+    SETVAL(exp_res, SUB2(ARRITEM(expAB, ADD2(hex_chunks, CONST("2")), expAB), wb_mant_aligned_idx));
+    SETVAL(mant_res, BITS(wb_mant_aligned, DEC(mantmaxbits), SUB2(mantmaxbits, INC(mantbits))));
 
     TEXT();
-    SETVAL(exp_res, SUB2(ARRITEM(expAB, ADD2(hex_chunks, CONST("2")), expAB), mant_aligned_idx));
-    SETVAL(mant_res, BITS(mant_aligned, DEC(mantmaxbits), SUB2(mantmaxbits, INC(mantbits))));
-    SETVAL(comb.mant_even, INV(BIT(mant_aligned, SUB2(mantmaxbits, INC(mantbits)))));
-    SETVAL(comb.mant_rnd, BIT(mant_aligned, SUB2(mantmaxbits, ADD2(mantbits, CONST("2")))));
-    SETVAL(comb.mant05, AND2_L(comb.mant_rnd, INV_L(OR_REDUCE(BITS(mant_aligned, SUB2(mantmaxbits, ADD2(mantbits, CONST("3"))), CONST("0"))))));
+    TEXT("Rounding bit:");
+    SETVAL(comb.mant_even, INV(BIT(wb_mant_aligned, SUB2(mantmaxbits, INC(mantbits)))));
+    SETVAL(comb.mant_rnd, BIT(wb_mant_aligned, SUB2(mantmaxbits, ADD2(mantbits, CONST("2")))));
+    SETVAL(comb.mant05, AND2_L(comb.mant_rnd, INV_L(OR_REDUCE(BITS(wb_mant_aligned, SUB2(mantmaxbits, ADD2(mantbits, CONST("3"))), CONST("0"))))));
     SETVAL(rnd_res, AND2(comb.mant_rnd, INV(AND2(comb.mant05, comb.mant_even))));
     
     TEXT();
     SETVAL(comb.vb_mant_res_rnd, ADD2(CC2(CONST("0", 1), mant_res), CC2(ALLZEROS(), rnd_res)));
     SETVAL(comb.vb_exp_res_rnd, ADD2(exp_res, CC2(ALLZEROS(), BITS(comb.vb_mant_res_rnd, INC(mantbits), mantbits))));
+
+    TEXT();
+    TEXT("Overflow: exponent is positive but out-of-range of 'expbits':");
     SETVAL(comb.v_overflow, AND2(INV(BIT(comb.vb_exp_res_rnd, INC(expbits))), BIT(comb.vb_exp_res_rnd, expbits)), "FP32 (exp-8): 01.****.****");
-    SETVAL(overflow, CC2(BIT(overflow, 0), comb.v_overflow));
+    SETVAL(overflow, comb.v_overflow);
+
+    TEXT();
+    TEXT("Undeflow: exponent is negative:");
     SETVAL(comb.v_underflow, BIT(comb.vb_exp_res_rnd, INC(expbits)));
-    SETVAL(underflow, CC2(BIT(underflow, 0), comb.v_underflow));
-    SETVAL(dbg_vb_mant_res_rnd, comb.vb_mant_res_rnd);
-    SETVAL(dbg_vb_exp_res_rnd, comb.vb_exp_res_rnd);
+    SETVAL(underflow, comb.v_underflow);
 
     TEXT();
     TEXT("De-normals are the value with the zero exponent (Intel compiler flags):");
@@ -236,14 +212,17 @@ void fmul_generic::proc_comb() {
         SETVAL(exp_res_rnd, BITS(comb.vb_exp_res_rnd, DEC(expbits), CONST("0")));
         SETVAL(mant_res_rnd, BITS(comb.vb_mant_res_rnd, DEC(mantbits), CONST("0")));
     ENDIF();
-    SETVAL(result, CC3(BIT(sign, 10), exp_res_rnd, mant_res_rnd));
+    SETVAL(ex, AND2_L(BIT(ena, SUB2(latency, CONST("2"))), OR2_L(overflow, underflow)));
+
+    TEXT();
+    SETVAL(result, CC3(BIT(sign, SUB2(latency, CONST("3"))), exp_res_rnd, mant_res_rnd));
 
     TEXT();
     SYNC_RESET();
 
     TEXT();
     SETVAL(o_res, result);
-    SETVAL(o_overflow, BIT(overflow, 1));
-    SETVAL(o_valid, BIT(ena, ADD2(hex_chunks, CONST("6"))));
+    SETVAL(o_overflow, ex);
+    SETVAL(o_valid, BIT(ena, DEC(latency)));
 }
 

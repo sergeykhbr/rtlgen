@@ -17,6 +17,7 @@
 #pragma once
 
 #include <api_rtlgen.h>
+#include "lzd_scaler.h"
 #include "fmul_istage.h"
 #include "fmul_generic.h"
 #include "mul_i8.h"
@@ -26,12 +27,14 @@ class mathlib_folder : public FolderObject {
  public:
     mathlib_folder(GenObject *parent) :
         FolderObject(parent, "mathlib"),
+        lzd_scaler_file_(this),
         fmul_istage_file_(this),
         fmul_generic_file_(this),
         mul_i8_file_(this),
         mul_4x4_i8_file_(this) {}
 
  protected:
+    lzd_scaler_file lzd_scaler_file_;
     fmul_istage_file fmul_istage_file_;
     fmul_generic_file fmul_generic_file_;
     mul_i8_file mul_i8_file_;
