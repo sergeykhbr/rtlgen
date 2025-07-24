@@ -30,7 +30,7 @@ fmul_tb::fmul_tb(GenObject *parent, const char *name) :
     w_overflow(this, "w_overflow", "1", RSTVAL_ZERO, NO_COMMENT),
     // regs
     clk_cnt(this, &clk, CLK_POSEDGE, &nrst, ACTIVE_LOW,  "clk_cnt", "32", "'0", NO_COMMENT),
-    compare_a(this, &clk, CLK_POSEDGE, &nrst, ACTIVE_LOW,  "compare_a", "32", "'0", NO_COMMENT),
+    compare_a(this, &clk, CLK_POSEDGE, &nrst, ACTIVE_LOW,  "compare_a", "32", "13", "'0", NO_COMMENT),
     // submodules:
     pll0(this, "pll0", NO_COMMENT),
     mul_fp32(this, "mul_fp32", NO_COMMENT),
@@ -73,25 +73,32 @@ fmul_tb::fmul_tb(GenObject *parent, const char *name) :
 }
 
 void fmul_tb::proc_comb() {
+    unsigned ia = 0;
+    unsigned ib = 0;
+    float fa = 0;
+    float fb = 0;
+
     SETVAL(clk_cnt, INC(clk_cnt));
     SETZERO(w_ena);
     SETZERO(wb_a);
     SETZERO(wb_b);
 
     IF (EQ(clk_cnt, CONST("10")));
+        fa = 3.1f;
+        fb = 0.006f;
         SETONE(w_ena);
-        SETVAL(wb_a, CONST_FP32(3.1f));
-        SETVAL(wb_b, CONST_FP32(0.006f));
-        SETVAL(compare_a, CONST_FP32(3.1f * 0.006f));
-    ELSIF (EQ(clk_cnt, CONST("11")));
-        unsigned ia = 0x3F800000;//0x000000ff;
-        unsigned ib = 0x00000020;
-        float fa = *reinterpret_cast<float *>(&ia);
-        float fb = *reinterpret_cast<float *>(&ib);
-        SETONE(w_ena);
-        SETVAL(wb_a, CONST_FP32(1.0f));
+        SETVAL(wb_a, CONST_FP32(fa));
         SETVAL(wb_b, CONST_FP32(fb));
-        SETVAL(compare_a, CONST_FP32(fa * fb));
+        SETARRITEM(compare_a, CONST("0"), compare_a, CONST_FP32(fa * fb));
+    ELSIF (EQ(clk_cnt, CONST("11")));
+        ia = 0x3F800000;//0x000000ff;
+        ib = 0x00000020;
+        fa = *reinterpret_cast<float *>(&ia);
+        fb = *reinterpret_cast<float *>(&ib);
+        SETONE(w_ena);
+        SETVAL(wb_a, CONST_FP32(fa));
+        SETVAL(wb_b, CONST_FP32(fb));
+        SETARRITEM(compare_a, CONST("0"), compare_a, CONST_FP32(fa * fb));
     ELSIF (EQ(clk_cnt, CONST("12")));
         ia = 0xafffffff;
         ib = 0x7f7ffffe;
@@ -100,7 +107,7 @@ void fmul_tb::proc_comb() {
         SETONE(w_ena);
         SETVAL(wb_a, CONST_FP32(fa));
         SETVAL(wb_b, CONST_FP32(fb));
-        SETVAL(compare_a, CONST_FP32(fa * fb));
+        SETARRITEM(compare_a, CONST("0"), compare_a, CONST_FP32(fa * fb));
     ELSIF (EQ(clk_cnt, CONST("20")));
         ia = 0x3f000001;
         ib = 0x00801010;
@@ -109,7 +116,7 @@ void fmul_tb::proc_comb() {
         SETONE(w_ena);
         SETVAL(wb_a, CONST_FP32(fa));
         SETVAL(wb_b, CONST_FP32(fb));
-        SETVAL(compare_a, CONST_FP32(fa * fb));
+        SETARRITEM(compare_a, CONST("0"), compare_a, CONST_FP32(fa * fb));
     ELSIF (EQ(clk_cnt, CONST("21")));
         ia = 0x3f000002;
         ib = 0x00081010;
@@ -118,9 +125,13 @@ void fmul_tb::proc_comb() {
         SETONE(w_ena);
         SETVAL(wb_a, CONST_FP32(fa));
         SETVAL(wb_b, CONST_FP32(fb));
-        SETVAL(compare_a, CONST_FP32(fa * fb));
+        SETARRITEM(compare_a, CONST("0"), compare_a, CONST_FP32(fa * fb));
     ELSE();
     ENDIF();
+
+    GenObject *i = &FOR_INC(DEC(CONST("13")));
+        SETARRITEM(compare_a, INC(*i), compare_a, ARRITEM(compare_a, *i, compare_a));
+    ENDFOR();
 }
 
 void fmul_tb::proc_test_clk() {

@@ -65,7 +65,7 @@ public:
 
     // regs
     RegSignal clk_cnt;
-    RegSignal compare_a;
+    WireArray<RegSignal> compare_a;
 
     // Sub-module instances:
     pll_generic pll0;
