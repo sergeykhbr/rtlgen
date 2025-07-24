@@ -28,6 +28,7 @@ class axi_mst_generator : public ModuleObject {
     axi_mst_generator(GenObject *parent, const char *name);
 
     virtual bool isAsyncResetParam() override { return false; }
+    virtual bool isTestBench() override { return true; }
 
     class CombProcess : public CombinationalProcess {
      public:

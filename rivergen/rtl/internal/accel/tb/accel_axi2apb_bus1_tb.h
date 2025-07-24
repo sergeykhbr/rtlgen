@@ -31,6 +31,7 @@ class accel_axi2apb_bus1_tb : public ModuleObject {
 
     virtual bool isTop() override { return true; }
     virtual bool isAsyncResetParam() override { return false; }
+    virtual bool isTestBench() override { return true; }
 
     class CombProcess : public CombinationalProcess {
      public:

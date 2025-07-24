@@ -29,6 +29,7 @@ class fmul_tb : public ModuleObject {
 
     virtual bool isTop() override { return true; }
     virtual bool isAsyncResetParam() override { return false; }
+    virtual bool isTestBench() override { return true; }
 
     class CombProcess : public CombinationalProcess {
      public:
@@ -61,10 +62,18 @@ public:
     Signal wb_b;
     Signal wb_res;
     Signal w_valid;
-    Signal w_overflow;
+    Signal w_ex;
+    Signal w_compare_ena;
+    Signal wb_compare_a;
+    Signal w_show_result;
 
     // regs
     RegSignal clk_cnt;
+    RegSignal test_cnt;
+    RegSignal compare_cnt;
+    RegSignal err_cnt;
+    RegSignal pause_cnt;
+    RegSignal state;
     WireArray<RegSignal> compare_a;
 
     // Sub-module instances:

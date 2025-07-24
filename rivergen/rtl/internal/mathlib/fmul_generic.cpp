@@ -26,7 +26,7 @@ fmul_generic::fmul_generic(GenObject *parent, const char *name, const char *comm
     i_a(this, "i_a", "fbits", "Operand 1"),
     i_b(this, "i_b", "fbits", "Operand 2"),
     o_res(this, "o_res", "fbits", "Result"),
-    o_overflow(this, "o_overflow", "1"),
+    o_ex(this, "o_ex", "1", "Exception, overflow or underflow"),
     o_valid(this, "o_valid", "1", "Result is valid"),
     // parameters
     mantbits(this, "mantbits", "23", "Mantissa bitwidth: FP64 = 52, FP32 = 23, FP16 = 10, BF16 = 7"),
@@ -222,7 +222,7 @@ void fmul_generic::proc_comb() {
 
     TEXT();
     SETVAL(o_res, result);
-    SETVAL(o_overflow, ex);
+    SETVAL(o_ex, ex);
     SETVAL(o_valid, BIT(ena, DEC(latency)));
 }
 

@@ -29,6 +29,7 @@ class axi_slv_tb : public ModuleObject {
 
     virtual bool isTop() override { return true; }
     virtual bool isAsyncResetParam() override { return false; }
+    virtual bool isTestBench() override { return true; }
 
     class CombProcess : public CombinationalProcess {
      public:

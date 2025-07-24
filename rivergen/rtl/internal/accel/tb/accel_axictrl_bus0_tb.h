@@ -37,6 +37,7 @@ class accel_axictrl_bus0_tb : public ModuleObject {
 
     virtual bool isTop() override { return true; }
     virtual bool isAsyncResetParam() override { return false; }
+    virtual bool isTestBench() override { return true; }
 
     class CombProcess : public CombinationalProcess {
      public:

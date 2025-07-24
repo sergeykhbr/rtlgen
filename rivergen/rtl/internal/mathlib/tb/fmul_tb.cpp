@@ -27,9 +27,17 @@ fmul_tb::fmul_tb(GenObject *parent, const char *name) :
     wb_b(this, "wb_b", "32", RSTVAL_ZERO, NO_COMMENT),
     wb_res(this, "wb_res", "32", RSTVAL_ZERO, NO_COMMENT),
     w_valid(this, "w_valid", "1", RSTVAL_ZERO, NO_COMMENT),
-    w_overflow(this, "w_overflow", "1", RSTVAL_ZERO, NO_COMMENT),
+    w_ex(this, "w_ex", "1", RSTVAL_ZERO, NO_COMMENT),
+    w_compare_ena(this, "w_compare_ena", "1", "'0", NO_COMMENT),
+    wb_compare_a(this, "wb_compare_a", "32", "'0", NO_COMMENT),
+    w_show_result(this, "w_show_result", "1", "'0", NO_COMMENT),
     // regs
     clk_cnt(this, &clk, CLK_POSEDGE, &nrst, ACTIVE_LOW,  "clk_cnt", "32", "'0", NO_COMMENT),
+    test_cnt(this, &clk, CLK_POSEDGE, &nrst, ACTIVE_LOW,  "test_cnt", "32", "'0", NO_COMMENT),
+    compare_cnt(this, &clk, CLK_POSEDGE, &nrst, ACTIVE_LOW,  "compare_cnt", "32", "'0", NO_COMMENT),
+    err_cnt(this, &clk, CLK_POSEDGE, &nrst, ACTIVE_LOW,  "err_cnt", "32", "'0", NO_COMMENT),
+    pause_cnt(this, &clk, CLK_POSEDGE, &nrst, ACTIVE_LOW,  "pause_cnt", "32", "'0", NO_COMMENT),
+    state(this, &clk, CLK_POSEDGE, &nrst, ACTIVE_LOW,  "state", "4", "'0", NO_COMMENT),
     compare_a(this, &clk, CLK_POSEDGE, &nrst, ACTIVE_LOW,  "compare_a", "32", "13", "'0", NO_COMMENT),
     // submodules:
     pll0(this, "pll0", NO_COMMENT),
@@ -56,7 +64,7 @@ fmul_tb::fmul_tb(GenObject *parent, const char *name) :
         CONNECT(mul_fp32, 0, mul_fp32.i_b, wb_b);
         CONNECT(mul_fp32, 0, mul_fp32.o_res, wb_res);
         CONNECT(mul_fp32, 0, mul_fp32.o_valid, w_valid);
-        CONNECT(mul_fp32, 0, mul_fp32.o_overflow, w_overflow);
+        CONNECT(mul_fp32, 0, mul_fp32.o_ex, w_ex);
     ENDNEW();
 
     TEXT();
@@ -82,6 +90,8 @@ void fmul_tb::proc_comb() {
     SETZERO(w_ena);
     SETZERO(wb_a);
     SETZERO(wb_b);
+    SETZERO(w_compare_ena);
+    SETZERO(w_show_result);
 
     IF (EQ(clk_cnt, CONST("10")));
         fa = 3.1f;
@@ -126,14 +136,48 @@ void fmul_tb::proc_comb() {
         SETVAL(wb_a, CONST_FP32(fa));
         SETVAL(wb_b, CONST_FP32(fb));
         SETARRITEM(compare_a, CONST("0"), compare_a, CONST_FP32(fa * fb));
-    ELSE();
+    ELSIF (EQ(clk_cnt, CONST("40")));
+    ELSIF(GE(clk_cnt, CONST("50")));
+        SWITCH(state);
+        CASE(CONST("0", 4));
+            IF (NZ(pause_cnt));
+                SETVAL(pause_cnt, DEC(pause_cnt));
+            ELSE();
+                SETVAL(state, CONST("1", 4));
+                SETVAL(test_cnt, INC(test_cnt));
+            ENDIF();
+        ENDCASE();
+        CASE(CONST("1", 4));
+            
+        ENDCASE();
+        CASEDEF();
+        ENDCASE();
+        ENDSWITCH();
+        SETONE(w_show_result);
     ENDIF();
 
     GenObject *i = &FOR_INC(DEC(CONST("13")));
         SETARRITEM(compare_a, INC(*i), compare_a, ARRITEM(compare_a, *i, compare_a));
     ENDFOR();
+
+    TEXT();
+    TEXT("Prepare compare statistic:");
+    IF (AND2(NZ(w_valid), EZ(w_ex)));
+        SETONE(w_compare_ena);
+        SETVAL(compare_cnt, INC(compare_cnt));
+        IF (NE(wb_res, ARRITEM(compare_a, DEC(CONST("13")), compare_a)));
+            SETVAL(err_cnt, INC(err_cnt));
+        ENDIF();
+    ENDIF();
+    SETVAL(wb_compare_a, ARRITEM(compare_a, DEC(CONST("13")), compare_a));
 }
 
 void fmul_tb::proc_test_clk() {
+    IF (w_compare_ena);
+        EXPECT_EQ(wb_compare_a, wb_res, "FMUL compare");
+    ENDIF();
+    IF (NZ(w_show_result));
+        DISPLAY_ERROR(compare_cnt, err_cnt, "FMUL errors");
+    ENDIF();
 }
 

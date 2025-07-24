@@ -73,7 +73,7 @@ class fmul_generic : public ModuleObject {
     InPort i_a;
     InPort i_b;
     OutPort o_res;
-    OutPort o_overflow;
+    OutPort o_ex;
     OutPort o_valid;
 
     ParamI32D mantbits;
