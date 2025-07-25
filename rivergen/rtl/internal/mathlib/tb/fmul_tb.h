@@ -34,11 +34,9 @@ class fmul_tb : public ModuleObject {
     class CombProcess : public CombinationalProcess {
      public:
         CombProcess(GenObject *parent) :
-            CombinationalProcess(parent, "comb"),
-            vb_m00(this, "vb_m00", "8", "1", NO_COMMENT) {
+            CombinationalProcess(parent, "comb") {
         }
      public:
-        Logic vb_m00;
     };
 
     // Clock1
@@ -69,11 +67,8 @@ public:
 
     // regs
     RegSignal clk_cnt;
-    RegSignal test_cnt;
     RegSignal compare_cnt;
     RegSignal err_cnt;
-    RegSignal pause_cnt;
-    RegSignal state;
     WireArray<RegSignal> compare_a;
 
     // Sub-module instances:

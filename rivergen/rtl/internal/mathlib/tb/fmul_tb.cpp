@@ -33,11 +33,8 @@ fmul_tb::fmul_tb(GenObject *parent, const char *name) :
     w_show_result(this, "w_show_result", "1", "'0", NO_COMMENT),
     // regs
     clk_cnt(this, &clk, CLK_POSEDGE, &nrst, ACTIVE_LOW,  "clk_cnt", "32", "'0", NO_COMMENT),
-    test_cnt(this, &clk, CLK_POSEDGE, &nrst, ACTIVE_LOW,  "test_cnt", "32", "'0", NO_COMMENT),
     compare_cnt(this, &clk, CLK_POSEDGE, &nrst, ACTIVE_LOW,  "compare_cnt", "32", "'0", NO_COMMENT),
     err_cnt(this, &clk, CLK_POSEDGE, &nrst, ACTIVE_LOW,  "err_cnt", "32", "'0", NO_COMMENT),
-    pause_cnt(this, &clk, CLK_POSEDGE, &nrst, ACTIVE_LOW,  "pause_cnt", "32", "'0", NO_COMMENT),
-    state(this, &clk, CLK_POSEDGE, &nrst, ACTIVE_LOW,  "state", "4", "'0", NO_COMMENT),
     compare_a(this, &clk, CLK_POSEDGE, &nrst, ACTIVE_LOW,  "compare_a", "32", "13", "'0", NO_COMMENT),
     // submodules:
     pll0(this, "pll0", NO_COMMENT),
@@ -136,25 +133,82 @@ void fmul_tb::proc_comb() {
         SETVAL(wb_a, CONST_FP32(fa));
         SETVAL(wb_b, CONST_FP32(fb));
         SETARRITEM(compare_a, CONST("0"), compare_a, CONST_FP32(fa * fb));
-    ELSIF (EQ(clk_cnt, CONST("40")));
-    ELSIF(GE(clk_cnt, CONST("50")));
-        SWITCH(state);
-        CASE(CONST("0", 4));
-            IF (NZ(pause_cnt));
-                SETVAL(pause_cnt, DEC(pause_cnt));
-            ELSE();
-                SETVAL(state, CONST("1", 4));
-                SETVAL(test_cnt, INC(test_cnt));
-            ENDIF();
-        ENDCASE();
-        CASE(CONST("1", 4));
-            
-        ENDCASE();
-        CASEDEF();
-        ENDCASE();
-        ENDSWITCH();
+    ELSIF (EQ(clk_cnt, CONST("22")));
+        ia = 0xbfc00002;
+        ib = 0x01091010;
+        fa = *reinterpret_cast<float *>(&ia);
+        fb = *reinterpret_cast<float *>(&ib);
+        SETONE(w_ena);
+        SETVAL(wb_a, CONST_FP32(fa));
+        SETVAL(wb_b, CONST_FP32(fb));
+        SETARRITEM(compare_a, CONST("0"), compare_a, CONST_FP32(fa * fb));
+    ELSIF (EQ(clk_cnt, CONST("23")));
+        ia = 0x35d00005;
+        ib = 0x8309101f;
+        fa = *reinterpret_cast<float *>(&ia);
+        fb = *reinterpret_cast<float *>(&ib);
+        SETONE(w_ena);
+        SETVAL(wb_a, CONST_FP32(fa));
+        SETVAL(wb_b, CONST_FP32(fb));
+        SETARRITEM(compare_a, CONST("0"), compare_a, CONST_FP32(fa * fb));
+    ELSIF (EQ(clk_cnt, CONST("24")));
+        ia = 0xf5400509;
+        ib = 0xa3e9103f;
+        fa = *reinterpret_cast<float *>(&ia);
+        fb = *reinterpret_cast<float *>(&ib);
+        SETONE(w_ena);
+        SETVAL(wb_a, CONST_FP32(fa));
+        SETVAL(wb_b, CONST_FP32(fb));
+        SETARRITEM(compare_a, CONST("0"), compare_a, CONST_FP32(fa * fb));
+    ELSIF (EQ(clk_cnt, CONST("25")));
+        ia = 0xff800001;
+        ib = 0xff800000;
+        fa = *reinterpret_cast<float *>(&ia);
+        fb = *reinterpret_cast<float *>(&ib);
+        SETONE(w_ena);
+        SETVAL(wb_a, CONST_FP32(fa));
+        SETVAL(wb_b, CONST_FP32(fb));
+        SETARRITEM(compare_a, CONST("0"), compare_a, CONST_FP32(fa * fb));
+    ELSIF (EQ(clk_cnt, CONST("26")));
+        ia = 0xbf800001;
+        ib = 0xbf800000;
+        fa = *reinterpret_cast<float *>(&ia);
+        fb = *reinterpret_cast<float *>(&ib);
+        SETONE(w_ena);
+        SETVAL(wb_a, CONST_FP32(fa));
+        SETVAL(wb_b, CONST_FP32(fb));
+        SETARRITEM(compare_a, CONST("0"), compare_a, CONST_FP32(fa * fb));
+    ELSIF (EQ(clk_cnt, CONST("27")));
+        ia = 0xbfc00002;
+        ib = 0xbfc00001;
+        fa = *reinterpret_cast<float *>(&ia);
+        fb = *reinterpret_cast<float *>(&ib);
+        SETONE(w_ena);
+        SETVAL(wb_a, CONST_FP32(fa));
+        SETVAL(wb_b, CONST_FP32(fb));
+        SETARRITEM(compare_a, CONST("0"), compare_a, CONST_FP32(fa * fb));
+    ELSIF (EQ(clk_cnt, CONST("28")));
+        ia = 0x80800002;
+        ib = 0x7f000003;
+        fa = *reinterpret_cast<float *>(&ia);
+        fb = *reinterpret_cast<float *>(&ib);
+        SETONE(w_ena);
+        SETVAL(wb_a, CONST_FP32(fa));
+        SETVAL(wb_b, CONST_FP32(fb));
+        SETARRITEM(compare_a, CONST("0"), compare_a, CONST_FP32(fa * fb));
+    ELSIF (EQ(clk_cnt, CONST("29")));
+        ia = 0x007fffff;
+        ib = 0x7e7fffff;
+        fa = *reinterpret_cast<float *>(&ia);
+        fb = *reinterpret_cast<float *>(&ib);
+        SETONE(w_ena);
+        SETVAL(wb_a, CONST_FP32(fa));
+        SETVAL(wb_b, CONST_FP32(fb));
+        SETARRITEM(compare_a, CONST("0"), compare_a, CONST_FP32(fa * fb));
+    ELSIF(EQ(clk_cnt, CONST("60")));
         SETONE(w_show_result);
     ENDIF();
+
 
     GenObject *i = &FOR_INC(DEC(CONST("13")));
         SETARRITEM(compare_a, INC(*i), compare_a, ARRITEM(compare_a, *i, compare_a));
