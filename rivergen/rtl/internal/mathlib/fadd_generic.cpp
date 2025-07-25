@@ -14,10 +14,10 @@
 //  limitations under the License.
 // 
 
-#include "fmul_generic.h"
+#include "fadd_generic.h"
 
-fmul_generic::fmul_generic(GenObject *parent, const char *name, const char *comment) :
-    ModuleObject(parent, "fmul_generic", name, comment),
+fadd_generic::fadd_generic(GenObject *parent, const char *name, const char *comment) :
+    ModuleObject(parent, "fadd_generic", name, comment),
     fbits(this, "fbits", "32", "Input format: FP32 = 32, FP16 = 16, BF16 = 16"),
     expbits(this, "expbits", "8", "Exponent bitwidth: FP64 = 11, FP32 = 8, FP16 = 5, BF16 = 8"),
     shiftbits(this, "shiftbits", "6", "Mantissa scale factor bits: must be $clog2(2*(fbits-expbits)), avoid using $clog2"),
@@ -33,14 +33,8 @@ fmul_generic::fmul_generic(GenObject *parent, const char *name, const char *comm
     mantbits(this, "mantbits", "SUB(SUB(fbits,expbits),1)", "Encoded mantissa bitwidth: FP64 = 52, FP32 = 23, FP16 = 10, BF16 = 7"),
     mantmaxbits(this, "mantmaxbits", "MUL(2,ADD(mantbits,1))", "Mantissa maximum bitwidth before shifting"),
     explevel(this, "explevel", "SUB(POW2(1,SUB(expbits,1)),1)", "Level 1 for exponent: 1023 (double); 127 (fp32)"),
-    hex_chunks(this, "hex_chunks", "DIV(ADD(mantbits,3),4)", "Number of hex multipliers"),
     latency(this, "latency", "ADD(hex_chunks,7)", "Cycles: 1 in latch + hex_chunks + 2 scaler + 2 rnd + 1 out latch + 1?"),
     // signals
-    wb_hex_i(this, "wb_hex_i", "4", "hex_chunks", NO_COMMENT),
-    wb_carry_i(this, "wb_carry_i", "ADD(mantbits,1)", "hex_chunks", NO_COMMENT),
-    wb_zres_i(this, "wb_zres_i", "ADD(mantbits,1)", "hex_chunks", NO_COMMENT),
-    wb_mant_lsb(this, "wb_mant_lsb", "ADD(mantbits,1)", "hex_chunks", NO_COMMENT),
-    wb_mant_msb(this, "wb_mant_msb", "ADD(mantbits,1)", "hex_chunks", NO_COMMENT),
     wb_mant_full(this, "wb_mant_full", "mantmaxbits", NO_COMMENT),
     wb_mant_aligned_idx(this, "wb_mant_aligned_idx", "shiftbits", "'0", NO_COMMENT),
     wb_mant_aligned(this, "wb_mant_aligned", "mantmaxbits", "'0", NO_COMMENT),
@@ -49,10 +43,16 @@ fmul_generic::fmul_generic(GenObject *parent, const char *name, const char *comm
     a(this, "a", "fbits", "'0", NO_COMMENT),
     b(this, "b", "fbits", "'0", NO_COMMENT),
     result(this, "result", "fbits", "'0", NO_COMMENT),
-    sign(this, "sign", "SUB(latency,2)", "'0", NO_COMMENT),
-    mantA(this, &i_clk, CLK_POSEDGE, &i_nrst, ACTIVE_LOW, "mantA", "ADD(mantbits,1)", "hex_chunks", "'0", NO_COMMENT),
-    mantB(this, &i_clk, CLK_POSEDGE, &i_nrst, ACTIVE_LOW, "mantB", "ADD(mantbits,1)", "hex_chunks", "'0", NO_COMMENT),
-    expAB(this, &i_clk, CLK_POSEDGE, &i_nrst, ACTIVE_LOW, "expAB", "ADD(expbits,2)", "ADD(hex_chunks,3)", "'0", NO_COMMENT),
+    signA(this, "signA", "SUB(latency,2)", "'0", NO_COMMENT),
+    signB(this, "signB", "SUB(latency,2)", "'0", NO_COMMENT),
+    mantA(this, "mantA", "ADD(mantbits,1)", "'0", NO_COMMENT),
+    mantB(this, "mantB", "ADD(mantbits,1)", "'0", NO_COMMENT),
+    mantA_unsigned(this, "mantA_unsigned", "ADD(mantbits,1)", "'0", NO_COMMENT),
+    mantB_unsigned(this, "mantB_unsigned", "ADD(mantbits,1)", "'0", NO_COMMENT),
+    mantA_descaled(this, "mantA_descaled", "ADD(mantbits,1)", "'0", NO_COMMENT),
+    mantB_descaled(this, "mantB_descaled", "ADD(mantbits,1)", "'0", NO_COMMENT),
+    expAB(this, "expAB", "ADD(expbits,2)", "'0", NO_COMMENT),
+    expAB_unsigned(this, "expAB_unsigned", "ADD(expbits,2)", "'0", NO_COMMENT),
     lzd_noscaling(this, "lzd_noscaling", "1", "0", NO_COMMENT),
     exp_res(this, "exp_res", "ADD(expbits,2)", "'0", NO_COMMENT),
     mant_res(this, "mant_res", "ADD(mantbits,1)", "'0", NO_COMMENT),
@@ -64,30 +64,9 @@ fmul_generic::fmul_generic(GenObject *parent, const char *name, const char *comm
     ex(this, "ex", "1", RSTVAL_ZERO, "Exception: overflow or underflow"),
     // process
     comb(this),
-    stagex(this, "stagex", "hex_chunks", NO_COMMENT),
     scaler0(this, "scaler0", NO_COMMENT)
 {
     Operation::start(this);
-
-    TEXT();
-    GENERATE("istagegen");
-    GenObject *i;
-    i = &FORGEN("i", CONST("0"), hex_chunks, "++", new StringConst("istage_x"));
-        stagex.idx.setObjValue(i);
-        stagex.ibits.setObjValue(&INC(mantbits));
-        stagex.mbits.setObjValue(&CONST("4"));
-        NEW(stagex, stagex.getName().c_str(), i);
-            CONNECT(stagex, i, stagex.i_clk, i_clk);
-            CONNECT(stagex, i, stagex.i_nrst, i_nrst);
-            CONNECT(stagex, i, stagex.i_a, ARRITEM_B(mantA, *i, mantA));
-            CONNECT(stagex, i, stagex.i_m, ARRITEM_B(wb_hex_i, *i, wb_hex_i));
-            CONNECT(stagex, i, stagex.i_zres, ARRITEM_B(wb_zres_i, *i, wb_zres_i));
-            CONNECT(stagex, i, stagex.i_carry, ARRITEM_B(wb_carry_i, *i, wb_carry_i));
-            CONNECT(stagex, i, stagex.o_result, ARRITEM_B(wb_mant_lsb, *i, wb_mant_lsb));
-            CONNECT(stagex, i, stagex.o_carry, ARRITEM_B(wb_mant_msb, *i, wb_mant_msb));
-        ENDNEW();
-    ENDFORGEN(new StringConst("istage_x"));
-    ENDGENERATE("istagegen");
 
     TEXT();
     scaler0.ibits.setObjValue(&mantmaxbits);
@@ -105,7 +84,7 @@ fmul_generic::fmul_generic(GenObject *parent, const char *name, const char *comm
     proc_comb();
 }
 
-void fmul_generic::proc_comb() {
+void fadd_generic::proc_comb() {
     GenObject *i;
 
     SETVAL(ena, CC2(BITS(ena, SUB2(latency, CONST("2")), CONST("0")), i_ena));
@@ -115,7 +94,8 @@ void fmul_generic::proc_comb() {
     SETVAL(b, i_b);
 
     TEXT();
-    SETVAL(sign, CC2(BITS(sign, SUB2(latency, CONST("4")), CONST("0")), XOR2(BIT(a, DEC(fbits)), BIT(b, DEC(fbits)))));
+    SETVAL(signA, CC2(BITS(signA, SUB2(latency, CONST("4")), CONST("0")), BIT(a, DEC(fbits))));
+    SETVAL(signB, CC2(BITS(signB, SUB2(latency, CONST("4")), CONST("0")), BIT(b, DEC(fbits))));
 
     TEXT();
     IF (EZ(BITS(a, SUB2(fbits, CONST("2")), mantbits)));
@@ -130,31 +110,46 @@ void fmul_generic::proc_comb() {
     ENDIF();
 
     TEXT();
-    TEXT("");
-    SETARRITEM(mantA, CONST("0"), mantA, comb.vb_mantA);
-    SETARRITEM(mantB, CONST("0"), mantB, comb.vb_mantB);
-    SETARRITEM(wb_carry_i, CONST("0"), wb_carry_i, ALLZEROS());
-    SETARRITEM(wb_zres_i, CONST("0"), wb_zres_i, ALLZEROS());
-    i = &FOR_INC(DEC(hex_chunks));
-        SETARRITEM(wb_hex_i, *i, wb_hex_i, BITS(ARRITEM(mantB, *i, mantB), 3, 0));
-        SETARRITEM(wb_carry_i, INC(*i), wb_carry_i, ARRITEM(wb_mant_msb, *i, wb_mant_msb));
-        SETARRITEM(wb_zres_i, INC(*i), wb_zres_i, ARRITEM(wb_mant_lsb, *i, wb_mant_lsb));
-        SETARRITEM(mantA, INC(*i), mantA, ARRITEM(mantA, *i, mantA));
-        SETARRITEM(mantB, INC(*i), mantB, CC2(CONST("0", 4), BITS(ARRITEM(mantB, *i, mantB), mantbits, CONST("4"))));
-    ENDFOR();
-    SETARRITEM(wb_hex_i, DEC(hex_chunks), wb_hex_i, BITS(ARRITEM(mantB, DEC(hex_chunks), mantB), 3, 0));
+    SETVAL(mantA, comb.vb_mantA);
+    SETVAL(mantB, comb.vb_mantB);
 
     TEXT();
     TEXT("expA - expB + EXPONENT_ZERO_LEVEL");
     SETVAL(comb.vb_expA_t, CC2(CONST("0", 2), BITS(a, SUB2(fbits, CONST("2")), mantbits)));
     SETVAL(comb.vb_expB_t, CC2(CONST("0", 2), BITS(b, SUB2(fbits, CONST("2")), mantbits)));
-    SETVAL(comb.vb_expAB_t, ADD2(comb.vb_expA_t, comb.vb_expB_t));
-    TEXT("pipeline exponent pre-scaled value:");
-    SETARRITEM(expAB, CONST("0"), expAB, SUB2(comb.vb_expAB_t, TO_LOGIC(explevel, ADD2(expbits,CONST("2")))));
-    i = &FOR_INC(ADD2(hex_chunks, CONST("2")));
-        SETARRITEM(expAB, INC(*i), expAB, ARRITEM(expAB, *i, expAB));
-    ENDFOR();
+    SETVAL(comb.vb_expAB_t, SUB2(comb.vb_expA_t, comb.vb_expB_t));
+    SETVAL(expAB, SUB2(comb.vb_expAB_t, TO_LOGIC(explevel, ADD2(expbits,CONST("2")))));
 
+    TEXT();
+    TEXT("Swap value, so that exponent is always A >= B:");
+    IF (NZ(BIT(expAB, INC(expbits))));
+        IF (NZ(BIT(signA, 0)));
+            SETVAL(mantA_unsigned, INC(INV_L(mantA)));
+        ELSE();
+            SETVAL(mantA_unsigned, mantA);
+        ENDIF();
+        IF (NZ(BIT(signB, 0)));
+            SETVAL(mantB_unsigned, INC(INV_L(mantB)));
+        ELSE();
+            SETVAL(mantB_unsigned, mantB);
+        ENDIF();
+        SETVAL(expAB_unsigned, expAB);
+    ELSE();
+        TEXT("Swap A <-> B");
+        IF (NZ(BIT(signA, 0)));
+            SETVAL(mantB_unsigned, INC(INV_L(mantA)));
+        ELSE();
+            SETVAL(mantB_unsigned, mantA);
+        ENDIF();
+        IF (NZ(BIT(signB, 0)));
+            SETVAL(mantA_unsigned, INC(INV_L(mantB)));
+        ELSE();
+            SETVAL(mantA_unsigned, mantB);
+        ENDIF();
+        SETVAL(expAB_unsigned, INC(INV_L(expAB)));
+    ENDIF();
+
+    /*
     TEXT();
     TEXT("Full istage output is valid when (goes to Leading Zero Detector Scaler):");
     TEXT("      FP32: hex_chunks=6, ena[7]");
@@ -214,7 +209,7 @@ void fmul_generic::proc_comb() {
     SETVAL(ex, AND2_L(BIT(ena, SUB2(latency, CONST("2"))), OR2_L(overflow, underflow)));
 
     TEXT();
-    SETVAL(result, CC3(BIT(sign, SUB2(latency, CONST("3"))), exp_res_rnd, mant_res_rnd));
+    SETVAL(result, CC3(BIT(sign, SUB2(latency, CONST("3"))), exp_res_rnd, mant_res_rnd));*/
 
     TEXT();
     SYNC_RESET();

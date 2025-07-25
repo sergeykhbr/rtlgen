@@ -17,14 +17,13 @@
 #pragma once
 
 #include <api_rtlgen.h>
-#include "fmul_istage.h"
 #include "lzd_scaler.h"
 
 using namespace sysvc;
 
-class fmul_generic : public ModuleObject {
+class fadd_generic : public ModuleObject {
  public:
-    fmul_generic(GenObject *parent, const char *name, const char *comment);
+    fadd_generic(GenObject *parent, const char *name, const char *comment);
 
     class CombProcess : public CombinationalProcess {
      public:
@@ -78,15 +77,9 @@ class fmul_generic : public ModuleObject {
     ParamI32D mantbits;
     ParamI32D mantmaxbits;
     ParamI32D explevel;
-    ParamI32D hex_chunks;
     ParamI32D latency;
 
  protected:
-    WireArray<Signal> wb_hex_i;
-    WireArray<Signal> wb_carry_i;
-    WireArray<Signal> wb_zres_i;
-    WireArray<Signal> wb_mant_lsb;
-    WireArray<Signal> wb_mant_msb;
     Signal wb_mant_full;
     Signal wb_mant_aligned_idx;
     Signal wb_mant_aligned;
@@ -95,10 +88,16 @@ class fmul_generic : public ModuleObject {
     RegSignal a;
     RegSignal b;
     RegSignal result;
-    RegSignal sign;
-    RegArray  mantA;
-    RegArray  mantB;
-    WireArray<RegSignal> expAB;
+    RegSignal signA;
+    RegSignal signB;
+    RegSignal mantA;
+    RegSignal mantB;
+    RegSignal mantA_unsigned;
+    RegSignal mantB_unsigned;
+    RegSignal mantA_descaled;
+    RegSignal mantB_descaled;
+    RegSignal expAB;
+    RegSignal expAB_unsigned;
     RegSignal lzd_noscaling;
     RegSignal exp_res;
     RegSignal mant_res;
@@ -112,16 +111,15 @@ class fmul_generic : public ModuleObject {
     // process should be intialized last to make all signals available
     CombProcess comb;
     // submodules
-    ModuleArray<fmul_istage> stagex;
     lzd_scaler scaler0;
 };
 
-class fmul_generic_file : public FileObject {
+class fadd_generic_file : public FileObject {
  public:
-    fmul_generic_file(GenObject *parent) : FileObject(parent, "fmul_generic"),
-    fmul_generic_(this, "fmul_generic", NO_COMMENT) {}
+    fadd_generic_file(GenObject *parent) : FileObject(parent, "fadd_generic"),
+    fadd_generic_(this, "fadd_generic", NO_COMMENT) {}
 
  private:
-    fmul_generic fmul_generic_;
+    fadd_generic fadd_generic_;
 };
 
