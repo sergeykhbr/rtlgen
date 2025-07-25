@@ -20,6 +20,7 @@ fmul_generic::fmul_generic(GenObject *parent, const char *name, const char *comm
     ModuleObject(parent, "fmul_generic", name, comment),
     fbits(this, "fbits", "32", "Input format: FP32 = 32, FP16 = 16, BF16 = 16"),
     expbits(this, "expbits", "8", "Exponent bitwidth: FP64 = 11, FP32 = 8, FP16 = 5, BF16 = 8"),
+    shiftbits(this, "shiftbits", "6", "Mantissa scale factor bits: must be $clog2(2*(fbits-expbits)), avoid using $clog2"),
     i_clk(this, "i_clk", "1", "CPU clock"),
     i_nrst(this, "i_nrst", "1", "Reset: active LOW"),
     i_ena(this, "i_ena", "1"),
@@ -29,9 +30,8 @@ fmul_generic::fmul_generic(GenObject *parent, const char *name, const char *comm
     o_ex(this, "o_ex", "1", "Exception, overflow or underflow"),
     o_valid(this, "o_valid", "1", "Result is valid"),
     // parameters
-    mantbits(this, "mantbits", "23", "Mantissa bitwidth: FP64 = 52, FP32 = 23, FP16 = 10, BF16 = 7"),
+    mantbits(this, "mantbits", "SUB(SUB(fbits,expbits),1)", "Encoded mantissa bitwidth: FP64 = 52, FP32 = 23, FP16 = 10, BF16 = 7"),
     mantmaxbits(this, "mantmaxbits", "MUL(2,ADD(mantbits,1))", "Mantissa maximum bitwidth before shifting"),
-    shiftbits(this, "shiftbits", "6", "Mantissa shift value: must be $clog2(mantmaxbits)"),
     explevel(this, "explevel", "SUB(POW2(1,SUB(expbits,1)),1)", "Level 1 for exponent: 1023 (double); 127 (fp32)"),
     hex_chunks(this, "hex_chunks", "DIV(ADD(mantbits,3),4)", "Number of hex multipliers"),
     latency(this, "latency", "ADD(hex_chunks,7)", "Cycles: 1 in latch + hex_chunks + 2 scaler + 2 rnd + 1 out latch + 1?"),

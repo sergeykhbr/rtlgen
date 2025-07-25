@@ -66,6 +66,7 @@ class fmul_generic : public ModuleObject {
  public:
     TmplParamI32D fbits;
     TmplParamI32D expbits;
+    TmplParamI32D shiftbits;
     // IOs
     InPort i_clk;
     InPort i_nrst;
@@ -78,7 +79,6 @@ class fmul_generic : public ModuleObject {
 
     ParamI32D mantbits;
     ParamI32D mantmaxbits;
-    ParamI32D shiftbits;
     ParamI32D explevel;
     ParamI32D hex_chunks;
     ParamI32D latency;

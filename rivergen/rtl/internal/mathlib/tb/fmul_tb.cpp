@@ -53,6 +53,7 @@ fmul_tb::fmul_tb(GenObject *parent, const char *name) :
     TEXT();
     mul_fp32.fbits.setObjValue(new DecConst(32));
     mul_fp32.expbits.setObjValue(new DecConst(8));
+    mul_fp32.shiftbits.setObjValue(new DecConst(6));
     NEW(mul_fp32, mul_fp32.getName().c_str());
         CONNECT(mul_fp32, 0, mul_fp32.i_nrst, nrst);
         CONNECT(mul_fp32, 0, mul_fp32.i_clk, clk);
