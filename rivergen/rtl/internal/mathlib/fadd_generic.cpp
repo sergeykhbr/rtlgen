@@ -49,10 +49,13 @@ fadd_generic::fadd_generic(GenObject *parent, const char *name, const char *comm
     mantB(this, "mantB", "ADD(mantbits,1)", "'0", NO_COMMENT),
     mantA_unsigned(this, "mantA_unsigned", "ADD(mantbits,1)", "'0", NO_COMMENT),
     mantB_unsigned(this, "mantB_unsigned", "ADD(mantbits,1)", "'0", NO_COMMENT),
-    mantA_descaled(this, "mantA_descaled", "ADD(mantbits,1)", "'0", NO_COMMENT),
-    mantB_descaled(this, "mantB_descaled", "ADD(mantbits,1)", "'0", NO_COMMENT),
+    mantA_descaled(this, "mantA_descaled", "SUB(mantmaxbits,1)", "'0", NO_COMMENT),
+    mantB_descaled(this, "mantB_descaled", "SUB(mantmaxbits,1)", "'0", NO_COMMENT),
     expAB(this, "expAB", "ADD(expbits,2)", "'0", NO_COMMENT),
     expAB_unsigned(this, "expAB_unsigned", "ADD(expbits,2)", "'0", NO_COMMENT),
+    mant_res_signed(this, "mant_res_signed", "mantmaxbits", "'0", NO_COMMENT),
+    mant_res_unsigned(this, "mant_res_unsigned", "mantmaxbits", "'0", NO_COMMENT),
+    res_sign(this, "lzd_noscaling", "3", "'0", NO_COMMENT),
     lzd_noscaling(this, "lzd_noscaling", "1", "0", NO_COMMENT),
     exp_res(this, "exp_res", "ADD(expbits,2)", "'0", NO_COMMENT),
     mant_res(this, "mant_res", "ADD(mantbits,1)", "'0", NO_COMMENT),
@@ -147,6 +150,24 @@ void fadd_generic::proc_comb() {
             SETVAL(mantA_unsigned, mantB);
         ENDIF();
         SETVAL(expAB_unsigned, INC(INV_L(expAB)));
+    ENDIF();
+
+    TEXT();
+    IF (GE(expAB_unsigned, DEC(mantmaxbits)));
+        SETVAL(mantA_descaled, CONST("0", "mantbits"));
+        SETZERO(mantB_descaled);
+    ELSE();
+        SETVAL(mantA_descaled, LSH(mantA_unsigned, expAB_unsigned));
+        SETVAL(mantB_descaled, mantB_unsigned);
+    ENDIF();
+
+    SETVAL(mant_res_signed, ADD2(CC2(CONST("0", 1), mantA_descaled), CC2(CONST("0", 1), mantB_descaled)));
+    IF (NZ(BIT(mant_res_signed, DEC(mantmaxbits))));
+        SETVAL(res_sign, CC2(BITS(res_sign, 1, 0), CONST("1", 1)));
+        SETVAL(mant_res_unsigned, INC(INV_L(mant_res_signed)));
+    ELSE();
+        SETVAL(res_sign, CC2(BITS(res_sign, 1, 0), CONST("0", 1)));
+        SETVAL(mant_res_unsigned, mant_res_signed);
     ENDIF();
 
     /*

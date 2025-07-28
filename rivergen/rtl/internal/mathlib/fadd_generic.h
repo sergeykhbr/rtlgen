@@ -98,6 +98,9 @@ class fadd_generic : public ModuleObject {
     RegSignal mantB_descaled;
     RegSignal expAB;
     RegSignal expAB_unsigned;
+    RegSignal mant_res_signed;
+    RegSignal mant_res_unsigned;
+    RegSignal res_sign;
     RegSignal lzd_noscaling;
     RegSignal exp_res;
     RegSignal mant_res;
