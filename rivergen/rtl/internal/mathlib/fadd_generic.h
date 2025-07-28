@@ -35,9 +35,12 @@ class fadd_generic : public ModuleObject {
             v_overflow(this, "v_overflow", "1", "0", NO_COMMENT),
             vb_mantA(this, "vb_mantA", "ADD(mantbits,1)", "'0", NO_COMMENT),
             vb_mantB(this, "vb_mantB", "ADD(mantbits,1)", "'0", NO_COMMENT),
+            vb_mantB_descaled(this, "vb_mantB_descaled", "SUB(mantmaxbits,1)", "'0", NO_COMMENT),
             vb_expA_t(this, "vb_expA_t", "ADD(expbits,2)", "'0", NO_COMMENT),
             vb_expB_t(this, "vb_expB_t", "ADD(expbits,2)", "'0", NO_COMMENT),
             vb_expAB_t(this, "vb_expAB_t", "ADD(expbits,2)", "'0", NO_COMMENT),
+            vb_mant_idx_normal(this, "vb_mant_idx_normal", "shiftbits", "'0", NO_COMMENT),
+            vb_mant_sum(this, "vb_mant_sum", "mantmaxbits", "'0", NO_COMMENT),
             v_mant_even(this, "v_mant_even", "1"),
             v_mant05(this, "v_mant05", "1"),
             v_mant_rnd(this, "v_mant_rnd", "1", "0", NO_COMMENT) {
@@ -50,9 +53,12 @@ class fadd_generic : public ModuleObject {
         Logic v_overflow;
         Logic vb_mantA;
         Logic vb_mantB;
+        Logic vb_mantB_descaled;
         Logic vb_expA_t;
         Logic vb_expB_t;
         Logic vb_expAB_t;
+        Logic vb_mant_idx_normal;
+        Logic vb_mant_sum;
         Logic v_mant_even;
         Logic v_mant05;
         Logic1 v_mant_rnd;
@@ -80,7 +86,6 @@ class fadd_generic : public ModuleObject {
     ParamI32D latency;
 
  protected:
-    Signal wb_mant_full;
     Signal wb_mant_aligned_idx;
     Signal wb_mant_aligned;
 
@@ -92,14 +97,17 @@ class fadd_generic : public ModuleObject {
     RegSignal signB;
     RegSignal mantA;
     RegSignal mantB;
-    RegSignal mantA_unsigned;
-    RegSignal mantB_unsigned;
+    RegSignal mantA_swapped;
+    RegSignal mantB_swapped;
     RegSignal mantA_descaled;
     RegSignal mantB_descaled;
+    RegSignal expA;
+    RegSignal expB;
     RegSignal expAB;
-    RegSignal expAB_unsigned;
-    RegSignal mant_res_signed;
-    RegSignal mant_res_unsigned;
+    RegSignal exp_dif;
+    RegArray exp_max;
+    RegSignal mant_sum;
+    RegSignal mant_sum_inv;
     RegSignal res_sign;
     RegSignal lzd_noscaling;
     RegSignal exp_res;

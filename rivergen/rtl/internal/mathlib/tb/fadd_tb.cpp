@@ -92,13 +92,13 @@ void fadd_tb::proc_comb() {
     SETZERO(w_show_result);
 
     IF (EQ(clk_cnt, CONST("10")));
-        fa = 3.1f;
-        fb = 0.006f;
+        fa = 1.1f;
+        fb = 2.006f;
         SETONE(w_ena);
         SETVAL(wb_a, CONST_FP32(fa));
         SETVAL(wb_b, CONST_FP32(fb));
-        SETARRITEM(compare_a, CONST("0"), compare_a, CONST_FP32(fa * fb));
-    ELSIF (EQ(clk_cnt, CONST("11")));
+        SETARRITEM(compare_a, CONST("0"), compare_a, CONST_FP32(fa + fb));
+/*    ELSIF (EQ(clk_cnt, CONST("11")));
         ia = 0x3F800000;//0x000000ff;
         ib = 0x00000020;
         fa = *reinterpret_cast<float *>(&ia);
@@ -205,7 +205,7 @@ void fadd_tb::proc_comb() {
         SETONE(w_ena);
         SETVAL(wb_a, CONST_FP32(fa));
         SETVAL(wb_b, CONST_FP32(fb));
-        SETARRITEM(compare_a, CONST("0"), compare_a, CONST_FP32(fa * fb));
+        SETARRITEM(compare_a, CONST("0"), compare_a, CONST_FP32(fa * fb));*/
     ELSIF(EQ(clk_cnt, CONST("60")));
         SETONE(w_show_result);
     ENDIF();

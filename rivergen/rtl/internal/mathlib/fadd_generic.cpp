@@ -33,9 +33,8 @@ fadd_generic::fadd_generic(GenObject *parent, const char *name, const char *comm
     mantbits(this, "mantbits", "SUB(SUB(fbits,expbits),1)", "Encoded mantissa bitwidth: FP64 = 52, FP32 = 23, FP16 = 10, BF16 = 7"),
     mantmaxbits(this, "mantmaxbits", "MUL(2,ADD(mantbits,1))", "Mantissa maximum bitwidth before shifting"),
     explevel(this, "explevel", "SUB(POW2(1,SUB(expbits,1)),1)", "Level 1 for exponent: 1023 (double); 127 (fp32)"),
-    latency(this, "latency", "ADD(hex_chunks,7)", "Cycles: 1 in latch + hex_chunks + 2 scaler + 2 rnd + 1 out latch + 1?"),
+    latency(this, "latency", "7", "Cycles: 1 in latch + 2 scaler + 2 rnd + 1 out latch + 1?"),
     // signals
-    wb_mant_full(this, "wb_mant_full", "mantmaxbits", NO_COMMENT),
     wb_mant_aligned_idx(this, "wb_mant_aligned_idx", "shiftbits", "'0", NO_COMMENT),
     wb_mant_aligned(this, "wb_mant_aligned", "mantmaxbits", "'0", NO_COMMENT),
     // registers
@@ -47,15 +46,18 @@ fadd_generic::fadd_generic(GenObject *parent, const char *name, const char *comm
     signB(this, "signB", "SUB(latency,2)", "'0", NO_COMMENT),
     mantA(this, "mantA", "ADD(mantbits,1)", "'0", NO_COMMENT),
     mantB(this, "mantB", "ADD(mantbits,1)", "'0", NO_COMMENT),
-    mantA_unsigned(this, "mantA_unsigned", "ADD(mantbits,1)", "'0", NO_COMMENT),
-    mantB_unsigned(this, "mantB_unsigned", "ADD(mantbits,1)", "'0", NO_COMMENT),
+    mantA_swapped(this, "mantA_swapped", "ADD(mantbits,1)", "'0", NO_COMMENT),
+    mantB_swapped(this, "mantB_swapped", "ADD(mantbits,1)", "'0", NO_COMMENT),
     mantA_descaled(this, "mantA_descaled", "SUB(mantmaxbits,1)", "'0", NO_COMMENT),
     mantB_descaled(this, "mantB_descaled", "SUB(mantmaxbits,1)", "'0", NO_COMMENT),
+    expA(this, "expA", "expbits", "'0", NO_COMMENT),
+    expB(this, "expB", "expbits", "'0", NO_COMMENT),
     expAB(this, "expAB", "ADD(expbits,2)", "'0", NO_COMMENT),
-    expAB_unsigned(this, "expAB_unsigned", "ADD(expbits,2)", "'0", NO_COMMENT),
-    mant_res_signed(this, "mant_res_signed", "mantmaxbits", "'0", NO_COMMENT),
-    mant_res_unsigned(this, "mant_res_unsigned", "mantmaxbits", "'0", NO_COMMENT),
-    res_sign(this, "lzd_noscaling", "3", "'0", NO_COMMENT),
+    exp_dif(this, "exp_dif", "ADD(expbits,2)", "'0", NO_COMMENT),
+    exp_max(this, &i_clk, CLK_POSEDGE, &i_nrst, ACTIVE_LOW, "exp_max", "ADD(expbits,2)", "5", "'0", NO_COMMENT),
+    mant_sum(this, "mant_sum", "mantmaxbits", "'0", NO_COMMENT),
+    mant_sum_inv(this, "mant_sum_inv", "4", "'0", NO_COMMENT),
+    res_sign(this, "res_sign", "5", "'0", NO_COMMENT),
     lzd_noscaling(this, "lzd_noscaling", "1", "0", NO_COMMENT),
     exp_res(this, "exp_res", "ADD(expbits,2)", "'0", NO_COMMENT),
     mant_res(this, "mant_res", "ADD(mantbits,1)", "'0", NO_COMMENT),
@@ -77,7 +79,7 @@ fadd_generic::fadd_generic(GenObject *parent, const char *name, const char *comm
     NEW(scaler0, scaler0.getName().c_str());
         CONNECT(scaler0, 0, scaler0.i_clk, i_clk);
         CONNECT(scaler0, 0, scaler0.i_nrst, i_nrst);
-        CONNECT(scaler0, 0, scaler0.i_m, wb_mant_full);
+        CONNECT(scaler0, 0, scaler0.i_m, mant_sum);
         CONNECT(scaler0, 0, scaler0.i_noscale, lzd_noscaling);
         CONNECT(scaler0, 0, scaler0.o_scaled, wb_mant_aligned);
         CONNECT(scaler0, 0, scaler0.o_scaled_factor, wb_mant_aligned_idx);
@@ -121,75 +123,84 @@ void fadd_generic::proc_comb() {
     SETVAL(comb.vb_expA_t, CC2(CONST("0", 2), BITS(a, SUB2(fbits, CONST("2")), mantbits)));
     SETVAL(comb.vb_expB_t, CC2(CONST("0", 2), BITS(b, SUB2(fbits, CONST("2")), mantbits)));
     SETVAL(comb.vb_expAB_t, SUB2(comb.vb_expA_t, comb.vb_expB_t));
-    SETVAL(expAB, SUB2(comb.vb_expAB_t, TO_LOGIC(explevel, ADD2(expbits,CONST("2")))));
+    SETVAL(expA, BITS(a, SUB2(fbits, CONST("2")), mantbits));
+    SETVAL(expB, BITS(b, SUB2(fbits, CONST("2")), mantbits));
+    SETVAL(expAB, comb.vb_expAB_t);
 
     TEXT();
     TEXT("Swap value, so that exponent is always A >= B:");
-    IF (NZ(BIT(expAB, INC(expbits))));
+    IF (EZ(BIT(expAB, INC(expbits))));
         IF (NZ(BIT(signA, 0)));
-            SETVAL(mantA_unsigned, INC(INV_L(mantA)));
+            SETVAL(mantA_swapped, INC(INV_L(mantA)));
         ELSE();
-            SETVAL(mantA_unsigned, mantA);
+            SETVAL(mantA_swapped, mantA);
         ENDIF();
         IF (NZ(BIT(signB, 0)));
-            SETVAL(mantB_unsigned, INC(INV_L(mantB)));
+            SETVAL(mantB_swapped, INC(INV_L(mantB)));
         ELSE();
-            SETVAL(mantB_unsigned, mantB);
+            SETVAL(mantB_swapped, mantB);
         ENDIF();
-        SETVAL(expAB_unsigned, expAB);
+        SETVAL(exp_dif, expAB);
+        SETARRITEM(exp_max, CONST("0"), exp_max, expA);
     ELSE();
         TEXT("Swap A <-> B");
         IF (NZ(BIT(signA, 0)));
-            SETVAL(mantB_unsigned, INC(INV_L(mantA)));
+            SETVAL(mantB_swapped, INC(INV_L(mantA)));
         ELSE();
-            SETVAL(mantB_unsigned, mantA);
+            SETVAL(mantB_swapped, mantA);
         ENDIF();
         IF (NZ(BIT(signB, 0)));
-            SETVAL(mantA_unsigned, INC(INV_L(mantB)));
+            SETVAL(mantA_swapped, INC(INV_L(mantB)));
         ELSE();
-            SETVAL(mantA_unsigned, mantB);
+            SETVAL(mantA_swapped, mantB);
         ENDIF();
-        SETVAL(expAB_unsigned, INC(INV_L(expAB)));
+        SETVAL(exp_dif, INC(INV_L(expAB)));
+        SETARRITEM(exp_max, CONST("0"), exp_max, expB);
     ENDIF();
+    i = &FOR_INC(DEC(CONST("5")));
+        SETARRITEM(exp_max, INC(*i), exp_max, ARRITEM(exp_max, *i, exp_max));
+    ENDFOR();
 
     TEXT();
-    IF (GE(expAB_unsigned, DEC(mantmaxbits)));
-        SETVAL(mantA_descaled, CONST("0", "mantbits"));
+    IF (GE(exp_dif, DEC(mantmaxbits)));
+        SETVAL(mantA_descaled, CC2(mantA_swapped, CONST("0", "mantbits")));
         SETZERO(mantB_descaled);
     ELSE();
-        SETVAL(mantA_descaled, LSH(mantA_unsigned, expAB_unsigned));
-        SETVAL(mantB_descaled, mantB_unsigned);
+        SETVAL(mantA_descaled, LSH(mantA_swapped, TO_INT(exp_dif)));
+        SETVAL(comb.vb_mantB_descaled, BITS(mantB_swapped, DEC(mantbits), CONST("0")), "exclude exponent bit");
+        SETBIT(comb.vb_mantB_descaled, ADD2(mantbits, TO_INT(exp_dif)), BIT(mantB_swapped, mantbits));
+        SETVAL(mantB_descaled, comb.vb_mantB_descaled);
     ENDIF();
 
-    SETVAL(mant_res_signed, ADD2(CC2(CONST("0", 1), mantA_descaled), CC2(CONST("0", 1), mantB_descaled)));
-    IF (NZ(BIT(mant_res_signed, DEC(mantmaxbits))));
-        SETVAL(res_sign, CC2(BITS(res_sign, 1, 0), CONST("1", 1)));
-        SETVAL(mant_res_unsigned, INC(INV_L(mant_res_signed)));
-    ELSE();
-        SETVAL(res_sign, CC2(BITS(res_sign, 1, 0), CONST("0", 1)));
-        SETVAL(mant_res_unsigned, mant_res_signed);
-    ENDIF();
-
-    /*
     TEXT();
-    TEXT("Full istage output is valid when (goes to Leading Zero Detector Scaler):");
-    TEXT("      FP32: hex_chunks=6, ena[7]");
-    TEXT("      ena[hex_chunks + 1] == 1");
-    TEXT("      expAB[hex_chunks]");
-    TEXT("      {wb_mant_msb[hex_chunks - 1], wb_mant_lsb[hex_chunks - 1]}");
-    TEXT("");
+    TEXT("Make mantissa always positive and latch was inversion or not");
+    TEXT("      - Goes to scaler input when ena[4] == 1");
+    TEXT("      - Output is ready on        ena[6] == 1");
+    SETVAL(comb.vb_mant_sum, ADD2(CC2(CONST("0", 1), mantA_descaled), CC2(CONST("0", 1), mantB_descaled)));
+    IF (NZ(BIT(comb.vb_mant_sum, DEC(mantmaxbits))));
+        SETVAL(mant_sum_inv, CC2(BITS(mant_sum_inv, 2, 0), CONST("1", 1)));
+        SETVAL(mant_sum, INC(INV_L(comb.vb_mant_sum)));
+    ELSE();
+        SETVAL(mant_sum_inv, CC2(BITS(mant_sum_inv, 2, 0), CONST("0", 1)));
+        SETVAL(mant_sum, comb.vb_mant_sum);
+    ENDIF();
+
+    TEXT();
     TEXT("Do not scale mantissa if the pre-scaled exponent <= 0:");
     SETZERO(lzd_noscaling);
-    IF (ORx(2, &NZ(BIT(ARRITEM(expAB, DEC(hex_chunks), expAB), INC(expbits))),
-                &EZ(ARRITEM(expAB, DEC(hex_chunks), expAB))));
-        SETVAL(lzd_noscaling, BIT(ena, hex_chunks));
+    IF (ORx(2, &NZ(BIT(exp_dif, INC(expbits))),
+                &EZ(exp_dif)));
+        SETVAL(lzd_noscaling, BIT(ena, 4));
     ENDIF();
-    SETVAL(wb_mant_full, CC2(ARRITEM(wb_mant_msb, DEC(hex_chunks), wb_mant_msb), ARRITEM(wb_mant_lsb, DEC(hex_chunks), wb_mant_lsb)));
 
     TEXT();
-    SETVAL(exp_res, SUB2(ARRITEM(expAB, ADD2(hex_chunks, CONST("2")), expAB), wb_mant_aligned_idx));
+    TEXT("mant_res_unsigned goes to 'scaler0' submodule input");
+    TEXT("  - latency for output is 2 clocks");
+    SETVAL(comb.vb_mant_idx_normal, SUB2(wb_mant_aligned_idx, SUB2(mantbits, CONST("2"))));
+    SETVAL(exp_res, ADD2(ARRITEM(exp_max, CONST("4"), exp_max), comb.vb_mant_idx_normal));
     SETVAL(mant_res, BITS(wb_mant_aligned, DEC(mantmaxbits), SUB2(mantmaxbits, INC(mantbits))));
 
+    
     TEXT();
     TEXT("Rounding bit:");
     SETVAL(comb.v_mant_even, INV(BIT(wb_mant_aligned, SUB2(mantmaxbits, INC(mantbits)))));
@@ -230,7 +241,7 @@ void fadd_generic::proc_comb() {
     SETVAL(ex, AND2_L(BIT(ena, SUB2(latency, CONST("2"))), OR2_L(overflow, underflow)));
 
     TEXT();
-    SETVAL(result, CC3(BIT(sign, SUB2(latency, CONST("3"))), exp_res_rnd, mant_res_rnd));*/
+    SETVAL(result, CC3(BIT(res_sign, CONST("4")), exp_res_rnd, mant_res_rnd));
 
     TEXT();
     SYNC_RESET();
