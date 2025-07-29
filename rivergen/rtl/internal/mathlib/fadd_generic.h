@@ -29,7 +29,7 @@ class fadd_generic : public ModuleObject {
      public:
         CombProcess(GenObject *parent) :
             CombinationalProcess(parent, "comb"),
-            vb_mant_res_rnd(this, "vb_mant_res_rnd", "ADD(mantbits,2)", "'0", NO_COMMENT),
+            vb_mant_res_rnd(this, "vb_mant_res_rnd", "ADD(mantbits,1)", "'0", NO_COMMENT),
             vb_exp_res_rnd(this, "vb_exp_res_rnd", "ADD(expbits,2)", "'0", NO_COMMENT),
             v_underflow(this, "v_underflow", "1", "0", NO_COMMENT),
             v_overflow(this, "v_overflow", "1", "0", NO_COMMENT),
@@ -93,8 +93,8 @@ class fadd_generic : public ModuleObject {
     RegSignal a;
     RegSignal b;
     RegSignal result;
-    RegSignal signA;
-    RegSignal signB;
+    RegSignal sub;
+    RegSignal inv;
     RegSignal mantA;
     RegSignal mantB;
     RegSignal mantA_swapped;
@@ -106,10 +106,9 @@ class fadd_generic : public ModuleObject {
     RegSignal expAB;
     RegSignal exp_dif;
     RegArray exp_max;
-    RegSignal mant_sum;
-    RegSignal mant_sum_inv;
-    RegSignal res_sign;
+    RegSignal mant_sum_mod;
     RegSignal lzd_noscaling;
+    RegSignal sign_res;
     RegSignal exp_res;
     RegSignal mant_res;
     RegSignal rnd_res;
