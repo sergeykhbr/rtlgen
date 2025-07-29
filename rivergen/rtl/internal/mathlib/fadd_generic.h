@@ -95,6 +95,8 @@ class fadd_generic : public ModuleObject {
     RegSignal result;
     RegSignal sub;
     RegSignal inv;
+    RegSignal signA;
+    RegSignal signB;
     RegSignal mantA;
     RegSignal mantB;
     RegSignal mantA_swapped;

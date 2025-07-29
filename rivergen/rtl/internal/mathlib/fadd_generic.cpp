@@ -42,8 +42,10 @@ fadd_generic::fadd_generic(GenObject *parent, const char *name, const char *comm
     a(this, "a", "fbits", "'0", NO_COMMENT),
     b(this, "b", "fbits", "'0", NO_COMMENT),
     result(this, "result", "fbits", "'0", NO_COMMENT),
-    sub(this, "sub", "2", "'0", "0=adder; 1=substruct"),
+    sub(this, "sub", "3", "'0", "0=adder; 1=substruct"),
     inv(this, "inv", "2", "'0", "1=mant result should be inverted"),
+    signA(this, "signA", "1", "'0", NO_COMMENT),
+    signB(this, "signB", "1", "'0", NO_COMMENT),
     mantA(this, "mantA", "ADD(mantbits,1)", "'0", NO_COMMENT),
     mantB(this, "mantB", "ADD(mantbits,1)", "'0", NO_COMMENT),
     mantA_swapped(this, "mantA_swapped", "ADD(mantbits,1)", "'0", NO_COMMENT),
@@ -110,6 +112,9 @@ void fadd_generic::proc_comb() {
     ENDIF();
 
     TEXT();
+    SETVAL(sub, CC2(BITS(sub, 1, 0), XOR2(BIT(a, DEC(fbits)), BIT(b, DEC(fbits)))));
+    SETVAL(signA, BIT(a, DEC(fbits)));
+    SETVAL(signB, BIT(b, DEC(fbits)));
     SETVAL(mantA, comb.vb_mantA);
     SETVAL(mantB, comb.vb_mantB);
 
@@ -129,34 +134,33 @@ void fadd_generic::proc_comb() {
         SETVAL(mantB_swapped, mantB);
         SETVAL(exp_dif, expAB);
         SETARRITEM(exp_max, CONST("0"), exp_max, expA);
-        SETVAL(inv, CC2(BIT(inv, 0), BIT(a, DEC(fbits))));
+        SETVAL(inv, CC2(BIT(inv, 0), signA));
     ELSE();
         TEXT("Swap A <-> B");
         SETVAL(mantA_swapped, mantB);
         SETVAL(mantB_swapped, mantA);
         SETVAL(exp_dif, INC(INV_L(expAB)));
         SETARRITEM(exp_max, CONST("0"), exp_max, expB);
-        SETVAL(inv, CC2(BIT(inv, 0), BIT(b, DEC(fbits))));
+        SETVAL(inv, CC2(BIT(inv, 0), signB));
     ENDIF();
-    SETVAL(sub, CC2(BIT(sub, 0), XOR2(BIT(a, DEC(fbits)), BIT(b, DEC(fbits)))));
     i = &FOR_INC(DEC(CONST("5")));
         SETARRITEM(exp_max, INC(*i), exp_max, ARRITEM(exp_max, *i, exp_max));
     ENDFOR();
 
     TEXT();
-    IF (GE(exp_dif, DEC(mantmaxbits)));
-        SETVAL(mantA_descaled, CC2(mantA_swapped, CONST("0", "mantbits")));
+    SETVAL(mantA_descaled, CC2(mantA_swapped, CONST("0", "mantbits")));
+    SETVAL(comb.vb_mantB_descaled, CC2(mantB_swapped, CONST("0", "mantbits")));
+    IF (GE(exp_dif, mantbits));
         SETZERO(mantB_descaled);
     ELSE();
-        SETVAL(mantA_descaled, LSH(mantA_swapped, TO_INT(exp_dif)));
-        SETVAL(mantB_descaled, mantB_swapped);
+        SETVAL(mantB_descaled, RSH(comb.vb_mantB_descaled, TO_INT(exp_dif)));
     ENDIF();
 
     TEXT();
     TEXT("Make mantissa always positive and latch was inversion or not");
     TEXT("      - Goes to scaler input when ena[4] == 1");
     TEXT("      - Output is ready on        ena[6] == 1");
-    IF (NZ(BIT(sub, 1)));
+    IF (NZ(BIT(sub, 2)));
         SETVAL(comb.vb_mant_sum, SUB2(CC2(CONST("0", 1), mantA_descaled), CC2(CONST("0", 1), mantB_descaled)));
     ELSE();
         SETVAL(comb.vb_mant_sum, ADD2(CC2(CONST("0", 1), mantA_descaled), CC2(CONST("0", 1), mantB_descaled)));
@@ -181,9 +185,17 @@ void fadd_generic::proc_comb() {
     TEXT("mant_res_unsigned goes to 'scaler0' submodule input");
     TEXT("  - latency for output is 2 clocks");
     IF (NZ(BIT(wb_mant_aligned, DEC(mantmaxbits))));
-        SETVAL(comb.vb_mant_idx_normal, SUB2(wb_mant_aligned_idx, mantbits));
+        SETVAL(comb.vb_mant_idx_normal, SUB2(wb_mant_aligned_idx, CONST("2", "shiftbits")));
+        IF (EQ(wb_mant_aligned_idx, CONST("1", "shiftbits")));
+            SETVAL(exp_res, ARRITEM(exp_max, CONST("4"), exp_max));
+        ELSIF (EZ(wb_mant_aligned_idx));
+            SETVAL(exp_res, ADD2(ARRITEM(exp_max, CONST("4"), exp_max), CONST("1")));
+        ELSE();
+            SETVAL(exp_res, SUB2(ARRITEM(exp_max, CONST("4"), exp_max), comb.vb_mant_idx_normal));
+        ENDIF();
+    ELSE();
+        SETZERO(exp_res);
     ENDIF();
-    SETVAL(exp_res, ADD2(ARRITEM(exp_max, CONST("4"), exp_max), comb.vb_mant_idx_normal));
     SETVAL(mant_res, BITS(wb_mant_aligned, SUB2(mantmaxbits, CONST("2")), SUB2(mantmaxbits, INC(mantbits))), "exclude older bit");
 
     
