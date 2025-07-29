@@ -100,16 +100,10 @@ void fadd_generic::proc_comb() {
     SETVAL(b, i_b);
 
     TEXT();
-    IF (EZ(BITS(a, SUB2(fbits, CONST("2")), mantbits)));
-        SETVAL(comb.vb_mantA, CC2(BITS(a, DEC(mantbits), CONST("0")), CONST("0", 1)));
-    ELSE();
-        SETVAL(comb.vb_mantA, CC2(CONST("1", 1), BITS(a, DEC(mantbits), CONST("0"))));
-    ENDIF();
-    IF (EZ(BITS(b, SUB2(fbits, CONST("2")), mantbits)));
-        SETVAL(comb.vb_mantB, CC2(BITS(b, DEC(mantbits), CONST("0")), CONST("0", 1)));
-    ELSE();
-        SETVAL(comb.vb_mantB, CC2(CONST("1", 1), BITS(b, DEC(mantbits), CONST("0"))));
-    ENDIF();
+    SETVAL(comb.v_expa_nzero, OR_REDUCE(BITS(a, SUB2(fbits, CONST("2")), mantbits)));
+    SETVAL(comb.v_expb_nzero, OR_REDUCE(BITS(b, SUB2(fbits, CONST("2")), mantbits)));
+    SETVAL(comb.vb_mantA, CC2(comb.v_expa_nzero, BITS(a, DEC(mantbits), CONST("0"))));
+    SETVAL(comb.vb_mantB, CC2(comb.v_expa_nzero, BITS(b, DEC(mantbits), CONST("0"))));
 
     TEXT();
     SETVAL(sub, CC2(BITS(sub, 1, 0), XOR2(BIT(a, DEC(fbits)), BIT(b, DEC(fbits)))));
@@ -120,11 +114,11 @@ void fadd_generic::proc_comb() {
 
     TEXT();
     TEXT("expA - expB + EXPONENT_ZERO_LEVEL");
-    SETVAL(comb.vb_expA_t, CC2(CONST("0", 2), BITS(a, SUB2(fbits, CONST("2")), mantbits)));
-    SETVAL(comb.vb_expB_t, CC2(CONST("0", 2), BITS(b, SUB2(fbits, CONST("2")), mantbits)));
+    SETVAL(comb.vb_expA_t, SUB2(CC2(CONST("0", 2), BITS(a, SUB2(fbits, CONST("2")), mantbits)), comb.v_expa_nzero));
+    SETVAL(comb.vb_expB_t, SUB2(CC2(CONST("0", 2), BITS(b, SUB2(fbits, CONST("2")), mantbits)), comb.v_expb_nzero));
     SETVAL(comb.vb_expAB_t, SUB2(comb.vb_expA_t, comb.vb_expB_t));
-    SETVAL(expA, BITS(a, SUB2(fbits, CONST("2")), mantbits));
-    SETVAL(expB, BITS(b, SUB2(fbits, CONST("2")), mantbits));
+    SETVAL(expA, SUB2(BITS(a, SUB2(fbits, CONST("2")), mantbits), comb.v_expa_nzero));
+    SETVAL(expB, SUB2(BITS(b, SUB2(fbits, CONST("2")), mantbits), comb.v_expb_nzero));
     SETVAL(expAB, comb.vb_expAB_t);
 
     TEXT();
@@ -186,9 +180,9 @@ void fadd_generic::proc_comb() {
     TEXT("  - latency for output is 2 clocks");
     IF (NZ(BIT(wb_mant_aligned, DEC(mantmaxbits))));
         SETVAL(comb.vb_mant_idx_normal, SUB2(wb_mant_aligned_idx, CONST("2", "shiftbits")));
-        IF (EQ(wb_mant_aligned_idx, CONST("1", "shiftbits")));
-            SETVAL(exp_res, ARRITEM(exp_max, CONST("4"), exp_max));
-        ELSIF (EZ(wb_mant_aligned_idx));
+        IF (EZ(wb_mant_aligned_idx));
+            SETVAL(exp_res, ADD2(ARRITEM(exp_max, CONST("4"), exp_max), CONST("2")));
+        ELSIF (EQ(wb_mant_aligned_idx, CONST("1", "shiftbits")));
             SETVAL(exp_res, ADD2(ARRITEM(exp_max, CONST("4"), exp_max), CONST("1")));
         ELSE();
             SETVAL(exp_res, SUB2(ARRITEM(exp_max, CONST("4"), exp_max), comb.vb_mant_idx_normal));

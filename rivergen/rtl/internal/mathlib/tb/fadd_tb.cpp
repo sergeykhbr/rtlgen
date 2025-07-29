@@ -104,21 +104,21 @@ void fadd_tb::proc_comb() {
         SETONE(w_ena);
         SETVAL(wb_a, CONST_FP32(fa));
         SETVAL(wb_b, CONST_FP32(fb));
-        SETARRITEM(compare_a, CONST("0"), compare_a, CONST_FP32(fa * fb));
+        SETARRITEM(compare_a, CONST("0"), compare_a, CONST_FP32(fa + fb));
     ELSIF (EQ(clk_cnt, CONST("12")));
         fa = -2.007f;
         fb = -2.006f;
         SETONE(w_ena);
         SETVAL(wb_a, CONST_FP32(fa));
         SETVAL(wb_b, CONST_FP32(fb));
-        SETARRITEM(compare_a, CONST("0"), compare_a, CONST_FP32(fa * fb));
+        SETARRITEM(compare_a, CONST("0"), compare_a, CONST_FP32(fa + fb));
     ELSIF (EQ(clk_cnt, CONST("20")));
         fa = 0.00011f;
         fb = 0.99999f;
         SETONE(w_ena);
         SETVAL(wb_a, CONST_FP32(fa));
         SETVAL(wb_b, CONST_FP32(fb));
-        SETARRITEM(compare_a, CONST("0"), compare_a, CONST_FP32(fa * fb));
+        SETARRITEM(compare_a, CONST("0"), compare_a, CONST_FP32(fa + fb));
     /*ELSIF (EQ(clk_cnt, CONST("21")));
         ia = 0x3f000002;
         ib = 0x00081010;
@@ -127,7 +127,7 @@ void fadd_tb::proc_comb() {
         SETONE(w_ena);
         SETVAL(wb_a, CONST_FP32(fa));
         SETVAL(wb_b, CONST_FP32(fb));
-        SETARRITEM(compare_a, CONST("0"), compare_a, CONST_FP32(fa * fb));
+        SETARRITEM(compare_a, CONST("0"), compare_a, CONST_FP32(fa + fb));
     ELSIF (EQ(clk_cnt, CONST("22")));
         ia = 0xbfc00002;
         ib = 0x01091010;
@@ -136,7 +136,7 @@ void fadd_tb::proc_comb() {
         SETONE(w_ena);
         SETVAL(wb_a, CONST_FP32(fa));
         SETVAL(wb_b, CONST_FP32(fb));
-        SETARRITEM(compare_a, CONST("0"), compare_a, CONST_FP32(fa * fb));
+        SETARRITEM(compare_a, CONST("0"), compare_a, CONST_FP32(fa + fb));
     ELSIF (EQ(clk_cnt, CONST("23")));
         ia = 0x35d00005;
         ib = 0x8309101f;
@@ -145,7 +145,7 @@ void fadd_tb::proc_comb() {
         SETONE(w_ena);
         SETVAL(wb_a, CONST_FP32(fa));
         SETVAL(wb_b, CONST_FP32(fb));
-        SETARRITEM(compare_a, CONST("0"), compare_a, CONST_FP32(fa * fb));
+        SETARRITEM(compare_a, CONST("0"), compare_a, CONST_FP32(fa + fb));
     ELSIF (EQ(clk_cnt, CONST("24")));
         ia = 0xf5400509;
         ib = 0xa3e9103f;
@@ -154,7 +154,7 @@ void fadd_tb::proc_comb() {
         SETONE(w_ena);
         SETVAL(wb_a, CONST_FP32(fa));
         SETVAL(wb_b, CONST_FP32(fb));
-        SETARRITEM(compare_a, CONST("0"), compare_a, CONST_FP32(fa * fb));
+        SETARRITEM(compare_a, CONST("0"), compare_a, CONST_FP32(fa + fb));
     ELSIF (EQ(clk_cnt, CONST("25")));
         ia = 0xff800001;
         ib = 0xff800000;
@@ -163,7 +163,7 @@ void fadd_tb::proc_comb() {
         SETONE(w_ena);
         SETVAL(wb_a, CONST_FP32(fa));
         SETVAL(wb_b, CONST_FP32(fb));
-        SETARRITEM(compare_a, CONST("0"), compare_a, CONST_FP32(fa * fb));
+        SETARRITEM(compare_a, CONST("0"), compare_a, CONST_FP32(fa + fb));
     ELSIF (EQ(clk_cnt, CONST("26")));
         ia = 0xbf800001;
         ib = 0xbf800000;
@@ -172,7 +172,7 @@ void fadd_tb::proc_comb() {
         SETONE(w_ena);
         SETVAL(wb_a, CONST_FP32(fa));
         SETVAL(wb_b, CONST_FP32(fb));
-        SETARRITEM(compare_a, CONST("0"), compare_a, CONST_FP32(fa * fb));
+        SETARRITEM(compare_a, CONST("0"), compare_a, CONST_FP32(fa + fb));
     ELSIF (EQ(clk_cnt, CONST("27")));
         ia = 0xbfc00002;
         ib = 0xbfc00001;
@@ -181,7 +181,7 @@ void fadd_tb::proc_comb() {
         SETONE(w_ena);
         SETVAL(wb_a, CONST_FP32(fa));
         SETVAL(wb_b, CONST_FP32(fb));
-        SETARRITEM(compare_a, CONST("0"), compare_a, CONST_FP32(fa * fb));
+        SETARRITEM(compare_a, CONST("0"), compare_a, CONST_FP32(fa + fb));
     ELSIF (EQ(clk_cnt, CONST("28")));
         ia = 0x80800002;
         ib = 0x7f000003;
@@ -190,7 +190,7 @@ void fadd_tb::proc_comb() {
         SETONE(w_ena);
         SETVAL(wb_a, CONST_FP32(fa));
         SETVAL(wb_b, CONST_FP32(fb));
-        SETARRITEM(compare_a, CONST("0"), compare_a, CONST_FP32(fa * fb));
+        SETARRITEM(compare_a, CONST("0"), compare_a, CONST_FP32(fa + fb));
     ELSIF (EQ(clk_cnt, CONST("29")));
         ia = 0x007fffff;
         ib = 0x7e7fffff;
@@ -199,7 +199,7 @@ void fadd_tb::proc_comb() {
         SETONE(w_ena);
         SETVAL(wb_a, CONST_FP32(fa));
         SETVAL(wb_b, CONST_FP32(fb));
-        SETARRITEM(compare_a, CONST("0"), compare_a, CONST_FP32(fa * fb));*/
+        SETARRITEM(compare_a, CONST("0"), compare_a, CONST_FP32(fa + fb));*/
     ELSIF(EQ(clk_cnt, CONST("60")));
         SETONE(w_show_result);
     ENDIF();

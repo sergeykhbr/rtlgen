@@ -29,6 +29,8 @@ class fadd_generic : public ModuleObject {
      public:
         CombProcess(GenObject *parent) :
             CombinationalProcess(parent, "comb"),
+            v_expa_nzero(this, "v_expa_nzero", "1", "0", NO_COMMENT),
+            v_expb_nzero(this, "v_expb_nzero", "1", "0", NO_COMMENT),
             vb_mant_res_rnd(this, "vb_mant_res_rnd", "ADD(mantbits,1)", "'0", NO_COMMENT),
             vb_exp_res_rnd(this, "vb_exp_res_rnd", "ADD(expbits,2)", "'0", NO_COMMENT),
             v_underflow(this, "v_underflow", "1", "0", NO_COMMENT),
@@ -47,6 +49,8 @@ class fadd_generic : public ModuleObject {
         }
 
      public:
+        Logic v_expa_nzero;
+        Logic v_expb_nzero;
         Logic vb_mant_res_rnd;
         Logic vb_exp_res_rnd;
         Logic v_underflow;
