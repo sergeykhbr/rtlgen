@@ -59,6 +59,7 @@ fadd_generic::fadd_generic(GenObject *parent, const char *name, const char *comm
     exp_max(this, &i_clk, CLK_POSEDGE, &i_nrst, ACTIVE_LOW, "exp_max", "ADD(expbits,2)", "5", "'0", NO_COMMENT),
     mant_sum_mod(this, "mant_sum_mod", "mantmaxbits", "'0", "Module after mantissas adding"),
     lzd_noscaling(this, "lzd_noscaling", "1", "0", NO_COMMENT),
+    lzd_noscaling_z(this, "lzd_noscaling_z", "1", "0", NO_COMMENT),
     sign_res(this, "sign_res", "5", "'0", NO_COMMENT),
     exp_res(this, "exp_res", "ADD(expbits,2)", "'0", NO_COMMENT),
     mant_res(this, "mant_res", "mantbits", "'0", NO_COMMENT),
@@ -81,7 +82,7 @@ fadd_generic::fadd_generic(GenObject *parent, const char *name, const char *comm
         CONNECT(scaler0, 0, scaler0.i_clk, i_clk);
         CONNECT(scaler0, 0, scaler0.i_nrst, i_nrst);
         CONNECT(scaler0, 0, scaler0.i_m, mant_sum_mod);
-        CONNECT(scaler0, 0, scaler0.i_noscale, lzd_noscaling);
+        CONNECT(scaler0, 0, scaler0.i_noscale, lzd_noscaling_z);
         CONNECT(scaler0, 0, scaler0.o_scaled, wb_mant_aligned);
         CONNECT(scaler0, 0, scaler0.o_scaled_factor, wb_mant_aligned_idx);
     ENDNEW();
@@ -151,28 +152,29 @@ void fadd_generic::proc_comb() {
     ENDIF();
 
     TEXT();
-    TEXT("Make mantissa always positive and latch was inversion or not");
-    TEXT("      - Goes to scaler input when ena[4] == 1");
-    TEXT("      - Output is ready on        ena[6] == 1");
-    IF (NZ(BIT(sub, 2)));
-        SETVAL(comb.vb_mant_sum, SUB2(CC2(CONST("0", 1), mantA_descaled), CC2(CONST("0", 1), mantB_descaled)));
-    ELSE();
-        SETVAL(comb.vb_mant_sum, ADD2(CC2(CONST("0", 1), mantA_descaled), CC2(CONST("0", 1), mantB_descaled)));
-    ENDIF();
-    IF (NZ(BIT(comb.vb_mant_sum, DEC(mantmaxbits))));
-        SETVAL(sign_res, CC2(BITS(sign_res, 4, 0), XOR2(CONST("1", 1), BIT(inv, 1))));
-        SETVAL(mant_sum_mod, INC(INV_L(comb.vb_mant_sum)));
-    ELSE();
-        SETVAL(sign_res, CC2(BITS(sign_res, 4, 0), BIT(inv, 1)));
-        SETVAL(mant_sum_mod, comb.vb_mant_sum);
-    ENDIF();
-
-    TEXT();
     TEXT("Do not scale mantissa if the pre-scaled exponent <= 0:");
     SETZERO(lzd_noscaling);
     IF (ORx(2, &NZ(BIT(exp_dif, INC(expbits))),
                 &EZ(exp_dif)));
-        SETVAL(lzd_noscaling, BIT(ena, 4));
+        SETVAL(lzd_noscaling, BIT(ena, 2));
+    ENDIF();
+    SETVAL(lzd_noscaling_z, lzd_noscaling);
+
+    TEXT();
+    TEXT("Make mantissa always positive and latch was inversion or not");
+    TEXT("      - Goes to scaler input when ena[4] == 1");
+    TEXT("      - Output is ready on        ena[6] == 1");
+    IF (NZ(BIT(sub, 2)));
+        SETVAL(comb.vb_mant_sum, SUB2(CC2(CONST("0", 2), mantA_descaled), CC2(CONST("0", 2), mantB_descaled)));
+    ELSE();
+        SETVAL(comb.vb_mant_sum, ADD2(CC2(CONST("0", 2), mantA_descaled), CC2(CONST("0", 2), mantB_descaled)));
+    ENDIF();
+    IF (NZ(BIT(comb.vb_mant_sum, mantmaxbits)));
+        SETVAL(sign_res, CC2(BITS(sign_res, 4, 0), XOR2(CONST("1", 1), BIT(inv, 1))));
+        SETVAL(mant_sum_mod, INC(INV_L(BITS(comb.vb_mant_sum, DEC(mantmaxbits), CONST("0")))));
+    ELSE();
+        SETVAL(sign_res, CC2(BITS(sign_res, 4, 0), BIT(inv, 1)));
+        SETVAL(mant_sum_mod, BITS(comb.vb_mant_sum, DEC(mantmaxbits), CONST("0")));
     ENDIF();
 
     TEXT();

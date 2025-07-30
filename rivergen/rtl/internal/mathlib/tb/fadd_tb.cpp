@@ -19,6 +19,7 @@
 fadd_tb::fadd_tb(GenObject *parent, const char *name) :
     ModuleObject(parent, "fadd_tb", name, NO_COMMENT),
     // parameters
+    latency(this, "latency", "10", "Pipeline length"),
     // Ports
     nrst(this, "nrst", "1", "1", "Power-on system reset active LOW"),
     clk(this, "clk", "1", RSTVAL_ZERO, NO_COMMENT),
@@ -35,7 +36,7 @@ fadd_tb::fadd_tb(GenObject *parent, const char *name) :
     clk_cnt(this, &clk, CLK_POSEDGE, &nrst, ACTIVE_LOW,  "clk_cnt", "32", "'0", NO_COMMENT),
     compare_cnt(this, &clk, CLK_POSEDGE, &nrst, ACTIVE_LOW,  "compare_cnt", "32", "'0", NO_COMMENT),
     err_cnt(this, &clk, CLK_POSEDGE, &nrst, ACTIVE_LOW,  "err_cnt", "32", "'0", NO_COMMENT),
-    compare_a(this, &clk, CLK_POSEDGE, &nrst, ACTIVE_LOW,  "compare_a", "32", "10", "'0", NO_COMMENT),
+    compare_a(this, &clk, CLK_POSEDGE, &nrst, ACTIVE_LOW,  "compare_a", "32", "latency", "'0", NO_COMMENT),
     // submodules:
     pll0(this, "pll0", NO_COMMENT),
     tt(this, "tt", NO_COMMENT),
@@ -205,7 +206,7 @@ void fadd_tb::proc_comb() {
     ENDIF();
 
 
-    GenObject *i = &FOR_INC(DEC(CONST("10")));
+    GenObject *i = &FOR_INC(DEC(latency));
         SETARRITEM(compare_a, INC(*i), compare_a, ARRITEM(compare_a, *i, compare_a));
     ENDFOR();
 
@@ -214,11 +215,11 @@ void fadd_tb::proc_comb() {
     IF (AND2(NZ(w_valid), EZ(w_ex)));
         SETONE(w_compare_ena);
         SETVAL(compare_cnt, INC(compare_cnt));
-        IF (NE(wb_res, ARRITEM(compare_a, DEC(CONST("9")), compare_a)));
+        IF (NE(wb_res, ARRITEM(compare_a, DEC(latency), compare_a)));
             SETVAL(err_cnt, INC(err_cnt));
         ENDIF();
     ENDIF();
-    SETVAL(wb_compare_a, ARRITEM(compare_a, DEC(CONST("9")), compare_a));
+    SETVAL(wb_compare_a, ARRITEM(compare_a, DEC(latency), compare_a));
 }
 
 void fadd_tb::proc_test_clk() {

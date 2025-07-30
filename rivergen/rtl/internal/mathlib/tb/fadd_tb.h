@@ -52,6 +52,7 @@ class fadd_tb : public ModuleObject {
     void proc_test_clk();
 
 public:
+    ParamI32D latency;
     // Ports:
     Signal nrst;
     Signal clk;

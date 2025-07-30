@@ -42,7 +42,7 @@ class fadd_generic : public ModuleObject {
             vb_expB_t(this, "vb_expB_t", "ADD(expbits,2)", "'0", NO_COMMENT),
             vb_expAB_t(this, "vb_expAB_t", "ADD(expbits,2)", "'0", NO_COMMENT),
             vb_mant_idx_normal(this, "vb_mant_idx_normal", "shiftbits", "'0", NO_COMMENT),
-            vb_mant_sum(this, "vb_mant_sum", "mantmaxbits", "'0", NO_COMMENT),
+            vb_mant_sum(this, "vb_mant_sum", "ADD(mantmaxbits,1)", "'0", NO_COMMENT),
             v_mant_even(this, "v_mant_even", "1"),
             v_mant05(this, "v_mant05", "1"),
             v_mant_rnd(this, "v_mant_rnd", "1", "0", NO_COMMENT) {
@@ -114,6 +114,7 @@ class fadd_generic : public ModuleObject {
     RegArray exp_max;
     RegSignal mant_sum_mod;
     RegSignal lzd_noscaling;
+    RegSignal lzd_noscaling_z;
     RegSignal sign_res;
     RegSignal exp_res;
     RegSignal mant_res;
