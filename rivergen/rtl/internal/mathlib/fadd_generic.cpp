@@ -104,7 +104,7 @@ void fadd_generic::proc_comb() {
     SETVAL(comb.v_expa_nzero, OR_REDUCE(BITS(a, SUB2(fbits, CONST("2")), mantbits)));
     SETVAL(comb.v_expb_nzero, OR_REDUCE(BITS(b, SUB2(fbits, CONST("2")), mantbits)));
     SETVAL(comb.vb_mantA, CC2(comb.v_expa_nzero, BITS(a, DEC(mantbits), CONST("0"))));
-    SETVAL(comb.vb_mantB, CC2(comb.v_expa_nzero, BITS(b, DEC(mantbits), CONST("0"))));
+    SETVAL(comb.vb_mantB, CC2(comb.v_expb_nzero, BITS(b, DEC(mantbits), CONST("0"))));
 
     TEXT();
     SETVAL(sub, CC2(BITS(sub, 1, 0), XOR2(BIT(a, DEC(fbits)), BIT(b, DEC(fbits)))));
