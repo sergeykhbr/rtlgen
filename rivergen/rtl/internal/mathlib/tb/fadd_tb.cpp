@@ -167,7 +167,7 @@ void fadd_tb::proc_comb() {
         SETVAL(wb_b, CONST_FP32(fb));
         SETARRITEM(compare_a, CONST("0"), compare_a, CONST_FP32(fa + fb));
     ELSIF (EQ(clk_cnt, CONST("31")));
-        ia = 0x7f800001;
+        ia = 0x7f000001;
         ib = 0x7fffffff;
         fa = *reinterpret_cast<float *>(&ia);
         fb = *reinterpret_cast<float *>(&ib);
@@ -185,7 +185,7 @@ void fadd_tb::proc_comb() {
         SETVAL(wb_b, CONST_FP32(fb));
         SETARRITEM(compare_a, CONST("0"), compare_a, CONST_FP32(fa + fb));
     ELSIF (EQ(clk_cnt, CONST("33")));
-        ia = 0x7f7FFFFF;
+        ia = 0x7e7FFFFF;
         ib = 0x7f000003;
         fa = *reinterpret_cast<float *>(&ia);
         fb = *reinterpret_cast<float *>(&ib);
@@ -205,6 +205,15 @@ void fadd_tb::proc_comb() {
     ELSIF (EQ(clk_cnt, CONST("40")));
         ia = 0x557fffff;
         ib = 0x54ffffff;
+        fa = *reinterpret_cast<float *>(&ia);
+        fb = *reinterpret_cast<float *>(&ib);
+        SETONE(w_ena);
+        SETVAL(wb_a, CONST_FP32(fa));
+        SETVAL(wb_b, CONST_FP32(fb));
+        SETARRITEM(compare_a, CONST("0"), compare_a, CONST_FP32(fa + fb));
+    ELSIF (EQ(clk_cnt, CONST("41")));
+        ia = 0x54c00000;
+        ib = 0x557fffff;
         fa = *reinterpret_cast<float *>(&ia);
         fb = *reinterpret_cast<float *>(&ib);
         SETONE(w_ena);

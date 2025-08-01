@@ -192,8 +192,7 @@ void fadd_generic::proc_comb() {
     ELSE();
         SETZERO(exp_res);
     ENDIF();
-    SETVAL(mant_res, BITS(wb_mant_aligned, SUB2(mantmaxbits, CONST("2")), SUB2(mantmaxbits, INC(mantbits))), "exclude older bit");
-
+    SETVAL(mant_res, BITS(wb_mant_aligned, SUB2(mantmaxbits, CONST("2")), SUB2(mantmaxbits, INC(mantbits))), "exclude 1 older bit");
     
     TEXT();
     TEXT("Rounding bit:");
